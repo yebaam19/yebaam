@@ -1,0 +1,54 @@
+/**
+ * UserProfile Skeleton Component
+ *
+ * Skeleton de alta fidelidad para el componente UserProfile
+ * Replica exactamente la estructura visual del perfil
+ */
+
+import { Skeleton } from '@/components/skeletons/Skeleton';
+
+export function UserProfileSkeleton() {
+  return (
+    <div className="w-full bg-white dark:bg-gray-800">
+      {/* Cover Photo Skeleton */}
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-lg">
+          <Skeleton className="h-[260px] w-full sm:h-80 lg:h-[380px]" />
+        </div>
+      </div>
+
+      {/* Profile Info Section Skeleton */}
+      <div>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="relative -mt-12 flex w-full flex-col items-center gap-4 pb-4 lg:flex-row lg:items-center lg:gap-6">
+            {/* Avatar Skeleton */}
+            <div className="shrink-0 lg:ml-6">
+              <Skeleton className="size-36 min-h-36 min-w-36 rounded-full border-4 border-white bg-gray-200 sm:size-40 sm:min-h-40 sm:min-w-40 md:size-[150px] md:min-h-[150px] md:min-w-[150px] lg:size-[150px] lg:min-h-[150px] lg:min-w-[150px] dark:border-gray-800 dark:bg-gray-700" />
+            </div>
+
+            {/* Info and Actions Skeleton */}
+            <div className="mt-10 flex w-full flex-col items-center lg:flex-1 lg:flex-row lg:items-center lg:justify-between">
+              {/* User Info Skeleton */}
+              <div className="mt-4 flex w-full flex-col items-center space-y-2 lg:items-start">
+                {/* Name */}
+                <Skeleton className="h-9 w-64" />
+                {/* Username */}
+                <Skeleton className="h-5 w-32" />
+                {/* Stats */}
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+
+              {/* Action Button Skeleton */}
+              <div className="mt-4 flex lg:mt-0 lg:mr-6">
+                <Skeleton className="h-10 w-32 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

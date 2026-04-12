@@ -1,0 +1,40 @@
+# ============================================================================
+# TERRAFORM VARIABLES - YEBAAM CLIENT (DESARROLLO)
+# ============================================================================
+# Configuración para mantener el entorno de desarrollo separado
+# Para usar: terraform plan -var-file="terraform.tfvars.develop"
+# ============================================================================
+
+# AWS Configuration
+aws_region  = "us-east-1"
+environment = "develop"
+
+# Amplify App Configuration
+app_name    = "yebaam-client"
+branch_name = "develop" # Rama de desarrollo
+
+# GitHub Configuration
+github_repository   = "https://github.com/JimCano19/client-next-production"
+github_access_token = "REEMPLAZAR_CON_TOKEN_GITHUB"
+
+# Domain Configuration - Sin dominio personalizado para desarrollo
+domain_name = "" # Dejarlo vacío para usar dominio por defecto de Amplify
+
+# Next.js Environment Variables - ACTUALIZADO: ECS + ALB con HTTPS y WebSocket Support
+next_public_api_url     = "https://api.yebaam.com"
+next_public_backend_url = "https://api.yebaam.com"
+next_public_graphql_url = "https://api.yebaam.com/graphql"
+next_public_socket_url  = "https://api.yebaam.com"
+next_public_ws_url      = "https://api.yebaam.com"
+next_public_app_url     = "https://develop.dwqmm5iclbz1m.amplifyapp.com"
+
+# NextAuth Configuration
+nextauth_url    = "https://develop.dwqmm5iclbz1m.amplifyapp.com"
+nextauth_secret = "REEMPLAZAR_CON_SECRET_SEGURO"
+
+# ============================================================================
+# NOTAS:
+# ============================================================================
+# Este archivo mantiene la configuración actual de desarrollo
+# La rama 'develop' usará: develop.dwqmm5iclbz1m.amplifyapp.com
+# ============================================================================

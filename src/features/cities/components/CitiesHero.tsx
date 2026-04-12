@@ -1,0 +1,89 @@
+'use client'
+
+import { GlobeAmericasIcon, SparklesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { useGlobalStats } from '../hooks/useGlobalStats'
+
+/**
+ * Hero section para la página de bienvenida al portal de ciudades
+ */
+export function CitiesHero() {
+  const { data: stats, isLoading } = useGlobalStats()
+
+  // Formatear números con separadores de miles
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K+`
+    }
+    return `${num}+`
+  }
+
+  return (
+    <section className="relative isolate overflow-hidden rounded-2xl bg-linear-to-br from-primary-600 via-primary-700 to-emerald-800 px-6 py-16 text-white shadow-xl sm:px-12 lg:px-16">
+      {/* Patrón decorativo de fondo */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <svg
+          className="absolute top-0 left-[max(50%,25rem)] h-256 w-512 -translate-x-1/2 mask-[radial-gradient(64rem_64rem_at_top,white,transparent)] stroke-white/10"
+          aria-hidden="true"
+        >
+          <defs>
+            <pattern id="hero-pattern" width={200} height={200} x="50%" y={-1} patternUnits="userSpaceOnUse">
+              <path d="M100 200V.5M.5 .5H200" fill="none" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" strokeWidth={0} fill="url(#hero-pattern)" />
+        </svg>
+      </div>
+
+      {/* Contenido principal */}
+      <div className="relative z-10 mx-auto max-w-4xl text-center">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
+          <GlobeAmericasIcon className="h-5 w-5" />
+          <span>Descubre tu comunidad</span>
+        </div>
+
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Portal de Ciudades</h1>
+
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90 sm:text-xl">
+          Explora y conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad local.
+        </p>
+
+        {/* Stats */}
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div className="rounded-xl bg-white/10 px-6 py-4 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-2">
+              <GlobeAmericasIcon className="h-6 w-6 text-amber-300" />
+              {isLoading ? (
+                <span className="text-3xl font-bold">...</span>
+              ) : (
+                <span className="text-3xl font-bold">{formatNumber(stats?.totalCities || 0)}</span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-white/80">Ciudades activas</p>
+          </div>
+          <div className="rounded-xl bg-white/10 px-6 py-4 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-2">
+              <UserGroupIcon className="h-6 w-6 text-amber-300" />
+              {isLoading ? (
+                <span className="text-3xl font-bold">...</span>
+              ) : (
+                <span className="text-3xl font-bold">{formatNumber(stats?.totalUsers || 0)}</span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-white/80">Usuarios conectados</p>
+          </div>
+          <div className="rounded-xl bg-white/10 px-6 py-4 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-2">
+              <SparklesIcon className="h-6 w-6 text-amber-300" />
+              {isLoading ? (
+                <span className="text-3xl font-bold">...</span>
+              ) : (
+                <span className="text-3xl font-bold">{formatNumber(stats?.totalMedia || 0)}</span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-white/80">Fotos compartidas</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

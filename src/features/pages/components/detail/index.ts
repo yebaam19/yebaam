@@ -1,0 +1,13 @@
+export { PageDetailHeader } from './PageDetailHeader';
+export { PageDetailTabs } from './PageDetailTabs';
+export { PageDetailSidebar } from './PageDetailSidebar';
+export { PageDetailAbout } from './PageDetailAbout';
+export { PageDetailPosts } from './PageDetailPosts';
+export { PageDetailPhotos } from '../photos/PageDetailPhotos';
+export { PageDetailCommunity } from '../community/PageDetailCommunity';
+export { PageDetailReviews } from '../reviews/PageDetailReviews';
+export { PageDetailFAQ } from './PageDetailFAQ';
+export { PageDetailPromotions } from '../promotions/PageDetailPromotions';
+export { PageDetailProducts } from './PageDetailProducts';
+export { PageDetailBadges } from './PageDetailBadges';
+export { PageDetailReels } from './PageDetailReels';

@@ -1,0 +1,100 @@
+'use client';
+
+import { Tab } from '@headlessui/react';
+import { cn } from '@/lib/utils';
+import NotificationList from './NotificationList';
+import type { Notification } from '../interfaces/notification.interfaces';
+
+interface NotificationTabsProps {
+  allNotifications: Notification[];
+  unreadNotifications: Notification[];
+  unreadCount: number;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  selectedTab: 'all' | 'unread';
+  onTabChange: (tab: 'all' | 'unread') => void;
+  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  onRead: (notificationId: string) => Promise<void>;
+  onDelete: (notificationId: string) => Promise<void>;
+}
+
+export default function NotificationTabs({
+  allNotifications,
+  unreadNotifications,
+  unreadCount,
+  isLoading,
+  isLoadingMore,
+  hasMore,
+  selectedTab,
+  onTabChange,
+  onScroll,
+  onRead,
+  onDelete,
+}: NotificationTabsProps) {
+  return (
+    <Tab.Group 
+      selectedIndex={selectedTab === 'all' ? 0 : 1} 
+      onChange={(index) => onTabChange(index === 0 ? 'all' : 'unread')}
+    >
+      <Tab.List className="flex border-b border-neutral-200 dark:border-neutral-800">
+        <Tab className={({ selected }) => cn(
+          'flex-1 py-3 text-sm font-medium transition-colors',
+          'focus:outline-none',
+          selected
+            ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
+            : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+        )}>
+          Todas
+        </Tab>
+        <Tab className={({ selected }) => cn(
+          'flex-1 py-3 text-sm font-medium transition-colors',
+          'focus:outline-none',
+          selected
+            ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
+            : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+        )}>
+          No leídas {unreadCount > 0 && `(${unreadCount})`}
+        </Tab>
+      </Tab.List>
+
+      <Tab.Panels>
+        {/* Tab: Todas */}
+        <Tab.Panel>
+          <NotificationList
+            notifications={allNotifications}
+            isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
+            emptyMessage={{
+              icon: 'bell',
+              title: 'No tienes notificaciones',
+              description: 'Cuando tengas notificaciones aparecerán aquí',
+            }}
+            onScroll={onScroll}
+            onRead={onRead}
+            onDelete={onDelete}
+          />
+        </Tab.Panel>
+
+        {/* Tab: No leídas */}
+        <Tab.Panel>
+          <NotificationList
+            notifications={unreadNotifications}
+            isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
+            emptyMessage={{
+              icon: 'check',
+              title: '¡Todo al día!',
+              description: 'No tienes notificaciones sin leer',
+            }}
+            onScroll={onScroll}
+            onRead={onRead}
+            onDelete={onDelete}
+          />
+        </Tab.Panel>
+      </Tab.Panels>
+    </Tab.Group>
+  );
+}

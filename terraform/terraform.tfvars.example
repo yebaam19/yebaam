@@ -1,0 +1,36 @@
+# ============================================================================
+# TERRAFORM VARIABLES - PLANTILLA DE EJEMPLO
+# ============================================================================
+# Copiar este archivo como terraform.tfvars y completar con tus valores
+# Comando: cp terraform.tfvars.example terraform.tfvars
+# ============================================================================
+
+# AWS Configuration
+aws_region  = "us-east-1"
+environment = "develop" # develop, staging, production
+
+# Amplify App Configuration
+app_name    = "farol-client"
+branch_name = "develop" # main, develop, staging
+
+# GitHub Configuration
+github_repository    = ""
+github_access_token  = "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" # GitHub Personal Access Token
+
+# Domain Configuration (opcional)
+domain_name = "" # Dejar vacío si no tienes dominio custom
+
+# Next.js Environment Variables
+next_public_api_url = "https://api.example.com"     # URL de tu backend API
+next_public_app_url = "https://app.example.com"     # URL de tu frontend
+nextauth_url        = "https://app.example.com"     # URL para NextAuth
+nextauth_secret     = "CHANGE_ME_TO_A_RANDOM_STRING" # Generar con: openssl rand -base64 32
+
+# ============================================================================
+# NOTAS IMPORTANTES:
+# ============================================================================
+# 1. Este archivo NO debe subirse a git (está en .gitignore)
+# 2. Para generar nextauth_secret seguro: openssl rand -base64 32
+# 3. GitHub token necesita permisos: repo (full control)
+# 4. Los valores de producción deben ser diferentes a desarrollo
+# ============================================================================

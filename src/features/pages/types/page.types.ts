@@ -1,0 +1,164 @@
+export type PageCategory = 
+  | 'LOCAL_BUSINESS'
+  | 'COMPANY'
+  | 'BRAND'
+  | 'ARTIST'
+  | 'PUBLIC_FIGURE'
+  | 'ENTERTAINMENT'
+  | 'CAUSE'
+  | 'COMMUNITY'
+  | 'SPORTS'
+  | 'EDUCATION'
+  | 'NONPROFIT'
+  | 'RELIGION'
+  | 'HEALTH'
+  | 'OTHER';
+
+export type PageRole = 'OWNER' | 'ADMIN' | 'EDITOR' | 'MODERATOR';
+
+export type PagePrivacy = 'PUBLIC' | 'PRIVATE';
+
+export interface PageContact {
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+  };
+}
+
+export interface PageStats {
+  followersCount: number;
+  postsCount: number;
+  engagementRate: number;
+  reachLast30Days: number;
+}
+
+export interface PageMember {
+  userId: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+  role: PageRole;
+  joinedAt: string;
+}
+
+export interface Page {
+  id: string;
+  name: string;
+  slug: string; // Backend usa 'slug', no 'username'
+  url?: string; // URL completa
+  description: string;
+  category: string; // Backend retorna strings como 'Company & Organization'
+  subcategory?: string;
+  
+  // Images - Backend usa estos nombres
+  profileImageUrl?: string;
+  coverImageUrl?: string;
+  
+  // Contact info
+  contact?: PageContact;
+  
+  // Social - Backend usa 'followerCount' (singular)
+  followerCount: number;
+  isFollowing?: boolean;
+  isVerified: boolean;
+  
+  // Ownership
+  ownerId: string;
+  ownerName?: string;
+  ownerUsername?: string;
+  ownerAvatar?: string;
+  
+  // User's role in page - Backend usa lowercase 'owner', 'admin', etc
+  userRole?: string;
+  teamMembers?: Array<{
+    userId: string;
+    role: string;
+    assignedAt: string;
+  }>;
+  
+  // Stats
+  postCount: number; // Backend usa 'postCount' (singular)
+  verificationRequestedAt?: string;
+  
+  // Meta
+  privacy: string; // Backend usa lowercase 'public', 'restricted'
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePageDto {
+  name: string;
+  slug?: string; // Opcional, se puede generar del nombre
+  description: string;
+  category: string; // Backend usa strings como 'Local Business'
+  subcategory?: string;
+  profileImageUrl?: string; // Backend usa profileImageUrl
+  coverImageUrl?: string;
+  contact?: {
+    email?: string;
+    phone?: string;
+    website?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      zipCode?: string;
+    };
+  };
+  privacy?: string; // 'public' | 'restricted'
+}
+
+export interface UpdatePageDto {
+  name?: string;
+  username?: string;
+  description?: string;
+  category?: PageCategory;
+  subcategory?: string;
+  avatarUrl?: string;
+  coverImageUrl?: string;
+  contact?: PageContact;
+  privacy?: PagePrivacy;
+}
+
+export interface SearchPagesParams {
+  query?: string;
+  category?: PageCategory;
+  verified?: boolean;
+  location?: string;
+  limit?: number;
+}
+
+export interface PageFollower {
+  userId: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+  followedAt: string;
+}
+
+export interface AssignRoleDto {
+  userId: string;
+  role: PageRole;
+}
+
+// API Response types
+export interface PagesListResponse {
+  pages: Page[];
+  total: number;
+  hasMore: boolean;
+}
+
+export interface PageResponse {
+  page: Page;
+  userRole?: PageRole;
+  isFollowing: boolean;
+}

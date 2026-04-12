@@ -1,0 +1,72 @@
+import type { Group } from '../types/group.types';
+
+export const mockMyGroups: Group[] = [
+  {
+    id: '1',
+    name: 'Fotografía Digital',
+    description: 'Comparte tus mejores fotografías y aprende técnicas profesionales',
+    //coverImage: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400',
+    memberCount: 12500,
+    postCount: 450,
+    privacy: 'public',
+    category: 'Arte y Fotografía',
+    isMember: true,
+  },
+  {
+    id: '2',
+    name: 'Desarrollo Web',
+    description: 'Comunidad de desarrolladores web compartiendo conocimiento',
+    //coverImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400',
+    memberCount: 8500,
+    postCount: 890,
+    privacy: 'public',
+    category: 'Tecnología',
+    isMember: true,
+  },
+];
+
+export const mockSuggestedGroups: Group[] = [
+  {
+    id: '3',
+    name: 'Viajeros del Mundo',
+    description: 'Comparte tus experiencias de viaje y descubre nuevos destinos',
+    //coverImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400',
+    memberCount: 15300,
+    postCount: 1200,
+    privacy: 'public',
+    category: 'Viajes',
+    isMember: false,
+  },
+  {
+    id: '4',
+    name: 'Cocina Casera',
+    description: 'Recetas deliciosas y consejos de cocina para todos los niveles',
+    //coverImage: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400',
+    memberCount: 9800,
+    postCount: 670,
+    privacy: 'public',
+    category: 'Comida',
+    isMember: false,
+  },
+  {
+    id: '5',
+    name: 'Emprendedores',
+    description: 'Red de emprendedores compartiendo experiencias y oportunidades',
+    memberCount: 6200,
+    postCount: 340,
+    privacy: 'private',
+    category: 'Negocios',
+    isMember: false,
+  },
+  {
+    id: '6',
+    name: 'Fitness y Salud',
+    description: 'Motivación diaria, rutinas de ejercicio y consejos de nutrición',
+    //coverImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
+    memberCount: 11400,
+    postCount: 890,
+    privacy: 'public',
+    category: 'Salud',
+    isMember: false,
+  },
+];
