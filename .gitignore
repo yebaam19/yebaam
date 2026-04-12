@@ -38,12 +38,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# terraform
-infrastructure/terraform/*.tfstate
-infrastructure/terraform/*.tfstate.*
-infrastructure/terraform/*.tfvars
-infrastructure/terraform/.terraform/
-infrastructure/terraform/.terraform.lock.hcl
 
 .cursor
 
