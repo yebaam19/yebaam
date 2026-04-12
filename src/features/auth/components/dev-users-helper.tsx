@@ -17,23 +17,7 @@ interface TestUser {
   label: string;
 }
 
-const TEST_USERS: TestUser[] = [
-  {
-    email: 'user@example.com',
-    password: 'SecurePass123',
-    label: 'Usuario de prueba',
-  },
-  {
-    email: 'user1@example.com',
-    password: 'SecurePass123',
-    label: 'Usuario de prueba 1',
-  },
-  {
-    email: 'user2@example.com',
-    password: 'SecurePass123',
-    label: 'Usuario de prueba 2',
-  },
-];
+const TEST_USERS: TestUser[] = [];
 
 interface DevUsersHelperProps {
   onSelectUser?: (email: string, password: string) => void;
