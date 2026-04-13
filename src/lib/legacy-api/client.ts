@@ -24,18 +24,9 @@ type StubResponse<T = unknown> = {
   request: Record<string, unknown>
 }
 
-const STUB_EMPTY_PAYLOAD = {
-  success: true,
-  data: [] as unknown[],
-  count: 0,
-  total: 0,
-  message: '',
-  pagination: { page: 1, limit: 0, total: 0, hasMore: false },
-}
-
 function makeEmptyResponse<T>(method: string, url: string): StubResponse<T> {
   return {
-    data: STUB_EMPTY_PAYLOAD as unknown as T,
+    data: [] as unknown as T,
     status: 200,
     statusText: 'OK (stub)',
     headers: {},
