@@ -41,8 +41,9 @@ export function DevUsersHelper({ onSelectUser }: DevUsersHelperProps) {
     setIsOpen(false);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string) => {
+    const { copyToClipboard: copy } = await import('@/lib/clipboard');
+    await copy(text);
   };
 
   return (

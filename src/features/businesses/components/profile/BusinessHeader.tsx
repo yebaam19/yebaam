@@ -253,14 +253,15 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
           )}
 
           {business.website && (
-            <Link
+            <a
               href={business.website}
               target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 text-neutral-600 transition-colors hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400"
             >
               <GlobeAltIcon className="h-5 w-5 shrink-0" />
               <span className="line-clamp-1">{new URL(business.website).hostname}</span>
-            </Link>
+            </a>
           )}
         </div>
 
@@ -284,19 +285,20 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
             <span className="text-sm font-medium text-neutral-500">Síguenos:</span>
             <div className="flex gap-2">
               {socialLinks.map((link) => {
-                const Icon = link.icon
-                return (
-                  <Link
-                    key={link.label}
-                    href={link.url!}
-                    target="_blank"
-                    className={`flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors dark:bg-neutral-700 dark:text-neutral-400 ${link.color}`}
-                    aria-label={link.label}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </Link>
-                )
-              })}
+                  const Icon = link.icon
+                  return (
+                    <a
+                      key={link.label}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors dark:bg-neutral-700 dark:text-neutral-400 ${link.color}`}
+                      aria-label={link.label}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  )
+                })}
             </div>
           </div>
         )}
