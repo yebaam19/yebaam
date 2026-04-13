@@ -67,6 +67,67 @@ The only lockfile is `pnpm-lock.yaml`. Do not create or commit `package-lock.jso
 
 When adding caching, prefer the `'use cache'` directive over the legacy `unstable_cache` API.
 
+## Data fetching architecture (App Router)
+
+The goal is not just "reduce API calls" — it is **avoid needing API routes in the first place** whenever the browser does not strictly need one. Apply these rules in order:
+
+1. **Fetch on the server, not the client.** Do reads in Server Components with `getServerClient()` from `@/lib/insforge/server`. Do not `useEffect(() => fetch('/api/...'))` for data that the page already knows it needs.
+2. **Server Components are the data layer.** Replace `Client → /api/route → InsForge` with `Server Component → InsForge`. Skip the HTTP hop.
+3. **Route Handlers only when the server is actually needed** — server-only secrets, cookie/token stitching, webhooks, OAuth callbacks, cross-source aggregation. Pure reads that just proxy InsForge should be deleted, not kept.
+4. **Mutations = Server Actions**, not POST route handlers. Call them directly from `<form action={...}>` or client handlers; follow with `revalidatePath` / `revalidateTag`.
+5. **Cache by default.** For `fetch(...)` use `next: { revalidate: N }`; avoid `cache: 'no-store'` unless truly dynamic. For InsForge SDK calls (not `fetch`), wrap with `'use cache'` — the fetch cache directives do not apply to SDK calls.
+6. **Parallelize, do not chain.** Use `Promise.all` in Server Components to kill waterfalls.
+7. **Split with `<Suspense>` boundaries** per section (e.g. product / reviews / recommendations) so slow sections stream independently instead of blocking the page.
+8. **Co-locate fetching** next to the route that uses it (`app/clubs/page.tsx`, `app/clubs/[id]/page.tsx`) — no global "data services" that over-fetch.
+9. **Revalidate on-demand** (`revalidatePath`, `revalidateTag`) after mutations; prefer that over short `revalidate` windows.
+10. **Client-side fetching is the last resort** — only for real-time, user-driven, or highly interactive pieces. When used, debounce inputs and prefer SWR/React Query over raw `useEffect` + `fetch`.
+
+### Decision flow for any new data read
+
+```
+Can a Server Component read it via getServerClient()?       → do that
+Does the browser need live/interactive updates?             → client + SWR (debounced)
+Does it need server-only secrets or token stitching?        → Route Handler
+Is it a mutation?                                           → Server Action
+```
+
+### Debouncing, rate limiting, caching, Suspense
+
+These four are load-bearing and must be applied together — they solve different layers of the same problem (too many calls, too expensive calls, too slow calls).
+
+**Debouncing (client → server call volume)**
+- Any input that triggers a request (search box, filter, autocomplete, "live preview") must debounce — 300ms default, 500ms for expensive queries.
+- Prefer `useDeferredValue` + Suspense for in-render filtering, and a debounced effect only when a network call is actually needed.
+- Cancel in-flight requests on new input (`AbortController`) so stale responses can't overwrite fresh ones.
+- Never debounce a mutation — debounce the *input*, not the submit.
+
+**Rate limiting (server → abuse + cost control)**
+- Every Route Handler that accepts unauthenticated or user-triggered input (auth, search, upload, webhooks, AI calls) must rate-limit by IP and/or user id. No exceptions for "internal" endpoints — the browser is not internal.
+- Return `429` with `Retry-After` on limit; do not silently drop.
+- Mutations via Server Actions also need a limiter when they hit paid APIs (AI, email, SMS, storage writes).
+- Keep limits centralized — one helper, not ad-hoc counters per route.
+
+**Caching (reduce repeat work)**
+- Server Components: `fetch` uses `next: { revalidate: N }` by default; `cache: 'no-store'` only when truly per-request dynamic.
+- InsForge SDK reads: wrap with `'use cache'` and tag them so `revalidateTag` can invalidate after mutations. The Next `fetch` cache does NOT apply to SDK calls.
+- Client: SWR / React Query with a sane `staleTime` — never `staleTime: 0` on list/detail views.
+- Full Route Cache: if a page has no per-request data, let it be fully static. Don't sprinkle `cookies()` / `headers()` calls that force dynamic rendering unless needed.
+- Invalidate on write with `revalidatePath` / `revalidateTag`, not by shortening `revalidate` windows.
+
+**React Suspense (perceived latency + waterfalls)**
+- Wrap each independent data section in its own `<Suspense fallback={<Skeleton />}>` so slow sections stream in without blocking the rest of the page.
+- Kick off parallel fetches at the top of a Server Component (don't `await` them) and pass the promises to children that `use()` them — this unlocks streaming + parallelism.
+- Pair every Suspense boundary with an `error.tsx` / ErrorBoundary sibling — a failed section should not blank the page.
+- Loading UI lives in `loading.tsx` at the route level for full-page fallbacks; inline `<Suspense>` for section-level.
+
+### Anti-patterns to refactor on sight
+
+- `useEffect` + `fetch('/api/...')` to load initial page data.
+- Route handlers that only forward a request to InsForge with no added server logic.
+- Sequential `await` chains in Server Components where `Promise.all` would work.
+- One giant Suspense wrapping the whole page instead of section-level boundaries.
+- Client components importing data-fetching helpers that could run on the server.
+
 ## Code conventions
 
 - Server components by default; only opt into client with `'use client'`
