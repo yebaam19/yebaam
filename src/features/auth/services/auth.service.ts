@@ -87,6 +87,17 @@ function readHasLocalSession(): boolean {
   }
 }
 
+function readCurrentAccessToken(): string | null {
+  try {
+    const headers = insforge.getHttpClient().getHeaders();
+    const auth = headers['Authorization'] || headers['authorization'];
+    if (!auth) return null;
+    return auth.replace(/^Bearer\s+/i, '') || null;
+  } catch {
+    return null;
+  }
+}
+
 async function syncSessionCookie(accessToken: string | null | undefined): Promise<void> {
   if (typeof window === 'undefined') return;
   try {
@@ -228,19 +239,7 @@ export class AuthService {
       return null;
     }
 
-    const { data: allowed } = await insforge.database.rpc('validate_oauth_user');
-    if (allowed !== true) {
-      clearHasLocalSession();
-      await insforge.auth.signOut();
-      await syncSessionCookie(null);
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(
-          'auth:blocked',
-          'Esta cuenta de Google no está registrada. Regístrate con email y verifica tu cuenta primero.'
-        );
-      }
-      return null;
-    }
+    await syncSessionCookie(readCurrentAccessToken());
 
     const profile = await fetchProfile(data.user.id);
     return mapProfileToAuthUser(data.user, profile);
