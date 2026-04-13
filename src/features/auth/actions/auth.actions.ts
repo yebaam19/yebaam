@@ -1,9 +1,5 @@
-/**
- * Server Actions para autenticación
- * Solo se ejecutan en el servidor (Next.js Server Components)
- */
-
-import { cookies } from 'next/headers';
+import 'server-only';
+import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
 
 export interface User {
   id: string;
@@ -12,74 +8,44 @@ export interface User {
   avatarUrl?: string | null;
 }
 
-/**
- * Obtiene el usuario autenticado desde el servidor
- * Esta función solo se puede llamar desde Server Components
- */
+type ProfileRow = {
+  id: string;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
 export async function getAuthUser(): Promise<User | null> {
-  try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
+  const token = await getServerAccessToken();
+  if (!token) return null;
 
-    if (!accessToken) {
-      return null;
-    }
+  const client = await getServerClient();
+  const { data: authResponse, error: authError } = await client.auth.getCurrentUser();
+  if (authError || !authResponse?.user) return null;
 
-    // Timeout para evitar esperas infinitas
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos
+  const userId = authResponse.user.id;
+  const email = authResponse.user.email ?? '';
 
-    try {
-      // Llamar al endpoint /api/auth/me del backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store', // No cachear para obtener datos frescos
-        signal: controller.signal,
-      });
+  const { data: profile } = await client.database
+    .from('profiles')
+    .select('id, username, first_name, last_name, display_name, avatar_url')
+    .eq('id', userId)
+    .single();
 
-      clearTimeout(timeoutId);
+  const p = (profile as ProfileRow | null) ?? null;
+  const fallbackName = email.split('@')[0] || 'user';
+  const displayName =
+    p?.display_name ||
+    [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim() ||
+    p?.username ||
+    fallbackName;
 
-      if (!response.ok) {
-        // Si es 401, el token es inválido
-        if (response.status === 401) {
-          console.warn('[Auth] Token inválido o expirado');
-        }
-        return null;
-      }
-
-      const authUser = await response.json();
-      
-      // Mapear AuthUser del backend a User del frontend
-      // Extraer nombre del email para generar displayName temporal
-      const emailName = authUser.email?.split('@')[0] || 'User';
-      
-      return {
-        id: authUser.id,
-        username: emailName,
-        displayName: emailName,
-        avatarUrl: authUser.avatar || null,
-      };
-    } catch (fetchError: any) {
-      clearTimeout(timeoutId);
-      
-      // Errores de conexión (servidor caído, timeout, etc.)
-      if (fetchError.name === 'AbortError') {
-        console.error('[Auth] Timeout al conectar con el servidor');
-      } else if (fetchError.cause?.code === 'ECONNREFUSED') {
-        console.error('[Auth] Servidor no disponible (ECONNREFUSED)');
-      } else {
-        console.error('[Auth] Error de red:', fetchError.message);
-      }
-      
-      // Retornar null para que la app continúe sin auth
-      return null;
-    }
-  } catch (error) {
-    console.error('[Auth] Error inesperado en getAuthUser:', error);
-    return null;
-  }
+  return {
+    id: userId,
+    username: p?.username ?? fallbackName,
+    displayName,
+    avatarUrl: p?.avatar_url ?? null,
+  };
 }
