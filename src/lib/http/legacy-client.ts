@@ -10,7 +10,7 @@
  * proper `/api` route → InsForge SDK path.
  */
 
-type StubResponse<T = unknown> = {
+type StubResponse<T = any> = {
   data: T;
   status: number;
   statusText: string;
@@ -101,12 +101,12 @@ async function doFetch<T>(
 }
 
 export interface LegacyClient {
-  get<T = unknown>(url: string, config?: RequestConfig): Promise<StubResponse<T>>;
-  head<T = unknown>(url: string, config?: RequestConfig): Promise<StubResponse<T>>;
-  post<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<StubResponse<T>>;
-  put<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<StubResponse<T>>;
-  patch<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<StubResponse<T>>;
-  delete<T = unknown>(url: string, config?: RequestConfig): Promise<StubResponse<T>>;
+  get<T = any>(url: string, config?: RequestConfig): Promise<StubResponse<T>>;
+  head<T = any>(url: string, config?: RequestConfig): Promise<StubResponse<T>>;
+  post<T = any>(url: string, data?: unknown, config?: RequestConfig): Promise<StubResponse<T>>;
+  put<T = any>(url: string, data?: unknown, config?: RequestConfig): Promise<StubResponse<T>>;
+  patch<T = any>(url: string, data?: unknown, config?: RequestConfig): Promise<StubResponse<T>>;
+  delete<T = any>(url: string, config?: RequestConfig): Promise<StubResponse<T>>;
   defaults: { baseURL: string; headers: Record<string, string> };
   interceptors: {
     request: { use: () => number; eject: () => void };
