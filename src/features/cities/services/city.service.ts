@@ -76,9 +76,9 @@ class CityServiceMock {
         id: city.id,
         name: city.name,
         slug: city.slug,
-        description: city.description,
-        coverImageUrl: city.coverImageUrl,
-        logoUrl: city.logoUrl,
+        description: city.description ?? '',
+        coverImageUrl: city.coverImageUrl ?? '',
+        logoUrl: city.logoUrl ?? '',
         country: {
           id: city.location.country,
           name: city.location.country,
@@ -96,7 +96,7 @@ class CityServiceMock {
           postsCount: city.stats.postCount,
         },
         isFollowing: false,
-        isFeatured: city.isFeatured,
+        isFeatured: city.isFeatured ?? false,
       }))
 
       return {
