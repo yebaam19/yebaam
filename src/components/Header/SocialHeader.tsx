@@ -58,11 +58,11 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
   // Navigation items con iconos outline y solid
   const navItems = [
     {
-      href: '/',
+      href: '/feed',
       icon: HomeIcon,
       iconSolid: HomeIconSolid,
       label: 'Inicio',
-      isActive: pathname === '/',
+      isActive: pathname === '/feed',
     },
     {
       href: '/watch',
@@ -98,7 +98,7 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
             </button>
 
             {/* Logo - Responsive sizes */}
-            <Link href="/" className="flex h-7 shrink-0 items-center sm:h-8">
+            <Link href="/feed" className="flex h-7 shrink-0 items-center sm:h-8">
               <Image
                 src={YebaamLogo}
                 alt="Yebaam"

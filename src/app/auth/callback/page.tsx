@@ -13,14 +13,15 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false
     const run = async () => {
-      // The SDK has already exchanged the OAuth code by the time this
-      // page mounts. Mark the local hint so checkAuth doesn't short-circuit.
-      authService.markSessionHint()
+      // Wait for the SDK's pending PKCE exchange, then mirror the
+      // access token into the httpOnly cookie before running checkAuth.
+      const user = await authService.completeOAuthLogin()
       await checkAuth()
       if (cancelled) return
       const { isAuthenticated } = useAuthStore.getState()
       const redirect = searchParams.get('redirect') || '/feed'
-      router.replace((isAuthenticated ? redirect : '/login') as never)
+      const authed = isAuthenticated || !!user
+      router.replace((authed ? redirect : '/login') as never)
     }
     run()
     return () => {

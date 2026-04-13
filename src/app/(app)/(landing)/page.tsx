@@ -1,64 +1,7 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { getAuthUser } from '@/features/auth/actions/auth.actions'
 
-import { LoginForm } from '@/features/auth/components/login-form'
-import BackgroundImage from '@/images/brand/Background-1.png'
-import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg'
-import Image from 'next/image'
-import Link from 'next/link'
-
-export default function Home() {
-  return (
-    <main className="relative flex min-h-screen items-center justify-center p-4">
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <Image src={BackgroundImage} alt="Background" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-black/10" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 flex w-full max-w-5xl flex-col overflow-hidden md:flex-row">
-        {/* Left Section - Branding */}
-        <div className="flex w-full flex-col justify-center px-4 py-8 md:w-1/2 md:py-16">
-          <div className="mx-auto mb-4 w-full max-w-75 text-center md:mx-0 md:mb-6 md:max-w-112.5 md:text-left">
-            <Image
-              src={LogoWhite}
-              alt="Yebaam Logo"
-              width={450}
-              height={115}
-              className="h-auto w-full brightness-0 invert"
-              priority
-            />
-          </div>
-          <p className="mb-2 text-center text-xl font-semibold text-white md:text-left md:text-2xl">
-            Comparte experiencias de otro mundo y mantén vínculos duraderos con las personas que realmente importan.
-          </p>
-        </div>
-
-        {/* Right Section - Login Form */}
-        <div className="flex w-full flex-col items-center justify-center p-8 md:w-1/2">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl dark:bg-neutral-900">
-            <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800 dark:text-white">Iniciar sesión</h2>
-            <LoginForm showForgotPassword={false} showDevHelper={false} />
-
-            {/* Create account */}
-            <div className="mt-6 border-t border-neutral-200 pt-4 text-center dark:border-neutral-700">
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                ¿No tienes una cuenta?{' '}
-                <Link href="/signup" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
-                  Regístrate
-                </Link>
-              </p>
-            </div>
-          </div>
-
-          {/* Create Page Link */}
-          <p className="mt-6 text-center text-sm text-white">
-            <Link href="/feed/paginas" className="font-semibold hover:underline">
-              Crea una página
-            </Link>{' '}
-            para una celebridad, una marca o un negocio.
-          </p>
-        </div>
-      </div>
-    </main>
-  )
+export default async function Home() {
+  const user = await getAuthUser()
+  redirect((user ? '/feed' : '/login') as never)
 }

@@ -46,7 +46,7 @@ export default function FriendSuggestions({ suggestions, onSendRequest }: Friend
           Sugerencias de amigos
         </h3>
         <Link
-          href="/amigos/sugerencias"
+          href="/feed/friends?tab=suggestions"
           className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
           Ver todas

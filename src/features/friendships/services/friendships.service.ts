@@ -271,6 +271,38 @@ export const friendshipsService = {
     };
   },
 
+  async getFriendsOf(userId: string): Promise<FriendsListResponse> {
+    if (!userId) return { friends: [], count: 0, closeFriendsCount: 0 };
+
+    const { data } = await insforge.database
+      .from('friendships')
+      .select('*')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
+
+    const rows = (data ?? []) as DbFriendship[];
+    const friendIds = rows.map((r) => (r.requester_id === userId ? r.recipient_id : r.requester_id));
+    const profiles = await hydrateProfiles(friendIds);
+
+    const friends: Friend[] = rows.map((r) => {
+      const fid = r.requester_id === userId ? r.recipient_id : r.requester_id;
+      const p = profiles.get(fid);
+      return {
+        friendId: fid,
+        friendshipId: r.id,
+        friendSince: r.accepted_at ?? r.created_at,
+        closeFriend: false,
+        restricted: false,
+        firstName: p?.first_name ?? undefined,
+        lastName: p?.last_name ?? undefined,
+        username: p?.username ?? `User-${fid.slice(0, 8)}`,
+        avatar: p?.avatar_url ?? undefined,
+      };
+    });
+
+    return { friends, count: friends.length, closeFriendsCount: 0 };
+  },
+
   async getFriendSettingsMap(
     ownerId: string,
     friendIds: string[]

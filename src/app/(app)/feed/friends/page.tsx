@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { FriendCard } from '@/features/user/components/FriendCard';
 import { FriendRequestCard } from '@/features/user/components/FriendRequestCard';
@@ -25,8 +26,22 @@ interface ConfirmModalState {
   type: 'danger' | 'warning';
 }
 
+const VALID_TABS: TabType[] = ['friends', 'requests', 'sent', 'suggestions'];
+
 export default function FriendsPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('friends');
+  const searchParams = useSearchParams();
+  const initialTab = (() => {
+    const t = searchParams?.get('tab');
+    return t && (VALID_TABS as string[]).includes(t) ? (t as TabType) : 'friends';
+  })();
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+
+  useEffect(() => {
+    const t = searchParams?.get('tab');
+    if (t && (VALID_TABS as string[]).includes(t)) {
+      setActiveTab(t as TabType);
+    }
+  }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState('');
   const [openChats, setOpenChats] = useState<OpenChat[]>([]);
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
@@ -150,21 +165,21 @@ export default function FriendsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-w-0">
       {/* Header con título */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
+      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-14 z-10">
+        <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <h1 className="text-xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
             Amigos
           </h1>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
             Gestiona tus conexiones y descubre nuevas amistades
           </p>
         </div>
       </div>
 
       {/* Contenido principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-w-0">
         {/* Estadísticas */}
         <FriendsStats
           totalFriends={stats.totalFriends}
@@ -190,11 +205,11 @@ export default function FriendsPage() {
         />
 
         {/* Contenido de tabs */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 min-h-96 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 min-h-96 p-3 sm:p-6 min-w-0">
           {/* Tab: Amigos */}
           {activeTab === 'friends' && (
             isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-48 rounded-xl" />
                 ))}
@@ -206,7 +221,7 @@ export default function FriendsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {friends.map((friend) => (
                   <FriendCard
                     key={friend.friendId}
@@ -223,7 +238,7 @@ export default function FriendsPage() {
           {/* Tab: Solicitudes recibidas */}
           {activeTab === 'requests' && (
             isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-64 rounded-xl" />
                 ))}
@@ -235,7 +250,7 @@ export default function FriendsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {pendingRequests.map((request) => (
                   <FriendRequestCard
                     key={request.id}
@@ -264,7 +279,7 @@ export default function FriendsPage() {
           {/* Tab: Solicitudes enviadas */}
           {activeTab === 'sent' && (
             isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-64 rounded-xl" />
                 ))}
@@ -276,7 +291,7 @@ export default function FriendsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {sentRequests.map((request) => {
                   // Intentar obtener el perfil del destinatario
                   const profile = request.profile || request.recipientProfile;
@@ -329,7 +344,7 @@ export default function FriendsPage() {
           {/* Tab: Sugerencias */}
           {activeTab === 'suggestions' && (
             isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-64 rounded-xl" />
                 ))}
@@ -342,7 +357,7 @@ export default function FriendsPage() {
               </div>
             ) : (
               <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                   {visibleSuggestions.map((suggestion) => (
                     <SuggestionCard
                       key={suggestion.id}

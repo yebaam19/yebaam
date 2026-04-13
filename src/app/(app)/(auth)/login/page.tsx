@@ -13,30 +13,32 @@ export const metadata: Metadata = {
 
 const Page = () => {
   return (
-    <main className="relative flex min-h-screen items-center justify-center p-4">
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+    <main className="relative flex min-h-screen w-full flex-col md:flex-row">
+      <div className="absolute inset-0 z-0">
         <Image src={BackgroundImage} alt="Background" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-black/10" />
       </div>
 
-      <div className="relative z-10 flex w-full max-w-5xl flex-col overflow-hidden md:flex-row">
-        <div className="flex w-full flex-col justify-center px-4 py-8 md:w-1/2 md:py-16">
-          <div className="mx-auto mb-4 w-full max-w-75 text-center md:mx-0 md:mb-6 md:max-w-112.5 md:text-left">
-            <Image
-              src={LogoWhite}
-              alt="Yebaam Logo"
-              width={450}
-              height={115}
-              className="h-auto w-full brightness-0 invert"
-              priority
-            />
+      <div className="relative z-10 flex min-h-screen w-full flex-col md:flex-row">
+        <div className="flex w-full flex-1 flex-col justify-center px-6 py-10 md:px-12 lg:px-20 xl:px-28">
+          <div className="mx-auto w-full max-w-xl md:mx-0">
+            <div className="mb-6 w-full max-w-75 text-center md:mb-8 md:max-w-112.5 md:text-left">
+              <Image
+                src={LogoWhite}
+                alt="Yebaam Logo"
+                width={450}
+                height={115}
+                className="h-auto w-full brightness-0 invert"
+                priority
+              />
+            </div>
+            <p className="text-center text-xl font-semibold text-white md:text-left md:text-2xl lg:text-3xl">
+              Comparte experiencias de otro mundo y mantén vínculos duraderos con las personas que realmente importan.
+            </p>
           </div>
-          <p className="mb-2 text-center text-xl font-semibold text-white md:text-left md:text-2xl">
-            Comparte experiencias de otro mundo y mantén vínculos duraderos con las personas que realmente importan.
-          </p>
         </div>
-        <div className="flex w-full flex-col items-center justify-center p-8 md:w-1/2">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl dark:bg-neutral-900">
+        <div className="flex w-full flex-1 flex-col items-center justify-center px-6 py-10 md:px-12 lg:px-20 xl:px-28">
+          <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-neutral-900">
             <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800 dark:text-white">Iniciar sesión</h2>
 
             <Suspense

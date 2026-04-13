@@ -298,6 +298,24 @@ export class AuthService {
   markSessionHint(): void {
     markHasLocalSession();
   }
+
+  /**
+   * Finish an OAuth sign-in. Waits for the SDK's pending PKCE exchange,
+   * then mirrors the resulting access token into the httpOnly cookie so
+   * server-side probes (/api/auth/me) and RSC can see the session.
+   */
+  async completeOAuthLogin(): Promise<AuthUser | null> {
+    if (typeof window === 'undefined') return null;
+    const { data, error } = await insforge.auth.getCurrentUser();
+    if (error || !data?.user) return null;
+    markHasLocalSession();
+    const accessToken = readCurrentAccessToken();
+    if (accessToken) {
+      await syncSessionCookie(accessToken);
+    }
+    const profile = await fetchProfile(data.user.id);
+    return mapProfileToAuthUser(data.user, profile);
+  }
 }
 
 export const authService = new AuthService();

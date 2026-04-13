@@ -50,21 +50,21 @@ export function FriendsStats({ totalFriends, closeFriends, pendingRequests, sent
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
       {statsCards.map((stat, index) => (
         <div
           key={index}
-          className="bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm border border-neutral-200 dark:border-neutral-800"
+          className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-4 shadow-sm border border-neutral-200 dark:border-neutral-800 min-w-0"
         >
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${stat.bg}`}>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${stat.bg}`}>
+              <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
+            <div className="min-w-0">
+              <p className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-white leading-tight">
                 {stat.value}
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate">
                 {stat.label}
               </p>
             </div>
