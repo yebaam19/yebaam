@@ -36,8 +36,8 @@ function SearchPageWrapper() {
  */
 function SearchPageSkeleton() {
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-900">
-      <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-dvh min-w-0 bg-white dark:bg-neutral-900">
+      <div className="mx-auto max-w-4xl min-w-0 px-3 py-5 sm:px-4 sm:py-6">
         <div className="h-12 bg-gray-200 dark:bg-neutral-800 rounded-lg mb-6 animate-pulse" />
         <div className="h-10 bg-gray-200 dark:bg-neutral-800 rounded-lg mb-6 animate-pulse" />
         <div className="space-y-4">

@@ -294,7 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <DialogPanel className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl dark:bg-neutral-900">
+            <DialogPanel className="fixed inset-y-0 left-0 flex w-[min(16rem,85vw)] max-w-full flex-col bg-white shadow-xl dark:bg-neutral-900">
               <SidebarContent isMobile />
             </DialogPanel>
           </TransitionChild>
@@ -304,7 +304,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          'fixed top-14 left-0 z-40 hidden h-[calc(100vh-3.5rem)] flex-col border-r border-neutral-200 bg-white transition-all duration-300 ease-in-out lg:flex dark:border-neutral-800 dark:bg-neutral-900',
+          'fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 z-40 hidden h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] flex-col border-r border-neutral-200 bg-white transition-all duration-300 ease-in-out lg:flex dark:border-neutral-800 dark:bg-neutral-900',
           isCollapsed ? 'w-20' : 'w-64',
           className
         )}

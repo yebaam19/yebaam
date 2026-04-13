@@ -32,7 +32,7 @@ export default function MessagesList({
   if (isLoading) {
 
     return (
-      <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-4">
         <p className="text-neutral-500">Cargando mensajes...</p>
       </div>
     );
@@ -40,7 +40,7 @@ export default function MessagesList({
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-4">
         <p className="text-neutral-500">No hay mensajes aún. ¡Inicia la conversación!</p>
       </div>
     );
@@ -48,7 +48,7 @@ export default function MessagesList({
 
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-4">
       {messages.map((msg, index) => {
         const isOwn = msg.senderId === currentUserId;
         

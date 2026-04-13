@@ -90,8 +90,8 @@ export default function RightSidebar() {
   const birthdays: any[] = []
 
   return (
-    <aside className="fixed top-16 right-0 hidden h-[calc(100vh-4rem)] w-80 overflow-y-auto border-l border-neutral-200 bg-white p-4 xl:block dark:border-neutral-800 dark:bg-neutral-900">
-      <div className="space-y-6">
+    <aside className="h-full min-h-0 w-full min-w-0 overflow-y-auto overflow-x-hidden border-l border-neutral-200 bg-white p-3 sm:p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="min-w-0 space-y-6">
         {/* Sugerencias de Amigos */}
         <FriendSuggestions suggestions={friendSuggestions} onSendRequest={handleSendFriendRequest} />
 

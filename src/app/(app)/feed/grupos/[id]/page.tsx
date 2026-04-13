@@ -55,7 +55,7 @@ export default function GroupDetailPage() {
             El grupo que buscas no existe o fue eliminado
           </p>
           <Link
-            href="/grupos"
+            href="/feed/grupos"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
           >
             <ArrowLeftIcon className="h-5 w-5" />
@@ -67,9 +67,9 @@ export default function GroupDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-dvh min-w-0 bg-neutral-50 dark:bg-neutral-950">
       {/* Cover Image */}
-      <div className="relative h-64 bg-linear-to-br from-blue-500 to-purple-600">
+      <div className="relative h-44 min-h-[11rem] bg-linear-to-br from-blue-500 to-purple-600 sm:h-64">
         {group.coverImageUrl ? (
           <Image
             src={group.coverImageUrl}
@@ -87,8 +87,8 @@ export default function GroupDetailPage() {
         
         {/* Back button */}
         <Link
-          href="/grupos"
-          className="absolute top-4 left-4 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-colors"
+          href="/feed/grupos"
+          className="absolute top-[max(1rem,env(safe-area-inset-top,0px))] left-4 rounded-full bg-black/40 p-2 backdrop-blur-sm transition-colors hover:bg-black/60"
         >
           <ArrowLeftIcon className="h-6 w-6 text-white" />
         </Link>
@@ -96,14 +96,14 @@ export default function GroupDetailPage() {
 
       {/* Group Info */}
       <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+        <div className="container mx-auto max-w-5xl min-w-0 px-3 sm:px-6 lg:px-8">
+          <div className="py-4 sm:py-6">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <h1 className="mb-2 text-2xl font-bold break-words text-neutral-900 sm:text-3xl dark:text-white">
                   {group.name}
                 </h1>
-                <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-600 sm:gap-4 dark:text-neutral-400">
                   <div className="flex items-center gap-1">
                     {group.privacy === 'public' ? (
                       <>
@@ -125,17 +125,17 @@ export default function GroupDetailPage() {
               </div>
               
               {/* Action buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
                 {group.isAdmin && (
                   <Link
-                    href={`/grupos/${groupId}/configuracion`}
+                    href={`/feed/grupos/${groupId}/configuracion`}
                     className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                   >
                     <Cog6ToothIcon className="h-6 w-6 text-neutral-600 dark:text-neutral-400" />
                   </Link>
                 )}
                 {!group.isMember && (
-                  <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
+                  <button className="w-full rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 sm:w-auto">
                     Unirse al grupo
                   </button>
                 )}
@@ -143,7 +143,7 @@ export default function GroupDetailPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 border-b border-neutral-200 dark:border-neutral-800 -mb-6">
+            <div className="-mx-3 -mb-6 flex gap-1 overflow-x-auto border-b border-neutral-200 px-3 sm:mx-0 sm:px-0 dark:border-neutral-800">
               <button
                 onClick={() => setActiveTab('posts')}
                 className={`px-4 py-3 font-medium transition-colors relative ${

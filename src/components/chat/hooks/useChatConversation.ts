@@ -101,6 +101,37 @@ export function useChatConversation({ contactId, chatSocket }: UseChatConversati
     }
   }, [chatSocket, conversationId]);
 
+  // Polling HTTP para nuevos mensajes mientras el WebSocket esté inactivo
+  useEffect(() => {
+    if (!conversationId || chatSocket?.connected) return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const result = await chatService.getConversationMessages(conversationId, 50, 0);
+        if (cancelled) return;
+        setMessages((prev) => {
+          const existingIds = new Set(prev.filter((m) => !m.isTemporary).map((m) => m.id));
+          const incoming = result.messages.filter((m: any) => !existingIds.has(m.id));
+          if (incoming.length === 0) return prev;
+          const merged = [...prev, ...incoming];
+          return merged.sort(
+            (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          );
+        });
+      } catch {
+        // ignore transient errors; next tick will retry
+      }
+    };
+
+    const interval = setInterval(poll, 4000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [conversationId, chatSocket]);
+
   return {
     conversationId,
     messages,

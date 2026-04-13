@@ -55,7 +55,9 @@ export function ApplicationLayoutClient({ children, user }: Props) {
           {/* Header de navegación social */}
           <SocialHeader />
 
-          <main className="pt-14">{children}</main>
+          <main className="min-w-0 w-full max-w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-8">
+            <div className="mx-auto w-full max-w-[100vw] px-4 sm:px-6">{children}</div>
+          </main>
 
           {/* Footer */}
           <footer className="border-t border-neutral-200 bg-white py-8 dark:border-neutral-800 dark:bg-neutral-900">

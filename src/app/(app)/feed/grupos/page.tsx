@@ -39,27 +39,27 @@ export default function GruposPage() {
   }, [suggestedGroups, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-      <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-dvh min-w-0 bg-neutral-50 dark:bg-neutral-950">
+      <div className="container mx-auto max-w-7xl min-w-0 px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30">
+        <div className="mb-6 sm:mb-8">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30">
                 <UserGroupIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">
                   Grupos
                 </h1>
-                <p className="text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
                   Conecta con personas que comparten tus intereses
                 </p>
               </div>
             </div>
             <button 
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+              className="flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 sm:w-auto"
             >
               <PlusIcon className="h-5 w-5" />
               Crear grupo
@@ -67,7 +67,7 @@ export default function GruposPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="-mx-3 flex gap-2 overflow-x-auto border-b border-neutral-200 px-3 pb-px sm:mx-0 sm:px-0 dark:border-neutral-800">
             <button
               onClick={() => setActiveTab('my-groups')}
               className={`px-4 py-3 font-medium transition-colors relative ${

@@ -115,11 +115,11 @@ export default function GroupSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-dvh min-w-0 bg-neutral-50 dark:bg-neutral-950">
       {/* Header */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-10 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto max-w-4xl min-w-0 px-3 py-3 sm:px-4 sm:py-4">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <Link 
               href={`/grupos/${groupId}`}
               className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
@@ -139,7 +139,7 @@ export default function GroupSettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <div className="mx-auto max-w-4xl min-w-0 space-y-6 px-3 py-5 sm:px-4 sm:py-6">
         {/* Privacy Settings */}
         <PrivacySettings 
           group={group}

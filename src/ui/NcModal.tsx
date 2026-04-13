@@ -78,7 +78,7 @@ const NcModal: FC<NcModalProps> = ({
               leaveTo="opacity-0 scale-95"
             >
               <div
-                className={`my-5 inline-block w-full transform overflow-hidden rounded-2xl border border-black/5 bg-white text-left align-middle text-neutral-900 shadow-xl transition-all sm:my-8 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 ${contentExtraClass}`}
+                className={`my-5 inline-block max-h-[min(90dvh,calc(100dvh-2rem))] w-full max-w-[calc(100vw-0.5rem)] transform overflow-hidden rounded-2xl border border-black/5 bg-white text-left align-middle text-neutral-900 shadow-xl transition-all sm:my-8 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 ${contentExtraClass}`}
               >
                 <div className="relative border-b border-neutral-100 px-6 py-4 text-center md:py-5 dark:border-neutral-700">
                   <ButtonClose
@@ -94,7 +94,9 @@ const NcModal: FC<NcModalProps> = ({
                     </DialogTitle>
                   )}
                 </div>
-                <div className={contentPaddingClass}>{renderContent()}</div>
+                <div className={`max-h-[min(75dvh,calc(100dvh-8rem))] overflow-y-auto overflow-x-hidden ${contentPaddingClass}`}>
+                  {renderContent()}
+                </div>
               </div>
             </TransitionChild>
           </div>

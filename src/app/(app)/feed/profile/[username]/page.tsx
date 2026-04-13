@@ -81,8 +81,8 @@ export default function FeedProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="max-w-4xl mx-auto p-4 md:p-6">
+    <div className="min-h-screen min-w-0 bg-neutral-50 dark:bg-neutral-900">
+      <div className="mx-auto max-w-4xl p-3 sm:p-4 md:p-6">
         {/* Card del perfil */}
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg overflow-hidden">
           {/* Cover Image */}
@@ -97,17 +97,17 @@ export default function FeedProfilePage() {
           </div>
 
           {/* Profile Info */}
-          <div className="px-6 pb-6">
+          <div className="px-4 pb-6 sm:px-6">
             {/* Avatar */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-16 sm:-mt-20">
+            <div className="-mt-16 flex flex-col items-center gap-4 sm:-mt-20 sm:flex-row sm:items-end">
               <Avatar
                 src={profile.avatarUrl}
                 initials={`${profile.firstName?.charAt(0) || ''}${profile.lastName?.charAt(0) || ''}`}
                 className="w-32 h-32 border-4 border-white dark:border-neutral-800 shadow-lg"
               />
 
-              <div className="flex-1 text-center sm:text-left mb-4 sm:mb-0">
-                <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
+              <div className="mb-4 min-w-0 flex-1 text-center sm:mb-0 sm:text-left">
+                <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">
                   {profile.firstName} {profile.lastName}
                 </h1>
                 <p className="text-neutral-600 dark:text-neutral-400">
@@ -116,11 +116,11 @@ export default function FeedProfilePage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
                 {isRequestSent ? (
                   <button
                     disabled
-                    className="px-6 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg font-semibold flex items-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-50 px-4 py-2.5 font-semibold text-green-700 sm:w-auto sm:px-6 dark:bg-green-900/20 dark:text-green-400"
                   >
                     <CheckIcon className="w-5 h-5" />
                     Solicitud Enviada
@@ -129,7 +129,7 @@ export default function FeedProfilePage() {
                   <button
                     onClick={handleSendRequest}
                     disabled={isSending}
-                    className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-primary-700 disabled:bg-neutral-400 sm:w-auto sm:px-6"
                   >
                     <UserPlusIcon className="w-5 h-5" />
                     {isSending ? 'Enviando...' : 'Agregar Amigo'}
@@ -138,7 +138,7 @@ export default function FeedProfilePage() {
 
                 <Link
                   href={`/${username}`}
-                  className="px-6 py-2.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-900 dark:text-white rounded-lg font-semibold transition-colors"
+                  className="flex w-full items-center justify-center rounded-lg bg-neutral-100 px-4 py-2.5 text-center font-semibold text-neutral-900 transition-colors hover:bg-neutral-200 sm:w-auto sm:px-6 dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600"
                 >
                   Ver Perfil Completo
                 </Link>

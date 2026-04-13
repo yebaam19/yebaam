@@ -1,13 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { FriendCard } from '@/features/user/components/FriendCard';
 import { FriendRequestCard } from '@/features/user/components/FriendRequestCard';
 import { SuggestionCard } from '@/features/user/components/SuggestionCard';
 import { FriendSuggestionsCompact } from '@/features/user/components/FriendSuggestionCard';
 import { useFriendships } from '@/features/friendships';
+import ChatBubble from '@/components/chat/ChatBubble';
 import { FriendsStats, FriendsTabs, SearchBar, ConfirmModal, type TabType } from './components';
+
+interface OpenChat {
+  contactId: string;
+  contactName: string;
+  contactAvatar: string;
+}
 
 interface ConfirmModalState {
   isOpen: boolean;
@@ -21,6 +28,8 @@ interface ConfirmModalState {
 export default function FriendsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('friends');
   const [searchQuery, setSearchQuery] = useState('');
+  const [openChats, setOpenChats] = useState<OpenChat[]>([]);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
     isOpen: false,
     title: '',
@@ -80,6 +89,40 @@ export default function FriendsPage() {
       },
     });
   };
+
+  const handleOpenChat = (friendId: string) => {
+    const friend = friends?.find((f) => f.friendId === friendId);
+    if (!friend) return;
+    setOpenChats((prev) => {
+      if (prev.some((c) => c.contactId === friendId)) return prev;
+      const next = prev.length >= 3 ? prev.slice(1) : prev;
+      const name =
+        friend.firstName && friend.lastName
+          ? `${friend.firstName} ${friend.lastName}`
+          : friend.username;
+      return [
+        ...next,
+        { contactId: friendId, contactName: name, contactAvatar: friend.avatar || '' },
+      ];
+    });
+  };
+
+  const handleCloseChat = (contactId: string) => {
+    setOpenChats((prev) => prev.filter((c) => c.contactId !== contactId));
+  };
+
+  const handleDismissSuggestion = (id: string) => {
+    setDismissedSuggestions((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  };
+
+  const visibleSuggestions = useMemo(
+    () => (suggestions || []).filter((s) => !dismissedSuggestions.has(s.id)),
+    [suggestions, dismissedSuggestions],
+  );
 
   const handleCancelRequest = async (requestId: string) => {
     setConfirmModal({
@@ -170,7 +213,7 @@ export default function FriendsPage() {
                     friend={friend as any}
                     onToggleCloseFriend={handleToggleCloseFriend}
                     onRemove={handleRemoveFriend}
-                    onChat={(id) => console.log('Chat with:', id)}
+                    onChat={handleOpenChat}
                   />
                 ))}
               </div>
@@ -291,7 +334,7 @@ export default function FriendsPage() {
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-64 rounded-xl" />
                 ))}
               </div>
-            ) : !suggestions || suggestions.length === 0 ? (
+            ) : visibleSuggestions.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-neutral-500 dark:text-neutral-400">
                   No hay sugerencias disponibles
@@ -300,12 +343,12 @@ export default function FriendsPage() {
             ) : (
               <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {suggestions.map((suggestion) => (
+                  {visibleSuggestions.map((suggestion) => (
                     <SuggestionCard
                       key={suggestion.id}
                       suggestion={suggestion}
                       onSendRequest={(userId) => sendFriendRequest({ addresseeId: userId })}
-                      onDismiss={(id) => console.log('Dismiss:', id)}
+                      onDismiss={handleDismissSuggestion}
                     />
                   ))}
                 </div>
@@ -320,6 +363,19 @@ export default function FriendsPage() {
           )}
         </div>
       </div>
+
+      {/* Chat bubbles */}
+      {openChats.map((chat, index) => (
+        <ChatBubble
+          key={chat.contactId}
+          contactId={chat.contactId}
+          contactName={chat.contactName}
+          contactAvatar={chat.contactAvatar}
+          isOnline={false}
+          onClose={() => handleCloseChat(chat.contactId)}
+          position={index}
+        />
+      ))}
 
       {/* Modal de confirmación */}
       <ConfirmModal

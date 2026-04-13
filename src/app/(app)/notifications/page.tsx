@@ -109,13 +109,13 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-dvh min-w-0 bg-neutral-50 dark:bg-neutral-950">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-10 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto max-w-4xl min-w-0 px-3 sm:px-6 lg:px-8">
+          <div className="flex h-16 min-w-0 items-center justify-between gap-2">
             {/* Título y botón volver */}
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-4">
               <button
                 onClick={() => router.back()}
                 className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -123,8 +123,8 @@ export default function NotificationsPage() {
               >
                 <ArrowLeftIcon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
               </button>
-              <div>
-                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-neutral-900 sm:text-2xl dark:text-white">
                   Notificaciones
                 </h1>
                 {unreadCount > 0 && (
@@ -183,8 +183,8 @@ export default function NotificationsPage() {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 overflow-y-auto"
-        style={{ maxHeight: 'calc(100vh - 180px)' }}
+        className="mx-auto max-w-4xl min-w-0 overflow-y-auto px-3 py-6 sm:px-6 lg:px-8"
+        style={{ maxHeight: 'calc(100dvh - 12rem - env(safe-area-inset-top, 0px))' }}
       >
         {isLoading ? (
           // Skeleton loading

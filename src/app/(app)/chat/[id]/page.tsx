@@ -168,7 +168,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-neutral-900">
+    <div className="flex max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] w-full min-w-0 flex-col overflow-hidden bg-white dark:bg-neutral-900">
       {/* Header con botón de cerrar */}
       <div className="relative">
         <ChatHeader

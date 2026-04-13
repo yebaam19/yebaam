@@ -95,8 +95,8 @@ export function SearchPageContent({
   const showError = error !== null && (!results || !hasResults(results, activeFilter));
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-900">
-      <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-dvh min-w-0 bg-white dark:bg-neutral-900">
+      <div className="mx-auto max-w-4xl min-w-0 px-3 py-5 sm:px-4 sm:py-6">
         {/* Header with Close Button */}
         <div className="flex items-center gap-3 mb-6">
           <button

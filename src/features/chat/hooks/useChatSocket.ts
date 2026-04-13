@@ -1,13 +1,13 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { Socket } from 'socket.io-client';
-import { socketManager } from '@/socket/socket-client';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { insforge } from '@/lib/insforge/client';
+import { useChatStore } from '../store/chat.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
   Message,
   CreateMessageDto,
   MessageReceivedEvent,
   MessagesReadEvent,
-  SendMessageResponse,
-  JoinConversationResponse,
+  MessageStatus,
 } from '../types';
 
 interface UseChatSocketProps {
@@ -17,7 +17,7 @@ interface UseChatSocketProps {
 }
 
 interface UseChatSocketReturn {
-  chatSocket: Socket | null;
+  chatSocket: null;
   joinConversation: (conversationId: string) => Promise<void>;
   leaveConversation: (conversationId: string) => Promise<void>;
   sendMessage: (messageData: CreateMessageDto) => Promise<Message | null>;
@@ -25,193 +25,261 @@ interface UseChatSocketReturn {
   isConnected: boolean;
 }
 
+type MessageCreatedPayload = {
+  message?: Message;
+  conversationId?: string;
+};
+
+type MessagesReadPayload = {
+  conversationId?: string;
+  userId?: string;
+};
+
+type SocketMessage = {
+  meta?: { channel?: string };
+  message?: Message;
+  conversationId?: string;
+  userId?: string;
+};
+
+function channelForConversation(conversationId: string): string {
+  return `chat:conv:${conversationId}`;
+}
+
+function hydrateMessage(raw: unknown): Message | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as Record<string, unknown>;
+  if (typeof obj.id !== 'string' || typeof obj.conversationId !== 'string') return null;
+  return {
+    id: obj.id,
+    conversationId: obj.conversationId,
+    senderId: String(obj.senderId ?? ''),
+    content: String(obj.content ?? ''),
+    media: (obj.media ?? null) as Message['media'],
+    status: (obj.status as MessageStatus) ?? MessageStatus.SENT,
+    replyToId: (obj.replyToId as string | null) ?? null,
+    isDeleted: Boolean(obj.isDeleted),
+    createdAt: new Date(obj.createdAt as string),
+    updatedAt: new Date((obj.updatedAt ?? obj.createdAt) as string),
+  };
+}
+
+async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+  });
+  const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    throw new Error((payload.error as string) || `Request failed (${response.status})`);
+  }
+  return payload as T;
+}
+
 export function useChatSocket({
   onMessageReceived,
   onMessagesRead,
   onError,
 }: UseChatSocketProps = {}): UseChatSocketReturn {
-  const socketRef = useRef<Socket | null>(null);
-  const isConnectedRef = useRef(false);
+  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+  const conversations = useChatStore((state) => state.conversations);
+  const [isConnected, setIsConnected] = useState(false);
+  const subscribedRef = useRef<Set<string>>(new Set());
+  const callbacksRef = useRef({ onMessageReceived, onMessagesRead, onError });
 
+  callbacksRef.current = { onMessageReceived, onMessagesRead, onError };
+
+  // Connect once per authenticated session and wire the generic listeners.
   useEffect(() => {
-    // Obtener el socket del namespace /chat
-    const socket = socketManager.getSocket('/chat');
-    socketRef.current = socket;
+    if (!currentUserId) return;
 
-    // Event listeners
+    let cancelled = false;
+
+    const handleMessageCreated = (payload: SocketMessage) => {
+      const message = hydrateMessage(payload?.message ?? payload);
+      const channel = payload?.meta?.channel ?? '';
+      const conversationId =
+        payload?.conversationId ?? message?.conversationId ?? channel.replace('chat:conv:', '');
+      if (!message || !conversationId) return;
+
+      callbacksRef.current.onMessageReceived?.({
+        message: { ...message, conversationId },
+        conversationId,
+      });
+    };
+
+    const handleMessagesRead = (payload: SocketMessage) => {
+      const channel = payload?.meta?.channel ?? '';
+      const conversationId = payload?.conversationId ?? channel.replace('chat:conv:', '');
+      const userId = payload?.userId ?? '';
+      if (!conversationId) return;
+      callbacksRef.current.onMessagesRead?.({ conversationId, userId });
+    };
+
     const handleConnect = () => {
-      console.log(' Conectado al chat WebSocket');
-      isConnectedRef.current = true;
+      if (!cancelled) setIsConnected(true);
     };
-
     const handleDisconnect = () => {
-      console.log(' Desconectado del chat WebSocket');
-      isConnectedRef.current = false;
+      if (!cancelled) setIsConnected(false);
+    };
+    const handleError = (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Realtime error';
+      callbacksRef.current.onError?.(message);
     };
 
-    const handleMessageReceived = (data: MessageReceivedEvent) => {
-      console.log('📨 Mensaje recibido:', data);
-      onMessageReceived?.(data);
+    insforge.realtime.on('connect', handleConnect);
+    insforge.realtime.on('disconnect', handleDisconnect);
+    insforge.realtime.on('connect_error', handleError);
+    insforge.realtime.on('error', handleError);
+    insforge.realtime.on<SocketMessage>('message.created', handleMessageCreated);
+    insforge.realtime.on<SocketMessage>('messages.read', handleMessagesRead);
+
+    insforge.realtime
+      .connect()
+      .then(() => {
+        if (!cancelled) setIsConnected(true);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.warn('[useChatSocket] connect failed', err);
+          setIsConnected(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      insforge.realtime.off('connect', handleConnect);
+      insforge.realtime.off('disconnect', handleDisconnect);
+      insforge.realtime.off('connect_error', handleError);
+      insforge.realtime.off('error', handleError);
+      insforge.realtime.off<SocketMessage>('message.created', handleMessageCreated);
+      insforge.realtime.off<SocketMessage>('messages.read', handleMessagesRead);
     };
+  }, [currentUserId]);
 
-    const handleMessagesRead = (data: MessagesReadEvent) => {
-      console.log(' Mensajes marcados como leídos:', data);
-      onMessagesRead?.(data);
-    };
+  // Auto-subscribe to every conversation the user is part of so new messages
+  // arrive even for non-active chats (for unread badges / notifications).
+  useEffect(() => {
+    if (!currentUserId) return;
+    const desired = new Set(conversations.map((c) => channelForConversation(c.id)));
 
-    const handleError = (error: any) => {
-      console.error(' Error en chat socket:', error);
-      onError?.(error.message || 'Error desconocido');
-    };
-
-    // Registrar event listeners
-    socket.on('connect', handleConnect);
-    socket.on('disconnect', handleDisconnect);
-    socket.on('message_received', handleMessageReceived);
-    socket.on('messages_read', handleMessagesRead);
-    socket.on('error', handleError);
-
-    // Verificar si ya está conectado
-    if (socket.connected) {
-      isConnectedRef.current = true;
+    // Subscribe to any new channel
+    for (const channel of desired) {
+      if (!subscribedRef.current.has(channel)) {
+        insforge.realtime
+          .subscribe(channel)
+          .then(() => subscribedRef.current.add(channel))
+          .catch((err) => console.warn('[useChatSocket] subscribe failed', channel, err));
+      }
     }
 
-    // Cleanup
+    // Unsubscribe from any channel that's no longer in the list
+    for (const channel of Array.from(subscribedRef.current)) {
+      if (!desired.has(channel)) {
+        insforge.realtime.unsubscribe(channel);
+        subscribedRef.current.delete(channel);
+      }
+    }
+  }, [conversations, currentUserId]);
+
+  // Cleanup all subscriptions on unmount.
+  useEffect(() => {
     return () => {
-      socket.off('connect', handleConnect);
-      socket.off('disconnect', handleDisconnect);
-      socket.off('message_received', handleMessageReceived);
-      socket.off('messages_read', handleMessagesRead);
-      socket.off('error', handleError);
+      for (const channel of Array.from(subscribedRef.current)) {
+        insforge.realtime.unsubscribe(channel);
+      }
+      subscribedRef.current.clear();
     };
-  }, [onMessageReceived, onMessagesRead, onError]);
+  }, []);
 
-  /**
-   * Unirse a una sala de conversación
-   */
-  const joinConversation = useCallback(
-    async (conversationId: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (!socketRef.current) {
-          reject(new Error('Socket no disponible'));
-          return;
-        }
+  const joinConversation = useCallback(async (conversationId: string): Promise<void> => {
+    const channel = channelForConversation(conversationId);
+    if (subscribedRef.current.has(channel)) return;
+    try {
+      await insforge.realtime.subscribe(channel);
+      subscribedRef.current.add(channel);
+    } catch (err) {
+      console.error('[useChatSocket] joinConversation failed', err);
+      throw err instanceof Error ? err : new Error('Failed to join conversation');
+    }
+  }, []);
 
-        socketRef.current.emit(
-          'join_conversation',
-          { conversationId },
-          (response: JoinConversationResponse) => {
-            if (response.success) {
-              console.log(
-                `🚪 Te uniste a la conversación ${conversationId}`,
-              );
-              resolve();
-            } else {
-              console.error('Error al unirse a la conversación:', response.error);
-              reject(new Error(response.error || 'Error desconocido'));
-            }
-          },
-        );
-      });
-    },
-    [],
-  );
+  const leaveConversation = useCallback(async (conversationId: string): Promise<void> => {
+    const channel = channelForConversation(conversationId);
+    // Keep the subscription alive so we still get notifications for this
+    // conversation while sitting on another screen — only drop it when the
+    // conversation is removed from the user's list (handled by the effect
+    // above). This mirrors Facebook Messenger behavior.
+    void channel;
+  }, []);
 
-  /**
-   * Salir de una sala de conversación
-   */
-  const leaveConversation = useCallback(
-    async (conversationId: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (!socketRef.current) {
-          reject(new Error('Socket no disponible'));
-          return;
-        }
-
-        socketRef.current.emit(
-          'leave_conversation',
-          { conversationId },
-          (response: JoinConversationResponse) => {
-            if (response.success) {
-              console.log(
-                `🚪 Saliste de la conversación ${conversationId}`,
-              );
-              resolve();
-            } else {
-              console.error('Error al salir de la conversación:', response.error);
-              reject(new Error(response.error || 'Error desconocido'));
-            }
-          },
-        );
-      });
-    },
-    [],
-  );
-
-  /**
-   * Enviar un mensaje
-   */
   const sendMessage = useCallback(
     async (messageData: CreateMessageDto): Promise<Message | null> => {
-      return new Promise((resolve, reject) => {
-        if (!socketRef.current) {
-          reject(new Error('Socket no disponible'));
-          return;
-        }
+      const { conversationId, content, media, replyToId } = messageData;
+      const payload = await jsonRequest<{ data: Message }>(
+        `/api/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ content, media, replyToId }),
+        },
+      );
 
-        socketRef.current.emit(
-          'send_message',
-          messageData,
-          (response: SendMessageResponse) => {
-            if (response.success && response.message) {
-              console.log(' Mensaje enviado exitosamente:', response.message);
-              resolve(response.message);
-            } else {
-              console.error('Error al enviar mensaje:', response.error);
-              reject(new Error(response.error || 'Error al enviar mensaje'));
-            }
-          },
-        );
+      const saved = hydrateMessage({
+        ...payload.data,
+        conversationId,
       });
+      if (!saved) return null;
+
+      // Broadcast the created message so other subscribers pick it up.
+      try {
+        await insforge.realtime.publish(channelForConversation(conversationId), 'message.created', {
+          message: saved,
+          conversationId,
+        });
+      } catch (err) {
+        console.warn('[useChatSocket] publish failed', err);
+      }
+
+      return saved;
     },
     [],
   );
 
-  /**
-   * Marcar mensajes como leídos
-   */
   const markAsRead = useCallback(
     async (conversationId: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (!socketRef.current) {
-          reject(new Error('Socket no disponible'));
-          return;
-        }
+      try {
+        await jsonRequest<{ success: true }>(`/api/conversations/${conversationId}/read`, {
+          method: 'POST',
+        });
+      } catch (err) {
+        console.warn('[useChatSocket] markAsRead failed', err);
+      }
 
-        socketRef.current.emit(
-          'mark_as_read',
-          { conversationId },
-          (response: { success: boolean; error?: string }) => {
-            if (response.success) {
-              console.log(` Mensajes marcados como leídos en ${conversationId}`);
-              resolve();
-            } else {
-              console.error('Error al marcar como leído:', response.error);
-              reject(new Error(response.error || 'Error desconocido'));
-            }
-          },
-        );
-      });
+      if (currentUserId) {
+        try {
+          await insforge.realtime.publish(
+            channelForConversation(conversationId),
+            'messages.read',
+            { conversationId, userId: currentUserId },
+          );
+        } catch (err) {
+          console.warn('[useChatSocket] publish read failed', err);
+        }
+      }
     },
-    [],
+    [currentUserId],
   );
 
   return {
-    chatSocket: socketRef.current,
+    chatSocket: null,
     joinConversation,
     leaveConversation,
     sendMessage,
     markAsRead,
-    isConnected: isConnectedRef.current,
+    isConnected,
   };
 }

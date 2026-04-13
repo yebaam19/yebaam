@@ -1,10 +1,17 @@
+import { insforge } from '@/lib/insforge/client';
 import {
   Conversation,
   GetMessagesResponse,
   EnableEncryptionDto,
   DisableEncryptionDto,
   EncryptionResult,
+  Message,
+  MessageMedia,
 } from '../types';
+
+function channelForConversation(conversationId: string): string {
+  return `chat:conv:${conversationId}`;
+}
 
 type JsonRecord = Record<string, unknown>;
 
@@ -78,6 +85,40 @@ class ChatService {
       offset: payload.pagination?.offset ?? offset,
       hasMore: Boolean(payload.pagination?.hasMore),
     };
+  }
+
+  async sendMessage(
+    conversationId: string,
+    content: string,
+    replyToId?: string,
+    media?: MessageMedia,
+  ): Promise<Message> {
+    const payload = await jsonFetch<{ data: Message }>(
+      `${this.baseUrl}/${conversationId}/messages`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ content, replyToId, media }),
+      },
+    );
+    if (!payload?.data?.id) {
+      throw new Error('Invalid message response from server');
+    }
+    const saved = { ...payload.data, conversationId } as Message;
+
+    // Broadcast to other subscribers via InsForge realtime so the chat
+    // sidebar and open conversation windows of other participants update
+    // live without polling.
+    try {
+      await insforge.realtime.publish(channelForConversation(conversationId), 'message.created', {
+        message: saved,
+        conversationId,
+      });
+    } catch (err) {
+      // Realtime delivery is best-effort — the message is already persisted.
+      console.warn('[ChatService] realtime publish failed', err);
+    }
+
+    return saved;
   }
 
   async findConversationByParticipant(

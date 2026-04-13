@@ -1,5 +1,6 @@
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { chatService } from '@/features/chat/services/chat.service';
 import type { Socket } from 'socket.io-client';
 
 interface UseChatMessagesProps {
@@ -85,79 +86,39 @@ export function useChatMessages({
 
   // Función para enviar mensaje
   const sendMessage = async (messageContent: string): Promise<boolean> => {
-
-    if (!messageContent.trim() || !conversationId || !chatSocket?.connected) {
-   
+    const trimmed = messageContent.trim();
+    if (!trimmed || !conversationId) {
       return false;
     }
 
-    try {
-      // Crear mensaje temporal optimista
-      const tempMessage = {
-        id: `temp-${Date.now()}`,
-        content: messageContent,
-        conversationId,
-        senderId: user?.id,
-        createdAt: new Date().toISOString(),
-        status: 'sending',
-        isTemporary: true,
-      };
-      
-      // Agregar mensaje temporal a la UI
-      setMessages((prev) => [...prev, tempMessage]);
-      
-      // Promise para manejar respuesta del servidor
-      return new Promise((resolve) => {
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      id: tempId,
+      content: trimmed,
+      conversationId,
+      senderId: user?.id,
+      createdAt: new Date().toISOString(),
+      status: 'sending',
+      isTemporary: true,
+    };
 
-        const timeout = setTimeout(() => {
-         
-          setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
-          resolve(false);
-        }, 10000);
-        
-        // Enviar mensaje por WebSocket
-        chatSocket.emit('send_message', {
-          senderId: user?.id,
-          conversationId,
-          content: messageContent,
-        }, (response: any) => {
-          clearTimeout(timeout);
-        
-          
-          if (response?.success) {
-            const newMessage = response.message || response.data?.message;
-            
-            if (newMessage) {
-            
-              
-              // Reemplazar mensaje temporal con el real
-              setMessages((prev) => {
-                const filtered = prev.filter((m) => m.id !== tempMessage.id);
-                const exists = filtered.some((m) => m.id === newMessage.id);
-                
-                if (exists) return filtered;
-                
-                const newMessages = [...filtered, newMessage];
-                return newMessages.sort((a, b) => 
-                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                );
-              });
-              
-              resolve(true);
-            } else {
-              
-              setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
-              resolve(false);
-            }
-          } else {
-       
-            setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
-            resolve(false);
-          }
-        });
+    setMessages((prev) => [...prev, tempMessage]);
+
+    try {
+      const newMessage = await chatService.sendMessage(conversationId, trimmed);
+
+      setMessages((prev) => {
+        const filtered = prev.filter((m) => m.id !== tempId);
+        if (filtered.some((m) => m.id === newMessage.id)) return filtered;
+        return [...filtered, newMessage].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
       });
+
+      return true;
     } catch (error) {
-      console.error(' Error:', error);
+      console.error('[useChatMessages] sendMessage failed:', error);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       return false;
     }
   };

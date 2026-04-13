@@ -7,10 +7,10 @@ interface Props {
 
 const Layout: FC<Props> = ({ children }) => {
   return (
-    <>
-      {children}
-      <Toaster position="top-right" richColors />
-    </>
+    <div className="min-h-dvh min-w-0">
+      <div className="mx-auto min-h-dvh w-full max-w-full px-4 py-6 sm:px-6">{children}</div>
+      <Toaster position="top-center" richColors />
+    </div>
   )
 }
 

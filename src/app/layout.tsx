@@ -1,5 +1,5 @@
 import '@/styles/tailwind.css';
-import { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
 import 'rc-slider/assets/index.css';
 
@@ -27,10 +27,16 @@ export const metadata: Metadata = {
   keywords: ['yebaam', 'red social', 'conectar', 'amigos', 'compartir'],
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode; }) {
   return (
     <html lang="es" className={poppins.className}>
-      <body className="bg-gray-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
+      <body className="min-h-dvh bg-gray-50 text-neutral-900 antialiased dark:bg-neutral-900 dark:text-neutral-100">
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>
@@ -38,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
                 <ApolloProvider>
                   <SocketProvider>
                     <OfflineIndicator />
-                    <div>{children}</div>
+                    <div className="min-w-0">{children}</div>
                   </SocketProvider>
                 </ApolloProvider>
               </QueryProvider>

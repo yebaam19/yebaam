@@ -103,8 +103,8 @@ export default function ProfessionalProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="mx-auto max-w-5xl p-5">
+    <div className="min-h-screen min-w-0 bg-neutral-50 dark:bg-neutral-900">
+      <div className="mx-auto max-w-5xl min-w-0 px-4 py-5 sm:px-5">
         {/* Back button */}
         <div className="mb-5">
           <button

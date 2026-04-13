@@ -34,11 +34,11 @@ async function getUserId(): Promise<string | null> {
 
 export async function GET() {
   const token = await getServerAccessToken();
-  if (!token) return NextResponse.json({ data: [], count: 0 }, { status: 401 });
+  if (!token) return NextResponse.json({ success: true, data: [], count: 0 });
 
   const client = await getServerClient();
   const userId = await getUserId();
-  if (!userId) return NextResponse.json({ data: [], count: 0 }, { status: 401 });
+  if (!userId) return NextResponse.json({ success: true, data: [], count: 0 });
 
   const { data: myParts, error: partsErr } = await client.database
     .from('conversation_participants')

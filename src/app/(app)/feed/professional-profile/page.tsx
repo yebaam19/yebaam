@@ -53,8 +53,8 @@ export default function ProfessionalProfileWelcomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="mx-auto max-w-6xl p-5">
+    <div className="min-h-screen min-w-0 bg-neutral-50 dark:bg-neutral-900">
+      <div className="mx-auto max-w-6xl min-w-0 px-4 py-5 sm:px-5">
         {/* Hero Section */}
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-3xl font-bold text-neutral-900 md:text-4xl lg:text-5xl dark:text-white">
@@ -67,7 +67,7 @@ export default function ProfessionalProfileWelcomePage() {
         </div>
 
         {/* Benefits Section */}
-        <section className="mb-12 p-5">
+        <section className="mb-12 px-0 py-3 sm:p-5">
           <ProfessionalBenefits />
         </section>
 
@@ -81,14 +81,14 @@ export default function ProfessionalProfileWelcomePage() {
 
         {/* CTA Section */}
         <section className="text-center">
-          <div className="mx-auto max-w-xl rounded-2xl bg-white p-8 shadow-lg dark:bg-neutral-800">
+          <div className="mx-auto max-w-xl rounded-2xl bg-white p-5 shadow-lg sm:p-8 dark:bg-neutral-800">
             <h3 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-white">¿Listo para comenzar?</h3>
             <p className="mb-6 text-neutral-600 dark:text-neutral-400">
               Crea tu perfil profesional y empieza a destacar tus habilidades y experiencia ante la comunidad.
             </p>
             <button
               onClick={() => setIsDialogOpen(true)}
-              className="rounded-lg bg-primary-600 px-6 py-3 font-medium text-white transition-colors hover:bg-primary-700"
+              className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white transition-colors hover:bg-primary-700 sm:w-auto"
             >
               Crear mi perfil profesional
             </button>

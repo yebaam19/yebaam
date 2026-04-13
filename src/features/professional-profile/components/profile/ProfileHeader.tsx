@@ -70,7 +70,7 @@ export function ProfileHeader({ profile, user, isOwner, onEditProfile }: Profile
   }
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0 max-w-full">
       {/* Cover Image */}
       <div className="relative h-32 overflow-hidden rounded-t-2xl sm:h-40 lg:h-48">
         {profile.coverUrl ? (
@@ -113,9 +113,11 @@ export function ProfileHeader({ profile, user, isOwner, onEditProfile }: Profile
         <div className="ml-0 pt-14 sm:ml-36 sm:pt-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             {/* User Info */}
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-neutral-900 sm:text-2xl dark:text-white">{fullName}</h1>
+            <div className="min-w-0">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <h1 className="min-w-0 text-xl font-bold break-words text-neutral-900 sm:text-2xl dark:text-white">
+                  {fullName}
+                </h1>
                 <CheckBadgeIcon className="h-5 w-5 text-primary-500" />
               </div>
               <p className="text-neutral-500 dark:text-neutral-400">@{user.username}</p>
@@ -169,7 +171,7 @@ export function ProfileHeader({ profile, user, isOwner, onEditProfile }: Profile
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
               {isOwner ? (
                 <>
                   <button

@@ -84,8 +84,8 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 z-50 bg-white shadow-sm dark:bg-neutral-900">
-        <div className="mx-auto flex h-14 max-w-full items-center justify-between gap-2 px-2 sm:px-4">
+      <header className="fixed top-0 right-0 left-0 z-50 bg-white pt-[env(safe-area-inset-top)] shadow-sm dark:bg-neutral-900">
+        <div className="mx-auto flex h-14 max-w-full min-w-0 items-center justify-between gap-2 px-2 sm:px-4">
           {/* Left Section - Menu + Logo */}
           <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             {/* Mobile Menu Button */}
@@ -117,7 +117,7 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
           </div>
 
           {/* Center Section - Navigation Icons (Desktop only) */}
-          <nav className="hidden max-w-2xl flex-1 items-center justify-center lg:flex">
+          <nav className="hidden min-w-0 max-w-2xl flex-1 items-center justify-center lg:flex">
             {navItems.map((item) => {
               const Icon = item.isActive ? item.iconSolid : item.icon
               return (
@@ -187,7 +187,7 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
           <div className="absolute inset-0 bg-black/50" onClick={handleCloseMobileSearch} />
 
           {/* Search Panel */}
-          <div className="animate-in slide-in-from-top absolute top-0 right-0 left-0 bg-white p-4 shadow-lg duration-200 dark:bg-neutral-900">
+          <div className="animate-in slide-in-from-top absolute top-0 right-0 left-0 bg-white p-4 pt-[max(1rem,env(safe-area-inset-top))] shadow-lg duration-200 dark:bg-neutral-900">
             <div className="flex items-center gap-3">
               <button
                 onClick={handleCloseMobileSearch}

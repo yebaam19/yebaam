@@ -175,6 +175,16 @@ export function useFriendships() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Solo ejecutar una vez al montar
 
+  // HTTP polling fallback while realtime WebSocket is dormant
+  useEffect(() => {
+    if (isFriendshipsConnected) return;
+    const interval = setInterval(() => {
+      fetchPendingRequests();
+      fetchFriends();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isFriendshipsConnected, fetchPendingRequests, fetchFriends]);
+
   // ============================================================================
   // Return API
   // ============================================================================

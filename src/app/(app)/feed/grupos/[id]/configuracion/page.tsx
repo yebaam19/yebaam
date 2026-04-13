@@ -31,13 +31,13 @@ export default function GroupSettingsPage() {
   }
 
   if (!group) {
-    router.push('/grupos');
+    router.push('/feed/grupos');
     return null;
   }
 
   if (!group.isAdmin) {
     toast.error('No tienes permisos para acceder a esta página');
-    router.push(`/grupos/${groupId}`);
+    router.push(`/feed/grupos/${groupId}`);
     return null;
   }
 
@@ -56,18 +56,18 @@ export default function GroupSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-      <div className="container mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-dvh min-w-0 bg-neutral-50 dark:bg-neutral-950">
+      <div className="container mx-auto max-w-3xl min-w-0 px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
-            href={`/grupos/${groupId}`}
-            className="inline-flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white mb-4"
+            href={`/feed/grupos/${groupId}`}
+            className="mb-4 inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5" />
             Volver al grupo
           </Link>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">
             Configuración del grupo
           </h1>
           <p className="text-neutral-600 dark:text-neutral-400 mt-2">

@@ -19,7 +19,7 @@ const ApplicationLayout: React.FC<Props> = async ({ children, header }) => {
     return (
       <Aside.Provider>
         {header || <Header />}
-        <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+        <main className="min-h-screen min-w-0 bg-neutral-50 px-4 pb-8 sm:px-6 dark:bg-neutral-950">
           {children}
         </main>
       </Aside.Provider>
