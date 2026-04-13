@@ -231,21 +231,58 @@ export class AuthService {
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
-    // Skip the SDK probe (and its /api/auth/refresh 401 in devtools) when
-    // there is no local hint of a session. The SDK otherwise tries to
-    // refresh on every cold load even before the user has ever logged in.
-    if (!readHasLocalSession()) return null;
+    if (typeof window === 'undefined') return null;
 
-    const { data, error } = await insforge.auth.getCurrentUser();
-    if (error || !data?.user) {
+    // If the SDK already has an in-memory session (same-tab nav), trust it.
+    const inMemoryToken = readCurrentAccessToken();
+    if (inMemoryToken) {
+      const { data, error } = await insforge.auth.getCurrentUser();
+      if (!error && data?.user) {
+        const profile = await fetchProfile(data.user.id);
+        return mapProfileToAuthUser(data.user, profile);
+      }
+    }
+
+    // Cold reload: the SDK is stateless. Our httpOnly `insforge_access_token`
+    // cookie (set by /api/auth/session on login) is the source of truth.
+    // Rehydrate the SDK from it via /api/auth/me.
+    if (!readHasLocalSession()) {
+      // No hint of a prior login — skip the server probe entirely.
+      return null;
+    }
+
+    let meResponse: Response;
+    try {
+      meResponse = await fetch('/api/auth/me', { method: 'GET' });
+    } catch {
+      return null;
+    }
+
+    if (!meResponse.ok) {
       clearHasLocalSession();
       return null;
     }
 
-    await syncSessionCookie(readCurrentAccessToken());
+    const { user, accessToken } = (await meResponse.json()) as {
+      user: { id: string; email?: string | null; emailVerified?: boolean } | null;
+      accessToken?: string;
+    };
 
-    const profile = await fetchProfile(data.user.id);
-    return mapProfileToAuthUser(data.user, profile);
+    if (!user || !accessToken) {
+      clearHasLocalSession();
+      return null;
+    }
+
+    // Seed the client SDK with the recovered token so subsequent authenticated
+    // calls (database, storage, etc.) carry the Authorization header.
+    try {
+      insforge.getHttpClient().setAuthToken(accessToken);
+    } catch {
+      // ignore
+    }
+
+    const profile = await fetchProfile(user.id);
+    return mapProfileToAuthUser(user, profile);
   }
 
   isAuthenticated(): boolean {
