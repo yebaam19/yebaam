@@ -4,7 +4,7 @@
  * Servicio para subir fotos de perfil y portada a S3
  */
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 
 export interface ProfileUploadUrlRequest {
   fileName: string;

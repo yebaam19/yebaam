@@ -10,7 +10,7 @@ import { unslugify } from '@/lib/utils'
 import { MOCK_CITIES, getOrCreateMockCity } from '../data/mock-cities'
 import { CitiesResponse, City, CityMedia, GetCitiesFilters, MediaType } from '../interfaces/city.interfaces'
 import { GlobalStats } from '../interfaces/global-stats.interface'
-import { getAxiosInstance } from '@/lib/axios/axiosConfig'
+import { getAxiosInstance } from '@/lib/legacy-api/client'
 
 /**
  * Simula delay de red para hacer el mock más realista

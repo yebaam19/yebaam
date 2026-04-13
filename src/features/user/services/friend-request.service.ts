@@ -1,6 +1,4 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
-
-const api = getAxiosInstance();
+import { friendshipsService } from '@/features/friendships/services/friendships.service';
 
 export interface FriendSuggestion {
   id: string;
@@ -15,15 +13,11 @@ export interface FriendSuggestion {
 
 export interface FriendRequest {
   requestId: string;
-  fromUserId?: string; // Solo en requests recibidas
-  toUserId?: string;   // Solo en requests enviadas
+  fromUserId?: string;
+  toUserId?: string;
   message?: string;
   sentAt: string;
   status: 'pending' | 'accepted' | 'rejected';
-  
-  // El backend devuelve 'profile' para ambos casos:
-  // - Para recibidas: profile del sender
-  // - Para enviadas: profile del recipient
   profile?: {
     id?: string;
     username: string;
@@ -33,20 +27,8 @@ export interface FriendRequest {
     avatar?: string;
     location?: string;
   };
-  
-  // Deprecated: Mantener para compatibilidad
-  senderProfile?: {
-    username: string;
-    firstName: string;
-    lastName: string;
-    avatar?: string;
-  };
-  recipientProfile?: {
-    username: string;
-    firstName: string;
-    lastName: string;
-    avatar?: string;
-  };
+  senderProfile?: FriendRequest['profile'];
+  recipientProfile?: FriendRequest['profile'];
 }
 
 export interface GetFriendRequestsResponse {
@@ -67,91 +49,60 @@ export interface FriendRequestActionResponse {
   friendId?: string;
 }
 
-/**
- * Servicio para gestionar solicitudes de amistad
- */
 export const friendRequestService = {
-  /**
-   * Obtener solicitudes de amistad recibidas y enviadas
-   */
-  async getFriendRequests(status?: 'pending' | 'accepted' | 'rejected'): Promise<GetFriendRequestsResponse> {
-    // El backend retorna ambas (recibidas y enviadas) en un solo endpoint
-    const response = await api.get('api/friendships/requests/pending');
-    
-    // El backend retorna: { data: { received: [...], sent: [...], totalReceived, totalSent } }
-    const data = response.data.data || response.data;
-    
-    const received = data.received || [];
-    const sent = data.sent || [];
-    
-    return {
-      received,
-      sent,
-      total: received.length + sent.length,
-    };
+  async getFriendRequests(): Promise<GetFriendRequestsResponse> {
+    const all = await friendshipsService.getAllPendingRequests();
+    const map = (r: (typeof all.received)[number]): FriendRequest => ({
+      requestId: r.id,
+      fromUserId: r.requesterId,
+      toUserId: r.addresseeId,
+      sentAt: r.sentAt,
+      status: r.status === 'accepted' ? 'accepted' : r.status === 'rejected' ? 'rejected' : 'pending',
+      profile: r.profile
+        ? {
+            id: r.profile.id,
+            username: r.profile.username,
+            firstName: r.profile.firstName,
+            lastName: r.profile.lastName,
+            avatar: r.profile.avatar,
+          }
+        : undefined,
+    });
+    const received = all.received.map(map);
+    const sent = all.sent.map(map);
+    return { received, sent, total: received.length + sent.length };
   },
 
-  /**
-   * Enviar solicitud de amistad
-   */
   async sendFriendRequest(recipientId: string): Promise<SendFriendRequestResponse> {
- 
-    
-    try {
-      const response = await api.post('/friendships/send', { addresseeId: recipientId });
-      console.log('[sendFriendRequest] Success:', response.data);
-      return response.data;
-    } catch (error: any) {
-
-      console.error(' [sendFriendRequest] Error response:', error.response);
- 
-      throw error;
-    }
+    const req = await friendshipsService.sendFriendRequest({ addresseeId: recipientId });
+    return { success: true, requestId: req.id, message: 'Solicitud enviada' };
   },
 
-  /**
-   * Aceptar solicitud de amistad
-   */
   async acceptFriendRequest(requestId: string): Promise<FriendRequestActionResponse> {
-    try {
-      console.log('[acceptFriendRequest] Enviando solicitud con requestId:', requestId);
-      console.log('[acceptFriendRequest] URL completa:', `/api/friendships/requests/${requestId}/accept`);
-      const response = await api.patch(`/api/friendships/requests/${requestId}/accept`);
-      console.log('[acceptFriendRequest]  Respuesta exitosa:', response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error('[acceptFriendRequest]  Error:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message,
-        requestId,
-      });
-      throw error;
-    }
+    const req = await friendshipsService.acceptFriendRequest(requestId);
+    return { success: true, message: 'Solicitud aceptada', friendId: req.requesterId };
   },
 
-  /**
-   * Rechazar solicitud de amistad
-   */
   async rejectFriendRequest(requestId: string): Promise<FriendRequestActionResponse> {
-    const response = await api.patch(`/api/friendships/requests/${requestId}/reject`);
-    return response.data;
+    await friendshipsService.rejectFriendRequest(requestId);
+    return { success: true, message: 'Solicitud rechazada' };
   },
 
-  /**
-   * Cancelar solicitud de amistad enviada
-   */
   async cancelFriendRequest(requestId: string): Promise<FriendRequestActionResponse> {
-    const response = await api.delete(`/friendships/${requestId}/cancel`);
-    return response.data;
+    await friendshipsService.cancelFriendRequest(requestId);
+    return { success: true, message: 'Solicitud cancelada' };
   },
 
-  /**
-   * Obtener sugerencias de amigos (4 usuarios por defecto)
-   */
   async getFriendSuggestions(limit: number = 4): Promise<FriendSuggestion[]> {
-    const response = await api.get(`/api/friendships/suggestions?limit=${limit}`);
-    return response.data.data; // Acceder a data.data porque el backend retorna {message, data}
+    const suggestions = await friendshipsService.getFriendSuggestions(limit);
+    return suggestions.map((s) => ({
+      id: s.id,
+      username: s.username,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      avatar: s.avatar,
+      mutualFriends: s.mutualFriends,
+      reason: s.reason,
+    }));
   },
 };

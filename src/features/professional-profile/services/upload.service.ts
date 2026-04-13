@@ -4,7 +4,7 @@
  * Servicio para subir archivos a S3 usando presigned URLs
  */
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
+import { getAxiosInstance } from '@/lib/legacy-api/client'
 
 interface GenerateUploadUrlRequest {
   fileName: string

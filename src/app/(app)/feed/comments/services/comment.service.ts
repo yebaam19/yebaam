@@ -1,272 +1,191 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
+import { insforge } from '@/lib/insforge/client';
 import type {
   Comment,
+  CommentAuthor,
   CreateCommentDTO,
   DeleteCommentDTO,
   GetCommentsFilters,
   GetCommentsResponse,
   UpdateCommentDTO,
-} from '../interfaces/comment.interfaces'
+} from '../interfaces/comment.interfaces';
 
-/**
- * Endpoints del API de comentarios
- */
-const COMMENT_ENDPOINTS = {
-  BY_POST: (postId: string) => `/api/posts/${postId}/comments`,
-  COMMENT_BY_ID: (postId: string, commentId: string) => `/api/posts/${postId}/comments/${commentId}`,
-  REPLIES: (postId: string, commentId: string) => `/api/posts/${postId}/comments/${commentId}/replies`,
-  UPDATE: (postId: string, commentId: string) => `/api/posts/${postId}/comments/${commentId}`,
-  DELETE: (postId: string, commentId: string) => `/api/posts/${postId}/comments/${commentId}`,
-} as const
+type DbComment = {
+  id: string;
+  post_id: string;
+  parent_comment_id: string | null;
+  author_id: string;
+  content: string;
+  mentions: string[];
+  likes_count: number;
+  replies_count: number;
+  is_edited: boolean;
+  edited_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
-/**
- * Servicio para gestión de comentarios
- * CRUD completo + integración con WebSocket
- */
+type DbProfile = {
+  id: string;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
+
+function profileToAuthor(profile: DbProfile | undefined, fallbackId: string): CommentAuthor {
+  if (!profile) {
+    return { id: fallbackId, username: '', firstName: '', lastName: '', avatar: null };
+  }
+  return {
+    id: profile.id,
+    username: profile.username ?? '',
+    firstName: profile.first_name ?? '',
+    lastName: profile.last_name ?? '',
+    avatar: profile.avatar_url ?? null,
+  };
+}
+
+async function hydrateAuthors(rows: DbComment[]): Promise<Map<string, DbProfile>> {
+  const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
+  if (authorIds.length === 0) return new Map();
+  const { data } = await insforge.database
+    .from('profiles')
+    .select('id, username, first_name, last_name, avatar_url')
+    .in('id', authorIds);
+  const map = new Map<string, DbProfile>();
+  for (const p of (data ?? []) as DbProfile[]) map.set(p.id, p);
+  return map;
+}
+
+function rowToComment(row: DbComment, authors: Map<string, DbProfile>): Comment {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    content: row.content,
+    author: profileToAuthor(authors.get(row.author_id), row.author_id),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    parentId: row.parent_comment_id,
+    isEdited: row.is_edited,
+    editedAt: row.edited_at ?? undefined,
+    likesCount: row.likes_count,
+    repliesCount: row.replies_count,
+  };
+}
+
 export class CommentService {
-  private readonly axios = getAxiosInstance()
-
-  /**
-   * Transforma la respuesta del backend al formato esperado por el cliente
-   */
-  private transformBackendComment(backendComment: any): Comment {
-    return {
-      id: backendComment._id || backendComment.id,
-      postId: backendComment.postId,
-      content: backendComment.content,
-      author: {
-        id: backendComment.user?.id || backendComment.author?.id,
-        username: backendComment.user?.username || backendComment.author?.username,
-        firstName: backendComment.user?.firstName || backendComment.author?.firstName,
-        lastName: backendComment.user?.lastName || backendComment.author?.lastName,
-        avatar: backendComment.user?.avatar || backendComment.author?.avatar || null,
-      },
-      createdAt: backendComment.createdAt,
-      updatedAt: backendComment.updatedAt,
-      parentId: backendComment.parentCommentId || backendComment.parentId || null,
-      isEdited: backendComment.isEdited || false,
-      editedAt: backendComment.editedAt,
-      likesCount: backendComment.likesCount,
-      repliesCount: backendComment.repliesCount,
-    }
-  }
-
-  /**
-   * Crea un nuevo comentario
-   *
-   * @param data - Datos del comentario
-   * @returns Comentario creado
-   *
-   * @example
-   * const comment = await commentService.create({
-   *   postId: '123',
-   *   content: 'Gran publicación!',
-   *   parentId: null
-   * });
-   */
   async create(data: CreateCommentDTO): Promise<Comment> {
-    try {
-      // Construir el body según sea comentario normal o reply
-      const requestBody: { content: string; parentCommentId?: string } = {
-        content: data.content,
-      }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-      // Solo agregar parentCommentId si es un reply
-      if (data.parentId) {
-        requestBody.parentCommentId = data.parentId
-      }
+    const { data: inserted, error } = await insforge.database
+      .from('comments')
+      .insert([
+        {
+          post_id: data.postId,
+          author_id: userId,
+          content: data.content,
+          parent_comment_id: data.parentId ?? null,
+        },
+      ])
+      .select('*')
+      .single();
+    if (error || !inserted) throw new Error(error?.message || 'Error al crear comentario');
 
-      const response = await this.axios.post(COMMENT_ENDPOINTS.BY_POST(data.postId), requestBody)
-
-      // Extraer el comentario del wrapper { message, data }
-      const commentData = response.data.data || response.data
-      return this.transformBackendComment(commentData)
-    } catch (error) {
-      throw this.handleError(error, 'Error al crear comentario')
-    }
+    const row = inserted as DbComment;
+    const authors = await hydrateAuthors([row]);
+    return rowToComment(row, authors);
   }
 
-  /**
-   * Actualiza un comentario existente
-   *
-   * @param data - Datos de actualización
-   * @returns Comentario actualizado
-   */
   async update(data: UpdateCommentDTO): Promise<Comment> {
-    try {
-      console.log(' Actualizando comentario:', {
-        postId: data.postId,
-        commentId: data.commentId,
+    const { data: updated, error } = await insforge.database
+      .from('comments')
+      .update({
         content: data.content,
-        endpoint: COMMENT_ENDPOINTS.UPDATE(data.postId, data.commentId),
+        is_edited: true,
+        edited_at: new Date().toISOString(),
       })
+      .eq('id', data.commentId)
+      .select('*')
+      .single();
+    if (error || !updated) throw new Error(error?.message || 'Error al actualizar comentario');
 
-      const response = await this.axios.patch(COMMENT_ENDPOINTS.UPDATE(data.postId, data.commentId), {
-        content: data.content,
-      })
-
-      console.log(' Comentario actualizado:', response.data)
-
-      const commentData = response.data.data || response.data
-      return this.transformBackendComment(commentData)
-    } catch (error) {
-      console.error(' Error al actualizar comentario:', error)
-      throw this.handleError(error, 'Error al actualizar comentario')
-    }
+    const row = updated as DbComment;
+    const authors = await hydrateAuthors([row]);
+    return rowToComment(row, authors);
   }
 
-  /**
-   * Elimina un comentario
-   *
-   * @param data - ID del comentario y post
-   */
   async delete(data: DeleteCommentDTO): Promise<void> {
-    try {
-      await this.axios.delete(COMMENT_ENDPOINTS.DELETE(data.postId, data.commentId))
-      console.log(' Comentario eliminado:', data.commentId)
-    } catch (error) {
-      throw this.handleError(error, 'Error al eliminar comentario')
-    }
+    const { error } = await insforge.database
+      .from('comments')
+      .delete()
+      .eq('id', data.commentId);
+    if (error) throw new Error(error.message || 'Error al eliminar comentario');
   }
 
-  /**
-   * Obtiene comentarios de un post
-   *
-   * @param filters - Filtros de búsqueda
-   * @returns Lista paginada de comentarios
-   *
-   * @example
-   * const response = await commentService.getByPost({
-   *   postId: '123',
-   *   page: 1,
-   *   limit: 20,
-   *   sortBy: 'newest'
-   * });
-   */
   async getByPost(filters: GetCommentsFilters): Promise<GetCommentsResponse> {
-    try {
-      const params = this.buildQueryParams(filters)
-      const endpoint = COMMENT_ENDPOINTS.BY_POST(filters.postId)
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 50;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-      console.log(` Llamando a:`, {
-        endpoint,
-        postId: filters.postId,
-        params,
-        baseURL: this.axios.defaults.baseURL,
-      })
+    let query = insforge.database
+      .from('comments')
+      .select('*', { count: 'exact' })
+      .eq('post_id', filters.postId)
+      .range(from, to);
 
-      const response = await this.axios.get(endpoint, { params })
-
-      // Transformar respuesta del backend
-      const responseData = response.data.data || response.data
-      const comments = Array.isArray(responseData) ? responseData : responseData.comments || []
-
-      const transformedComments = comments.map((comment: any) => this.transformBackendComment(comment))
-
-      return {
-        comments: transformedComments,
-        total: responseData.total || transformedComments.length,
-        page: filters.page || 1,
-        limit: filters.limit || 50,
-        hasMore: responseData.hasMore || false,
-      }
-    } catch (error) {
-      console.error(' Error al obtener comentarios:', error)
-      throw this.handleError(error, 'Error al obtener comentarios')
+    if (filters.parentId === null || filters.parentId === undefined) {
+      query = query.is('parent_comment_id', null);
+    } else {
+      query = query.eq('parent_comment_id', filters.parentId);
     }
+
+    const ascending = filters.sortBy === 'oldest';
+    query = query.order('created_at', { ascending });
+
+    const { data, error, count } = await query;
+    if (error) throw new Error(error.message || 'Error al obtener comentarios');
+
+    const rows = (data ?? []) as DbComment[];
+    const authors = await hydrateAuthors(rows);
+    const comments = rows.map((r) => rowToComment(r, authors));
+
+    return {
+      comments,
+      total: count ?? comments.length,
+      page,
+      limit,
+      hasMore: (count ?? 0) > to + 1,
+    };
   }
 
-  /**
-   * Obtiene un comentario por ID
-   *
-   * @param commentId - ID del comentario
-   * @param postId - ID del post
-   * @returns Comentario encontrado
-   */
-  async getById(commentId: string, postId: string): Promise<Comment> {
-    try {
-      const response = await this.axios.get(COMMENT_ENDPOINTS.COMMENT_BY_ID(postId, commentId))
+  async getById(commentId: string, _postId: string): Promise<Comment> {
+    const { data, error } = await insforge.database
+      .from('comments')
+      .select('*')
+      .eq('id', commentId)
+      .single();
+    if (error || !data) throw new Error(error?.message || 'Error al obtener comentario');
 
-      const commentData = response.data.data || response.data
-      return this.transformBackendComment(commentData)
-    } catch (error) {
-      throw this.handleError(error, 'Error al obtener comentario')
-    }
+    const row = data as DbComment;
+    const authors = await hydrateAuthors([row]);
+    return rowToComment(row, authors);
   }
 
-  /**
-   * Obtiene las respuestas de un comentario específico
-   *
-   * @param postId - ID del post
-   * @param commentId - ID del comentario padre
-   * @returns Lista de respuestas
-   *
-   * @example
-   * const replies = await commentService.getReplies('postId', 'commentId');
-   */
-  async getReplies(postId: string, commentId: string): Promise<Comment[]> {
-    try {
-      console.log(` Obteniendo respuestas de comentario:`, {
-        postId,
-        commentId,
-        endpoint: COMMENT_ENDPOINTS.REPLIES(postId, commentId),
-      })
+  async getReplies(_postId: string, commentId: string): Promise<Comment[]> {
+    const { data, error } = await insforge.database
+      .from('comments')
+      .select('*')
+      .eq('parent_comment_id', commentId)
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message || 'Error al obtener respuestas del comentario');
 
-      const response = await this.axios.get(COMMENT_ENDPOINTS.REPLIES(postId, commentId))
-
-      console.log(` Respuestas obtenidas:`, response.data)
-
-      // Transformar respuesta del backend
-      const responseData = response.data.data || response.data
-      const replies = Array.isArray(responseData) ? responseData : responseData.replies || []
-
-      const transformedReplies = replies.map((reply: any) => this.transformBackendComment(reply))
-
-      console.log(` ${transformedReplies.length} respuestas transformadas`)
-
-      return transformedReplies
-    } catch (error) {
-      console.error(' Error al obtener respuestas:', error)
-      throw this.handleError(error, 'Error al obtener respuestas del comentario')
-    }
-  }
-
-  // ============================================
-  // Métodos privados auxiliares
-  // ============================================
-
-  /**
-   * Construye parámetros de query desde filtros
-   */
-  private buildQueryParams(filters: GetCommentsFilters): Record<string, any> {
-    const params: Record<string, any> = {}
-
-    if (filters.page) params.page = filters.page
-    if (filters.limit) params.limit = filters.limit
-    if (filters.sortBy) params.sortBy = filters.sortBy
-    if (filters.parentId !== undefined) params.parentId = filters.parentId
-
-    return params
-  }
-
-  /**
-   * Maneja errores de HTTP
-   */
-  private handleError(error: any, defaultMessage: string): Error {
-    if (error instanceof Error && !error.message.includes('AxiosError')) {
-      return error
-    }
-
-    const backendMessage = error?.response?.data?.message
-    if (backendMessage) {
-      return new Error(backendMessage)
-    }
-
-    return new Error(defaultMessage)
+    const rows = (data ?? []) as DbComment[];
+    const authors = await hydrateAuthors(rows);
+    return rows.map((r) => rowToComment(r, authors));
   }
 }
 
-/**
- * Instancia singleton del servicio
- */
-export const commentService = new CommentService()
+export const commentService = new CommentService();

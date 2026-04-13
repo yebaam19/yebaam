@@ -40,6 +40,7 @@ interface AuthState {
   
   // Acciones
   login: (credentials: LoginDTO) => Promise<void>;
+  loginWithGoogle: (redirectTo?: string) => Promise<void>;
   register: (userData: RegisterDTO) => Promise<any>;
   logout: () => Promise<void>;
   verifyEmail: (data: VerifyEmailRequest) => Promise<void>;
@@ -81,6 +82,19 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: false,
               isLoading: false,
               error: error instanceof Error ? error.message : 'Error al iniciar sesión'
+            });
+            throw error;
+          }
+        },
+
+        loginWithGoogle: async (redirectTo?: string) => {
+          set({ isLoading: true, error: null });
+          try {
+            await authService.loginWithGoogle(redirectTo);
+          } catch (error) {
+            set({
+              isLoading: false,
+              error: error instanceof Error ? error.message : 'Error al iniciar sesión con Google',
             });
             throw error;
           }
@@ -189,72 +203,14 @@ export const useAuthStore = create<AuthState>()(
         checkAuth: async () => {
           set({ isLoading: true });
           try {
-        
-            
-            // Verificar si hay token en cookies
-            if (!authService.isAuthenticated()) {
-           
-              set({ 
-                user: null,
-                isAuthenticated: false,
-                isLoading: false
-              });
-              return;
-            }
-
-            
-            // Obtener usuario actual del backend
             const user = await authService.getCurrentUser();
-            
-           
-            
             if (user) {
-         
-              
-             //TODO: QUIZÁ CACHÉAR ESTO PARA EVITAR LLAMADAS MÚLTIPLES --- IGNORE ---
-              try {
-                const axios = (await import('@/lib/axios/axiosInstance')).getAxiosInstance();
-                const profileResponse = await axios.get('/api/profile');
-                const profile = profileResponse.data;
-                
-        
-                set({ 
-                  user: {
-                    ...user,
-                    avatarUrl: profile.avatarUrl,
-                    coverPhotoUrl: profile.coverPhotoUrl,
-                    avatar: profile.avatarUrl || user.avatar,
-                  },
-                  isAuthenticated: true,
-                  isLoading: false,
-                  error: null
-                });
-              } catch (profileError) {
-              
-                // Si falla el perfil, usar solo los datos de auth
-                set({ 
-                  user,
-                  isAuthenticated: true,
-                  isLoading: false,
-                  error: null
-                });
-              }
+              set({ user, isAuthenticated: true, isLoading: false, error: null });
             } else {
-          
-              set({ 
-                user: null,
-                isAuthenticated: false,
-                isLoading: false
-              });
+              set({ user: null, isAuthenticated: false, isLoading: false });
             }
-          } catch (error) {
-         
-            set({ 
-              user: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: null // No mostrar error en checkAuth silencioso
-            });
+          } catch {
+            set({ user: null, isAuthenticated: false, isLoading: false, error: null });
           }
         },
 

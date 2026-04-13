@@ -1,4 +1,4 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 import type {
   PageProduct,
   PaginatedProducts,
@@ -161,7 +161,7 @@ export const pageProductsService = {
       `${API_BASE}/${pageId}/products/generate-image-upload-url`,
       data
     );
-    return response.data;
+    return response.data as { uploadUrl: string; cloudFrontUrl: string; s3Key: string };
   },
 
   /**

@@ -1,6 +1,6 @@
 
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 import { CreateCommentDTO, CreatePostDTO, GetPostsFilters, Post, ReactionType, UpdatePostDTO } from '../interfaces/post.interfaces';
 import { PostStatisticsResponse } from '../interfaces/statistics.interfaces';
 

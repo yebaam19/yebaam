@@ -3,14 +3,15 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { 
-  socketManager, 
-  getUsersSocket, 
+import {
+  socketManager,
+  getUsersSocket,
   getPostsSocket,
   getStoriesSocket,
   getFriendshipsSocket,
   getNotificationsSocket,
 } from '@/socket/socket-client';
+import { isRealtimeEnabled } from '@/socket/realtime-flag';
 
 /**
  * Socket Connection State
@@ -120,6 +121,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated || !user) {
 
+      return;
+    }
+
+    if (!isRealtimeEnabled()) {
+      // Legacy socket.io backend is gone. Stay dormant until the InsForge
+      // Realtime migration replaces this provider.
       return;
     }
 

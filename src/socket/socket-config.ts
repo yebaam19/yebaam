@@ -23,7 +23,7 @@ export const getBaseUrl = (): string => {
   return (
     process.env.NEXT_PUBLIC_SOCKET_URL ||
     process.env.NEXT_PUBLIC_WS_URL?.replace('ws://', 'http://') ||
-    'http://localhost:3001'
+    ''
   );
 };
 

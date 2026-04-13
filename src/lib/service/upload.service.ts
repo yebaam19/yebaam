@@ -4,7 +4,7 @@
  * Servicio para obtener URLs pre-firmadas de S3 y subir archivos
  */
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 
 /**
  * DTO para solicitar URL de subida (S3)
@@ -54,7 +54,7 @@ export class UploadService {
       
       // El backend devuelve { urls: [...], total: n }
       // Tomamos el primer elemento del array
-      return response.data.urls[0];
+      return (response.data as { urls: UploadUrlResponse[] }).urls[0];
     } catch (error: any) {
 
       throw new Error(error.response?.data?.message || 'Error al obtener URL de subida');

@@ -4,9 +4,41 @@
 
 This document captures all the backend logic from the current NestJS API (`api-yeebaam-backen-service-ecr`) to be re-implemented on InsForge.
 
-- **Current stack:** NestJS 11 + TypeScript, PostgreSQL (TypeORM), MongoDB (Mongoose), Redis, Socket.IO, Bull queues, AWS S3/CloudFront/IVS/SES, Twilio
-- **Target platform:** InsForge
-- **Architecture pattern:** Domain-Driven Design, modular feature-based structure
+- **Current stack (legacy):** NestJS 11 + TypeScript, PostgreSQL (TypeORM), MongoDB (Mongoose), Redis, Socket.IO, Bull queues, AWS S3/CloudFront/IVS/SES, Twilio
+- **Target stack:**
+  - **Backend / DB / Auth / Storage / Realtime / Edge Functions / Cron** → InsForge
+  - **Email** → [Resend](https://resend.com) (called from edge functions; API key stored as InsForge secret `RESEND_API_KEY`)
+  - **Live streaming** → deferred (future: Livepeer or Mux if needed)
+  - **Push notifications** → deferred (future: OneSignal if needed)
+- **Architecture pattern:** Postgres-first with RLS; business logic in edge functions only when CRUD + RLS isn't enough
+
+### Removed from scope
+- ❌ AWS S3 / CloudFront / IVS / SES — replaced by InsForge storage + Resend
+- ❌ MongoDB — everything lives in InsForge Postgres
+- ❌ Redis / Bull queues — replaced by InsForge cron schedules + edge functions
+- ❌ Socket.IO — replaced by InsForge realtime table subscriptions
+- ❌ Twilio / SMS / phone OTP — email OTP via InsForge auth + Resend is sufficient
+- ❌ Multi-provider email abstraction (SendGrid/Mailtrap/Nodemailer) — Resend only
+- ❌ Server-side E2E chat encryption — rely on TLS + RLS
+- ❌ Custom JWT / bcrypt / refresh tokens — use InsForge auth (built-in)
+
+### Realtime event mapping
+Instead of Socket.IO gateways, clients subscribe to InsForge table changes:
+| Legacy gateway | InsForge replacement |
+|---|---|
+| ChatGateway (`message:new`) | subscribe to `messages` where `conversation_id = X` |
+| NotificationGateway | subscribe to `notifications` where `recipient_id = auth.uid()` |
+| CommentGateway | subscribe to `comments` where `post_id = X` |
+| FriendshipsGateway | subscribe to `friendships` where `recipient_id = auth.uid()` |
+| PostGateway | subscribe to `posts` feed (client-side filter) |
+
+### Background jobs (replacing Bull queues)
+| Legacy queue | InsForge replacement |
+|---|---|
+| `email-queue` | Edge function `send-email` → Resend API (called inline or via trigger) |
+| `notification-queue` | DB trigger inserts into `notifications` table; realtime delivers |
+| `media-queue` | Deferred; InsForge storage handles basic delivery |
+| Story 24h expiry | Cron schedule → edge function `story-cleanup` (runs hourly) |
 
 ---
 
@@ -1274,6 +1306,22 @@ TWILIO_ACCOUNT_SID
 TWILIO_AUTH_TOKEN
 TWILIO_PHONE_NUMBER
 ```
+
+---
+
+## Implementation Phases
+
+**Phase 1 (core social graph — in progress):**
+Auth · User Profile · Media Upload · Posts/Feed · Comments · Reactions · Friendships · Notifications · Stories
+
+**Phase 2 (messaging + communities):**
+Chat · Search · Blogs · Pages · Groups · Clubs
+
+**Phase 3 (marketplace + pro):**
+Businesses · Professional Profile · Professional Services
+
+**Phase 4 (deferred, needs external services):**
+Live Streaming (Livepeer/Mux) · Push Notifications (OneSignal)
 
 ---
 

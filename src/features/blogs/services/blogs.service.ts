@@ -1,4 +1,4 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 import type { Blog, SearchBlogsParams, BlogsListResponse, BlogPost } from '../types/blog.types';
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces';
 

@@ -5,7 +5,9 @@
       "Bash(npx skills:*)",
       "Bash(ls -la .insforge .claude insforge.config.*)",
       "Bash(npx @insforge/cli link --project-id 17921f1c-d2f4-42c0-8ed9-86256dbfaa64)",
-      "Bash(npx -y skills add insforge/agent-skills -y -g)"
+      "Bash(npx -y skills add insforge/agent-skills -y -g)",
+      "Bash(npx @insforge/cli whoami)",
+      "Bash(npx @insforge/cli current)"
     ]
   }
 }

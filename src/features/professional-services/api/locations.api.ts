@@ -6,7 +6,7 @@
  * NOTA: Actualmente usa datos mock hasta que el backend esté implementado
  */
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
+import { getAxiosInstance } from '@/lib/legacy-api/client'
 import type {
   State,
   City,

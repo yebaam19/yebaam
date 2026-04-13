@@ -1,4 +1,4 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 import type { Club, CreateClubDto, UpdateClubDto, SearchClubsParams, ClubsListResponse, ClubMember } from '../types/club.types';
 
 const API_BASE = '/api/clubs';

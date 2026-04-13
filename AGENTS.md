@@ -2,6 +2,15 @@
 
 Conventions for AI coding agents (Claude, Cursor, Codex, etc.) working in this repo.
 
+## Backend: InsForge only
+
+**The custom backend is being removed. All backend functionality must go through InsForge (`@insforge/sdk`).**
+
+- Do **not** add or keep `axios` calls to `/api/auth/*` or any other custom backend endpoints — they no longer exist and will throw `Network Error`.
+- Use the InsForge SDK for auth, database, storage, edge functions, realtime, AI features.
+- When you find legacy code calling the old backend (e.g. `AuthService` in [src/features/auth/services/auth.service.ts](src/features/auth/services/auth.service.ts)), migrate it to InsForge rather than patching the axios call.
+- See the `insforge`, `insforge-cli`, `insforge-debug`, and `insforge-integrations` skills for SDK + infra usage.
+
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack default for dev + build)
@@ -60,3 +69,15 @@ When adding caching, prefer the `'use cache'` directive over the legacy `unstabl
 ## Build tolerance
 
 `next.config.ts` sets `eslint.ignoreDuringBuilds` and `typescript.ignoreBuildErrors` to `true` so production builds never fail on lint/type errors. This is intentional for deploy reliability — do not remove without discussing with the team. Still fix errors locally via `pnpm lint` and `tsc --noEmit`.
+
+## Learned User Preferences
+
+- Keep InsForge SQL migration files out of the shared repo for security; `insforge/migrations/*.sql` is gitignored—share SQL through InsForge or other private channels instead of committing it.
+- Use server-only `RESEND_API_KEY` for Resend (never a `NEXT_PUBLIC_` variable).
+
+## Learned Workspace Facts
+
+- `terraform/` holds AWS-oriented deployment IaC (Amplify-related); see `terraform/README.md` for workflow. Application backend behavior is InsForge per the sections above.
+- Primary GitHub remote for this codebase is `https://github.com/yebaam19/yebaam` (confirm `git remote -v` and credentials before pushing).
+- `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_APP_URL_DEV`, and `NEXT_PUBLIC_API_URL_DEV` are read in `src/config/featureFlags.ts`; include them in `.env.example` when documenting env vars.
+- `NEXT_PUBLIC_BACKEND_URL` may appear in Next env and infra config even when nothing under `src/` reads it directly.

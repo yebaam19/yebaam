@@ -1,6 +1,5 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { insforge } from '@/lib/insforge/client';
 
-// Interfaces según el backend
 export interface StoryView {
   userId: string;
   viewedAt: string;
@@ -24,14 +23,6 @@ export interface Story {
   duration?: number;
   width?: number;
   height?: number;
-  metadata?: {
-    deviceType?: string;
-    location?: {
-      latitude: number;
-      longitude: number;
-      city?: string;
-    };
-  };
 }
 
 export interface UserStoriesDto {
@@ -51,73 +42,105 @@ export interface PresignedUrlResponse {
   expiresIn: number;
 }
 
-interface ApiResponse<T> {
-  message: string;
-  data: T;
+type DbStory = {
+  id: string;
+  author_id: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  content: string | null;
+  background_color: string | null;
+  privacy: 'public' | 'friends';
+  view_count: number;
+  expires_at: string;
+  created_at: string;
+};
+
+type DbStoryView = {
+  story_id: string;
+  viewer_id: string;
+  viewed_at: string;
+};
+
+type DbProfile = {
+  id: string;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
+
+const STORIES_BUCKET = 'stories';
+
+function rowToStory(row: DbStory, views: DbStoryView[] = []): Story {
+  return {
+    id: row.id,
+    userId: row.author_id,
+    mediaUrl: row.media_url,
+    s3Key: row.media_url,
+    type: row.media_type,
+    status: new Date(row.expires_at).getTime() > Date.now() ? 'active' : 'expired',
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    views: views.map((v) => ({ userId: v.viewer_id, viewedAt: v.viewed_at })),
+    viewCount: row.view_count,
+    caption: row.content ?? undefined,
+    backgroundColor: row.background_color ?? undefined,
+  };
 }
 
 class StoryService {
-  private readonly baseUrl = '/api/stories';
-  
-  private get api() {
-    return getAxiosInstance();
-  }
-
-  /**
-   * Helper para extraer data de la respuesta (maneja ambos formatos)
-   */
-  private unwrapResponse<T>(response: T | ApiResponse<T>): T {
-    // Si tiene la estructura { message, data }, extraer data
-    if (response && typeof response === 'object' && 'data' in response && 'message' in response) {
-      return (response as ApiResponse<T>).data;
-    }
-    // Si no, retornar tal cual
-    return response as T;
-  }
-
-  /**
-   * Generar presigned URL para subir archivo a S3
-   */
-  async generatePresignedUrl(data: {
+  async generatePresignedUrl(_data: {
     fileName: string;
     fileType: string;
     fileSize: number;
     mediaType: 'image' | 'video';
   }): Promise<PresignedUrlResponse> {
-    try {
-      const response = await this.api.post<PresignedUrlResponse | ApiResponse<PresignedUrlResponse>>(
-        `${this.baseUrl}/presigned-url`,
-        data
-      );
-      return this.unwrapResponse(response.data);
-    } catch (error) {
-      console.error('Error generating presigned URL:', error);
-      throw error;
-    }
+    throw new Error(
+      'Presigned URL flow is no longer used. Call createStoryFromFile(file, ...) instead.'
+    );
   }
 
-  /**
-   * Subir archivo directamente a S3 usando presigned URL
-   */
-  async uploadToS3(presignedUrl: string, file: File): Promise<void> {
-    try {
-      await fetch(presignedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
+  async uploadToS3(_presignedUrl: string, _file: File): Promise<void> {
+    throw new Error(
+      'Presigned URL flow is no longer used. Call createStoryFromFile(file, ...) instead.'
+    );
+  }
+
+  async createStoryFromFile(
+    file: File,
+    options: { type: 'image' | 'video'; caption?: string; backgroundColor?: string }
+  ): Promise<Story> {
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+
+    const { data: uploaded, error: uploadError } = await insforge.storage
+      .from(STORIES_BUCKET)
+      .uploadAuto(file);
+    if (uploadError || !uploaded) {
+      throw new Error(uploadError?.message || 'Error al subir archivo de story');
+    }
+    const mediaUrl = (uploaded as { url: string }).url;
+
+    const { data: inserted, error } = await insforge.database
+      .from('stories')
+      .insert([
+        {
+          author_id: userId,
+          media_url: mediaUrl,
+          media_type: options.type,
+          content: options.caption ?? null,
+          background_color: options.backgroundColor ?? null,
         },
-      });
-    } catch (error) {
-      console.error('Error uploading to S3:', error);
-      throw error;
-    }
+      ])
+      .select('*')
+      .single();
+    if (error || !inserted) throw new Error(error?.message || 'Error al crear story');
+
+    return rowToStory(inserted as DbStory);
   }
 
-  /**
-   * Crear nueva story en el backend (después de subir a S3)
-   */
-  async createStory(data: {
+  async createStory(_data: {
     mediaUrl: string;
     s3Key: string;
     type: 'image' | 'video';
@@ -128,75 +151,120 @@ class StoryService {
     height?: number;
     duration?: number;
   }): Promise<Story> {
-    try {
-      const response = await this.api.post<Story | ApiResponse<Story>>(
-        this.baseUrl,
-        data
-      );
-      return this.unwrapResponse(response.data);
-    } catch (error) {
-      console.error('Error creating story:', error);
-      throw error;
-    }
+    throw new Error(
+      'createStory(data) is deprecated. Use createStoryFromFile(file, options) — uploads + inserts in one call.'
+    );
   }
 
-  /**
-   * Obtener mis historias activas
-   */
   async getMyStories(): Promise<Story[]> {
-    try {
-      const response = await this.api.get<Story[] | ApiResponse<Story[]>>(
-        `${this.baseUrl}/my-stories`
-      );
-      return this.unwrapResponse(response.data);
-    } catch (error) {
-      console.error('Error fetching my stories:', error);
-      throw error;
-    }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) return [];
+
+    const { data, error } = await insforge.database
+      .from('stories')
+      .select('*')
+      .eq('author_id', userId)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+    if (error || !data) return [];
+    return (data as DbStory[]).map((r) => rowToStory(r));
   }
 
-  /**
-   * Obtener historias de amigos (agrupadas por usuario)
-   */
   async getFriendsStories(): Promise<UserStoriesDto[]> {
-    try {
-      const response = await this.api.get<UserStoriesDto[] | ApiResponse<UserStoriesDto[]>>(
-        `${this.baseUrl}/friends`
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) return [];
+
+    const { data: friends } = await insforge.database
+      .from('friendships')
+      .select('requester_id, recipient_id')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
+
+    const friendIds = ((friends ?? []) as { requester_id: string; recipient_id: string }[])
+      .map((f) => (f.requester_id === userId ? f.recipient_id : f.requester_id))
+      .filter((id) => id !== userId);
+
+    if (friendIds.length === 0) return [];
+
+    const { data: storiesData } = await insforge.database
+      .from('stories')
+      .select('*')
+      .in('author_id', friendIds)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+
+    const stories = (storiesData ?? []) as DbStory[];
+    if (stories.length === 0) return [];
+
+    const { data: profileData } = await insforge.database
+      .from('profiles')
+      .select('id, username, first_name, last_name, avatar_url')
+      .in('id', friendIds);
+    const profiles = new Map<string, DbProfile>();
+    for (const p of (profileData ?? []) as DbProfile[]) profiles.set(p.id, p);
+
+    const { data: viewData } = await insforge.database
+      .from('story_views')
+      .select('*')
+      .eq('viewer_id', userId)
+      .in(
+        'story_id',
+        stories.map((s) => s.id)
       );
-      return this.unwrapResponse(response.data);
-    } catch (error) {
-      console.error('Error fetching friends stories:', error);
-      throw error;
+    const viewedIds = new Set(
+      ((viewData ?? []) as DbStoryView[]).map((v) => v.story_id)
+    );
+
+    const grouped = new Map<string, Story[]>();
+    for (const s of stories) {
+      const list = grouped.get(s.author_id) ?? [];
+      list.push(rowToStory(s));
+      grouped.set(s.author_id, list);
     }
+
+    const result: UserStoriesDto[] = [];
+    for (const [authorId, authorStories] of grouped.entries()) {
+      const p = profiles.get(authorId);
+      result.push({
+        userId: authorId,
+        username: p?.username ?? '',
+        avatarUrl: p?.avatar_url ?? undefined,
+        fullName: [p?.first_name, p?.last_name].filter(Boolean).join(' '),
+        stories: authorStories,
+        unviewedCount: authorStories.filter((s) => !viewedIds.has(s.id)).length,
+        lastStoryAt: authorStories[0]?.createdAt ?? '',
+      });
+    }
+    return result;
   }
 
-  /**
-   * Incrementar vista en una historia
-   */
   async viewStory(storyId: string): Promise<Story> {
-    try {
-      const response = await this.api.post<Story | ApiResponse<Story>>(
-        `${this.baseUrl}/${storyId}/view`
-      );
-      return this.unwrapResponse(response.data);
-    } catch (error) {
-      console.error('Error viewing story:', error);
-      throw error;
-    }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+
+    await insforge.database
+      .from('story_views')
+      .insert([{ story_id: storyId, viewer_id: userId }]);
+
+    const { data } = await insforge.database
+      .from('stories')
+      .select('*')
+      .eq('id', storyId)
+      .single();
+    if (!data) throw new Error('Story not found');
+    return rowToStory(data as DbStory);
   }
 
-  /**
-   * Eliminar una historia
-   */
   async deleteStory(storyId: string): Promise<void> {
-    try {
-      await this.api.delete(`${this.baseUrl}/${storyId}`);
-    } catch (error) {
-      console.error('Error deleting story:', error);
-      throw error;
-    }
+    const { error } = await insforge.database
+      .from('stories')
+      .delete()
+      .eq('id', storyId);
+    if (error) throw new Error(error.message || 'Error al eliminar story');
   }
 }
 
 export const storyService = new StoryService();
-

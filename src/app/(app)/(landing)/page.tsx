@@ -25,6 +25,7 @@ export default function Home() {
               width={450}
               height={115}
               className="mx-auto h-auto w-auto max-w-[300px] brightness-0 invert md:mx-0 md:max-w-[450px]"
+              style={{ height: 'auto' }}
               priority
             />
           </div>

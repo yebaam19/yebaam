@@ -1,15 +1,14 @@
 import type { NextConfig } from 'next'
+import path from 'node:path'
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
+  turbopack: {
+    root: path.resolve(__dirname),
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    typedRoutes: true,
-  },
+  typedRoutes: true,
   images: {
     minimumCacheTTL: 2678400 * 6,
     dangerouslyAllowSVG: true,

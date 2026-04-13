@@ -1,8 +1,6 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { profileService } from '@/features/profile/services/profile.service';
+import type { UserProfile as ProfileShape } from '@/features/profile/interfaces/profile.interfaces';
 
-/**
- * Interfaces para el perfil de usuario
- */
 export interface UserLocation {
   country?: string;
   state?: string;
@@ -53,81 +51,90 @@ export interface UserProfile {
   friends: string[];
   followers: string[];
   following: string[];
-  workExperience: any[];
-  education: any[];
+  workExperience: unknown[];
+  education: unknown[];
   createdAt: string;
   updatedAt: string;
 }
 
-/**
- * Servicio para manejar perfiles de usuario
- */
+const DEFAULT_PRIVACY: UserPrivacy = {
+  profileVisibility: 'public',
+  showEmail: false,
+  showPhoneNumber: false,
+  showBirthday: true,
+  showLocation: true,
+  allowFriendRequests: true,
+  allowMessages: true,
+  showOnlineStatus: true,
+  whoCanPost: 'friends',
+  whoCanSeeMyPosts: 'friends',
+};
+
+function mapToLegacyShape(p: ProfileShape): UserProfile {
+  return {
+    userId: p.userId,
+    username: p.username,
+    firstName: p.firstName ?? '',
+    middleName: p.secondName,
+    lastName: p.lastName ?? '',
+    secondLastName: p.secondLastName,
+    birthDate: p.birthDate ? p.birthDate.toISOString() : undefined,
+    gender: p.gender ? (p.gender.toLowerCase() as 'male' | 'female' | 'other') : undefined,
+    bio: p.bio ?? undefined,
+    avatarUrl: p.avatarUrl ?? undefined,
+    coverPhotoUrl: p.coverPhotoUrl ?? undefined,
+    location: {
+      country: p.residenceCountry ?? undefined,
+      state: p.residenceState ?? undefined,
+      city: p.residenceCity ?? undefined,
+    },
+    privacy: DEFAULT_PRIVACY,
+    stats: {
+      friendsCount: p._count?.posts ? p._count.posts : 0,
+      followersCount: p._count?.followers ?? 0,
+      followingCount: p._count?.following ?? 0,
+      postsCount: p._count?.posts ?? 0,
+      photosCount: 0,
+      videosCount: 0,
+      checkinsCount: 0,
+    },
+    isActive: true,
+    isVerified: false,
+    isCelebrity: false,
+    friends: [],
+    followers: [],
+    following: [],
+    workExperience: [],
+    education: [],
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  };
+}
+
 class UserProfileService {
-  private readonly axios = getAxiosInstance();
-
-  /**
-   * Obtiene el perfil completo del usuario autenticado
-   */
   async getMyProfile(): Promise<UserProfile> {
-    try {
-      console.log('[UserProfileService] Fetching my profile...');
-      const response = await this.axios.get<UserProfile>('/api/current-user/profile');
-      console.log('[UserProfileService] Profile fetched:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('[UserProfileService] Error fetching my profile:', error);
-      throw this.handleError(error, 'Error al obtener tu perfil');
-    }
+    const p = await profileService.getMyProfile();
+    return mapToLegacyShape(p);
   }
 
-  /**
-   * Obtiene el perfil de un usuario por username
-   */
   async getUserProfileByUsername(username: string): Promise<UserProfile> {
-    try {
-      console.log('[UserProfileService] Fetching profile for:', username);
-      const response = await this.axios.get<UserProfile>(`/api/users/${username}/profile`);
-      console.log('[UserProfileService] Profile fetched:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('[UserProfileService] Error fetching profile:', error);
-      throw this.handleError(error, `Error al obtener el perfil de ${username}`);
-    }
+    const p = await profileService.getProfileByUsername(username);
+    return mapToLegacyShape(p);
   }
 
-  /**
-   * Actualiza el perfil del usuario autenticado
-   */
   async updateMyProfile(data: Partial<UserProfile>): Promise<UserProfile> {
-    try {
-      console.log('[UserProfileService] Updating my profile:', data);
-      const response = await this.axios.patch<UserProfile>('/api/current-user/profile', data);
-      console.log('[UserProfileService] Profile updated:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('[UserProfileService] Error updating profile:', error);
-      throw this.handleError(error, 'Error al actualizar tu perfil');
-    }
-  }
-
-  /**
-   * Maneja errores de HTTP
-   */
-  private handleError(error: any, defaultMessage: string): Error {
-    if (error instanceof Error && !error.message.includes('AxiosError')) {
-      return error;
-    }
-
-    const backendMessage = error?.response?.data?.message;
-    if (backendMessage) {
-      return new Error(backendMessage);
-    }
-
-    return new Error(defaultMessage);
+    const p = await profileService.updateProfile({
+      firstName: data.firstName,
+      secondName: data.middleName,
+      lastName: data.lastName,
+      secondLastName: data.secondLastName,
+      bio: data.bio,
+      gender: data.gender?.toUpperCase(),
+      birthDate: data.birthDate,
+      residenceCity: data.location?.city,
+    });
+    return mapToLegacyShape(p);
   }
 }
 
-/**
- * Instancia singleton del servicio
- */
 export const userProfileService = new UserProfileService();

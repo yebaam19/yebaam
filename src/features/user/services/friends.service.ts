@@ -1,10 +1,8 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
-
-const api = getAxiosInstance();
+import { friendshipsService } from '@/features/friendships/services/friendships.service';
 
 export interface Friend {
   friendId: string;
-  friendshipId?: string; // ID de la relación de amistad
+  friendshipId?: string;
   username: string;
   firstName: string;
   lastName: string;
@@ -21,40 +19,44 @@ export interface GetFriendsResponse {
   closeFriends: Friend[];
 }
 
-/**
- * Servicio para gestionar amigos
- */
 export const friendsService = {
-  /**
-   * Obtener lista de amigos
-   */
   async getFriends(): Promise<GetFriendsResponse> {
-    const response = await api.get('/user/friends');
-    return response.data;
+    const list = await friendshipsService.getFriends();
+    const friends: Friend[] = list.friends.map((f) => ({
+      friendId: f.friendId,
+      friendshipId: f.friendshipId,
+      username: f.username,
+      firstName: f.firstName ?? '',
+      lastName: f.lastName ?? '',
+      avatar: f.avatar,
+      friendSince: f.friendSince,
+      closeFriend: f.closeFriend,
+    }));
+    return {
+      friends,
+      total: list.count,
+      closeFriends: friends.filter((f) => f.closeFriend),
+    };
   },
 
-  /**
-   * Obtener amigos cercanos
-   */
   async getCloseFriends(): Promise<Friend[]> {
-    const response = await api.get('/user/friends/close');
-    return response.data;
+    const result = await this.getFriends();
+    return result.closeFriends;
   },
 
-  /**
-   * Marcar/desmarcar como amigo cercano
-   */
-  async toggleCloseFriend(friendId: string): Promise<{ success: boolean; closeFriend: boolean }> {
-    const response = await api.post(`/user/friends/${friendId}/close`);
-    return response.data;
+  async toggleCloseFriend(
+    friendId: string
+  ): Promise<{ success: boolean; closeFriend: boolean }> {
+    const list = await friendshipsService.getFriends();
+    const current = list.friends.find((f) => f.friendId === friendId);
+    const newValue = !(current?.closeFriend ?? false);
+    await friendshipsService.updateFriendConfig(friendId, { closeFriend: newValue });
+    return { success: true, closeFriend: newValue };
   },
 
-  /**
-   * Eliminar amigo
-   * @param friendshipId - ID de la relación de amistad (no el userId)
-   */
-  async removeFriend(friendshipId: string): Promise<{ success: boolean; message: string }> {
-    const response = await api.delete(`/api/friendships/friends/${friendshipId}/unfriend`);
-    return response.data;
+  async removeFriend(
+    friendshipId: string
+  ): Promise<{ success: boolean; message: string }> {
+    return friendshipsService.removeFriend(friendshipId);
   },
 };

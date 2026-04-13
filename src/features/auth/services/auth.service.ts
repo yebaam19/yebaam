@@ -1,336 +1,264 @@
-/**
- * AuthService
- * 
- * Servicio de infraestructura para la autenticación.
- * Maneja la comunicación HTTP con el backend para operaciones de auth.
- * 
- * Responsabilidades:
- * - Login/Register/Logout de usuarios
- * - Refresh de tokens
- * - Validación de sesiones
- * - Gestión de tokens en cookies
- * 
- * Principios aplicados:
- * - Single Responsibility: Solo maneja comunicación HTTP con auth endpoints
- * - Dependency Inversion: Depende de abstracciones (AxiosInstance)
- * - Clean Code: Métodos pequeños, nombres descriptivos, manejo de errores centralizado
- */
-
-import Cookies from 'js-cookie';
-// Importar configuración de axios PRIMERO para asegurar que se inicialice
-import '@/lib/axios/axiosConfig';
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
-import type { 
-  LoginDTO, 
-  RegisterDTO, 
+import { insforge } from '@/lib/insforge/client';
+import type {
+  LoginDTO,
+  RegisterDTO,
   AuthResponseDTO,
-  AuthUser, 
+  AuthUser,
   MessageResponse,
   VerifyEmailRequest,
-  ResendOtpRequest
+  ResendOtpRequest,
 } from '../interfaces/auth.interfaces';
 
-/**
- * Endpoints del API de autenticación
- * Apuntan al backend con prefijo /api
- */
-const AUTH_ENDPOINTS = {
-  LOGIN: '/api/auth/login',
-  REGISTER: '/api/auth/register',
-  LOGOUT: '/api/auth/logout',
-  REFRESH_TOKEN: '/api/auth/refresh-token',
-  VALIDATE_SESSION: '/api/auth/validate-session',
-  CURRENT_USER: '/api/auth/me',
-  VERIFY_EMAIL: '/api/auth/verify-email',
-  RESEND_OTP: '/api/auth/resend-otp',
-} as const;
+type ProfileRow = {
+  id: string;
+  username: string | null;
+  first_name: string | null;
+  middle_name: string | null;
+  last_name: string | null;
+  second_last_name: string | null;
+  birth_date: string | null;
+  gender: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  avatar_url: string | null;
+  cover_photo_url: string | null;
+  profile_completed: boolean | null;
+  created_at: string;
+};
 
-/**
- * Nombres de las cookies de autenticación
- */
-const TOKEN_KEYS = {
-  ACCESS: 'accessToken',
-  REFRESH: 'refreshToken',
-} as const;
+function mapProfileToAuthUser(
+  authUser: { id: string; email?: string | null; emailVerified?: boolean },
+  profile: Partial<ProfileRow> | null
+): AuthUser {
+  const birth = profile?.birth_date ? new Date(profile.birth_date) : null;
+  return {
+    id: authUser.id,
+    email: authUser.email ?? '',
+    username: profile?.username ?? '',
+    status: 'ACTIVE',
+    emailVerified: authUser.emailVerified ?? true,
+    profileCompleted: profile?.profile_completed ?? false,
+    avatarUrl: profile?.avatar_url ?? undefined,
+    avatar: profile?.avatar_url ?? undefined,
+    coverPhotoUrl: profile?.cover_photo_url ?? undefined,
+    createdAt: profile?.created_at ?? new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+    firstName: profile?.first_name ?? undefined,
+    secondName: profile?.middle_name ?? undefined,
+    lastName: profile?.last_name ?? undefined,
+    secondLastName: profile?.second_last_name ?? undefined,
+    birthDay: birth ? String(birth.getUTCDate()) : undefined,
+    birthMonth: birth ? String(birth.getUTCMonth() + 1) : undefined,
+    birthYear: birth ? String(birth.getUTCFullYear()) : undefined,
+    gender: profile?.gender ?? undefined,
+    residenceCountry: profile?.country ?? undefined,
+    residenceState: profile?.state ?? undefined,
+    residenceCity: profile?.city ?? undefined,
+  };
+}
 
-/**
- * Opciones de cookies para producción
- */
-const getCookieOptions = () => ({
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-});
+const SESSION_FLAG_KEY = 'yebaam:auth:has-session';
 
-export class AuthService {
-  private readonly axios = getAxiosInstance();
-
-  /**
-   * Inicia sesión de un usuario
-   * 
-   * @param credentials - Email/username y password
-   * @returns Usuario autenticado y tokens
-   * @throws Error si las credenciales son inválidas
-   */
-  async login(credentials: LoginDTO): Promise<AuthResponseDTO> {
-    try {
-      const response = await this.axios.post<AuthResponseDTO>(
-        AUTH_ENDPOINTS.LOGIN,
-        credentials
-      );
-
-      const { accessToken, refreshToken } = response.data;
-      
-      // Almacenar tokens en cookies
-      this.setAccessToken(accessToken);
-      this.setRefreshToken(refreshToken);
-
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Error al iniciar sesión');
-    }
-  }
-
-  /**
-   * Registra un nuevo usuario
-   * 
-   * @param userData - Datos del usuario a registrar
-   * @returns Mensaje de éxito (NO devuelve tokens - usuario debe verificar email)
-   * @throws Error si el registro falla
-   */
-  async register(userData: RegisterDTO): Promise<MessageResponse> {
-    try {
-      console.log('[AuthService] Registrando usuario:', {
-        ...userData,
-        password: '***hidden***'
-      });
-
-      const response = await this.axios.post<MessageResponse>(
-        AUTH_ENDPOINTS.REGISTER,
-        userData
-      );
-
-      console.log('[AuthService] Registro exitoso:', response.data);
-
-      // NO almacenar tokens - el usuario debe verificar email primero
-      // Los tokens se almacenarán después de verificar email o hacer login
-
-      return response.data;
-    } catch (error) {
-      console.error('[AuthService] Error en registro:', error);
-      throw this.handleError(error, 'Error al registrar usuario');
-    }
-  }
-
-    /**
-   * Verifica el email del usuario
-   * 
-   * @param verifyData - Datos para verificar el email
-   * @returns Mensaje de respuesta
-   * @throws Error si la verificación falla
-   */
-  async verifyEmail(verifyData: VerifyEmailRequest): Promise<MessageResponse> {
-    try {
-      const response = await this.axios.post<MessageResponse>(
-        AUTH_ENDPOINTS.VERIFY_EMAIL,
-        verifyData
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Error al verificar email');
-    }
-  }
-
-  /**
-   * Reenvía el código OTP al email del usuario
-   * 
-   * @param resendData - Datos para reenviar el OTP
-   * @returns Mensaje de respuesta
-   * @throws Error si el reenvío falla
-   */
-  async resendOtp(resendData: ResendOtpRequest): Promise<MessageResponse> {
-    try {
-      const response = await this.axios.post<MessageResponse>(
-        AUTH_ENDPOINTS.RESEND_OTP,
-        resendData
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Error al reenviar código OTP');
-    }
-  }
-
-
-  /**
-   * Cierra la sesión del usuario actual
-   * Limpia tokens y notifica al backend
-   */
-  async logout(): Promise<void> {
-    try {
-      // Intentar notificar al backend (mejor esfuerzo)
-      await this.axios.post(AUTH_ENDPOINTS.LOGOUT).catch(() => {
-        // Si falla, ignorar - el cliente igual limpiará los tokens
-      });
-    } finally {
-      // Siempre limpiar tokens locales
-      this.clearAuthTokens();
-    }
-  }
-
-  /**
-   * Refresca el access token usando el refresh token
-   * 
-   * @returns Nuevo access token
-   * @throws Error si el refresh token es inválido o expiró
-   */
-  async refreshToken(): Promise<string> {
-    try {
-      const refreshToken = this.getRefreshToken();
-      
-      if (!refreshToken) {
-        throw new Error('No hay refresh token disponible');
-      }
-
-      const response = await this.axios.post<{ accessToken: string; refreshToken?: string }>(
-        AUTH_ENDPOINTS.REFRESH_TOKEN,
-        { refreshToken }
-      );
-
-      const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-      // Actualizar tokens
-      this.setAccessToken(accessToken);
-      if (newRefreshToken) {
-        this.setRefreshToken(newRefreshToken);
-      }
-
-      return accessToken;
-    } catch (error) {
-      // Si el refresh falla, limpiar tokens
-      this.clearAuthTokens();
-      throw this.handleError(error, 'Error al refrescar token');
-    }
-  }
-
-  /**
-   * Obtiene el usuario autenticado actual desde el backend
-   * 
-   * @returns Usuario actual o null si no está autenticado
-   */
-  async getCurrentUser(): Promise<AuthUser | null> {
-    try {
-      console.log('[AuthService] Obteniendo usuario actual...');
-      const response = await this.axios.get<AuthUser>(AUTH_ENDPOINTS.CURRENT_USER);
-      console.log('[AuthService] Usuario obtenido:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('[AuthService] Error al obtener usuario:', error);
-      // Si falla (401, 403), retornar null en lugar de lanzar error
-      if (this.isUnauthorizedError(error)) {
-        return null;
-      }
-      throw this.handleError(error, 'Error al obtener usuario actual');
-    }
-  }
-
-  /**
-   * Valida si hay una sesión activa
-   * 
-   * @returns true si hay tokens válidos
-   */
-  isAuthenticated(): boolean {
-    const accessToken = this.getAccessToken();
-    return !!accessToken;
-  }
-
-  // ============================================
-  // Métodos privados de gestión de tokens
-  // ============================================
-
-  private setAccessToken(token: string): void {
-    Cookies.set(TOKEN_KEYS.ACCESS, token, {
-      ...getCookieOptions(),
-      expires: 7, // 7 días
-    });
-  }
-
-  private setRefreshToken(token: string): void {
-    Cookies.set(TOKEN_KEYS.REFRESH, token, {
-      ...getCookieOptions(),
-      expires: 30, // 30 días
-    });
-  }
-
-  private getAccessToken(): string | null {
-    return Cookies.get(TOKEN_KEYS.ACCESS) || null;
-  }
-
-  private getRefreshToken(): string | null {
-    return Cookies.get(TOKEN_KEYS.REFRESH) || null;
-  }
-
-  private clearAuthTokens(): void {
-    Cookies.remove(TOKEN_KEYS.ACCESS);
-    Cookies.remove(TOKEN_KEYS.REFRESH);
-  }
-
-  // ============================================
-  // Métodos privados de manejo de errores
-  // ============================================
-
-  /**
-   * Verifica si un error es de tipo no autorizado (401/403)
-   */
-  private isUnauthorizedError(error: any): boolean {
-    return error?.response?.status === 401 || error?.response?.status === 403;
-  }
-
-  /**
-   * Maneja errores de HTTP y los transforma en mensajes amigables
-   * 
-   * @param error - Error original
-   * @param defaultMessage - Mensaje por defecto si no se puede extraer uno del error
-   * @returns Error formateado
-   */
-  private handleError(error: any, defaultMessage: string): Error {
-    // Si ya es un Error, retornarlo
-    if (error instanceof Error && !error.message.includes('AxiosError')) {
-      return error;
-    }
-
-    // Extraer mensaje del backend si está disponible
-    const responseData = error?.response?.data;
-    
-    // Si hay errores de validación detallados, formatearlos
-    if (responseData?.errors && Array.isArray(responseData.errors)) {
-      const validationErrors = responseData.errors
-        .map((err: any) => {
-          if (Array.isArray(err.errors)) {
-            return err.errors.join(', ');
-          }
-          return err.errors || err.message;
-        })
-        .filter(Boolean)
-        .join('. ');
-      
-      if (validationErrors) {
-        console.error('[AuthService] Validation errors:', validationErrors);
-        return new Error(validationErrors);
-      }
-    }
-    
-    // Si hay un mensaje simple del backend
-    const backendMessage = responseData?.message;
-    if (backendMessage && backendMessage !== 'Validation failed') {
-      return new Error(backendMessage);
-    }
-
-    // Usar mensaje por defecto
-    return new Error(defaultMessage);
+function markHasLocalSession(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(SESSION_FLAG_KEY, '1');
+  } catch {
+    // ignore — private mode, quota, etc.
   }
 }
 
-/**
- * Instancia singleton del servicio de autenticación
- * Exportar para uso en toda la aplicación
- */
+function clearHasLocalSession(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(SESSION_FLAG_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function readHasLocalSession(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(SESSION_FLAG_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+async function syncSessionCookie(accessToken: string | null | undefined): Promise<void> {
+  if (typeof window === 'undefined') return;
+  try {
+    if (accessToken) {
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      });
+    } else {
+      await fetch('/api/auth/session', { method: 'DELETE' });
+    }
+  } catch (err) {
+    console.warn('[AuthService] Failed to sync session cookie', err);
+  }
+}
+
+async function fetchProfile(userId: string): Promise<Partial<ProfileRow> | null> {
+  const { data, error } = await insforge.database
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error) return null;
+  return (data as Partial<ProfileRow>) ?? null;
+}
+
+export class AuthService {
+  async login(credentials: LoginDTO): Promise<AuthResponseDTO> {
+    if (!credentials.email) {
+      throw new Error('Email is required to sign in');
+    }
+    const { data, error } = await insforge.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
+    if (error || !data) throw new Error(error?.message || 'Error al iniciar sesión');
+
+    markHasLocalSession();
+    await syncSessionCookie(data.accessToken);
+
+    const profile = await fetchProfile(data.user.id);
+    const user = mapProfileToAuthUser(data.user, profile);
+
+    return {
+      accessToken: data.accessToken ?? '',
+      refreshToken: data.refreshToken ?? '',
+      user,
+    };
+  }
+
+  async register(userData: RegisterDTO): Promise<MessageResponse> {
+    const displayName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
+
+    const { data, error } = await insforge.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      name: displayName,
+    });
+    if (error) throw new Error(error.message || 'Error al registrar usuario');
+
+    if (data?.user?.id) {
+      await insforge.database
+        .from('profiles')
+        .update({
+          first_name: userData.firstName,
+          middle_name: userData.secondName ?? null,
+          last_name: userData.lastName,
+          second_last_name: userData.secondLastName ?? null,
+          birth_date: userData.birthDate,
+          gender: userData.gender,
+          country: userData.country,
+          state: userData.state,
+          city: userData.city,
+        })
+        .eq('id', data.user.id);
+    }
+
+    return {
+      message: data?.requireEmailVerification
+        ? 'Account created. Check your email to verify your account.'
+        : 'Account created.',
+    };
+  }
+
+  async verifyEmail(verifyData: VerifyEmailRequest): Promise<MessageResponse> {
+    const { error } = await insforge.auth.verifyEmail({
+      email: verifyData.email,
+      otp: verifyData.otp,
+    });
+    if (error) throw new Error(error.message || 'Error al verificar email');
+    return { message: 'Email verified.' };
+  }
+
+  async resendOtp(resendData: ResendOtpRequest): Promise<MessageResponse> {
+    const { error } = await insforge.auth.resendVerificationEmail({
+      email: resendData.email,
+    });
+    if (error) throw new Error(error.message || 'Error al reenviar código OTP');
+    return { message: 'Verification code resent.' };
+  }
+
+  async loginWithGoogle(redirectTo?: string): Promise<void> {
+    if (typeof window === 'undefined') return;
+    const finalDestination = redirectTo ?? '/feed';
+    const callbackUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(finalDestination)}`;
+    const { error } = await insforge.auth.signInWithOAuth({
+      provider: 'google',
+      redirectTo: callbackUrl,
+    });
+    if (error) throw new Error(error.message || 'Error al iniciar sesión con Google');
+  }
+
+  async logout(): Promise<void> {
+    clearHasLocalSession();
+    await insforge.auth.signOut();
+    await syncSessionCookie(null);
+  }
+
+  async refreshToken(): Promise<string> {
+    if (!readHasLocalSession()) throw new Error('Session expired');
+    const { data, error } = await insforge.auth.getCurrentUser();
+    if (error || !data?.user) {
+      clearHasLocalSession();
+      throw new Error('Session expired');
+    }
+    return '';
+  }
+
+  async getCurrentUser(): Promise<AuthUser | null> {
+    // Skip the SDK probe (and its /api/auth/refresh 401 in devtools) when
+    // there is no local hint of a session. The SDK otherwise tries to
+    // refresh on every cold load even before the user has ever logged in.
+    if (!readHasLocalSession()) return null;
+
+    const { data, error } = await insforge.auth.getCurrentUser();
+    if (error || !data?.user) {
+      clearHasLocalSession();
+      return null;
+    }
+
+    const { data: allowed } = await insforge.database.rpc('validate_oauth_user');
+    if (allowed !== true) {
+      clearHasLocalSession();
+      await insforge.auth.signOut();
+      await syncSessionCookie(null);
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(
+          'auth:blocked',
+          'Esta cuenta de Google no está registrada. Regístrate con email y verifica tu cuenta primero.'
+        );
+      }
+      return null;
+    }
+
+    const profile = await fetchProfile(data.user.id);
+    return mapProfileToAuthUser(data.user, profile);
+  }
+
+  isAuthenticated(): boolean {
+    return readHasLocalSession();
+  }
+
+  /**
+   * Mark a local session hint without performing a login. Used by the
+   * OAuth callback page: after the SDK finishes the PKCE exchange, we
+   * know a session exists even though neither `login()` nor
+   * `loginWithPassword()` was called in this browser context.
+   */
+  markSessionHint(): void {
+    markHasLocalSession();
+  }
+}
+
 export const authService = new AuthService();

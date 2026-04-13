@@ -14,6 +14,7 @@ import { NotificationType } from '../interfaces/notification.interfaces';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { toast } from 'sonner';
+import { isRealtimeEnabled } from '@/socket/realtime-flag';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const WEBSOCKET_URL = `${BACKEND_URL}/notifications`;
@@ -30,6 +31,7 @@ export function useNotificationWebSocket() {
   const isConnectingRef = useRef(false);
 
   const connect = useCallback(() => {
+    if (!isRealtimeEnabled()) return;
     if (!user?.id) {
       console.log('[WS-Notifications] No hay usuario autenticado, no conectar');
       return;
@@ -138,6 +140,7 @@ export function useNotificationWebSocket() {
   }, [user?.id, fetchNotifications]);
 
   const connectToUsers = useCallback(() => {
+    if (!isRealtimeEnabled()) return;
     if (!user?.id) {
       console.log('[WS-Users] No hay usuario autenticado');
       return;
@@ -233,6 +236,7 @@ export function useNotificationWebSocket() {
   }, [user?.id, fetchNotifications, fetchPendingRequests]);
 
   const connectToFriendships = useCallback(() => {
+    if (!isRealtimeEnabled()) return;
     if (!user?.id) {
       console.log(' No hay usuario autenticado');
       return;

@@ -281,6 +281,6 @@ export function useUpdateBusiness(businessId: string) {
 }
 
 const getAxiosInstance = () => {
-  const axios = require('@/lib/axios/axiosInstance').getAxiosInstance;
+  const axios = require('@/lib/legacy-api/client').getAxiosInstance;
   return axios();
 };

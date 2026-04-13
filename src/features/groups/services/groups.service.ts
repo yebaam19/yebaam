@@ -1,4 +1,4 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 import type { Group } from '../types/group.types';
 
 export interface GetGroupsResponse {

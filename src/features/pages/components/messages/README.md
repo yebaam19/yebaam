@@ -250,13 +250,7 @@ Los componentes incluyen logging en consola:
 ```
 
 ### Inspeccionar React Query Cache
-Usa React Query Devtools:
-```tsx
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-
-// En tu app
-<ReactQueryDevtools initialIsOpen={false} />
-```
+TanStack Query Devtools no está integrado en esta app. Para depurar, usa la extensión del navegador para React Query, logs en los hooks, o la pestaña Red.
 
 ### Verificar autenticación
 El token JWT debe estar en `localStorage`:

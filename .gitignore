@@ -97,6 +97,9 @@ docker-compose.override.yml
 dist/
 .cache/
 
+# InsForge SQL migrations (local only — do not commit)
+insforge/migrations/*.sql
+
 # InsForge & AI agent skills
 .insforge
 .agent

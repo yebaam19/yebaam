@@ -1,347 +1,527 @@
-/**
- * Profile Media Service
- * 
- * Servicio para gestionar fotos, videos y álbumes del perfil
- */
+import { insforge } from '@/lib/insforge/client';
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
-
-// Types
 export interface ProfilePhoto {
-  id: string
-  userId: string
-  albumId?: string
-  url: string
-  s3Key: string
-  caption?: string
-  tags?: string[]
-  width?: number
-  height?: number
-  likes: number
-  likesCount: number
-  commentsCount: number
-  visibility: 'public' | 'friends' | 'only_me'
-  uploadedAt: Date
+  id: string;
+  userId: string;
+  albumId?: string;
+  url: string;
+  s3Key: string;
+  caption?: string;
+  tags?: string[];
+  width?: number;
+  height?: number;
+  likes: number;
+  likesCount: number;
+  commentsCount: number;
+  visibility: 'public' | 'friends' | 'only_me';
+  uploadedAt: Date;
 }
 
 export interface ProfileVideo {
-  id: string
-  userId: string
-  albumId?: string
-  url: string
-  s3Key: string
-  thumbnailUrl?: string
-  caption?: string
-  tags?: string[]
-  duration?: number
-  width?: number
-  height?: number
-  likes: number
-  likesCount: number
-  commentsCount: number
-  viewsCount: number
-  visibility: 'public' | 'friends' | 'only_me'
-  uploadedAt: Date
+  id: string;
+  userId: string;
+  albumId?: string;
+  url: string;
+  s3Key: string;
+  thumbnailUrl?: string;
+  caption?: string;
+  tags?: string[];
+  duration?: number;
+  width?: number;
+  height?: number;
+  likes: number;
+  likesCount: number;
+  commentsCount: number;
+  viewsCount: number;
+  visibility: 'public' | 'friends' | 'only_me';
+  uploadedAt: Date;
 }
 
 export interface ProfileAlbum {
-  id: string
-  userId: string
-  name: string
-  description?: string
-  coverPhotoId?: string
-  coverPhotoUrl?: string
-  privacy: 'public' | 'friends' | 'only_me'
-  photosCount: number
-  videosCount: number
-  createdAt: Date
-  updatedAt: Date
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  coverPhotoId?: string;
+  coverPhotoUrl?: string;
+  privacy: 'public' | 'friends' | 'only_me';
+  photosCount: number;
+  videosCount: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateAlbumDTO {
-  name: string
-  description?: string
-  privacy: 'public' | 'friends' | 'only_me'
+  name: string;
+  description?: string;
+  privacy: 'public' | 'friends' | 'only_me';
 }
 
 export interface UpdateAlbumDTO {
-  name?: string
-  description?: string
-  privacy?: 'public' | 'friends' | 'only_me'
-  coverPhotoId?: string
+  name?: string;
+  description?: string;
+  privacy?: 'public' | 'friends' | 'only_me';
+  coverPhotoId?: string;
 }
 
 export interface UploadPhotoDTO {
-  s3Key: string
-  url: string
-  caption?: string
-  albumId?: string
-  width?: number
-  height?: number
-  size: number
-  mimeType: string
-  visibility?: 'public' | 'friends' | 'only_me'
+  s3Key: string;
+  url: string;
+  caption?: string;
+  albumId?: string;
+  width?: number;
+  height?: number;
+  size: number;
+  mimeType: string;
+  visibility?: 'public' | 'friends' | 'only_me';
 }
 
 export interface UploadVideoDTO {
-  s3Key: string
-  url: string
-  thumbnailUrl?: string
-  caption?: string
-  albumId?: string
-  duration?: number
-  width?: number
-  height?: number
-  size: number
-  mimeType: string
-  visibility?: 'public' | 'friends' | 'only_me'
+  s3Key: string;
+  url: string;
+  thumbnailUrl?: string;
+  caption?: string;
+  albumId?: string;
+  duration?: number;
+  width?: number;
+  height?: number;
+  size: number;
+  mimeType: string;
+  visibility?: 'public' | 'friends' | 'only_me';
 }
 
-export interface GenerateUploadUrlResponse {
-  uploadUrl: string
-  cloudFrontUrl: string
-  s3Key: string
-  expiresIn: number
+type DbPhoto = {
+  id: string;
+  user_id: string;
+  album_id: string | null;
+  storage_bucket: string;
+  storage_key: string;
+  url: string;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+  size_bytes: number | null;
+  mime_type: string | null;
+  likes_count: number;
+  comments_count: number;
+  visibility: 'public' | 'friends' | 'private';
+  uploaded_at: string;
+};
+
+type DbVideo = {
+  id: string;
+  user_id: string;
+  album_id: string | null;
+  storage_bucket: string;
+  storage_key: string;
+  url: string;
+  thumbnail_url: string | null;
+  caption: string | null;
+  duration_seconds: number | null;
+  width: number | null;
+  height: number | null;
+  size_bytes: number | null;
+  mime_type: string | null;
+  likes_count: number;
+  comments_count: number;
+  views_count: number;
+  visibility: 'public' | 'friends' | 'private';
+  uploaded_at: string;
+};
+
+type DbAlbum = {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  privacy: 'public' | 'friends' | 'private';
+  cover_photo_id: string | null;
+  photos_count: number;
+  videos_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+const PHOTOS_BUCKET = 'profile-photos';
+const VIDEOS_BUCKET = 'profile-videos';
+
+function dbVisibilityToClient(v: DbPhoto['visibility']): ProfilePhoto['visibility'] {
+  return v === 'private' ? 'only_me' : v;
+}
+function clientVisibilityToDb(v: ProfilePhoto['visibility']): DbPhoto['visibility'] {
+  return v === 'only_me' ? 'private' : v;
+}
+
+function rowToPhoto(row: DbPhoto): ProfilePhoto {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    albumId: row.album_id ?? undefined,
+    url: row.url,
+    s3Key: row.storage_key,
+    caption: row.caption ?? undefined,
+    width: row.width ?? undefined,
+    height: row.height ?? undefined,
+    likes: row.likes_count,
+    likesCount: row.likes_count,
+    commentsCount: row.comments_count,
+    visibility: dbVisibilityToClient(row.visibility),
+    uploadedAt: new Date(row.uploaded_at),
+  };
+}
+
+function rowToVideo(row: DbVideo): ProfileVideo {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    albumId: row.album_id ?? undefined,
+    url: row.url,
+    s3Key: row.storage_key,
+    thumbnailUrl: row.thumbnail_url ?? undefined,
+    caption: row.caption ?? undefined,
+    duration: row.duration_seconds ?? undefined,
+    width: row.width ?? undefined,
+    height: row.height ?? undefined,
+    likes: row.likes_count,
+    likesCount: row.likes_count,
+    commentsCount: row.comments_count,
+    viewsCount: row.views_count,
+    visibility: dbVisibilityToClient(row.visibility),
+    uploadedAt: new Date(row.uploaded_at),
+  };
+}
+
+function rowToAlbum(row: DbAlbum): ProfileAlbum {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    description: row.description ?? undefined,
+    coverPhotoId: row.cover_photo_id ?? undefined,
+    privacy: dbVisibilityToClient(row.privacy),
+    photosCount: row.photos_count,
+    videosCount: row.videos_count,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+async function getUserId(): Promise<string> {
+  const { data } = await insforge.auth.getCurrentUser();
+  const id = data?.user?.id;
+  if (!id) throw new Error('Not authenticated');
+  return id;
 }
 
 class ProfileMediaService {
-  private readonly axios = getAxiosInstance()
-
   // ========================================================================
   // PHOTOS
   // ========================================================================
 
-  /**
-   * Genera una URL presignada para subir una foto
-   */
-  async generatePhotoUploadUrl(
-    fileName: string,
-    fileType: string,
-    fileSize: number,
-    albumId?: string
-  ): Promise<GenerateUploadUrlResponse> {
-    try {
-      const response = await this.axios.post<GenerateUploadUrlResponse>(
-        '/api/profile/photos/generate-upload-url',
+  async uploadPhotoFile(
+    file: File,
+    options: { albumId?: string; caption?: string; visibility?: ProfilePhoto['visibility'] } = {}
+  ): Promise<ProfilePhoto> {
+    const userId = await getUserId();
+
+    const { data: uploaded, error: uploadError } = await insforge.storage
+      .from(PHOTOS_BUCKET)
+      .uploadAuto(file);
+    if (uploadError || !uploaded) {
+      throw new Error(uploadError?.message || 'Error al subir foto');
+    }
+    const { url, key } = uploaded as { url: string; key: string };
+
+    const { data, error } = await insforge.database
+      .from('profile_photos')
+      .insert([
         {
-          fileName,
-          fileType,
-          fileSize,
-          albumId,
-        }
-      )
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error generating photo upload URL:', error)
-      throw error
-    }
+          user_id: userId,
+          album_id: options.albumId ?? null,
+          storage_bucket: PHOTOS_BUCKET,
+          storage_key: key,
+          url,
+          caption: options.caption ?? null,
+          size_bytes: file.size,
+          mime_type: file.type,
+          visibility: clientVisibilityToDb(options.visibility ?? 'friends'),
+        },
+      ])
+      .select('*')
+      .single();
+    if (error || !data) throw new Error(error?.message || 'Error al registrar foto');
+    return rowToPhoto(data as DbPhoto);
   }
 
-  /**
-   * Confirma la subida de una foto y crea el registro en BD
-   */
   async uploadPhoto(data: UploadPhotoDTO): Promise<ProfilePhoto> {
-    try {
-      const response = await this.axios.post<ProfilePhoto>('/api/profile/photos', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error uploading photo:', error)
-      throw error
-    }
+    const userId = await getUserId();
+    const { data: inserted, error } = await insforge.database
+      .from('profile_photos')
+      .insert([
+        {
+          user_id: userId,
+          album_id: data.albumId ?? null,
+          storage_bucket: PHOTOS_BUCKET,
+          storage_key: data.s3Key,
+          url: data.url,
+          caption: data.caption ?? null,
+          width: data.width ?? null,
+          height: data.height ?? null,
+          size_bytes: data.size,
+          mime_type: data.mimeType,
+          visibility: clientVisibilityToDb(data.visibility ?? 'friends'),
+        },
+      ])
+      .select('*')
+      .single();
+    if (error || !inserted) throw new Error(error?.message || 'Error al registrar foto');
+    return rowToPhoto(inserted as DbPhoto);
   }
 
-  /**
-   * Obtiene las fotos del usuario autenticado
-   */
-  async getMyPhotos(albumId?: string, cursor?: string): Promise<{ data: ProfilePhoto[]; nextCursor?: string }> {
-    try {
-      const response = await this.axios.get('/api/profile/photos', {
-        params: { albumId, cursor },
-      })
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error getting my photos:', error)
-      throw error
-    }
+  async getMyPhotos(
+    albumId?: string,
+    cursor?: string
+  ): Promise<{ data: ProfilePhoto[]; nextCursor?: string }> {
+    const userId = await getUserId();
+    let query = insforge.database
+      .from('profile_photos')
+      .select('*')
+      .eq('user_id', userId)
+      .order('uploaded_at', { ascending: false })
+      .limit(20);
+    if (albumId) query = query.eq('album_id', albumId);
+    if (cursor) query = query.lt('uploaded_at', cursor);
+
+    const { data, error } = await query;
+    if (error || !data) return { data: [], nextCursor: undefined };
+
+    const photos = (data as DbPhoto[]).map(rowToPhoto);
+    const nextCursor =
+      photos.length === 20 ? (data as DbPhoto[])[photos.length - 1].uploaded_at : undefined;
+    return { data: photos, nextCursor };
   }
 
-  /**
-   * Elimina una foto
-   */
   async deletePhoto(photoId: string): Promise<void> {
-    try {
-      await this.axios.delete(`/api/profile/photos/${photoId}`)
-    } catch (error) {
-      console.error('[ProfileMediaService] Error deleting photo:', error)
-      throw error
+    const { data: row } = await insforge.database
+      .from('profile_photos')
+      .select('storage_bucket, storage_key')
+      .eq('id', photoId)
+      .maybeSingle();
+    if (row) {
+      const { storage_bucket, storage_key } = row as { storage_bucket: string; storage_key: string };
+      await insforge.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
     }
+    const { error } = await insforge.database
+      .from('profile_photos')
+      .delete()
+      .eq('id', photoId);
+    if (error) throw new Error(error.message || 'Error al eliminar foto');
   }
 
   // ========================================================================
   // VIDEOS
   // ========================================================================
 
-  /**
-   * Genera una URL presignada para subir un video
-   */
-  async generateVideoUploadUrl(
-    fileName: string,
-    fileType: string,
-    fileSize: number,
-    albumId?: string
-  ): Promise<GenerateUploadUrlResponse> {
-    try {
-      const response = await this.axios.post<GenerateUploadUrlResponse>(
-        '/api/profile/videos/generate-upload-url',
+  async uploadVideoFile(
+    file: File,
+    options: {
+      albumId?: string;
+      caption?: string;
+      thumbnailUrl?: string;
+      visibility?: ProfileVideo['visibility'];
+    } = {}
+  ): Promise<ProfileVideo> {
+    const userId = await getUserId();
+
+    const { data: uploaded, error: uploadError } = await insforge.storage
+      .from(VIDEOS_BUCKET)
+      .uploadAuto(file);
+    if (uploadError || !uploaded) {
+      throw new Error(uploadError?.message || 'Error al subir video');
+    }
+    const { url, key } = uploaded as { url: string; key: string };
+
+    const { data, error } = await insforge.database
+      .from('profile_videos')
+      .insert([
         {
-          fileName,
-          fileType,
-          fileSize,
-          albumId,
-        }
-      )
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error generating video upload URL:', error)
-      throw error
-    }
+          user_id: userId,
+          album_id: options.albumId ?? null,
+          storage_bucket: VIDEOS_BUCKET,
+          storage_key: key,
+          url,
+          thumbnail_url: options.thumbnailUrl ?? null,
+          caption: options.caption ?? null,
+          size_bytes: file.size,
+          mime_type: file.type,
+          visibility: clientVisibilityToDb(options.visibility ?? 'friends'),
+        },
+      ])
+      .select('*')
+      .single();
+    if (error || !data) throw new Error(error?.message || 'Error al registrar video');
+    return rowToVideo(data as DbVideo);
   }
 
-  /**
-   * Confirma la subida de un video y crea el registro en BD
-   */
   async uploadVideo(data: UploadVideoDTO): Promise<ProfileVideo> {
-    try {
-      const response = await this.axios.post<ProfileVideo>('/api/profile/videos', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error uploading video:', error)
-      throw error
-    }
+    const userId = await getUserId();
+    const { data: inserted, error } = await insforge.database
+      .from('profile_videos')
+      .insert([
+        {
+          user_id: userId,
+          album_id: data.albumId ?? null,
+          storage_bucket: VIDEOS_BUCKET,
+          storage_key: data.s3Key,
+          url: data.url,
+          thumbnail_url: data.thumbnailUrl ?? null,
+          caption: data.caption ?? null,
+          duration_seconds: data.duration ?? null,
+          width: data.width ?? null,
+          height: data.height ?? null,
+          size_bytes: data.size,
+          mime_type: data.mimeType,
+          visibility: clientVisibilityToDb(data.visibility ?? 'friends'),
+        },
+      ])
+      .select('*')
+      .single();
+    if (error || !inserted) throw new Error(error?.message || 'Error al registrar video');
+    return rowToVideo(inserted as DbVideo);
   }
 
-  /**
-   * Obtiene los videos del usuario autenticado
-   */
-  async getMyVideos(albumId?: string, cursor?: string): Promise<{ data: ProfileVideo[]; nextCursor?: string }> {
-    try {
-      const response = await this.axios.get('/api/profile/videos', {
-        params: { albumId, cursor },
-      })
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error getting my videos:', error)
-      throw error
-    }
+  async getMyVideos(
+    albumId?: string,
+    cursor?: string
+  ): Promise<{ data: ProfileVideo[]; nextCursor?: string }> {
+    const userId = await getUserId();
+    let query = insforge.database
+      .from('profile_videos')
+      .select('*')
+      .eq('user_id', userId)
+      .order('uploaded_at', { ascending: false })
+      .limit(20);
+    if (albumId) query = query.eq('album_id', albumId);
+    if (cursor) query = query.lt('uploaded_at', cursor);
+
+    const { data, error } = await query;
+    if (error || !data) return { data: [], nextCursor: undefined };
+
+    const videos = (data as DbVideo[]).map(rowToVideo);
+    const nextCursor =
+      videos.length === 20 ? (data as DbVideo[])[videos.length - 1].uploaded_at : undefined;
+    return { data: videos, nextCursor };
   }
 
-  /**
-   * Elimina un video
-   */
   async deleteVideo(videoId: string): Promise<void> {
-    try {
-      await this.axios.delete(`/api/profile/videos/${videoId}`)
-    } catch (error) {
-      console.error('[ProfileMediaService] Error deleting video:', error)
-      throw error
+    const { data: row } = await insforge.database
+      .from('profile_videos')
+      .select('storage_bucket, storage_key')
+      .eq('id', videoId)
+      .maybeSingle();
+    if (row) {
+      const { storage_bucket, storage_key } = row as { storage_bucket: string; storage_key: string };
+      await insforge.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
     }
+    const { error } = await insforge.database
+      .from('profile_videos')
+      .delete()
+      .eq('id', videoId);
+    if (error) throw new Error(error.message || 'Error al eliminar video');
   }
 
   // ========================================================================
   // ALBUMS
   // ========================================================================
 
-  /**
-   * Crea un nuevo álbum
-   */
   async createAlbum(data: CreateAlbumDTO): Promise<ProfileAlbum> {
-    try {
-      const response = await this.axios.post<ProfileAlbum>('/api/profile/albums', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error creating album:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Obtiene los álbumes del usuario autenticado
-   */
-  async getMyAlbums(cursor?: string): Promise<{ data: ProfileAlbum[]; nextCursor?: string }> {
-    try {
-      const response = await this.axios.get('/api/profile/albums', {
-        params: { cursor },
-      })
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error getting my albums:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Obtiene un álbum por ID
-   */
-  async getAlbumById(albumId: string): Promise<ProfileAlbum> {
-    try {
-      const response = await this.axios.get<ProfileAlbum>(`/api/profile/albums/${albumId}`)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error getting album:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Actualiza un álbum
-   */
-  async updateAlbum(albumId: string, data: UpdateAlbumDTO): Promise<ProfileAlbum> {
-    try {
-      const response = await this.axios.patch<ProfileAlbum>(`/api/profile/albums/${albumId}`, data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileMediaService] Error updating album:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Elimina un álbum
-   */
-  async deleteAlbum(albumId: string): Promise<void> {
-    try {
-      await this.axios.delete(`/api/profile/albums/${albumId}`)
-    } catch (error) {
-      console.error('[ProfileMediaService] Error deleting album:', error)
-      throw error
-    }
-  }
-
-  // ========================================================================
-  // UPLOAD HELPERS
-  // ========================================================================
-
-  /**
-   * Sube un archivo a S3 usando la URL presignada
-   */
-  async uploadToS3(file: File, uploadUrl: string): Promise<void> {
-    try {
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
+    const userId = await getUserId();
+    const { data: inserted, error } = await insforge.database
+      .from('profile_albums')
+      .insert([
+        {
+          user_id: userId,
+          name: data.name,
+          description: data.description ?? null,
+          privacy: clientVisibilityToDb(data.privacy),
         },
-      })
+      ])
+      .select('*')
+      .single();
+    if (error || !inserted) throw new Error(error?.message || 'Error al crear álbum');
+    return rowToAlbum(inserted as DbAlbum);
+  }
 
-      if (!response.ok) {
-        throw new Error(`Error al subir a S3: ${response.status} ${response.statusText}`)
-      }
-    } catch (error) {
-      console.error('[ProfileMediaService] Error uploading to S3:', error)
-      throw error
-    }
+  async getMyAlbums(
+    cursor?: string
+  ): Promise<{ data: ProfileAlbum[]; nextCursor?: string }> {
+    const userId = await getUserId();
+    let query = insforge.database
+      .from('profile_albums')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (cursor) query = query.lt('created_at', cursor);
+
+    const { data, error } = await query;
+    if (error || !data) return { data: [], nextCursor: undefined };
+
+    const albums = (data as DbAlbum[]).map(rowToAlbum);
+    const nextCursor =
+      albums.length === 20 ? (data as DbAlbum[])[albums.length - 1].created_at : undefined;
+    return { data: albums, nextCursor };
+  }
+
+  async getAlbumById(albumId: string): Promise<ProfileAlbum> {
+    const { data, error } = await insforge.database
+      .from('profile_albums')
+      .select('*')
+      .eq('id', albumId)
+      .single();
+    if (error || !data) throw new Error(error?.message || 'Álbum no encontrado');
+    return rowToAlbum(data as DbAlbum);
+  }
+
+  async updateAlbum(albumId: string, data: UpdateAlbumDTO): Promise<ProfileAlbum> {
+    const payload: Record<string, unknown> = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.description !== undefined) payload.description = data.description;
+    if (data.privacy !== undefined) payload.privacy = clientVisibilityToDb(data.privacy);
+    if (data.coverPhotoId !== undefined) payload.cover_photo_id = data.coverPhotoId;
+
+    const { data: updated, error } = await insforge.database
+      .from('profile_albums')
+      .update(payload)
+      .eq('id', albumId)
+      .select('*')
+      .single();
+    if (error || !updated) throw new Error(error?.message || 'Error al actualizar álbum');
+    return rowToAlbum(updated as DbAlbum);
+  }
+
+  async deleteAlbum(albumId: string): Promise<void> {
+    const { error } = await insforge.database
+      .from('profile_albums')
+      .delete()
+      .eq('id', albumId);
+    if (error) throw new Error(error.message || 'Error al eliminar álbum');
+  }
+
+  // ========================================================================
+  // DEPRECATED: Presigned URL / S3 helpers — kept as throwing stubs so
+  // any remaining callers surface a clear migration error.
+  // ========================================================================
+
+  async generatePhotoUploadUrl(): Promise<never> {
+    throw new Error('Presigned URL flow removed. Call uploadPhotoFile(file) instead.');
+  }
+  async generateVideoUploadUrl(): Promise<never> {
+    throw new Error('Presigned URL flow removed. Call uploadVideoFile(file) instead.');
+  }
+  async uploadToS3(): Promise<never> {
+    throw new Error('S3 upload removed. Use uploadPhotoFile / uploadVideoFile.');
   }
 }
 
-export const profileMediaService = new ProfileMediaService()
+export const profileMediaService = new ProfileMediaService();

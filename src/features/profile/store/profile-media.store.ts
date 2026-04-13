@@ -116,41 +116,17 @@ export const useProfileMediaStore = create<ProfileMediaState>((set, get) => ({
     }
 
     try {
-      // Agregar a la cola
       get().addToUploadQueue(uploadItem)
       set({ isUploading: true })
 
-      // 1. Generar URL presignada
       get().updateUploadStatus(file.name, 'uploading')
-      const { uploadUrl, cloudFrontUrl, s3Key } = await profileMediaService.generatePhotoUploadUrl(
-        file.name,
-        file.type,
-        file.size,
-        data.albumId
-      )
-
-      // 2. Obtener dimensiones de la imagen
-      const dimensions = await getImageDimensions(file)
-
-      // 3. Subir a S3
-      await profileMediaService.uploadToS3(file, uploadUrl)
-      get().updateUploadProgress(file.name, 100)
-
-      // 4. Confirmar subida en backend
-      get().updateUploadStatus(file.name, 'processing')
-      const uploadData: UploadPhotoDTO = {
-        s3Key,
-        url: cloudFrontUrl,
-        caption: data.caption,
+      const photo = await profileMediaService.uploadPhotoFile(file, {
         albumId: data.albumId,
-        width: dimensions.width,
-        height: dimensions.height,
-        size: file.size,
-        mimeType: file.type,
+        caption: data.caption,
         visibility: data.visibility || 'public',
-      }
-
-      const photo = await profileMediaService.uploadPhoto(uploadData)
+      })
+      get().updateUploadProgress(file.name, 100)
+      get().updateUploadStatus(file.name, 'processing')
 
       // 5. Actualizar estado
       set((state) => ({
@@ -225,42 +201,17 @@ export const useProfileMediaStore = create<ProfileMediaState>((set, get) => ({
     }
 
     try {
-      // Agregar a la cola
       get().addToUploadQueue(uploadItem)
       set({ isUploading: true })
 
-      // 1. Generar URL presignada
       get().updateUploadStatus(file.name, 'uploading')
-      const { uploadUrl, cloudFrontUrl, s3Key } = await profileMediaService.generateVideoUploadUrl(
-        file.name,
-        file.type,
-        file.size,
-        data.albumId
-      )
-
-      // 2. Obtener dimensiones y duración del video
-      const videoMetadata = await getVideoMetadata(file)
-
-      // 3. Subir a S3
-      await profileMediaService.uploadToS3(file, uploadUrl)
-      get().updateUploadProgress(file.name, 100)
-
-      // 4. Confirmar subida en backend
-      get().updateUploadStatus(file.name, 'processing')
-      const uploadData: UploadVideoDTO = {
-        s3Key,
-        url: cloudFrontUrl,
-        caption: data.caption,
+      const video = await profileMediaService.uploadVideoFile(file, {
         albumId: data.albumId,
-        duration: videoMetadata.duration,
-        width: videoMetadata.width,
-        height: videoMetadata.height,
-        size: file.size,
-        mimeType: file.type,
+        caption: data.caption,
         visibility: data.visibility || 'public',
-      }
-
-      const video = await profileMediaService.uploadVideo(uploadData)
+      })
+      get().updateUploadProgress(file.name, 100)
+      get().updateUploadStatus(file.name, 'processing')
 
       // 5. Actualizar estado
       set((state) => ({

@@ -29,8 +29,12 @@ export const metadata: Metadata = {
   },
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProfessionalServicesPage() {
-  const [servicesResponse] = await Promise.all([professionalServiceService.getServices({ page: 1, limit: 12 })])
+  const servicesResponse = await professionalServiceService
+    .getServices({ page: 1, limit: 12 })
+    .catch(() => ({ services: [], total: 0 }))
 
   return (
     <div className="container mx-auto max-w-7xl p-5">

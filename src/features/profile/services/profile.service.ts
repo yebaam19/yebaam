@@ -1,6 +1,4 @@
-
-
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
+import { insforge } from '@/lib/insforge/client';
 import type {
   ProfileStatsResponse,
   UpdateInterestsDTO,
@@ -9,212 +7,283 @@ import type {
   UpdateSocialLinksDTO,
   UploadImageResponse,
   UserProfile,
-} from '../interfaces/profile.interfaces'
+} from '../interfaces/profile.interfaces';
+
+type DbProfile = {
+  id: string;
+  username: string | null;
+  first_name: string | null;
+  middle_name: string | null;
+  last_name: string | null;
+  second_last_name: string | null;
+  display_name: string | null;
+  bio: string | null;
+  website: string | null;
+  birth_date: string | null;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  hometown: string | null;
+  phone_number: string | null;
+  avatar_url: string | null;
+  cover_photo_url: string | null;
+  relationship_status: string | null;
+  interests: string[] | null;
+  friends_count: number | null;
+  followers_count: number | null;
+  posts_count: number | null;
+  photos_count: number | null;
+  videos_count: number | null;
+  work_experience: unknown;
+  education: unknown;
+  created_at: string;
+  updated_at: string;
+};
+
+const AVATAR_BUCKET = 'avatars';
+const COVER_BUCKET = 'covers';
+
+function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
+  const displayName =
+    row.display_name ?? [row.first_name, row.last_name].filter(Boolean).join(' ') ?? row.username ?? '';
+  return {
+    id: row.id,
+    userId: row.id,
+    username: row.username ?? '',
+    firstName: row.first_name ?? undefined,
+    secondName: row.middle_name ?? undefined,
+    lastName: row.last_name ?? undefined,
+    secondLastName: row.second_last_name ?? undefined,
+    displayName,
+    avatarUrl: row.avatar_url ?? null,
+    coverPhotoUrl: row.cover_photo_url ?? null,
+    coverUrl: row.cover_photo_url ?? null,
+    idDocumentUrl: null,
+    bio: row.bio ?? null,
+    documentStatus: null,
+    residenceCountry: row.country ?? null,
+    residenceState: row.state ?? null,
+    residenceCity: row.city ?? null,
+    birthCountry: null,
+    birthState: null,
+    birthCity: row.hometown ?? null,
+    birthDate: row.birth_date ? new Date(row.birth_date) : null,
+    gender: (row.gender as UserProfile['gender']) ?? null,
+    bloodType: null,
+    relationshipStatus: (row.relationship_status as UserProfile['relationshipStatus']) ?? null,
+    email,
+    phone: row.phone_number ?? null,
+    websiteUrl: row.website ?? null,
+    facebookUrl: null,
+    instagramUrl: null,
+    twitterUrl: null,
+    linkedinUrl: null,
+    githubUrl: null,
+    interests: row.interests ?? [],
+    tvShows: null,
+    musicBands: null,
+    favoriteMovies: null,
+    favoriteBooks: null,
+    favoriteGames: null,
+    studyPlace: null,
+    workPlace: null,
+    _count: {
+      posts: row.posts_count ?? 0,
+      followers: row.followers_count ?? 0,
+      following: 0,
+      sentFriendRequests: 0,
+      receivedFriendRequests: 0,
+    },
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  if (data.firstName !== undefined) payload.first_name = data.firstName;
+  if (data.secondName !== undefined) payload.middle_name = data.secondName;
+  if (data.lastName !== undefined) payload.last_name = data.lastName;
+  if (data.secondLastName !== undefined) payload.second_last_name = data.secondLastName;
+  if (data.avatarUrl !== undefined) payload.avatar_url = data.avatarUrl;
+  if (data.coverPhotoUrl !== undefined) payload.cover_photo_url = data.coverPhotoUrl;
+  if (data.bio !== undefined) payload.bio = data.bio;
+  if (data.websiteUrl !== undefined) payload.website = data.websiteUrl;
+  if (data.relationshipStatus !== undefined) payload.relationship_status = data.relationshipStatus;
+  if (data.gender !== undefined) payload.gender = data.gender;
+  if (data.birthDate !== undefined) payload.birth_date = data.birthDate;
+  if (data.residenceCity !== undefined) payload.city = data.residenceCity;
+  if (data.birthCity !== undefined) payload.hometown = data.birthCity;
+  if (data.phone !== undefined) payload.phone_number = data.phone;
+  return payload;
+}
 
 class ProfileService {
-  private readonly axios = getAxiosInstance()
-
-  /**
-   * Obtiene el perfil de un usuario por username
-   * Requiere autenticación - el token se envía automáticamente via interceptor
-   */
   async getProfileByUsername(username: string): Promise<UserProfile> {
-    try {
-      const response = await this.axios.get<UserProfile>(`/api/users/${username}/profile`)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error getting profile:', error)
-      throw error
-    }
+    const { data, error } = await insforge.database
+      .from('profiles')
+      .select('*')
+      .eq('username', username)
+      .single();
+    if (error || !data) throw new Error(error?.message || 'Perfil no encontrado');
+    return mapDbToProfile(data as DbProfile);
   }
 
-  /**
-   * Obtiene el perfil del usuario autenticado
-   */
   async getMyProfile(): Promise<UserProfile> {
-    try {
-   
-      const response = await this.axios.get<UserProfile>('/api/profile')
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error getting my profile:', error)
-      throw error
-    }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const user = userData?.user;
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await insforge.database
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    if (error || !data) throw new Error(error?.message || 'Perfil no encontrado');
+    return mapDbToProfile(data as DbProfile, user.email ?? undefined);
   }
 
-  /**
-   * Actualiza nombres y apellidos del usuario
-   */
   async updateProfile(data: UpdateProfileDTO): Promise<UserProfile> {
-    try {
-      const response = await this.axios.patch<UserProfile>('/api/current-user/profile', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error updating profile:', error)
-      throw error
-    }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+
+    const { data: updated, error } = await insforge.database
+      .from('profiles')
+      .update(mapUpdateToDb(data))
+      .eq('id', userId)
+      .select('*')
+      .single();
+    if (error || !updated) throw new Error(error?.message || 'Error al actualizar perfil');
+    return mapDbToProfile(updated as DbProfile, userData?.user?.email ?? undefined);
   }
 
-  /**
-   * Actualiza información personal del usuario
-   * Nota: Usa el mismo endpoint que updateProfile
-   */
   async updatePersonalInfo(data: UpdatePersonalInfoDTO): Promise<UserProfile> {
-    try {
-      const response = await this.axios.patch<UserProfile>('/api/current-user/profile', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error updating personal info:', error)
-      throw error
-    }
+    return this.updateProfile({
+      bio: data.bio,
+      residenceCity: data.residenceCity,
+      birthCity: data.birthCity,
+      birthDate: data.birthdate?.toISOString().slice(0, 10),
+      gender: data.gender,
+      relationshipStatus: data.relationshipStatus,
+      phone: data.phone,
+    });
   }
 
-  /**
-   * Actualiza enlaces sociales del usuario
-   * Nota: Usa el mismo endpoint que updateProfile
-   */
   async updateSocialLinks(data: UpdateSocialLinksDTO): Promise<UserProfile> {
-    try {
-      const response = await this.axios.patch<UserProfile>('/api/current-user/profile', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error updating social links:', error)
-      throw error
-    }
+    // Only `website` has a column in the schema. Other social links are dropped silently.
+    return this.updateProfile({ websiteUrl: data.websiteUrl });
   }
 
-  /**
-   * Actualiza los intereses del usuario
-   */
   async updateInterests(data: UpdateInterestsDTO): Promise<UserProfile> {
-    try {
-      const response = await this.axios.patch<UserProfile>('/users/me/interests', data)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error updating interests:', error)
-      throw error
-    }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
+
+    const { data: updated, error } = await insforge.database
+      .from('profiles')
+      .update({ interests: data.interests })
+      .eq('id', userId)
+      .select('*')
+      .single();
+    if (error || !updated) throw new Error(error?.message || 'Error al actualizar intereses');
+    return mapDbToProfile(updated as DbProfile, userData?.user?.email ?? undefined);
   }
 
   async uploadImage(file: File, type: 'avatar' | 'cover' | 'idDocument'): Promise<UploadImageResponse> {
-    try {
-
-      console.log('[ProfileService] Archivo:', {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      })
-
-      // 1. Generar presigned URL
-      let imageType: 'avatar' | 'coverPhoto' | 'idDocument';
-      if (type === 'avatar') {
-        imageType = 'avatar';
-      } else if (type === 'cover') {
-        imageType = 'coverPhoto';
-      } else {
-        imageType = 'idDocument';
-      }
-
-
-      const presignedResponse = await this.axios.post<{
-        uploadUrl: string
-        cloudFrontUrl: string
-        s3Key: string
-        expiresIn: number
-      }>('/api/profile/generate-image-upload-url', {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        imageType,
-      })
-
-      const { uploadUrl, cloudFrontUrl } = presignedResponse.data
-      
- 
-
-      
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      })
-
-      console.log('[ProfileService] Respuesta de S3:', uploadResponse.status, uploadResponse.statusText)
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Error al subir a S3: ${uploadResponse.status} ${uploadResponse.statusText}`)
-      }
-
-
-
-      return {
-        url: cloudFrontUrl,
-      }
-    } catch (error) {
-      console.error('[ProfileService] Error uploading image:', error)
-      throw error
+    if (type === 'idDocument') {
+      throw new Error('ID document upload not yet supported — no storage bucket');
     }
+    const bucket = type === 'avatar' ? AVATAR_BUCKET : COVER_BUCKET;
+
+    const { data, error } = await insforge.storage.from(bucket).uploadAuto(file);
+    if (error || !data) throw new Error(error?.message || 'Error al subir imagen');
+
+    const url = (data as { url: string }).url;
+
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (userId) {
+      const column = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
+      await insforge.database
+        .from('profiles')
+        .update({ [column]: url })
+        .eq('id', userId);
+    }
+
+    return { url };
   }
 
-  /**
-   * Obtiene las estadísticas del perfil
-   */
   async getProfileStats(userId: string): Promise<ProfileStatsResponse> {
-    try {
-      const response = await this.axios.get<ProfileStatsResponse>(`/users/${userId}/stats`)
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error getting profile stats:', error)
-      throw error
-    }
+    const { data, error } = await insforge.database
+      .from('profiles')
+      .select('friends_count, followers_count, posts_count')
+      .eq('id', userId)
+      .single();
+    if (error || !data) return { posts: 0, followers: 0, following: 0, friends: 0 };
+    const row = data as Pick<DbProfile, 'friends_count' | 'followers_count' | 'posts_count'>;
+    return {
+      posts: row.posts_count ?? 0,
+      followers: row.followers_count ?? 0,
+      following: 0,
+      friends: row.friends_count ?? 0,
+    };
   }
 
-  /**
-   * Obtiene los posts de un usuario
-   */
   async getUserPosts(userId: string, cursor?: string) {
-    try {
-      const response = await this.axios.get(`/users/${userId}/posts`, {
-        params: { cursor },
-      })
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error getting user posts:', error)
-      throw error
-    }
+    let query = insforge.database
+      .from('posts')
+      .select('*')
+      .eq('author_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (cursor) query = query.lt('created_at', cursor);
+
+    const { data, error } = await query;
+    if (error || !data) return { items: [], nextCursor: null };
+    const rows = data as { id: string; created_at: string }[];
+    return {
+      items: data,
+      nextCursor: rows.length === 20 ? rows[rows.length - 1].created_at : null,
+    };
   }
 
-  /**
-   * Obtiene las fotos de un usuario
-   */
   async getUserPhotos(userId: string, cursor?: string) {
-    try {
-      const response = await this.axios.get(`/users/${userId}/photos`, {
-        params: { cursor },
-      })
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error getting user photos:', error)
-      throw error
-    }
+    let query = insforge.database
+      .from('profile_photos')
+      .select('*')
+      .eq('user_id', userId)
+      .order('uploaded_at', { ascending: false })
+      .limit(20);
+    if (cursor) query = query.lt('uploaded_at', cursor);
+
+    const { data, error } = await query;
+    if (error || !data) return { items: [], nextCursor: null };
+    const rows = data as { id: string; uploaded_at: string }[];
+    return {
+      items: data,
+      nextCursor: rows.length === 20 ? rows[rows.length - 1].uploaded_at : null,
+    };
   }
 
-  /**
-   * Obtiene los videos de un usuario
-   */
   async getUserVideos(userId: string, cursor?: string) {
-    try {
-      const response = await this.axios.get(`/users/${userId}/videos`, {
-        params: { cursor },
-      })
-      return response.data
-    } catch (error) {
-      console.error('[ProfileService] Error getting user videos:', error)
-      throw error
-    }
+    let query = insforge.database
+      .from('profile_videos')
+      .select('*')
+      .eq('user_id', userId)
+      .order('uploaded_at', { ascending: false })
+      .limit(20);
+    if (cursor) query = query.lt('uploaded_at', cursor);
+
+    const { data, error } = await query;
+    if (error || !data) return { items: [], nextCursor: null };
+    const rows = data as { id: string; uploaded_at: string }[];
+    return {
+      items: data,
+      nextCursor: rows.length === 20 ? rows[rows.length - 1].uploaded_at : null,
+    };
   }
 }
 
-export const profileService = new ProfileService()
+export const profileService = new ProfileService();

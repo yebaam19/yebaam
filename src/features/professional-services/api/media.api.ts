@@ -4,7 +4,7 @@
  * Cliente para operaciones de medios (imágenes/videos) de servicios profesionales
  */
 
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
+import { getAxiosInstance } from '@/lib/legacy-api/client'
 
 export interface AddMediaDto {
   type: 'image' | 'video'

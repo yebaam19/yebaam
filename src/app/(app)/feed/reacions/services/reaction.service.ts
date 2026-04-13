@@ -1,220 +1,208 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
-import type {
-  Reaction,
-  CreateReactionDTO,
-  UpdateReactionDTO,
-  ReactionCounts,
-  ReactionsResponse,
-  GetReactionsFilters,
+import { insforge } from '@/lib/insforge/client';
+import {
   ReactionType,
+  type CreateReactionDTO,
+  type GetReactionsFilters,
+  type Reaction,
+  type ReactionCounts,
+  type ReactionsResponse,
+  type UpdateReactionDTO,
 } from '../interfaces/reaction.interfaces';
 
-const REACTION_ENDPOINTS = {
-  CREATE: '/api/reactions',
-  UPDATE: (postId: string) => `/api/reactions/${postId}`,
-  DELETE: (postId: string) => `/api/reactions/${postId}`,
-  BY_POST: (postId: string) => `/api/reactions/post/${postId}`,
-  MY_REACTION: (postId: string) => `/api/reactions/post/${postId}/my-reaction`,
-  COUNTS: (postId: string) => `/api/reactions/post/${postId}/counts`,
-} as const;
+type DbReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
+
+type DbReaction = {
+  id: string;
+  type: DbReactionType;
+  user_id: string;
+  post_id: string | null;
+  comment_id: string | null;
+  created_at: string;
+};
+
+type DbProfile = {
+  id: string;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
+
+function toClientType(t: DbReactionType): ReactionType {
+  return t.toUpperCase() as ReactionType;
+}
+function toDbType(t: ReactionType): DbReactionType {
+  return t.toLowerCase() as DbReactionType;
+}
+
+function rowToReaction(row: DbReaction, users: Map<string, DbProfile>): Reaction {
+  const profile = users.get(row.user_id);
+  return {
+    id: row.id,
+    postId: row.post_id ?? '',
+    userId: row.user_id,
+    type: toClientType(row.type),
+    createdAt: row.created_at,
+    updatedAt: row.created_at,
+    user: profile
+      ? {
+          id: profile.id,
+          username: profile.username ?? '',
+          firstName: profile.first_name ?? '',
+          lastName: profile.last_name ?? '',
+          avatar: profile.avatar_url ?? undefined,
+        }
+      : undefined,
+  };
+}
+
+async function hydrateUsers(rows: DbReaction[]): Promise<Map<string, DbProfile>> {
+  const ids = Array.from(new Set(rows.map((r) => r.user_id)));
+  if (ids.length === 0) return new Map();
+  const { data } = await insforge.database
+    .from('profiles')
+    .select('id, username, first_name, last_name, avatar_url')
+    .in('id', ids);
+  const map = new Map<string, DbProfile>();
+  for (const p of (data ?? []) as DbProfile[]) map.set(p.id, p);
+  return map;
+}
+
+function emptyCounts(): ReactionCounts {
+  return { LIKE: 0, LOVE: 0, HAHA: 0, WOW: 0, SAD: 0, ANGRY: 0 };
+}
 
 export class ReactionService {
-  private readonly axios = getAxiosInstance();
-
-  /**
-   * Crear o actualizar reacción
-   * El backend maneja automáticamente si crear o actualizar
-   */
   async react(data: CreateReactionDTO): Promise<Reaction> {
-    try {
-      console.log('[REACTION SERVICE] react - Datos:', data);
-      
-      // El backend espera type en minúsculas
-      const response = await this.axios.post(REACTION_ENDPOINTS.CREATE, {
-        postId: data.postId,
-        type: data.type.toLowerCase(),
-      });
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-      console.log('[REACTION SERVICE] react - Response:', response.data);
-      return this.transformReaction(response.data.data || response.data);
-    } catch (error) {
-      console.error('[REACTION SERVICE] react - Error:', error);
-      throw this.handleError(error, 'Error al reaccionar');
+    // Upsert: one reaction per (user, post). The unique index enforces this.
+    const { data: existing } = await insforge.database
+      .from('reactions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('post_id', data.postId)
+      .maybeSingle();
+
+    if (existing) {
+      const { data: updated, error } = await insforge.database
+        .from('reactions')
+        .update({ type: toDbType(data.type) })
+        .eq('id', (existing as { id: string }).id)
+        .select('*')
+        .single();
+      if (error || !updated) throw new Error(error?.message || 'Error al reaccionar');
+      const row = updated as DbReaction;
+      const users = await hydrateUsers([row]);
+      return rowToReaction(row, users);
     }
+
+    const { data: inserted, error } = await insforge.database
+      .from('reactions')
+      .insert([{ type: toDbType(data.type), user_id: userId, post_id: data.postId }])
+      .select('*')
+      .single();
+    if (error || !inserted) throw new Error(error?.message || 'Error al reaccionar');
+    const row = inserted as DbReaction;
+    const users = await hydrateUsers([row]);
+    return rowToReaction(row, users);
   }
 
-  /**
-   * Actualizar reacción existente
-   */
   async updateReaction(postId: string, data: UpdateReactionDTO): Promise<Reaction> {
-    try {
-      console.log('[REACTION SERVICE] updateReaction:', postId, data);
-      
-      const response = await this.axios.patch(REACTION_ENDPOINTS.UPDATE(postId), {
-        type: data.type.toLowerCase(),
-      });
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-      return this.transformReaction(response.data.data || response.data);
-    } catch (error) {
-      console.error('[REACTION SERVICE] updateReaction - Error:', error);
-      throw this.handleError(error, 'Error al actualizar reacción');
-    }
+    const { data: updated, error } = await insforge.database
+      .from('reactions')
+      .update({ type: toDbType(data.type) })
+      .eq('user_id', userId)
+      .eq('post_id', postId)
+      .select('*')
+      .single();
+    if (error || !updated) throw new Error(error?.message || 'Error al actualizar reacción');
+    const row = updated as DbReaction;
+    const users = await hydrateUsers([row]);
+    return rowToReaction(row, users);
   }
 
-  /**
-   * Eliminar reacción
-   */
   async unreact(postId: string): Promise<void> {
-    try {
-      console.log('[REACTION SERVICE] unreact:', postId);
-      await this.axios.delete(REACTION_ENDPOINTS.DELETE(postId));
-    } catch (error) {
-      console.error('[REACTION SERVICE] unreact - Error:', error);
-      throw this.handleError(error, 'Error al quitar reacción');
-    }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) return;
+    const { error } = await insforge.database
+      .from('reactions')
+      .delete()
+      .eq('user_id', userId)
+      .eq('post_id', postId);
+    if (error) throw new Error(error.message || 'Error al quitar reacción');
   }
 
-  /**
-   * Obtener todas las reacciones de un post
-   */
   async getByPost(postId: string, filters?: GetReactionsFilters): Promise<ReactionsResponse> {
-    try {
-      console.log('[REACTION SERVICE] getByPost:', postId);
-      
-      const params = this.buildQueryParams(filters);
-      const response = await this.axios.get(REACTION_ENDPOINTS.BY_POST(postId), { params });
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 50;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-      return {
-        reactions: Array.isArray(response.data.reactions)
-          ? response.data.reactions.map(this.transformReaction)
-          : [],
-        counts: response.data.counts || this.getEmptyCounts(),
-        currentUserReaction: response.data.currentUserReaction
-          ? this.transformReaction(response.data.currentUserReaction)
-          : null,
-        total: response.data.total || 0,
-      };
-    } catch (error) {
-      console.error('[REACTION SERVICE] getByPost - Error:', error);
-      throw this.handleError(error, 'Error al obtener reacciones');
-    }
+    let query = insforge.database
+      .from('reactions')
+      .select('*', { count: 'exact' })
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (filters?.type) query = query.eq('type', toDbType(filters.type));
+
+    const { data, error, count } = await query;
+    if (error) throw new Error(error.message || 'Error al obtener reacciones');
+
+    const rows = (data ?? []) as DbReaction[];
+    const users = await hydrateUsers(rows);
+    const reactions = rows.map((r) => rowToReaction(r, users));
+
+    const counts = await this.getCounts(postId);
+    const currentUserReaction = await this.getMyReaction(postId);
+
+    return {
+      reactions,
+      counts,
+      currentUserReaction,
+      total: count ?? reactions.length,
+    };
   }
 
-  /**
-   * Obtener mi reacción en un post
-   */
   async getMyReaction(postId: string): Promise<Reaction | null> {
-    try {
-      console.log('[REACTION SERVICE] getMyReaction:', postId);
-      
-      const response = await this.axios.get(REACTION_ENDPOINTS.MY_REACTION(postId));
-      
-      if (!response.data || !response.data.data) {
-        return null;
-      }
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    const userId = userData?.user?.id;
+    if (!userId) return null;
 
-      return this.transformReaction(response.data.data);
-    } catch (error) {
-      // 404 significa que no hay reacción, no es un error
-      if ((error as any)?.response?.status === 404) {
-        return null;
-      }
-      
-      console.error('[REACTION SERVICE] getMyReaction - Error:', error);
-      throw this.handleError(error, 'Error al obtener tu reacción');
-    }
+    const { data, error } = await insforge.database
+      .from('reactions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('post_id', postId)
+      .maybeSingle();
+    if (error || !data) return null;
+    const row = data as DbReaction;
+    return rowToReaction(row, new Map());
   }
 
-  /**
-   * Obtener contadores de reacciones de un post
-   */
   async getCounts(postId: string): Promise<ReactionCounts> {
-    try {
-      console.log('[REACTION SERVICE] getCounts:', postId);
-      
-      const response = await this.axios.get(REACTION_ENDPOINTS.COUNTS(postId));
-      
-      return response.data.counts || this.getEmptyCounts();
-    } catch (error) {
-      console.error('[REACTION SERVICE] getCounts - Error:', error);
-      throw this.handleError(error, 'Error al obtener contadores');
+    const { data, error } = await insforge.database
+      .from('reactions')
+      .select('type')
+      .eq('post_id', postId);
+    if (error || !data) return emptyCounts();
+
+    const counts = emptyCounts();
+    for (const row of data as { type: DbReactionType }[]) {
+      const key = toClientType(row.type);
+      counts[key] = (counts[key] ?? 0) + 1;
     }
-  }
-
-  // ============================================
-  // Métodos privados auxiliares
-  // ============================================
-
-  /**
-   * Transforma reacción del backend al formato del cliente
-   */
-  private transformReaction(data: any): Reaction {
-    return {
-      id: data._id || data.id,
-      postId: data.postId,
-      userId: data.userId,
-      type: data.type?.toUpperCase() as ReactionType,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      user: data.user ? {
-        id: data.user._id || data.user.id,
-        username: data.user.username,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName,
-        avatar: data.user.avatar,
-      } : undefined,
-    };
-  }
-
-  /**
-   * Construye parámetros de query
-   */
-  private buildQueryParams(filters?: GetReactionsFilters): Record<string, any> {
-    if (!filters) return {};
-
-    const params: Record<string, any> = {};
-
-    if (filters.postId) params.postId = filters.postId;
-    if (filters.userId) params.userId = filters.userId;
-    if (filters.type) params.type = filters.type.toLowerCase();
-    if (filters.page) params.page = filters.page;
-    if (filters.limit) params.limit = filters.limit;
-
-    return params;
-  }
-
-  /**
-   * Retorna contadores vacíos
-   */
-  private getEmptyCounts(): ReactionCounts {
-    return {
-      LIKE: 0,
-      LOVE: 0,
-      HAHA: 0,
-      WOW: 0,
-      SAD: 0,
-      ANGRY: 0,
-    };
-  }
-
-  /**
-   * Maneja errores de HTTP
-   */
-  private handleError(error: any, defaultMessage: string): Error {
-    if (error instanceof Error && !error.message.includes('AxiosError')) {
-      return error;
-    }
-
-    const backendMessage = error?.response?.data?.message;
-    if (backendMessage) {
-      return new Error(backendMessage);
-    }
-
-    return new Error(defaultMessage);
+    return counts;
   }
 }
 
-/**
- * Instancia singleton del servicio
- */
 export const reactionService = new ReactionService();

@@ -23,7 +23,8 @@ const Page = () => {
               alt="Yebaam Logo"
               width={300}
               height={60}
-              className="w-auto h-14 mx-auto"
+              className="mx-auto h-14 w-auto"
+              style={{ width: 'auto' }}
               priority
             />
           </div>

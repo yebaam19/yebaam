@@ -4,10 +4,18 @@ import { usePostSocketEvents } from '../hooks/usePostSocketEvents';
 import { useReactionSocket } from '@/app/(app)/feed/reacions';
 import PostCard from './PostCard';
 import { usePosts } from '../hooks/usePosts';
+import type { Post } from '../interfaces/post.interfaces';
 
+interface FeedTimelineProps {
+  initialPosts?: Post[];
+}
 
-export default function FeedTimeline() {
-  const { data: posts = [], isLoading, error } = usePosts();
+export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
+  const hasInitial = initialPosts !== undefined;
+  const query = usePosts({ enabled: !hasInitial });
+  const posts: Post[] = hasInitial ? initialPosts! : (query.data ?? []);
+  const isLoading = hasInitial ? false : query.isLoading;
+  const error = hasInitial ? null : query.error;
 
   // Activar WebSocket para actualizaciones en tiempo real
   usePostSocketEvents();

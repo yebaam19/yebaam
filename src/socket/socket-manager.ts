@@ -2,6 +2,8 @@ import { Manager, Socket } from 'socket.io-client';
 import Cookies from 'js-cookie';
 import { getSocketConfig, getBaseUrl, getAuthToken } from './socket-config';
 import { attachSocketListeners } from './socket-listeners';
+import { isRealtimeEnabled } from './realtime-flag';
+import { getStubSocket } from './stub-socket';
 
 class SocketManager {
   private manager: Manager | null = null;
@@ -20,6 +22,10 @@ class SocketManager {
   getSocket(namespace: string = '/'): Socket {
     if (!namespace || namespace === 'undefined') {
       throw new Error(`Invalid namespace: ${namespace}`);
+    }
+
+    if (!isRealtimeEnabled()) {
+      return getStubSocket();
     }
 
     if (this.sockets.has(namespace)) {

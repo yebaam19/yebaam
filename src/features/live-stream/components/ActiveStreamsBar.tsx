@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAxiosInstance } from '@/lib/axios/axiosInstance';
+import { getAxiosInstance } from '@/lib/legacy-api/client';
 import { VideoCameraIcon, UserGroupIcon } from '@heroicons/react/24/solid';
 import { SignalIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';

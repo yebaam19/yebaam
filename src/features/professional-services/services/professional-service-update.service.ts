@@ -1,4 +1,4 @@
-import { getAxiosInstance } from '@/lib/axios/axiosInstance'
+import { getAxiosInstance } from '@/lib/legacy-api/client'
 import { ProfessionalService, UpdateProfessionalServiceDTO } from '../interfaces/professional-service.interfaces'
 
 const BASE_URL = '/api/professional-services'
