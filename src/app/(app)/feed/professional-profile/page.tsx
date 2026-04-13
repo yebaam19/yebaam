@@ -28,11 +28,10 @@ export default function ProfessionalProfileWelcomePage() {
 
   // Si ya tiene perfil, redirigir a su perfil profesional
   useEffect(() => {
-    if (myProfile && !isLoading) {
-      // Usar username del objeto user si está disponible, fallback a userId
-      const identifier = myProfile.user?.username || myProfile.userId
-      router.push(`/feed/professional-profile/${identifier}`)
-    }
+    if (!myProfile || isLoading) return
+    const identifier = myProfile.user?.username || myProfile.userId
+    if (!identifier) return
+    router.push(`/feed/professional-profile/${identifier}`)
   }, [myProfile, isLoading, router])
 
   if (isLoading) {

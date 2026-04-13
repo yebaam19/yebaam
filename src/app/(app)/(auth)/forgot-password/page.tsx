@@ -17,13 +17,13 @@ const Page = () => {
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="mx-auto mb-6 h-14 w-auto">
+          <div className="mx-auto mb-6 flex justify-center">
             <Image
               src={LogoWhite}
               alt="Yebaam Logo"
               width={300}
               height={60}
-              className="h-full w-auto"
+              style={{ height: 56, width: 'auto' }}
               priority
             />
           </div>

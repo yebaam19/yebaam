@@ -52,8 +52,8 @@ export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
   if (!user) return null
 
   return (
-    <div className="mx-auto w-full max-w-[590px] p-5">
-      <div className="space-y-3">
+    <div className="mx-auto w-full max-w-[590px] px-3 pt-3 pb-6 sm:px-5 sm:pt-5">
+      <div className="space-y-3 sm:space-y-4">
         <Stories />
         <CreatePostModal />
         <EditPostModal />

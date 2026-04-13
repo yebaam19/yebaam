@@ -27,11 +27,8 @@ export function useReactionSocket() {
 
   useEffect(() => {
     if (!postsSocket) {
-      console.warn('[REACTION SOCKET] postsSocket no está disponible');
       return;
     }
-
-    console.log('[REACTION SOCKET] Conectando listeners...');
 
     // ============================================
     // Event Listeners
@@ -42,9 +39,6 @@ export function useReactionSocket() {
      * Se dispara cuando cualquier usuario reacciona a un post
      */
     const handleReactionAdded = (reaction: Reaction) => {
-      console.log('[REACTION SOCKET] reaction_added:', reaction);
-      
-      // Actualizar store de reacciones
       addReaction(reaction);
       
       // Actualizar contador en el post
@@ -61,9 +55,6 @@ export function useReactionSocket() {
      * Se dispara cuando cualquier usuario quita su reacción
      */
     const handleReactionRemoved = (data: { postId: string; userId: string; type: string }) => {
-      console.log('[REACTION SOCKET] reaction_removed:', data);
-      
-      // Actualizar store de reacciones
       removeReaction(data.postId, data.userId);
       
       // Actualizar contador en el post
@@ -82,9 +73,6 @@ export function useReactionSocket() {
      * Se dispara cuando un usuario cambia su tipo de reacción
      */
     const handleReactionUpdated = (data: { reaction: Reaction; oldType: string }) => {
-      console.log('[REACTION SOCKET] reaction_updated:', data);
-      
-      // Actualizar store de reacciones
       updateReactionInList(data.reaction);
       
       // Decrementar contador anterior
@@ -109,14 +97,7 @@ export function useReactionSocket() {
     postsSocket.on('reaction_removed', handleReactionRemoved);
     postsSocket.on('reaction_updated', handleReactionUpdated);
 
-    console.log('[REACTION SOCKET] Listeners registrados');
-
-    // ============================================
-    // Cleanup
-    // ============================================
-
     return () => {
-      console.log('[REACTION SOCKET] Desconectando listeners...');
       postsSocket.off('reaction_added', handleReactionAdded);
       postsSocket.off('reaction_removed', handleReactionRemoved);
       postsSocket.off('reaction_updated', handleReactionUpdated);

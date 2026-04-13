@@ -32,7 +32,7 @@ export default function FeedLayout({ children }: { children: React.ReactNode }) 
           {/* Main Feed Content - Se adapta al ancho del sidebar */}
           <main
             className={cn(
-              'min-h-screen flex-1 transition-all duration-300 ease-in-out',
+              'min-h-screen flex-1 pt-14 transition-all duration-300 ease-in-out',
               'lg:ml-64 xl:mr-80',
               isCollapsed && 'lg:ml-20'
             )}

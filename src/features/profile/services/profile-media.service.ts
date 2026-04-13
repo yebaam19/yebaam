@@ -207,9 +207,33 @@ function rowToAlbum(row: DbAlbum): ProfileAlbum {
 }
 
 async function getUserId(): Promise<string> {
+  // Try the SDK first (fast path — in-memory session after login).
   const { data } = await insforge.auth.getCurrentUser();
-  const id = data?.user?.id;
-  if (!id) throw new Error('Not authenticated');
+  const sdkId = data?.user?.id;
+  if (sdkId) return sdkId;
+
+  // Cold reload fallback: the SDK has no token in memory because the
+  // InsForge refresh cookie is cross-origin and blocked in dev. Fetch the
+  // user from our own route handler which reads the httpOnly
+  // `insforge_access_token` cookie, then seed the SDK with that token so
+  // subsequent `insforge.database` / `insforge.storage` calls carry it.
+  if (typeof window === 'undefined') throw new Error('Not authenticated');
+
+  const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
+  if (!response.ok) throw new Error('Not authenticated');
+  const payload = (await response.json()) as {
+    user?: { id?: string };
+    accessToken?: string;
+  };
+  const id = payload.user?.id;
+  const accessToken = payload.accessToken;
+  if (!id || !accessToken) throw new Error('Not authenticated');
+
+  try {
+    insforge.getHttpClient().setAuthToken(accessToken);
+  } catch {
+    // ignore — the SDK will fall back to anon key on the next call
+  }
   return id;
 }
 
