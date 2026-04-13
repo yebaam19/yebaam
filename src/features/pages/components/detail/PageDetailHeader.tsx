@@ -81,16 +81,21 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
     }
   };
 
-  const handleShare = () => {
-    // TODO: Implement share functionality
+  const handleShare = async () => {
     if (navigator.share) {
-      navigator.share({
-        title: page.name,
-        text: page.description || `Mira esta página: ${page.name}`,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
+      try {
+        await navigator.share({
+          title: page.name,
+          text: page.description || `Mira esta página: ${page.name}`,
+          url: window.location.href,
+        });
+      } catch {
+        /* user aborted share sheet */
+      }
+      return;
+    }
+    const { copyToClipboard } = await import('@/lib/clipboard');
+    if (await copyToClipboard(window.location.href)) {
       alert('Enlace copiado al portapapeles');
     }
   };

@@ -193,15 +193,21 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
 
             {/* Share button (for everyone) */}
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (navigator.share) {
-                  navigator.share({
-                    title: business.name,
-                    text: business.description || `Mira este negocio: ${business.name}`,
-                    url: window.location.href,
-                  })
-                } else {
-                  navigator.clipboard.writeText(window.location.href)
+                  try {
+                    await navigator.share({
+                      title: business.name,
+                      text: business.description || `Mira este negocio: ${business.name}`,
+                      url: window.location.href,
+                    })
+                  } catch {
+                    /* user aborted share sheet */
+                  }
+                  return
+                }
+                const { copyToClipboard } = await import('@/lib/clipboard')
+                if (await copyToClipboard(window.location.href)) {
                   alert('Enlace copiado al portapapeles')
                 }
               }}
