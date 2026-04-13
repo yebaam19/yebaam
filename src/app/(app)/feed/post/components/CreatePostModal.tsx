@@ -2,7 +2,7 @@
 
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
+import { invalidate } from '@/lib/hooks/cacheStore'
 
 import { usePostStore } from '../stores/post.store'
 import { useAuth } from '@/features/auth/context/auth-context'
@@ -15,7 +15,6 @@ import PostModalFooter from './PostModalFooter'
 
 export default function CreatePostModal() {
   const { user } = useAuth()
-  const queryClient = useQueryClient()
 
   const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId } = usePostStore()
 
@@ -165,14 +164,14 @@ export default function CreatePostModal() {
       await createPost(postData)
 
       // Invalidar caché del timeline (feed principal)
-      await queryClient.invalidateQueries({ queryKey: ['posts', 'timeline'] })
+      invalidate('posts::timeline')
 
       if (contextBlogId) {
-        await queryClient.invalidateQueries({ queryKey: ['blogs', contextBlogId, 'posts'] })
+        invalidate(`blogs::${contextBlogId}::posts`)
       }
 
       if (contextPageId) {
-        await queryClient.invalidateQueries({ queryKey: ['pages', contextPageId, 'posts'] })
+        invalidate(`pages::${contextPageId}::posts`)
       }
 
       resetForm()

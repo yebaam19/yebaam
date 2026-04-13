@@ -9,7 +9,6 @@ import ThemeProvider from './theme-provider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import { ApolloProvider } from '@/lib/apollo/apollo-provider';
-import { QueryProvider } from '@/providers/query-provider';
 import { SocketProvider } from '@/providers/socket-provider';
 
 const poppins = Poppins({
@@ -40,14 +39,12 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>
-              <QueryProvider>
-                <ApolloProvider>
-                  <SocketProvider>
-                    <OfflineIndicator />
-                    <div className="min-w-0">{children}</div>
-                  </SocketProvider>
-                </ApolloProvider>
-              </QueryProvider>
+              <ApolloProvider>
+                <SocketProvider>
+                  <OfflineIndicator />
+                  <div className="min-w-0">{children}</div>
+                </SocketProvider>
+              </ApolloProvider>
             </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>

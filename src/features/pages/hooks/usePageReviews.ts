@@ -1,10 +1,8 @@
-import {
-  useQuery,
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-  QueryKey,
-} from '@tanstack/react-query';
+'use client';
+
+import { useFetch } from '@/lib/hooks/useFetch';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { invalidate } from '@/lib/hooks/cacheStore';
 import { pageReviewsService } from '../services/page-reviews.service';
 import {
   CreateReviewInput,
@@ -24,7 +22,8 @@ export const pageReviewsKeys = {
 };
 
 /**
- * Hook to fetch page reviews with infinite scroll
+ * Hook to fetch page reviews.
+ * TODO: pagination — original used useInfiniteQuery; only first page returned now.
  */
 export function usePageReviews(
   pageId: string,
@@ -32,104 +31,77 @@ export function usePageReviews(
   filterBy: ReviewFilterBy = 'all',
   limit: number = 10,
 ) {
-  return useInfiniteQuery({
-    queryKey: pageReviewsKeys.list(pageId, sortBy, filterBy),
-    queryFn: ({ pageParam = 1 }) =>
-      pageReviewsService.getPageReviews(pageId, pageParam, limit, sortBy, filterBy),
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.hasMore ? allPages.length + 1 : undefined;
-    },
-    initialPageParam: 1,
-    enabled: !!pageId,
-  });
+  return useFetch(
+    pageReviewsKeys.list(pageId, sortBy, filterBy),
+    () => pageReviewsService.getPageReviews(pageId, 1, limit, sortBy, filterBy),
+    { enabled: !!pageId }
+  );
 }
 
-/**
- * Hook to fetch review statistics
- */
 export function useReviewStats(pageId: string) {
-  return useQuery({
-    queryKey: pageReviewsKeys.stats(pageId),
-    queryFn: () => pageReviewsService.getReviewStats(pageId),
-    enabled: !!pageId,
-  });
+  return useFetch(
+    pageReviewsKeys.stats(pageId),
+    () => pageReviewsService.getReviewStats(pageId),
+    { enabled: !!pageId }
+  );
 }
 
-/**
- * Hook to create a review
- */
 export function useCreateReview(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: CreateReviewInput) =>
-      pageReviewsService.createReview(pageId, input),
-    onSuccess: () => {
-      // Invalidate all review lists and stats
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.stats(pageId) });
-    },
-  });
+  return useAsyncAction(
+    (input: CreateReviewInput) => pageReviewsService.createReview(pageId, input),
+    {
+      onSuccess: () => {
+        invalidate('pageReviews::list');
+        invalidate(`pageReviews::stats::${pageId}`);
+      },
+    }
+  );
 }
 
-/**
- * Hook to update a review
- */
 export function useUpdateReview(pageId: string, reviewId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: UpdateReviewInput) =>
+  return useAsyncAction(
+    (input: UpdateReviewInput) =>
       pageReviewsService.updateReview(pageId, reviewId, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.stats(pageId) });
-    },
-  });
+    {
+      onSuccess: () => {
+        invalidate('pageReviews::list');
+        invalidate(`pageReviews::stats::${pageId}`);
+      },
+    }
+  );
 }
 
-/**
- * Hook to delete a review
- */
 export function useDeleteReview(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (reviewId: string) =>
-      pageReviewsService.deleteReview(pageId, reviewId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.stats(pageId) });
-    },
-  });
+  return useAsyncAction(
+    (reviewId: string) => pageReviewsService.deleteReview(pageId, reviewId),
+    {
+      onSuccess: () => {
+        invalidate('pageReviews::list');
+        invalidate(`pageReviews::stats::${pageId}`);
+      },
+    }
+  );
 }
 
-/**
- * Hook to toggle helpful on a review
- */
 export function useToggleHelpful(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (reviewId: string) =>
-      pageReviewsService.toggleHelpful(pageId, reviewId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.lists() });
-    },
-  });
+  return useAsyncAction(
+    (reviewId: string) => pageReviewsService.toggleHelpful(pageId, reviewId),
+    {
+      onSuccess: () => {
+        invalidate('pageReviews::list');
+      },
+    }
+  );
 }
 
-/**
- * Hook to add owner response
- */
 export function useAddOwnerResponse(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ reviewId, input }: { reviewId: string; input: OwnerResponseInput }) =>
+  return useAsyncAction(
+    ({ reviewId, input }: { reviewId: string; input: OwnerResponseInput }) =>
       pageReviewsService.addOwnerResponse(pageId, reviewId, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pageReviewsKeys.lists() });
-    },
-  });
+    {
+      onSuccess: () => {
+        invalidate('pageReviews::list');
+      },
+    }
+  );
 }

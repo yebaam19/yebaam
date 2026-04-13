@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { DocumentTextIcon } from '@/components/icons/heroicons-shim';
-import { useQuery } from '@tanstack/react-query';
+import { useFetch } from '@/lib/hooks/useFetch';
 import { CreatePostCard } from '@/components/CreatePostCard';
 import { CreatePostModal, usePostStore } from '@/features/post';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -17,11 +17,12 @@ export const PageDetailPosts: FC<PageDetailPostsProps> = ({ pageId, isOwner = fa
   const { openCreateModal } = usePostStore();
   
   // Fetch posts from API
-  const { data: allPosts = [], isLoading } = useQuery({
-    queryKey: ['page-posts', pageId],
-    queryFn: () => postService.getPagePosts(pageId),
-    enabled: !!pageId,
-  });
+  const { data: allPostsData, isLoading } = useFetch(
+    ['page-posts', pageId],
+    () => postService.getPagePosts(pageId),
+    { enabled: !!pageId }
+  );
+  const allPosts = allPostsData ?? [];
   
   // Filtrar solo posts normales (excluir reels)
   const posts = allPosts.filter(post => !post.isReel);

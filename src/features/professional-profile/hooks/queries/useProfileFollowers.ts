@@ -1,100 +1,53 @@
-/**
- * Profile Followers Hooks
- *
- * React Query hooks para gestionar seguidores de perfiles profesionales
- */
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { professionalProfileService } from '../../services/professional-profile.service'
-import { professionalProfileKeys } from './useProfessionalProfileQueries'
+import { toast } from 'sonner';
+import { useFetch } from '@/lib/hooks/useFetch';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { invalidate } from '@/lib/hooks/cacheStore';
+import { professionalProfileService } from '../../services/professional-profile.service';
 
-// ============================================================================
-// QUERIES
-// ============================================================================
-
-/**
- * Hook para verificar si el usuario sigue un perfil
- */
 export function useFollowStatus(profileId: string | undefined) {
-  return useQuery({
-    queryKey: ['profile-follow-status', profileId],
-    queryFn: () => professionalProfileService.checkFollowStatus(profileId!),
-    enabled: !!profileId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  })
+  return useFetch(
+    ['profile-follow-status', profileId],
+    () => professionalProfileService.checkFollowStatus(profileId!),
+    { enabled: !!profileId, staleTime: 1000 * 60 * 5 }
+  );
 }
 
-// ============================================================================
-// MUTATIONS
-// ============================================================================
-
-/**
- * Hook para seguir un perfil
- */
 export function useFollowProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (profileId: string) => professionalProfileService.followProfile(profileId),
-    onMutate: async (profileId) => {
-      // Cancel ongoing queries
-      await queryClient.cancelQueries({ queryKey: ['profile-follow-status', profileId] })
-
-      // Optimistic update
-      queryClient.setQueryData(['profile-follow-status', profileId], true)
-    },
-    onSuccess: (_, profileId) => {
-      // Invalidate follow status
-      queryClient.invalidateQueries({ queryKey: ['profile-follow-status', profileId] })
-      
-      // Invalidate profile to update followers count
-      queryClient.invalidateQueries({ queryKey: professionalProfileKeys.all })
-      
-      toast.success('Ahora sigues este perfil')
-    },
-    onError: (error: any, profileId) => {
-      // Revert optimistic update
-      queryClient.invalidateQueries({ queryKey: ['profile-follow-status', profileId] })
-      
-      const message = error.response?.data?.message || 'Error al seguir el perfil'
-      toast.error(message)
-      console.error('Error following profile:', error)
-    },
-  })
+  return useAsyncAction(
+    (profileId: string) => professionalProfileService.followProfile(profileId),
+    {
+      onSuccess: (_, profileId) => {
+        invalidate(`profile-follow-status::${profileId}`);
+        invalidate('professional-profile');
+        toast.success('Ahora sigues este perfil');
+      },
+      onError: (error: any, profileId) => {
+        invalidate(`profile-follow-status::${profileId}`);
+        const message = error.response?.data?.message || 'Error al seguir el perfil';
+        toast.error(message);
+        console.error('Error following profile:', error);
+      },
+    }
+  );
 }
 
-/**
- * Hook para dejar de seguir un perfil
- */
 export function useUnfollowProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (profileId: string) => professionalProfileService.unfollowProfile(profileId),
-    onMutate: async (profileId) => {
-      // Cancel ongoing queries
-      await queryClient.cancelQueries({ queryKey: ['profile-follow-status', profileId] })
-
-      // Optimistic update
-      queryClient.setQueryData(['profile-follow-status', profileId], false)
-    },
-    onSuccess: (_, profileId) => {
-      // Invalidate follow status
-      queryClient.invalidateQueries({ queryKey: ['profile-follow-status', profileId] })
-      
-      // Invalidate profile to update followers count
-      queryClient.invalidateQueries({ queryKey: professionalProfileKeys.all })
-      
-      toast.success('Dejaste de seguir este perfil')
-    },
-    onError: (error: any, profileId) => {
-      // Revert optimistic update
-      queryClient.invalidateQueries({ queryKey: ['profile-follow-status', profileId] })
-      
-      const message = error.response?.data?.message || 'Error al dejar de seguir el perfil'
-      toast.error(message)
-      console.error('Error unfollowing profile:', error)
-    },
-  })
+  return useAsyncAction(
+    (profileId: string) => professionalProfileService.unfollowProfile(profileId),
+    {
+      onSuccess: (_, profileId) => {
+        invalidate(`profile-follow-status::${profileId}`);
+        invalidate('professional-profile');
+        toast.success('Dejaste de seguir este perfil');
+      },
+      onError: (error: any, profileId) => {
+        invalidate(`profile-follow-status::${profileId}`);
+        const message = error.response?.data?.message || 'Error al dejar de seguir el perfil';
+        toast.error(message);
+        console.error('Error unfollowing profile:', error);
+      },
+    }
+  );
 }

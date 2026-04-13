@@ -9,7 +9,8 @@ import {
   PlayIcon,
   StopIcon,
 } from '@/components/icons/heroicons-shim';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { invalidate } from '@/lib/hooks/cacheStore';
 import { postService } from '@/app/(app)/feed/post/services/post.service';
 
 interface CreateReelModalProps {
@@ -35,7 +36,6 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const queryClient = useQueryClient();
 
   const MAX_DURATION = 90; // 90 segundos
   const MAX_SIZE = 100 * 1024 * 1024; // 100MB
@@ -163,8 +163,8 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
 
   // ==================== PUBLICAR REEL ====================
 
-  const publishMutation = useMutation({
-    mutationFn: async () => {
+  const publishMutation = useAsyncAction(
+    async () => {
       const videoToUpload = videoBlob || videoFile;
       if (!videoToUpload) throw new Error('No hay video para subir');
 
@@ -221,20 +221,20 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
 
       console.log('[CREATE REEL] Reel publicado exitosamente');
     },
-    onSuccess: () => {
-      // Invalidar queries
-      queryClient.invalidateQueries({ queryKey: ['page-reels'] });
-      queryClient.invalidateQueries({ queryKey: ['page-posts'] });
-      queryClient.invalidateQueries({ queryKey: ['reels'] });
-      
-      handleClose();
-    },
-    onError: (error) => {
-      console.error('[CREATE REEL] Error:', error);
-      alert('Error al publicar reel. Intenta nuevamente.');
-      setStep('preview');
-    },
-  });
+    {
+      onSuccess: () => {
+        invalidate('page-reels');
+        invalidate('page-posts');
+        invalidate('reels');
+        handleClose();
+      },
+      onError: (error) => {
+        console.error('[CREATE REEL] Error:', error);
+        alert('Error al publicar reel. Intenta nuevamente.');
+        setStep('preview');
+      },
+    }
+  );
 
   const handlePublish = () => {
     setStep('uploading');

@@ -1,4 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+'use client';
+
+import { useFetch } from '@/lib/hooks/useFetch';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { cacheKey, invalidate, updateCached } from '@/lib/hooks/cacheStore';
 import { pagePhotosService } from '../services/page-photos.service';
 import { PagePhoto, UploadPhotoInput } from '../interfaces/page-photo.interface';
 import { toast } from 'sonner';
@@ -12,104 +16,73 @@ export const pagePhotosKeys = {
   count: (pageId: string) => [...pagePhotosKeys.counts(), pageId] as const,
 };
 
-/**
- * Hook para obtener fotos de una página
- */
+type CachedRecord<T> = { data: T; fetchedAt: number };
+
 export function usePagePhotos(pageId: string | undefined) {
-  return useQuery({
-    queryKey: pagePhotosKeys.list(pageId!),
-    queryFn: () => pagePhotosService.getPagePhotos(pageId!),
-    enabled: !!pageId,
-  });
+  return useFetch(
+    pagePhotosKeys.list(pageId!),
+    () => pagePhotosService.getPagePhotos(pageId!),
+    { enabled: !!pageId }
+  );
 }
 
-/**
- * Hook para obtener el contador de fotos de una página
- */
 export function usePagePhotosCount(pageId: string | undefined) {
-  return useQuery({
-    queryKey: pagePhotosKeys.count(pageId!),
-    queryFn: () => pagePhotosService.getPhotosCount(pageId!),
-    enabled: !!pageId,
-  });
+  return useFetch(
+    pagePhotosKeys.count(pageId!),
+    () => pagePhotosService.getPhotosCount(pageId!),
+    { enabled: !!pageId }
+  );
 }
 
-/**
- * Hook para subir una foto a una página
- */
 export function useUploadPagePhoto(pageId: string) {
-  const queryClient = useQueryClient();
+  return useAsyncAction(
+    (input: UploadPhotoInput) => pagePhotosService.uploadPhoto(pageId, input),
+    {
+      onSuccess: (newPhoto: PagePhoto) => {
+        invalidate(`page-photos::list::${pageId}`);
+        invalidate(`page-photos::count::${pageId}`);
 
-  return useMutation({
-    mutationFn: (input: UploadPhotoInput) =>
-      pagePhotosService.uploadPhoto(pageId, input),
-    onSuccess: (newPhoto: PagePhoto) => {
-      // Invalidar queries de fotos
-      queryClient.invalidateQueries({ queryKey: pagePhotosKeys.list(pageId) });
-      queryClient.invalidateQueries({ queryKey: pagePhotosKeys.count(pageId) });
+        updateCached<CachedRecord<PagePhoto[]>>(
+          cacheKey('page-photos', 'list', pageId),
+          (record) => ({
+            data: record?.data ? [newPhoto, ...record.data] : [newPhoto],
+            fetchedAt: Date.now(),
+          })
+        );
 
-      // Optimistic update
-      queryClient.setQueryData<PagePhoto[]>(
-        pagePhotosKeys.list(pageId),
-        (old) => (old ? [newPhoto, ...old] : [newPhoto])
-      );
-
-      toast.success('Foto subida exitosamente');
-    },
-    onError: (error: any) => {
-      console.error('Error uploading photo:', error);
-      toast.error(
-        error.response?.data?.message || 'Error al subir la foto'
-      );
-    },
-  });
+        toast.success('Foto subida exitosamente');
+      },
+      onError: (error: any) => {
+        console.error('Error uploading photo:', error);
+        toast.error(error.response?.data?.message || 'Error al subir la foto');
+      },
+    }
+  );
 }
 
-/**
- * Hook para eliminar una foto
- */
 export function useDeletePagePhoto(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (photoId: string) =>
-      pagePhotosService.deletePhoto(pageId, photoId),
-    onMutate: async (photoId: string) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: pagePhotosKeys.list(pageId) });
-
-      // Snapshot previous value
-      const previousPhotos = queryClient.getQueryData<PagePhoto[]>(
-        pagePhotosKeys.list(pageId)
+  return useAsyncAction(
+    async (photoId: string) => {
+      updateCached<CachedRecord<PagePhoto[]>>(
+        cacheKey('page-photos', 'list', pageId),
+        (record) => ({
+          data: record?.data ? record.data.filter((p) => p.id !== photoId) : [],
+          fetchedAt: Date.now(),
+        })
       );
-
-      // Optimistically remove photo
-      queryClient.setQueryData<PagePhoto[]>(
-        pagePhotosKeys.list(pageId),
-        (old) => old?.filter((photo) => photo.id !== photoId) || []
-      );
-
-      return { previousPhotos };
+      return pagePhotosService.deletePhoto(pageId, photoId);
     },
-    onError: (error: any, photoId, context) => {
-      // Rollback on error
-      if (context?.previousPhotos) {
-        queryClient.setQueryData(
-          pagePhotosKeys.list(pageId),
-          context.previousPhotos
-        );
-      }
-      console.error('Error deleting photo:', error);
-      toast.error(
-        error.response?.data?.message || 'Error al eliminar la foto'
-      );
-    },
-    onSuccess: () => {
-      // Invalidar queries
-      queryClient.invalidateQueries({ queryKey: pagePhotosKeys.list(pageId) });
-      queryClient.invalidateQueries({ queryKey: pagePhotosKeys.count(pageId) });
-
-      toast.success('Foto eliminada');
-    },
-  });
+    {
+      onSuccess: () => {
+        invalidate(`page-photos::list::${pageId}`);
+        invalidate(`page-photos::count::${pageId}`);
+        toast.success('Foto eliminada');
+      },
+      onError: (error: any) => {
+        console.error('Error deleting photo:', error);
+        toast.error(error.response?.data?.message || 'Error al eliminar la foto');
+        invalidate(`page-photos::list::${pageId}`);
+      },
+    }
+  );
 }

@@ -1,4 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+'use client';
+
+import { useFetch } from '@/lib/hooks/useFetch';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { cacheKey, invalidate, updateCached } from '@/lib/hooks/cacheStore';
 import { businessPhotosService } from '../services/business-photos.service';
 import { BusinessPhoto, UploadPhotoInput } from '../interfaces/business-photo.interface';
 import { toast } from 'sonner';
@@ -12,129 +16,95 @@ export const businessPhotosKeys = {
   count: (businessId: string) => [...businessPhotosKeys.counts(), businessId] as const,
 };
 
-/**
- * Hook para obtener fotos de un negocio
- */
+type CachedRecord<T> = { data: T; fetchedAt: number };
+
 export function useBusinessPhotos(businessId: string | undefined) {
-  return useQuery({
-    queryKey: businessPhotosKeys.list(businessId!),
-    queryFn: () => businessPhotosService.getBusinessPhotos(businessId!),
-    enabled: !!businessId,
-  });
+  return useFetch(
+    businessPhotosKeys.list(businessId!),
+    () => businessPhotosService.getBusinessPhotos(businessId!),
+    { enabled: !!businessId }
+  );
 }
 
-/**
- * Hook para obtener el contador de fotos de un negocio
- */
 export function useBusinessPhotosCount(businessId: string | undefined) {
-  return useQuery({
-    queryKey: businessPhotosKeys.count(businessId!),
-    queryFn: () => businessPhotosService.getPhotosCount(businessId!),
-    enabled: !!businessId,
-  });
+  return useFetch(
+    businessPhotosKeys.count(businessId!),
+    () => businessPhotosService.getPhotosCount(businessId!),
+    { enabled: !!businessId }
+  );
 }
 
-/**
- * Hook para subir una foto a un negocio
- */
 export function useUploadBusinessPhoto(businessId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: UploadPhotoInput) =>
+  return useAsyncAction(
+    (input: UploadPhotoInput) =>
       businessPhotosService.uploadPhoto(businessId, input),
-    onSuccess: (newPhoto: BusinessPhoto) => {
-      // Invalidar queries de fotos
-      queryClient.invalidateQueries({ queryKey: businessPhotosKeys.list(businessId) });
-      queryClient.invalidateQueries({ queryKey: businessPhotosKeys.count(businessId) });
+    {
+      onSuccess: (newPhoto: BusinessPhoto) => {
+        invalidate(`business-photos::list::${businessId}`);
+        invalidate(`business-photos::count::${businessId}`);
 
-      // Optimistic update
-      queryClient.setQueryData<BusinessPhoto[]>(
-        businessPhotosKeys.list(businessId),
-        (old) => (old ? [newPhoto, ...old] : [newPhoto])
-      );
+        const listKey = cacheKey('business-photos', 'list', businessId);
+        updateCached<CachedRecord<BusinessPhoto[]>>(listKey, (record) => ({
+          data: record?.data ? [newPhoto, ...record.data] : [newPhoto],
+          fetchedAt: Date.now(),
+        }));
 
-      toast.success('Foto subida exitosamente');
-    },
-    onError: (error: any) => {
-      console.error('Error uploading photo:', error);
-      toast.error(
-        error.response?.data?.message || 'Error al subir la foto'
-      );
-    },
-  });
-}
-
-/**
- * Hook para subir múltiples fotos
- */
-export function useUploadMultipleBusinessPhotos(businessId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (inputs: UploadPhotoInput[]) =>
-      businessPhotosService.uploadMultiplePhotos(businessId, inputs),
-    onSuccess: (newPhotos: BusinessPhoto[]) => {
-      // Invalidar queries de fotos
-      queryClient.invalidateQueries({ queryKey: businessPhotosKeys.list(businessId) });
-      queryClient.invalidateQueries({ queryKey: businessPhotosKeys.count(businessId) });
-
-      toast.success(`${newPhotos.length} fotos subidas exitosamente`);
-    },
-    onError: (error: any) => {
-      console.error('Error uploading photos:', error);
-      toast.error(
-        error.response?.data?.message || 'Error al subir las fotos'
-      );
-    },
-  });
-}
-
-/**
- * Hook para eliminar una foto
- */
-export function useDeleteBusinessPhoto(businessId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (photoId: string) =>
-      businessPhotosService.deletePhoto(businessId, photoId),
-    onMutate: async (photoId: string) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: businessPhotosKeys.list(businessId) });
-
-      // Snapshot previous value
-      const previousPhotos = queryClient.getQueryData<BusinessPhoto[]>(
-        businessPhotosKeys.list(businessId)
-      );
-
-      // Optimistically remove photo
-      queryClient.setQueryData<BusinessPhoto[]>(
-        businessPhotosKeys.list(businessId),
-        (old) => old?.filter((photo) => photo.id !== photoId) || []
-      );
-
-      return { previousPhotos };
-    },
-    onError: (error: any, photoId, context) => {
-      // Rollback on error
-      if (context?.previousPhotos) {
-        queryClient.setQueryData(
-          businessPhotosKeys.list(businessId),
-          context.previousPhotos
+        toast.success('Foto subida exitosamente');
+      },
+      onError: (error: any) => {
+        console.error('Error uploading photo:', error);
+        toast.error(
+          error.response?.data?.message || 'Error al subir la foto'
         );
-      }
-      console.error('Error deleting photo:', error);
-      toast.error(
-        error.response?.data?.message || 'Error al eliminar la foto'
-      );
-    },
-    onSuccess: () => {
-      // Invalidar queries
-      queryClient.invalidateQueries({ queryKey: businessPhotosKeys.list(businessId) });
-      queryClient.invalidateQueries({ queryKey: businessPhotosKeys.count(businessId) });
+      },
+    }
+  );
+}
 
-      toast.success('Foto eliminada');
+export function useUploadMultipleBusinessPhotos(businessId: string) {
+  return useAsyncAction(
+    (inputs: UploadPhotoInput[]) =>
+      businessPhotosService.uploadMultiplePhotos(businessId, inputs),
+    {
+      onSuccess: (newPhotos: BusinessPhoto[]) => {
+        invalidate(`business-photos::list::${businessId}`);
+        invalidate(`business-photos::count::${businessId}`);
+        toast.success(`${newPhotos.length} fotos subidas exitosamente`);
+      },
+      onError: (error: any) => {
+        console.error('Error uploading photos:', error);
+        toast.error(
+          error.response?.data?.message || 'Error al subir las fotos'
+        );
+      },
+    }
+  );
+}
+
+export function useDeleteBusinessPhoto(businessId: string) {
+  return useAsyncAction(
+    async (photoId: string) => {
+      const listKey = cacheKey('business-photos', 'list', businessId);
+      // Optimistic remove
+      updateCached<CachedRecord<BusinessPhoto[]>>(listKey, (record) => ({
+        data: record?.data ? record.data.filter((p) => p.id !== photoId) : [],
+        fetchedAt: Date.now(),
+      }));
+      return businessPhotosService.deletePhoto(businessId, photoId);
     },
-  });
+    {
+      onSuccess: () => {
+        invalidate(`business-photos::list::${businessId}`);
+        invalidate(`business-photos::count::${businessId}`);
+        toast.success('Foto eliminada');
+      },
+      onError: (error: any) => {
+        console.error('Error deleting photo:', error);
+        toast.error(
+          error.response?.data?.message || 'Error al eliminar la foto'
+        );
+        invalidate(`business-photos::list::${businessId}`);
+      },
+    }
+  );
 }

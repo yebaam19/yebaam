@@ -1,8 +1,8 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+'use client';
+
+import { useFetch } from '@/lib/hooks/useFetch';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { invalidate } from '@/lib/hooks/cacheStore';
 import { pagePromotionsService } from '../services/page-promotions.service';
 import {
   CreatePromotionInput,
@@ -18,83 +18,63 @@ export const pagePromotionsKeys = {
   active: (pageId: string) => [...pagePromotionsKeys.all, 'active', pageId] as const,
 };
 
-/**
- * Hook to fetch all page promotions
- */
 export function usePagePromotions(pageId: string, includeInactive: boolean = false) {
-  return useQuery({
-    queryKey: pagePromotionsKeys.list(pageId, includeInactive),
-    queryFn: () => pagePromotionsService.getPagePromotions(pageId, includeInactive),
-    enabled: !!pageId,
-  });
+  return useFetch(
+    pagePromotionsKeys.list(pageId, includeInactive),
+    () => pagePromotionsService.getPagePromotions(pageId, includeInactive),
+    { enabled: !!pageId }
+  );
 }
 
-/**
- * Hook to fetch only active promotions
- */
 export function useActivePromotions(pageId: string) {
-  return useQuery({
-    queryKey: pagePromotionsKeys.active(pageId),
-    queryFn: () => pagePromotionsService.getActivePromotions(pageId),
-    enabled: !!pageId,
-  });
+  return useFetch(
+    pagePromotionsKeys.active(pageId),
+    () => pagePromotionsService.getActivePromotions(pageId),
+    { enabled: !!pageId }
+  );
 }
 
-/**
- * Hook to create a promotion
- */
 export function useCreatePromotion(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: CreatePromotionInput) =>
-      pagePromotionsService.createPromotion(pageId, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pagePromotionsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: pagePromotionsKeys.active(pageId) });
-    },
-  });
+  return useAsyncAction(
+    (input: CreatePromotionInput) => pagePromotionsService.createPromotion(pageId, input),
+    {
+      onSuccess: () => {
+        invalidate('pagePromotions::list');
+        invalidate(`pagePromotions::active::${pageId}`);
+      },
+    }
+  );
 }
 
-/**
- * Hook to update a promotion
- */
 export function useUpdatePromotion(pageId: string, promotionId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: UpdatePromotionInput) =>
+  return useAsyncAction(
+    (input: UpdatePromotionInput) =>
       pagePromotionsService.updatePromotion(pageId, promotionId, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pagePromotionsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: pagePromotionsKeys.active(pageId) });
-    },
-  });
+    {
+      onSuccess: () => {
+        invalidate('pagePromotions::list');
+        invalidate(`pagePromotions::active::${pageId}`);
+      },
+    }
+  );
 }
 
-/**
- * Hook to delete a promotion
- */
 export function useDeletePromotion(pageId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (promotionId: string) =>
-      pagePromotionsService.deletePromotion(pageId, promotionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pagePromotionsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: pagePromotionsKeys.active(pageId) });
-    },
-  });
+  return useAsyncAction(
+    (promotionId: string) => pagePromotionsService.deletePromotion(pageId, promotionId),
+    {
+      onSuccess: () => {
+        invalidate('pagePromotions::list');
+        invalidate(`pagePromotions::active::${pageId}`);
+      },
+    }
+  );
 }
 
-/**
- * Hook to validate a promotion code
- */
 export function useValidateCode(pageId: string, code: string) {
-  return useQuery({
-    queryKey: [...pagePromotionsKeys.all, 'validate', pageId, code],
-    queryFn: () => pagePromotionsService.validateCode(pageId, code),
-    enabled: !!pageId && !!code && code.length >= 3,
-  });
+  return useFetch(
+    [...pagePromotionsKeys.all, 'validate', pageId, code],
+    () => pagePromotionsService.validateCode(pageId, code),
+    { enabled: !!pageId && !!code && code.length >= 3 }
+  );
 }

@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useFetch } from '@/lib/hooks/useFetch';
 import { postService } from '@/app/(app)/feed/post/services/post.service';
 import { CreateReelModal } from '../reels/CreateReelModal';
 import { ReelViewerModal } from '../reels/ReelViewerModal';
@@ -21,14 +21,15 @@ export const PageDetailReels: FC<PageDetailReelsProps> = ({ pageId, isOwner = fa
   const [activeFilter, setActiveFilter] = useState<'all' | 'popular' | 'recent'>('all');
 
   // Fetch reels (posts con isReel: true) de la página
-  const { data: reels = [], isLoading } = useQuery({
-    queryKey: ['page-reels', pageId],
-    queryFn: async () => {
+  const { data: reelsData, isLoading } = useFetch(
+    ['page-reels', pageId],
+    async () => {
       const posts = await postService.getPagePosts(pageId);
       return posts.filter((post) => post.isReel === true);
     },
-    enabled: !!pageId,
-  });
+    { enabled: !!pageId }
+  );
+  const reels = reelsData ?? [];
 
   // Aplicar filtros
   const filteredReels = [...reels].sort((a, b) => {
