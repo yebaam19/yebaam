@@ -124,6 +124,11 @@ export const useProfileStore = create<ProfileState>()(
 
           const profile = await profileService.getProfileByUsername(username)
 
+          if (!profile) {
+            set({ currentProfile: null, isLoading: false })
+            return
+          }
+
           // Actualizar cache
           const profiles = new Map(get().profiles)
           profiles.set(username, profile)

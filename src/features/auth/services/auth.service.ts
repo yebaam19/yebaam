@@ -165,6 +165,7 @@ export class AuthService {
       await insforge.database
         .from('profiles')
         .update({
+          username: userData.email.split('@')[0] || null,
           first_name: userData.firstName,
           middle_name: userData.secondName ?? null,
           last_name: userData.lastName,

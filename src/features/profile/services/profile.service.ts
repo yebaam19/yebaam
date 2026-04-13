@@ -120,13 +120,14 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
 }
 
 class ProfileService {
-  async getProfileByUsername(username: string): Promise<UserProfile> {
+  async getProfileByUsername(username: string): Promise<UserProfile | null> {
     const { data, error } = await insforge.database
       .from('profiles')
       .select('*')
       .eq('username', username)
-      .single();
-    if (error || !data) throw new Error(error?.message || 'Perfil no encontrado');
+      .maybeSingle();
+    if (error) throw new Error(error.message || 'Error al cargar perfil');
+    if (!data) return null;
     return mapDbToProfile(data as DbProfile);
   }
 
