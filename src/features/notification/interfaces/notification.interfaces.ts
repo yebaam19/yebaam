@@ -82,6 +82,9 @@ export interface NotificationMetadata {
   // Para mensajes
   conversationId?: string;
   messagePreview?: string;
+
+  // Para solicitudes de amistad
+  friendshipId?: string;
   
   // Contadores (cuando hay múltiples actores)
   actorsCount?: number;

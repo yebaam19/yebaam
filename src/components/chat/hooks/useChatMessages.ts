@@ -1,95 +1,92 @@
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
-import type { Socket } from 'socket.io-client';
+import { insforge } from '@/lib/insforge/client';
 
 interface UseChatMessagesProps {
   conversationId: string | null;
-  chatSocket: Socket | null;
   messages: any[];
   setMessages: Dispatch<SetStateAction<any[]>>;
 }
 
+function channelForConversation(conversationId: string): string {
+  return `chat:conv:${conversationId}`;
+}
+
 export function useChatMessages({
   conversationId,
-  chatSocket,
   messages,
   setMessages,
 }: UseChatMessagesProps) {
   const user = useAuthStore((state) => state.user);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Escuchar mensajes recibidos por WebSocket
+  // Listen for realtime message.created / messages.read events
   useEffect(() => {
-    if (!chatSocket || !conversationId) {
-      return;
-    }
+    if (!conversationId) return;
 
-    const handleMessageReceived = (event: any) => {
-   
-      if (event.conversationId === conversationId) {
-     
-        setMessages((prev) => {
-          // Evitar duplicados
-          const exists = prev.some((m) => m.id === event.message.id);
-          if (exists) {
+    const myChannel = channelForConversation(conversationId);
 
-            return prev;
-          }
-          
-          // Agregar y mantener orden cronológico
-          const newMessages = [...prev, event.message];
-          return newMessages.sort((a, b) => 
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        });
-        
-        // Marcar como leído automáticamente si no es mi mensaje
-        if (chatSocket && event.message.senderId !== user?.id) {
-    
-          chatSocket.emit('mark_as_read', { conversationId });
-        }
-      }
-    };
+    const handleMessageCreated = (payload: any) => {
+      const channel = payload?.meta?.channel ?? '';
+      const eventConvId = payload?.conversationId ?? payload?.message?.conversationId;
+      if (channel && channel !== myChannel) return;
+      if (eventConvId && eventConvId !== conversationId) return;
 
-    const handleMessagesRead = (event: any) => {
+      const incoming = payload?.message;
+      if (!incoming?.id) return;
 
-      
-      if (event.conversationId === conversationId && event.userId !== user?.id) {
-      
-        
-        // Actualizar todos los mensajes del usuario actual a 'read'
-        setMessages((prev) => 
-          prev.map((msg) => {
-            if (msg.senderId === user?.id && msg.status !== 'read') {
-              return { ...msg, status: 'read' };
-            }
-            return msg;
-          })
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === incoming.id)) return prev;
+        const next = [...prev, incoming];
+        return next.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
+      });
+
+      // Auto-mark as read if the inbound message isn't mine
+      if (incoming.senderId && incoming.senderId !== user?.id && user?.id) {
+        fetch(`/api/conversations/${conversationId}/read`, {
+          method: 'POST',
+          credentials: 'same-origin',
+        }).catch(() => {});
+        insforge.realtime
+          .publish(myChannel, 'messages.read', { conversationId, userId: user.id })
+          .catch(() => {});
       }
     };
 
-    chatSocket.on('message_received', handleMessageReceived);
-    chatSocket.on('messages_read', handleMessagesRead);
+    const handleMessagesRead = (payload: any) => {
+      const channel = payload?.meta?.channel ?? '';
+      const eventConvId = payload?.conversationId;
+      if (channel && channel !== myChannel) return;
+      if (eventConvId && eventConvId !== conversationId) return;
+      if (payload?.userId && payload.userId === user?.id) return;
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.senderId === user?.id && msg.status !== 'read' ? { ...msg, status: 'read' } : msg,
+        ),
+      );
+    };
+
+    insforge.realtime.on('message.created', handleMessageCreated);
+    insforge.realtime.on('messages.read', handleMessagesRead);
 
     return () => {
-      chatSocket.off('message_received', handleMessageReceived);
-      chatSocket.off('messages_read', handleMessagesRead);
+      insforge.realtime.off('message.created', handleMessageCreated);
+      insforge.realtime.off('messages.read', handleMessagesRead);
     };
-  }, [chatSocket, conversationId, user?.id, setMessages]);
+  }, [conversationId, user?.id, setMessages]);
 
-  // Auto-scroll al final cuando hay mensajes nuevos
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Función para enviar mensaje
   const sendMessage = async (messageContent: string): Promise<boolean> => {
     const trimmed = messageContent.trim();
-    if (!trimmed || !conversationId) {
-      return false;
-    }
+    if (!trimmed || !conversationId) return false;
 
     const tempId = `temp-${Date.now()}`;
     const tempMessage = {

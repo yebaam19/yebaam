@@ -161,7 +161,19 @@ export const friendshipsService = {
       }
       throw new Error(error?.message || 'Error al enviar solicitud de amistad');
     }
-    return rowToRequest(inserted as DbFriendship);
+    const friendship = inserted as DbFriendship;
+
+    await insforge.database.from('notifications').insert([
+      {
+        type: 'friend_request',
+        recipient_id: friendship.recipient_id,
+        actor_id: userId,
+        related_id: friendship.id,
+        message: 'sent you a friend request',
+      },
+    ]);
+
+    return rowToRequest(friendship);
   },
 
   async acceptFriendRequest(requestId: string): Promise<FriendRequest> {
@@ -172,7 +184,19 @@ export const friendshipsService = {
       .select('*')
       .single();
     if (error || !data) throw new Error(error?.message || 'Error al aceptar solicitud');
-    return rowToRequest(data as DbFriendship);
+    const friendship = data as DbFriendship;
+
+    await insforge.database.from('notifications').insert([
+      {
+        type: 'friend_accept',
+        recipient_id: friendship.requester_id,
+        actor_id: friendship.recipient_id,
+        related_id: friendship.id,
+        message: 'accepted your friend request',
+      },
+    ]);
+
+    return rowToRequest(friendship);
   },
 
   async rejectFriendRequest(requestId: string): Promise<FriendRequest> {

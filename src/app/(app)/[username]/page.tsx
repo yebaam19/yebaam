@@ -20,6 +20,7 @@ import {
 } from '@/features/profile/components';
 import { useProfile } from '@/features/profile/hooks/useProfile';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
+import { useFetch } from '@/lib/hooks/useFetch';
 
 import {
   DocumentTextIcon,
@@ -56,6 +57,21 @@ export default function UserProfilePage() {
 
   // Fetch user profile
   const { profile: user, isLoading } = useProfile(username);
+
+  // Live friend count for this profile (any user, not just the current one).
+  const { data: friendCountData } = useFetch<{ count: number }>(
+    ['friendships', 'count', user?.userId],
+    async () => {
+      if (!user?.userId) return { count: 0 };
+      const res = await fetch(`/api/friendships/count?userId=${encodeURIComponent(user.userId)}`, {
+        credentials: 'same-origin',
+      });
+      if (!res.ok) return { count: 0 };
+      return (await res.json()) as { count: number };
+    },
+    { enabled: Boolean(user?.userId), staleTime: 60_000 }
+  );
+  const friendCount = friendCountData?.count ?? 0;
 
   // Get friendship status and fetch functions
   const initializeFriendships = useFriendshipsStore(state => state.initializeFriendships);
@@ -105,7 +121,7 @@ export default function UserProfilePage() {
         friendshipInfo={{
           status: 'NONE',
           isRequester: false,
-          friendCount: 0, // FriendButton now handles all friendship state internally
+          friendCount,
         }}
       />
 

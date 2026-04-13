@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useSocket } from '@/providers/socket-provider';
+import { insforge } from '@/lib/insforge/client';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 import { useChatConversation } from './hooks/useChatConversation';
 import { useChatMessages } from './hooks/useChatMessages';
@@ -29,56 +29,65 @@ export default function ChatBubble({
   position = 0,
 }: ChatBubbleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
-  
-  // Obtener socket desde el context
-  const { chatSocket, isChatConnected } = useSocket();
+  const [isChatConnected, setIsChatConnected] = useState(false);
 
-  // Obtener estado online en tiempo real desde el store
-  const isOnline = usePresenceStore(state => state.isUserOnline(contactId));
+  const isOnline = usePresenceStore((state) => state.isUserOnline(contactId));
 
-  // Hook: Manejar conversación y carga inicial
+  // Track the InsForge realtime connection state so the header dot reflects it.
+  useEffect(() => {
+    let cancelled = false;
+    const handleConnect = () => !cancelled && setIsChatConnected(true);
+    const handleDisconnect = () => !cancelled && setIsChatConnected(false);
+
+    insforge.realtime.on('connect', handleConnect);
+    insforge.realtime.on('disconnect', handleDisconnect);
+
+    insforge.realtime
+      .connect()
+      .then(() => !cancelled && setIsChatConnected(true))
+      .catch(() => !cancelled && setIsChatConnected(false));
+
+    return () => {
+      cancelled = true;
+      insforge.realtime.off('connect', handleConnect);
+      insforge.realtime.off('disconnect', handleDisconnect);
+    };
+  }, []);
+
   const { conversationId, messages, setMessages, isLoading } = useChatConversation({
     contactId,
-    chatSocket,
   });
 
-  // Hook: Manejar mensajes (enviar, recibir, actualizar)
   const { sendMessage, messagesEndRef } = useChatMessages({
     conversationId,
-    chatSocket,
     messages,
     setMessages,
   });
 
-  // Hook: Indicadores de "está escribiendo"
   const { isTyping, stopTyping, handleInputChange } = useTypingIndicator({
     conversationId,
-    chatSocket,
   });
 
-  // Calcular posición desde la derecha
-  const rightPosition = 320 + (position * 340);
+  const rightPosition = 320 + position * 340;
 
   return (
     <div
       className={cn(
-        "fixed bottom-0 w-80 bg-white dark:bg-neutral-900 rounded-t-xl shadow-2xl border-x border-t border-neutral-200 dark:border-neutral-800 flex flex-col transition-all duration-200 z-40",
-        isMinimized ? "h-14" : "h-[480px]"
+        'fixed bottom-0 w-80 bg-white dark:bg-neutral-900 rounded-t-xl shadow-2xl border-x border-t border-neutral-200 dark:border-neutral-800 flex flex-col transition-all duration-200 z-40',
+        isMinimized ? 'h-14' : 'h-[480px]',
       )}
       style={{ right: `${rightPosition}px` }}
     >
-      {/* Header */}
       <ChatBubbleHeader
         contactName={contactName}
         contactAvatar={contactAvatar}
-        isOnline={isOnline}
+        isOnline={isOnline || initialIsOnline}
         isChatConnected={isChatConnected}
         isMinimized={isMinimized}
         onToggleMinimize={() => setIsMinimized(!isMinimized)}
         onClose={onClose}
       />
 
-      {/* Messages & Input Area */}
       {!isMinimized && (
         <>
           <ChatBubbleMessages

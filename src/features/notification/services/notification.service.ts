@@ -103,6 +103,9 @@ function buildMetadata(row: DbNotification): NotificationMetadata {
   const meta: NotificationMetadata = {};
   if (row.related_type === 'post' && row.related_id) meta.postId = row.related_id;
   if (row.related_type === 'comment' && row.related_id) meta.commentId = row.related_id;
+  if ((row.type === 'friend_request' || row.type === 'friend_accept') && row.related_id) {
+    meta.friendshipId = row.related_id;
+  }
   return meta;
 }
 
