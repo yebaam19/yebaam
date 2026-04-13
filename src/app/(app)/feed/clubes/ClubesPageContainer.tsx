@@ -54,32 +54,26 @@ export function ClubesPageContainer() {
       id: 'mis-clubes' as TabType,
       label: 'Mis Clubes',
       icon: UsersIcon,
-      count: myClubs?.length,
+      count: Array.isArray(myClubs) ? myClubs.length : undefined,
     },
     {
       id: 'sugeridos' as TabType,
       label: 'Sugeridos',
       icon: SparklesIcon,
-      count: suggestedClubs?.length,
+      count: Array.isArray(suggestedClubs) ? suggestedClubs.length : undefined,
     },
     {
       id: 'descubrir' as TabType,
       label: 'Descubrir',
       icon: FireIcon,
-      count: popularClubs?.length,
+      count: Array.isArray(popularClubs) ? popularClubs.length : undefined,
     },
   ]
 
   const getActiveData = () => {
-    switch (activeTab) {
-      case 'mis-clubes':
-        return myClubs || []
-      case 'sugeridos':
-        return suggestedClubs || []
-      case 'descubrir':
-      default:
-        return popularClubs || []
-    }
+    const data =
+      activeTab === 'mis-clubes' ? myClubs : activeTab === 'sugeridos' ? suggestedClubs : popularClubs
+    return Array.isArray(data) ? data : []
   }
 
   const isLoading = () => {
