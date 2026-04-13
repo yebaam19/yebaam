@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
 
   const { data: created, error: createErr } = await client.database
     .from('conversations')
-    .insert({ type: 'direct', created_by: userId })
+    .insert({ type: 'direct' })
     .select('*')
     .maybeSingle();
 

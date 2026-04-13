@@ -80,7 +80,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
       }
     };
 
-    if (contactId && !conversationId) {
+    if (contactId && !conversationId && user?.id) {
       initializeConversation();
     }
 
@@ -94,7 +94,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId]);
+  }, [contactId, user?.id]);
 
   return {
     conversationId,

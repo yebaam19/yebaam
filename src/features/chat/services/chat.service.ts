@@ -37,15 +37,114 @@ class ChatService {
   private readonly baseUrl = '/api/conversations';
 
   async createOrGetConversation(participantId: string): Promise<Conversation> {
-    const payload = await jsonFetch<{ data: Conversation }>(this.baseUrl, {
-      method: 'POST',
-      body: JSON.stringify({ participantId }),
-    });
-
-    if (!payload?.data?.id) {
-      throw new Error('Invalid conversation response from server');
+    const { data: userRes, error: userErr } = await insforge.auth.getCurrentUser();
+    if (userErr || !userRes?.user?.id) {
+      throw new Error('You must be signed in to start a conversation');
     }
-    return payload.data;
+    const userId = userRes.user.id;
+    if (participantId === userId) {
+      throw new Error('Cannot start a conversation with yourself');
+    }
+
+    const { data: myParts } = await insforge.database
+      .from('conversation_participants')
+      .select('conversation_id')
+      .eq('user_id', userId);
+
+    const myConvIds = ((myParts ?? []) as { conversation_id: string }[]).map(
+      (r) => r.conversation_id,
+    );
+
+    if (myConvIds.length > 0) {
+      const { data: shared } = await insforge.database
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', participantId)
+        .in('conversation_id', myConvIds);
+
+      const sharedIds = ((shared ?? []) as { conversation_id: string }[]).map(
+        (r) => r.conversation_id,
+      );
+
+      if (sharedIds.length > 0) {
+        const { data: directs } = await insforge.database
+          .from('conversations')
+          .select('*')
+          .in('id', sharedIds)
+          .eq('type', 'direct');
+
+        const existing = ((directs ?? []) as Array<{
+          id: string;
+          type: string;
+          name: string | null;
+          avatar: string | null;
+          created_at: string;
+          updated_at: string;
+        }>)[0];
+
+        if (existing) {
+          return {
+            id: existing.id,
+            type: existing.type as Conversation['type'],
+            name: existing.name,
+            avatar: existing.avatar,
+            participantIds: [userId, participantId],
+            lastMessage: null,
+            unreadCount: 0,
+            lastReadAt: null,
+            createdAt: new Date(existing.created_at),
+            updatedAt: new Date(existing.updated_at),
+            isEncrypted: false,
+            encryptionEnabledAt: null,
+          };
+        }
+      }
+    }
+
+    const { data: created, error: createErr } = await insforge.database
+      .from('conversations')
+      .insert({ type: 'direct' })
+      .select('*')
+      .maybeSingle();
+
+    if (createErr || !created) {
+      throw new Error(createErr?.message ?? 'Failed to create conversation');
+    }
+
+    const conv = created as {
+      id: string;
+      type: string;
+      name: string | null;
+      avatar: string | null;
+      created_at: string;
+      updated_at: string;
+    };
+
+    const { error: partErr } = await insforge.database
+      .from('conversation_participants')
+      .insert([
+        { conversation_id: conv.id, user_id: userId },
+        { conversation_id: conv.id, user_id: participantId },
+      ]);
+
+    if (partErr) {
+      throw new Error(partErr.message);
+    }
+
+    return {
+      id: conv.id,
+      type: conv.type as Conversation['type'],
+      name: conv.name,
+      avatar: conv.avatar,
+      participantIds: [userId, participantId],
+      lastMessage: null,
+      unreadCount: 0,
+      lastReadAt: null,
+      createdAt: new Date(conv.created_at),
+      updatedAt: new Date(conv.updated_at),
+      isEncrypted: false,
+      encryptionEnabledAt: null,
+    };
   }
 
   async getConversations(): Promise<Conversation[]> {
