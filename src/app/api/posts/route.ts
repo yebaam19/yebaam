@@ -30,8 +30,22 @@ export async function GET(request: NextRequest) {
 
   const { client, userId } = await getUserId();
 
-  if ((scope === 'mine' || scope === 'timeline') && !token) {
-    return NextResponse.json({ success: true, data: [] }, { status: 401 });
+  const needsAuth = scope === 'mine' || scope === 'timeline';
+
+  if (needsAuth && !userId) {
+    const res = NextResponse.json({ success: true, data: [] });
+    if (token) {
+      res.cookies.set({
+        name: 'insforge_access_token',
+        value: '',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+    }
+    return res;
   }
 
   let query = client.database
