@@ -131,3 +131,16 @@ Available languages:
 - Storage: Upload files to buckets, store URLs in database
 - AI operations are OpenAI-compatible
 - **EXTRA IMPORTANT**: Use Tailwind CSS 3.4 (do not upgrade to v4). Lock these dependencies in `package.json`
+
+## Learned User Preferences
+
+- Do not commit InsForge SQL migration files under `insforge/migrations/*.sql`; keep migrations local or share through non-public channels for security.
+- Resend email uses server-only env var `RESEND_API_KEY` (never `NEXT_PUBLIC_*`); mirror it in `.env.example` with a placeholder value.
+- Use `pnpm` for installs and package changes in this repository.
+- TanStack Query Devtools were removed from the app; keep `@tanstack/react-query` for existing data hooks and do not re-add floating devtools unless explicitly requested.
+
+## Learned Workspace Facts
+
+- `.gitignore` includes `insforge/migrations/*.sql` so migration SQL is not tracked by default.
+- Client auth bootstrap: when a local session hint indicates a prior login, resolve the user with `GET /api/auth/me` (httpOnly cookie) before calling `insforge.auth.getCurrentUser()`, so stale SDK access tokens do not trigger failing InsForge `/api/auth/refresh` requests; on failure, clear the SDK token, session hint, and synced session cookies.
+- Yebaam logo `next/image` components that use `max-w-*` width constraints or fixed height classes (`h-14`) may need `style={{ height: 'auto' }}` or `style={{ width: 'auto' }}` respectively to satisfy Next.js image sizing warnings.

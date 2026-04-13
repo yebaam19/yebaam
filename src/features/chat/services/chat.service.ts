@@ -9,6 +9,26 @@ import {
   MessageMedia,
 } from '../types';
 
+async function ensureSdkAuthToken(): Promise<void> {
+  try {
+    const headers = insforge.getHttpClient().getHeaders();
+    const hasAuth = Boolean(headers['Authorization'] || headers['authorization']);
+    if (hasAuth) return;
+  } catch {
+    // fall through
+  }
+  try {
+    const res = await fetch('/api/auth/me', { method: 'GET', credentials: 'same-origin' });
+    if (!res.ok) return;
+    const { accessToken } = (await res.json()) as { accessToken?: string };
+    if (accessToken) {
+      insforge.getHttpClient().setAuthToken(accessToken);
+    }
+  } catch {
+    // ignore — caller will surface the resulting error
+  }
+}
+
 function channelForConversation(conversationId: string): string {
   return `chat:conv:${conversationId}`;
 }
@@ -37,6 +57,7 @@ class ChatService {
   private readonly baseUrl = '/api/conversations';
 
   async createOrGetConversation(participantId: string): Promise<Conversation> {
+    await ensureSdkAuthToken();
     const { data: userRes, error: userErr } = await insforge.auth.getCurrentUser();
     if (userErr || !userRes?.user?.id) {
       throw new Error('You must be signed in to start a conversation');
