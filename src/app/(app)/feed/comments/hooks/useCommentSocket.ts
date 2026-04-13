@@ -1,94 +1,86 @@
 import { useEffect } from 'react';
-import { useSocket } from '@/providers/socket-provider';
+import { insforge } from '@/lib/insforge/client';
 import { useCommentStore } from '../store/comment.store';
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
 import type {
-  Comment,
   CommentSocketPayload,
   CommentUpdatedPayload,
   CommentDeletedPayload,
 } from '../interfaces/comment.interfaces';
 
-/**
- * Eventos de WebSocket para comentarios
- */
-const COMMENT_SOCKET_EVENTS = {
-  COMMENT_ADDED: 'comment_added',
-  COMMENT_UPDATED: 'comment_updated',
-  COMMENT_DELETED: 'comment_deleted',
+const COMMENT_EVENTS = {
+  CREATED: 'comment.created',
+  UPDATED: 'comment.updated',
+  DELETED: 'comment.deleted',
 } as const;
 
+export function channelForPostComments(postId: string): string {
+  return `comments:post:${postId}`;
+}
+
 /**
- * Hook para escuchar eventos de comentarios en tiempo real
- * Actualiza el store de comentarios Y el contador en posts
- * 
- * @example
- * function PostDetailPage() {
- *   useCommentSocket(); // Activa la escucha de eventos
- *   // ...
- * }
+ * Subscribes to InsForge Realtime for a post's comment stream and keeps the
+ * comment + post stores in sync with events published by comment.service.
  */
-export function useCommentSocket() {
-  const { postsSocket } = useSocket();
+export function useCommentSocket(postId: string | null | undefined) {
   const { addComment, updateCommentInList, removeComment } = useCommentStore();
   const { incrementCommentsCount, decrementCommentsCount } = usePostStore();
 
   useEffect(() => {
-    if (!postsSocket) {
-      console.warn('  [useCommentSocket] postsSocket no disponible');
-      return;
-    }
+    if (!postId) return;
 
-    // ============================================
-    // Event: comment_added
-    // ============================================
-    const handleCommentAdded = (payload: CommentSocketPayload) => {
+    const myChannel = channelForPostComments(postId);
+    let cancelled = false;
 
-      const { comment, postId } = payload;
-      
-      // Actualizar store de comentarios
-      addComment(comment);
-      
-      // Incrementar contador en el post
-      incrementCommentsCount(postId);
+    const matchesChannel = (payload: any) => {
+      const channel = payload?.meta?.channel ?? '';
+      return !channel || channel === myChannel;
     };
 
-    // ============================================
-    // Event: comment_updated
-    // ============================================
-    const handleCommentUpdated = (payload: CommentUpdatedPayload) => {
-  
-      const { comment } = payload;
-      
-      // Actualizar en el store
-      updateCommentInList(comment);
+    const handleCreated = (payload: CommentSocketPayload & { meta?: { channel?: string } }) => {
+      if (!matchesChannel(payload)) return;
+      if (payload.postId !== postId) return;
+      addComment(payload.comment);
+      incrementCommentsCount(payload.postId);
     };
 
-    // ============================================
-    // Event: comment_deleted
-    // ============================================
-    const handleCommentDeleted = (payload: CommentDeletedPayload) => {
- 
-      const { commentId, postId } = payload;
-      
-      // Eliminar del store de comentarios
-      removeComment(commentId, postId);
-      
-      // Decrementar contador en el post
-      decrementCommentsCount(postId);
+    const handleUpdated = (payload: CommentUpdatedPayload & { meta?: { channel?: string } }) => {
+      if (!matchesChannel(payload)) return;
+      if (payload.postId !== postId) return;
+      updateCommentInList(payload.comment);
     };
 
-    // Registrar listeners
-    postsSocket.on(COMMENT_SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
-    postsSocket.on(COMMENT_SOCKET_EVENTS.COMMENT_UPDATED, handleCommentUpdated);
-    postsSocket.on(COMMENT_SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+    const handleDeleted = (payload: CommentDeletedPayload & { meta?: { channel?: string } }) => {
+      if (!matchesChannel(payload)) return;
+      if (payload.postId !== postId) return;
+      removeComment(payload.commentId, payload.postId);
+      decrementCommentsCount(payload.postId);
+    };
 
-    // Cleanup
+    insforge.realtime.on(COMMENT_EVENTS.CREATED, handleCreated);
+    insforge.realtime.on(COMMENT_EVENTS.UPDATED, handleUpdated);
+    insforge.realtime.on(COMMENT_EVENTS.DELETED, handleDeleted);
+
+    (async () => {
+      try {
+        await insforge.realtime.connect();
+        if (cancelled) return;
+        await insforge.realtime.subscribe(myChannel);
+      } catch (error) {
+        console.error('[useCommentSocket] realtime subscribe failed:', error);
+      }
+    })();
+
     return () => {
-
-      postsSocket.off(COMMENT_SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
-      postsSocket.off(COMMENT_SOCKET_EVENTS.COMMENT_UPDATED, handleCommentUpdated);
-      postsSocket.off(COMMENT_SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+      cancelled = true;
+      insforge.realtime.off(COMMENT_EVENTS.CREATED, handleCreated);
+      insforge.realtime.off(COMMENT_EVENTS.UPDATED, handleUpdated);
+      insforge.realtime.off(COMMENT_EVENTS.DELETED, handleDeleted);
+      try {
+        insforge.realtime.unsubscribe(myChannel);
+      } catch {
+        // ignore
+      }
     };
-  }, [postsSocket, addComment, updateCommentInList, removeComment, incrementCommentsCount, decrementCommentsCount]);
+  }, [postId, addComment, updateCommentInList, removeComment, incrementCommentsCount, decrementCommentsCount]);
 }

@@ -78,10 +78,7 @@ export function usePostSocket() {
    * Registrar listeners de WebSocket
    */
   useEffect(() => {
-    if (!postsSocket || !isPostsConnected) {
-      console.log('[POST SOCKET] Not connected, skipping listeners');
-      return;
-    }
+    if (!postsSocket || !isPostsConnected) return;
 
     console.log('[POST SOCKET] Registering listeners...');
 

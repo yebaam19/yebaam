@@ -16,9 +16,9 @@ export const FEATURE_FLAGS = {
   // ============================================================================
   
   // Chat y Mensajería
-  CHAT_ENABLED: true, // Sistema de chat - Funcional 
-  CHAT_PUBLICO_ENABLED: false, // Chat público - No implementado
-  MENSAJES_ENABLED: false, // Mensajes privados - Funcional 
+  CHAT_ENABLED: true, // Sistema de chat - Funcional
+  CHAT_PUBLICO_ENABLED: true, // Chat público - Funcional
+  MENSAJES_ENABLED: true, // Mensajes privados - Funcional
   
   // Social Features
   STORIES_ENABLED: true, // Historias - Funcional 

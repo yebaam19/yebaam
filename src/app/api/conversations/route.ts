@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken, getServiceClient } from '@/lib/insforge/server';
 
 type ParticipantRow = {
   conversation_id: string;
@@ -126,23 +126,22 @@ export async function POST(request: NextRequest) {
   const token = await getServerAccessToken();
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const userId = await getUserId();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { participantId } = (await request.json().catch(() => ({}))) as {
     participantId?: string;
   };
   if (!participantId) {
     return NextResponse.json({ error: 'participantId is required' }, { status: 400 });
   }
-
-  const client = await getServerClient();
-  const userId = await getUserId();
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   if (participantId === userId) {
     return NextResponse.json({ error: 'Cannot start a conversation with yourself' }, { status: 400 });
   }
 
-  // Look for an existing direct conversation with exactly these two participants.
-  const { data: myParts } = await client.database
+  const db = getServiceClient().database;
+
+  const { data: myParts } = await db
     .from('conversation_participants')
     .select('conversation_id')
     .eq('user_id', userId);
@@ -150,7 +149,7 @@ export async function POST(request: NextRequest) {
   const myConvIds = ((myParts ?? []) as { conversation_id: string }[]).map((r) => r.conversation_id);
 
   if (myConvIds.length > 0) {
-    const { data: shared } = await client.database
+    const { data: shared } = await db
       .from('conversation_participants')
       .select('conversation_id')
       .eq('user_id', participantId)
@@ -159,7 +158,7 @@ export async function POST(request: NextRequest) {
     const sharedIds = ((shared ?? []) as { conversation_id: string }[]).map((r) => r.conversation_id);
 
     if (sharedIds.length > 0) {
-      const { data: directs } = await client.database
+      const { data: directs } = await db
         .from('conversations')
         .select('*')
         .in('id', sharedIds)
@@ -188,22 +187,22 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { data: created, error: createErr } = await client.database
+  const { data: created, error: createErr } = await db
     .from('conversations')
-    .insert({ type: 'direct' })
+    .insert({ type: 'direct', created_by: userId })
     .select('*')
     .maybeSingle();
 
   if (createErr || !created) {
     return NextResponse.json(
       { error: createErr?.message ?? 'Failed to create conversation' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
   const conv = created as ConversationRow;
 
-  const { error: partErr } = await client.database
+  const { error: partErr } = await db
     .from('conversation_participants')
     .insert([
       { conversation_id: conv.id, user_id: userId },

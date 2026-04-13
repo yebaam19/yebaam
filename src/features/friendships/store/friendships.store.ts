@@ -562,6 +562,7 @@ export const useFriendshipsStore = create<FriendshipsState>()(
           sentRequests: [],
           suggestions: [],
           isLoading: false,
+          isInitialized: false,
           error: null,
           totalFriends: 0,
           closeFriendsCount: 0,

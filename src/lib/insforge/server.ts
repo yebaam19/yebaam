@@ -32,3 +32,19 @@ export async function getServerAccessToken(): Promise<string | null> {
   const store = await cookies();
   return store.get(COOKIE_NAME)?.value ?? null;
 }
+
+export function getServiceClient(): InsForgeClient {
+  const { baseUrl, anonKey } = requireEnv();
+  const apiKey = process.env.INSFORGE_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing INSFORGE_API_KEY (server-only)');
+  }
+
+  const client = createClient({
+    baseUrl,
+    anonKey,
+    isServerMode: true,
+  });
+  client.getHttpClient().setAuthToken(apiKey);
+  return client;
+}

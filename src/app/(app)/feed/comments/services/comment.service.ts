@@ -1,4 +1,5 @@
 import { insforge } from '@/lib/insforge/client';
+import { channelForPostComments } from '../hooks/useCommentSocket';
 import type {
   Comment,
   CommentAuthor,
@@ -8,6 +9,15 @@ import type {
   GetCommentsResponse,
   UpdateCommentDTO,
 } from '../interfaces/comment.interfaces';
+
+async function publishCommentEvent<T>(postId: string, event: string, payload: T): Promise<void> {
+  try {
+    await insforge.realtime.connect();
+    await insforge.realtime.publish(channelForPostComments(postId), event, payload);
+  } catch (error) {
+    console.error(`[commentService] failed to publish ${event}:`, error);
+  }
+}
 
 type DbComment = {
   id: string;
@@ -95,7 +105,13 @@ export class CommentService {
 
     const row = inserted as DbComment;
     const authors = await hydrateAuthors([row]);
-    return rowToComment(row, authors);
+    const comment = rowToComment(row, authors);
+    await publishCommentEvent(comment.postId, 'comment.created', {
+      comment,
+      postId: comment.postId,
+      userId,
+    });
+    return comment;
   }
 
   async update(data: UpdateCommentDTO): Promise<Comment> {
@@ -113,7 +129,15 @@ export class CommentService {
 
     const row = updated as DbComment;
     const authors = await hydrateAuthors([row]);
-    return rowToComment(row, authors);
+    const comment = rowToComment(row, authors);
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    await publishCommentEvent(comment.postId, 'comment.updated', {
+      comment,
+      postId: comment.postId,
+      userId: userData?.user?.id ?? comment.author.id,
+      oldContent: '',
+    });
+    return comment;
   }
 
   async delete(data: DeleteCommentDTO): Promise<void> {
@@ -122,6 +146,13 @@ export class CommentService {
       .delete()
       .eq('id', data.commentId);
     if (error) throw new Error(error.message || 'Error al eliminar comentario');
+
+    const { data: userData } = await insforge.auth.getCurrentUser();
+    await publishCommentEvent(data.postId, 'comment.deleted', {
+      commentId: data.commentId,
+      postId: data.postId,
+      userId: userData?.user?.id ?? '',
+    });
   }
 
   async getByPost(filters: GetCommentsFilters): Promise<GetCommentsResponse> {

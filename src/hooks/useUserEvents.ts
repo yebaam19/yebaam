@@ -37,10 +37,7 @@ export function useUserEvents() {
   const [lastProfileUpdate, setLastProfileUpdate] = useState<ProfileUpdateData | null>(null);
 
   useEffect(() => {
-    if (!usersSocket || !isUsersConnected) {
-      console.log('[useUserEvents] Socket not connected yet');
-      return;
-    }
+    if (!usersSocket || !isUsersConnected) return;
 
     console.log('[useUserEvents] Setting up event listeners');
 

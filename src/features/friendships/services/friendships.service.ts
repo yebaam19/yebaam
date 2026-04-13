@@ -1,4 +1,5 @@
 import { insforge } from '@/lib/insforge/client';
+import { ensureInsforgeTokenFromCookie } from '@/lib/insforge/ensure-browser-token';
 
 export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
@@ -101,6 +102,7 @@ type DbFriendSettings = {
 };
 
 async function getCurrentUserId(): Promise<string | null> {
+  await ensureInsforgeTokenFromCookie();
   const { data } = await insforge.auth.getCurrentUser();
   return data?.user?.id ?? null;
 }

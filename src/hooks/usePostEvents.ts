@@ -40,10 +40,7 @@ export function usePostEvents() {
   const [lastDelete, setLastDelete] = useState<{ postId: string } | null>(null);
 
   useEffect(() => {
-    if (!postsSocket || !isPostsConnected) {
-      console.log('[usePostEvents] Socket not connected yet');
-      return;
-    }
+    if (!postsSocket || !isPostsConnected) return;
 
     console.log('[usePostEvents] Setting up event listeners');
 

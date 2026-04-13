@@ -27,10 +27,7 @@ export function usePostSocketEvents() {
   const { addPostToList, updatePostInList, removePostFromList } = usePostStore();
 
   useEffect(() => {
-    if (!postsSocket || !isPostsConnected) {
-      console.log('[PostSocket] Socket not connected yet');
-      return;
-    }
+    if (!postsSocket || !isPostsConnected) return;
 
     console.log('[PostSocket] Setting up post event listeners on /posts namespace');
 

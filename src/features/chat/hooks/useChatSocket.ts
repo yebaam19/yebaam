@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { insforge } from '@/lib/insforge/client';
+import { ensureInsforgeTokenFromCookie } from '@/lib/insforge/ensure-browser-token';
 import { useChatStore } from '../store/chat.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -138,8 +139,8 @@ export function useChatSocket({
     insforge.realtime.on<SocketMessage>('message.created', handleMessageCreated);
     insforge.realtime.on<SocketMessage>('messages.read', handleMessagesRead);
 
-    insforge.realtime
-      .connect()
+    ensureInsforgeTokenFromCookie()
+      .then(() => insforge.realtime.connect())
       .then(() => {
         if (!cancelled) setIsConnected(true);
       })

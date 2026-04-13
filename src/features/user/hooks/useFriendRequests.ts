@@ -176,10 +176,7 @@ export function useFriendRequests() {
 
   // Escuchar eventos de WebSocket en tiempo real
   useEffect(() => {
-    if (!usersSocket) {
-      console.log('[useFriendRequests] Socket de usuarios no disponible aún');
-      return;
-    }
+    if (!usersSocket) return;
 
     // Listener: Nueva solicitud de amistad recibida
     const handleFriendRequestReceived = (data: any) => {

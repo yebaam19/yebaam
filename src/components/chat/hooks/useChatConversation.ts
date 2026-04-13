@@ -3,6 +3,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
 import { insforge } from '@/lib/insforge/client';
+import { ensureInsforgeTokenFromCookie } from '@/lib/insforge/ensure-browser-token';
 
 interface UseChatConversationProps {
   contactId: string;
@@ -47,6 +48,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
 
         // Join InsForge realtime channel for this conversation
         try {
+          await ensureInsforgeTokenFromCookie();
           await insforge.realtime.connect();
           await insforge.realtime.subscribe(channelForConversation(conversation.id));
         } catch (err) {

@@ -72,8 +72,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [serverError, setServerError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Sincronizar Auth con Profile Store
-  useAuthSync();
+  // Sincronizar Auth con Profile Store solo tras checkAuth (evita getCurrentUser con sesión aún no hidratada)
+  useAuthSync({ authReady: isInitialized });
 
   // Obtener estado y acciones del store
   const {

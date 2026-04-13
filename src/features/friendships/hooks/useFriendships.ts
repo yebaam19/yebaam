@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useSocket } from '@/providers/socket-provider';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useAuth } from '@/features/auth/context/auth-context';
 import { useFriendshipsStore } from '../store/friendships.store';
 import type { FriendRequest } from '../services/friendships.service';
 
@@ -26,7 +26,7 @@ import type { FriendRequest } from '../services/friendships.service';
  */
 export function useFriendships() {
   const { friendshipsSocket, isFriendshipsConnected } = useSocket();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isInitialized: authInitialized } = useAuth();
 
   // Estado del store
   const {
@@ -164,16 +164,32 @@ export function useFriendships() {
   }, [friendshipsSocket, isFriendshipsConnected, user?.id]);
 
   // ============================================================================
-  // Auto-fetch on mount
+  // Load after auth is ready (avoid empty snapshot when SDK/cookie are not hydrated yet)
   // ============================================================================
 
   useEffect(() => {
-    fetchFriends();
-    fetchPendingRequests();
-    fetchSentRequests();
-    fetchSuggestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Solo ejecutar una vez al montar
+    if (!authInitialized) return;
+
+    const reset = useFriendshipsStore.getState().reset;
+
+    if (!isAuthenticated || !user?.id) {
+      reset();
+      return;
+    }
+
+    void fetchFriends();
+    void fetchPendingRequests();
+    void fetchSentRequests();
+    void fetchSuggestions();
+  }, [
+    authInitialized,
+    isAuthenticated,
+    user?.id,
+    fetchFriends,
+    fetchPendingRequests,
+    fetchSentRequests,
+    fetchSuggestions,
+  ]);
 
   // HTTP polling fallback while realtime WebSocket is dormant
   useEffect(() => {

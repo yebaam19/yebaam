@@ -128,10 +128,7 @@ export function useFriends() {
 
   // Escuchar eventos de WebSocket
   useEffect(() => {
-    if (!usersSocket) {
-      console.log('[useFriends] Socket de usuarios no disponible aún');
-      return;
-    }
+    if (!usersSocket) return;
 
 
 

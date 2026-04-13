@@ -43,10 +43,7 @@ export function useStorySocket() {
    * Registrar listeners de WebSocket
    */
   useEffect(() => {
-    if (!storiesSocket || !isStoriesConnected) {
-      console.log('[STORIES SOCKET] Not connected, skipping listeners');
-      return;
-    }
+    if (!storiesSocket || !isStoriesConnected) return;
 
     console.log('[STORIES SOCKET] Registering listeners...');
 
