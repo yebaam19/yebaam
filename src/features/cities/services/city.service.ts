@@ -12,6 +12,31 @@ import { CitiesResponse, City, CityMedia, GetCitiesFilters, MediaType } from '..
 import { GlobalStats } from '../interfaces/global-stats.interface'
 import { getAxiosInstance } from '@/lib/legacy-api/client'
 
+type CityBackendRow = {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  coverImageUrl?: string
+  logoUrl?: string
+  isFeatured?: boolean
+  location: {
+    country: string
+    state?: string
+  }
+  stats: {
+    followerCount: number
+    photoCount: number
+    videoCount: number
+    postCount: number
+  }
+}
+
+type CitiesListPayload = {
+  cities?: CityBackendRow[]
+  total?: number
+}
+
 /**
  * Simula delay de red para hacer el mock más realista
  */
@@ -27,8 +52,8 @@ class CityServiceMock {
    */
   async getAllCities(filters?: GetCitiesFilters): Promise<CitiesResponse> {
     try {
-      const axios = await getAxiosInstance()
-      
+      const axios = getAxiosInstance()
+
       // Construir parámetros de query
       const params = new URLSearchParams()
       if (filters?.limit) params.append('limit', filters.limit.toString())
@@ -39,10 +64,15 @@ class CityServiceMock {
         params.append('offset', '0')
       }
 
-      const response = await axios.get(`/api/cities?${params.toString()}`)
-      
+      const response = await axios.get<CitiesListPayload>(`/api/cities?${params.toString()}`)
+      const payload = response.data
+      const rawCities = payload?.cities
+      if (!Array.isArray(rawCities)) {
+        throw new Error('cities-endpoint-unavailable')
+      }
+
       // Mapear respuesta del backend al formato del frontend
-      const mappedCities = response.data.cities.map((city: any) => ({
+      const mappedCities = rawCities.map((city) => ({
         id: city.id,
         name: city.name,
         slug: city.slug,
@@ -71,11 +101,10 @@ class CityServiceMock {
 
       return {
         cities: mappedCities,
-        total: response.data.total,
+        total: payload?.total ?? mappedCities.length,
       }
-    } catch (error) {
-      console.error('Error fetching cities from API, using mock data:', error)
-      
+    } catch {
+      // Cities backend is not yet migrated to InsForge — use mocks silently.
       // Fallback a datos mock si falla el API
       await simulateNetworkDelay()
       let cities = [...MOCK_CITIES]
@@ -120,20 +149,23 @@ class CityServiceMock {
    */
   async getCityBySlug(slug: string): Promise<City | null> {
     try {
-      const axios = await getAxiosInstance()
-      const response = await axios.get(`/api/cities/${slug}`)
+      const axios = getAxiosInstance()
+      const response = await axios.get<CityBackendRow>(`/api/cities/${slug}`)
       const city = response.data
+      if (!city || typeof city !== 'object' || !('id' in city) || !city.location || !city.stats) {
+        throw new Error('city-endpoint-unavailable')
+      }
 
       // Mapear respuesta del backend al formato del frontend
       return {
         id: city.id,
         name: city.name,
         slug: city.slug,
-        description: city.description,
+        description: city.description ?? '',
         stateId: city.location.state || undefined,
         countryId: city.location.country,
-        coverImageUrl: city.coverImageUrl,
-        logoUrl: city.logoUrl,
+        coverImageUrl: city.coverImageUrl ?? '',
+        logoUrl: city.logoUrl ?? '',
         country: {
           id: city.location.country,
           name: city.location.country,
@@ -151,12 +183,11 @@ class CityServiceMock {
           postsCount: city.stats.postCount,
         },
         isFollowing: false,
-        isFeatured: city.isFeatured,
+        isFeatured: city.isFeatured ?? false,
         cityMedia: [], // TODO: Implementar cuando exista endpoint de media
       }
-    } catch (error) {
-      console.error(`Error fetching city ${slug} from API, using mock data:`, error)
-      
+    } catch {
+      // City backend is not yet migrated to InsForge — use mocks silently.
       // Fallback a datos mock
       await simulateNetworkDelay()
       const cityName = unslugify(slug)
@@ -245,12 +276,11 @@ class CityServiceMock {
    */
   async getGlobalStats(): Promise<GlobalStats> {
     try {
-      const axios = await getAxiosInstance()
+      const axios = getAxiosInstance()
       const response = await axios.get<GlobalStats>('/api/cities/stats/global')
       return response.data
-    } catch (error) {
-      console.error('Error fetching global stats:', error)
-      // Fallback a datos mock si falla el API
+    } catch {
+      // Global stats endpoint not yet migrated — fall back to mock data silently.
       return {
         totalCities: 12,
         totalUsers: 1200,
