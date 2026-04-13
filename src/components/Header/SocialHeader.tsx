@@ -98,8 +98,14 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
             </button>
 
             {/* Logo - Responsive sizes */}
-            <Link href="/" className="flex shrink-0 items-center">
-              <Image src={YebaamLogo} alt="Yebaam" className="h-7 w-auto sm:h-8" height={32} priority />
+            <Link href="/" className="flex h-7 shrink-0 items-center sm:h-8">
+              <Image
+                src={YebaamLogo}
+                alt="Yebaam"
+                className="h-full w-auto"
+                style={{ width: 'auto', height: '100%' }}
+                priority
+              />
             </Link>
 
             {/* Search Bar - Desktop Only */}

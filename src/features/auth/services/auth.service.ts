@@ -32,10 +32,12 @@ function mapProfileToAuthUser(
   profile: Partial<ProfileRow> | null
 ): AuthUser {
   const birth = profile?.birth_date ? new Date(profile.birth_date) : null;
+  const email = authUser.email ?? '';
+  const usernameFallback = email.split('@')[0] || 'user';
   return {
     id: authUser.id,
-    email: authUser.email ?? '',
-    username: profile?.username ?? '',
+    email,
+    username: profile?.username ?? usernameFallback,
     status: 'ACTIVE',
     emailVerified: authUser.emailVerified ?? true,
     profileCompleted: profile?.profile_completed ?? false,

@@ -15,20 +15,19 @@ export const metadata: Metadata = {
 const Page = () => {
   return (
     <main className="relative flex min-h-screen items-center justify-center p-6">
-      <div className="absolute inset-0 z-0">
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <Image src={BackgroundImage} alt="Background" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-black/10" />
       </div>
 
       <div className="relative z-10 w-full max-w-lg">
-        <div className="mb-5 text-center">
+        <div className="mx-auto mb-5 w-full max-w-60 text-center">
           <Image
             src={LogoWhite}
             alt="Yebaam Logo"
             width={240}
             height={60}
-            className="mx-auto h-auto w-auto max-w-60 brightness-0 invert"
-            style={{ height: 'auto' }}
+            className="h-auto w-full brightness-0 invert"
             priority
           />
         </div>
