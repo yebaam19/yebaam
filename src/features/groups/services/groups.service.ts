@@ -1,17 +1,8 @@
-import { getAxiosInstance } from '@/lib/legacy-api/client';
 import type { Group } from '../types/group.types';
 
 export interface GetGroupsResponse {
   groups: Group[];
   total: number;
-}
-
-export interface JoinGroupRequest {
-  groupId: string;
-}
-
-export interface LeaveGroupRequest {
-  groupId: string;
 }
 
 export interface CreateGroupRequest {
@@ -30,189 +21,108 @@ export interface UpdateGroupRequest {
   coverImageUrl?: string;
 }
 
-interface PresignedUrlResponse {
-  uploadUrl: string;
-  s3Key: string;
-  expiresIn: number;
-  cloudFrontUrl: string;
+type JsonRecord = Record<string, unknown>;
+
+async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    credentials: 'same-origin',
+  });
+  const payload = (await response.json().catch(() => ({}))) as JsonRecord;
+  if (!response.ok) {
+    const message = (payload as { error?: string }).error || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return payload as T;
+}
+
+async function uploadCover(file: File): Promise<string> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('bucket', 'covers');
+  form.append('folder', 'groups');
+
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: form,
+  });
+  const payload = (await response.json().catch(() => ({}))) as {
+    data?: { url?: string };
+    error?: string;
+  };
+  if (!response.ok || !payload.data?.url) {
+    throw new Error(payload.error || 'Failed to upload cover image');
+  }
+  return payload.data.url;
 }
 
 class GroupsService {
-  private readonly axios = getAxiosInstance();
-
-  /**
-   * Obtener mis grupos (grupos a los que pertenezco)
-   */
   async getMyGroups(): Promise<Group[]> {
-    try {
-      const response = await this.axios.get<GetGroupsResponse>('/api/groups/my-groups');
-      return response.data.groups;
-    } catch (error) {
-      console.error('[GroupsService] Error fetching my groups:', error);
-      throw error;
-    }
+    const data = await jsonFetch<GetGroupsResponse>('/api/groups/my-groups');
+    return data.groups ?? [];
   }
 
-  /**
-   * Obtener grupos sugeridos basados en intereses
-   */
   async getSuggestedGroups(): Promise<Group[]> {
-    try {
-      const response = await this.axios.get<GetGroupsResponse>('/api/groups/suggested');
-      return response.data.groups;
-    } catch (error) {
-      console.error('[GroupsService] Error fetching suggested groups:', error);
-      throw error;
-    }
+    const data = await jsonFetch<GetGroupsResponse>('/api/groups/suggested');
+    return data.groups ?? [];
   }
 
-  /**
-   * Buscar grupos por query
-   */
   async searchGroups(query: string): Promise<Group[]> {
-    try {
-      const response = await this.axios.get<GetGroupsResponse>('/api/groups/search', {
-        params: { q: query },
-      });
-      return response.data.groups;
-    } catch (error) {
-      console.error('[GroupsService] Error searching groups:', error);
-      throw error;
-    }
+    const data = await jsonFetch<GetGroupsResponse>(
+      `/api/groups/search?q=${encodeURIComponent(query)}`,
+    );
+    return data.groups ?? [];
   }
 
-  /**
-   * Obtener detalles de un grupo específico
-   */
   async getGroupById(groupId: string): Promise<Group> {
-    try {
-      const response = await this.axios.get<Group>(`/api/groups/${groupId}`);
-      return response.data;
-    } catch (error) {
-      console.error('[GroupsService] Error fetching group:', error);
-      throw error;
-    }
+    return jsonFetch<Group>(`/api/groups/${groupId}`);
   }
 
-  /**
-   * Unirse a un grupo
-   */
   async joinGroup(groupId: string): Promise<void> {
-    try {
-      await this.axios.post(`/api/groups/${groupId}/join`, {});
-    } catch (error) {
-      console.error('[GroupsService] Error joining group:', error);
-      throw error;
-    }
+    await jsonFetch<{ success: true }>(`/api/groups/${groupId}/join`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
   }
 
-  /**
-   * Salir de un grupo
-   */
   async leaveGroup(groupId: string): Promise<void> {
-    try {
-      await this.axios.post(`/api/groups/${groupId}/leave`, {});
-    } catch (error) {
-      console.error('[GroupsService] Error leaving group:', error);
-      throw error;
-    }
+    await jsonFetch<{ success: true }>(`/api/groups/${groupId}/leave`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
   }
 
-  /**
-   * Crear un nuevo grupo
-   */
   async createGroup(data: CreateGroupRequest): Promise<Group> {
-    try {
-      let coverImageUrl: string | undefined;
-
-      // Si hay imagen, primero obtener presigned URL y subir a S3
-      if (data.coverImage) {
-        console.log('[GroupsService] Step 1: Requesting presigned URL for:', {
-          fileName: data.coverImage.name,
-          fileType: data.coverImage.type,
-          fileSize: data.coverImage.size,
-        });
-
-        const presignedResponse = await this.axios.post<PresignedUrlResponse>(
-          '/api/groups/generate-cover-url',
-          {
-            fileName: data.coverImage.name,
-            fileType: data.coverImage.type,
-            fileSize: data.coverImage.size,
-          }
-        );
-
-        console.log('[GroupsService] Step 2: Got presigned response:', presignedResponse.data);
-
-        // Subir archivo directamente a S3 usando la presigned URL
-        const uploadResponse = await fetch(presignedResponse.data.uploadUrl, {
-          method: 'PUT',
-          body: data.coverImage,
-          headers: {
-            'Content-Type': data.coverImage.type,
-          },
-        });
-
-        console.log('[GroupsService] Step 3: Upload to S3 status:', uploadResponse.status);
-
-        if (!uploadResponse.ok) {
-          throw new Error(`Failed to upload image to S3: ${uploadResponse.statusText}`);
-        }
-
-        // Usar la CloudFront URL para el grupo
-        coverImageUrl = presignedResponse.data.cloudFrontUrl;
-        console.log('[GroupsService] Step 4: Will use CloudFront URL:', coverImageUrl);
-      }
-
-      // Crear grupo con JSON (no FormData)
-      console.log('[GroupsService] Step 5: Creating group with data:', {
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        privacy: data.privacy,
-        coverImageUrl,
-      });
-
-      const response = await this.axios.post<Group>('/api/groups', {
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        privacy: data.privacy,
-        coverImageUrl,
-      });
-
-      console.log('[GroupsService] Step 6: Group created successfully:', response.data);
-      
-      return response.data;
-    } catch (error) {
-      console.error('[GroupsService] Error creating group:', error);
-      throw error;
+    let coverImageUrl: string | undefined;
+    if (data.coverImage) {
+      coverImageUrl = await uploadCover(data.coverImage);
     }
+    return jsonFetch<Group>('/api/groups', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        privacy: data.privacy,
+        coverImageUrl,
+      }),
+    });
   }
 
-  /**
-   * Actualizar un grupo existente
-   */
   async updateGroup(groupId: string, data: UpdateGroupRequest): Promise<Group> {
-    try {
-      const response = await this.axios.put<Group>(`/api/groups/${groupId}`, data);
-      return response.data;
-    } catch (error) {
-      console.error('[GroupsService] Error updating group:', error);
-      throw error;
-    }
+    return jsonFetch<Group>(`/api/groups/${groupId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
-  /**
-   * Eliminar un grupo
-   */
   async deleteGroup(groupId: string): Promise<void> {
-    try {
-      await this.axios.delete(`/api/groups/${groupId}`);
-    } catch (error) {
-      console.error('[GroupsService] Error deleting group:', error);
-      throw error;
-    }
+    await jsonFetch<{ success: true }>(`/api/groups/${groupId}`, { method: 'DELETE' });
   }
 }
 

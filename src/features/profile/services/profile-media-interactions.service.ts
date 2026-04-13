@@ -1,18 +1,6 @@
-import { getAxiosInstance } from '@/lib/legacy-api/client';
-
-/**
- * Tipos de reacción disponibles
- */
 export type ReactionType = 'like' | 'love' | 'wow' | 'haha' | 'sad' | 'angry';
-
-/**
- * Tipo de entidad para reacciones y comentarios
- */
 export type EntityType = 'photo' | 'video';
 
-/**
- * Interface para una reacción
- */
 export interface Reaction {
   id: string;
   type: ReactionType;
@@ -26,9 +14,6 @@ export interface Reaction {
   createdAt: string;
 }
 
-/**
- * Interface para un comentario
- */
 export interface Comment {
   id: string;
   user: {
@@ -46,142 +31,122 @@ export interface Comment {
   updatedAt: string;
 }
 
-/**
- * Interface para la respuesta de reacciones
- */
 export interface ReactionsResponse {
   reactions: Reaction[];
   counts: Record<ReactionType, number>;
   total: number;
 }
 
-/**
- * Interface para la respuesta de comentarios
- */
 export interface CommentsResponse {
   comments: Comment[];
   nextCursor?: string;
   total: number;
 }
 
-/**
- * Servicio para manejar interacciones (reacciones y comentarios) en fotos y videos del perfil
- */
+type JsonRecord = Record<string, unknown>;
+
+async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    credentials: 'same-origin',
+  });
+  const payload = (await response.json().catch(() => ({}))) as JsonRecord;
+  if (!response.ok) {
+    const message = (payload as { error?: string }).error || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return payload as T;
+}
+
+function segment(entityType: EntityType): 'photos' | 'videos' {
+  return entityType === 'photo' ? 'photos' : 'videos';
+}
+
 class ProfileMediaInteractionsService {
-  private get api() {
-    return getAxiosInstance();
+  private basePath(entityType: EntityType, entityId: string): string {
+    return `/api/profile/${segment(entityType)}/${entityId}`;
   }
 
-  private getBasePath(entityType: EntityType): string {
-    return entityType === 'photo' ? '/api/profile/photos' : '/api/profile/videos';
-  }
-
-  // ========================================
-  // REACCIONES
-  // ========================================
-
-  /**
-   * Reaccionar a una foto o video
-   */
   async react(entityType: EntityType, entityId: string, type: ReactionType): Promise<Reaction> {
-    const basePath = this.getBasePath(entityType);
-    const response = await this.api.post(`${basePath}/${entityId}/reactions`, { type });
-    return response.data;
+    return jsonFetch<Reaction>(`${this.basePath(entityType, entityId)}/reactions`, {
+      method: 'POST',
+      body: JSON.stringify({ type }),
+    });
   }
 
-  /**
-   * Quitar reacción de una foto o video
-   */
   async unreact(entityType: EntityType, entityId: string): Promise<void> {
-    const basePath = this.getBasePath(entityType);
-    await this.api.delete(`${basePath}/${entityId}/reactions`);
+    await jsonFetch<{ success: true }>(`${this.basePath(entityType, entityId)}/reactions`, {
+      method: 'DELETE',
+    });
   }
 
-  /**
-   * Obtener reacciones de una foto o video
-   */
   async getReactions(
     entityType: EntityType,
     entityId: string,
-    type?: ReactionType
+    type?: ReactionType,
   ): Promise<ReactionsResponse> {
-    const basePath = this.getBasePath(entityType);
-    const params = type ? { type } : {};
-    const response = await this.api.get(`${basePath}/${entityId}/reactions`, { params });
-    return response.data;
+    const qs = type ? `?type=${encodeURIComponent(type)}` : '';
+    return jsonFetch<ReactionsResponse>(
+      `${this.basePath(entityType, entityId)}/reactions${qs}`,
+    );
   }
 
-  /**
-   * Obtener mi reacción a una foto o video
-   */
   async getMyReaction(entityType: EntityType, entityId: string): Promise<Reaction | null> {
-    const basePath = this.getBasePath(entityType);
-    const response = await this.api.get(`${basePath}/${entityId}/reactions/me`);
-    return response.data.reaction;
+    const payload = await jsonFetch<{ reaction: Reaction | null }>(
+      `${this.basePath(entityType, entityId)}/reactions/me`,
+    );
+    return payload.reaction ?? null;
   }
 
-  // ========================================
-  // COMENTARIOS
-  // ========================================
-
-  /**
-   * Comentar en una foto o video
-   */
   async comment(
     entityType: EntityType,
     entityId: string,
     content: string,
-    parentCommentId?: string
+    parentCommentId?: string,
   ): Promise<Comment> {
-    const basePath = this.getBasePath(entityType);
-    const response = await this.api.post(`${basePath}/${entityId}/comments`, {
-      content,
-      parentCommentId,
+    return jsonFetch<Comment>(`${this.basePath(entityType, entityId)}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content, parentCommentId }),
     });
-    return response.data;
   }
 
-  /**
-   * Obtener comentarios de una foto o video
-   */
   async getComments(
     entityType: EntityType,
     entityId: string,
     cursor?: string,
-    limit: number = 20
+    limit: number = 20,
   ): Promise<CommentsResponse> {
-    const basePath = this.getBasePath(entityType);
-    const params: any = { limit };
-    if (cursor) {
-      params.cursor = cursor;
-    }
-    const response = await this.api.get(`${basePath}/${entityId}/comments`, { params });
-    return response.data;
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.set('cursor', cursor);
+    return jsonFetch<CommentsResponse>(
+      `${this.basePath(entityType, entityId)}/comments?${params.toString()}`,
+    );
   }
 
-  /**
-   * Obtener respuestas de un comentario
-   */
   async getCommentReplies(
     entityType: EntityType,
     entityId: string,
-    commentId: string
+    commentId: string,
   ): Promise<Comment[]> {
-    const basePath = this.getBasePath(entityType);
-    const response = await this.api.get(`${basePath}/${entityId}/comments/${commentId}/replies`);
-    return response.data.replies;
+    const payload = await jsonFetch<{ replies: Comment[] }>(
+      `${this.basePath(entityType, entityId)}/comments/${commentId}/replies`,
+    );
+    return payload.replies ?? [];
   }
 
-  /**
-   * Eliminar un comentario
-   */
   async deleteComment(
     entityType: EntityType,
     entityId: string,
-    commentId: string
+    commentId: string,
   ): Promise<void> {
-    const basePath = this.getBasePath(entityType);
-    await this.api.delete(`${basePath}/${entityId}/comments/${commentId}`);
+    await jsonFetch<{ success: true }>(
+      `${this.basePath(entityType, entityId)}/comments/${commentId}`,
+      { method: 'DELETE' },
+    );
   }
 }
 

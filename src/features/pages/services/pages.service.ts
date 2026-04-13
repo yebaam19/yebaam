@@ -1,4 +1,4 @@
-import { getAxiosInstance } from '@/lib/legacy-api/client';
+import { getAxiosInstance } from '@/lib/http/legacy-client';
 import type {
   Page,
   CreatePageDto,

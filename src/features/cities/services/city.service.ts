@@ -10,7 +10,12 @@ import { unslugify } from '@/lib/utils'
 import { MOCK_CITIES, getOrCreateMockCity } from '../data/mock-cities'
 import { CitiesResponse, City, CityMedia, GetCitiesFilters, MediaType } from '../interfaces/city.interfaces'
 import { GlobalStats } from '../interfaces/global-stats.interface'
-import { getAxiosInstance } from '@/lib/legacy-api/client'
+
+async function jsonFetch<T>(url: string): Promise<T> {
+  const response = await fetch(url, { credentials: 'same-origin' })
+  if (!response.ok) throw new Error(`Request failed (${response.status})`)
+  return (await response.json()) as T
+}
 
 type CityBackendRow = {
   id: string
@@ -52,9 +57,6 @@ class CityServiceMock {
    */
   async getAllCities(filters?: GetCitiesFilters): Promise<CitiesResponse> {
     try {
-      const axios = getAxiosInstance()
-
-      // Construir parámetros de query
       const params = new URLSearchParams()
       if (filters?.limit) params.append('limit', filters.limit.toString())
       if (filters?.page) {
@@ -64,8 +66,7 @@ class CityServiceMock {
         params.append('offset', '0')
       }
 
-      const response = await axios.get<CitiesListPayload>(`/api/cities?${params.toString()}`)
-      const payload = response.data
+      const payload = await jsonFetch<CitiesListPayload>(`/api/cities?${params.toString()}`)
       const rawCities = payload?.cities
       if (!Array.isArray(rawCities)) {
         throw new Error('cities-endpoint-unavailable')
@@ -149,9 +150,7 @@ class CityServiceMock {
    */
   async getCityBySlug(slug: string): Promise<City | null> {
     try {
-      const axios = getAxiosInstance()
-      const response = await axios.get<CityBackendRow>(`/api/cities/${slug}`)
-      const city = response.data
+      const city = await jsonFetch<CityBackendRow>(`/api/cities/${slug}`)
       if (!city || typeof city !== 'object' || !('id' in city) || !city.location || !city.stats) {
         throw new Error('city-endpoint-unavailable')
       }
@@ -276,9 +275,7 @@ class CityServiceMock {
    */
   async getGlobalStats(): Promise<GlobalStats> {
     try {
-      const axios = getAxiosInstance()
-      const response = await axios.get<GlobalStats>('/api/cities/stats/global')
-      return response.data
+      return await jsonFetch<GlobalStats>('/api/cities/stats/global')
     } catch {
       // Global stats endpoint not yet migrated — fall back to mock data silently.
       return {

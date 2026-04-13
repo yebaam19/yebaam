@@ -68,7 +68,7 @@ export default function BlogDetailPage() {
     )
   }
 
-  if (error || !blog) {
+  if (error || !blog?.id) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -92,9 +92,9 @@ export default function BlogDetailPage() {
       {/* Stats */}
       <div className="mx-auto mt-4 max-w-6xl px-4 sm:px-6 lg:px-8">
         <BlogStats
-          followersCount={blog.stats.followersCount}
-          postsCount={blog.stats.postsCount}
-          totalViews={blog.stats.totalViews}
+          followersCount={blog.stats?.followersCount ?? 0}
+          postsCount={blog.stats?.postsCount ?? 0}
+          totalViews={blog.stats?.totalViews ?? 0}
         />
       </div>
 

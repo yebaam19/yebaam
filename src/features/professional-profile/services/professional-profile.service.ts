@@ -4,7 +4,7 @@
  * Servicio para interactuar con los endpoints del perfil profesional
  */
 
-import { getAxiosInstance } from '@/lib/legacy-api/client'
+import { getAxiosInstance } from '@/lib/http/legacy-client'
 import type {
   Association,
   AssociationFormData,

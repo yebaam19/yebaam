@@ -1,152 +1,137 @@
-import { getAxiosInstance } from '@/lib/legacy-api/client';
-import type { Club, CreateClubDto, UpdateClubDto, SearchClubsParams, ClubsListResponse, ClubMember } from '../types/club.types';
+import type {
+  Club,
+  CreateClubDto,
+  UpdateClubDto,
+  SearchClubsParams,
+  ClubsListResponse,
+} from '../types/club.types';
 
 const API_BASE = '/api/clubs';
 
+type JsonRecord = Record<string, unknown>;
+
+async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    credentials: 'same-origin',
+  });
+  const payload = (await response.json().catch(() => ({}))) as JsonRecord;
+  if (!response.ok) {
+    const message = (payload as { error?: string }).error || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return payload as T;
+}
+
 export const clubsService = {
-  // CRUD Operations
   async getMyClubs(): Promise<Club[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/my-clubs`);
-    return data;
+    return jsonFetch<Club[]>(`${API_BASE}/my-clubs`);
   },
 
   async getSuggestedClubs(limit = 10): Promise<Club[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/discovery/suggested`, {
-      params: { limit },
-    });
-    return data;
+    return jsonFetch<Club[]>(`${API_BASE}/discovery/suggested?limit=${limit}`);
   },
 
   async searchClubs(params: SearchClubsParams): Promise<ClubsListResponse> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/search`, { params });
-    return data;
+    const search = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) search.set(k, String(v));
+    }
+    return jsonFetch<ClubsListResponse>(`${API_BASE}/search?${search.toString()}`);
   },
 
   async getClubById(clubId: string): Promise<Club> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${clubId}`);
-    return data;
+    return jsonFetch<Club>(`${API_BASE}/${clubId}`);
   },
 
   async getClubBySlug(slug: string): Promise<Club> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/slug/${slug}`);
-    return data;
+    return jsonFetch<Club>(`${API_BASE}/slug/${slug}`);
   },
 
   async createClub(clubData: CreateClubDto): Promise<Club> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(API_BASE, clubData);
-    return data;
+    return jsonFetch<Club>(API_BASE, {
+      method: 'POST',
+      body: JSON.stringify(clubData),
+    });
   },
 
   async updateClub(clubId: string, clubData: UpdateClubDto): Promise<Club> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.put(`${API_BASE}/${clubId}`, clubData);
-    return data;
+    return jsonFetch<Club>(`${API_BASE}/${clubId}`, {
+      method: 'PUT',
+      body: JSON.stringify(clubData),
+    });
   },
 
   async deleteClub(clubId: string): Promise<void> {
-    const axios = getAxiosInstance();
-    await axios.delete(`${API_BASE}/${clubId}`);
+    await jsonFetch<{ success: true }>(`${API_BASE}/${clubId}`, { method: 'DELETE' });
   },
 
-  // Discovery
   async getClubsByCategory(category: string, limit = 12): Promise<Club[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/discovery/category`, {
-      params: { category, limit },
-    });
-    return data;
+    const params = new URLSearchParams({ category, limit: String(limit) });
+    return jsonFetch<Club[]>(`${API_BASE}/discovery/category?${params.toString()}`);
   },
 
   async getPopularClubs(limit = 10): Promise<Club[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/discovery/popular`, {
-      params: { limit },
-    });
-    return data;
+    return jsonFetch<Club[]>(`${API_BASE}/discovery/popular?limit=${limit}`);
   },
 
   async getTrendingClubs(limit = 10): Promise<Club[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/discovery/trending`, {
-      params: { limit },
-    });
-    return data;
+    return jsonFetch<Club[]>(`${API_BASE}/discovery/trending?limit=${limit}`);
   },
 
-  // Membership
   async joinClub(clubId: string, membershipTier?: string): Promise<{ message: string }> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/${clubId}/join`, { membershipTier });
-    return data;
+    return jsonFetch<{ message: string }>(`${API_BASE}/${clubId}/join`, {
+      method: 'POST',
+      body: JSON.stringify({ membershipTier }),
+    });
   },
 
   async leaveClub(clubId: string): Promise<{ message: string }> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/${clubId}/leave`);
-    return data;
+    return jsonFetch<{ message: string }>(`${API_BASE}/${clubId}/leave`, {
+      method: 'POST',
+    });
   },
 
-  // Members Management
   async getClubMembers(clubId: string, page = 1, limit = 20) {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${clubId}/members`, {
-      params: { page, limit },
-    });
-    return data;
+    return jsonFetch(`${API_BASE}/${clubId}/members?page=${page}&limit=${limit}`);
   },
 
-  async assignRole(clubId: string, userId: string, role: 'ADMIN' | 'MODERATOR' | 'MEMBER') {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/${clubId}/members/${userId}/assign-role`, {
-      role,
+  async assignRole(
+    clubId: string,
+    userId: string,
+    role: 'ADMIN' | 'MODERATOR' | 'MEMBER',
+  ) {
+    return jsonFetch(`${API_BASE}/${clubId}/members/${userId}/assign-role`, {
+      method: 'POST',
+      body: JSON.stringify({ role }),
     });
-    return data;
   },
 
   async removeMember(clubId: string, userId: string) {
-    const axios = getAxiosInstance();
-    const { data } = await axios.delete(`${API_BASE}/${clubId}/members/${userId}`);
-    return data;
+    return jsonFetch(`${API_BASE}/${clubId}/members/${userId}`, {
+      method: 'DELETE',
+    });
   },
 
-  // S3 Image Upload
-  async generateProfileImageUrl(fileName: string, fileType: string, fileSize: number) {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/generate-profile-image-url`, {
-      fileName,
-      fileType,
-      fileSize,
-    });
-    return data;
+  async generateProfileImageUrl(_fileName: string, _fileType: string, _fileSize: number) {
+    throw new Error(
+      'Presigned image uploads are no longer supported. Post the file to /api/upload with bucket=avatars.',
+    );
   },
 
-  async generateCoverImageUrl(fileName: string, fileType: string, fileSize: number) {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/generate-cover-image-url`, {
-      fileName,
-      fileType,
-      fileSize,
-    });
-    return data;
+  async generateCoverImageUrl(_fileName: string, _fileType: string, _fileSize: number) {
+    throw new Error(
+      'Presigned image uploads are no longer supported. Post the file to /api/upload with bucket=covers.',
+    );
   },
 
-  async uploadImageToS3(uploadUrl: string, file: File): Promise<void> {
-    const response = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Error al subir la imagen a S3');
-    }
+  async uploadImageToS3(_uploadUrl: string, _file: File): Promise<void> {
+    throw new Error(
+      'Direct S3 PUT is no longer supported. Post the file to /api/upload.',
+    );
   },
 };

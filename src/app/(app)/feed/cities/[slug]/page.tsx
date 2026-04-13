@@ -36,13 +36,13 @@ export default async function CityDetailPage({ params }: Props) {
   // Fetch en el servidor
   const city = await cityService.getCityBySlug(slug)
 
-  if (!city) {
+  if (!city || !(city as any).id || !city.stats) {
     notFound()
   }
 
   // Filtrar media por tipo
-  const photos = city.cityMedia.filter((m) => m.type === MediaType.IMAGE)
-  const videos = city.cityMedia.filter((m) => m.type === MediaType.VIDEO)
+  const photos = (city.cityMedia ?? []).filter((m) => m.type === MediaType.IMAGE)
+  const videos = (city.cityMedia ?? []).filter((m) => m.type === MediaType.VIDEO)
 
   return (
     <div className="space-y-6">

@@ -7,64 +7,41 @@ import {
   City,
   LocationFiltersData,
   State,
-} from '../interfaces/business.interfaces'
-
-import { getAxiosInstance } from '@/lib/legacy-api/client';
+} from '../interfaces/business.interfaces';
 
 const API_BASE = '/api/businesses';
 
-/**
- * Business Service
- * 
- * Servicio para manejar todas las operaciones relacionadas con negocios.
- * Usa axios con TanStack Query para caché y gestión de estado.
- */
+type JsonRecord = Record<string, unknown>;
+
+async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T | null> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    credentials: 'same-origin',
+  });
+  if (response.status === 404) return null;
+  const payload = (await response.json().catch(() => ({}))) as JsonRecord;
+  if (!response.ok) {
+    const message = (payload as { error?: string }).error || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return payload as T;
+}
+
 class BusinessService {
-  private getAxios() {
-    return getAxiosInstance();
-  }
-
-  /**
-   * Obtener negocio por ID
-   */
   async getBusinessById(id: string): Promise<BusinessDetailResponse | null> {
-    try {
-      const axios = this.getAxios();
-      const { data } = await axios.get(`${API_BASE}/${id}`);
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        return null;
-      }
-      throw error;
-    }
+    return jsonFetch<BusinessDetailResponse>(`${API_BASE}/${id}`);
   }
 
-  /**
-   * Obtener negocio por slug (URL-friendly)
-   */
   async getBusinessBySlug(slug: string): Promise<BusinessDetailResponse | null> {
-    try {
-      const axios = this.getAxios();
-      const { data } = await axios.get(`${API_BASE}/${slug}`);
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        return null;
-      }
-      throw error;
-    }
+    return jsonFetch<BusinessDetailResponse>(`${API_BASE}/${slug}`);
   }
 
-  /**
-   * Buscar y filtrar negocios con paginación
-   */
   async getBusinesses(filters: BusinessFilters = {}): Promise<BusinessesListResponse> {
-    const axios = this.getAxios();
-    
-    // Construir query params
     const params = new URLSearchParams();
-    
     if (filters.search) params.append('search', filters.search);
     if (filters.categoryId) params.append('categoryId', filters.categoryId);
     if (filters.cityId) params.append('cityId', filters.cityId);
@@ -73,112 +50,76 @@ class BusinessService {
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());
 
-    const { data } = await axios.get(`${API_BASE}?${params.toString()}`);
-    return data;
+    const data = await jsonFetch<BusinessesListResponse>(`${API_BASE}?${params.toString()}`);
+    return (
+      data ??
+      ({
+        businesses: [],
+        total: 0,
+        page: 1,
+        limit: filters.limit ?? 20,
+        hasMore: false,
+      } as unknown as BusinessesListResponse)
+    );
   }
 
-  /**
-   * Obtener negocios por ciudad
-   */
   async getBusinessesByCity(
     cityId: string,
-    filters: Omit<BusinessFilters, 'cityId'> = {}
+    filters: Omit<BusinessFilters, 'cityId'> = {},
   ): Promise<BusinessesListResponse> {
     return this.getBusinesses({ ...filters, cityId });
   }
 
-  /**
-   * Obtener negocios por categoría
-   */
   async getBusinessesByCategory(
     categoryId: string,
-    filters: Omit<BusinessFilters, 'categoryId'> = {}
+    filters: Omit<BusinessFilters, 'categoryId'> = {},
   ): Promise<BusinessesListResponse> {
     return this.getBusinesses({ ...filters, categoryId });
   }
 
-  /**
-   * Obtener todas las categorías de negocios
-   */
   async getCategories(): Promise<BusinessCategory[]> {
-    const axios = this.getAxios();
-    const { data } = await axios.get(`${API_BASE}/categories`);
-    return data;
+    const data = await jsonFetch<BusinessCategory[]>(`${API_BASE}/categories`);
+    return data ?? [];
   }
 
-  /**
-   * Obtener categoría por ID
-   */
   async getCategoryById(id: string): Promise<BusinessCategory | null> {
-    try {
-      const axios = this.getAxios();
-      const { data } = await axios.get(`${API_BASE}/categories/${id}`);
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        return null;
-      }
-      throw error;
-    }
+    return jsonFetch<BusinessCategory>(`${API_BASE}/categories/${id}`);
   }
 
-  /**
-   * Obtener datos de ubicación (estados y ciudades)
-   */
   async getLocationFilters(): Promise<LocationFiltersData> {
-    const axios = this.getAxios();
-    const { data } = await axios.get(`${API_BASE}/locations`);
-    return data;
+    const data = await jsonFetch<LocationFiltersData>(`${API_BASE}/locations`);
+    return data ?? ({ states: [], cities: [] } as unknown as LocationFiltersData);
   }
 
-  /**
-   * Obtener todos los estados/departamentos
-   */
   async getStates(): Promise<State[]> {
-    const axios = this.getAxios();
-    const { data } = await axios.get(`${API_BASE}/locations/states`);
-    return data;
+    const data = await jsonFetch<State[]>(`${API_BASE}/locations/states`);
+    return data ?? [];
   }
 
-  /**
-   * Obtener ciudades por estado
-   */
   async getCitiesByState(stateId: string): Promise<City[]> {
-    const axios = this.getAxios();
-    const { data } = await axios.get(`${API_BASE}/locations/states/${stateId}/cities`);
-    return data;
+    const data = await jsonFetch<City[]>(
+      `${API_BASE}/locations/states/${stateId}/cities`,
+    );
+    return data ?? [];
   }
 
-  /**
-   * Búsqueda rápida (autocompletado)
-   * Para usar en search bars con debounce
-   */
   async quickSearch(query: string, limit: number = 5): Promise<BusinessBasic[]> {
-    if (!query || query.length < 2) {
-      return [];
-    }
-
-    const axios = this.getAxios();
-    const params = new URLSearchParams({
-      search: query,
-      limit: limit.toString(),
-    });
-
-    const { data } = await axios.get(`${API_BASE}/quick-search?${params.toString()}`);
-    return data.businesses || [];
+    if (!query || query.length < 2) return [];
+    const params = new URLSearchParams({ search: query, limit: String(limit) });
+    const data = await jsonFetch<{ businesses: BusinessBasic[] }>(
+      `${API_BASE}/quick-search?${params.toString()}`,
+    );
+    return data?.businesses ?? [];
   }
 
-  /**
-   * Crear reseña para un negocio (requiere autenticación)
-   */
-  async createReview(businessId: string, review: {
-    rating: number;
-    title?: string;
-    comment?: string;
-  }) {
-    const axios = this.getAxios();
-    const { data } = await axios.post(`${API_BASE}/${businessId}/reviews`, review);
-    return data;
+  async createReview(
+    businessId: string,
+    review: { rating: number; title?: string; comment?: string },
+  ) {
+    return jsonFetch(`${API_BASE}/${businessId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(review),
+    });
   }
 }
 

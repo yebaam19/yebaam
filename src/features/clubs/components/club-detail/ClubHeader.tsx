@@ -32,7 +32,7 @@ export function ClubHeader({ club, isMember, isLoading, onMembershipToggle }: Cl
               <Image src={club.profileImageUrl} alt={club.name} fill className="object-cover" unoptimized />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700">
-                <span className="text-4xl font-bold text-white">{club.name.charAt(0).toUpperCase()}</span>
+                <span className="text-4xl font-bold text-white">{(club.name || '?').charAt(0).toUpperCase()}</span>
               </div>
             )}
           </div>

@@ -1,4 +1,8 @@
-import { getAxiosInstance } from '@/lib/legacy-api/client'
+async function jsonFetch<T>(url: string): Promise<T> {
+  const response = await fetch(url, { credentials: 'same-origin' })
+  if (!response.ok) throw new Error(`Request failed (${response.status})`)
+  return (await response.json()) as T
+}
 
 /**
  * Interfaz de categoría desde la API
@@ -34,9 +38,8 @@ class CityCategoryService {
    */
   async getActiveCategories(): Promise<CityCategory[]> {
     try {
-      const axios = await getAxiosInstance()
-      const response = await axios.get<CategoriesResponse>(`${this.baseUrl}/active`)
-      return response.data.categories
+      const data = await jsonFetch<CategoriesResponse>(`${this.baseUrl}/active`)
+      return data.categories ?? this.getFallbackCategories()
     } catch (error) {
       console.error('Error fetching active categories:', error)
       // Fallback a datos estáticos si falla la API
@@ -49,9 +52,8 @@ class CityCategoryService {
    */
   async getCategoryBySlug(slug: string): Promise<CityCategory | null> {
     try {
-      const axios = await getAxiosInstance()
-      const response = await axios.get<{ category: CityCategory }>(`${this.baseUrl}/${slug}`)
-      return response.data.category
+      const data = await jsonFetch<{ category: CityCategory }>(`${this.baseUrl}/${slug}`)
+      return data.category ?? null
     } catch (error) {
       console.error(`Error fetching category ${slug}:`, error)
       return null

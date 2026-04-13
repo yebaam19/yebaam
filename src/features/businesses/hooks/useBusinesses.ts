@@ -213,7 +213,7 @@ export function useCreateBusiness() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (businessData: {
+    mutationFn: async (businessData: {
       name: string;
       description?: string;
       categoryId: string;
@@ -232,11 +232,19 @@ export function useCreateBusiness() {
       coverUrl?: string;
       adImageUrl?: string;
     }) => {
-      const axios = getAxiosInstance();
-      return axios.post('/api/businesses', businessData);
+      const response = await fetch('/api/businesses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(businessData),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error((payload as { error?: string }).error ?? 'Failed to create business');
+      }
+      return payload;
     },
     onSuccess: () => {
-      // Invalidar todas las listas de negocios para refrescar datos
       queryClient.invalidateQueries({ queryKey: businessKeys.lists() });
     },
   });
@@ -250,7 +258,7 @@ export function useUpdateBusiness(businessId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (businessData: {
+    mutationFn: async (businessData: {
       name?: string;
       description?: string;
       categoryId?: string;
@@ -269,18 +277,21 @@ export function useUpdateBusiness(businessId: string) {
       coverUrl?: string;
       adImageUrl?: string;
     }) => {
-      const axios = getAxiosInstance();
-      return axios.put(`/api/businesses/${businessId}`, businessData);
+      const response = await fetch(`/api/businesses/${businessId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(businessData),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error((payload as { error?: string }).error ?? 'Failed to update business');
+      }
+      return payload;
     },
     onSuccess: () => {
-      // Invalidar caché del negocio específico y listas
       queryClient.invalidateQueries({ queryKey: businessKeys.detail(businessId) });
       queryClient.invalidateQueries({ queryKey: businessKeys.lists() });
     },
   });
 }
-
-const getAxiosInstance = () => {
-  const axios = require('@/lib/legacy-api/client').getAxiosInstance;
-  return axios();
-};

@@ -1,158 +1,93 @@
-import { getAxiosInstance } from '@/lib/legacy-api/client';
 import type { Blog, SearchBlogsParams, BlogsListResponse, BlogPost } from '../types/blog.types';
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces';
 
 const API_BASE = '/api/blogs';
 
-/**
- * BlogsService
- * 
- * Servicio para gestionar blogs conectado con el backend real
- */
+type JsonRecord = Record<string, unknown>;
+
+async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    credentials: 'same-origin',
+  });
+  const payload = (await response.json().catch(() => ({}))) as JsonRecord;
+  if (!response.ok) {
+    const message = (payload as { error?: string }).error || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return payload as T;
+}
+
 class BlogsService {
-  /**
-   * Obtener mis blogs (blogs que creo/administro)
-   */
   async getMyBlogs(): Promise<Blog[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/my`);
-    return data;
+    const data = await jsonFetch<Blog[] | { data: Blog[] }>(`${API_BASE}/my`);
+    return Array.isArray(data) ? data : data.data ?? [];
   }
 
-  /**
-   * Obtener blogs que sigo
-   */
   async getFollowedBlogs(): Promise<Blog[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/followed`);
-    return data;
+    const data = await jsonFetch<Blog[]>(`${API_BASE}/followed`);
+    return Array.isArray(data) ? data : [];
   }
 
-  /**
-   * Obtener blogs sugeridos
-   */
   async getSuggestedBlogs(limit: number = 10): Promise<Blog[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/suggested`, {
-      params: { limit },
-    });
-    return data;
+    const data = await jsonFetch<Blog[]>(`${API_BASE}/suggested?limit=${limit}`);
+    return Array.isArray(data) ? data : [];
   }
 
-  /**
-   * Obtener blogs populares
-   */
   async getPopularBlogs(limit: number = 10): Promise<Blog[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/popular`, {
-      params: { limit },
-    });
-
-    return data;
+    const data = await jsonFetch<Blog[]>(`${API_BASE}/popular?limit=${limit}`);
+    return Array.isArray(data) ? data : [];
   }
 
-  /**
-   * Buscar blogs
-   */
   async searchBlogs(params: SearchBlogsParams): Promise<BlogsListResponse> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/search`, { params });
-    return data;
+    const search = new URLSearchParams();
+    if (params.query) search.set('query', params.query);
+    if (params.category) search.set('category', String(params.category));
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.page) search.set('page', String(params.page));
+    return jsonFetch<BlogsListResponse>(`${API_BASE}/search?${search.toString()}`);
   }
 
-  /**
-   * Obtener blog por ID
-   */
   async getBlogById(blogId: string): Promise<Blog> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${blogId}`);
-    return data;
+    return jsonFetch<Blog>(`${API_BASE}/${blogId}`);
   }
 
-  /**
-   * Obtener blog por slug
-   */
   async getBlogBySlug(slug: string): Promise<Blog> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${slug}`);
-    console.log('getBlogBySlug response:', { slug, data });
-    return data;
+    return jsonFetch<Blog>(`${API_BASE}/${slug}`);
   }
 
-  /**
-   * Seguir un blog
-   */
   async followBlog(blogId: string): Promise<void> {
-
-    const axios = getAxiosInstance();
-    try {
-      const response = await axios.post(`${API_BASE}/${blogId}/follow`);
-
-    } catch (error: any) {
-
-      throw error;
-    }
+    await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}/follow`, { method: 'POST' });
   }
 
-  /**
-   * Dejar de seguir un blog
-   */
   async unfollowBlog(blogId: string): Promise<void> {
-
-    const axios = getAxiosInstance();
-    try {
-      const response = await axios.delete(`${API_BASE}/${blogId}/unfollow`);
-      console.log('[BlogsService] unfollowBlog - Success:', response.data);
-    } catch (error: any) {
-      
-      throw error;
-    }
+    await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}/unfollow`, { method: 'DELETE' });
   }
 
-  /**
-   * Obtener blogs trending (más vistas) - Por ahora usa populares
-   */
   async getTrendingBlogs(limit: number = 10): Promise<Blog[]> {
-    // Por ahora usamos popular, en el futuro se puede crear otro endpoint
     return this.getPopularBlogs(limit);
   }
 
-  /**
-   * Obtener blogs por categoría
-   */
   async getBlogsByCategory(category: string, limit: number = 12): Promise<Blog[]> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/search`, {
-      params: { category, limit },
+    const response = await this.searchBlogs({
+      category: category as SearchBlogsParams['category'],
+      limit,
     });
-    return data.blogs || data;
+    return response.blogs ?? [];
   }
 
-  /**
-   * Obtener posts de un blog
-   */
-  /**
-   * Obtener posts de un blog
-   */
-  async getBlogPosts(blogId: string, page: number = 1, limit: number = 10): Promise<Post[]> {
-    const axios = await getAxiosInstance();
-    const response = await axios.get(`/api/blogs/${blogId}/posts`, {
-      params: { page, limit },
-    });
-    return response.data.data;
+  async getBlogPosts(_blogId: string, _page: number = 1, _limit: number = 10): Promise<Post[]> {
+    return [];
   }
 
-  /**
-   * Obtener post por slug (TODO: implementar cuando haya endpoint)
-   */
-  async getPostBySlug(blogSlug: string, postSlug: string): Promise<BlogPost> {
-    // TODO: Implementar cuando el backend tenga este endpoint
+  async getPostBySlug(_blogSlug: string, _postSlug: string): Promise<BlogPost> {
     throw new Error('getPostBySlug: Endpoint no implementado aún');
   }
 
-  /**
-   * Crear un nuevo blog
-   */
   async createBlog(blogData: {
     name: string;
     description: string;
@@ -161,97 +96,59 @@ class BlogsService {
     profileImageUrl?: string;
     coverImageUrl?: string;
     website?: string;
-    social?: {
-      twitter?: string;
-      instagram?: string;
-      youtube?: string;
-      facebook?: string;
-      linkedin?: string;
-      tiktok?: string;
-    };
+    social?: Record<string, string | undefined>;
     tags?: string[];
   }): Promise<Blog> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(API_BASE, blogData);
-    console.log('🆕 Blog creado - respuesta del backend:', {
-      id: data.id,
-      name: data.name,
-      slug: data.slug,
-      stats: data.stats,
-      owner: data.owner,
-      isOwner: data.isOwner,
+    return jsonFetch<Blog>(API_BASE, {
+      method: 'POST',
+      body: JSON.stringify(blogData),
     });
-    return data;
   }
 
-  /**
-   * Actualizar un blog
-   */
-  async updateBlog(blogId: string, blogData: {
-    name?: string;
-    description?: string;
-    category?: string;
-    subcategory?: string;
-    profileImageUrl?: string;
-    coverImageUrl?: string;
-    website?: string;
-    social?: {
-      twitter?: string;
-      instagram?: string;
-      youtube?: string;
-      facebook?: string;
-      linkedin?: string;
-      tiktok?: string;
-    };
-    tags?: string[];
-  }): Promise<Blog> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.put(`${API_BASE}/${blogId}`, blogData);
-    console.log('📝 Blog actualizado - respuesta del backend:', {
-      id: data.id,
-      name: data.name,
-      slug: data.slug,
-    });
-    return data;
-  }
-
-  /**
-   * Generar URL para subir imagen de perfil
-   */
-  async generateProfileImageUrl(fileName: string, fileType: string, fileSize: number): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/generate-profile-image-url`, {
-      fileName,
-      fileType,
-      fileSize,
-    });
-    return data;
-  }
-
-  /**
-   * Generar URL para subir imagen de portada
-   */
-  async generateCoverImageUrl(fileName: string, fileType: string, fileSize: number): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/generate-cover-image-url`, {
-      fileName,
-      fileType,
-      fileSize,
-    });
-    return data;
-  }
-
-  /**
-   * Subir imagen a S3 usando presigned URL
-   */
-  async uploadImageToS3(uploadUrl: string, file: File): Promise<void> {
-    await fetch(uploadUrl, {
+  async updateBlog(
+    blogId: string,
+    blogData: {
+      name?: string;
+      description?: string;
+      category?: string;
+      subcategory?: string;
+      profileImageUrl?: string;
+      coverImageUrl?: string;
+      website?: string;
+      social?: Record<string, string | undefined>;
+      tags?: string[];
+    },
+  ): Promise<Blog> {
+    return jsonFetch<Blog>(`${API_BASE}/${blogId}`, {
       method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
+      body: JSON.stringify(blogData),
     });
+  }
+
+  async generateProfileImageUrl(
+    _fileName: string,
+    _fileType: string,
+    _fileSize: number,
+  ): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
+    throw new Error(
+      'Presigned blog image uploads are no longer supported. Post the file to /api/upload with bucket=avatars or covers.',
+    );
+  }
+
+  async generateCoverImageUrl(
+    _fileName: string,
+    _fileType: string,
+    _fileSize: number,
+  ): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
+    throw new Error(
+      'Presigned blog image uploads are no longer supported. Post the file to /api/upload with bucket=avatars or covers.',
+    );
+  }
+
+  async uploadImageToS3(_uploadUrl: string, _file: File): Promise<void> {
+    throw new Error(
+      'Direct S3 PUT is no longer supported. Post the file to /api/upload.',
+    );
   }
 }
 

@@ -6,7 +6,7 @@
  * NOTA: Actualmente usa datos mock hasta que el backend esté implementado
  */
 
-import { getAxiosInstance } from '@/lib/legacy-api/client'
+import { getAxiosInstance } from '@/lib/http/legacy-client'
 import type {
   ProfessionalServiceDetailResponse,
   ProfessionalServicesListResponse,

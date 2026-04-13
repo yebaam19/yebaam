@@ -11,6 +11,21 @@ Conventions for AI coding agents (Claude, Cursor, Codex, etc.) working in this r
 - When you find legacy code calling the old backend (e.g. `AuthService` in [src/features/auth/services/auth.service.ts](src/features/auth/services/auth.service.ts)), migrate it to InsForge rather than patching the axios call.
 - See the `insforge`, `insforge-cli`, `insforge-debug`, and `insforge-integrations` skills for SDK + infra usage.
 
+## HTTP layer: no axios, no legacy client
+
+`src/lib/legacy-api/client.ts` is **deprecated and being removed**. Do not import `getAxiosInstance`, `initAxios`, `setTokenProvider`, or any other export from `@/lib/legacy-api/*` in new code. Every remaining caller must be migrated.
+
+For anything that cannot be expressed as a direct `@insforge/sdk` call from the browser (server-only secrets, token stitching, aggregation, webhooks, OAuth callbacks), use **Next.js App Router Route Handlers** under `src/app/api/**/route.ts`:
+
+- File convention: https://nextjs.org/docs/app/api-reference/file-conventions/route
+- Full App Router API reference: https://nextjs.org/docs/app/api-reference
+- Export named HTTP methods (`GET`, `POST`, `PATCH`, `PUT`, `DELETE`) from `route.ts`. Use `NextRequest` / `NextResponse`.
+- Read cookies/headers via `next/headers` (`await cookies()`, `await headers()`).
+- On the server, build an InsForge client with `getServerClient()` from `@/lib/insforge/server` so the caller's access token is forwarded.
+- From the client, call the route with `fetch('/api/...')` — never through a shared axios-style wrapper.
+
+**Decision rule**: if a browser-side feature can talk to InsForge directly via `@insforge/sdk`, do that. Only add a Route Handler when the server is actually needed (secrets, cookie-only token handling, cross-table stitching, third-party webhooks).
+
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack default for dev + build)

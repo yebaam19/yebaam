@@ -1,14 +1,3 @@
-/**
- * Upload Service
- * 
- * Servicio para obtener URLs pre-firmadas de S3 y subir archivos
- */
-
-import { getAxiosInstance } from '@/lib/legacy-api/client';
-
-/**
- * DTO para solicitar URL de subida (S3)
- */
 export interface UploadUrlRequestDTO {
   fileName: string;
   fileType: string;
@@ -16,162 +5,121 @@ export interface UploadUrlRequestDTO {
   postId?: string;
 }
 
-/**
- * Respuesta del backend con URL de subida (S3)
- */
 export interface UploadUrlResponse {
-  uploadUrl: string;      // URL pre-firmada para hacer PUT
-  s3Key: string;          // Key del archivo en S3
-  expiresIn: number;      // Segundos hasta expiración
-  cloudFrontUrl: string;  // URL pública de CloudFront
+  uploadUrl: string;
+  s3Key: string;
+  expiresIn: number;
+  cloudFrontUrl: string;
 }
 
-/**
- * Resultado de la subida de un archivo
- */
 export interface UploadResult {
-  url: string;           // CloudFront URL
-  s3Key: string;         // S3 Key
+  url: string;
+  s3Key: string;
   fileName: string;
   fileType: string;
   fileSize: number;
-  type: 'image' | 'video'; // Tipo simplificado para el backend
+  type: 'image' | 'video';
+}
+
+type UploadResponsePayload = {
+  success: boolean;
+  data: {
+    url: string;
+    key: string;
+    bucket: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+  };
+};
+
+async function uploadViaRoute(
+  file: File,
+  bucket: string,
+  folder: string,
+  onProgress?: (progress: number) => void,
+): Promise<UploadResponsePayload['data']> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('bucket', bucket);
+    if (folder) form.append('folder', folder);
+
+    const xhr = new XMLHttpRequest();
+    if (onProgress) {
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      });
+    }
+
+    xhr.addEventListener('load', () => {
+      try {
+        const payload = JSON.parse(xhr.responseText || '{}') as Partial<UploadResponsePayload> & {
+          error?: string;
+        };
+        if (xhr.status >= 200 && xhr.status < 300 && payload.data) {
+          resolve(payload.data);
+        } else {
+          reject(new Error(payload.error || 'Error al subir el archivo'));
+        }
+      } catch (err) {
+        reject(err instanceof Error ? err : new Error('Error parsing upload response'));
+      }
+    });
+
+    xhr.addEventListener('error', () => reject(new Error('Error de red al subir el archivo')));
+    xhr.open('POST', '/api/upload');
+    xhr.send(form);
+  });
 }
 
 export class UploadService {
-  /**
-   * Obtiene una URL pre-firmada del backend para subir un archivo a S3
-   */
-  async getUploadUrl(data: UploadUrlRequestDTO): Promise<UploadUrlResponse> {
-    try {
-      console.log('🔗 [UploadService] Solicitando presigned URL:', data);
-      const axios = getAxiosInstance();
-      const response = await axios.post('/api/create-post/generate-upload-urls', {
-        files: [data]
-      });
-      
-      console.log(' [UploadService] Presigned URL recibida:', response.data);
-      
-      // El backend devuelve { urls: [...], total: n }
-      // Tomamos el primer elemento del array
-      return (response.data as { urls: UploadUrlResponse[] }).urls[0];
-    } catch (error: any) {
-
-      throw new Error(error.response?.data?.message || 'Error al obtener URL de subida');
-    }
+  async getUploadUrl(_data: UploadUrlRequestDTO): Promise<UploadUrlResponse> {
+    throw new Error(
+      'Presigned URL uploads are no longer supported. Use uploadService.uploadFile(file) which posts to /api/upload.',
+    );
   }
 
-  /**
-   * Sube un archivo usando la URL pre-firmada de S3
-   */
   async uploadFileToUrl(
-    file: File,
-    uploadUrl: string,
-    onProgress?: (progress: number) => void
+    _file: File,
+    _uploadUrl: string,
+    _onProgress?: (progress: number) => void,
   ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      // Progreso de subida
-      if (onProgress) {
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const progress = Math.round((e.loaded / e.total) * 100);
-            onProgress(progress);
-          }
-        });
-      }
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error('Error al subir el archivo a S3'));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('Error de red al subir el archivo'));
-      });
-
-      xhr.open('PUT', uploadUrl);
-      xhr.setRequestHeader('Content-Type', file.type);
-      xhr.send(file);
-    });
+    throw new Error(
+      'Direct S3 PUT is no longer supported. Use uploadService.uploadFile(file) which posts to /api/upload.',
+    );
   }
 
-  /**
-   * Proceso completo: obtiene URL de S3 y sube el archivo
-   */
   async uploadFile(
     file: File,
     postId?: string,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ): Promise<UploadResult> {
-    try {
-      console.log(' [UploadService] Iniciando upload de archivo:', {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        postId
-      });
-
-      // 1. Obtener URL pre-firmada del backend
-      const uploadData: UploadUrlRequestDTO = {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        postId,
-      };
-
-      const { uploadUrl, s3Key, cloudFrontUrl } = await this.getUploadUrl(uploadData);
-
-      console.log('📡 [UploadService] Subiendo a S3...', { s3Key, cloudFrontUrl });
-
-      // 2. Subir archivo a S3 usando la URL pre-firmada
-      await this.uploadFileToUrl(file, uploadUrl, onProgress);
-
-      console.log(' [UploadService] Archivo subido exitosamente');
-
-      // 3. Determinar tipo (image o video)
-      const type: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image';
-
-      // 4. Retornar información del archivo subido
-      const result: UploadResult = {
-        url: cloudFrontUrl,  // URL de CloudFront
-        s3Key,               // Key en S3
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        type,
-      };
-
-      console.log('📦 [UploadService] Resultado final:', result);
-
-      return result;
-    } catch (error) {
-      console.error(' [UploadService] Error uploading file:', error);
-      throw error;
-    }
+    const folder = postId ? `posts/${postId}` : 'posts';
+    const data = await uploadViaRoute(file, 'posts', folder, onProgress);
+    const type: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image';
+    return {
+      url: data.url,
+      s3Key: data.key,
+      fileName: data.fileName,
+      fileType: data.fileType,
+      fileSize: data.fileSize,
+      type,
+    };
   }
 
-  /**
-   * Sube múltiples archivos a S3
-   */
   async uploadMultipleFiles(
     files: File[],
     postId?: string,
-    onProgress?: (fileIndex: number, progress: number) => void
+    onProgress?: (fileIndex: number, progress: number) => void,
   ): Promise<UploadResult[]> {
-    const uploadPromises = files.map((file, index) => {
-      return this.uploadFile(
-        file,
-        postId,
-        onProgress ? (progress) => onProgress(index, progress) : undefined
-      );
-    });
-
-    return Promise.all(uploadPromises);
+    return Promise.all(
+      files.map((file, index) =>
+        this.uploadFile(file, postId, onProgress ? (p) => onProgress(index, p) : undefined),
+      ),
+    );
   }
 }
 
