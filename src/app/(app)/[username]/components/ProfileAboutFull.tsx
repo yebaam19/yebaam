@@ -11,7 +11,7 @@ import {
   GlobeAltIcon,
   PhoneIcon,
   EnvelopeIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 interface ProfileAboutFullProps {
   username: string;

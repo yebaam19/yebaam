@@ -1,6 +1,6 @@
 'use client'
 
-import { GlobeAmericasIcon, SparklesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { GlobeAmericasIcon, SparklesIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 import { useGlobalStats } from '../hooks/useGlobalStats'
 
 /**

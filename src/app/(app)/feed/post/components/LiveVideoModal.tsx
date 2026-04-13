@@ -16,7 +16,7 @@ import {
   LockClosedIcon,
   CheckCircleIcon,
   SignalIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth';
 import { useLiveStream } from '@/features/live-stream/hooks/useLiveStream';

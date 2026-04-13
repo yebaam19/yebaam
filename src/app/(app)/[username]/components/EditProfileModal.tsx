@@ -7,7 +7,7 @@ import {
   BriefcaseIcon,
   EnvelopeIcon,
   TagIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { GeneralTab, WorkEducationTab, ContactTab, InterestsTab } from './EditProfile';
 

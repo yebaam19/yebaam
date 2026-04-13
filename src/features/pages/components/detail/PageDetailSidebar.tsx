@@ -8,7 +8,7 @@ import {
   TrophyIcon,
   ChatBubbleLeftRightIcon,
   ShoppingBagIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { usePagePhotosCount } from '../../hooks/usePagePhotos';
 import { usePageBySlug } from '../../hooks/usePages';
 import { useReviewStats } from '../../hooks/usePageReviews';

@@ -7,7 +7,7 @@
 import ButtonPrimary from '@/ui/ButtonPrimary'
 import ButtonSecondary from '@/ui/ButtonSecondary'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { Fragment, ReactNode } from 'react'
 
 interface BaseDialogProps {

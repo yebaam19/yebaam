@@ -6,7 +6,7 @@
  * Muestra los horarios de atención del negocio.
  */
 
-import { ClockIcon } from '@heroicons/react/24/outline'
+import { ClockIcon } from '@/components/icons/heroicons-shim'
 
 interface BusinessHoursData {
   monday?: string

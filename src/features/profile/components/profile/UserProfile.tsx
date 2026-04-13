@@ -3,7 +3,7 @@
 import coverPlaceholder from '@/images/cover-placeholder.png';
 import { formatNumber } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
-import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { FriendshipStatus, UserProfile as UserProfileType } from '../../interfaces/profile.interfaces';

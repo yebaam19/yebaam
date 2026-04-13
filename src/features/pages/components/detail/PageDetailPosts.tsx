@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon } from '@/components/icons/heroicons-shim';
 import { useQuery } from '@tanstack/react-query';
 import { CreatePostCard } from '@/components/CreatePostCard';
 import { CreatePostModal, usePostStore } from '@/features/post';

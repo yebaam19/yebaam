@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { CheckBadgeIcon, UserPlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon, UserPlusIcon, ChatBubbleLeftIcon } from '@/components/icons/heroicons-shim';
 import { CommunityMember } from '../../interfaces/community.interface';
 import Image from 'next/image';
 import Link from 'next/link';

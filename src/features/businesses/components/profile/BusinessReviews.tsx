@@ -6,8 +6,8 @@
  * Sección de reseñas del negocio con ratings y comentarios.
  */
 
-import { ChatBubbleLeftIcon, StarIcon, UserCircleIcon } from '@heroicons/react/24/outline'
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+import { ChatBubbleLeftIcon, StarIcon, UserCircleIcon } from '@/components/icons/heroicons-shim'
+import { StarIcon as StarSolidIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useState } from 'react'
 import { BusinessReview } from '../../interfaces/business.interfaces'

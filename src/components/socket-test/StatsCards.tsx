@@ -1,4 +1,4 @@
-import { UserIcon, SignalIcon } from '@heroicons/react/24/solid';
+import { UserIcon, SignalIcon } from '@/components/icons/heroicons-shim';
 
 interface StatsCardsProps {
   connectedUsers: number;

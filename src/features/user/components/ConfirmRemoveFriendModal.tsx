@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon } from '@/components/icons/heroicons-shim';
 
 interface ConfirmRemoveFriendModalProps {
   isOpen: boolean;

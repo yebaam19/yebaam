@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UserGroupIcon, PlusIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, PlusIcon, SparklesIcon } from '@/components/icons/heroicons-shim';
 import { GroupsGrid, GroupsSearchBar, GroupsEmptyState, CreateGroupModal } from '@/features/groups/components';
 import { useMyGroups, useSuggestedGroups, useSearchGroups } from '@/features/groups/hooks/useGroups';
 import { useGroupsUIStore } from '@/features/groups/store/groupsUIStore';

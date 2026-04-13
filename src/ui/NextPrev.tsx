@@ -2,8 +2,8 @@
 
 import React, { FC } from 'react'
 import twFocusClass from '@/utils/twFocusClass'
-import { ChevronLeftIcon } from '@heroicons/react/24/outline'
-import { ChevronRightIcon } from '@heroicons/react/24/solid'
+import { ChevronLeftIcon } from '@/components/icons/heroicons-shim'
+import { ChevronRightIcon } from '@/components/icons/heroicons-shim'
 
 export interface NextPrevProps {
 	className?: string

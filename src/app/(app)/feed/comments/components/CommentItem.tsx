@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/features/auth'
 import { useSocket } from '@/providers/socket-provider'
-import { ChatBubbleLeftIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import { ChatBubbleLeftIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons/heroicons-shim'
 import { useCallback, useEffect, useState } from 'react'
 import type { Comment, CommentUpdatedPayload } from '../interfaces/comment.interfaces'
 import { commentService } from '../services/comment.service'

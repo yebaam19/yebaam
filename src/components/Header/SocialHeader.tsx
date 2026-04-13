@@ -15,12 +15,12 @@ import {
   PlayIcon,
   UserGroupIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import {
   HomeIcon as HomeIconSolid,
   PlayIcon as PlayIconSolid,
   UserGroupIcon as UserGroupIconSolid,
-} from '@heroicons/react/24/solid'
+} from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStoryStore } from '../store';
 import { useStorySocket } from '../hooks/useStorySocket';
-import { PlusIcon } from '@heroicons/react/24/solid';
+import { PlusIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth/context/auth-context';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim';
 import { PageProduct } from '@/interfaces/page-product.interface';
 import { useUpdateProduct, useDeleteProduct } from '@/hooks/usePageProducts';
 import { ProductPriceDisplay } from './ProductPriceDisplay';

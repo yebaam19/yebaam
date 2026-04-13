@@ -1,6 +1,6 @@
 'use client';
 
-import { GlobeAltIcon, UserGroupIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, UserGroupIcon, LockClosedIcon } from '@/components/icons/heroicons-shim';
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Público', icon: GlobeAltIcon, description: 'Cualquiera puede ver' },

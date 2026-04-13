@@ -1,6 +1,6 @@
 'use client';
 
-import { ClockIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { useSearchHistory } from '../hooks/useSearchHistory';
 import type { SearchResultType } from '../interfaces/search.interfaces';

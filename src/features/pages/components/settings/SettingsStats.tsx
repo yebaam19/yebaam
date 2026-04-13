@@ -7,7 +7,7 @@ import {
   EyeIcon,
   ArrowTrendingUpIcon,
   ArrowDownTrayIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 interface SettingsStatsProps {
   page: Page;

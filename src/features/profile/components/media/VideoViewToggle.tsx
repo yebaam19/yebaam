@@ -1,6 +1,6 @@
 'use client';
 
-import { Squares2X2Icon, ListBulletIcon, TableCellsIcon } from '@heroicons/react/24/outline';
+import { Squares2X2Icon, ListBulletIcon, TableCellsIcon } from '@/components/icons/heroicons-shim';
 
 export type VideoViewMode = 'grid' | 'card' | 'list';
 

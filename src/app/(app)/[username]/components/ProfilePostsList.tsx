@@ -1,6 +1,6 @@
 'use client';
 
-import { PhotoIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 
 interface ProfilePostsListProps {
   username: string;

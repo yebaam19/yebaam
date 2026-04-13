@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { VideoCameraIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { VideoCameraIcon, PlayIcon } from '@/components/icons/heroicons-shim';
 
 interface ReelsEmptyStateProps {
   isOwner: boolean;

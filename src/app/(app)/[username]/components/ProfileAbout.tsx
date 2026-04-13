@@ -7,7 +7,7 @@ import {
   HeartIcon,
   BriefcaseIcon,
   AcademicCapIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 interface ProfileAboutProps {
   bio?: string;

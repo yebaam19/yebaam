@@ -23,7 +23,7 @@ import {
   UserIcon,
   UsersIcon,
   VideoCameraIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import type { FeatureFlag } from './features-flag';
 import { isFeatureEnabled } from './features-flag';
 

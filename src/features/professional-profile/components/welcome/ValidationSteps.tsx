@@ -6,7 +6,7 @@
 
 'use client'
 
-import { ArrowUpTrayIcon, CheckBadgeIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
+import { ArrowUpTrayIcon, CheckBadgeIcon, ShieldCheckIcon } from '@/components/icons/heroicons-shim'
 
 const steps = [
   {

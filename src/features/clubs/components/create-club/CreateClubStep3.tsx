@@ -1,4 +1,4 @@
-import { PhotoIcon } from '@heroicons/react/24/outline'
+import { PhotoIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { FC, useState } from 'react'
 import { useUploadClubImage } from '../../hooks/useClubs'

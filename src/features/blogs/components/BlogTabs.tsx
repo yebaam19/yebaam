@@ -1,4 +1,4 @@
-import { DocumentTextIcon, InformationCircleIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, InformationCircleIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 
 export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de'
 

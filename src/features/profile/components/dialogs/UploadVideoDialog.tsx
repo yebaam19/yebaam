@@ -11,7 +11,7 @@ import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/re
 import ButtonPrimary from '@/ui/ButtonPrimary'
 import ButtonSecondary from '@/ui/ButtonSecondary'
 import Textarea from '@/ui/Textarea'
-import { VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { VideoCameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useProfileMediaStore } from '../../store/profile-media.store'
 
 interface UploadVideoDialogProps {

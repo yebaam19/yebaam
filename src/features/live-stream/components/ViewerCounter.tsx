@@ -1,6 +1,6 @@
 'use client';
 
-import { EyeIcon } from '@heroicons/react/24/solid';
+import { EyeIcon } from '@/components/icons/heroicons-shim';
 
 interface ViewerCounterProps {
   viewerCount: number;

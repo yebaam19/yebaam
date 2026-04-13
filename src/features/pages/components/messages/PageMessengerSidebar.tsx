@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { usePageConversations } from '../../hooks/usePageMessages';
 import { PageConversation } from '../../interfaces/page-conversation.interface';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 

@@ -5,7 +5,7 @@
  * y mensajes de confirmación
  */
 
-import { XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CheckIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 interface FriendRequestActionsProps {

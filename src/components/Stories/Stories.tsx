@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useStoryStore } from '@/app/(app)/stories/store/story.store';
 import { useStorySocket } from '@/app/(app)/stories/hooks/useStorySocket';

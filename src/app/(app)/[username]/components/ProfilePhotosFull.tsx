@@ -8,7 +8,7 @@ import {
   FunnelIcon,
   Squares2X2Icon,
   ListBulletIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import UploadPhotoDialog from '@/features/profile/components/dialogs/UploadPhotoDialog';
 import CreateAlbumDialog from '@/features/profile/components/dialogs/CreateAlbumDialog';
 import { useProfileMediaStore } from '@/features/profile/store/profile-media.store';

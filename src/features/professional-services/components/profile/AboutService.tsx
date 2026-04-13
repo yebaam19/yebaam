@@ -1,4 +1,4 @@
-import { BriefcaseIcon, ClockIcon, CurrencyDollarIcon, TagIcon } from '@heroicons/react/24/outline'
+import { BriefcaseIcon, ClockIcon, CurrencyDollarIcon, TagIcon } from '@/components/icons/heroicons-shim'
 import { ProfessionalService } from '../../interfaces/professional-service.interfaces'
 
 interface AboutServiceProps {

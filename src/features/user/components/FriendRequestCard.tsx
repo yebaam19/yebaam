@@ -6,7 +6,7 @@ import {
   CheckIcon,
   XMarkIcon,
   ClockIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { FriendRequest } from '@/features/user/services/friend-request.service';
 

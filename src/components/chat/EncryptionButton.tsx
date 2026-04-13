@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, LockOpenIcon } from '@/components/icons/heroicons-shim';
 import EncryptionModal from './EncryptionModal';
 
 interface EncryptionButtonProps {

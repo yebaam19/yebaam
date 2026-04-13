@@ -1,4 +1,4 @@
-import { DocumentTextIcon, EyeIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, EyeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 import { formatFollowersCount, formatViewsCount } from '../utils/blogHelpers'
 
 interface BlogStatsProps {

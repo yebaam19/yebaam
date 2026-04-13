@@ -6,7 +6,7 @@ import {
   CheckBadgeIcon,
   GlobeAltIcon,
   LockClosedIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import type { Club } from '../types/club.types';
 import {
   getCategoryLabel,

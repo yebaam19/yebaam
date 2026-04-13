@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PhotoIcon } from '@/components/icons/heroicons-shim';
 import { useCreateGroup } from '../hooks/useGroups';
 import { toast } from 'sonner';
 

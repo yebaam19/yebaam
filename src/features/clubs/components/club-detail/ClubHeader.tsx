@@ -7,7 +7,7 @@ import {
   getMembershipTierLabel,
   getTierBadgeColor,
 } from '@/features/clubs/utils/clubHelpers'
-import { CheckBadgeIcon, GlobeAltIcon, LockClosedIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, GlobeAltIcon, LockClosedIcon, UsersIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 
 interface ClubHeaderProps {

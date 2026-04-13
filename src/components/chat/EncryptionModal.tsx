@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { XMarkIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@/components/icons/heroicons-shim';
 import { useEnableEncryption, useDisableEncryption } from '@/features/chat/hooks/useEncryption';
 import { useEncryptionStore } from '@/features/chat/store/encryption.store';
 

@@ -1,4 +1,4 @@
-import { XMarkIcon, MinusIcon, PhoneIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MinusIcon, PhoneIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 

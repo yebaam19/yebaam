@@ -1,6 +1,6 @@
 'use client';
 
-import { UserGroupIcon, UserPlusIcon, SparklesIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, UserPlusIcon, SparklesIcon, PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
 
 interface FriendsStatsProps {
   totalFriends: number;

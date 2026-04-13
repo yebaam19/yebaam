@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { PaperAirplaneIcon, PhotoIcon, FaceSmileIcon } from '@heroicons/react/24/outline';
+import { PaperAirplaneIcon, PhotoIcon, FaceSmileIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 interface ChatBubbleInputProps {

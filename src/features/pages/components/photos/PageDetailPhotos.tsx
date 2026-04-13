@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { PlusIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PhotoIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 import { usePagePhotos, useDeletePagePhoto } from '../../hooks/usePagePhotos';
 import { PagePhoto } from '../../interfaces/page-photo.interface';
 import { UploadPhotoModal } from './UploadPhotoModal';

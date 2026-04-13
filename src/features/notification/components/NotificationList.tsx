@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { BellIcon, CheckIcon } from '@/components/icons/heroicons-shim';
 import NotificationItem from './NotificationItem';
 import type { Notification } from '../interfaces/notification.interfaces';
 

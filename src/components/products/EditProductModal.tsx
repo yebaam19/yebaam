@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { useForm } from 'react-hook-form';
 import { PageProduct, CreateProductDto } from '@/interfaces/page-product.interface';
 import { useUpdateProduct } from '@/hooks/usePageProducts';

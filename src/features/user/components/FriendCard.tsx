@@ -6,8 +6,8 @@ import {
   EllipsisHorizontalIcon,
   StarIcon,
   UserMinusIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
+import { StarIcon as StarIconSolid } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import { Friend } from '@/features/user/services/friends.service';

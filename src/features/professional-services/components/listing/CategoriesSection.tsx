@@ -17,7 +17,7 @@ import {
   HeartIcon,
   PaintBrushIcon,
   ScaleIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { ComponentType, SVGProps } from 'react'
 

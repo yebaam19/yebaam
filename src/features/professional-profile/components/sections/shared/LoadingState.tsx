@@ -7,7 +7,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 
 interface LoadingStateProps {
   className?: string

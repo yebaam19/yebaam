@@ -1,4 +1,4 @@
-import { EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalCircleIcon } from '@/components/icons/heroicons-shim';
 
 interface SidebarTabsProps {
   activeTab: 'inbox' | 'community';

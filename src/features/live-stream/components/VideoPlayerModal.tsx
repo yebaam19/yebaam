@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { XMarkIcon, UserIcon, EyeIcon, ClockIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, UserIcon, EyeIcon, ClockIcon, ChatBubbleLeftIcon } from '@/components/icons/heroicons-shim';
 import { useRef, useEffect, useState } from 'react';
 import { liveStreamService } from '../services/live-stream.service';
 import { LiveStreamChat } from './LiveStreamChat';

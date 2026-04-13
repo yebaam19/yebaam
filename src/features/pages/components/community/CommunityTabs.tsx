@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { UsersIcon, StarIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { UsersIcon, StarIcon, ClockIcon } from '@/components/icons/heroicons-shim';
 
 export type CommunityTabType = 'all' | 'followers' | 'fans';
 

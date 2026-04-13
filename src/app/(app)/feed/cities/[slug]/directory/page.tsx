@@ -1,7 +1,7 @@
 import { DirectoryCategoriesGrid } from '@/features/cities/components/directory/DirectoryCategoriesGrid'
 import { DirectoryHero } from '@/features/cities/components/directory/DirectoryHero'
 import { cityService } from '@/features/cities/services/city.service'
-import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, HomeIcon } from '@/components/icons/heroicons-shim'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'

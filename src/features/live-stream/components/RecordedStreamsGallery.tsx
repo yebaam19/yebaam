@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { liveStreamService } from '../services/live-stream.service';
-import { PlayIcon, ClockIcon, EyeIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, ClockIcon, EyeIcon } from '@/components/icons/heroicons-shim';
 
 interface RecordedStream {
   id: string;

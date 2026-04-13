@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PhotoIcon, UserIcon, FolderIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { HeartIcon, ChatBubbleOvalLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { PhotoIcon, UserIcon, FolderIcon, ArrowPathIcon } from '@/components/icons/heroicons-shim';
+import { HeartIcon, ChatBubbleOvalLeftIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth';
 import { useProfileMediaStore } from '@/features/profile/store/profile-media.store';
 import { ProfilePhoto } from '@/features/profile/services/profile-media.service';

@@ -19,7 +19,7 @@ import {
   PlusIcon,
   TrashIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import { Fragment, useCallback, useState } from 'react'
 import type { PortfolioProject } from '../../interfaces/professional-service.interfaces'
 

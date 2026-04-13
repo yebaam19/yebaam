@@ -1,4 +1,4 @@
-import { EnvelopeIcon, PhoneIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, PhoneIcon, GlobeAltIcon } from '@/components/icons/heroicons-shim';
 
 interface ContactTabProps {
   formData: {

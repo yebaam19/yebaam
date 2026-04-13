@@ -7,7 +7,7 @@
  * Adapted from legacy ArticleWrapper.tsx component.
  */
 
-import { BriefcaseIcon, DocumentTextIcon, UserIcon } from '@heroicons/react/24/outline'
+import { BriefcaseIcon, DocumentTextIcon, UserIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { ArticleContextType } from '../interfaces'
 

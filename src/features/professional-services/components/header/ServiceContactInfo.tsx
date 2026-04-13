@@ -1,4 +1,4 @@
-import { EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/solid'
+import { EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 interface ServiceContactInfoProps {

@@ -1,7 +1,7 @@
 'use client'
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { FaceSmileIcon } from '@heroicons/react/24/outline'
+import { FaceSmileIcon } from '@/components/icons/heroicons-shim'
 import { ACTIVITIES, FEELINGS } from '../constants/post.constants'
 import type { PostFeeling } from '../interfaces/post.interfaces'
 import { cn } from '@/lib/utils'

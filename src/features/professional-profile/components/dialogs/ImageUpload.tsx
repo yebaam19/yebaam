@@ -7,7 +7,7 @@
 
 'use client'
 
-import { ArrowPathIcon, ArrowUpTrayIcon, LinkIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ArrowUpTrayIcon, LinkIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'

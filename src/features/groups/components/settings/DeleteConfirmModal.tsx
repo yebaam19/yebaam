@@ -1,6 +1,6 @@
 'use client';
 
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@/components/icons/heroicons-shim';
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;

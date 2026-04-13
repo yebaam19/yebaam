@@ -5,7 +5,7 @@
  * Sección de bienvenida con información sobre clubes y botón de creación.
  */
 
-import { ShieldCheckIcon, UsersIcon, SparklesIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon, UsersIcon, SparklesIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 
 import { BackgroundPattern } from '@/components/BackgroundPattern';
 import { cn } from '@/lib/utils';

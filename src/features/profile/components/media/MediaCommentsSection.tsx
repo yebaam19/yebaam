@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChatBubbleOvalLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { UserIcon } from '@heroicons/react/24/solid';
+import { ChatBubbleOvalLeftIcon, TrashIcon } from '@/components/icons/heroicons-shim';
+import { UserIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 import { useAuth } from '@/features/auth';
 import {

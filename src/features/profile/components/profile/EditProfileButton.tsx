@@ -6,7 +6,7 @@
  * Botón para abrir el diálogo de edición de perfil
  */
 
-import { PencilSquareIcon } from '@heroicons/react/24/outline'
+import { PencilSquareIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import EditProfileDialog from '../dialogs/EditProfileDialog'

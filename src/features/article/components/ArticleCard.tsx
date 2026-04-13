@@ -7,7 +7,7 @@
  */
 
 import Avatar from '@/ui/Avatar'
-import { ChatBubbleLeftIcon, ClockIcon, EyeIcon, HeartIcon } from '@heroicons/react/24/outline'
+import { ChatBubbleLeftIcon, ClockIcon, EyeIcon, HeartIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArticleBasic } from '../interfaces'

@@ -7,7 +7,7 @@ import {
   UserGroupIcon,
   PhotoIcon,
   VideoCameraIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 export type ProfileTab = 'posts' | 'about' | 'friends' | 'photos' | 'videos';
 

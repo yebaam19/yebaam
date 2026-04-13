@@ -9,7 +9,7 @@ import {
   PhotoIcon,
   ShieldCheckIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import { Fragment, useRef, useState } from 'react'
 import { MediaType } from '../interfaces/city.interfaces'
 import { cityService } from '../services/city.service'

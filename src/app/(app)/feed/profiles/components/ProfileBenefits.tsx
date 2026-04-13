@@ -1,6 +1,6 @@
 'use client';
 
-import { GlobeAltIcon, UsersIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, UsersIcon, BookOpenIcon } from '@/components/icons/heroicons-shim';
 import { BackgroundPattern } from '@/components/BackgroundPattern';
 
 const benefits = [

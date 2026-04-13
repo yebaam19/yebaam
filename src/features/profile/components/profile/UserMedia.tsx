@@ -6,7 +6,7 @@
  * Muestra fotos y videos del usuario
  */
 
-import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, PlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useUserPhotos, useUserVideos } from '../../hooks/useProfile'

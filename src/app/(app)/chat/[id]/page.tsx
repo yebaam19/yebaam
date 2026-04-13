@@ -8,7 +8,7 @@ import { useSocket } from '@/providers/socket-provider';
 import ChatHeader from '@/components/chat/ChatHeader';
 import MessagesList from '@/components/chat/MessagesList';
 import ChatInput from '@/components/chat/ChatInput';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import type { MessageMedia } from '@/features/chat/types';
 
 export default function ChatPage() {

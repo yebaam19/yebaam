@@ -1,6 +1,6 @@
 'use client';
 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from '@/components/icons/heroicons-shim';
 
 interface SearchBarProps {
   value: string;

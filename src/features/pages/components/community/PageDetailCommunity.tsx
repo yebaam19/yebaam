@@ -4,7 +4,7 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   ChevronDownIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { Menu, Transition } from '@headlessui/react';
 import { usePageFollowers } from '../../hooks/usePageCommunity';
 import { FollowerSortBy } from '../../services/page-community.service';

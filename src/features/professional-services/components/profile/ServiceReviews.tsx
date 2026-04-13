@@ -1,4 +1,4 @@
-import { StarIcon } from '@heroicons/react/24/solid'
+import { StarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { ProfessionalServiceReview } from '../../interfaces/professional-service.interfaces'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/ui/Button'
-import { PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { MediaType } from '../interfaces/city.interfaces'
 import { CityPhotoUploadDialog } from './CityPhotoUploadDialog'

@@ -1,4 +1,4 @@
-import { FunnelIcon } from '@heroicons/react/24/solid';
+import { FunnelIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { EVENT_CATEGORIES } from '@/config/socket-events';
 

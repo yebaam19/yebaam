@@ -6,7 +6,7 @@
 
 'use client'
 
-import { AcademicCapIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { AcademicCapIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddTitle, useUpdateTitle, useDeleteTitle } from '../../hooks'
 import type { Title } from '../../interfaces/professional-profile.interfaces'

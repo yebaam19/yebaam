@@ -6,7 +6,7 @@ import {
   ArrowPathIcon,
   TrashIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 interface SettingsDangerZoneProps {
   page: Page;

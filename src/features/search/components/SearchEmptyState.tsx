@@ -1,6 +1,6 @@
 'use client';
 
-import { MagnifyingGlassIcon, FaceFrownIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FaceFrownIcon, ExclamationTriangleIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 interface EmptyStateProps {

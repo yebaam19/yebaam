@@ -1,6 +1,6 @@
 'use client';
 
-import { PencilIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 
 interface EditInfoSectionProps {
   onEdit: () => void;

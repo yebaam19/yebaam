@@ -6,7 +6,7 @@ import {
   MapPinIcon,
   CalendarIcon,
   ChartBarIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import type { Page } from '../../types/page.types';
 import { getCategoryLabel, formatRelativeDate } from '../../utils/pageHelpers';
 

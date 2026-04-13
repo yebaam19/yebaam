@@ -7,7 +7,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { LanguageIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { LanguageIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddLanguage, useDeleteLanguage, useUpdateLanguage } from '../../hooks'
 import type { Language } from '../../interfaces/professional-profile.interfaces'

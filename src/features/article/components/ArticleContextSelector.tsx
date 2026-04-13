@@ -10,8 +10,8 @@
 
 import { Button } from '@/ui/Button'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { BookOpenIcon, BriefcaseIcon, ChevronDownIcon, UserGroupIcon, UserIcon } from '@heroicons/react/24/outline'
-import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import { BookOpenIcon, BriefcaseIcon, ChevronDownIcon, UserGroupIcon, UserIcon } from '@/components/icons/heroicons-shim'
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect, useState } from 'react'
 import { ArticleContext, ArticleContextType } from '../interfaces'
 import { articleService } from '../services'

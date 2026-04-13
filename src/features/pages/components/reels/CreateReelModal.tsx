@@ -8,7 +8,7 @@ import {
   ArrowUpTrayIcon,
   PlayIcon,
   StopIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postService } from '@/app/(app)/feed/post/services/post.service';
 

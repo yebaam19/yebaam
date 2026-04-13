@@ -1,4 +1,4 @@
-import { ClockIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import { ClockIcon, CurrencyDollarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ProfessionalServiceBasic } from '../../interfaces/directory.interfaces'

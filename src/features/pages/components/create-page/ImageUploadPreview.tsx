@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface ImageUploadPreviewProps {
   preview: string | null;

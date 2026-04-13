@@ -5,7 +5,7 @@ import { FamilyMember, FamilyTreeData } from './types';
 import { mockFamilyTree } from './mockData';
 import { FamilyMemberCard } from './FamilyMemberCard';
 
-import { PlusIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, ArrowsPointingOutIcon } from '@/components/icons/heroicons-shim';
 import { AddMemberModal } from './AddMemberModal';
 
 interface TreeNode {

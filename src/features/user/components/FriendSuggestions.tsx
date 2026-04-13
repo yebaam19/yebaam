@@ -1,7 +1,7 @@
 'use client'
 
-import { UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import { UserPlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'

@@ -13,7 +13,7 @@ import {
   UsersIcon,
   DocumentTextIcon,
   InformationCircleIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useGroup } from '@/features/groups/hooks/useGroups';
 
 type TabType = 'posts' | 'members' | 'about';

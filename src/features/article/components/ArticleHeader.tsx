@@ -17,7 +17,7 @@ import {
   HeartIcon,
   PencilSquareIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Article } from '../interfaces'

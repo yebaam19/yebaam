@@ -10,8 +10,8 @@ import {
   BellIcon,
   ChatBubbleLeftIcon,
   EllipsisHorizontalIcon,
-} from '@heroicons/react/24/outline';
-import { BellIcon as BellSolidIcon } from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
+import { BellIcon as BellSolidIcon } from '@/components/icons/heroicons-shim';
 import type { Page } from '../../types/page.types';
 import { formatFollowersCount } from '../../utils/pageHelpers';
 import { useFollowPage, useUnfollowPage } from '../../hooks/usePages';

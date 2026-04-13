@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeftIcon, Squares2X2Icon, PhotoIcon, VideoCameraIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, Squares2X2Icon, PhotoIcon, VideoCameraIcon, ListBulletIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth';
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
 import PostCard from '@/app/(app)/feed/post/components/PostCard';

@@ -14,7 +14,7 @@
  * - Separation of Concerns: Lógica en useIdentificationUpload hook
  */
 
-import { CameraIcon, XMarkIcon, DocumentIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { CameraIcon, XMarkIcon, DocumentIcon, CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useEffect } from 'react'
 import { useIdentificationUpload } from '../../hooks/useIdentificationUpload'

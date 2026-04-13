@@ -6,7 +6,7 @@
  * Sección de descripción "Acerca del negocio" con estados expandido/colapsado.
  */
 
-import { ChevronDownIcon, ChevronUpIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, ChevronUpIcon, InformationCircleIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 
 interface AboutBusinessProps {

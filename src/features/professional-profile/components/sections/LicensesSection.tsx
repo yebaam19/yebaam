@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DocumentTextIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddLicense, useUpdateLicense, useDeleteLicense } from '../../hooks'
 import type { License } from '../../interfaces/professional-profile.interfaces'

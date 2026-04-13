@@ -1,6 +1,6 @@
 'use client';
 
-import { TrashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 
 interface DangerZoneSectionProps {
   onDelete: () => void;

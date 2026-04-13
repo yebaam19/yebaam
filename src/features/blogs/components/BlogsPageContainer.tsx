@@ -10,7 +10,7 @@ import {
   useSuggestedBlogs,
   useUnfollowBlog,
 } from '@/features/blogs/hooks/useBlogs'
-import { BookOpenIcon, FireIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, FireIcon, SparklesIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 
 type TabType = 'siguiendo' | 'mis-blogs' | 'descubrir'

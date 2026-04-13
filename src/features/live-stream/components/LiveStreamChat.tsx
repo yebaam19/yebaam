@@ -7,7 +7,7 @@ import {
   liveStreamCommentService, 
   LiveStreamComment 
 } from '../services/live-stream-comment.service';
-import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PaperAirplaneIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 
 interface LiveStreamChatProps {
   streamId: string;

@@ -5,7 +5,7 @@
  * Versión adaptada para la página de servicios profesionales.
  */
 
-import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid'
+import { MapPinIcon, StarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 

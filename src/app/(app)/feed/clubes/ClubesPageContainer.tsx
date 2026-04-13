@@ -10,7 +10,7 @@ import {
   useSuggestedClubs,
 } from '@/features/clubs/hooks/useClubs'
 import { useClubsUIStore } from '@/features/clubs/store/clubsUIStore'
-import { FireIcon, SparklesIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { FireIcon, SparklesIcon, UsersIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 
 type TabType = 'mis-clubes' | 'sugeridos' | 'descubrir'

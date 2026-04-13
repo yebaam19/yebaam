@@ -10,7 +10,7 @@ import {
   Transition,
   TransitionChild,
 } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { toast } from 'sonner';
 
 import { useAuth } from '@/features/auth';

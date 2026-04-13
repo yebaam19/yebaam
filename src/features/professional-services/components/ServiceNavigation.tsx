@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeftIcon, ShareIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, ShareIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 interface ServiceBreadcrumbProps {

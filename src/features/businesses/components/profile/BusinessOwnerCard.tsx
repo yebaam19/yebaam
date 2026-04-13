@@ -6,7 +6,7 @@
  * Tarjeta de información del propietario del negocio.
  */
 
-import { CheckBadgeIcon, EnvelopeIcon, UserIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, EnvelopeIcon, UserIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { BusinessOwner } from '../../interfaces/business.interfaces'

@@ -10,8 +10,8 @@
 
 import Avatar from '@/ui/Avatar'
 import { Button } from '@/ui/Button'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckIcon } from '@heroicons/react/24/solid'
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
+import { CheckIcon } from '@/components/icons/heroicons-shim'
 
 interface ArticleUser {
   id: string

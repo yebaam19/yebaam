@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ArrowPathIcon, UserPlusIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, UserPlusIcon, CheckIcon } from '@/components/icons/heroicons-shim';
 import { profileService } from '@/features/profile/services/profile.service';
 import type { UserProfile } from '@/features/profile/interfaces/profile.interfaces';
 import { useFriendRequests } from '@/features/user/hooks/useFriendRequests';

@@ -7,7 +7,7 @@
 'use client'
 
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
-import { MapIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { MapIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 import { PortalSection } from '../interfaces'
 import { PortalSectionsGrid } from './PortalSectionsGrid'
 

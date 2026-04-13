@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { XMarkIcon, PhotoIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PhotoIcon, ArrowUpTrayIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 import { useProductImageUpload } from '@/hooks/useProductImageUpload';
 import { toast } from 'sonner';

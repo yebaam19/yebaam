@@ -1,6 +1,6 @@
 'use client';
 
-import { NewspaperIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { NewspaperIcon, CheckCircleIcon } from '@/components/icons/heroicons-shim';
 
 const verificationBenefits = [
     'Crea y gestiona tus propios espacios',

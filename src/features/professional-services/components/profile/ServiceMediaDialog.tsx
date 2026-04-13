@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useCallback, useEffect } from 'react'
 import { ProfessionalServiceMedia, ServiceMediaType } from '../../interfaces/professional-service.interfaces'

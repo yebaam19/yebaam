@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 

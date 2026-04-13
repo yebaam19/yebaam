@@ -7,8 +7,8 @@
  * Visible only on large screens
  */
 
-import { BookmarkIcon, ChatBubbleLeftIcon, HeartIcon, ShareIcon } from '@heroicons/react/24/outline'
-import { BookmarkIcon as BookmarkIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
+import { BookmarkIcon, ChatBubbleLeftIcon, HeartIcon, ShareIcon } from '@/components/icons/heroicons-shim'
+import { BookmarkIcon as BookmarkIconSolid, HeartIcon as HeartIconSolid } from '@/components/icons/heroicons-shim'
 
 interface ArticleSidebarActionsProps {
   isLiked: boolean

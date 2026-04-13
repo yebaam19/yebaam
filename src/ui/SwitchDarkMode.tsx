@@ -1,8 +1,8 @@
 'use client'
 
 import { ThemeContext } from '@/app/theme-provider'
-import { SunIcon } from '@heroicons/react/24/outline'
-import { MoonIcon } from '@heroicons/react/24/solid'
+import { SunIcon } from '@/components/icons/heroicons-shim'
+import { MoonIcon } from '@/components/icons/heroicons-shim'
 import React, { useContext } from 'react'
 interface SwitchDarkModeProps {
   className?: string

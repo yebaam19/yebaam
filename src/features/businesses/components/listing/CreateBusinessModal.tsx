@@ -1,7 +1,7 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
 import { Fragment, useState } from 'react'
 

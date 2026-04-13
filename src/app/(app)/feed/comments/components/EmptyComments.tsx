@@ -1,4 +1,4 @@
-import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline'
+import { ChatBubbleLeftIcon } from '@/components/icons/heroicons-shim'
 
 interface EmptyCommentsProps {
   message?: string

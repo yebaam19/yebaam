@@ -1,4 +1,4 @@
-import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import { GlobeAltIcon } from '@/components/icons/heroicons-shim'
 import type { Blog } from '../types/blog.types'
 
 interface BlogAboutSectionProps {

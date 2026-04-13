@@ -1,7 +1,7 @@
 'use client'
 
 import Avatar from '@/ui/Avatar'
-import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useStorySocket } from '../../hooks/useStorySocket'

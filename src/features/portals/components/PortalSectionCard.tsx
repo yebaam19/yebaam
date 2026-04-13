@@ -14,7 +14,7 @@ import {
   PhotoIcon,
   UserGroupIcon,
   VideoCameraIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import { PortalSection } from '../interfaces'
 
 const iconMap = {

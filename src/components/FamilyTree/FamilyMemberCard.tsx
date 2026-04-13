@@ -1,8 +1,8 @@
 'use client';
 
 import { FamilyMember } from './types';
-import { UserIcon, CalendarIcon, HeartIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { UserIcon, CalendarIcon, HeartIcon, PencilIcon, PlusIcon } from '@/components/icons/heroicons-shim';
+import { HeartIcon as HeartIconSolid } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 
 interface FamilyMemberCardProps {

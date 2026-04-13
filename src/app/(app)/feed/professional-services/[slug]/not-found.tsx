@@ -4,7 +4,7 @@
  * Página de error 404 para servicios profesionales no encontrados.
  */
 
-import { BriefcaseIcon, HomeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { BriefcaseIcon, HomeIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 export default function ServiceNotFound() {

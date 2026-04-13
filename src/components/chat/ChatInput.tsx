@@ -5,7 +5,7 @@ import {
   FaceSmileIcon,
   EllipsisVerticalIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';
 import Image from 'next/image';

@@ -8,7 +8,7 @@ import {
   HomeIcon,
   MapPinIcon,
   SparklesIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { Category } from '../data/categories'
 

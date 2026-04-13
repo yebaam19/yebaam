@@ -8,8 +8,8 @@ import {
 } from '../../hooks/usePageMessages';
 import { usePageMessagesWebSocket } from '../../hooks/usePageMessagesWebSocket';
 import { MessageType } from '../../interfaces/page-message.interface';
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
-import { CheckIcon } from '@heroicons/react/24/outline';
+import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
+import { CheckIcon } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 

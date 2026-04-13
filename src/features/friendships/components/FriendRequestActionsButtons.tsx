@@ -7,7 +7,7 @@
 
 'use client';
 
-import { ArrowPathIcon, CheckIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, CheckIcon, XCircleIcon } from '@/components/icons/heroicons-shim';
 
 interface FriendRequestActionsProps {
   isAddressee: boolean; // true si eres el destinatario (puedes aceptar/rechazar)

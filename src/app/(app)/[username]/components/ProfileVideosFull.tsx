@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PlayIcon, EyeIcon, HeartIcon, ChatBubbleLeftIcon, FolderIcon, TagIcon, Squares2X2Icon, ListBulletIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, EyeIcon, HeartIcon, ChatBubbleLeftIcon, FolderIcon, TagIcon, Squares2X2Icon, ListBulletIcon, CloudArrowUpIcon } from '@/components/icons/heroicons-shim';
+import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim';
 import UploadVideoDialog from '@/features/profile/components/dialogs/UploadVideoDialog';
 import { useProfileMediaStore } from '@/features/profile/store/profile-media.store';
 

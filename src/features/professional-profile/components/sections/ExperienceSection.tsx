@@ -6,7 +6,7 @@
 
 'use client'
 
-import { BriefcaseIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { BriefcaseIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddExperience, useUpdateExperience, useDeleteExperience } from '../../hooks'
 import type { Experience } from '../../interfaces/professional-profile.interfaces'

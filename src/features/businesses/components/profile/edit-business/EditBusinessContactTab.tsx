@@ -7,7 +7,7 @@
  */
 
 import { useCitiesByState, useStates } from '@/features/businesses/hooks'
-import { ClockIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/outline'
+import { ClockIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 
 type BusinessHours = Record<string, string>

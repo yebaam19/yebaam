@@ -1,7 +1,7 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { CloudArrowUpIcon, PhotoIcon, TagIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CloudArrowUpIcon, PhotoIcon, TagIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { FC, Fragment, useCallback, useRef, useState } from 'react'
 import { useUploadBusinessPhoto } from '../../hooks/useBusinessPhotos'

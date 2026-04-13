@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth';
 import { useCommentStore } from '../store/comment.store';
 import { CommentAuthorAvatar } from './CommentAuthorAvatar';

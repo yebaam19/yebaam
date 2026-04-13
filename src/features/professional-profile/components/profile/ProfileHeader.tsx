@@ -6,7 +6,7 @@
 
 'use client'
 
-import { CheckBadgeIcon, Cog6ToothIcon, ShareIcon, UserMinusIcon, UserPlusIcon } from '@heroicons/react/24/solid'
+import { CheckBadgeIcon, Cog6ToothIcon, ShareIcon, UserMinusIcon, UserPlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useFollowProfile, useFollowStatus, useUnfollowProfile } from '../../hooks/queries/useProfileFollowers'

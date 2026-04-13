@@ -1,7 +1,7 @@
 'use client'
 
 import { useBusinessSearch } from '@/features/businesses/hooks'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@/components/icons/heroicons-shim'
 import { useBusinessesUIStore } from '../../store/businessesUI.store'
 import {
   BusinessCategoriesSection,

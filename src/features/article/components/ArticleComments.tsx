@@ -8,7 +8,7 @@
 
 import Avatar from '@/ui/Avatar'
 import { Button } from '@/ui/Button'
-import { PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim'
 import { useEffect, useState } from 'react'
 import { ArticleComment } from '../interfaces'
 import { articleService } from '../services'

@@ -7,7 +7,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { CheckBadgeIcon, ShieldCheckIcon, StarIcon, TrophyIcon } from '@heroicons/react/24/solid'
+import { CheckBadgeIcon, ShieldCheckIcon, StarIcon, TrophyIcon } from '@/components/icons/heroicons-shim'
 
 interface Badge {
   id: string

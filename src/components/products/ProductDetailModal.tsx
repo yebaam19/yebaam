@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, TagIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, TagIcon } from '@/components/icons/heroicons-shim';
 import { PageProduct } from '@/interfaces/page-product.interface';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductPriceDisplay } from './ProductPriceDisplay';

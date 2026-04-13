@@ -8,7 +8,7 @@ import {
   HashtagIcon,
   Squares2X2Icon,
   UserIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 interface SearchFiltersProps {
   activeFilter: SearchResultType;

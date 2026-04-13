@@ -28,7 +28,7 @@ import {
   PhotoIcon,
   SparklesIcon,
   VideoCameraIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useParams } from 'next/navigation';
 import { Suspense, useState, useEffect } from 'react';
 

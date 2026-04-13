@@ -1,6 +1,6 @@
 'use client'
 
-import { UserGroupIcon } from '@heroicons/react/24/outline'
+import { UserGroupIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMyClubs } from '@/features/clubs/hooks/useClubs'

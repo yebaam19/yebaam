@@ -13,7 +13,7 @@ import {
   CalendarIcon,
   EnvelopeIcon,
   BellIcon,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import type { NotificationType } from '../interfaces/notification.interfaces';

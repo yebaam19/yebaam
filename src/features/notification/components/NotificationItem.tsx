@@ -1,6 +1,6 @@
 'use client';
 
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { NotificationType, type Notification } from '../interfaces/notification.interfaces';
 import { useNotificationActions } from '../hooks/useNotificationActions';

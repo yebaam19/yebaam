@@ -8,7 +8,7 @@ import {
   FireIcon,
   BoltIcon,
   SparklesIcon,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
 
 interface PageDetailBadgesProps {
   pageId: string;

@@ -7,7 +7,7 @@
  */
 
 import { useProfileMediaStore } from '../../store/profile-media.store'
-import { XMarkIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon } from '@/components/icons/heroicons-shim'
 
 export default function UploadProgress() {
   const { uploadQueue, clearUploadQueue } = useProfileMediaStore()

@@ -4,7 +4,7 @@ import {
 
   CheckIcon,
   ArrowLeftIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 import Avatar from '@/ui/Avatar';
 import { useRouter } from 'next/navigation';

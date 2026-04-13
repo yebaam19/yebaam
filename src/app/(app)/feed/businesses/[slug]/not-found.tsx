@@ -4,7 +4,7 @@
  * Página de error 404 para negocios no encontrados.
  */
 
-import { BuildingStorefrontIcon, HomeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { BuildingStorefrontIcon, HomeIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 export default function BusinessNotFound() {

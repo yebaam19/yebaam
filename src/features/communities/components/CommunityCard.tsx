@@ -13,7 +13,7 @@ import {
   LockClosedIcon,
   ArrowTrendingUpIcon,
   DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 interface CommunityCardProps {
   community: Community;

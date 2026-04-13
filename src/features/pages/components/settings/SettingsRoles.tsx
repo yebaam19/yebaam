@@ -4,8 +4,8 @@ import {
   UserCircleIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
+import { CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 
 interface SettingsRolesProps {
   page: Page;

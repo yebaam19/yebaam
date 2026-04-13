@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { SignalIcon } from '@heroicons/react/24/solid';
+import { SignalIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { ALL_SOCKET_EVENTS } from '@/config/socket-events';
 

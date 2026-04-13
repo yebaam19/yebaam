@@ -1,7 +1,7 @@
 'use client'
 
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
-import { ChatBubbleLeftIcon, HeartIcon, PhotoIcon, PlayIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import { ChatBubbleLeftIcon, HeartIcon, PhotoIcon, PlayIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useState } from 'react'
 

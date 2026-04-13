@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import Image from 'next/image';
-import { StarIcon, HandThumbUpIcon } from '@heroicons/react/24/solid';
-import { HandThumbUpIcon as HandThumbUpOutline, CheckBadgeIcon } from '@heroicons/react/24/outline';
+import { StarIcon, HandThumbUpIcon } from '@/components/icons/heroicons-shim';
+import { HandThumbUpIcon as HandThumbUpOutline, CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 import { PageReview } from '../../interfaces/page-review.interface';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';

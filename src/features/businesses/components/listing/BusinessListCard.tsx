@@ -6,7 +6,7 @@
  * Tarjeta para mostrar un negocio en el listado.
  */
 
-import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid'
+import { MapPinIcon, StarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BusinessBasic } from '../../interfaces/business.interfaces'

@@ -1,4 +1,4 @@
-import { BriefcaseIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline'
+import { BriefcaseIcon, BuildingStorefrontIcon } from '@/components/icons/heroicons-shim'
 
 interface DirectoryHeroProps {
   cityName: string

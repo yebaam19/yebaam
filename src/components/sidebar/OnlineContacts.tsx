@@ -1,6 +1,6 @@
 'use client';
 
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import Link from 'next/link';
 

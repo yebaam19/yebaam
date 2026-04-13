@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { LockClosedIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, CheckCircleIcon } from '@/components/icons/heroicons-shim';
 import type { ProfileFeature } from '../config/features.config';
 
 interface FeatureCardProps {

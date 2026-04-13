@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import type { MessageMedia } from '@/features/chat/types';
 
 interface ImageModalProps {

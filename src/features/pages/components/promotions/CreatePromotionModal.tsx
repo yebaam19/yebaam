@@ -1,6 +1,6 @@
 import { FC, Fragment, useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PhotoIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PhotoIcon, CloudArrowUpIcon } from '@/components/icons/heroicons-shim';
 import { useCreatePromotion, useUpdatePromotion } from '../../hooks/usePagePromotions';
 import { PagePromotion, PromotionType, CreatePromotionInput } from '../../interfaces/page-promotion.interface';
 import Image from 'next/image';

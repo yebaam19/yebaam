@@ -4,7 +4,7 @@ import Avatar from '@/ui/Avatar'
 
 import T from '@/utils/getT'
 import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { BellIcon } from '@heroicons/react/24/outline'
+import { BellIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { FC } from 'react'
 

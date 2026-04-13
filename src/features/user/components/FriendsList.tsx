@@ -5,8 +5,8 @@ import {
   EllipsisHorizontalIcon,
   HeartIcon as HeartOutline,
   UserMinusIcon,
-} from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid'
+} from '@/components/icons/heroicons-shim'
+import { HeartIcon as HeartSolid } from '@/components/icons/heroicons-shim'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Image from 'next/image'

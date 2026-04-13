@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@/components/icons/heroicons-shim';
 import type { CreatePageDto } from '../../types/page.types';
 
 interface CreatePageStep2Props {

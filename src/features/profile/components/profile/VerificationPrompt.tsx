@@ -6,7 +6,7 @@
  * Prompt para que los usuarios verifiquen su cuenta
  */
 
-import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
+import { ExclamationCircleIcon } from '@/components/icons/heroicons-shim'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 
 interface VerificationPromptProps {

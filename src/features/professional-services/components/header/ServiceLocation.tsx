@@ -1,4 +1,4 @@
-import { MapPinIcon } from '@heroicons/react/24/solid'
+import { MapPinIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 interface ServiceLocationProps {

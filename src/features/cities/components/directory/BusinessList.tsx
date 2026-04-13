@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { BusinessBasic, BusinessCategory } from '../../interfaces/directory.interfaces'
 import { BusinessCard } from './BusinessCard'

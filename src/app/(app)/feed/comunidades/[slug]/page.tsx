@@ -18,7 +18,7 @@ import {
   LockClosedIcon,
   ArrowTrendingUpIcon,
   GlobeAltIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import {
   formatMembersCount,
   getCategoryLabel,

@@ -1,4 +1,4 @@
-import { PencilIcon } from '@heroicons/react/24/outline'
+import { PencilIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 
 type CoverSize = 'small' | 'medium' | 'large' | 'xlarge'

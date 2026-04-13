@@ -8,7 +8,7 @@ import {
     BuildingOffice2Icon,
     HeartIcon,
     UsersIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import type { ComponentType, SVGProps } from 'react';
 
 /**

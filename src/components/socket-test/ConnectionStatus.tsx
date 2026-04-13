@@ -1,4 +1,4 @@
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon, XCircleIcon } from '@/components/icons/heroicons-shim';
 import type { Socket } from 'socket.io-client';
 
 interface ConnectionStatusProps {

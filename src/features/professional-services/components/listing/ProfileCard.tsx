@@ -7,7 +7,7 @@
 'use client'
 
 import type { ProfessionalProfile } from '@/features/professional-profile/interfaces/professional-profile.interfaces'
-import { UserIcon } from '@heroicons/react/24/outline'
+import { UserIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 interface ProfileCardProps {

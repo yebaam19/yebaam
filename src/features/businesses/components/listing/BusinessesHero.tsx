@@ -7,7 +7,7 @@
  * Estilo similar a ServicesHero pero con tema azul/cyan.
  */
 
-import { BuildingStorefrontIcon, MapPinIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline'
+import { BuildingStorefrontIcon, MapPinIcon, PlusIcon, StarIcon } from '@/components/icons/heroicons-shim'
 
 import { BackgroundPattern } from '@/components/BackgroundPattern'
 import { cn } from '@/lib/utils'

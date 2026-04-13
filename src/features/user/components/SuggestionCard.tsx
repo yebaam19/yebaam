@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { 
   UserPlusIcon,
   UsersIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { FriendSuggestion } from '@/features/user/services/friend-request.service';
 

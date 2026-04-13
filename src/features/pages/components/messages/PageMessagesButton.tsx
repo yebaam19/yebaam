@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import PageMessengerPanel from './PageMessengerPanel';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim';
 
 interface PageMessagesButtonProps {
   pageId: string;

@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { PlusIcon, FunnelIcon, TagIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, FunnelIcon, TagIcon } from '@/components/icons/heroicons-shim';
 import { usePagePromotions, useDeletePromotion } from '../../hooks/usePagePromotions';
 import { PromotionCard } from './PromotionCard';
 import { CreatePromotionModal } from './CreatePromotionModal';

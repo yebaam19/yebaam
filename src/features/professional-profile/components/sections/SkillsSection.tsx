@@ -7,7 +7,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { LightBulbIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { LightBulbIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddSkill, useDeleteSkill, useUpdateSkill } from '../../hooks'
 import type { Skill } from '../../interfaces/professional-profile.interfaces'

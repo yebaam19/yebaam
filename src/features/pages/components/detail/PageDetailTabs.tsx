@@ -4,7 +4,7 @@ import {
   DocumentTextIcon,
   InformationCircleIcon,
   PlayIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 type TabType =
   | 'inicio'

@@ -9,7 +9,7 @@ import {
   GlobeAltIcon,
   LockClosedIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import type { Group } from '../types/group.types';
 import { useJoinGroup } from '../hooks/useGroups';
 import { useGroupsUIStore } from '../store/groupsUIStore';

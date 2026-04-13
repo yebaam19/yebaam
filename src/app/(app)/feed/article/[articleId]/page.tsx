@@ -5,7 +5,7 @@
  */
 
 import { ArticleView, articleService } from '@/features/article'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 

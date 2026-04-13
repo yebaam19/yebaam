@@ -7,7 +7,7 @@
 import { Button } from '@/ui/Button'
 import Select from '@/ui/Select'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { ArrowPathIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ClipboardDocumentIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'

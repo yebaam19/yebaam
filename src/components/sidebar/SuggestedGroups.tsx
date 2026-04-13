@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { UserGroupIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon } from '@/components/icons/heroicons-shim';
 
 interface Group {
   id: string;

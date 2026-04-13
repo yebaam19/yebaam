@@ -3,7 +3,7 @@ import {
   MinusIcon,
   PhoneIcon,
   VideoCameraIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 
 interface ChatBubbleHeaderProps {

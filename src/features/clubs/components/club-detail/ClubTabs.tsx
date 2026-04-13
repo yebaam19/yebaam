@@ -1,4 +1,4 @@
-import { CalendarIcon, HomeIcon, InformationCircleIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { CalendarIcon, HomeIcon, InformationCircleIcon, UsersIcon } from '@/components/icons/heroicons-shim'
 
 export type TabType = 'inicio' | 'eventos' | 'miembros' | 'acerca-de'
 

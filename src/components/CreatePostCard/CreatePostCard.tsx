@@ -2,7 +2,7 @@
 
 import { getFirstName, getUserInitials } from '@/lib/user-helpers'
 import Avatar from '@/ui/Avatar'
-import { PencilIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { isFeatureEnabled } from '@/config/features-flag'
 

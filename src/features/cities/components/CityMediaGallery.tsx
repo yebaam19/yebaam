@@ -1,7 +1,7 @@
 'use client'
 
-import { HeartIcon, PhotoIcon } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
+import { HeartIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
+import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useState } from 'react'
 import { CityMedia, MediaType } from '../interfaces/city.interfaces'

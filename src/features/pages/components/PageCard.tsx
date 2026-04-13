@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CheckBadgeIcon, UserGroupIcon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
 import type { Page } from '../types/page.types';
 import { formatFollowersCount, getCategoryLabel, truncateText } from '../utils/pageHelpers';
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FamilyMember } from './types';
-import { XMarkIcon, ArrowUpTrayIcon, UserIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowUpTrayIcon, UserIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 
 interface AddMemberModalProps {

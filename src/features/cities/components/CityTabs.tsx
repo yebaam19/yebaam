@@ -1,6 +1,6 @@
 'use client'
 
-import { MapIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { MapIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { CityMedia, MediaType } from '../interfaces/city.interfaces'
 import { CategoriesGrid } from './CategoriesGrid'

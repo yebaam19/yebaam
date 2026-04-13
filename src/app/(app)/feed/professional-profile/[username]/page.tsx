@@ -4,7 +4,7 @@ import { EditProfileDialog } from '@/features/professional-profile/components/di
 import type { EditProfileFormData } from '@/features/professional-profile/components/dialogs/EditProfileDialog'
 import { ContentTabs } from '@/features/professional-profile/components/profile/ContentTabs'
 import { ProfileHeader } from '@/features/professional-profile/components/profile/ProfileHeader'
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'

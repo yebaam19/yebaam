@@ -7,7 +7,7 @@
  * Feature flag: SERVICES_CV_UPLOAD
  */
 
-import { ArrowUpTrayIcon, DocumentArrowDownIcon, DocumentIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowUpTrayIcon, DocumentArrowDownIcon, DocumentIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useCallback, useState } from 'react'
 
 interface CVUploaderProps {

@@ -7,7 +7,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   PhotoIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { PagePromotion, PromotionType } from '../../interfaces/page-promotion.interface';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';

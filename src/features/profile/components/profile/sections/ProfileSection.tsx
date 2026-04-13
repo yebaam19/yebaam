@@ -4,7 +4,7 @@
  * Wrapper genérico para secciones del perfil
  */
 
-import { PencilIcon } from '@heroicons/react/24/outline'
+import { PencilIcon } from '@/components/icons/heroicons-shim'
 import type { ReactNode } from 'react'
 
 interface ProfileSectionProps {

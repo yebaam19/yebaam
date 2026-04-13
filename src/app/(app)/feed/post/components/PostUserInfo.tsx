@@ -1,5 +1,5 @@
 import Avatar from '@/ui/Avatar';
-import { GlobeAltIcon, UserGroupIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, UserGroupIcon, LockClosedIcon } from '@/components/icons/heroicons-shim';
 import { getUserInitials } from '@/lib/user-helpers';
 
 const VISIBILITY_OPTIONS = [

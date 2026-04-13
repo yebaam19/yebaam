@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, CheckIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CheckIcon, FunnelIcon } from '@/components/icons/heroicons-shim';
 import { useNotifications } from '@/features/notification';
 import { useNotificationStore } from '@/features/notification/store/notification.store';
 import { useNotificationWebSocket } from '@/features/notification/hooks/useNotificationWebSocket';

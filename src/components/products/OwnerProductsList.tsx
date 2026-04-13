@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@/components/icons/heroicons-shim';
 import { PageProduct, ProductFilters } from '@/interfaces/page-product.interface';
 import { usePageProducts } from '@/hooks/usePageProducts';
 import { OwnerProductCard } from './OwnerProductCard';

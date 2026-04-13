@@ -7,7 +7,7 @@
 import { Button } from '@/ui/Button'
 import Input from '@/ui/Input'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import type { License, LicenseFormData } from '../../interfaces/professional-profile.interfaces'

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FEATURE_FLAGS } from '@/config/features-flag';
-import { CheckCircleIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons/heroicons-shim';
 
 /**
  * DevFeatureFlagsPanel

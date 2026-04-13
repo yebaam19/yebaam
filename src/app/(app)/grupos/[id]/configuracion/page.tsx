@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { useGroup, useUpdateGroup, useDeleteGroup } from '@/features/groups/hooks/useGroups';
 import { toast } from 'sonner';
 import {

@@ -10,7 +10,7 @@ import {
 } from '@/features/communities/hooks/useCommunities';
 import { CommunitiesGrid } from '@/features/communities/components';
 import { Community } from '@/features/communities/types/community.types';
-import { FireIcon, UserGroupIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { FireIcon, UserGroupIcon, SparklesIcon } from '@/components/icons/heroicons-shim';
 
 type TabType = 'descubrir' | 'mis-comunidades' | 'sugeridas';
 

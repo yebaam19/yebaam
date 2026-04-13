@@ -7,7 +7,7 @@
  */
 
 import { useBusinessCategories } from '@/features/businesses/hooks'
-import { InformationCircleIcon, TagIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon, TagIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 
 interface EditBusinessInfoTabProps {

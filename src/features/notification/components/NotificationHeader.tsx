@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@/components/icons/heroicons-shim';
 
 interface NotificationHeaderProps {
   unreadCount: number;

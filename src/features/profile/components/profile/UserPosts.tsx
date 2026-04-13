@@ -11,7 +11,7 @@ import PostCard from '@/app/(app)/feed/post/components/PostCard'
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store'
 import { useAuth } from '@/features/auth/context/auth-context'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect, useMemo, useRef } from 'react'
 
 interface UserPostsProps {

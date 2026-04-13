@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { HashtagIcon, ChartBarIcon, FireIcon } from '@heroicons/react/24/outline';
+import { HashtagIcon, ChartBarIcon, FireIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import type { HashtagSearchResult } from '../interfaces/search.interfaces';
 

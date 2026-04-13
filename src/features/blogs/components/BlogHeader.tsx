@@ -1,6 +1,6 @@
 import { useAuth } from '@/features/auth'
 import Avatar from '@/ui/Avatar'
-import { CheckBadgeIcon, PencilIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, PencilIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import type { Blog } from '../types/blog.types'
 import { getCategoryColor, getCategoryLabel } from '../utils/blogHelpers'

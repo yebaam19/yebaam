@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { HeartIcon, ChatBubbleLeftIcon, ShareIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon, ChatBubbleLeftIcon, ShareIcon } from '@/components/icons/heroicons-shim';
+import { HeartIcon as HeartIconSolid } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import type { PostSearchResult } from '../interfaces/search.interfaces';

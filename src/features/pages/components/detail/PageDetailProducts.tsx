@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import Link from 'next/link';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon } from '@/components/icons/heroicons-shim';
 import { PublicProductsCatalog } from '@/components/products/PublicProductsCatalog';
 import { OwnerProductsList } from '@/components/products/OwnerProductsList';
 

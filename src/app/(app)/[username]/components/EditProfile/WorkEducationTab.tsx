@@ -1,4 +1,4 @@
-import { BriefcaseIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { BriefcaseIcon, AcademicCapIcon } from '@/components/icons/heroicons-shim';
 
 interface WorkEducationTabProps {
   formData: {

@@ -1,5 +1,5 @@
 import { slugify } from '@/lib/utils'
-import { MapPinIcon } from '@heroicons/react/24/outline'
+import { MapPinIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { CityBasic } from '../interfaces/city.interfaces'
 

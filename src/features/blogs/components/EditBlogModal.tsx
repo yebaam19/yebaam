@@ -1,7 +1,7 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { PencilIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { Fragment, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useUpdateBlog } from '../hooks/useBlogs'

@@ -8,7 +8,7 @@
  */
 
 import { FEATURE_FLAGS } from '@/config/features-flag'
-import { CodeBracketIcon, LinkIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { CodeBracketIcon, LinkIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
 import type { PortfolioProject } from '../interfaces/professional-service.interfaces'
 
 interface ServicePortfolioProps {

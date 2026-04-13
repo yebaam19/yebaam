@@ -1,6 +1,6 @@
 'use client';
 
-import { PhotoIcon, UserGroupIcon, MapPinIcon, GifIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, UserGroupIcon, MapPinIcon, GifIcon } from '@/components/icons/heroicons-shim';
 import PostFeelingSelector from './PostFeelingSelector';
 import type { PostFeeling } from '../interfaces/post.interfaces';
 

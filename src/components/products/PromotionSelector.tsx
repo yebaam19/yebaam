@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TagIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { TagIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { useActivePromotions } from '@/features/pages/hooks/usePagePromotions';
 import type { PagePromotion, PromotionType } from '@/features/pages/interfaces/page-promotion.interface';
 

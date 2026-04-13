@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { VideoCameraIcon, UserIcon, FolderIcon, ArrowPathIcon, PlayIcon } from '@heroicons/react/24/outline';
-import { HeartIcon, EyeIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { VideoCameraIcon, UserIcon, FolderIcon, ArrowPathIcon, PlayIcon } from '@/components/icons/heroicons-shim';
+import { HeartIcon, EyeIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth';
 import { useProfileMediaStore } from '@/features/profile/store/profile-media.store';
 import { ProfileVideo } from '@/features/profile/services/profile-media.service';

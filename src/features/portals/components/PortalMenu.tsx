@@ -6,7 +6,7 @@
 
 'use client'
 
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import type { MediaFile } from '../interfaces/post.interfaces';
 

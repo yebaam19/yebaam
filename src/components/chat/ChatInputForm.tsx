@@ -1,4 +1,4 @@
-import { PhotoIcon, FaceSmileIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, FaceSmileIcon, PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
 
 interface ChatInputFormProps {
   message: string;

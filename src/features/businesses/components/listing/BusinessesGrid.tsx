@@ -6,7 +6,7 @@
  * Grid de negocios con estado de carga y vacío.
  */
 
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@/components/icons/heroicons-shim'
 import { BusinessBasic } from '../../interfaces/business.interfaces'
 import { BusinessListCard } from './BusinessListCard'
 

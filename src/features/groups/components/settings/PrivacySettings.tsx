@@ -1,6 +1,6 @@
 'use client';
 
-import { GlobeAltIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, LockClosedIcon } from '@/components/icons/heroicons-shim';
 import type { Group } from '../../types/group.types';
 
 interface PrivacySettingsProps {

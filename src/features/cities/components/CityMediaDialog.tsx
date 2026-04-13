@@ -2,8 +2,8 @@
 
 import Avatar from '@/ui/Avatar'
 import { Dialog, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { ChevronLeftIcon, ChevronRightIcon, HeartIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
+import { ChevronLeftIcon, ChevronRightIcon, HeartIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Fragment, useState } from 'react'

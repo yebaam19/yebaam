@@ -5,7 +5,7 @@
  * Sección de bienvenida con información sobre blogs y botón de creación.
  */
 
-import { DocumentTextIcon, PlusIcon, SparklesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, PlusIcon, SparklesIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 
 import { BackgroundPattern } from '@/components/BackgroundPattern'
 import { cn } from '@/lib/utils'

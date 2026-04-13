@@ -4,7 +4,7 @@ import {
   PhotoIcon,
   FaceSmileIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';

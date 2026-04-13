@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { getAxiosInstance } from '@/lib/legacy-api/client';
-import { VideoCameraIcon, UserGroupIcon } from '@heroicons/react/24/solid';
-import { SignalIcon } from '@heroicons/react/24/outline';
+import { VideoCameraIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
+import { SignalIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 const axios = getAxiosInstance();

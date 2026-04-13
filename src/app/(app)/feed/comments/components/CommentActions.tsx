@@ -1,6 +1,6 @@
 'use client'
 
-import { EllipsisHorizontalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { EllipsisHorizontalIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useEffect, useRef, useState } from 'react'
 
 interface CommentActionsProps {

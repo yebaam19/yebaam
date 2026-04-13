@@ -6,8 +6,8 @@
  * Header del perfil del negocio con cover, logo e información básica.
  */
 
-import { Cog6ToothIcon, ShareIcon } from '@heroicons/react/24/outline'
-import { CheckBadgeIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon, StarIcon } from '@heroicons/react/24/solid'
+import { Cog6ToothIcon, ShareIcon } from '@/components/icons/heroicons-shim'
+import { CheckBadgeIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon, StarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'

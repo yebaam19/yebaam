@@ -4,7 +4,7 @@
  * Anuncio promocional del Portal de la Salsa
  */
 
-import { ArrowRightIcon, MusicalNoteIcon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon, MusicalNoteIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 export function PortalAd() {

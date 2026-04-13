@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GlobeAltIcon, TagIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, TagIcon, PlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface InterestsTabProps {
   formData: {

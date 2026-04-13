@@ -17,7 +17,7 @@ import {
   ListBulletIcon,
   PhotoIcon,
   QueueListIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'

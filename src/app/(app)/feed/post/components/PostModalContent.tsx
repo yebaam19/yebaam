@@ -1,6 +1,6 @@
 'use client'
 
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import type { UseFormRegister, FieldErrors } from 'react-hook-form'
 import type { PostFeeling, PostLocation, PostGif } from '../interfaces/post.interfaces'
 import type { CreatePostInput } from '../validators/create-post.validator'

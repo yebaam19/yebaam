@@ -1,5 +1,5 @@
 import { ButtonHTMLAttributes } from 'react';
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
 
 interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;

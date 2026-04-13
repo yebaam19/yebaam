@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeftIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ChartBarIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth';
 import { usePost } from '@/app/(app)/feed/post/hooks/usePosts';
 import { PostCard } from '@/features/post';

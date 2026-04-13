@@ -1,4 +1,4 @@
-import { CheckBadgeIcon, StarIcon } from '@heroicons/react/24/solid'
+import { CheckBadgeIcon, StarIcon } from '@/components/icons/heroicons-shim'
 
 interface ServiceInfoProps {
   name: string

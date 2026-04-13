@@ -4,7 +4,7 @@ import CreatePostModal from '@/app/(app)/feed/post/components/CreatePostModal'
 import PostCard from '@/app/(app)/feed/post/components/PostCard'
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@/components/icons/heroicons-shim'
 
 interface BlogPostsListProps {
   posts: Post[]

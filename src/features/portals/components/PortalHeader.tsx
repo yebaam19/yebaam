@@ -5,7 +5,7 @@
  */
 
 import { Button } from '@/ui/Button'
-import { UserPlusIcon } from '@heroicons/react/24/outline'
+import { UserPlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { PortalHeaderProps } from '../interfaces'
 

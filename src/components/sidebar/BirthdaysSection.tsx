@@ -1,6 +1,6 @@
 'use client';
 
-import { CakeIcon } from '@heroicons/react/24/outline';
+import { CakeIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 
 interface Birthday {

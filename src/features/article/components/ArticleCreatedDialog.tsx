@@ -10,8 +10,8 @@
 
 import { Button } from '@/ui/Button'
 import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import { ArrowTopRightOnSquareIcon, CheckIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import { ArrowTopRightOnSquareIcon, CheckIcon, ClipboardDocumentIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 

@@ -7,7 +7,7 @@
  */
 
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
-import { ChevronLeftIcon, ChevronRightIcon, PhotoIcon, PlayIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, PhotoIcon, PlayIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { Fragment, useState } from 'react'
 import { BusinessMedia, BusinessMediaType } from '../../interfaces/business.interfaces'

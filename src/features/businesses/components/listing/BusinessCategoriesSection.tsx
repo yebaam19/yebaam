@@ -17,7 +17,7 @@ import {
   MusicalNoteIcon,
   ShoppingBagIcon,
   WrenchScrewdriverIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 
 interface BusinessCategoriesSectionProps {
   selectedCategoryId?: string | null

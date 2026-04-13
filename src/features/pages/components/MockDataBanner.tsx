@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { BeakerIcon } from '@heroicons/react/24/outline';
+import { BeakerIcon } from '@/components/icons/heroicons-shim';
 
 export const MockDataBanner: FC = () => {
   return (

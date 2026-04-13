@@ -1,6 +1,6 @@
 'use client';
 
-import { UserGroupIcon, UserPlusIcon, PaperAirplaneIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, UserPlusIcon, PaperAirplaneIcon, SparklesIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 export type TabType = 'friends' | 'requests' | 'sent' | 'suggestions';

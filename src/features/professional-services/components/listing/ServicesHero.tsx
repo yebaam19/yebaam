@@ -5,7 +5,7 @@
  * Inspirado en el legacy pero con diseño moderno.
  */
 
-import { BriefcaseIcon, CalendarIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline'
+import { BriefcaseIcon, CalendarIcon, PlusIcon, StarIcon } from '@/components/icons/heroicons-shim'
 
 import { BackgroundPattern } from '@/components/BackgroundPattern'
 import { cn } from '@/lib/utils'

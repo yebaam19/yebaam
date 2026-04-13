@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { EnvelopeIcon, PhoneIcon, GlobeAltIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, PhoneIcon, GlobeAltIcon, MapPinIcon } from '@/components/icons/heroicons-shim';
 import type { CreatePageDto, PageContact } from '../../types/page.types';
 import { validateEmail, validatePhone, validateUrl } from '../../utils/pageHelpers';
 

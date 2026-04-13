@@ -8,7 +8,7 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   GlobeAltIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
 import InfoItem from './InfoItem'

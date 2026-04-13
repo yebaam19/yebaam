@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ProductFilters } from '@/interfaces/page-product.interface';
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface ProductFiltersBarProps {
   filters: ProductFilters;

@@ -12,7 +12,7 @@ import ButtonSecondary from '@/ui/ButtonSecondary'
 import Input from '@/ui/Input'
 import Textarea from '@/ui/Textarea'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
-import { FolderPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { FolderPlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useProfileMediaStore } from '../../store/profile-media.store'
 
 interface CreateAlbumDialogProps {

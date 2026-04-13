@@ -3,7 +3,7 @@
 import { useEffect, Fragment, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Popover, Transition } from '@headlessui/react';
-import { BellIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from '@/components/icons/heroicons-shim';
 import { useNotificationStore } from '../store/notification.store';
 import NotificationHeader from './NotificationHeader';
 import NotificationTabs from './NotificationTabs';

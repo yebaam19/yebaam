@@ -5,8 +5,8 @@ import {
   FunnelIcon,
   ChevronDownIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
+import { StarIcon as StarSolid } from '@/components/icons/heroicons-shim';
 import { usePageReviews, useReviewStats, useToggleHelpful, useDeleteReview } from '../../hooks/usePageReviews';
 import { ReviewCard } from './ReviewCard';
 import { ReviewFilterBy, ReviewSortBy } from '../../interfaces/page-review.interface';

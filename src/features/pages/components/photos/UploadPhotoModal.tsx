@@ -5,7 +5,7 @@ import {
   XMarkIcon,
   PhotoIcon,
   CloudArrowUpIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useUploadPagePhoto } from '../../hooks/usePagePhotos';
 import Image from 'next/image';
 

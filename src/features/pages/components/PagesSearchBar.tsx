@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react';
-import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { usePagesUIStore } from '../store/pagesUI.store';
 import type { PageCategory } from '../types/page.types';
 import { PAGE_CATEGORY_LABELS } from '../utils/pageHelpers';

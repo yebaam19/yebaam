@@ -6,7 +6,7 @@
  * Contenedor principal de la página de perfil de un negocio.
  */
 
-import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, HomeIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { Business } from '../../interfaces/business.interfaces'
 import {

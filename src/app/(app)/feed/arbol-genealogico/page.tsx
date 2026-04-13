@@ -1,6 +1,6 @@
 import { FamilyTree } from '@/components/FamilyTree';
 import { isFeatureEnabled } from '@/config/features-flag';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
 
 export default function ArbolGenealogico() {

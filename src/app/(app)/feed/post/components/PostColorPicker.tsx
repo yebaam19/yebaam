@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon } from '@/components/icons/heroicons-shim'
 import { BACKGROUND_COLORS } from '../constants/post.constants'
 
 interface PostColorPickerProps {

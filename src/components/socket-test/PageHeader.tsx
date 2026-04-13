@@ -1,4 +1,4 @@
-import { SignalIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { SignalIcon, ArrowPathIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {

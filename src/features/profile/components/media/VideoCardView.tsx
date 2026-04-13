@@ -1,7 +1,7 @@
 'use client';
 
-import { PlayIcon, EyeIcon, HeartIcon, ClockIcon, CalendarIcon } from '@heroicons/react/24/solid';
-import { ChatBubbleLeftIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { PlayIcon, EyeIcon, HeartIcon, ClockIcon, CalendarIcon } from '@/components/icons/heroicons-shim';
+import { ChatBubbleLeftIcon, EllipsisVerticalIcon } from '@/components/icons/heroicons-shim';
 import { ProfileVideo } from '@/features/profile/services/profile-media.service';
 import Image from 'next/image';
 

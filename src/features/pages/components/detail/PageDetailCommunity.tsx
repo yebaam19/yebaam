@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { UsersIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { UsersIcon, ShieldCheckIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 import { getRoleColor, getRoleLabel } from '../../utils/pageHelpers';
 import type { PageRole } from '../../types/page.types';

@@ -14,7 +14,7 @@ import {
   XCircleIcon, 
   ClockIcon,
   ChatBubbleLeftRightIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { friendshipsService, FriendRequestActionsButtons } from '@/features/friendships';

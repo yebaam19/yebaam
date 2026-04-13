@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import type { CreateClubDto } from '../../types/club.types';
 
 interface CreateClubStep4Props {

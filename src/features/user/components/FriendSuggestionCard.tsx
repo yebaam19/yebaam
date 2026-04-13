@@ -1,7 +1,7 @@
 'use client'
 
-import { CheckIcon, UserGroupIcon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import { CheckIcon, UserGroupIcon, UserPlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRef, useState } from 'react'

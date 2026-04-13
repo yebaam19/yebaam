@@ -5,12 +5,12 @@ import {
   HandThumbUpIcon,
   ChatBubbleLeftIcon,
   ShareIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import {
   HandThumbUpIcon as HandThumbUpSolidIcon,
   HeartIcon as HeartSolidIcon,
   FaceSmileIcon as FaceSmileSolidIcon,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 interface PostActionsProps {

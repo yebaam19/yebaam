@@ -8,7 +8,7 @@
  */
 
 import { FEATURE_FLAGS } from '@/config/features-flag'
-import { DocumentArrowDownIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
+import { DocumentArrowDownIcon, DocumentTextIcon } from '@/components/icons/heroicons-shim'
 
 interface ServiceCVProps {
   cvUrl?: string

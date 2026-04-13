@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { PlayIcon } from '@heroicons/react/24/outline';
+import { PlayIcon } from '@/components/icons/heroicons-shim';
 
 interface ReelsHeaderProps {
   reelsCount: number;

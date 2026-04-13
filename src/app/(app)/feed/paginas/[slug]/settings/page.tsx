@@ -2,7 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
 import { usePageBySlug } from '@/features/pages/hooks/usePages';
 import { useAuthStore } from '@/features/auth/store/auth.store';

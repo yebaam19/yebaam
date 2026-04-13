@@ -1,4 +1,4 @@
-import { GlobeAltIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, HeartIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 
 interface GeneralTabProps {

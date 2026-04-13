@@ -8,7 +8,7 @@ import {
   GlobeAltIcon,
   LockClosedIcon,
   ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useGroup, useUpdateGroup } from '@/features/groups/hooks/useGroups';
 import { toast } from 'sonner';
 

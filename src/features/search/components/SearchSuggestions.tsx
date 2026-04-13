@@ -1,6 +1,6 @@
 'use client';
 
-import { FireIcon, HashtagIcon, UserIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { FireIcon, HashtagIcon, UserIcon, DocumentTextIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { useSearchSuggestions } from '../hooks/useSearchSuggestions';
 import type { SearchResultType } from '../interfaces/search.interfaces';

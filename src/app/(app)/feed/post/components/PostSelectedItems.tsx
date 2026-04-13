@@ -1,6 +1,6 @@
 'use client';
 
-import { XMarkIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MapPinIcon } from '@/components/icons/heroicons-shim';
 import type { PostFeeling, PostLocation, PostGif } from '../interfaces/post.interfaces';
 
 interface PostSelectedItemsProps {

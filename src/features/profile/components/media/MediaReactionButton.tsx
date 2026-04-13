@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon } from '@/components/icons/heroicons-shim';
+import { HeartIcon as HeartIconSolid } from '@/components/icons/heroicons-shim';
 import { 
   profileMediaInteractionsService, 
   ReactionType,

@@ -6,7 +6,7 @@ import {
   ExclamationTriangleIcon,
   PhotoIcon,
   ShoppingBagIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 type SettingsSection = 'general' | 'appearance' | 'products' | 'roles' | 'stats' | 'danger';
 

@@ -6,7 +6,7 @@
 
 'use client'
 
-import { PencilIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, TrashIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddAssociation, useUpdateAssociation, useDeleteAssociation } from '../../hooks'
 import type { Association } from '../../interfaces/professional-profile.interfaces'

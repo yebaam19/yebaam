@@ -1,6 +1,6 @@
 'use client';
 
-import { PlayIcon } from '@heroicons/react/24/outline';
+import { PlayIcon } from '@/components/icons/heroicons-shim';
 import type { MediaFile } from '../interfaces/post.interfaces';
 
 interface PostVideoPlayerProps {

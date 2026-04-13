@@ -6,7 +6,7 @@
 
 import { Button } from '@/ui/Button'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ExclamationTriangleIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 
 interface DeleteConfirmDialogProps {

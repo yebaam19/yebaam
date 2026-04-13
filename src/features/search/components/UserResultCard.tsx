@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckBadgeIcon, UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon, UserPlusIcon, UserMinusIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import type { UserSearchResult, SearchUserResult } from '../interfaces/search.interfaces';

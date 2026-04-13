@@ -5,7 +5,7 @@ import {
   PhotoIcon,
   VideoCameraIcon,
     PaintBrushIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, useRef, useState } from 'react'
 import { toast } from 'sonner';

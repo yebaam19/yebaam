@@ -6,7 +6,7 @@
  * Tab para editar imágenes (logo y cover) del negocio.
  */
 
-import { PhotoIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { PhotoIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 
 interface EditBusinessImagesTabProps {

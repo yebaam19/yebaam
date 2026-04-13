@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SignalSlashIcon, WifiIcon } from '@heroicons/react/24/outline';
+import { SignalSlashIcon, WifiIcon } from '@/components/icons/heroicons-shim';
 import useOnlineStatus from '@/hooks/useOnlineStatus';
 
 export default function OfflineIndicator() {

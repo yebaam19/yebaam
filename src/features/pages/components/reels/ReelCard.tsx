@@ -4,8 +4,8 @@ import {
   HeartIcon,
   ChatBubbleLeftIcon,
   ShareIcon,
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+} from '@/components/icons/heroicons-shim';
+import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim';
 import { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces';
 
 interface ReelCardProps {

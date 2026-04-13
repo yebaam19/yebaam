@@ -1,6 +1,6 @@
 'use client'
 
-import { PlayIcon } from '@heroicons/react/24/solid'
+import { PlayIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useState } from 'react'
 import { ProfessionalServiceMedia, ServiceMediaType } from '../../interfaces/professional-service.interfaces'

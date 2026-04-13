@@ -15,7 +15,7 @@ import {
   PaintBrushIcon,
   ArrowLeftIcon,
   SparklesIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 

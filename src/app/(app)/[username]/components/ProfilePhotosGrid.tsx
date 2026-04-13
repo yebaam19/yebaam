@@ -1,6 +1,6 @@
 'use client';
 
-import { PhotoIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
 
 interface Photo {

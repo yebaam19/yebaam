@@ -14,7 +14,7 @@ import {
   NewspaperIcon,
   SparklesIcon,
   UserGroupIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import { PortalConfig, PortalMenuItem } from '../interfaces'
 import { salsaSections } from './salsa-sections'
 

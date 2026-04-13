@@ -8,7 +8,7 @@ import {
   UserGroupIcon, 
   UserPlusIcon,
   SparklesIcon 
-} from '@heroicons/react/24/outline';
+} from '@/components/icons/heroicons-shim';
 
 /**
  * Página de Amigos

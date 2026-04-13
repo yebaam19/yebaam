@@ -6,7 +6,7 @@
 
 'use client'
 
-import { ArrowUpTrayIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowUpTrayIcon, PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useState } from 'react'
 import { CreateProfessionalServiceDTO } from '../../../interfaces/professional-service.interfaces'

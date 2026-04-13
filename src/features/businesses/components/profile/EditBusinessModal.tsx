@@ -23,7 +23,7 @@ import {
   InformationCircleIcon,
   PhotoIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
+} from '@/components/icons/heroicons-shim'
 import { Fragment, useState } from 'react'
 import { Business, UpdateBusinessDTO } from '../../interfaces/business.interfaces'
 import { EditBusinessContactTab } from './edit-business/EditBusinessContactTab'

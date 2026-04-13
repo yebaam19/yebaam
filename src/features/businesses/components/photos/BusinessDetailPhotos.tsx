@@ -1,6 +1,6 @@
 'use client'
 
-import { PhotoIcon, PlusIcon, TagIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { PhotoIcon, PlusIcon, TagIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { FC, useState } from 'react'
 import { useBusinessPhotos, useDeleteBusinessPhoto } from '../../hooks/useBusinessPhotos'

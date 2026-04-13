@@ -6,7 +6,7 @@
 
 'use client'
 
-import { BookOpenIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
 import { useAddStudy, useDeleteStudy, useUpdateStudy } from '../../hooks'
 import type { Study } from '../../interfaces/professional-profile.interfaces'
