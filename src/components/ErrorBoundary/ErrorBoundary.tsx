@@ -14,6 +14,16 @@ interface State {
   errorInfo: React.ErrorInfo | null;
 }
 
+const CHUNK_RELOAD_KEY = 'yebaam_chunk_reload_attempts';
+const MAX_CHUNK_RELOAD_ATTEMPTS = 2;
+
+function isChunkLoadError(error: Error): boolean {
+  return (
+    error.name === 'ChunkLoadError' ||
+    /Failed to load chunk|Loading chunk \d+ failed/i.test(error.message)
+  );
+}
+
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -33,6 +43,20 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+
+    if (
+      typeof window !== 'undefined' &&
+      process.env.NODE_ENV === 'development' &&
+      isChunkLoadError(error)
+    ) {
+      const attempts = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? '0');
+      if (attempts < MAX_CHUNK_RELOAD_ATTEMPTS) {
+        window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(attempts + 1));
+        window.location.reload();
+        return;
+      }
+    }
+
     this.setState({
       error,
       errorInfo,
@@ -48,6 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleReload = () => {
+    window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
     window.location.reload();
   };
 
@@ -75,6 +100,23 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-neutral-600 dark:text-neutral-400 mb-6">
                 Ha ocurrido un error inesperado. No te preocupes, estamos trabajando para solucionarlo.
               </p>
+
+              {process.env.NODE_ENV === 'development' &&
+                this.state.error &&
+                isChunkLoadError(this.state.error) && (
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 text-left">
+                    En desarrollo, un fallo al cargar un fragmento de JavaScript suele deberse a Turbopack
+                    regenerando archivos. Prueba recargar, usar{' '}
+                    <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs dark:bg-neutral-800">
+                      pnpm dev:webpack
+                    </code>{' '}
+                    o borrar la carpeta{' '}
+                    <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs dark:bg-neutral-800">
+                      .next
+                    </code>{' '}
+                    y reiniciar el servidor.
+                  </p>
+                )}
 
               {/* Error details (only in development) */}
               {process.env.NODE_ENV === 'development' && this.state.error && (

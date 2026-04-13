@@ -100,6 +100,9 @@ dist/
 # InsForge SQL migrations (local only — do not commit)
 insforge/migrations/*.sql
 
+# MCP config (contains API keys)
+.mcp.json
+
 # InsForge & AI agent skills
 .insforge
 .agent
