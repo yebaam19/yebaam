@@ -10,6 +10,7 @@ import { createClient } from '@/utils/supabase/client'
 import {
   deletePost,
   deleteTopic,
+  editPost,
   moveTopic,
   setTopicLocked,
   setTopicPinned,
@@ -51,6 +52,9 @@ export default function TopicThread({
   const [isPinned, setIsPinned] = useState(topic.isPinned)
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [moveTargetId, setMoveTargetId] = useState<string>('')
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [editingDraft, setEditingDraft] = useState('')
+  const [editError, setEditError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
 
   useEffect(() => {
@@ -58,11 +62,21 @@ export default function TopicThread({
       channel: `foro:topic:${topic.id}`,
       table: 'forum_posts',
       filter: `topic_id=eq.${topic.id}`,
-      events: ['INSERT', 'DELETE'],
+      events: ['INSERT', 'UPDATE', 'DELETE'],
       onChange: async (payload) => {
         if (payload.eventType === 'DELETE') {
           const oldRow = payload.old as PostInsertRow
           if (oldRow?.id) setPosts((prev) => prev.filter((p) => p.id !== oldRow.id))
+          return
+        }
+        if (payload.eventType === 'UPDATE') {
+          const row = payload.new as PostInsertRow
+          if (!row?.id) return
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === row.id ? { ...p, content: row.content, editedAt: row.edited_at } : p,
+            ),
+          )
           return
         }
         const row = payload.new as PostInsertRow
@@ -118,6 +132,39 @@ export default function TopicThread({
     })
     return () => unsubscribe(channel)
   }, [topic.id])
+
+  const startEditing = (post: ForoPost) => {
+    setEditingPostId(post.id)
+    setEditingDraft(post.content)
+    setEditError(null)
+  }
+
+  const cancelEditing = () => {
+    setEditingPostId(null)
+    setEditingDraft('')
+    setEditError(null)
+  }
+
+  const handleSaveEdit = (postId: string) => {
+    const content = editingDraft.trim()
+    if (!content) {
+      setEditError('El mensaje no puede estar vacío.')
+      return
+    }
+    startTransition(async () => {
+      const result = await editPost({ postId, content })
+      if (!result.ok) {
+        setEditError(result.error ?? 'No se pudo editar el mensaje.')
+        return
+      }
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, content, editedAt: result.editedAt ?? new Date().toISOString() } : p,
+        ),
+      )
+      cancelEditing()
+    })
+  }
 
   const handleDeletePost = (postId: string) => {
     startTransition(async () => {
@@ -280,7 +327,10 @@ export default function TopicThread({
 
       <ol className="space-y-3">
         {posts.map((post, idx) => {
-          const canDelete = isModerator || user?.id === post.author.id
+          const isOwner = user?.id === post.author.id
+          const canDelete = isModerator || isOwner
+          const canEdit = isModerator || isOwner
+          const isEditing = editingPostId === post.id
           return (
             <li
               key={post.id}
@@ -293,25 +343,69 @@ export default function TopicThread({
                   </span>
                   {' · '}
                   {formatRelativeDate(post.createdAt)}
+                  {post.editedAt && (
+                    <span className="ml-1 italic text-neutral-400">(editado)</span>
+                  )}
                   {idx === 0 && (
                     <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700 uppercase dark:bg-blue-900/40 dark:text-blue-300">
                       OP
                     </span>
                   )}
                 </div>
-                {canDelete && (
-                  <button
-                    type="button"
-                    onClick={() => handleDeletePost(post.id)}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Eliminar
-                  </button>
+                {!isEditing && (
+                  <div className="flex items-center gap-3">
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => startEditing(post)}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePost(post.id)}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Eliminar
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
-              <div className="mt-3 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-                {post.content}
-              </div>
+              {isEditing ? (
+                <div className="mt-3 space-y-2">
+                  <textarea
+                    value={editingDraft}
+                    onChange={(e) => setEditingDraft(e.target.value)}
+                    rows={4}
+                    className="block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+                  />
+                  {editError && <p className="text-xs text-red-600">{editError}</p>}
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={cancelEditing}
+                      className="rounded-md px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveEdit(post.id)}
+                      className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700"
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+                  {post.content}
+                </div>
+              )}
             </li>
           )
         })}
