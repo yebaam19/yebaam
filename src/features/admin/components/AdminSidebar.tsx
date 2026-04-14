@@ -1,6 +1,5 @@
 'use client'
 
-import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -11,7 +10,6 @@ import {
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
 import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
-import { adminLogout } from '@/features/admin/actions/auth.actions'
 
 const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
   'squares-2x2': Squares2X2Icon,
@@ -27,7 +25,6 @@ interface Props {
 
 export default function AdminSidebar({ onNavigate }: Props) {
   const pathname = usePathname() ?? ''
-  const [isLoggingOut, startLogout] = useTransition()
 
   return (
     <nav className="flex h-full flex-col">
@@ -80,18 +77,10 @@ export default function AdminSidebar({ onNavigate }: Props) {
           )
         })}
       </ul>
-      <div className="space-y-2 border-t border-neutral-200 px-4 py-4 text-[11px] text-neutral-400 dark:border-neutral-800">
-        <Link href="/feed" className="block hover:text-blue-600">
+      <div className="border-t border-neutral-200 px-4 py-4 text-[11px] text-neutral-400 dark:border-neutral-800">
+        <Link href="/feed" className="block hover:text-primary-600">
           ← Volver a Yebaam
         </Link>
-        <button
-          type="button"
-          disabled={isLoggingOut}
-          onClick={() => startLogout(() => adminLogout())}
-          className="block w-full text-left font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
-        >
-          {isLoggingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
-        </button>
       </div>
     </nav>
   )

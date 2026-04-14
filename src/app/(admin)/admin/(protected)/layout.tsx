@@ -12,11 +12,11 @@ export default async function AdminProtectedLayout({
   const client = await getServerClient()
   const { data } = await client.auth.getUser()
   if (!data?.user) {
-    redirect('/admin/login' as Route)
+    redirect('/login?redirect=/admin' as Route)
   }
   const staff = await isPlatformAdmin()
   if (!staff) {
-    redirect('/admin/login?error=forbidden' as Route)
+    redirect('/feed' as Route)
   }
   return <AdminShell>{children}</AdminShell>
 }

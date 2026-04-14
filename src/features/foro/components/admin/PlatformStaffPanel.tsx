@@ -1,10 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import {
-  grantPlatformAdminByUsername,
-  revokePlatformAdmin,
-} from '@/features/foro/actions/admin.actions'
+import { grantPlatformAdminByUsername } from '@/features/foro/actions/admin.actions'
 import type { ForoAuthor } from '@/features/foro/types'
 
 interface Props {
@@ -37,18 +34,6 @@ export default function PlatformStaffPanel({ initial }: Props) {
     })
   }
 
-  const handleRevoke = (userId: string) => {
-    setError(null)
-    startTransition(async () => {
-      const result = await revokePlatformAdmin(userId)
-      if (!result.ok) {
-        setError(result.error ?? 'No se pudo quitar.')
-        return
-      }
-      setStaff((prev) => prev.filter((u) => u.id !== userId))
-    })
-  }
-
   return (
     <section className="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <header className="border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
@@ -66,24 +51,11 @@ export default function PlatformStaffPanel({ initial }: Props) {
           <li className="px-4 py-6 text-sm text-neutral-500">Sin administradores todavía.</li>
         ) : (
           staff.map((user) => (
-            <li
-              key={user.id}
-              className="flex items-center justify-between gap-4 px-4 py-3 text-sm"
-            >
-              <div>
-                <div className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {user.displayName}
-                </div>
-                <div className="text-xs text-neutral-500">@{user.username}</div>
+            <li key={user.id} className="px-4 py-3 text-sm">
+              <div className="font-medium text-neutral-900 dark:text-neutral-100">
+                {user.displayName}
               </div>
-              <button
-                type="button"
-                onClick={() => handleRevoke(user.id)}
-                disabled={isPending}
-                className="rounded-md border border-red-300 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-900/20"
-              >
-                Quitar
-              </button>
+              <div className="text-xs text-neutral-500">@{user.username}</div>
             </li>
           ))
         )}
