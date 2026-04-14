@@ -163,8 +163,9 @@ export default function CreatePostModal() {
 
       await createPost(postData)
 
-      // Invalidar caché del timeline (feed principal)
-      invalidate('posts::timeline')
+      // Timeline cache is updated in-place by the store (prepends the new
+      // post) — do NOT invalidate it here, invalidate() deletes the entry and
+      // wipes the optimistic insert, so the feed would go empty until reload.
 
       if (contextBlogId) {
         invalidate(`blogs::${contextBlogId}::posts`)

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import { getServerClient } from '@/utils/supabase/server';
 import {
   loadMyReactions,
   loadProfilesForPosts,
@@ -42,9 +42,6 @@ export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const token = await getServerAccessToken();
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   const { id } = await context.params;
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const { client, userId } = await getUserId();
@@ -59,17 +56,24 @@ export async function PATCH(
     patch.privacy = ['public', 'friends', 'private'].includes(p) ? p : 'public';
   }
 
+  // Scope the update to the caller so we get a clear error when it's not
+  // theirs, and so an RLS miss can't masquerade as a generic zero-row update.
   const { data, error } = await client
     .from('posts')
     .update(patch)
     .eq('id', id)
+    .eq('author_id', userId)
     .select('*')
     .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    console.error('[api/posts PATCH] supabase error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  if (!data) {
     return NextResponse.json(
-      { error: error?.message ?? 'Failed to update post' },
-      { status: 500 }
+      { error: 'Post not found or you are not the author' },
+      { status: 404 }
     );
   }
 

@@ -291,7 +291,13 @@ export const usePostStore = create<PostState>((set, get) => ({
       
       get().removePostFromList(postId);
       set({ totalPosts: Math.max(0, get().totalPosts - 1) });
-      
+
+      // Mirror the removal into the shared cache so FeedTimeline re-renders.
+      updateCached<TimelineCache>(TIMELINE_CACHE_KEY, (record) => ({
+        data: record?.data ? record.data.filter((p) => p.id !== postId) : [],
+        fetchedAt: Date.now(),
+      }));
+
       toast.success('Post eliminado');
     } catch (error) {
       console.error('[POST STORE] deletePost - Error:', error);
