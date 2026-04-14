@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import { ensureRealtimeConnected } from '@/lib/insforge/realtime';
 
 interface UseChatConversationProps {
@@ -84,8 +84,8 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
           });
         };
 
-        insforge.realtime.on('message.created', handleIncoming);
-        realtimeCleanup = () => insforge.realtime.off('message.created', handleIncoming);
+        supabase.realtime.on('message.created', handleIncoming);
+        realtimeCleanup = () => supabase.realtime.off('message.created', handleIncoming);
 
         // Step B: fetch initial messages and connect realtime in parallel.
         const fetchMessages = chatService
@@ -113,7 +113,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
         const subscribeRealtime = ensureRealtimeConnected()
           .then((ok) => {
             if (!ok || !isMounted) return;
-            return insforge.realtime.subscribe(channelForConversation(convId));
+            return supabase.realtime.subscribe(channelForConversation(convId));
           })
           .catch((err) => {
             console.warn('[useChatConversation] realtime subscribe failed', err);
@@ -135,7 +135,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
                   method: 'POST',
                   credentials: 'same-origin',
                 });
-                await insforge.realtime.publish(
+                await supabase.realtime.publish(
                   channelForConversation(convId),
                   'messages.read',
                   { conversationId: convId, userId: user.id },
@@ -165,7 +165,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
       }
       if (conversationId) {
         try {
-          insforge.realtime.unsubscribe(channelForConversation(conversationId));
+          supabase.realtime.unsubscribe(channelForConversation(conversationId));
         } catch {}
         markConversationAsClosed(conversationId);
       }

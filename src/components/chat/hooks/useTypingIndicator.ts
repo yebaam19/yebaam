@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 
 interface UseTypingIndicatorProps {
   conversationId: string | null;
@@ -33,16 +33,16 @@ export function useTypingIndicator({ conversationId }: UseTypingIndicatorProps) 
       }
     };
 
-    insforge.realtime.on('user.typing', handleUserTyping);
+    supabase.realtime.on('user.typing', handleUserTyping);
     return () => {
-      insforge.realtime.off('user.typing', handleUserTyping);
+      supabase.realtime.off('user.typing', handleUserTyping);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [conversationId, user?.id]);
 
   const publishTyping = (isTypingValue: boolean) => {
     if (!conversationId || !user?.id) return;
-    insforge.realtime
+    supabase.realtime
       .publish(channelForConversation(conversationId), 'user.typing', {
         conversationId,
         userId: user.id,

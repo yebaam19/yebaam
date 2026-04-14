@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import {
   Conversation,
   GetMessagesResponse,
@@ -160,7 +160,7 @@ class ChatService {
     // sidebar and open conversation windows of other participants update
     // live without polling.
     try {
-      await insforge.realtime.publish(channelForConversation(conversationId), 'message.created', {
+      await supabase.realtime.publish(channelForConversation(conversationId), 'message.created', {
         message: saved,
         conversationId,
       });

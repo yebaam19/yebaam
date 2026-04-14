@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 
 export interface ProfilePhoto {
   id: string;
@@ -208,7 +208,7 @@ function rowToAlbum(row: DbAlbum): ProfileAlbum {
 
 async function getUserId(): Promise<string> {
   // Try the SDK first (fast path — in-memory session after login).
-  const { data } = await insforge.auth.getCurrentUser();
+  const { data } = await supabase.auth.getUser();
   const sdkId = data?.user?.id;
   if (sdkId) return sdkId;
 
@@ -216,7 +216,7 @@ async function getUserId(): Promise<string> {
   // InsForge refresh cookie is cross-origin and blocked in dev. Fetch the
   // user from our own route handler which reads the httpOnly
   // `insforge_access_token` cookie, then seed the SDK with that token so
-  // subsequent `insforge.database` / `insforge.storage` calls carry it.
+  // subsequent `supabase.database` / `supabase.storage` calls carry it.
   if (typeof window === 'undefined') throw new Error('Not authenticated');
 
   const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
@@ -230,7 +230,7 @@ async function getUserId(): Promise<string> {
   if (!id || !accessToken) throw new Error('Not authenticated');
 
   try {
-    insforge.getHttpClient().setAuthToken(accessToken);
+    supabase.getHttpClient().setAuthToken(accessToken);
   } catch {
     // ignore — the SDK will fall back to anon key on the next call
   }
@@ -248,7 +248,7 @@ class ProfileMediaService {
   ): Promise<ProfilePhoto> {
     const userId = await getUserId();
 
-    const { data: uploaded, error: uploadError } = await insforge.storage
+    const { data: uploaded, error: uploadError } = await supabase.storage
       .from(PHOTOS_BUCKET)
       .uploadAuto(file);
     if (uploadError || !uploaded) {
@@ -256,7 +256,7 @@ class ProfileMediaService {
     }
     const { url, key } = uploaded as { url: string; key: string };
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profile_photos')
       .insert([
         {
@@ -279,7 +279,7 @@ class ProfileMediaService {
 
   async uploadPhoto(data: UploadPhotoDTO): Promise<ProfilePhoto> {
     const userId = await getUserId();
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error } = await supabase
       .from('profile_photos')
       .insert([
         {
@@ -307,7 +307,7 @@ class ProfileMediaService {
     cursor?: string
   ): Promise<{ data: ProfilePhoto[]; nextCursor?: string }> {
     const userId = await getUserId();
-    let query = insforge.database
+    let query = supabase
       .from('profile_photos')
       .select('*')
       .eq('user_id', userId)
@@ -326,16 +326,16 @@ class ProfileMediaService {
   }
 
   async deletePhoto(photoId: string): Promise<void> {
-    const { data: row } = await insforge.database
+    const { data: row } = await supabase
       .from('profile_photos')
       .select('storage_bucket, storage_key')
       .eq('id', photoId)
       .maybeSingle();
     if (row) {
       const { storage_bucket, storage_key } = row as { storage_bucket: string; storage_key: string };
-      await insforge.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
+      await supabase.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
     }
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('profile_photos')
       .delete()
       .eq('id', photoId);
@@ -357,7 +357,7 @@ class ProfileMediaService {
   ): Promise<ProfileVideo> {
     const userId = await getUserId();
 
-    const { data: uploaded, error: uploadError } = await insforge.storage
+    const { data: uploaded, error: uploadError } = await supabase.storage
       .from(VIDEOS_BUCKET)
       .uploadAuto(file);
     if (uploadError || !uploaded) {
@@ -365,7 +365,7 @@ class ProfileMediaService {
     }
     const { url, key } = uploaded as { url: string; key: string };
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profile_videos')
       .insert([
         {
@@ -389,7 +389,7 @@ class ProfileMediaService {
 
   async uploadVideo(data: UploadVideoDTO): Promise<ProfileVideo> {
     const userId = await getUserId();
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error } = await supabase
       .from('profile_videos')
       .insert([
         {
@@ -419,7 +419,7 @@ class ProfileMediaService {
     cursor?: string
   ): Promise<{ data: ProfileVideo[]; nextCursor?: string }> {
     const userId = await getUserId();
-    let query = insforge.database
+    let query = supabase
       .from('profile_videos')
       .select('*')
       .eq('user_id', userId)
@@ -438,16 +438,16 @@ class ProfileMediaService {
   }
 
   async deleteVideo(videoId: string): Promise<void> {
-    const { data: row } = await insforge.database
+    const { data: row } = await supabase
       .from('profile_videos')
       .select('storage_bucket, storage_key')
       .eq('id', videoId)
       .maybeSingle();
     if (row) {
       const { storage_bucket, storage_key } = row as { storage_bucket: string; storage_key: string };
-      await insforge.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
+      await supabase.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
     }
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('profile_videos')
       .delete()
       .eq('id', videoId);
@@ -460,7 +460,7 @@ class ProfileMediaService {
 
   async createAlbum(data: CreateAlbumDTO): Promise<ProfileAlbum> {
     const userId = await getUserId();
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error } = await supabase
       .from('profile_albums')
       .insert([
         {
@@ -480,7 +480,7 @@ class ProfileMediaService {
     cursor?: string
   ): Promise<{ data: ProfileAlbum[]; nextCursor?: string }> {
     const userId = await getUserId();
-    let query = insforge.database
+    let query = supabase
       .from('profile_albums')
       .select('*')
       .eq('user_id', userId)
@@ -498,7 +498,7 @@ class ProfileMediaService {
   }
 
   async getAlbumById(albumId: string): Promise<ProfileAlbum> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profile_albums')
       .select('*')
       .eq('id', albumId)
@@ -514,7 +514,7 @@ class ProfileMediaService {
     if (data.privacy !== undefined) payload.privacy = clientVisibilityToDb(data.privacy);
     if (data.coverPhotoId !== undefined) payload.cover_photo_id = data.coverPhotoId;
 
-    const { data: updated, error } = await insforge.database
+    const { data: updated, error } = await supabase
       .from('profile_albums')
       .update(payload)
       .eq('id', albumId)
@@ -525,7 +525,7 @@ class ProfileMediaService {
   }
 
   async deleteAlbum(albumId: string): Promise<void> {
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('profile_albums')
       .delete()
       .eq('id', albumId);

@@ -119,6 +119,7 @@ class UserProfileService {
 
   async getUserProfileByUsername(username: string): Promise<UserProfile> {
     const p = await profileService.getProfileByUsername(username);
+    if (!p) throw new Error('Profile not found');
     return mapToLegacyShape(p);
   }
 

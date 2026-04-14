@@ -94,7 +94,9 @@ export function subscribeToBroadcast<T = Record<string, unknown>>(
 ): RealtimeChannel {
   const client = getClient();
   const channel = client.channel(opts.channel, { config: { broadcast: { self: false } } });
-  channel.on('broadcast', { event: opts.event }, ({ payload }) => opts.onMessage(payload as T));
+  channel.on('broadcast', { event: opts.event }, (msg: { payload: unknown }) =>
+    opts.onMessage(msg.payload as T),
+  );
   channel.subscribe();
   return channel;
 }

@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import { ensureInsforgeTokenFromCookie } from '@/lib/insforge/ensure-browser-token';
 
 export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
@@ -103,13 +103,13 @@ type DbFriendSettings = {
 
 async function getCurrentUserId(): Promise<string | null> {
   await ensureInsforgeTokenFromCookie();
-  const { data } = await insforge.auth.getCurrentUser();
+  const { data } = await supabase.auth.getUser();
   return data?.user?.id ?? null;
 }
 
 async function hydrateProfiles(ids: string[]): Promise<Map<string, DbProfile>> {
   if (ids.length === 0) return new Map();
-  const { data } = await insforge.database
+  const { data } = await supabase
     .from('profiles')
     .select('id, username, first_name, last_name, avatar_url')
     .in('id', Array.from(new Set(ids)));
@@ -146,7 +146,7 @@ export const friendshipsService = {
     const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error } = await supabase
       .from('friendships')
       .insert([
         {
@@ -165,7 +165,7 @@ export const friendshipsService = {
     }
     const friendship = inserted as DbFriendship;
 
-    await insforge.database.from('notifications').insert([
+    await supabase.from('notifications').insert([
       {
         type: 'friend_request',
         recipient_id: friendship.recipient_id,
@@ -179,7 +179,7 @@ export const friendshipsService = {
   },
 
   async acceptFriendRequest(requestId: string): Promise<FriendRequest> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('friendships')
       .update({ status: 'accepted' })
       .eq('id', requestId)
@@ -188,7 +188,7 @@ export const friendshipsService = {
     if (error || !data) throw new Error(error?.message || 'Error al aceptar solicitud');
     const friendship = data as DbFriendship;
 
-    await insforge.database.from('notifications').insert([
+    await supabase.from('notifications').insert([
       {
         type: 'friend_accept',
         recipient_id: friendship.requester_id,
@@ -202,7 +202,7 @@ export const friendshipsService = {
   },
 
   async rejectFriendRequest(requestId: string): Promise<FriendRequest> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('friendships')
       .delete()
       .eq('id', requestId)
@@ -213,7 +213,7 @@ export const friendshipsService = {
   },
 
   async cancelFriendRequest(requestId: string): Promise<{ success: boolean; message: string }> {
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('friendships')
       .delete()
       .eq('id', requestId);
@@ -225,7 +225,7 @@ export const friendshipsService = {
     const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('friendships')
       .select('*')
       .eq('id', friendshipId)
@@ -258,7 +258,7 @@ export const friendshipsService = {
     const userId = await getCurrentUserId();
     if (!userId) return { friends: [], count: 0, closeFriendsCount: 0 };
 
-    const { data } = await insforge.database
+    const { data } = await supabase
       .from('friendships')
       .select('*')
       .eq('status', 'accepted')
@@ -300,7 +300,7 @@ export const friendshipsService = {
   async getFriendsOf(userId: string): Promise<FriendsListResponse> {
     if (!userId) return { friends: [], count: 0, closeFriendsCount: 0 };
 
-    const { data } = await insforge.database
+    const { data } = await supabase
       .from('friendships')
       .select('*')
       .eq('status', 'accepted')
@@ -334,7 +334,7 @@ export const friendshipsService = {
     friendIds: string[]
   ): Promise<Map<string, DbFriendSettings>> {
     if (friendIds.length === 0) return new Map();
-    const { data } = await insforge.database
+    const { data } = await supabase
       .from('friend_settings')
       .select('*')
       .eq('owner_id', ownerId)
@@ -351,12 +351,12 @@ export const friendshipsService = {
     }
 
     const [receivedRes, sentRes] = await Promise.all([
-      insforge.database
+      supabase
         .from('friendships')
         .select('*')
         .eq('status', 'pending')
         .eq('recipient_id', userId),
-      insforge.database
+      supabase
         .from('friendships')
         .select('*')
         .eq('status', 'pending')
@@ -390,7 +390,7 @@ export const friendshipsService = {
   },
 
   async removeFriend(friendshipId: string): Promise<{ success: boolean; message: string }> {
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('friendships')
       .delete()
       .eq('id', friendshipId);
@@ -410,7 +410,7 @@ export const friendshipsService = {
     if (config.restricted !== undefined) payload.restricted = config.restricted;
     if (config.nickname !== undefined) payload.nickname = config.nickname;
 
-    const { data: existing } = await insforge.database
+    const { data: existing } = await supabase
       .from('friend_settings')
       .select('*')
       .eq('owner_id', userId)
@@ -418,16 +418,16 @@ export const friendshipsService = {
       .maybeSingle();
 
     if (existing) {
-      await insforge.database
+      await supabase
         .from('friend_settings')
         .update(payload)
         .eq('owner_id', userId)
         .eq('friend_id', friendId);
     } else {
-      await insforge.database.from('friend_settings').insert([payload]);
+      await supabase.from('friend_settings').insert([payload]);
     }
 
-    const { data: profile } = await insforge.database
+    const { data: profile } = await supabase
       .from('profiles')
       .select('id, username, first_name, last_name, avatar_url')
       .eq('id', friendId)
@@ -451,7 +451,7 @@ export const friendshipsService = {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const { data, error } = await insforge.database.rpc('friend_suggestions', {
+    const { data, error } = await supabase.rpc('friend_suggestions', {
       for_user: userId,
       max_results: limit,
     });

@@ -1,7 +1,7 @@
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 
 interface UseChatMessagesProps {
   conversationId: string | null;
@@ -50,7 +50,7 @@ export function useChatMessages({
           method: 'POST',
           credentials: 'same-origin',
         }).catch(() => {});
-        insforge.realtime
+        supabase.realtime
           .publish(myChannel, 'messages.read', { conversationId, userId: user.id })
           .catch(() => {});
       }
@@ -70,12 +70,12 @@ export function useChatMessages({
       );
     };
 
-    insforge.realtime.on('message.created', handleMessageCreated);
-    insforge.realtime.on('messages.read', handleMessagesRead);
+    supabase.realtime.on('message.created', handleMessageCreated);
+    supabase.realtime.on('messages.read', handleMessagesRead);
 
     return () => {
-      insforge.realtime.off('message.created', handleMessageCreated);
-      insforge.realtime.off('messages.read', handleMessagesRead);
+      supabase.realtime.off('message.created', handleMessageCreated);
+      supabase.realtime.off('messages.read', handleMessagesRead);
     };
   }, [conversationId, user?.id, setMessages]);
 

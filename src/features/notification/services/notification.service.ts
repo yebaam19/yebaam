@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import {
   NotificationType,
   type GetNotificationsFilters,
@@ -124,7 +124,7 @@ export class NotificationService {
     );
     if (actorIds.length === 0) return new Map();
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profiles')
       .select('id, username, first_name, last_name, display_name, avatar_url, is_verified')
       .in('id', actorIds);
@@ -161,7 +161,7 @@ export class NotificationService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) {
       return {
@@ -170,7 +170,7 @@ export class NotificationService {
       };
     }
 
-    let query = insforge.database
+    let query = supabase
       .from('notifications')
       .select('*', { count: 'exact' })
       .eq('recipient_id', userId)
@@ -195,7 +195,7 @@ export class NotificationService {
     const actors = await this.hydrateActors(rows);
     const notifications = rows.map((r) => this.rowToNotification(r, actors));
 
-    const { count: unreadCount } = await insforge.database
+    const { count: unreadCount } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', userId)
@@ -214,7 +214,7 @@ export class NotificationService {
   }
 
   async getById(notificationId: string): Promise<Notification> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('notifications')
       .select('*')
       .eq('id', notificationId)
@@ -227,7 +227,7 @@ export class NotificationService {
   }
 
   async getStats(): Promise<NotificationStats> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) {
       return {
@@ -237,12 +237,12 @@ export class NotificationService {
       };
     }
 
-    const { count: total } = await insforge.database
+    const { count: total } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', userId);
 
-    const { count: unread } = await insforge.database
+    const { count: unread } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', userId)
@@ -257,7 +257,7 @@ export class NotificationService {
 
   async markAsRead(notificationIds: string[]): Promise<void> {
     if (notificationIds.length === 0) return;
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
       .in('id', notificationIds);
@@ -269,11 +269,11 @@ export class NotificationService {
   }
 
   async markAllAsRead(): Promise<void> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return;
 
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq('recipient_id', userId)
@@ -282,7 +282,7 @@ export class NotificationService {
   }
 
   async delete(notificationId: string): Promise<void> {
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('notifications')
       .delete()
       .eq('id', notificationId);
@@ -291,7 +291,7 @@ export class NotificationService {
 
   async deleteMany(notificationIds: string[]): Promise<void> {
     if (notificationIds.length === 0) return;
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('notifications')
       .delete()
       .in('id', notificationIds);

@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import type {
   ProfileStatsResponse,
   UpdateInterestsDTO,
@@ -121,7 +121,7 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
 
 class ProfileService {
   async getProfileByUsername(username: string): Promise<UserProfile | null> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('username', username)
@@ -132,11 +132,11 @@ class ProfileService {
   }
 
   async getMyProfile(): Promise<UserProfile> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
     if (!user) throw new Error('Not authenticated');
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
@@ -146,11 +146,11 @@ class ProfileService {
   }
 
   async updateProfile(data: UpdateProfileDTO): Promise<UserProfile> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: updated, error } = await insforge.database
+    const { data: updated, error } = await supabase
       .from('profiles')
       .update(mapUpdateToDb(data))
       .eq('id', userId)
@@ -178,11 +178,11 @@ class ProfileService {
   }
 
   async updateInterests(data: UpdateInterestsDTO): Promise<UserProfile> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: updated, error } = await insforge.database
+    const { data: updated, error } = await supabase
       .from('profiles')
       .update({ interests: data.interests })
       .eq('id', userId)
@@ -198,16 +198,16 @@ class ProfileService {
     }
     const bucket = type === 'avatar' ? AVATAR_BUCKET : COVER_BUCKET;
 
-    const { data, error } = await insforge.storage.from(bucket).uploadAuto(file);
+    const { data, error } = await supabase.storage.from(bucket).uploadAuto(file);
     if (error || !data) throw new Error(error?.message || 'Error al subir imagen');
 
     const url = (data as { url: string }).url;
 
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (userId) {
       const column = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
-      await insforge.database
+      await supabase
         .from('profiles')
         .update({ [column]: url })
         .eq('id', userId);
@@ -217,7 +217,7 @@ class ProfileService {
   }
 
   async getProfileStats(userId: string): Promise<ProfileStatsResponse> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profiles')
       .select('friends_count, followers_count, posts_count')
       .eq('id', userId)
@@ -233,7 +233,7 @@ class ProfileService {
   }
 
   async getUserPosts(userId: string, cursor?: string) {
-    let query = insforge.database
+    let query = supabase
       .from('posts')
       .select('*')
       .eq('author_id', userId)
@@ -251,7 +251,7 @@ class ProfileService {
   }
 
   async getUserPhotos(userId: string, cursor?: string) {
-    let query = insforge.database
+    let query = supabase
       .from('profile_photos')
       .select('*')
       .eq('user_id', userId)
@@ -269,7 +269,7 @@ class ProfileService {
   }
 
   async getUserVideos(userId: string, cursor?: string) {
-    let query = insforge.database
+    let query = supabase
       .from('profile_videos')
       .select('*')
       .eq('user_id', userId)

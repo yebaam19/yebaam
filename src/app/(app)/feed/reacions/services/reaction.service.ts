@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import {
   ReactionType,
   type CreateReactionDTO,
@@ -59,7 +59,7 @@ function rowToReaction(row: DbReaction, users: Map<string, DbProfile>): Reaction
 async function hydrateUsers(rows: DbReaction[]): Promise<Map<string, DbProfile>> {
   const ids = Array.from(new Set(rows.map((r) => r.user_id)));
   if (ids.length === 0) return new Map();
-  const { data } = await insforge.database
+  const { data } = await supabase
     .from('profiles')
     .select('id, username, first_name, last_name, avatar_url')
     .in('id', ids);
@@ -83,7 +83,7 @@ function isDuplicateUserPostReactionError(err: { message?: string } | null | und
 
 export class ReactionService {
   async react(data: CreateReactionDTO): Promise<Reaction> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
@@ -91,7 +91,7 @@ export class ReactionService {
     const rowPayload = { type: dbType, user_id: userId, post_id: data.postId };
 
     // Update first: one round-trip when a row already exists (avoids stale SELECT missing a row).
-    const { data: updatedRows, error: updateError } = await insforge.database
+    const { data: updatedRows, error: updateError } = await supabase
       .from('reactions')
       .update({ type: dbType })
       .eq('user_id', userId)
@@ -107,7 +107,7 @@ export class ReactionService {
       return rowToReaction(row, users);
     }
 
-    const { data: inserted, error: insertError } = await insforge.database
+    const { data: inserted, error: insertError } = await supabase
       .from('reactions')
       .insert([rowPayload])
       .select('*')
@@ -121,7 +121,7 @@ export class ReactionService {
 
     // Lost race: another request inserted between UPDATE and INSERT.
     if (insertError && isDuplicateUserPostReactionError(insertError)) {
-      const { data: afterRace, error: retryError } = await insforge.database
+      const { data: afterRace, error: retryError } = await supabase
         .from('reactions')
         .update({ type: dbType })
         .eq('user_id', userId)
@@ -138,11 +138,11 @@ export class ReactionService {
   }
 
   async updateReaction(postId: string, data: UpdateReactionDTO): Promise<Reaction> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: updated, error } = await insforge.database
+    const { data: updated, error } = await supabase
       .from('reactions')
       .update({ type: toDbType(data.type) })
       .eq('user_id', userId)
@@ -156,10 +156,10 @@ export class ReactionService {
   }
 
   async unreact(postId: string): Promise<void> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return;
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('reactions')
       .delete()
       .eq('user_id', userId)
@@ -173,7 +173,7 @@ export class ReactionService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    let query = insforge.database
+    let query = supabase
       .from('reactions')
       .select('*', { count: 'exact' })
       .eq('post_id', postId)
@@ -201,11 +201,11 @@ export class ReactionService {
   }
 
   async getMyReaction(postId: string): Promise<Reaction | null> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return null;
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('reactions')
       .select('*')
       .eq('user_id', userId)
@@ -217,7 +217,7 @@ export class ReactionService {
   }
 
   async getCounts(postId: string): Promise<ReactionCounts> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('reactions')
       .select('type')
       .eq('post_id', postId);

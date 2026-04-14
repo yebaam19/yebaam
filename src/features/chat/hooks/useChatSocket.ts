@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import { ensureRealtimeConnected } from '@/lib/insforge/realtime';
 import { useChatStore } from '../store/chat.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -166,12 +166,12 @@ export function useChatSocket({
       callbacksRef.current.onError?.(message);
     };
 
-    insforge.realtime.on('connect', handleConnect);
-    insforge.realtime.on('disconnect', handleDisconnect);
-    insforge.realtime.on('connect_error', handleError);
-    insforge.realtime.on('error', handleError);
-    insforge.realtime.on<SocketMessage>('message.created', handleMessageCreated);
-    insforge.realtime.on<SocketMessage>('messages.read', handleMessagesRead);
+    supabase.realtime.on('connect', handleConnect);
+    supabase.realtime.on('disconnect', handleDisconnect);
+    supabase.realtime.on('connect_error', handleError);
+    supabase.realtime.on('error', handleError);
+    supabase.realtime.on<SocketMessage>('message.created', handleMessageCreated);
+    supabase.realtime.on<SocketMessage>('messages.read', handleMessagesRead);
 
     ensureRealtimeConnected().then((ok) => {
       if (!cancelled) setIsConnected(ok);
@@ -179,12 +179,12 @@ export function useChatSocket({
 
     return () => {
       cancelled = true;
-      insforge.realtime.off('connect', handleConnect);
-      insforge.realtime.off('disconnect', handleDisconnect);
-      insforge.realtime.off('connect_error', handleError);
-      insforge.realtime.off('error', handleError);
-      insforge.realtime.off<SocketMessage>('message.created', handleMessageCreated);
-      insforge.realtime.off<SocketMessage>('messages.read', handleMessagesRead);
+      supabase.realtime.off('connect', handleConnect);
+      supabase.realtime.off('disconnect', handleDisconnect);
+      supabase.realtime.off('connect_error', handleError);
+      supabase.realtime.off('error', handleError);
+      supabase.realtime.off<SocketMessage>('message.created', handleMessageCreated);
+      supabase.realtime.off<SocketMessage>('messages.read', handleMessagesRead);
     };
   }, [currentUserId]);
 
@@ -197,7 +197,7 @@ export function useChatSocket({
     // Subscribe to any new channel
     for (const channel of desired) {
       if (!subscribedRef.current.has(channel)) {
-        insforge.realtime
+        supabase.realtime
           .subscribe(channel)
           .then(() => subscribedRef.current.add(channel))
           .catch((err) => console.warn('[useChatSocket] subscribe failed', channel, err));
@@ -207,7 +207,7 @@ export function useChatSocket({
     // Unsubscribe from any channel that's no longer in the list
     for (const channel of Array.from(subscribedRef.current)) {
       if (!desired.has(channel)) {
-        insforge.realtime.unsubscribe(channel);
+        supabase.realtime.unsubscribe(channel);
         subscribedRef.current.delete(channel);
       }
     }
@@ -217,7 +217,7 @@ export function useChatSocket({
   useEffect(() => {
     return () => {
       for (const channel of Array.from(subscribedRef.current)) {
-        insforge.realtime.unsubscribe(channel);
+        supabase.realtime.unsubscribe(channel);
       }
       subscribedRef.current.clear();
     };
@@ -227,7 +227,7 @@ export function useChatSocket({
     const channel = channelForConversation(conversationId);
     if (subscribedRef.current.has(channel)) return;
     try {
-      await insforge.realtime.subscribe(channel);
+      await supabase.realtime.subscribe(channel);
       subscribedRef.current.add(channel);
     } catch (err) {
       console.error('[useChatSocket] joinConversation failed', err);
@@ -263,7 +263,7 @@ export function useChatSocket({
 
       // Broadcast the created message so other subscribers pick it up.
       try {
-        await insforge.realtime.publish(channelForConversation(conversationId), 'message.created', {
+        await supabase.realtime.publish(channelForConversation(conversationId), 'message.created', {
           message: saved,
           conversationId,
         });
@@ -288,7 +288,7 @@ export function useChatSocket({
 
       if (currentUserId) {
         try {
-          await insforge.realtime.publish(
+          await supabase.realtime.publish(
             channelForConversation(conversationId),
             'messages.read',
             { conversationId, userId: currentUserId },

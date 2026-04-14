@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import { channelForPostComments } from '../hooks/useCommentSocket';
 import type {
   Comment,
@@ -12,8 +12,8 @@ import type {
 
 async function publishCommentEvent<T>(postId: string, event: string, payload: T): Promise<void> {
   try {
-    await insforge.realtime.connect();
-    await insforge.realtime.publish(channelForPostComments(postId), event, payload);
+    await supabase.realtime.connect();
+    await supabase.realtime.publish(channelForPostComments(postId), event, payload);
   } catch (error) {
     console.error(`[commentService] failed to publish ${event}:`, error);
   }
@@ -58,7 +58,7 @@ function profileToAuthor(profile: DbProfile | undefined, fallbackId: string): Co
 async function hydrateAuthors(rows: DbComment[]): Promise<Map<string, DbProfile>> {
   const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
   if (authorIds.length === 0) return new Map();
-  const { data } = await insforge.database
+  const { data } = await supabase
     .from('profiles')
     .select('id, username, first_name, last_name, avatar_url')
     .in('id', authorIds);
@@ -85,11 +85,11 @@ function rowToComment(row: DbComment, authors: Map<string, DbProfile>): Comment 
 
 export class CommentService {
   async create(data: CreateCommentDTO): Promise<Comment> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error } = await supabase
       .from('comments')
       .insert([
         {
@@ -115,7 +115,7 @@ export class CommentService {
   }
 
   async update(data: UpdateCommentDTO): Promise<Comment> {
-    const { data: updated, error } = await insforge.database
+    const { data: updated, error } = await supabase
       .from('comments')
       .update({
         content: data.content,
@@ -130,7 +130,7 @@ export class CommentService {
     const row = updated as DbComment;
     const authors = await hydrateAuthors([row]);
     const comment = rowToComment(row, authors);
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     await publishCommentEvent(comment.postId, 'comment.updated', {
       comment,
       postId: comment.postId,
@@ -141,13 +141,13 @@ export class CommentService {
   }
 
   async delete(data: DeleteCommentDTO): Promise<void> {
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('comments')
       .delete()
       .eq('id', data.commentId);
     if (error) throw new Error(error.message || 'Error al eliminar comentario');
 
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     await publishCommentEvent(data.postId, 'comment.deleted', {
       commentId: data.commentId,
       postId: data.postId,
@@ -161,7 +161,7 @@ export class CommentService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    let query = insforge.database
+    let query = supabase
       .from('comments')
       .select('*', { count: 'exact' })
       .eq('post_id', filters.postId)
@@ -208,7 +208,7 @@ export class CommentService {
   }
 
   async getById(commentId: string, _postId: string): Promise<Comment> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('comments')
       .select('*')
       .eq('id', commentId)
@@ -221,7 +221,7 @@ export class CommentService {
   }
 
   async getReplies(_postId: string, commentId: string): Promise<Comment[]> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('comments')
       .select('*')
       .eq('parent_comment_id', commentId)

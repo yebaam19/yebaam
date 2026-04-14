@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 import { useChatConversation } from './hooks/useChatConversation';
 import { useChatMessages } from './hooks/useChatMessages';
@@ -39,18 +39,18 @@ export default function ChatBubble({
     const handleConnect = () => !cancelled && setIsChatConnected(true);
     const handleDisconnect = () => !cancelled && setIsChatConnected(false);
 
-    insforge.realtime.on('connect', handleConnect);
-    insforge.realtime.on('disconnect', handleDisconnect);
+    supabase.realtime.on('connect', handleConnect);
+    supabase.realtime.on('disconnect', handleDisconnect);
 
-    insforge.realtime
+    supabase.realtime
       .connect()
       .then(() => !cancelled && setIsChatConnected(true))
       .catch(() => !cancelled && setIsChatConnected(false));
 
     return () => {
       cancelled = true;
-      insforge.realtime.off('connect', handleConnect);
-      insforge.realtime.off('disconnect', handleDisconnect);
+      supabase.realtime.off('connect', handleConnect);
+      supabase.realtime.off('disconnect', handleDisconnect);
     };
   }, []);
 

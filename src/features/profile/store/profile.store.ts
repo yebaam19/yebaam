@@ -301,7 +301,7 @@ export const useProfileStore = create<ProfileState>()(
           const page = reset ? 1 : get().postsPage
           const response = await profileService.getUserPosts(userId, page.toString())
 
-          const newPosts = reset ? response.data : [...get().userPosts, ...response.data]
+          const newPosts = reset ? response.items : [...get().userPosts, ...response.items]
 
           set({
             userPosts: newPosts,
@@ -333,7 +333,7 @@ export const useProfileStore = create<ProfileState>()(
           const page = reset ? 1 : get().photosPage
           const response = await profileService.getUserPhotos(userId, page.toString())
 
-          const newPhotos = reset ? response.data : [...get().userPhotos, ...response.data]
+          const newPhotos = reset ? response.items : [...get().userPhotos, ...response.items]
 
           set({
             userPhotos: newPhotos,
@@ -365,7 +365,7 @@ export const useProfileStore = create<ProfileState>()(
           const page = reset ? 1 : get().videosPage
           const response = await profileService.getUserVideos(userId, page.toString())
 
-          const newVideos = reset ? response.data : [...get().userVideos, ...response.data]
+          const newVideos = reset ? response.items : [...get().userVideos, ...response.items]
 
           set({
             userVideos: newVideos,

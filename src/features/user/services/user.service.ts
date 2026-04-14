@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 
 export interface UserBasicInfo {
   id: string;
@@ -28,7 +28,7 @@ function profileToBasic(profile: DbProfile): UserBasicInfo {
 
 class UserService {
   async getUserById(userId: string): Promise<UserBasicInfo | null> {
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profiles')
       .select('id, username, first_name, last_name, avatar_url')
       .eq('id', userId)
@@ -39,7 +39,7 @@ class UserService {
 
   async getUsersBatch(userIds: string[]): Promise<UserBasicInfo[]> {
     if (userIds.length === 0) return [];
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('profiles')
       .select('id, username, first_name, last_name, avatar_url')
       .in('id', userIds);

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 import { ensureRealtimeConnected } from '@/lib/insforge/realtime';
 import { useCommentStore } from '../store/comment.store';
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
@@ -58,15 +58,15 @@ export function useCommentSocket(postId: string | null | undefined) {
       decrementCommentsCount(payload.postId);
     };
 
-    insforge.realtime.on(COMMENT_EVENTS.CREATED, handleCreated);
-    insforge.realtime.on(COMMENT_EVENTS.UPDATED, handleUpdated);
-    insforge.realtime.on(COMMENT_EVENTS.DELETED, handleDeleted);
+    supabase.realtime.on(COMMENT_EVENTS.CREATED, handleCreated);
+    supabase.realtime.on(COMMENT_EVENTS.UPDATED, handleUpdated);
+    supabase.realtime.on(COMMENT_EVENTS.DELETED, handleDeleted);
 
     (async () => {
       const ok = await ensureRealtimeConnected();
       if (!ok || cancelled) return;
       try {
-        await insforge.realtime.subscribe(myChannel);
+        await supabase.realtime.subscribe(myChannel);
       } catch {
         // subscribe can fail if the socket dropped between connect and here;
         // ensureRealtimeConnected will retry on the next mount.
@@ -75,11 +75,11 @@ export function useCommentSocket(postId: string | null | undefined) {
 
     return () => {
       cancelled = true;
-      insforge.realtime.off(COMMENT_EVENTS.CREATED, handleCreated);
-      insforge.realtime.off(COMMENT_EVENTS.UPDATED, handleUpdated);
-      insforge.realtime.off(COMMENT_EVENTS.DELETED, handleDeleted);
+      supabase.realtime.off(COMMENT_EVENTS.CREATED, handleCreated);
+      supabase.realtime.off(COMMENT_EVENTS.UPDATED, handleUpdated);
+      supabase.realtime.off(COMMENT_EVENTS.DELETED, handleDeleted);
       try {
-        insforge.realtime.unsubscribe(myChannel);
+        supabase.realtime.unsubscribe(myChannel);
       } catch {
         // ignore
       }

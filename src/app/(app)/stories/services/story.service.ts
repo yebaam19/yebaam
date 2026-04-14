@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { supabase } from '@/utils/supabase/client';
 
 export interface StoryView {
   userId: string;
@@ -110,11 +110,11 @@ class StoryService {
     file: File,
     options: { type: 'image' | 'video'; caption?: string; backgroundColor?: string }
   ): Promise<Story> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: uploaded, error: uploadError } = await insforge.storage
+    const { data: uploaded, error: uploadError } = await supabase.storage
       .from(STORIES_BUCKET)
       .uploadAuto(file);
     if (uploadError || !uploaded) {
@@ -122,7 +122,7 @@ class StoryService {
     }
     const mediaUrl = (uploaded as { url: string }).url;
 
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error } = await supabase
       .from('stories')
       .insert([
         {
@@ -157,11 +157,11 @@ class StoryService {
   }
 
   async getMyStories(): Promise<Story[]> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return [];
 
-    const { data, error } = await insforge.database
+    const { data, error } = await supabase
       .from('stories')
       .select('*')
       .eq('author_id', userId)
@@ -172,11 +172,11 @@ class StoryService {
   }
 
   async getFriendsStories(): Promise<UserStoriesDto[]> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return [];
 
-    const { data: friends } = await insforge.database
+    const { data: friends } = await supabase
       .from('friendships')
       .select('requester_id, recipient_id')
       .eq('status', 'accepted')
@@ -188,7 +188,7 @@ class StoryService {
 
     if (friendIds.length === 0) return [];
 
-    const { data: storiesData } = await insforge.database
+    const { data: storiesData } = await supabase
       .from('stories')
       .select('*')
       .in('author_id', friendIds)
@@ -198,14 +198,14 @@ class StoryService {
     const stories = (storiesData ?? []) as DbStory[];
     if (stories.length === 0) return [];
 
-    const { data: profileData } = await insforge.database
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('id, username, first_name, last_name, avatar_url')
       .in('id', friendIds);
     const profiles = new Map<string, DbProfile>();
     for (const p of (profileData ?? []) as DbProfile[]) profiles.set(p.id, p);
 
-    const { data: viewData } = await insforge.database
+    const { data: viewData } = await supabase
       .from('story_views')
       .select('*')
       .eq('viewer_id', userId)
@@ -241,15 +241,15 @@ class StoryService {
   }
 
   async viewStory(storyId: string): Promise<Story> {
-    const { data: userData } = await insforge.auth.getCurrentUser();
+    const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    await insforge.database
+    await supabase
       .from('story_views')
       .insert([{ story_id: storyId, viewer_id: userId }]);
 
-    const { data } = await insforge.database
+    const { data } = await supabase
       .from('stories')
       .select('*')
       .eq('id', storyId)
@@ -259,7 +259,7 @@ class StoryService {
   }
 
   async deleteStory(storyId: string): Promise<void> {
-    const { error } = await insforge.database
+    const { error } = await supabase
       .from('stories')
       .delete()
       .eq('id', storyId);
