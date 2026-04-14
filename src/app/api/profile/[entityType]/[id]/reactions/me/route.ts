@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapProfileUser, resolveColumn, type ProfileLite } from '@/lib/api/profile-media';
 
 export async function GET(
@@ -14,11 +14,11 @@ export async function GET(
   if (!column) return NextResponse.json({ error: 'Invalid entity type' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ reaction: null });
 
-  const { data } = await client.database
+  const { data } = await client
     .from('reactions')
     .select('id,type,created_at,user_id')
     .eq('user_id', userId)
@@ -28,7 +28,7 @@ export async function GET(
   if (!data) return NextResponse.json({ reaction: null });
 
   const row = data as { id: string; type: string; created_at: string; user_id: string };
-  const { data: profile } = await client.database
+  const { data: profile } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', userId)

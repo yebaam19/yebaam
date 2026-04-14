@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 export async function DELETE(
   _request: NextRequest,
@@ -11,7 +11,7 @@ export async function DELETE(
   const { id, userId } = await context.params;
   const client = await getServerClient();
 
-  const { error } = await client.database
+  const { error } = await client
     .from('club_members')
     .delete()
     .eq('club_id', id)

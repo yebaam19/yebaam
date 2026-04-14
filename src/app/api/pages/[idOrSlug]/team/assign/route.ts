@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 const VALID_ROLES = ['OWNER', 'ADMIN', 'EDITOR', 'MODERATOR'];
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,7 +9,7 @@ async function resolvePageId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('pages')
     .select('id')
     .eq('slug', idOrSlug)
@@ -36,7 +36,7 @@ export async function POST(
   const pageId = await resolvePageId(client, idOrSlug);
   if (!pageId) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
-  const { data: existing } = await client.database
+  const { data: existing } = await client
     .from('page_team_members')
     .select('user_id')
     .eq('page_id', pageId)
@@ -44,14 +44,14 @@ export async function POST(
     .maybeSingle();
 
   if (existing) {
-    const { error } = await client.database
+    const { error } = await client
       .from('page_team_members')
       .update({ role })
       .eq('page_id', pageId)
       .eq('user_id', body.userId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   } else {
-    const { error } = await client.database
+    const { error } = await client
       .from('page_team_members')
       .insert({ page_id: pageId, user_id: body.userId, role });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

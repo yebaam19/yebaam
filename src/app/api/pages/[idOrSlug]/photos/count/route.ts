@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -14,7 +14,7 @@ export async function GET(
   if (UUID_RE.test(idOrSlug)) {
     pageId = idOrSlug;
   } else {
-    const { data } = await client.database
+    const { data } = await client
       .from('pages')
       .select('id')
       .eq('slug', idOrSlug)
@@ -23,7 +23,7 @@ export async function GET(
   }
   if (!pageId) return NextResponse.json({ count: 0 });
 
-  const { count } = await client.database
+  const { count } = await client
     .from('page_photos')
     .select('id', { count: 'exact', head: true })
     .eq('page_id', pageId);

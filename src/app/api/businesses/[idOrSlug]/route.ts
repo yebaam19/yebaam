@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   mapBusinessDetail,
   type BusinessRow,
@@ -18,8 +18,8 @@ async function loadBusiness(
   idOrSlug: string
 ) {
   const { data } = UUID_RE.test(idOrSlug)
-    ? await client.database.from('businesses').select('*').eq('id', idOrSlug).maybeSingle()
-    : await client.database.from('businesses').select('*').eq('slug', idOrSlug).maybeSingle();
+    ? await client.from('businesses').select('*').eq('id', idOrSlug).maybeSingle()
+    : await client.from('businesses').select('*').eq('slug', idOrSlug).maybeSingle();
   return (data ?? null) as BusinessRow | null;
 }
 
@@ -29,22 +29,22 @@ async function detailResponse(
 ) {
   const [categoryRes, cityRes, ownerRes, mediaRes, reviewsRes] = await Promise.all([
     row.category_id
-      ? client.database.from('business_categories').select('*').eq('id', row.category_id).maybeSingle()
+      ? client.from('business_categories').select('*').eq('id', row.category_id).maybeSingle()
       : Promise.resolve({ data: null as BusinessCategoryRow | null }),
     row.city_id
-      ? client.database.from('business_cities').select('*').eq('id', row.city_id).maybeSingle()
+      ? client.from('business_cities').select('*').eq('id', row.city_id).maybeSingle()
       : Promise.resolve({ data: null as BusinessCityRow | null }),
-    client.database
+    client
       .from('profiles')
       .select('id,username,first_name,last_name,avatar_url')
       .eq('id', row.owner_id)
       .maybeSingle(),
-    client.database
+    client
       .from('business_media')
       .select('*')
       .eq('business_id', row.id)
       .order('sort_order', { ascending: true }),
-    client.database
+    client
       .from('business_reviews')
       .select('*')
       .eq('business_id', row.id)
@@ -59,7 +59,7 @@ async function detailResponse(
 
   let state: StateRow | null = null;
   if (city) {
-    const { data: stateData } = await client.database
+    const { data: stateData } = await client
       .from('states')
       .select('*')
       .eq('id', city.state_id)
@@ -69,7 +69,7 @@ async function detailResponse(
 
   const reviewerIds = Array.from(new Set(reviews.map((r) => r.user_id)));
   const { data: reviewers } = reviewerIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', reviewerIds)
@@ -140,7 +140,7 @@ export async function PUT(
   if (Array.isArray(body.tags)) patch.tags = body.tags;
   if (typeof body.visibility === 'string') patch.visibility = body.visibility;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('businesses')
     .update(patch)
     .eq('id', row.id)
@@ -171,7 +171,7 @@ export async function DELETE(
   const row = await loadBusiness(client, idOrSlug);
   if (!row) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
 
-  const { error } = await client.database.from('businesses').delete().eq('id', row.id);
+  const { error } = await client.from('businesses').delete().eq('id', row.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

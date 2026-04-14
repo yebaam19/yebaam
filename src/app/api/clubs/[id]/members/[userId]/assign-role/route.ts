@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 const VALID_ROLES = ['ADMIN', 'MODERATOR', 'MEMBER'];
 
@@ -18,7 +18,7 @@ export async function POST(
   }
 
   const client = await getServerClient();
-  const { error } = await client.database
+  const { error } = await client
     .from('club_members')
     .update({ role: roleRaw })
     .eq('club_id', id)

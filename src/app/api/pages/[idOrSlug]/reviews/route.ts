@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   mapReview,
   resolvePageId,
@@ -23,7 +23,7 @@ export async function GET(
   const pageId = await resolvePageId(client, idOrSlug);
   if (!pageId) return NextResponse.json({ reviews: [], total: 0, hasMore: false });
 
-  let query = client.database
+  let query = client
     .from('page_reviews')
     .select('*', { count: 'exact' })
     .eq('page_id', pageId)
@@ -46,7 +46,7 @@ export async function GET(
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
 
   const { data: profiles } = userIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', userIds)
@@ -55,11 +55,11 @@ export async function GET(
   const profileMap = new Map<string, ProfileLite>();
   for (const p of (profiles ?? []) as ProfileLite[]) profileMap.set(p.id, p);
 
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
   const myHelpful = new Set<string>();
   if (viewerId && rows.length > 0) {
-    const { data: helps } = await client.database
+    const { data: helps } = await client
       .from('page_review_helpful')
       .select('review_id')
       .eq('user_id', viewerId)
@@ -97,14 +97,14 @@ export async function POST(
   }
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const pageId = await resolvePageId(client, idOrSlug);
   if (!pageId) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('page_reviews')
     .insert({
       page_id: pageId,
@@ -123,7 +123,7 @@ export async function POST(
     );
   }
 
-  const { data: profile } = await client.database
+  const { data: profile } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', userId)
@@ -132,5 +132,4 @@ export async function POST(
   return NextResponse.json(
     mapReview(data as ReviewRow, (profile ?? undefined) as ProfileLite | undefined, false)
   );
-  void refreshHelpfulCount;
 }

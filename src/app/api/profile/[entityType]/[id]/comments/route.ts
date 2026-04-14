@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapProfileUser, resolveColumn, type ProfileLite } from '@/lib/api/profile-media';
 
 type CommentRow = {
@@ -39,7 +39,7 @@ export async function GET(
   const cursor = searchParams.get('cursor');
 
   const client = await getServerClient();
-  let query = client.database
+  let query = client
     .from('comments')
     .select('*', { count: 'exact' })
     .eq(column, id)
@@ -61,7 +61,7 @@ export async function GET(
 
   const authorIds = Array.from(new Set(sliced.map((r) => r.author_id)));
   const { data: profiles } = authorIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', authorIds)
@@ -96,7 +96,7 @@ export async function POST(
   if (!content) return NextResponse.json({ error: 'content is required' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const authorId = me?.user?.id;
   if (!authorId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -109,7 +109,7 @@ export async function POST(
   };
   if (body.parentCommentId) insertRow.parent_comment_id = body.parentCommentId;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('comments')
     .insert(insertRow)
     .select('*')
@@ -123,29 +123,29 @@ export async function POST(
   }
 
   if (body.parentCommentId) {
-    const { count } = await client.database
+    const { count } = await client
       .from('comments')
       .select('id', { count: 'exact', head: true })
       .eq('parent_comment_id', body.parentCommentId);
-    await client.database
+    await client
       .from('comments')
       .update({ replies_count: count ?? 0 })
       .eq('id', body.parentCommentId);
   }
 
-  const { count: totalComments } = await client.database
+  const { count: totalComments } = await client
     .from('comments')
     .select('id', { count: 'exact', head: true })
     .eq(column, id)
     .is('parent_comment_id', null);
 
   const table = entityType === 'photos' ? 'profile_photos' : 'profile_videos';
-  await client.database
+  await client
     .from(table)
     .update({ comments_count: totalComments ?? 0 })
     .eq('id', id);
 
-  const { data: profile } = await client.database
+  const { data: profile } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', authorId)

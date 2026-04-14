@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import type { BusinessReviewRow, ProfileLite } from '@/lib/api/businesses';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,7 +9,7 @@ async function resolveBusinessId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('businesses')
     .select('id')
     .eq('slug', idOrSlug)
@@ -21,7 +21,7 @@ async function refreshAverage(
   client: Awaited<ReturnType<typeof getServerClient>>,
   businessId: string
 ) {
-  const { data } = await client.database
+  const { data } = await client
     .from('business_reviews')
     .select('rating')
     .eq('business_id', businessId);
@@ -29,7 +29,7 @@ async function refreshAverage(
   const avg = ratings.length
     ? ratings.reduce((sum, n) => sum + n, 0) / ratings.length
     : null;
-  await client.database
+  await client
     .from('businesses')
     .update({ average_rating: avg, updated_at: new Date().toISOString() })
     .eq('id', businessId);
@@ -44,7 +44,7 @@ export async function GET(
   const businessId = await resolveBusinessId(client, idOrSlug);
   if (!businessId) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('business_reviews')
     .select('*')
     .eq('business_id', businessId)
@@ -55,7 +55,7 @@ export async function GET(
   const rows = (data ?? []) as BusinessReviewRow[];
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   const { data: profiles } = userIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', userIds)
@@ -109,14 +109,14 @@ export async function POST(
   }
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const businessId = await resolveBusinessId(client, idOrSlug);
   if (!businessId) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
 
-  const { data: existing } = await client.database
+  const { data: existing } = await client
     .from('business_reviews')
     .select('id')
     .eq('business_id', businessId)
@@ -125,7 +125,7 @@ export async function POST(
 
   let saved;
   if (existing) {
-    const { data, error } = await client.database
+    const { data, error } = await client
       .from('business_reviews')
       .update({
         rating,
@@ -144,7 +144,7 @@ export async function POST(
     }
     saved = data as BusinessReviewRow;
   } else {
-    const { data, error } = await client.database
+    const { data, error } = await client
       .from('business_reviews')
       .insert({
         business_id: businessId,

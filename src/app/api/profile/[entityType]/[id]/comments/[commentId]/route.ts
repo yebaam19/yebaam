@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { resolveColumn } from '@/lib/api/profile-media';
 
 export async function DELETE(
@@ -14,7 +14,7 @@ export async function DELETE(
   if (!column) return NextResponse.json({ error: 'Invalid entity type' }, { status: 400 });
 
   const client = await getServerClient();
-  const { error } = await client.database
+  const { error } = await client
     .from('comments')
     .delete()
     .eq('id', commentId)
@@ -22,14 +22,14 @@ export async function DELETE(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const { count: totalComments } = await client.database
+  const { count: totalComments } = await client
     .from('comments')
     .select('id', { count: 'exact', head: true })
     .eq(column, id)
     .is('parent_comment_id', null);
 
   const table = entityType === 'photos' ? 'profile_photos' : 'profile_videos';
-  await client.database
+  await client
     .from(table)
     .update({ comments_count: totalComments ?? 0 })
     .eq('id', id);

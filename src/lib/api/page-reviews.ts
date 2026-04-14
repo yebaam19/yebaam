@@ -1,5 +1,5 @@
 import 'server-only';
-import type { getServerClient } from '@/lib/insforge/server';
+import type { getServerClient } from '@/utils/supabase/server';
 
 export type ReviewRow = {
   id: string;
@@ -32,7 +32,7 @@ export async function resolvePageId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('pages')
     .select('id')
     .eq('slug', idOrSlug)
@@ -77,11 +77,11 @@ export async function refreshHelpfulCount(
   client: Awaited<ReturnType<typeof getServerClient>>,
   reviewId: string
 ) {
-  const { count } = await client.database
+  const { count } = await client
     .from('page_review_helpful')
     .select('review_id', { count: 'exact', head: true })
     .eq('review_id', reviewId);
-  await client.database
+  await client
     .from('page_reviews')
     .update({ helpful_count: count ?? 0 })
     .eq('id', reviewId);

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   VALID_REACTION_TYPES,
   normalizeReactionType,
@@ -23,13 +23,13 @@ async function refreshLikesCount(
   entityId: string,
   column: 'profile_photo_id' | 'profile_video_id'
 ) {
-  const { count } = await client.database
+  const { count } = await client
     .from('reactions')
     .select('id', { count: 'exact', head: true })
     .eq(column, entityId);
 
   const table = entityType === 'photos' ? 'profile_photos' : 'profile_videos';
-  await client.database
+  await client
     .from(table)
     .update({ likes_count: count ?? 0 })
     .eq('id', entityId);
@@ -47,7 +47,7 @@ export async function GET(
   const typeFilter = normalizeReactionType(searchParams.get('type'));
 
   const client = await getServerClient();
-  let query = client.database.from('reactions').select('*').eq(column, id);
+  let query = client.from('reactions').select('*').eq(column, id);
   if (typeFilter) query = query.eq('type', typeFilter);
 
   const { data, error } = await query.order('created_at', { ascending: false });
@@ -57,7 +57,7 @@ export async function GET(
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
 
   const { data: profiles } = userIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', userIds)
@@ -104,11 +104,11 @@ export async function POST(
   if (!type) return NextResponse.json({ error: 'Invalid reaction type' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: existing } = await client.database
+  const { data: existing } = await client
     .from('reactions')
     .select('id')
     .eq('user_id', userId)
@@ -116,13 +116,13 @@ export async function POST(
     .maybeSingle();
 
   if (existing) {
-    const { error } = await client.database
+    const { error } = await client
       .from('reactions')
       .update({ type })
       .eq('id', (existing as { id: string }).id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   } else {
-    const { error } = await client.database
+    const { error } = await client
       .from('reactions')
       .insert({ user_id: userId, type, [column]: id });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -130,7 +130,7 @@ export async function POST(
 
   await refreshLikesCount(client, entityType, id, column);
 
-  const { data: userProfile } = await client.database
+  const { data: userProfile } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', userId)
@@ -156,11 +156,11 @@ export async function DELETE(
   if (!column) return NextResponse.json({ error: 'Invalid entity type' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { error } = await client.database
+  const { error } = await client
     .from('reactions')
     .delete()
     .eq('user_id', userId)

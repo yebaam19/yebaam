@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import type { BusinessCityRow, StateRow } from '@/lib/api/businesses';
 
 export async function GET() {
   const client = await getServerClient();
   const [{ data: states }, { data: cities }] = await Promise.all([
-    client.database.from('states').select('*').order('name', { ascending: true }),
-    client.database.from('business_cities').select('*').order('name', { ascending: true }),
+    client.from('states').select('*').order('name', { ascending: true }),
+    client.from('business_cities').select('*').order('name', { ascending: true }),
   ]);
 
   const stateRows = (states ?? []) as StateRow[];

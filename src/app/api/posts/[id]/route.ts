@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   loadMyReactions,
   loadProfilesForPosts,
@@ -9,7 +9,7 @@ import {
 
 async function getUserId() {
   const client = await getServerClient();
-  const { data } = await client.auth.getCurrentUser();
+  const { data } = await client.auth.getUser();
   return { client, userId: data?.user?.id ?? null };
 }
 
@@ -20,7 +20,7 @@ export async function GET(
   const { id } = await context.params;
   const { client, userId } = await getUserId();
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('posts')
     .select('*')
     .eq('id', id)
@@ -59,7 +59,7 @@ export async function PATCH(
     patch.privacy = ['public', 'friends', 'private'].includes(p) ? p : 'public';
   }
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('posts')
     .update(patch)
     .eq('id', id)
@@ -91,7 +91,7 @@ export async function DELETE(
 
   const { id } = await context.params;
   const client = await getServerClient();
-  const { error } = await client.database.from('posts').delete().eq('id', id);
+  const { error } = await client.from('posts').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

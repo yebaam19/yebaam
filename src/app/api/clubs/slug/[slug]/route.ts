@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 
 export async function GET(
@@ -8,10 +8,10 @@ export async function GET(
 ) {
   const { slug } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('clubs')
     .select('*')
     .eq('slug', slug)

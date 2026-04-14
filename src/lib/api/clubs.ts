@@ -98,7 +98,7 @@ export function mapClub(
 
 export async function loadClubContext(
   client: Awaited<
-    ReturnType<typeof import('@/lib/insforge/server').getServerClient>
+    ReturnType<typeof import('@/utils/supabase/server').getServerClient>
   >,
   rows: ClubRow[],
   viewerId: string | null
@@ -108,20 +108,20 @@ export async function loadClubContext(
 
   const [ownersRes, membersRes, memberCountRes] = await Promise.all([
     ownerIds.length
-      ? client.database
+      ? client
           .from('profiles')
           .select('id,username,first_name,last_name,avatar_url')
           .in('id', ownerIds)
       : Promise.resolve({ data: [] as ProfileLite[] }),
     viewerId && clubIds.length
-      ? client.database
+      ? client
           .from('club_members')
           .select('club_id,role,membership_tier')
           .eq('user_id', viewerId)
           .in('club_id', clubIds)
       : Promise.resolve({ data: [] as Array<Pick<ClubMemberRow, 'club_id' | 'role' | 'membership_tier'>> }),
     clubIds.length
-      ? client.database.from('club_members').select('club_id').in('club_id', clubIds)
+      ? client.from('club_members').select('club_id').in('club_id', clubIds)
       : Promise.resolve({ data: [] as Array<{ club_id: string }> }),
   ]);
 

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 export async function POST(
   _request: NextRequest,
@@ -14,11 +14,11 @@ export async function POST(
   }
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { error } = await client.database
+  const { error } = await client
     .from('conversation_participants')
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)

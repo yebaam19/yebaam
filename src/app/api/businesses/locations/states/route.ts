@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import type { StateRow } from '@/lib/api/businesses';
 
 export async function GET() {
   const client = await getServerClient();
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('states')
     .select('*')
     .order('name', { ascending: true });

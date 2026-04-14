@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { loadPageContext, mapPage, type PageRow } from '@/lib/api/pages';
 
 export async function GET(request: NextRequest) {
@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Math.max(Number(searchParams.get('limit') ?? '10') || 10, 1), 50);
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('pages')
     .select('*')
     .eq('privacy', 'public')

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -8,7 +8,7 @@ async function resolvePageId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('pages')
     .select('id')
     .eq('slug', idOrSlug)
@@ -28,7 +28,7 @@ export async function DELETE(
   const pageId = await resolvePageId(client, idOrSlug);
   if (!pageId) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
-  const { error } = await client.database
+  const { error } = await client
     .from('page_team_members')
     .delete()
     .eq('page_id', pageId)

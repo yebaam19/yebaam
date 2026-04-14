@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 type CityRow = {
   id: string;
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   const offset = Math.max(Number(searchParams.get('offset') ?? '0') || 0, 0);
 
   const client = await getServerClient();
-  const { data, error, count } = await client.database
+  const { data, error, count } = await client
     .from('cities')
     .select('*', { count: 'exact' })
     .order('is_featured', { ascending: false })

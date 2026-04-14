@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -14,7 +14,7 @@ export async function GET(
   if (UUID_RE.test(idOrSlug)) {
     businessId = idOrSlug;
   } else {
-    const { data } = await client.database
+    const { data } = await client
       .from('businesses')
       .select('id')
       .eq('slug', idOrSlug)
@@ -23,7 +23,7 @@ export async function GET(
   }
   if (!businessId) return NextResponse.json({ count: 0 });
 
-  const { count } = await client.database
+  const { count } = await client
     .from('business_media')
     .select('id', { count: 'exact', head: true })
     .eq('business_id', businessId);

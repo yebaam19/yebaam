@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapBlog, slugify, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
 
 async function loadOwners(
@@ -8,7 +8,7 @@ async function loadOwners(
 ) {
   const ids = Array.from(new Set(rows.map((r) => r.owner_id)));
   if (ids.length === 0) return new Map<string, OwnerProfile>();
-  const { data } = await client.database
+  const { data } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .in('id', ids);
@@ -23,7 +23,7 @@ async function loadFollowingIds(
   blogIds: string[]
 ) {
   if (!userId || blogIds.length === 0) return new Set<string>();
-  const { data } = await client.database
+  const { data } = await client
     .from('blog_follows')
     .select('blog_id')
     .eq('user_id', userId)
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get('category')?.trim() ?? '';
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id ?? null;
 
-  let request_ = client.database
+  let request_ = client
     .from('blogs')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
@@ -83,14 +83,14 @@ export async function POST(request: NextRequest) {
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const baseSlug = slugify(name);
   let slug = baseSlug;
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data: conflict } = await client.database
+    const { data: conflict } = await client
       .from('blogs')
       .select('id')
       .eq('slug', slug)
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     tags: Array.isArray(body.tags) ? (body.tags as string[]) : [],
   };
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('blogs')
     .insert(insertRow)
     .select('*')

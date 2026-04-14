@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 export async function GET(
   _request: NextRequest,
@@ -8,7 +8,7 @@ export async function GET(
   const { id: postId } = await context.params;
   const client = await getServerClient();
 
-  const { data: post, error } = await client.database
+  const { data: post, error } = await client
     .from('posts')
     .select('id,reactions_count,comments_count,created_at')
     .eq('id', postId)

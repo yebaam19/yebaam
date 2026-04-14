@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 export async function DELETE(
   _request: NextRequest,
@@ -10,7 +10,7 @@ export async function DELETE(
 
   const { photoId } = await context.params;
   const client = await getServerClient();
-  const { error } = await client.database.from('page_photos').delete().eq('id', photoId);
+  const { error } = await client.from('page_photos').delete().eq('id', photoId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

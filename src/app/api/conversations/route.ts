@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken, getServiceClient } from '@/lib/insforge/server';
-import { withRetry } from '@/lib/insforge/with-retry';
+import { getServerClient, getServerAccessToken, getServiceClient } from '@/utils/supabase/server';
+import { withRetry } from '@/utils/supabase/with-retry';
 
 type ParticipantRow = {
   conversation_id: string;
@@ -29,7 +29,7 @@ type MessageRow = {
 
 async function getUserId(): Promise<string | null> {
   const client = await getServerClient();
-  const { data } = await client.auth.getCurrentUser();
+  const { data } = await client.auth.getUser();
   return data?.user?.id ?? null;
 }
 
@@ -42,7 +42,7 @@ export async function GET() {
   if (!userId) return NextResponse.json({ success: true, data: [], count: 0 });
 
   const { data: myParts, error: partsErr } = await withRetry(() =>
-    client.database
+    client
       .from('conversation_participants')
       .select('conversation_id,last_read_at')
       .eq('user_id', userId),
@@ -58,7 +58,7 @@ export async function GET() {
   }
 
   const { data: convs, error: convErr } = await withRetry(() =>
-    client.database
+    client
       .from('conversations')
       .select('*')
       .in('id', conversationIds)
@@ -70,7 +70,7 @@ export async function GET() {
   }
 
   const { data: allParts } = await withRetry(() =>
-    client.database
+    client
       .from('conversation_participants')
       .select('conversation_id,user_id,last_read_at')
       .in('conversation_id', conversationIds),
@@ -82,7 +82,7 @@ export async function GET() {
   const lastMsgResults = await Promise.all(
     conversationIds.map((cid) =>
       withRetry(() =>
-        client.database
+        client
           .from('messages')
           .select('id,conversation_id,sender_id,content,created_at')
           .eq('conversation_id', cid)
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Cannot start a conversation with yourself' }, { status: 400 });
   }
 
-  const db = getServiceClient().database;
+  const db = getServiceClient();
 
   const { data: myParts } = await db
     .from('conversation_participants')

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 export async function POST(
   _request: NextRequest,
@@ -10,11 +10,11 @@ export async function POST(
 
   const { id } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: existing } = await client.database
+  const { data: existing } = await client
     .from('group_members')
     .select('group_id')
     .eq('group_id', id)
@@ -22,7 +22,7 @@ export async function POST(
     .maybeSingle();
 
   if (!existing) {
-    const { error } = await client.database
+    const { error } = await client
       .from('group_members')
       .insert({ group_id: id, user_id: userId, role: 'MEMBER' });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

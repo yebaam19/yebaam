@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadGroupContext, mapGroup, type GroupRow } from '@/lib/api/groups';
 
 export async function GET(
@@ -8,10 +8,10 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('groups')
     .select('*')
     .eq('id', id)
@@ -36,7 +36,7 @@ export async function PUT(
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id ?? null;
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -46,7 +46,7 @@ export async function PUT(
   if (body.privacy === 'public' || body.privacy === 'private') patch.privacy = body.privacy;
   if (typeof body.coverImageUrl === 'string' || body.coverImageUrl === null) patch.cover_image_url = body.coverImageUrl;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('groups')
     .update(patch)
     .eq('id', id)
@@ -74,7 +74,7 @@ export async function DELETE(
 
   const { id } = await context.params;
   const client = await getServerClient();
-  const { error } = await client.database.from('groups').delete().eq('id', id);
+  const { error } = await client.from('groups').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

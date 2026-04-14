@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import type { ProfileLite } from '@/lib/api/pages';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,7 +9,7 @@ async function resolvePageId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('pages')
     .select('id')
     .eq('slug', idOrSlug)
@@ -26,7 +26,7 @@ export async function GET(
   const pageId = await resolvePageId(client, idOrSlug);
   if (!pageId) return NextResponse.json([], { status: 404 });
 
-  const { data: follows, error } = await client.database
+  const { data: follows, error } = await client
     .from('page_followers')
     .select('user_id,created_at')
     .eq('page_id', pageId)
@@ -37,7 +37,7 @@ export async function GET(
   const rows = (follows ?? []) as Array<{ user_id: string; created_at: string }>;
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   const { data: profiles } = userIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', userIds)

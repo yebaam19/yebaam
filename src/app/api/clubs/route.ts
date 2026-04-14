@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, slugify, type ClubRow } from '@/lib/api/clubs';
 
 export async function GET() {
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('clubs')
     .select('*')
     .order('created_at', { ascending: false })
@@ -31,14 +31,14 @@ export async function POST(request: NextRequest) {
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const baseSlug = slugify(name);
   let slug = baseSlug;
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data: conflict } = await client.database
+    const { data: conflict } = await client
       .from('clubs')
       .select('id')
       .eq('slug', slug)
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     tags: Array.isArray(body.tags) ? (body.tags as string[]) : [],
   };
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('clubs')
     .insert(insertRow)
     .select('*')

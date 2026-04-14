@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 
 export async function GET(
@@ -8,10 +8,10 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('clubs')
     .select('*')
     .eq('id', id)
@@ -36,7 +36,7 @@ export async function PUT(
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id ?? null;
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -52,7 +52,7 @@ export async function PUT(
   if (typeof body.website === 'string' || body.website === null) patch.website = body.website;
   if (Array.isArray(body.tags)) patch.tags = body.tags;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('clubs')
     .update(patch)
     .eq('id', id)
@@ -80,7 +80,7 @@ export async function DELETE(
 
   const { id } = await context.params;
   const client = await getServerClient();
-  const { error } = await client.database.from('clubs').delete().eq('id', id);
+  const { error } = await client.from('clubs').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

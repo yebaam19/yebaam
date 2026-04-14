@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapBlog, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -8,7 +8,7 @@ async function loadBlog(
   client: Awaited<ReturnType<typeof getServerClient>>,
   idOrSlug: string
 ) {
-  const query = client.database.from('blogs').select('*');
+  const query = client.from('blogs').select('*');
   const { data } = UUID_RE.test(idOrSlug)
     ? await query.eq('id', idOrSlug).maybeSingle()
     : await query.eq('slug', idOrSlug).maybeSingle();
@@ -21,13 +21,13 @@ export async function GET(
 ) {
   const { idOrSlug } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id ?? null;
 
   const row = await loadBlog(client, idOrSlug);
   if (!row) return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
 
-  const { data: owner } = await client.database
+  const { data: owner } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', row.owner_id)
@@ -38,7 +38,7 @@ export async function GET(
 
   const followingIds = new Set<string>();
   if (userId) {
-    const { data: follow } = await client.database
+    const { data: follow } = await client
       .from('blog_follows')
       .select('blog_id')
       .eq('user_id', userId)
@@ -75,7 +75,7 @@ export async function PUT(
   if (body.social && typeof body.social === 'object') patch.social = body.social;
   if (Array.isArray(body.tags)) patch.tags = body.tags;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('blogs')
     .update(patch)
     .eq('id', row.id)
@@ -90,7 +90,7 @@ export async function PUT(
   }
 
   const updated = data as BlogRow;
-  const { data: owner } = await client.database
+  const { data: owner } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', updated.owner_id)

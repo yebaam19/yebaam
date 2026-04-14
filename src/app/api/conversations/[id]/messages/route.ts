@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 type MessageRow = {
   id: string;
@@ -49,7 +49,7 @@ export async function GET(
 
   const client = await getServerClient();
 
-  const { data, error, count } = await client.database
+  const { data, error, count } = await client
     .from('messages')
     .select('*', { count: 'exact' })
     .eq('conversation_id', conversationId)
@@ -100,11 +100,11 @@ export async function POST(
   }
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const senderId = me?.user?.id;
   if (!senderId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: inserted, error } = await client.database
+  const { data: inserted, error } = await client
     .from('messages')
     .insert({
       conversation_id: conversationId,
@@ -124,7 +124,7 @@ export async function POST(
     );
   }
 
-  await client.database
+  await client
     .from('conversations')
     .update({ updated_at: new Date().toISOString() })
     .eq('id', conversationId);

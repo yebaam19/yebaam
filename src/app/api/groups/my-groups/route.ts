@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadGroupContext, mapGroup, type GroupRow } from '@/lib/api/groups';
 
 export async function GET() {
@@ -7,19 +7,19 @@ export async function GET() {
   if (!token) return NextResponse.json({ groups: [], total: 0 }, { status: 401 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ groups: [], total: 0 }, { status: 401 });
 
-  const { data: owned } = await client.database.from('groups').select('*').eq('creator_id', userId);
+  const { data: owned } = await client.from('groups').select('*').eq('creator_id', userId);
 
-  const { data: memberships } = await client.database
+  const { data: memberships } = await client
     .from('group_members')
     .select('group_id')
     .eq('user_id', userId);
   const memberIds = ((memberships ?? []) as Array<{ group_id: string }>).map((m) => m.group_id);
   const { data: memberGroups } = memberIds.length
-    ? await client.database.from('groups').select('*').in('id', memberIds)
+    ? await client.from('groups').select('*').in('id', memberIds)
     : { data: [] as GroupRow[] };
 
   const seen = new Set<string>();

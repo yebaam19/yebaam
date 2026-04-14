@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { checkRateLimit, clientIp } from '@/lib/api/rate-limit';
 
 type ProfileRow = {
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   const escaped = q.replace(/[\\%_]/g, '\\$&');
   const pattern = `%${escaped}%`;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url,bio')
     .or(`username.ilike.${pattern},first_name.ilike.${pattern},last_name.ilike.${pattern}`)

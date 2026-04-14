@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import type { BusinessCityRow } from '@/lib/api/businesses';
 
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { stateId } = await context.params;
   const client = await getServerClient();
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('business_cities')
     .select('*')
     .eq('state_id', stateId)

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 export async function DELETE(
   _request: NextRequest,
@@ -10,11 +10,11 @@ export async function DELETE(
 
   const { idOrSlug } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: blog } = await client.database
+  const { data: blog } = await client
     .from('blogs')
     .select('id')
     .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`)
@@ -22,7 +22,7 @@ export async function DELETE(
   if (!blog) return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
 
   const blogId = (blog as { id: string }).id;
-  const { error } = await client.database
+  const { error } = await client
     .from('blog_follows')
     .delete()
     .eq('blog_id', blogId)

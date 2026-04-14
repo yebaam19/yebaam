@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { loadGroupContext, mapGroup, type GroupRow } from '@/lib/api/groups';
 
 export async function GET() {
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('groups')
     .select('*')
     .eq('privacy', 'public')

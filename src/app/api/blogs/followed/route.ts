@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapBlog, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
 
 export async function GET() {
@@ -7,11 +7,11 @@ export async function GET() {
   if (!token) return NextResponse.json([], { status: 401 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json([], { status: 401 });
 
-  const { data: follows } = await client.database
+  const { data: follows } = await client
     .from('blog_follows')
     .select('blog_id')
     .eq('user_id', userId);
@@ -19,7 +19,7 @@ export async function GET() {
   const blogIds = ((follows ?? []) as { blog_id: string }[]).map((r) => r.blog_id);
   if (blogIds.length === 0) return NextResponse.json([]);
 
-  const { data: rows, error } = await client.database
+  const { data: rows, error } = await client
     .from('blogs')
     .select('*')
     .in('id', blogIds)
@@ -30,7 +30,7 @@ export async function GET() {
   const blogRows = (rows ?? []) as BlogRow[];
   const ownerIds = Array.from(new Set(blogRows.map((r) => r.owner_id)));
   const { data: owners } = ownerIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', ownerIds)

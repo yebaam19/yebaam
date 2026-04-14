@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -8,7 +8,7 @@ async function resolvePageId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('pages')
     .select('id')
     .eq('slug', idOrSlug)
@@ -20,11 +20,11 @@ async function refreshFollowerCount(
   client: Awaited<ReturnType<typeof getServerClient>>,
   pageId: string
 ) {
-  const { count } = await client.database
+  const { count } = await client
     .from('page_followers')
     .select('page_id', { count: 'exact', head: true })
     .eq('page_id', pageId);
-  await client.database
+  await client
     .from('pages')
     .update({ follower_count: count ?? 0 })
     .eq('id', pageId);
@@ -39,14 +39,14 @@ export async function POST(
 
   const { idOrSlug } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const pageId = await resolvePageId(client, idOrSlug);
   if (!pageId) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
-  const { data: existing } = await client.database
+  const { data: existing } = await client
     .from('page_followers')
     .select('page_id')
     .eq('page_id', pageId)
@@ -54,7 +54,7 @@ export async function POST(
     .maybeSingle();
 
   if (!existing) {
-    const { error } = await client.database
+    const { error } = await client
       .from('page_followers')
       .insert({ page_id: pageId, user_id: userId });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { loadGroupContext, mapGroup, type GroupRow } from '@/lib/api/groups';
 
 export async function GET(request: NextRequest) {
@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('q')?.trim() ?? searchParams.get('query')?.trim() ?? '';
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  let request_ = client.database.from('groups').select('*').limit(50);
+  let request_ = client.from('groups').select('*').limit(50);
   if (query) request_ = request_.ilike('name', `%${query}%`);
 
   const { data, error } = await request_;

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 type CityCategoryRow = {
   id: string;
@@ -16,7 +16,7 @@ type CityCategoryRow = {
 
 export async function GET() {
   const client = await getServerClient();
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('city_categories')
     .select('*')
     .eq('is_active', true)

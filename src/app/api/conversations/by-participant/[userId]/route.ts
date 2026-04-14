@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
-import { withRetry } from '@/lib/insforge/with-retry';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import { withRetry } from '@/utils/supabase/with-retry';
 
 type ConversationRow = {
   id: string;
@@ -25,7 +25,7 @@ export async function GET(
   }
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const meId = me?.user?.id;
   if (!meId) return NextResponse.json({ success: true, data: null });
   if (meId === otherId) {
@@ -33,7 +33,7 @@ export async function GET(
   }
 
   const { data: myParts, error: myErr } = await withRetry(() =>
-    client.database
+    client
       .from('conversation_participants')
       .select('conversation_id')
       .eq('user_id', meId),
@@ -46,7 +46,7 @@ export async function GET(
   if (myIds.length === 0) return NextResponse.json({ success: true, data: null });
 
   const { data: shared, error: sharedErr } = await withRetry(() =>
-    client.database
+    client
       .from('conversation_participants')
       .select('conversation_id')
       .eq('user_id', otherId)
@@ -60,7 +60,7 @@ export async function GET(
   if (sharedIds.length === 0) return NextResponse.json({ success: true, data: null });
 
   const { data: conv, error: convErr } = await withRetry(() =>
-    client.database
+    client
       .from('conversations')
       .select('id,type,name,avatar,created_at,updated_at,metadata')
       .in('id', sharedIds)

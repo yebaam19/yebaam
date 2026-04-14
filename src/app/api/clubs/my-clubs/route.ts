@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 
 export async function GET() {
@@ -7,19 +7,19 @@ export async function GET() {
   if (!token) return NextResponse.json([], { status: 401 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json([], { status: 401 });
 
-  const { data: ownedRes } = await client.database.from('clubs').select('*').eq('owner_id', userId);
-  const { data: memberships } = await client.database
+  const { data: ownedRes } = await client.from('clubs').select('*').eq('owner_id', userId);
+  const { data: memberships } = await client
     .from('club_members')
     .select('club_id')
     .eq('user_id', userId);
 
   const memberClubIds = ((memberships ?? []) as Array<{ club_id: string }>).map((m) => m.club_id);
   const { data: memberClubs } = memberClubIds.length
-    ? await client.database.from('clubs').select('*').in('id', memberClubIds)
+    ? await client.from('clubs').select('*').in('id', memberClubIds)
     : { data: [] as ClubRow[] };
 
   const seen = new Set<string>();

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 const VALID_TIERS = ['FREE', 'BASIC', 'PREMIUM', 'VIP'];
 
@@ -16,11 +16,11 @@ export async function POST(
   const tier = VALID_TIERS.includes(tierRaw) ? tierRaw : 'FREE';
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: existing } = await client.database
+  const { data: existing } = await client
     .from('club_members')
     .select('club_id')
     .eq('club_id', id)
@@ -28,7 +28,7 @@ export async function POST(
     .maybeSingle();
 
   if (!existing) {
-    const { error } = await client.database
+    const { error } = await client
       .from('club_members')
       .insert({ club_id: id, user_id: userId, role: 'MEMBER', membership_tier: tier });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -1,5 +1,5 @@
 import 'server-only';
-import type { getServerClient } from '@/lib/insforge/server';
+import type { getServerClient } from '@/utils/supabase/server';
 
 export type PageRow = {
   id: string;
@@ -93,27 +93,27 @@ export async function loadPageContext(
 
   const [ownersRes, viewerFollowsRes, viewerTeamRes, followerCountsRes] = await Promise.all([
     ownerIds.length
-      ? client.database
+      ? client
           .from('profiles')
           .select('id,username,first_name,last_name,avatar_url')
           .in('id', ownerIds)
       : Promise.resolve({ data: [] as ProfileLite[] }),
     viewerId && pageIds.length
-      ? client.database
+      ? client
           .from('page_followers')
           .select('page_id')
           .eq('user_id', viewerId)
           .in('page_id', pageIds)
       : Promise.resolve({ data: [] as Array<{ page_id: string }> }),
     viewerId && pageIds.length
-      ? client.database
+      ? client
           .from('page_team_members')
           .select('page_id,role')
           .eq('user_id', viewerId)
           .in('page_id', pageIds)
       : Promise.resolve({ data: [] as Array<{ page_id: string; role: string }> }),
     pageIds.length
-      ? client.database.from('page_followers').select('page_id').in('page_id', pageIds)
+      ? client.from('page_followers').select('page_id').in('page_id', pageIds)
       : Promise.resolve({ data: [] as Array<{ page_id: string }> }),
   ]);
 

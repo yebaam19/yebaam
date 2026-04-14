@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   const client = await getServerClient();
-  const { count, error } = await client.database
+  const { count, error } = await client
     .from('friendships')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'accepted')

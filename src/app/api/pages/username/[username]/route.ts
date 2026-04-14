@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { loadPageContext, mapPage, type PageRow } from '@/lib/api/pages';
 
 export async function GET(
@@ -8,10 +8,10 @@ export async function GET(
 ) {
   const { username } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('pages')
     .select('*')
     .eq('slug', username)

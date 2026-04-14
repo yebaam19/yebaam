@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { mapBlog, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
 
 export async function GET(request: NextRequest) {
@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Math.max(Number(searchParams.get('limit') ?? '10') || 10, 1), 50);
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('blogs')
     .select('*')
     .order('created_at', { ascending: false })
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const rows = (data ?? []) as BlogRow[];
   const ownerIds = Array.from(new Set(rows.map((r) => r.owner_id)));
   const { data: owners } = ownerIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', ownerIds)
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   const followingIds = new Set<string>();
   if (userId) {
-    const { data: follows } = await client.database
+    const { data: follows } = await client
       .from('blog_follows')
       .select('blog_id')
       .eq('user_id', userId)

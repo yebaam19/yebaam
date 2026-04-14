@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   mapBusinessBasic,
   slugify,
@@ -23,13 +23,13 @@ async function loadRefs(
 
   const [categoriesRes, citiesRes, ownersRes] = await Promise.all([
     categoryIds.length
-      ? client.database.from('business_categories').select('*').in('id', categoryIds)
+      ? client.from('business_categories').select('*').in('id', categoryIds)
       : Promise.resolve({ data: [] as BusinessCategoryRow[] }),
     cityIds.length
-      ? client.database.from('business_cities').select('*').in('id', cityIds)
+      ? client.from('business_cities').select('*').in('id', cityIds)
       : Promise.resolve({ data: [] as BusinessCityRow[] }),
     ownerIds.length
-      ? client.database
+      ? client
           .from('profiles')
           .select('id,username,first_name,last_name,avatar_url')
           .in('id', ownerIds)
@@ -41,7 +41,7 @@ async function loadRefs(
 
   const stateIds = Array.from(new Set(Array.from(cities.values()).map((c) => c.state_id)));
   const { data: statesData } = stateIds.length
-    ? await client.database.from('states').select('*').in('id', stateIds)
+    ? await client.from('states').select('*').in('id', stateIds)
     : { data: [] as StateRow[] };
 
   const categories = new Map<string, BusinessCategoryRow>();
@@ -56,14 +56,14 @@ async function loadRefs(
   const mediaCount = new Map<string, number>();
   const reviewsCount = new Map<string, number>();
   if (businessIds.length) {
-    const { data: mediaRows } = await client.database
+    const { data: mediaRows } = await client
       .from('business_media')
       .select('business_id')
       .in('business_id', businessIds);
     for (const m of ((mediaRows ?? []) as { business_id: string }[])) {
       mediaCount.set(m.business_id, (mediaCount.get(m.business_id) ?? 0) + 1);
     }
-    const { data: reviewRows } = await client.database
+    const { data: reviewRows } = await client
       .from('business_reviews')
       .select('business_id')
       .in('business_id', businessIds);
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 
   let cityIdsForState: string[] | null = null;
   if (stateId && !cityId) {
-    const { data: cityRows } = await client.database
+    const { data: cityRows } = await client
       .from('business_cities')
       .select('id')
       .eq('state_id', stateId);
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  let query = client.database
+  let query = client
     .from('businesses')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
@@ -144,14 +144,14 @@ export async function POST(request: NextRequest) {
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const baseSlug = slugify(name);
   let slug = baseSlug;
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data: conflict } = await client.database
+    const { data: conflict } = await client
       .from('businesses')
       .select('id')
       .eq('slug', slug)
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     tags: Array.isArray(body.tags) ? (body.tags as string[]) : [],
   };
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('businesses')
     .insert(insertRow)
     .select('*')

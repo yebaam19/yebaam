@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 
 type CommentRow = {
   id: string;
@@ -17,7 +17,7 @@ export async function GET(
   const { id: postId } = await context.params;
   const client = await getServerClient();
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('comments')
     .select('*')
     .eq('post_id', postId)
@@ -41,11 +41,11 @@ export async function POST(
   if (!content) return NextResponse.json({ error: 'content is required' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const authorId = me?.user?.id;
   if (!authorId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('comments')
     .insert({ post_id: postId, author_id: authorId, content })
     .select('*')
@@ -58,12 +58,12 @@ export async function POST(
     );
   }
 
-  const { count: commentsCount } = await client.database
+  const { count: commentsCount } = await client
     .from('comments')
     .select('id', { count: 'exact', head: true })
     .eq('post_id', postId);
 
-  await client.database
+  await client
     .from('posts')
     .update({
       comments_count: commentsCount ?? 0,

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import type { ClubMemberRow, ProfileLite } from '@/lib/api/clubs';
 
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
 
   const client = await getServerClient();
 
-  const { data, error, count } = await client.database
+  const { data, error, count } = await client
     .from('club_members')
     .select('*', { count: 'exact' })
     .eq('club_id', id)
@@ -26,7 +26,7 @@ export async function GET(
   const rows = (data ?? []) as ClubMemberRow[];
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   const { data: profiles } = userIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', userIds)

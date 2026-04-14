@@ -1,40 +1,14 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
 
-const COOKIE_NAME = 'insforge_access_token'
-const MAX_AGE = 60 * 60 * 24 * 7
-
-export async function POST(request: NextRequest) {
-  const { accessToken } = (await request.json().catch(() => ({}))) as {
-    accessToken?: string
-  }
-
-  if (!accessToken) {
-    return NextResponse.json({ error: 'Missing accessToken' }, { status: 400 })
-  }
-
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set({
-    name: COOKIE_NAME,
-    value: accessToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: MAX_AGE,
-  })
-  return response
+// Legacy InsForge endpoint that mirrored the SDK access token into an
+// httpOnly cookie. Supabase's @supabase/ssr package manages its own
+// session cookies, so this route is intentionally a no-op now. Kept
+// to avoid 404s from stale clients during the cutover; safe to delete
+// once nothing in the app references it.
+export async function POST() {
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE() {
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set({
-    name: COOKIE_NAME,
-    value: '',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 0,
-  })
-  return response
+  return NextResponse.json({ ok: true });
 }

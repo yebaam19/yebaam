@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadPageContext, mapPage, type PageRow } from '@/lib/api/pages';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -8,7 +8,7 @@ async function loadPage(
   client: Awaited<ReturnType<typeof getServerClient>>,
   idOrSlug: string
 ) {
-  const query = client.database.from('pages').select('*');
+  const query = client.from('pages').select('*');
   const { data } = UUID_RE.test(idOrSlug)
     ? await query.eq('id', idOrSlug).maybeSingle()
     : await query.eq('slug', idOrSlug).maybeSingle();
@@ -21,7 +21,7 @@ export async function GET(
 ) {
   const { idOrSlug } = await context.params;
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
   const row = await loadPage(client, idOrSlug);
@@ -42,7 +42,7 @@ export async function PUT(
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id ?? null;
 
   const row = await loadPage(client, idOrSlug);
@@ -58,7 +58,7 @@ export async function PUT(
   if (body.contact && typeof body.contact === 'object') patch.contact = body.contact;
   if (typeof body.privacy === 'string') patch.privacy = body.privacy;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('pages')
     .update(patch)
     .eq('id', row.id)
@@ -89,7 +89,7 @@ export async function DELETE(
   const row = await loadPage(client, idOrSlug);
   if (!row) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
-  const { error } = await client.database.from('pages').delete().eq('id', row.id);
+  const { error } = await client.from('pages').delete().eq('id', row.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { mapProfileUser, resolveColumn, type ProfileLite } from '@/lib/api/profile-media';
 
 type CommentRow = {
@@ -23,7 +23,7 @@ export async function GET(
   }
 
   const client = await getServerClient();
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('comments')
     .select('*')
     .eq('parent_comment_id', commentId)
@@ -34,7 +34,7 @@ export async function GET(
   const rows = (data ?? []) as CommentRow[];
   const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
   const { data: profiles } = authorIds.length
-    ? await client.database
+    ? await client
         .from('profiles')
         .select('id,username,first_name,last_name,avatar_url')
         .in('id', authorIds)

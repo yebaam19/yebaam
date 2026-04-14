@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadPageContext, mapPage, type PageRow } from '@/lib/api/pages';
 
 export async function GET() {
@@ -7,11 +7,11 @@ export async function GET() {
   if (!token) return NextResponse.json([], { status: 401 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json([], { status: 401 });
 
-  const { data: follows } = await client.database
+  const { data: follows } = await client
     .from('page_followers')
     .select('page_id')
     .eq('user_id', userId);
@@ -19,7 +19,7 @@ export async function GET() {
   const pageIds = ((follows ?? []) as Array<{ page_id: string }>).map((r) => r.page_id);
   if (pageIds.length === 0) return NextResponse.json([]);
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('pages')
     .select('*')
     .in('id', pageIds)

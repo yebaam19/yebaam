@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   loadMyReactions,
   loadProfilesForPosts,
@@ -9,7 +9,7 @@ import {
 
 async function getUserId() {
   const client = await getServerClient();
-  const { data } = await client.auth.getCurrentUser();
+  const { data } = await client.auth.getUser();
   return { client, userId: data?.user?.id ?? null };
 }
 
@@ -20,7 +20,6 @@ function parseIntParam(value: string | null, fallback: number, max = 100): numbe
 }
 
 export async function GET(request: NextRequest) {
-  const token = await getServerAccessToken();
   const { searchParams } = new URL(request.url);
   const scope = searchParams.get('scope') ?? 'timeline';
   const userIdFilter = searchParams.get('userId');
@@ -33,22 +32,10 @@ export async function GET(request: NextRequest) {
   const needsAuth = scope === 'mine' || scope === 'timeline';
 
   if (needsAuth && !userId) {
-    const res = NextResponse.json({ success: true, data: [] });
-    if (token) {
-      res.cookies.set({
-        name: 'insforge_access_token',
-        value: '',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-    }
-    return res;
+    return NextResponse.json({ success: true, data: [] });
   }
 
-  let query = client.database
+  let query = client
     .from('posts')
     .select('*')
     .order('created_at', { ascending: false })
@@ -100,7 +87,7 @@ export async function POST(request: NextRequest) {
     comments_count: 0,
   };
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('posts')
     .insert(insertRow)
     .select('*')

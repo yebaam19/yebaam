@@ -1,5 +1,5 @@
 import 'server-only';
-import type { InsForgeClient } from '@insforge/sdk';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type PostRow = {
   id: string;
@@ -113,13 +113,13 @@ export function mapPost(row: PostRow, profilesById: Map<string, ProfileLite>, my
 }
 
 export async function loadProfilesForPosts(
-  client: InsForgeClient,
+  client: SupabaseClient,
   rows: PostRow[]
 ): Promise<Map<string, ProfileLite>> {
   const authorIds = Array.from(new Set(rows.map((r) => r.author_id).filter(Boolean)));
   if (authorIds.length === 0) return new Map();
 
-  const { data } = await client.database
+  const { data } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .in('id', authorIds);
@@ -130,12 +130,12 @@ export async function loadProfilesForPosts(
 }
 
 export async function loadMyReactions(
-  client: InsForgeClient,
+  client: SupabaseClient,
   postIds: string[],
   userId: string | null
 ): Promise<Map<string, string>> {
   if (!userId || postIds.length === 0) return new Map();
-  const { data } = await client.database
+  const { data } = await client
     .from('reactions')
     .select('post_id,type')
     .eq('user_id', userId)

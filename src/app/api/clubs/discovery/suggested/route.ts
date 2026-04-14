@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 
 export async function GET(request: NextRequest) {
@@ -8,10 +8,10 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get('category')?.trim() ?? '';
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  let query = client.database
+  let query = client
     .from('clubs')
     .select('*')
     .eq('privacy', 'PUBLIC')

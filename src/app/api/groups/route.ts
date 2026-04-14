@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadGroupContext, mapGroup, type GroupRow } from '@/lib/api/groups';
 
 export async function GET() {
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('groups')
     .select('*')
     .order('created_at', { ascending: false })
@@ -32,13 +32,13 @@ export async function POST(request: NextRequest) {
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
 
   const client = await getServerClient();
-  const { data: me } = await client.auth.getCurrentUser();
+  const { data: me } = await client.auth.getUser();
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const privacy = body.privacy === 'private' ? 'private' : 'public';
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('groups')
     .insert({
       creator_id: userId,
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   const row = data as GroupRow;
-  await client.database
+  await client
     .from('group_members')
     .insert({ group_id: row.id, user_id: userId, role: 'OWNER' });
 

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import type { BusinessMediaRow } from '@/lib/api/businesses';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,7 +9,7 @@ async function resolveBusinessId(
   idOrSlug: string
 ): Promise<string | null> {
   if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client.database
+  const { data } = await client
     .from('businesses')
     .select('id')
     .eq('slug', idOrSlug)
@@ -40,7 +40,7 @@ export async function GET(
   const businessId = await resolveBusinessId(client, idOrSlug);
   if (!businessId) return NextResponse.json([], { status: 404 });
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('business_media')
     .select('*')
     .eq('business_id', businessId)
@@ -76,7 +76,7 @@ export async function POST(
   const businessId = await resolveBusinessId(client, idOrSlug);
   if (!businessId) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('business_media')
     .insert({
       business_id: businessId,

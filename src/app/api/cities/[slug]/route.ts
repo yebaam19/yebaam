@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 type CityRow = {
   id: string;
@@ -24,7 +24,7 @@ export async function GET(
   const { slug } = await context.params;
   const client = await getServerClient();
 
-  const { data, error } = await client.database
+  const { data, error } = await client
     .from('cities')
     .select('*')
     .eq('slug', slug)

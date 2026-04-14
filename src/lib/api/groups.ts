@@ -1,5 +1,5 @@
 import 'server-only';
-import type { getServerClient } from '@/lib/insforge/server';
+import type { getServerClient } from '@/utils/supabase/server';
 
 export type GroupRow = {
   id: string;
@@ -65,20 +65,20 @@ export async function loadGroupContext(
 
   const [creatorsRes, viewerMembersRes, allMembersRes] = await Promise.all([
     creatorIds.length
-      ? client.database
+      ? client
           .from('profiles')
           .select('id,username,first_name,last_name,avatar_url')
           .in('id', creatorIds)
       : Promise.resolve({ data: [] as ProfileLite[] }),
     viewerId && ids.length
-      ? client.database
+      ? client
           .from('group_members')
           .select('group_id')
           .eq('user_id', viewerId)
           .in('group_id', ids)
       : Promise.resolve({ data: [] as Array<{ group_id: string }> }),
     ids.length
-      ? client.database.from('group_members').select('group_id').in('group_id', ids)
+      ? client.from('group_members').select('group_id').in('group_id', ids)
       : Promise.resolve({ data: [] as Array<{ group_id: string }> }),
   ]);
 
