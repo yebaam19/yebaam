@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'api.dicebear.com', pathname: '/**' },
       { protocol: 'https', hostname: 'ws5s792r.us-east.insforge.app', pathname: '/**' },
       { protocol: 'https', hostname: '*.insforge.app', pathname: '/**' },
+      { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/**' },
     ],
   },
 }
