@@ -17,7 +17,8 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
   const [selectedPhoto, setSelectedPhoto] = useState<PagePhoto | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  const { data: photos = [], isLoading } = usePagePhotos(pageId);
+  const { data, isLoading } = usePagePhotos(pageId);
+  const photos: PagePhoto[] = data ?? [];
   const deletePhotoMutation = useDeletePagePhoto(pageId);
 
   const handlePhotoClick = (photo: PagePhoto) => {

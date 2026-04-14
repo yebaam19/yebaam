@@ -13,6 +13,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArticleBasic } from '../interfaces'
 import { formatRelativeDate } from '../utils/date-utils'
+import type { Route } from 'next';
 
 interface ArticleFeedCardProps {
   article: ArticleBasic
@@ -31,7 +32,7 @@ export function ArticleFeedCard({ article, variant = 'list' }: ArticleFeedCardPr
     >
       {/* Author header */}
       <div className="flex gap-3">
-        <Link href={`/users/${article.author.username}`} className="shrink-0">
+        <Link href={`/users/${article.author.username}` as Route} className="shrink-0">
           <Avatar
             src={article.author.avatarUrl}
             initials={article.author.displayName.slice(0, 2).toUpperCase()}
@@ -41,7 +42,7 @@ export function ArticleFeedCard({ article, variant = 'list' }: ArticleFeedCardPr
         </Link>
         <div className="min-w-0 flex-1">
           <Link
-            href={`/users/${article.author.username}`}
+            href={`/users/${article.author.username}` as Route}
             className={`block font-medium text-neutral-900 hover:underline dark:text-white ${
               isGrid ? 'truncate text-sm' : 'text-base'
             }`}
@@ -49,7 +50,7 @@ export function ArticleFeedCard({ article, variant = 'list' }: ArticleFeedCardPr
             {article.author.displayName}
           </Link>
           <Link
-            href={`/feed/article/${article.id}`}
+            href={`/feed/article/${article.id}` as Route}
             className={`block text-neutral-500 hover:underline dark:text-neutral-400 ${isGrid ? 'text-xs' : 'text-sm'}`}
             suppressHydrationWarning
           >
@@ -78,7 +79,7 @@ export function ArticleFeedCard({ article, variant = 'list' }: ArticleFeedCardPr
       {/* Content */}
       <div className={isGrid ? 'flex-1' : ''}>
         <Link
-          href={`/feed/article/${article.id}`}
+          href={`/feed/article/${article.id}` as Route}
           className="block space-y-2 hover:text-neutral-600 dark:hover:text-neutral-300"
         >
           <h2
@@ -174,7 +175,7 @@ export function ArticleFeedCard({ article, variant = 'list' }: ArticleFeedCardPr
             Artículo
           </span>
           <Link
-            href={`/feed/article/${article.id}`}
+            href={`/feed/article/${article.id}` as Route}
             className={`font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ${
               isGrid ? 'text-xs' : 'text-sm'
             }`}

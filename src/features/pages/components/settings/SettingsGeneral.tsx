@@ -9,14 +9,16 @@ interface SettingsGeneralProps {
 export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
   const [formData, setFormData] = useState({
     name: page.name,
-    username: page.username,
+    username: page.slug,
     description: page.description || '',
     category: page.category,
     subcategory: page.subcategory || '',
     email: page.contact?.email || '',
     phone: page.contact?.phone || '',
     website: page.contact?.website || '',
-    address: page.contact?.address || '',
+    address: [page.contact?.address?.street, page.contact?.address?.city, page.contact?.address?.country]
+      .filter(Boolean)
+      .join(', '),
   });
 
   const [isSaving, setIsSaving] = useState(false);

@@ -24,7 +24,7 @@ type HeroiconProps = Omit<SVGProps<SVGSVGElement>, 'ref'> & {
 
 function make(name: string): ComponentType<HeroiconProps> {
   const IconComponent = (props: HeroiconProps) => (
-    <Icon icon={`${PREFIX}:${name}`} {...(props as unknown as IconProps)} />
+    <Icon {...(props as unknown as IconProps)} icon={`${PREFIX}:${name}`} />
   )
   IconComponent.displayName = `Heroicon(${name})`
   return IconComponent

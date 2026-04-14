@@ -27,6 +27,7 @@ import { usePathname } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import AvatarDropdown from './AvatarDropdown'
 import { HeaderSearchDropdown } from './HeaderSearchDropdown'
+import type { Route } from 'next';
 
 interface SocialHeaderProps {
   onMobileMenuClick?: () => void
@@ -98,7 +99,7 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
             </button>
 
             {/* Logo - Responsive sizes */}
-            <Link href="/feed" className="flex h-7 shrink-0 items-center sm:h-8">
+            <Link href={'/feed' as Route} className="flex h-7 shrink-0 items-center sm:h-8">
               <Image
                 src={YebaamLogo}
                 alt="Yebaam"
@@ -123,7 +124,7 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={item.href as Route}
                   className={cn(
                     'relative flex h-14 items-center justify-center px-8 xl:px-10',
                     'transition-all duration-200',

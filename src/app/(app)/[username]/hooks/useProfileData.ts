@@ -49,10 +49,14 @@ export function useProfileData(username: string, isOwnProfile: boolean): UseProf
         .join(', ')
     : undefined;
 
-  // Format education for display (using first entry if available)
-  const educationString = profile?.education && profile.education.length > 0
-    ? profile.education[0].institution
-    : undefined;
+  // Format education for display (using first entry if available). The
+  // education column on profiles is JSONB and typed as `unknown`, so we
+  // narrow it through an intermediate cast.
+  const educationArr = Array.isArray(profile?.education)
+    ? (profile.education as Array<{ institution?: string }>)
+    : [];
+  const educationString =
+    educationArr.length > 0 ? educationArr[0]?.institution : undefined;
 
   return {
     profile,

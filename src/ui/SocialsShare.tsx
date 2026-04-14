@@ -2,6 +2,7 @@ import { Facebook01Icon, Mail01Icon, NewTwitterIcon } from '@hugeicons/core-free
 import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import Link from 'next/link'
 import { FC } from 'react'
+import type { Route } from 'next';
 
 interface SocialsShareProps {
   className?: string
@@ -41,7 +42,7 @@ const SocialsShare: FC<SocialsShareProps> = ({
   const renderItem = (item: SocialType, index: number) => {
     return (
       <Link
-        href={item.href}
+        href={item.href as Route}
         className={`-mx-2 flex items-center gap-x-2.5 rounded-lg bg-white p-2.5 text-neutral-600 hover:bg-neutral-100 ${itemClass}`}
         title={`Share on ${item.name}`}
         target="_blank"

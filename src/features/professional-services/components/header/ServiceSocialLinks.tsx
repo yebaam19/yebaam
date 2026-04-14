@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FacebookIcon, InstagramIcon, LinkedInIcon, TikTokIcon, TwitterIcon, YouTubeIcon } from '../icons/SocialIcons'
+import type { Route } from 'next';
 
 interface SocialLink {
   url: string
@@ -60,7 +61,7 @@ export function ServiceSocialLinks({
           return (
             <Link
               key={link.label}
-              href={link.url}
+              href={link.url as Route}
               target="_blank"
               className={`flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors dark:bg-neutral-700 dark:text-neutral-400 ${link.color}`}
               aria-label={link.label}

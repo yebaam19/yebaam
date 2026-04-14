@@ -12,8 +12,8 @@ interface CreateClubStep3Props {
 }
 
 export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNext, onBack }) => {
-  const [profileImageUrl, setProfileImageUrl] = useState(data.profileImageUrl || '')
-  const [coverImageUrl, setCoverImageUrl] = useState(data.coverImageUrl || '')
+  const [profileImageUrl, setProfileImageUrl] = useState<string>(data.profileImage ?? '')
+  const [coverImageUrl, setCoverImageUrl] = useState<string>(data.coverImage ?? '')
 
   const uploadProfileImage = useUploadClubImage('profile')
   const uploadCoverImage = useUploadClubImage('cover')
@@ -44,8 +44,8 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
 
   const handleNext = () => {
     onUpdate({
-      profileImageUrl: profileImageUrl || undefined,
-      coverImageUrl: coverImageUrl || undefined,
+      profileImage: profileImageUrl || undefined,
+      coverImage: coverImageUrl || undefined,
     })
     onNext()
   }

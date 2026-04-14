@@ -18,9 +18,15 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
   const [address, setAddress] = useState(data.address || '')
 
   // Fetch data from API
-  const { data: categories = [], isLoading: loadingCategories } = useBusinessCategories()
-  const { data: states = [], isLoading: loadingStates } = useStates()
-  const { data: cities = [], isLoading: loadingCities } = useCitiesByState(stateId || undefined)
+  const { data: categoriesRaw, isLoading: loadingCategories } = useBusinessCategories()
+
+  const categories = categoriesRaw ?? []
+  const { data: statesRaw, isLoading: loadingStates } = useStates()
+
+  const states = statesRaw ?? []
+  const { data: citiesRaw, isLoading: loadingCities } = useCitiesByState(stateId || undefined)
+
+  const cities = citiesRaw ?? []
 
   const canProceed = categoryId && cityId
 

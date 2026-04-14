@@ -72,7 +72,9 @@ export const PageDetailSidebar: FC<PageDetailSidebarProps> = ({
   const reviewCount = reviewStats?.totalReviews || 0;
 
   // Get real promotions count
-  const { data: activePromotions = [] } = useActivePromotions(pageId);
+  const { data: activePromotionsRaw } = useActivePromotions(pageId);
+
+  const activePromotions = activePromotionsRaw ?? []
   const promotionsCount = activePromotions.length;
 
   // Get products count

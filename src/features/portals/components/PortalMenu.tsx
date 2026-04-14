@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { PortalMenuItem } from '../interfaces'
+import type { Route } from 'next';
 
 interface MenuItemProps {
   icon: React.ReactNode
@@ -52,7 +53,7 @@ function MenuItem({ icon, label, href, isActive, isComingSoon }: MenuItemProps) 
   }
 
   return (
-    <Link href={href} className="block">
+    <Link href={href as Route} className="block">
       {content}
     </Link>
   )
@@ -80,7 +81,7 @@ export function PortalMenu({ portalSlug, menuItems }: PortalMenuProps) {
             key={index}
             icon={item.icon}
             label={item.label}
-            href={item.href}
+            href={item.href as Route}
             isActive={getIsActive(item.href)}
             isComingSoon={item.isComingSoon}
           />
@@ -130,7 +131,7 @@ export function PortalMenu({ portalSlug, menuItems }: PortalMenuProps) {
                 }
 
                 return (
-                  <Link key={index} href={item.href} onClick={() => setIsOpen(false)}>
+                  <Link key={index} href={item.href as Route} onClick={() => setIsOpen(false)}>
                     {content}
                   </Link>
                 )

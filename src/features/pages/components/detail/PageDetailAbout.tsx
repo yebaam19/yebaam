@@ -130,72 +130,60 @@ export const PageDetailAbout: FC<PageDetailAboutProps> = ({ page }) => {
             )}
 
             {/* Dirección */}
-            {(page.contact.address || page.contact.city || page.contact.country) && (
-              <div className="flex items-start gap-3">
-                <MapPinIcon className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Dirección
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {page.contact.address && <>{page.contact.address}<br /></>}
-                    {page.contact.city && `${page.contact.city}`}
-                    {page.contact.city && page.contact.country && ', '}
-                    {page.contact.country}
-                  </p>
+            {page.contact.address &&
+              (page.contact.address.street ||
+                page.contact.address.city ||
+                page.contact.address.country) && (
+                <div className="flex items-start gap-3">
+                  <MapPinIcon className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Dirección
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {page.contact.address.street && (
+                        <>
+                          {page.contact.address.street}
+                          <br />
+                        </>
+                      )}
+                      {page.contact.address.city && `${page.contact.address.city}`}
+                      {page.contact.address.city && page.contact.address.country && ', '}
+                      {page.contact.address.country}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       )}
 
       {/* Estadísticas */}
-      {page.stats && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Estadísticas
-          </h3>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {page.stats.postsCount}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Publicaciones
-              </p>
-            </div>
-            
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {page.stats.followersCount.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Seguidores
-              </p>
-            </div>
-            
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {page.stats.engagementRate.toFixed(1)}%
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Engagement
-              </p>
-            </div>
-            
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {page.stats.reachLast30Days.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Alcance (30d)
-              </p>
-            </div>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Estadísticas
+        </h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {page.postCount}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Publicaciones
+            </p>
+          </div>
+
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {page.followerCount.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Seguidores
+            </p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

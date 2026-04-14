@@ -23,14 +23,19 @@ export default function GruposPage() {
   const setSearchQuery = useGroupsUIStore((state) => state.setSearchQuery);
 
   // Fetching con React Query
-  const { data: myGroups = [], isLoading: isLoadingMyGroups } = useMyGroups();
-  const { data: suggestedGroups = [], isLoading: isLoadingSuggestions } = useSuggestedGroups();
+  const { data: myGroupsRaw, isLoading: isLoadingMyGroups } = useMyGroups();
+
+  const myGroups = myGroupsRaw ?? []
+  const { data: suggestedGroupsRaw, isLoading: isLoadingSuggestions } = useSuggestedGroups();
+
+  const suggestedGroups = suggestedGroupsRaw ?? []
   
   // Búsqueda en el backend
-  const { data: searchResults = [], isLoading: isLoadingSearch } = useSearchGroups(
+  const { data: searchResultsRaw, isLoading: isLoadingSearch } = useSearchGroups(
     searchQuery,
-    isSearching && searchQuery.length > 0
+    isSearching && searchQuery.length > 0,
   );
+  const searchResults = searchResultsRaw ?? [];
 
   // Determinar qué grupos mostrar en el tab "Descubrir"
   const discoverGroups = isSearching && searchQuery.length > 0 ? searchResults : suggestedGroups;

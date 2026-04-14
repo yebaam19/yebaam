@@ -9,7 +9,7 @@ import {
 import { StarIcon as StarSolid } from '@/components/icons/heroicons-shim';
 import { usePageReviews, useReviewStats, useToggleHelpful, useDeleteReview } from '../../hooks/usePageReviews';
 import { ReviewCard } from './ReviewCard';
-import { ReviewFilterBy, ReviewSortBy } from '../../interfaces/page-review.interface';
+import { PageReview, ReviewFilterBy, ReviewSortBy } from '../../interfaces/page-review.interface';
 
 interface PageDetailReviewsProps {
   pageId: string;
@@ -44,19 +44,13 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
 
   // Fetch data
   const { data: stats } = useReviewStats(pageId);
-  const {
-    data: reviewsData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = usePageReviews(pageId, sortBy, filterBy);
+  const { data: reviewsData, isLoading } = usePageReviews(pageId, sortBy, filterBy);
 
   const toggleHelpfulMutation = useToggleHelpful(pageId);
   const deleteReviewMutation = useDeleteReview(pageId);
 
-  const allReviews = reviewsData?.pages.flatMap((page) => page.reviews) ?? [];
-  const totalReviews = reviewsData?.pages[0]?.total ?? 0;
+  const allReviews: PageReview[] = reviewsData?.reviews ?? [];
+  const totalReviews = reviewsData?.total ?? 0;
 
   const handleToggleHelpful = (reviewId: string) => {
     toggleHelpfulMutation.mutate(reviewId);
@@ -286,17 +280,6 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
               isOwner={isOwner}
             />
           ))}
-
-          {/* Load More Button */}
-          {hasNextPage && (
-            <button
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="w-full py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isFetchingNextPage ? 'Cargando...' : 'Cargar más valoraciones'}
-            </button>
-          )}
         </div>
       )}
     </div>

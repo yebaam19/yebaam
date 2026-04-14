@@ -7,6 +7,7 @@ import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/r
 import { BellIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { FC } from 'react'
+import type { Route } from 'next';
 
 const notifications = [
   {
@@ -64,7 +65,7 @@ const NotifyDropdown: FC<Props> = ({ className = '' }) => {
               <CloseButton
                 as={Link}
                 key={index}
-                href={item.href}
+                href={item.href as Route}
                 className="relative -m-3 flex rounded-lg p-2 pe-8 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-gray-700"
               >
                 <Avatar  className="size-8 sm:size-12" />

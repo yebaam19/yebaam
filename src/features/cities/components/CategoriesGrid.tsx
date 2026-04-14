@@ -11,7 +11,9 @@ interface CategoriesGridProps {
  * Grid de categorías para explorar la ciudad
  */
 export function CategoriesGrid({ citySlug }: CategoriesGridProps) {
-  const { data: categories = [], isLoading, error } = useActiveCategories()
+  const { data: categoriesRaw, isLoading, error } = useActiveCategories()
+
+  const categories = categoriesRaw ?? []
 
   if (isLoading) {
     return (

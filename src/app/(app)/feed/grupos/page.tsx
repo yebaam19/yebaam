@@ -22,8 +22,12 @@ export default function GruposPage() {
   const setSearchQuery = useGroupsUIStore((state) => state.setSearchQuery);
 
   // Fetching con React Query
-  const { data: myGroups = [], isLoading: isLoadingMyGroups } = useMyGroups();
-  const { data: suggestedGroups = [], isLoading: isLoadingSuggestions } = useSuggestedGroups();
+  const { data: myGroupsRaw, isLoading: isLoadingMyGroups } = useMyGroups();
+
+  const myGroups = myGroupsRaw ?? []
+  const { data: suggestedGroupsRaw, isLoading: isLoadingSuggestions } = useSuggestedGroups();
+
+  const suggestedGroups = suggestedGroupsRaw ?? []
 
   // Filtrar grupos sugeridos por búsqueda
   const filteredSuggestedGroups = useMemo(() => {

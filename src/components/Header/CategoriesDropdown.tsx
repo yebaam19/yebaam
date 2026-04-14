@@ -7,6 +7,7 @@ import { Airplane02Icon, Building03Icon, Car03Icon, HotAirBalloonIcon, House04Ic
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { Route } from 'next';
 
 const solutions = [
   {
@@ -66,7 +67,7 @@ export default function DropdownTravelers() {
                 <CloseButton
                   as={Link}
                   key={index}
-                  href={item.href}
+                  href={item.href as Route}
                   className={`focus-visible:ring-opacity-50 -m-3 flex items-center rounded-lg p-2 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 ${
                     isActive ? 'bg-neutral-50 dark:bg-neutral-700' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700'
                   }`}
@@ -85,7 +86,7 @@ export default function DropdownTravelers() {
           {/* FOOTER */}
           <div className="bg-neutral-50 p-4 dark:bg-neutral-700">
             <Link
-              href="/"
+              href={'/' as Route}
               className="focus-visible:ring-opacity-50 flow-root space-y-0.5 rounded-md px-2 py-2 focus:outline-none focus-visible:ring focus-visible:ring-orange-500"
             >
               <span className="flex items-center">

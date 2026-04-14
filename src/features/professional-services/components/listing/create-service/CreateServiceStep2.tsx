@@ -22,9 +22,15 @@ interface CreateServiceStep2Props {
 
 export function CreateServiceStep2({ data, onUpdate, onNext, onBack }: CreateServiceStep2Props) {
   // Usar hooks reales en lugar de mock
-  const { data: categories = [], isLoading: isLoadingCategories } = useCategories()
-  const { data: states = [], isLoading: isLoadingStates } = useStates()
-  const { data: cities = [], isLoading: isLoadingCities } = useAllCities()
+  const { data: categoriesRaw, isLoading: isLoadingCategories } = useCategories()
+
+  const categories = categoriesRaw ?? []
+  const { data: statesRaw, isLoading: isLoadingStates } = useStates()
+
+  const states = statesRaw ?? []
+  const { data: citiesRaw, isLoading: isLoadingCities } = useAllCities()
+
+  const cities = citiesRaw ?? []
 
   const [categoryId, setCategoryId] = useState(data.categoryId || '')
   const [selectedStateId, setSelectedStateId] = useState('')

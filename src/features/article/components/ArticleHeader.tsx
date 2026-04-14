@@ -22,6 +22,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Article } from '../interfaces'
 import { formatRelativeDate } from '../utils/date-utils'
+import type { Route } from 'next';
 
 interface ArticleHeaderProps {
   article: Article
@@ -49,7 +50,7 @@ export function ArticleHeader({
     <div className="relative">
       <div className="container mx-auto max-w-4xl px-4 py-6">
         <div className="mb-6 flex items-center gap-3">
-          <Link href={`/users/${article.author.username}`} className="flex cursor-pointer items-center gap-3">
+          <Link href={`/users/${article.author.username}` as Route} className="flex cursor-pointer items-center gap-3">
             <Avatar
               src={article.author.avatarUrl}
               initials={article.author.displayName.slice(0, 2).toUpperCase()}
@@ -84,7 +85,7 @@ export function ArticleHeader({
 
         {isAuthor && (
           <div className="mb-6 flex items-center gap-3">
-            <Link href={`/feed/article/${article.id}/edit`}>
+            <Link href={`/feed/article/${article.id}/edit` as Route}>
               <Button outline className="flex items-center gap-2 px-3 py-1.5 text-sm">
                 <PencilSquareIcon className="h-4 w-4" />
                 Editar artículo

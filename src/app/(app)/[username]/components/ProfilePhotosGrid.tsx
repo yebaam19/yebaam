@@ -2,6 +2,7 @@
 
 import { PhotoIcon } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
+import type { Route } from 'next';
 
 interface Photo {
   id: string;
@@ -28,7 +29,7 @@ export default function ProfilePhotosGrid({
         </h2>
         {totalPhotos > 9 && (
           <Link
-            href={`/${username}/photos`}
+            href={`/${username}/photos` as Route}
             className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 font-semibold transition-colors hover:underline"
           >
             Ver todas ({totalPhotos})
@@ -41,7 +42,7 @@ export default function ProfilePhotosGrid({
           {photos.slice(0, 9).map((photo) => (
             <Link
               key={photo.id}
-              href={`/${username}/photos/${photo.id}`}
+              href={`/${username}/photos/${photo.id}` as Route}
               className="aspect-square bg-neutral-200 dark:bg-neutral-800 rounded-2xl overflow-hidden group relative"
             >
               <img

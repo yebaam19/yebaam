@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { FC } from 'react'
 import { SocialType } from './SocialsShare'
+import type { Route } from 'next';
 
 interface Props {
   className?: string
@@ -32,7 +33,7 @@ const SocialsList: FC<Props> = ({ className = '', itemClass = 'block', socials =
   return (
     <nav className={`flex gap-x-3.5 text-2xl text-neutral-600 dark:text-neutral-300 ${className}`}>
       {socials.map((item, i) => (
-        <Link key={i} className={itemClass} href={item.href} target="_blank" rel="noopener noreferrer">
+        <Link key={i} className={itemClass} href={item.href as Route} target="_blank" rel="noopener noreferrer">
           <HugeiconsIcon icon={item.icon} size={20} color="currentColor" strokeWidth={1.5} />
         </Link>
       ))}

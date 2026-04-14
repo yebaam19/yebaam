@@ -45,16 +45,10 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
   const [activeTab, setActiveTab] = useState<CommunityTabType>('all');
   const [sortBy, setSortBy] = useState<FollowerSortBy>('recent');
 
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = usePageFollowers(pageId, 20, sortBy);
+  const { data, isLoading } = usePageFollowers(pageId, 20, sortBy);
 
-  const allMembers = data?.pages.flatMap((page) => page.followers) || [];
-  const totalMembers = data?.pages[0]?.total || 0;
+  const allMembers: CommunityMember[] = data?.followers ?? [];
+  const totalMembers = data?.total ?? 0;
 
   // Determine sortBy based on active tab
   const handleTabChange = (tab: CommunityTabType) => {
@@ -236,18 +230,6 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
         </div>
       )}
 
-      {/* Load More Button */}
-      {hasNextPage && (
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:opacity-50"
-          >
-            {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

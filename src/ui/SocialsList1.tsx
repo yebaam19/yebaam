@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { FC } from 'react'
 import { SocialType } from './SocialsShare'
+import type { Route } from 'next';
 
 interface Props {
   className?: string
@@ -31,7 +32,7 @@ const SocialsList1: FC<Props> = ({ className = 'gap-y-2.5', socials = socialsDem
   const renderItem = (item: SocialType, index: number) => {
     return (
       <Link
-        href={item.href}
+        href={item.href as Route}
         className="group flex items-center gap-x-2 text-2xl leading-none text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white"
         target="_blank"
         rel="noopener noreferrer"

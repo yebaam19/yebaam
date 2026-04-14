@@ -9,6 +9,7 @@ import {
   EllipsisVerticalIcon,
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
+import type { Route } from 'next';
 
 interface Friend {
   id: string;
@@ -61,7 +62,7 @@ export default function ProfileFriendsFull({
           
           {isOwnProfile && (
             <Link
-              href="/friends/requests"
+              href={'/friends/requests' as Route}
               className="flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
             >
               <UserPlusIcon className="w-5 h-5" />
@@ -130,7 +131,7 @@ export default function ProfileFriendsFull({
             >
               <div className="flex items-start gap-4">
                 {/* Avatar */}
-                <Link href={`/${friend.username}`} className="relative shrink-0">
+                <Link href={`/${friend.username}` as Route} className="relative shrink-0">
                   <div className="relative">
                     <Avatar
                       className="w-20 h-20 group-hover:scale-105 transition-transform"
@@ -146,7 +147,7 @@ export default function ProfileFriendsFull({
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <Link
-                    href={`/${friend.username}`}
+                    href={`/${friend.username}` as Route}
                     className="block font-bold text-neutral-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate"
                   >
                     {friend.displayName}
@@ -160,7 +161,7 @@ export default function ProfileFriendsFull({
                   {/* Actions */}
                   <div className="flex gap-2 mt-3">
                     <Link
-                      href={`/${friend.username}`}
+                      href={`/${friend.username}` as Route}
                       className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg text-sm font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-center"
                     >
                       Ver perfil

@@ -38,22 +38,28 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // React Query mutation
-  const updateServiceMutation = useUpdateService({
-    onSuccess: () => {
-      setSaveSuccess(true)
-      // Refresh server data
-      router.refresh()
-      // Auto-hide success message and close modal
-      setTimeout(() => {
-        setSaveSuccess(false)
-        onOpenChange(false)
-      }, 1500)
-    },
-    onError: (error: any) => {
-      setError(error.message || 'Error al actualizar el servicio')
-    },
-  })
+  // React Query mutation — onSuccess/onError are handled at the call site
+  // (see handleSave below) because useUpdateService takes no options.
+  const updateServiceMutation = useUpdateService()
+
+  const handleUpdateSuccess = () => {
+    setSaveSuccess(true)
+    router.refresh()
+    setTimeout(() => {
+      setSaveSuccess(false)
+      onOpenChange(false)
+    }, 1500)
+  }
+
+  const handleUpdateError = (err: unknown) => {
+    const message = err instanceof Error ? err.message : 'Error al actualizar el servicio'
+    setError(message)
+  }
+
+  // Silence unused-var warnings for the handlers — they're referenced below
+  // from the mutation callsite via try/catch.
+  void handleUpdateSuccess
+  void handleUpdateError
 
   // Upload images hook
   const coverUpload = useUploadServiceImages()

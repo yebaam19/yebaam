@@ -28,7 +28,7 @@ const SearchBtnPopover = () => {
               className="flex w-full items-center"
               onSubmit={(e) => {
                 e.preventDefault()
-                router.push('/start-categories/all')
+                router.push('/start-categories/all' as unknown as Parameters<typeof router.push>[0])
               }}
             >
               <HugeiconsIcon icon={Search01Icon} size={26} color="currentColor" strokeWidth={1} />

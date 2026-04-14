@@ -33,9 +33,15 @@ export function BusinessesFilterBar({
   onClearFilters,
 }: BusinessesFilterBarProps) {
   // Fetch data from API
-  const { data: categories = [], isLoading: loadingCategories } = useBusinessCategories()
-  const { data: states = [], isLoading: loadingStates } = useStates()
-  const { data: cities = [] } = useCitiesByState(selectedStateId || undefined)
+  const { data: categoriesRaw, isLoading: loadingCategories } = useBusinessCategories()
+
+  const categories = categoriesRaw ?? []
+  const { data: statesRaw, isLoading: loadingStates } = useStates()
+
+  const states = statesRaw ?? []
+  const { data: citiesRaw } = useCitiesByState(selectedStateId || undefined)
+
+  const cities = citiesRaw ?? []
 
   const hasFilters = searchQuery || selectedCategoryId || selectedStateId || selectedCityId
 

@@ -84,12 +84,12 @@ export const useMockProfessionalServices = () => {
             (service) =>
               service.name.toLowerCase().includes(query) ||
               service.description?.toLowerCase().includes(query) ||
-              service.category.name.toLowerCase().includes(query)
+              service.category?.name.toLowerCase().includes(query)
           );
         }
 
         if (params.categoryId) {
-          results = results.filter((service) => service.category.id === params.categoryId);
+          results = results.filter((service) => service.category?.id === params.categoryId);
         }
 
         if (params.cityId) {

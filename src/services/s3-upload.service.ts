@@ -41,6 +41,18 @@ class S3UploadService {
       'S3 upload not yet migrated. Create an Supabase storage bucket and use supabase.storage.from(bucket).uploadAuto(file).'
     )
   }
+
+  async uploadServiceMedia(_file: File, _serviceId: string): Promise<string> {
+    throw new Error(
+      'uploadServiceMedia not yet migrated. Port to supabase.storage.from("posts").upload(key, file).'
+    )
+  }
+
+  async generateVideoThumbnail(_file: File): Promise<Blob | null> {
+    throw new Error(
+      'generateVideoThumbnail not yet migrated. Port to canvas or server-side thumbnail generation.'
+    )
+  }
 }
 
 export const s3UploadService = new S3UploadService()

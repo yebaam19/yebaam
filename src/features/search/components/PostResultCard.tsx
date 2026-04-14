@@ -7,6 +7,7 @@ import { HeartIcon as HeartIconSolid } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import type { PostSearchResult } from '../interfaces/search.interfaces';
+import type { Route } from 'next';
 
 interface PostResultCardProps {
   post: PostSearchResult;
@@ -52,7 +53,7 @@ export function PostResultCard({
 
   return (
     <Link
-      href={`/post/${post.id}`}
+      href={`/post/${post.id}` as Route}
       className={cn(
         'block p-4 rounded-lg border border-gray-200 dark:border-neutral-700',
         'hover:bg-gray-50 dark:hover:bg-neutral-800/50',

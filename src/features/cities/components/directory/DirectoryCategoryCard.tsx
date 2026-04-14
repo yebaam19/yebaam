@@ -11,6 +11,7 @@ import {
   Squares2X2Icon,
 } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { DirectoryCategory, DirectoryCategoryType } from '../../interfaces/directory.interfaces'
 
 interface DirectoryCategoryCardProps {
@@ -52,7 +53,7 @@ export function DirectoryCategoryCard({ category, citySlug }: DirectoryCategoryC
   const isGreen = category.color === '#16A44C'
 
   return (
-    <Link href={getHref()} className="group block">
+    <Link href={getHref() as Route} className="group block">
       <div className="relative flex h-full flex-col items-center gap-3 overflow-hidden rounded-xl border border-neutral-200 bg-white p-6 shadow-sm transition-all hover:border-transparent hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-transparent">
         {/* Icono con fondo */}
         <div

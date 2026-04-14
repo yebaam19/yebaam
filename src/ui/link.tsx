@@ -1,11 +1,19 @@
 'use client'
 
 import * as Headless from '@headlessui/react'
-import NextLink, { type LinkProps } from 'next/link'
+import NextLink from 'next/link'
 import React, { forwardRef } from 'react'
 
+// Loose Link wrapper that accepts any string href. We intentionally don't use
+// Next.js 16's typed-routes LinkProps<...> here because this component is
+// shared across UI bits (Badge, Button, Pagination, navbar, SocialsList, Tag…)
+// where the href is dynamic and not a known static route.
+type LooseLinkProps = Omit<React.ComponentPropsWithoutRef<typeof NextLink>, 'href'> & {
+  href: string
+}
+
 export const Link = forwardRef(function Link(
-  props: LinkProps & React.ComponentPropsWithoutRef<'a'>,
+  props: LooseLinkProps & React.ComponentPropsWithoutRef<'a'>,
   ref: React.ForwardedRef<HTMLAnchorElement>
 ) {
   const closeHeadless = Headless.useClose()
@@ -13,7 +21,7 @@ export const Link = forwardRef(function Link(
   return (
     <Headless.DataInteractive>
       <NextLink
-        {...props}
+        {...(props as React.ComponentProps<typeof NextLink>)}
         ref={ref}
         onClick={(e) => {
           if (props.onClick) {

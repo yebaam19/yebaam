@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
+import type { Route } from 'next';
 
 interface FriendSuggestionCardProps {
   userId: string
@@ -66,7 +67,7 @@ export function FriendSuggestionCard({
       )}
 
       {/* Avatar */}
-      <Link href={`/${username}`} className="block">
+      <Link href={`/${username}` as Route} className="block">
         <div className="relative h-28 w-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600">
           {avatar ? (
             <Image src={avatar} alt={`${displayFirstName} ${displayLastName}`} fill className="object-cover" />
@@ -81,7 +82,7 @@ export function FriendSuggestionCard({
 
       {/* Información */}
       <div className="p-2.5">
-        <Link href={`/${username}`} className="block hover:underline">
+        <Link href={`/${username}` as Route} className="block hover:underline">
           <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
             {displayFirstName} {displayLastName}
           </p>
@@ -181,7 +182,7 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
       <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 dark:border-gray-700">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h3>
         <Link
-          href="/friends/suggestions"
+          href={'/friends/suggestions' as Route}
           className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           Ver más

@@ -2,10 +2,12 @@ import type { NextConfig } from 'next'
 import path from 'node:path'
 
 const nextConfig: NextConfig = {
-  experimental: {
-    // Default true in Next 16; can race with chunk serving during long compiles (ChunkLoadError in dev).
-    turbopackFileSystemCacheForDev: false,
-  },
+  experimental: process.env.NODE_ENV === 'development'
+    ? {
+        // Default true in Next 16; can race with chunk serving during long compiles (ChunkLoadError in dev).
+        turbopackFileSystemCacheForDev: false,
+      }
+    : {},
   turbopack: {
     root: path.resolve(__dirname),
   },

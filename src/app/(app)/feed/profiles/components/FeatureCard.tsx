@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { LockClosedIcon, CheckCircleIcon } from '@/components/icons/heroicons-shim';
 import type { ProfileFeature } from '../config/features.config';
+import type { Route } from 'next';
 
 interface FeatureCardProps {
     feature: ProfileFeature;
@@ -68,7 +69,7 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                         {feature.buttonLabel}
                     </button>
                 ) : (
-                    <Link href={feature.href} className="block">
+                    <Link href={feature.href as Route} className="block">
                         <button
                             className={cn(
                                 'w-full py-2.5 px-4 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer',
@@ -94,7 +95,7 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
                             Verifica tu email para crear espacios
                         </p>
-                        <Link href="/settings/account" className="block">
+                        <Link href={'/settings/account' as Route} className="block">
                             <button className="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
                                 Verificar cuenta
                             </button>

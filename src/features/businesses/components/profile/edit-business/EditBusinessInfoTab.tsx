@@ -54,7 +54,9 @@ export function EditBusinessInfoTab({
   const [autoSlug, setAutoSlug] = useState(true)
 
   // Fetch categories from API
-  const { data: categories = [], isLoading: loadingCategories } = useBusinessCategories()
+  const { data: categoriesRaw, isLoading: loadingCategories } = useBusinessCategories()
+
+  const categories = categoriesRaw ?? []
 
   // Manejar cambio de nombre
   const handleNameChange = (value: string) => {

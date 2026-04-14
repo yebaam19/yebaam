@@ -25,6 +25,7 @@ import { useState } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import PersonalDialog from '../dialogs/PersonalDialog'
+import type { Route } from 'next';
 
 interface UserDetailsProps {
   user: UserProfile
@@ -84,7 +85,7 @@ export default function UserDetails({ user, loggedInUserId }: UserDetailsProps) 
             <HomeIcon className="h-4 w-4" />
             <span className="font-semibold">Ciudad de residencia:</span>
             <Link
-              href={`/cities/${displayUser.residenceCity.toLowerCase().replace(/\s+/g, '-')}`}
+              href={`/cities/${displayUser.residenceCity.toLowerCase().replace(/\s+/g, '-')}` as Route}
               className="text-primary hover:text-primary/80 hover:underline"
             >
               {displayUser.residenceCity}
@@ -98,7 +99,7 @@ export default function UserDetails({ user, loggedInUserId }: UserDetailsProps) 
             <MapPinIcon className="h-4 w-4" />
             <span className="font-semibold">Ciudad de origen:</span>
             <Link
-              href={`/cities/${displayUser.birthCity.toLowerCase().replace(/\s+/g, '-')}`}
+              href={`/cities/${displayUser.birthCity.toLowerCase().replace(/\s+/g, '-')}` as Route}
               className="text-primary hover:text-primary/80 hover:underline"
             >
               {displayUser.birthCity}

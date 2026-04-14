@@ -111,8 +111,8 @@ export interface CreateClubDto {
   category: ClubCategory;
   subcategory?: string;
   privacy: ClubPrivacy;
-  profileImage?: File;
-  coverImage?: File;
+  profileImage?: string;
+  coverImage?: string;
   membershipTiers?: MembershipTier[];
   rules?: string[];
   location?: string;

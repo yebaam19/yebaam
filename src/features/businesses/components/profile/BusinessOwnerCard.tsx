@@ -10,6 +10,7 @@ import { CheckBadgeIcon, EnvelopeIcon, UserIcon } from '@/components/icons/heroi
 import Image from 'next/image'
 import Link from 'next/link'
 import type { BusinessOwner } from '../../interfaces/business.interfaces'
+import type { Route } from 'next';
 
 interface BusinessOwnerCardProps {
   owner: BusinessOwner
@@ -44,7 +45,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
       <div className="mt-4 flex items-center gap-4">
         {/* Avatar */}
         <Link
-          href={`/user/${owner.username}`}
+          href={`/user/${owner.username}` as Route}
           className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-neutral-200 ring-2 ring-primary-100 ring-offset-2 transition-all hover:ring-primary-300 dark:bg-neutral-700 dark:ring-primary-900/30 dark:hover:ring-primary-700"
         >
           {owner.avatarUrl ? (
@@ -60,7 +61,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
             <Link
-              href={`/user/${owner.username}`}
+              href={`/user/${owner.username}` as Route}
               className="font-semibold text-neutral-900 hover:text-primary-600 dark:text-neutral-100 dark:hover:text-primary-400"
             >
               {owner.username}
@@ -75,7 +76,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
       {/* Actions */}
       <div className="mt-4 flex gap-2">
         <Link
-          href={`/user/${owner.username}`}
+          href={`/user/${owner.username}` as Route}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
         >
           <UserIcon className="h-4 w-4" />

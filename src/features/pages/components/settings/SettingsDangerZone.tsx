@@ -275,7 +275,7 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
                     </p>
                     <ul className="mt-2 space-y-1 text-sm text-red-700 dark:text-red-400">
                       <li>• Todas las publicaciones y comentarios</li>
-                      <li>• {page.stats?.followersCount || 0} seguidores</li>
+                      <li>• {page.followerCount || 0} seguidores</li>
                       <li>• Todas las fotos y videos</li>
                       <li>• El historial completo</li>
                     </ul>

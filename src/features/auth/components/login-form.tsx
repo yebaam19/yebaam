@@ -48,7 +48,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
       })
 
       toast.success('¡Bienvenido de nuevo!')
-      router.push(redirectTo)
+      router.push(redirectTo as unknown as Parameters<typeof router.push>[0])
     } catch (err: any) {
       toast.error(err.message || 'Error al iniciar sesión')
     }

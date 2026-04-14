@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import type React from 'react'
 import { createContext, useContext, useState } from 'react'
 import { Link } from './link'
+import type { Route } from 'next';
 
 const TableContext = createContext<{ bleed: boolean; dense: boolean; grid: boolean; striped: boolean }>({
   bleed: false,
@@ -111,7 +112,7 @@ export function TableCell({ className, children, ...props }: React.ComponentProp
       {href && (
         <Link
           data-row-link
-          href={href}
+          href={href as Route}
           target={target}
           aria-label={title}
           tabIndex={cellRef?.previousElementSibling === null ? 0 : -1}

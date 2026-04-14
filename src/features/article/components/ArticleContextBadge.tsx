@@ -10,6 +10,7 @@
 import { BriefcaseIcon, DocumentTextIcon, UserIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { ArticleContextType } from '../interfaces'
+import type { Route } from 'next';
 
 interface ArticleContextBadgeProps {
   contextType: ArticleContextType
@@ -85,7 +86,7 @@ export function ArticleContextBadge({
       >
         <Icon className={`h-4 w-4 ${contextInfo.color}`} />
         <Link
-          href={contextInfo.href}
+          href={contextInfo.href as Route}
           className={`text-sm font-medium transition-opacity hover:underline hover:opacity-80 ${contextInfo.color}`}
         >
           {contextInfo.label}
@@ -96,7 +97,7 @@ export function ArticleContextBadge({
 
   return (
     <Link
-      href={contextInfo.href}
+      href={contextInfo.href as Route}
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-80 ${contextInfo.bgColor} ${contextInfo.color}`}
     >
       <Icon className="h-3.5 w-3.5" />

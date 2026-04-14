@@ -89,13 +89,13 @@ const HeaderStorie = () => {
           </button>
           
           <div className="flex items-center gap-3">
-            <Avatar 
-              src={user.avatar} 
+            <Avatar
+              src={user.avatar}
               className="size-10 ring-2 ring-white"
-              initials={user.displayName?.slice(0, 2).toUpperCase() || 'U'}
+              initials={user.username?.slice(0, 2).toUpperCase() || 'U'}
             />
             <div className="text-white">
-              <p className="font-semibold">{user.displayName || user.username}</p>
+              <p className="font-semibold">{user.firstName || user.username}</p>
               <p className="text-xs opacity-80">Ahora</p>
             </div>
           </div>

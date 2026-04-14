@@ -7,4 +7,3 @@ export { SearchResultsHeader } from './SearchResultsHeader';
 export { PaginasLoadingSkeleton } from './PaginasLoadingSkeleton';
 export { PaginasGrid } from './PaginasGrid';
 export { PaginasEmptyState } from './PaginasEmptyState';
-export { MockDataBanner } from './MockDataBanner';

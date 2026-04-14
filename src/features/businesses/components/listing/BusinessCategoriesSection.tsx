@@ -37,7 +37,9 @@ const categoryIcons: Record<string, React.ElementType> = {
 }
 
 export function BusinessCategoriesSection({ selectedCategoryId, onCategorySelect }: BusinessCategoriesSectionProps) {
-  const { data: categories = [], isLoading } = useBusinessCategories()
+  const { data: categoriesRaw, isLoading } = useBusinessCategories()
+
+  const categories = categoriesRaw ?? []
 
   if (isLoading) {
     return (

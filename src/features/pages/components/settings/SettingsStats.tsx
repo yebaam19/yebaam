@@ -26,14 +26,14 @@ export const SettingsStats: FC<SettingsStatsProps> = ({ page }) => {
   const stats: StatCard[] = [
     {
       label: 'Seguidores',
-      value: page.stats?.followersCount?.toLocaleString('es-ES') || '0',
+      value: page.followerCount?.toLocaleString('es-ES') || '0',
       change: '+12.5%',
       trend: 'up',
       icon: UsersIcon,
     },
     {
       label: 'Publicaciones',
-      value: page.stats?.postsCount?.toLocaleString('es-ES') || '0',
+      value: page.postCount?.toLocaleString('es-ES') || '0',
       change: '+8',
       trend: 'up',
       icon: DocumentTextIcon,

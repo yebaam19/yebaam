@@ -15,6 +15,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { Route } from 'next'
 import { Fragment } from 'react'
 import { getCityMenuItems } from '../data/categories'
 
@@ -59,7 +60,7 @@ export function CityMenu({ citySlug }: CityMenuProps) {
           return (
             <Link
               key={item.id}
-              href={item.isComingSoon ? '#' : item.href}
+              href={(item.isComingSoon ? '#' : item.href) as Route}
               className={`group flex items-center gap-3 rounded-xl border p-4 transition-all ${
                 isActive
                   ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
@@ -110,7 +111,7 @@ export function CityMenu({ citySlug }: CityMenuProps) {
                   <MenuItem key={item.id}>
                     {({ focus }) => (
                       <Link
-                        href={item.isComingSoon ? '#' : item.href}
+                        href={(item.isComingSoon ? '#' : item.href) as Route}
                         onClick={(e) => item.isComingSoon && e.preventDefault()}
                         className={`flex items-center gap-3 px-4 py-3 text-sm ${
                           isActive

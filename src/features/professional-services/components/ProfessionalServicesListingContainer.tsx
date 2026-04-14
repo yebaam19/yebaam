@@ -149,7 +149,9 @@ export function ProfessionalServicesListingContainer({
   const myServices = myServicesData?.services || []
   
   // Servicios sugeridos = featured services
-  const { data: suggestedServices = [], isLoading: isLoadingSuggested } = useFeaturedServices(12)
+  const { data: suggestedServicesRaw, isLoading: isLoadingSuggested } = useFeaturedServices(12)
+
+  const suggestedServices = suggestedServicesRaw ?? []
   
   // Servicios para descubrir = todos los servicios (más resultados sin sección de categorías)
   const { data: discoverData, isLoading: isLoadingDiscover } = useServices({ page: 1, limit: 24 })
@@ -159,19 +161,18 @@ export function ProfessionalServicesListingContainer({
   const { data: profilesData, isLoading: isLoadingProfiles } = useAllProfiles(24, 0)
   const professionalProfiles = profilesData?.profiles || []
 
-  // Search query - aplicar filtros cuando hay búsqueda
+  // Search query - aplicar filtros cuando hay búsqueda. The underlying
+  // `useServices` hook takes only one argument; display-gating on
+  // `shouldSearch` happens below in the render branches.
   const shouldSearch = !!(searchQuery || filters.categoryId || filters.cityId || filters.stateId)
-  const { data: searchResults, isLoading: isSearchLoading } = useServices(
-    {
-      search: searchQuery,
-      categoryId: filters.categoryId,
-      cityId: filters.cityId,
-      stateId: filters.stateId,
-      page: 1,
-      limit: 50,
-    },
-    { enabled: shouldSearch }
-  )
+  const { data: searchResults, isLoading: isSearchLoading } = useServices({
+    search: searchQuery,
+    categoryId: filters.categoryId,
+    cityId: filters.cityId,
+    stateId: filters.stateId,
+    page: 1,
+    limit: 50,
+  })
 
   // Handle filter changes from filter bar
   const handleFiltersChange = useCallback(

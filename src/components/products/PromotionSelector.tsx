@@ -15,7 +15,9 @@ export function PromotionSelector({
   onPromotionSelect,
 }: PromotionSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: promotions = [], isLoading } = useActivePromotions(pageId);
+  const { data: promotionsRaw, isLoading } = useActivePromotions(pageId);
+
+  const promotions = promotionsRaw ?? []
 
   const selectedPromotion = promotions.find(p => p.id === selectedPromotionId);
 

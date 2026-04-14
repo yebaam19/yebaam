@@ -4,13 +4,12 @@ import { useChatNotifications } from '@/features/chat/context/chat-notification.
 
 export default function UnreadMessagesBadge() {
   let unreadCount = 0;
-  
+
   try {
-    const notifications = useChatNotifications();
-    unreadCount = notifications.unreadCount;
-  } catch (error) {
+    const { notifications } = useChatNotifications();
+    unreadCount = notifications.length;
+  } catch {
     // Si no hay provider, no mostrar nada
-    console.log('UnreadMessagesBadge: No hay ChatNotificationProvider');
     return null;
   }
 

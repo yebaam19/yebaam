@@ -16,7 +16,8 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
   const [selectedPhoto, setSelectedPhoto] = useState<BusinessPhoto | null>(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
 
-  const { data: photos = [], isLoading } = useBusinessPhotos(businessId)
+  const { data, isLoading } = useBusinessPhotos(businessId)
+  const photos: BusinessPhoto[] = data ?? []
   const deletePhotoMutation = useDeleteBusinessPhoto(businessId)
 
   const handlePhotoClick = (photo: BusinessPhoto) => {

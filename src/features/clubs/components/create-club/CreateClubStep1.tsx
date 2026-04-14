@@ -1,5 +1,5 @@
 import { FC, useState } from 'react'
-import type { CreateClubDto } from '../../types/club.types'
+import type { CreateClubDto, ClubCategory } from '../../types/club.types'
 
 interface CreateClubStep1Props {
   data: Partial<CreateClubDto>
@@ -10,7 +10,7 @@ interface CreateClubStep1Props {
 export const CreateClubStep1: FC<CreateClubStep1Props> = ({ data, onUpdate, onNext }) => {
   const [name, setName] = useState(data.name || '')
   const [description, setDescription] = useState(data.description || '')
-  const [category, setCategory] = useState(data.category || '')
+  const [category, setCategory] = useState<ClubCategory | ''>(data.category ?? '')
 
   const handleNext = () => {
     if (!name.trim() || !description.trim() || !category) {
@@ -20,7 +20,7 @@ export const CreateClubStep1: FC<CreateClubStep1Props> = ({ data, onUpdate, onNe
     onUpdate({
       name: name.trim(),
       description: description.trim(),
-      category,
+      category: category || undefined,
     })
     onNext()
   }
@@ -78,7 +78,7 @@ export const CreateClubStep1: FC<CreateClubStep1Props> = ({ data, onUpdate, onNe
         <select
           id="club-category"
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => setCategory(e.target.value as ClubCategory | '')}
           className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
         >
           <option value="">Selecciona una categoría</option>

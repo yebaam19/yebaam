@@ -57,8 +57,12 @@ export function EditBusinessContactTab({
   const [selectedStateId, setSelectedStateId] = useState('')
 
   // Fetch data from API
-  const { data: states = [], isLoading: loadingStates } = useStates()
-  const { data: cities = [], isLoading: loadingCities } = useCitiesByState(selectedStateId || undefined)
+  const { data: statesRaw, isLoading: loadingStates } = useStates()
+
+  const states = statesRaw ?? []
+  const { data: citiesRaw, isLoading: loadingCities } = useCitiesByState(selectedStateId || undefined)
+
+  const cities = citiesRaw ?? []
 
   // Actualizar horario de un día específico
   const updateDayHours = (day: keyof BusinessHours, value: string) => {

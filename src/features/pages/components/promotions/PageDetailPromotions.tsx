@@ -21,7 +21,8 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<PagePromotion | undefined>();
 
-  const { data: promotions = [], isLoading } = usePagePromotions(pageId, isOwner);
+  const { data, isLoading } = usePagePromotions(pageId, isOwner);
+  const promotions: PagePromotion[] = data ?? [];
   const deletePromotionMutation = useDeletePromotion(pageId);
 
   const handleDelete = (promotionId: string) => {

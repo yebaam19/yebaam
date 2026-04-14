@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import type React from 'react'
 import { Button } from './Button'
+import type { Route } from 'next';
 
 export function Pagination({
   'aria-label': ariaLabel = 'Page navigation',
@@ -60,7 +61,7 @@ export function PaginationPage({
 }: React.PropsWithChildren<{ href: string; className?: string; current?: boolean }>) {
   return (
     <Button
-      href={href}
+      href={href as Route}
       plain
       aria-label={`Page ${children}`}
       aria-current={current ? 'page' : undefined}
@@ -97,18 +98,18 @@ export function PaginationGap({
 export default function PaginationComponent() {
   return (
     <Pagination>
-      <PaginationPrevious href="?page=2" />
+      <PaginationPrevious href={'?page=2' as Route} />
       <PaginationList>
-        <PaginationPage href="?page=1">1</PaginationPage>
-        <PaginationPage href="?page=2">2</PaginationPage>
-        <PaginationPage href="?page=3" current>
+        <PaginationPage href={'?page=1' as Route}>1</PaginationPage>
+        <PaginationPage href={'?page=2' as Route}>2</PaginationPage>
+        <PaginationPage href={'?page=3' as Route} current>
           3
         </PaginationPage>
         <PaginationGap />
-        <PaginationPage href="?page=65">65</PaginationPage>
-        <PaginationPage href="?page=66">66</PaginationPage>
+        <PaginationPage href={'?page=65' as Route}>65</PaginationPage>
+        <PaginationPage href={'?page=66' as Route}>66</PaginationPage>
       </PaginationList>
-      <PaginationNext href="?page=4" />
+      <PaginationNext href={'?page=4' as Route} />
     </Pagination>
   )
 }

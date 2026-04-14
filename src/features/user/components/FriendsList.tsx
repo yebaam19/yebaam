@@ -15,6 +15,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { useFriends } from '../hooks/useFriends'
 import { ConfirmRemoveFriendModal } from './ConfirmRemoveFriendModal'
+import type { Route } from 'next';
 
 interface FriendCardProps {
   friend: {
@@ -88,7 +89,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
 
       {/* Información */}
       <div className="p-4">
-        <Link href={`/${friend.username}`} className="block hover:underline">
+        <Link href={`/${friend.username}` as Route} className="block hover:underline">
           <h3 className="truncate text-lg font-semibold text-gray-900 dark:text-white">
             {friend.firstName} {friend.lastName}
           </h3>
@@ -117,7 +118,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
         {/* Acciones */}
         <div className="mt-4 flex gap-2">
           <Link
-            href={`/messages/${friend.friendId}`}
+            href={`/messages/${friend.friendId}` as Route}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           >
             <ChatBubbleLeftIcon className="h-4 w-4" />

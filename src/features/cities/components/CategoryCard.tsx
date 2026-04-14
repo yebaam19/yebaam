@@ -11,6 +11,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { Category } from '../data/categories'
+import type { Route } from 'next';
 
 interface CategoryCardProps {
   citySlug: string
@@ -45,7 +46,7 @@ export function CategoryCard({ citySlug, category }: CategoryCardProps) {
 
   return (
     <Link
-      href={href}
+      href={href as Route}
       className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-neutral-200 bg-white p-4 shadow-sm transition-all hover:border-transparent hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-transparent"
     >
       {/* Icono con fondo */}

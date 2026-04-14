@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
+import type { Route } from 'next';
 
 /**
  * Componente FriendSuggestions
@@ -64,7 +65,7 @@ export function FriendSuggestions() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h2>
         <Link
-          href="/friends/suggestions"
+          href={'/friends/suggestions' as Route}
           className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           Ver todo
@@ -110,7 +111,7 @@ export function FriendSuggestions() {
 
               {/* Información del usuario */}
               <div className="p-3">
-                <Link href={`/${suggestion.username}`} className="block hover:underline">
+                <Link href={`/${suggestion.username}` as Route} className="block hover:underline">
                   <h3 className="line-clamp-1 text-sm font-semibold text-gray-900 dark:text-white">
                     {suggestion.firstName} {suggestion.lastName}
                   </h3>

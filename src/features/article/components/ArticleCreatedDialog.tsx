@@ -14,6 +14,7 @@ import { ArrowTopRightOnSquareIcon, CheckIcon, ClipboardDocumentIcon, XMarkIcon 
 import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
+import type { Route } from 'next';
 
 interface ArticleCreatedDialogProps {
   isOpen: boolean
@@ -143,7 +144,7 @@ export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreate
             <Button outline onClick={onClose}>
               Cerrar
             </Button>
-            <Link href={articleUrl}>
+            <Link href={articleUrl as Route}>
               <Button color="primary" className="gap-2">
                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                 Ver artículo

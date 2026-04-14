@@ -13,6 +13,7 @@ import UploadPhotoDialog from '@/features/profile/components/dialogs/UploadPhoto
 import CreateAlbumDialog from '@/features/profile/components/dialogs/CreateAlbumDialog';
 import { useProfileMediaStore } from '@/features/profile/store/profile-media.store';
 import { useEffect } from 'react';
+import type { Route } from 'next';
 
 interface Photo {
   id: string;
@@ -206,7 +207,7 @@ export default function ProfilePhotosFull({
             {photos.map((photo) => (
               <Link
                 key={photo.id}
-                href={`/${username}/photos/${photo.id}`}
+                href={`/${username}/photos/${photo.id}` as Route}
                 className="group relative aspect-square bg-neutral-200 dark:bg-neutral-800 rounded-2xl overflow-hidden"
               >
                 <img
@@ -235,7 +236,7 @@ export default function ProfilePhotosFull({
             {photos.map((photo) => (
               <Link
                 key={photo.id}
-                href={`/${username}/photos/${photo.id}`}
+                href={`/${username}/photos/${photo.id}` as Route}
                 className="block bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-neutral-800 p-4 shadow-sm hover:shadow-md transition-all group"
               >
                 <div className="flex items-center gap-4">
