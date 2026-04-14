@@ -90,12 +90,27 @@ export async function DELETE(
   _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const token = await getServerAccessToken();
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   const { id } = await context.params;
-  const client = await getServerClient();
-  const { error } = await client.from('posts').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { client, userId } = await getUserId();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data, error } = await client
+    .from('posts')
+    .delete()
+    .eq('id', id)
+    .eq('author_id', userId)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    console.error('[api/posts DELETE] supabase error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json(
+      { error: 'Post not found or you are not the author' },
+      { status: 404 }
+    );
+  }
   return NextResponse.json({ success: true });
 }
