@@ -46,22 +46,28 @@ export async function POST(request: NextRequest) {
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Storage RLS requires the first path segment to be the caller's UUID.
+  // Any optional sub-folder hangs off underneath the user's prefix.
   const safeFolder = folder.replace(/[^\w\-/]+/g, '_').replace(/^\/+|\/+$/g, '');
   const fileName = `${Date.now()}-${sanitizeFileName(file.name || 'upload')}`;
-  const prefix = safeFolder ? `${safeFolder}/${userId}` : userId;
+  const prefix = safeFolder ? `${userId}/${safeFolder}` : userId;
   const key = `${prefix}/${fileName}`;
 
-  const { error } = await client.storage.from(bucket).upload(key, file);
+  const { error } = await client.storage.from(bucket).upload(key, file, {
+    contentType: file.type || undefined,
+    upsert: false,
+  });
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const url = client.storage.from(bucket).getPublicUrl(key);
+  // Supabase getPublicUrl is synchronous and returns { data: { publicUrl } }.
+  const { data: publicData } = client.storage.from(bucket).getPublicUrl(key);
 
   return NextResponse.json({
     success: true,
     data: {
-      url,
+      url: publicData.publicUrl,
       key,
       bucket,
       fileName: file.name,
