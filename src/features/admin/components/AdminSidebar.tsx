@@ -1,0 +1,98 @@
+'use client'
+
+import { useTransition } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  ChatBubbleLeftRightIcon,
+  Cog6ToothIcon,
+  FlagIcon,
+  Squares2X2Icon,
+  UsersIcon,
+} from '@/components/icons/heroicons-shim'
+import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
+import { adminLogout } from '@/features/admin/actions/auth.actions'
+
+const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
+  'squares-2x2': Squares2X2Icon,
+  'chat-bubble-left-right': ChatBubbleLeftRightIcon,
+  users: UsersIcon,
+  flag: FlagIcon,
+  cog: Cog6ToothIcon,
+}
+
+interface Props {
+  onNavigate?: () => void
+}
+
+export default function AdminSidebar({ onNavigate }: Props) {
+  const pathname = usePathname() ?? ''
+  const [isLoggingOut, startLogout] = useTransition()
+
+  return (
+    <nav className="flex h-full flex-col">
+      <div className="px-4 pt-6 pb-4">
+        <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
+          Administración
+        </p>
+      </div>
+      <ul className="flex-1 space-y-1 px-2">
+        {ADMIN_NAV_ITEMS.map((item) => {
+          const Icon = ICONS[item.iconName]
+          const isActive =
+            item.href != null &&
+            (item.matchPrefix === '/admin'
+              ? pathname === '/admin'
+              : pathname.startsWith(item.matchPrefix ?? item.href))
+          const base =
+            'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors'
+          if (item.disabled || !item.href) {
+            return (
+              <li key={item.label}>
+                <span
+                  className={`${base} cursor-not-allowed text-neutral-400 dark:text-neutral-600`}
+                  title="Próximamente"
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                  <span className="ml-auto rounded bg-neutral-100 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-800">
+                    Pronto
+                  </span>
+                </span>
+              </li>
+            )
+          }
+          return (
+            <li key={item.label}>
+              <Link
+                href={item.href}
+                onClick={onNavigate}
+                className={`${base} ${
+                  isActive
+                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="space-y-2 border-t border-neutral-200 px-4 py-4 text-[11px] text-neutral-400 dark:border-neutral-800">
+        <Link href="/feed" className="block hover:text-blue-600">
+          ← Volver a Yebaam
+        </Link>
+        <button
+          type="button"
+          disabled={isLoggingOut}
+          onClick={() => startLogout(() => adminLogout())}
+          className="block w-full text-left font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+        >
+          {isLoggingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
+        </button>
+      </div>
+    </nav>
+  )
+}

@@ -12,12 +12,14 @@ import {
   ChatBubbleLeftRightIcon,
   HomeIcon,
   MagnifyingGlassIcon,
+  NewspaperIcon,
   PlayIcon,
   UserGroupIcon,
   XMarkIcon,
 } from '@/components/icons/heroicons-shim'
 import {
   HomeIcon as HomeIconSolid,
+  NewspaperIcon as NewspaperIconSolid,
   PlayIcon as PlayIconSolid,
   UserGroupIcon as UserGroupIconSolid,
 } from '@/components/icons/heroicons-shim'
@@ -31,9 +33,10 @@ import type { Route } from 'next';
 
 interface SocialHeaderProps {
   onMobileMenuClick?: () => void
+  isPlatformAdmin?: boolean
 }
 
-export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
+export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: SocialHeaderProps) {
   const pathname = usePathname()
   const { user } = useAuth()
   const [isMessengerOpen, setIsMessengerOpen] = useState(false)
@@ -80,6 +83,13 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
       label: 'Grupos',
       isActive: pathname?.startsWith('/groups'),
       featureFlag: 'GRUPOS_ENABLED' as FeatureFlag,
+    },
+    {
+      href: '/foro',
+      icon: NewspaperIcon,
+      iconSolid: NewspaperIconSolid,
+      label: 'Foro',
+      isActive: pathname?.startsWith('/foro'),
     },
   ].filter((item) => !item.featureFlag || isFeatureEnabled(item.featureFlag))
 
@@ -175,7 +185,7 @@ export default function SocialHeader({ onMobileMenuClick }: SocialHeaderProps) {
 
             {/* User Avatar Dropdown */}
             <div className="ml-1 sm:ml-2">
-              <AvatarDropdown />
+              <AvatarDropdown isPlatformAdmin={isPlatformAdmin} />
             </div>
           </div>
         </div>

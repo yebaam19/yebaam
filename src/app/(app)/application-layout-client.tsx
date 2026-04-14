@@ -24,9 +24,10 @@ interface Props {
   children: ReactNode
 
   user: User
+  isPlatformAdmin?: boolean
 }
 
-export function ApplicationLayoutClient({ children, user }: Props) {
+export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Props) {
   const pathname = usePathname()
 
   // Activar sincronización de notificaciones en tiempo real
@@ -53,7 +54,7 @@ export function ApplicationLayoutClient({ children, user }: Props) {
           {/* Banner de ambiente (solo en dev/staging) */}
 
           {/* Header de navegación social */}
-          <SocialHeader />
+          <SocialHeader isPlatformAdmin={isPlatformAdmin} />
 
           <main className="min-w-0 w-full max-w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-8">
             <div className="mx-auto w-full max-w-[100vw] px-4 sm:px-6">{children}</div>

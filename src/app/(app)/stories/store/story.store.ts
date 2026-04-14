@@ -93,48 +93,11 @@ export const useStoryStore = create<StoryState>((set, get) => ({
         throw new Error('Archivo y tipo son requeridos');
       }
 
-      // 1. Generar presigned URL
-      console.log('[STORY STORE] Generating presigned URL...');
-      const presignedData = await storyService.generatePresignedUrl({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        mediaType: type,
-      });
-
-      // 2. Subir archivo a S3
-      console.log('[STORY STORE] Uploading to S3...');
-      await storyService.uploadToS3(presignedData.uploadUrl, file);
-
-      // 3. Obtener dimensiones del archivo si es imagen
-      let width: number | undefined;
-      let height: number | undefined;
-      let duration: number | undefined;
-
-      if (type === 'image') {
-        const img = await createImageBitmap(file);
-        width = img.width;
-        height = img.height;
-      } else if (type === 'video') {
-        // Para video, necesitarías usar un elemento <video> temporal
-        // Por ahora lo dejamos undefined
-      }
-
-      // 4. Crear historia en el backend
-      console.log('[STORY STORE] Creating story in backend...');
-      const newStory = await storyService.createStory({
-        mediaUrl: presignedData.cloudFrontUrl,
-        s3Key: presignedData.s3Key,
+      const newStory = await storyService.createStoryFromFile(file, {
         type,
         caption: caption || undefined,
-        mimeType: file.type,
-        fileSize: file.size,
-        width,
-        height,
-        duration,
       });
 
-      // 5. Agregar a mis historias
       set(state => ({
         myStories: [newStory, ...(Array.isArray(state.myStories) ? state.myStories : [])],
         isCreating: false,
