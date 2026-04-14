@@ -28,6 +28,7 @@ const Page = () => {
             width={240}
             height={60}
             className="h-auto w-full brightness-0 invert"
+            style={{ height: 'auto' }}
             priority
           />
         </div>

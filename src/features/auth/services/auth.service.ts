@@ -1,4 +1,4 @@
-import { insforge } from '@/lib/insforge/client';
+import { createClient } from '@/utils/supabase/client';
 import type {
   LoginDTO,
   RegisterDTO,
@@ -28,8 +28,8 @@ type ProfileRow = {
 };
 
 function mapProfileToAuthUser(
-  authUser: { id: string; email?: string | null; emailVerified?: boolean },
-  profile: Partial<ProfileRow> | null
+  authUser: { id: string; email?: string | null; email_confirmed_at?: string | null },
+  profile: Partial<ProfileRow> | null,
 ): AuthUser {
   const birth = profile?.birth_date ? new Date(profile.birth_date) : null;
   const email = authUser.email ?? '';
@@ -39,7 +39,7 @@ function mapProfileToAuthUser(
     email,
     username: profile?.username ?? usernameFallback,
     status: 'ACTIVE',
-    emailVerified: authUser.emailVerified ?? true,
+    emailVerified: Boolean(authUser.email_confirmed_at),
     profileCompleted: profile?.profile_completed ?? false,
     avatarUrl: profile?.avatar_url ?? undefined,
     avatar: profile?.avatar_url ?? undefined,
@@ -60,109 +60,45 @@ function mapProfileToAuthUser(
   };
 }
 
-const SESSION_FLAG_KEY = 'yebaam:auth:has-session';
-
-function markHasLocalSession(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(SESSION_FLAG_KEY, '1');
-  } catch {
-    // ignore — private mode, quota, etc.
-  }
-}
-
-function clearHasLocalSession(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.removeItem(SESSION_FLAG_KEY);
-  } catch {
-    // ignore
-  }
-}
-
-function readHasLocalSession(): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage.getItem(SESSION_FLAG_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function readCurrentAccessToken(): string | null {
-  try {
-    const headers = insforge.getHttpClient().getHeaders();
-    const auth = headers['Authorization'] || headers['authorization'];
-    if (!auth) return null;
-    return auth.replace(/^Bearer\s+/i, '') || null;
-  } catch {
-    return null;
-  }
-}
-
-/** Drop SDK + cookie session hints without relying on client /auth/refresh. */
-async function clearStaleClientSession(): Promise<void> {
-  try {
-    insforge.getHttpClient().setAuthToken(null);
-  } catch {
-    // ignore
-  }
-  clearHasLocalSession();
-  await syncSessionCookie(null);
-  try {
-    await insforge.auth.signOut();
-  } catch {
-    // ignore — offline or already cleared
-  }
-}
-
-async function syncSessionCookie(accessToken: string | null | undefined): Promise<void> {
-  if (typeof window === 'undefined') return;
-  try {
-    if (accessToken) {
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken }),
-      });
-    } else {
-      await fetch('/api/auth/session', { method: 'DELETE' });
-    }
-  } catch (err) {
-    console.warn('[AuthService] Failed to sync session cookie', err);
-  }
-}
-
-async function fetchProfile(userId: string): Promise<Partial<ProfileRow> | null> {
-  const { data, error } = await insforge.database
+async function fetchProfile(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<Partial<ProfileRow> | null> {
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
   if (error) return null;
   return (data as Partial<ProfileRow>) ?? null;
 }
 
 export class AuthService {
+  private get supabase() {
+    return createClient();
+  }
+
   async login(credentials: LoginDTO): Promise<AuthResponseDTO> {
     if (!credentials.email) {
       throw new Error('Email is required to sign in');
     }
-    const { data, error } = await insforge.auth.signInWithPassword({
+    const { data, error } = await this.supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password,
     });
-    if (error || !data) throw new Error(error?.message || 'Error al iniciar sesión');
+    if (error || !data?.user || !data.session) {
+      throw new Error(error?.message || 'Error al iniciar sesión');
+    }
 
-    markHasLocalSession();
-    await syncSessionCookie(data.accessToken);
-
-    const profile = await fetchProfile(data.user.id);
-    const user = mapProfileToAuthUser(data.user, profile);
+    const profile = await fetchProfile(this.supabase, data.user.id);
+    const user = mapProfileToAuthUser(
+      { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at },
+      profile,
+    );
 
     return {
-      accessToken: data.accessToken ?? '',
-      refreshToken: data.refreshToken ?? '',
+      accessToken: data.session.access_token ?? '',
+      refreshToken: data.session.refresh_token ?? '',
       user,
     };
   }
@@ -170,15 +106,19 @@ export class AuthService {
   async register(userData: RegisterDTO): Promise<MessageResponse> {
     const displayName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
 
-    const { data, error } = await insforge.auth.signUp({
+    const { data, error } = await this.supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
-      name: displayName,
+      options: {
+        data: { name: displayName },
+      },
     });
     if (error) throw new Error(error.message || 'Error al registrar usuario');
 
+    // handle_new_user trigger already created the profile row on the DB side.
+    // Fill it in with the rest of the signup data now.
     if (data?.user?.id) {
-      await insforge.database
+      await this.supabase
         .from('profiles')
         .update({
           username: userData.email.split('@')[0] || null,
@@ -196,23 +136,25 @@ export class AuthService {
     }
 
     return {
-      message: data?.requireEmailVerification
-        ? 'Account created. Check your email to verify your account.'
-        : 'Account created.',
+      message: data.session
+        ? 'Account created.'
+        : 'Account created. Check your email to verify your account.',
     };
   }
 
   async verifyEmail(verifyData: VerifyEmailRequest): Promise<MessageResponse> {
-    const { error } = await insforge.auth.verifyEmail({
+    const { error } = await this.supabase.auth.verifyOtp({
       email: verifyData.email,
-      otp: verifyData.otp,
+      token: verifyData.otp,
+      type: 'email',
     });
     if (error) throw new Error(error.message || 'Error al verificar email');
     return { message: 'Email verified.' };
   }
 
   async resendOtp(resendData: ResendOtpRequest): Promise<MessageResponse> {
-    const { error } = await insforge.auth.resendVerificationEmail({
+    const { error } = await this.supabase.auth.resend({
+      type: 'signup',
       email: resendData.email,
     });
     if (error) throw new Error(error.message || 'Error al reenviar código OTP');
@@ -223,110 +165,72 @@ export class AuthService {
     if (typeof window === 'undefined') return;
     const finalDestination = redirectTo ?? '/feed';
     const callbackUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(finalDestination)}`;
-    const { error } = await insforge.auth.signInWithOAuth({
+    const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
-      redirectTo: callbackUrl,
+      options: { redirectTo: callbackUrl },
     });
     if (error) throw new Error(error.message || 'Error al iniciar sesión con Google');
   }
 
   async logout(): Promise<void> {
-    clearHasLocalSession();
-    await insforge.auth.signOut();
-    await syncSessionCookie(null);
+    // Cap signOut so a hung network call can't freeze the UI.
+    const signOut = this.supabase.auth.signOut().catch(() => undefined);
+    const timeout = new Promise((resolve) => setTimeout(resolve, 1500));
+    await Promise.race([signOut, timeout]);
   }
 
   async refreshToken(): Promise<string> {
-    const user = await this.getCurrentUser();
-    if (!user) throw new Error('Session expired');
-    return '';
+    const { data } = await this.supabase.auth.refreshSession();
+    return data.session?.access_token ?? '';
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
     if (typeof window === 'undefined') return null;
-
-    const hasSessionHint = readHasLocalSession();
-    const inMemoryToken = readCurrentAccessToken();
-
-    // When we believe the user logged in before, trust the httpOnly cookie first.
-    // The SDK may still hold a stale access token; calling getCurrentUser() here
-    // triggers POST /api/auth/refresh and a noisy 401 before we ever read the cookie.
-    if (hasSessionHint) {
-      let meResponse: Response;
-      try {
-        meResponse = await fetch('/api/auth/me', {
-          method: 'GET',
-          credentials: 'same-origin',
-        });
-      } catch {
-        return null;
-      }
-
-      if (!meResponse.ok) {
-        await clearStaleClientSession();
-        return null;
-      }
-
-      const { user, accessToken } = (await meResponse.json()) as {
-        user: { id: string; email?: string | null; emailVerified?: boolean } | null;
-        accessToken?: string;
-      };
-
-      if (!user || !accessToken) {
-        await clearStaleClientSession();
-        return null;
-      }
-
-      try {
-        insforge.getHttpClient().setAuthToken(accessToken);
-      } catch {
-        // ignore
-      }
-
-      const profile = await fetchProfile(user.id);
-      return mapProfileToAuthUser(user, profile);
-    }
-
-    // No session hint means we have no httpOnly cookie to trust. If the SDK
-    // still holds an in-memory token from a prior tab, it's stale — calling
-    // getCurrentUser() would fire POST /auth/refresh and log a noisy 401.
-    // Drop it instead.
-    if (inMemoryToken) {
-      await clearStaleClientSession();
-    }
-    return null;
+    const { data } = await this.supabase.auth.getUser();
+    const user = data?.user;
+    if (!user) return null;
+    const profile = await fetchProfile(this.supabase, user.id);
+    return mapProfileToAuthUser(
+      { id: user.id, email: user.email, email_confirmed_at: user.email_confirmed_at },
+      profile,
+    );
   }
 
   isAuthenticated(): boolean {
-    return readHasLocalSession();
+    // Session presence is the source of truth. `getUser()` would be async;
+    // this is a cheap sync check using Supabase's in-memory session cache.
+    if (typeof window === 'undefined') return false;
+    try {
+      const raw = window.localStorage.getItem('sb-auth-token');
+      return Boolean(raw);
+    } catch {
+      return false;
+    }
   }
 
   /**
-   * Mark a local session hint without performing a login. Used by the
-   * OAuth callback page: after the SDK finishes the PKCE exchange, we
-   * know a session exists even though neither `login()` nor
-   * `loginWithPassword()` was called in this browser context.
+   * Kept for API parity with the old InsForge-backed service. Supabase's
+   * `@supabase/ssr` package syncs the session cookie automatically, so
+   * there's nothing to mark here.
    */
   markSessionHint(): void {
-    markHasLocalSession();
+    // no-op
   }
 
   /**
-   * Finish an OAuth sign-in. Waits for the SDK's pending PKCE exchange,
-   * then mirrors the resulting access token into the httpOnly cookie so
-   * server-side probes (/api/auth/me) and RSC can see the session.
+   * After a Google OAuth round trip, Supabase's detectSessionInUrl hook
+   * consumes the code and populates the session. Read it back and hydrate
+   * the AuthUser for the store.
    */
   async completeOAuthLogin(): Promise<AuthUser | null> {
     if (typeof window === 'undefined') return null;
-    const { data, error } = await insforge.auth.getCurrentUser();
-    if (error || !data?.user) return null;
-    markHasLocalSession();
-    const accessToken = readCurrentAccessToken();
-    if (accessToken) {
-      await syncSessionCookie(accessToken);
-    }
-    const profile = await fetchProfile(data.user.id);
-    return mapProfileToAuthUser(data.user, profile);
+    const { data } = await this.supabase.auth.getUser();
+    if (!data?.user) return null;
+    const profile = await fetchProfile(this.supabase, data.user.id);
+    return mapProfileToAuthUser(
+      { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at },
+      profile,
+    );
   }
 }
 

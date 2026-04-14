@@ -20,6 +20,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { authService } from '../services/auth.service';
 import { socketManager } from '@/socket/socket-client';
+import { disconnectRealtime, resetRealtimeFailure } from '@/utils/supabase/realtime';
 import type { 
   AuthUser, 
   LoginDTO, 
@@ -70,7 +71,8 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: true, error: null });
           try {
             const response = await authService.login(credentials);
-            set({ 
+            resetRealtimeFailure();
+            set({
               user: response.user,
               isAuthenticated: true,
               isLoading: false,
@@ -172,28 +174,22 @@ export const useAuthStore = create<AuthState>()(
          */
         logout: async () => {
           set({ isLoading: true });
+          // Tear down transports BEFORE talking to the backend so a stuck
+          // realtime socket can never block signOut from completing.
+          await disconnectRealtime();
+          socketManager.disconnectAll();
           try {
             await authService.logout();
-            
-      
-            socketManager.disconnectAll();
-            
-            set({ 
-              user: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: null
-            });
-          } catch (error) {
-            // Limpiar estado local incluso si falla el backend
-            socketManager.disconnectAll();
-            set({ 
-              user: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: null
-            });
+          } catch {
+            // ignore — local state is cleared below regardless
           }
+          resetRealtimeFailure();
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          });
         },
 
         /**

@@ -29,8 +29,7 @@ export default function MessagesList({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  if (isLoading) {
-
+  if (isLoading && messages.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-4">
         <p className="text-neutral-500">Cargando mensajes...</p>
@@ -38,7 +37,7 @@ export default function MessagesList({
     );
   }
 
-  if (messages.length === 0) {
+  if (!isLoading && messages.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-4">
         <p className="text-neutral-500">No hay mensajes aún. ¡Inicia la conversación!</p>

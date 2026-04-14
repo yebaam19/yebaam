@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { insforge } from '@/lib/insforge/client';
+import { ensureRealtimeConnected } from '@/lib/insforge/realtime';
 import { useCommentStore } from '../store/comment.store';
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
 import type {
@@ -62,12 +63,13 @@ export function useCommentSocket(postId: string | null | undefined) {
     insforge.realtime.on(COMMENT_EVENTS.DELETED, handleDeleted);
 
     (async () => {
+      const ok = await ensureRealtimeConnected();
+      if (!ok || cancelled) return;
       try {
-        await insforge.realtime.connect();
-        if (cancelled) return;
         await insforge.realtime.subscribe(myChannel);
-      } catch (error) {
-        console.error('[useCommentSocket] realtime subscribe failed:', error);
+      } catch {
+        // subscribe can fail if the socket dropped between connect and here;
+        // ensureRealtimeConnected will retry on the next mount.
       }
     })();
 

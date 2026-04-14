@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken, getServiceClient } from '@/lib/insforge/server';
+import { withRetry } from '@/lib/insforge/with-retry';
 
 type ParticipantRow = {
   conversation_id: string;
@@ -40,10 +41,12 @@ export async function GET() {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ success: true, data: [], count: 0 });
 
-  const { data: myParts, error: partsErr } = await client.database
-    .from('conversation_participants')
-    .select('conversation_id,last_read_at')
-    .eq('user_id', userId);
+  const { data: myParts, error: partsErr } = await withRetry(() =>
+    client.database
+      .from('conversation_participants')
+      .select('conversation_id,last_read_at')
+      .eq('user_id', userId),
+  );
 
   if (partsErr) {
     return NextResponse.json({ error: partsErr.message }, { status: 500 });
@@ -54,27 +57,45 @@ export async function GET() {
     return NextResponse.json({ success: true, data: [], count: 0 });
   }
 
-  const { data: convs, error: convErr } = await client.database
-    .from('conversations')
-    .select('*')
-    .in('id', conversationIds)
-    .order('updated_at', { ascending: false });
+  const { data: convs, error: convErr } = await withRetry(() =>
+    client.database
+      .from('conversations')
+      .select('*')
+      .in('id', conversationIds)
+      .order('updated_at', { ascending: false }),
+  );
 
   if (convErr) {
     return NextResponse.json({ error: convErr.message }, { status: 500 });
   }
 
-  const { data: allParts } = await client.database
-    .from('conversation_participants')
-    .select('conversation_id,user_id,last_read_at')
-    .in('conversation_id', conversationIds);
+  const { data: allParts } = await withRetry(() =>
+    client.database
+      .from('conversation_participants')
+      .select('conversation_id,user_id,last_read_at')
+      .in('conversation_id', conversationIds),
+  );
 
-  const { data: recentMsgs } = await client.database
-    .from('messages')
-    .select('id,conversation_id,sender_id,content,created_at')
-    .in('conversation_id', conversationIds)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: false });
+  // Fetch only the latest message per conversation. A single unbounded
+  // `in('conversation_id', …)` pulls every message in every conversation,
+  // which OOM-killed Postgres in the small dev container.
+  const lastMsgResults = await Promise.all(
+    conversationIds.map((cid) =>
+      withRetry(() =>
+        client.database
+          .from('messages')
+          .select('id,conversation_id,sender_id,content,created_at')
+          .eq('conversation_id', cid)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ),
+    ),
+  );
+  const recentMsgs = lastMsgResults
+    .map((r) => (r.data as MessageRow | null))
+    .filter((m): m is MessageRow => m !== null);
 
   const partsByConv = new Map<string, ParticipantRow[]>();
   for (const p of (allParts ?? []) as ParticipantRow[]) {
@@ -83,8 +104,8 @@ export async function GET() {
   }
 
   const lastMsgByConv = new Map<string, MessageRow>();
-  for (const m of (recentMsgs ?? []) as MessageRow[]) {
-    if (!lastMsgByConv.has(m.conversation_id)) lastMsgByConv.set(m.conversation_id, m);
+  for (const m of recentMsgs) {
+    lastMsgByConv.set(m.conversation_id, m);
   }
 
   const mine = new Map<string, ParticipantRow>();

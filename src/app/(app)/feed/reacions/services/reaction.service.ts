@@ -72,42 +72,69 @@ function emptyCounts(): ReactionCounts {
   return { LIKE: 0, LOVE: 0, HAHA: 0, WOW: 0, SAD: 0, ANGRY: 0 };
 }
 
+function isDuplicateUserPostReactionError(err: { message?: string } | null | undefined): boolean {
+  const msg = err?.message ?? '';
+  return (
+    msg.includes('idx_reactions_user_post') ||
+    msg.includes('duplicate key') ||
+    msg.includes('23505')
+  );
+}
+
 export class ReactionService {
   async react(data: CreateReactionDTO): Promise<Reaction> {
     const { data: userData } = await insforge.auth.getCurrentUser();
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    // Upsert: one reaction per (user, post). The unique index enforces this.
-    const { data: existing } = await insforge.database
+    const dbType = toDbType(data.type);
+    const rowPayload = { type: dbType, user_id: userId, post_id: data.postId };
+
+    // Update first: one round-trip when a row already exists (avoids stale SELECT missing a row).
+    const { data: updatedRows, error: updateError } = await insforge.database
       .from('reactions')
-      .select('id')
+      .update({ type: dbType })
       .eq('user_id', userId)
       .eq('post_id', data.postId)
-      .maybeSingle();
+      .select('*');
 
-    if (existing) {
-      const { data: updated, error } = await insforge.database
-        .from('reactions')
-        .update({ type: toDbType(data.type) })
-        .eq('id', (existing as { id: string }).id)
-        .select('*')
-        .single();
-      if (error || !updated) throw new Error(error?.message || 'Error al reaccionar');
-      const row = updated as DbReaction;
+    if (updateError) throw new Error(updateError.message || 'Error al reaccionar');
+
+    const fromUpdate = updatedRows?.[0];
+    if (fromUpdate) {
+      const row = fromUpdate as DbReaction;
       const users = await hydrateUsers([row]);
       return rowToReaction(row, users);
     }
 
-    const { data: inserted, error } = await insforge.database
+    const { data: inserted, error: insertError } = await insforge.database
       .from('reactions')
-      .insert([{ type: toDbType(data.type), user_id: userId, post_id: data.postId }])
+      .insert([rowPayload])
       .select('*')
       .single();
-    if (error || !inserted) throw new Error(error?.message || 'Error al reaccionar');
-    const row = inserted as DbReaction;
-    const users = await hydrateUsers([row]);
-    return rowToReaction(row, users);
+
+    if (!insertError && inserted) {
+      const row = inserted as DbReaction;
+      const users = await hydrateUsers([row]);
+      return rowToReaction(row, users);
+    }
+
+    // Lost race: another request inserted between UPDATE and INSERT.
+    if (insertError && isDuplicateUserPostReactionError(insertError)) {
+      const { data: afterRace, error: retryError } = await insforge.database
+        .from('reactions')
+        .update({ type: dbType })
+        .eq('user_id', userId)
+        .eq('post_id', data.postId)
+        .select('*')
+        .single();
+      if (retryError || !afterRace) throw new Error(retryError?.message || 'Error al reaccionar');
+      const row = afterRace as DbReaction;
+      const users = await hydrateUsers([row]);
+      return rowToReaction(row, users);
+    }
+
+    throw new Error(insertError?.message || 'Error al reaccionar');
   }
 
   async updateReaction(postId: string, data: UpdateReactionDTO): Promise<Reaction> {

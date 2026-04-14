@@ -176,7 +176,22 @@ export class CommentService {
     const ascending = filters.sortBy === 'oldest';
     query = query.order('created_at', { ascending });
 
-    const { data, error, count } = await query;
+    // PostgREST returns "Could not query the database for the schema cache"
+    // while its schema cache is warming up. Retry a couple of times before
+    // surfacing the error so the UI doesn't flicker on cold starts.
+    let data: unknown = null;
+    let error: { message?: string } | null = null;
+    let count: number | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await query;
+      data = result.data;
+      error = result.error;
+      count = result.count ?? null;
+      if (!error) break;
+      const msg = error.message ?? '';
+      if (!/schema cache/i.test(msg)) break;
+      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+    }
     if (error) throw new Error(error.message || 'Error al obtener comentarios');
 
     const rows = (data ?? []) as DbComment[];

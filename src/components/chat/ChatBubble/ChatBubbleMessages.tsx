@@ -59,7 +59,7 @@ export function ChatBubbleMessages({
     }
   };
 
-  if (isLoading) {
+  if (isLoading && messages.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto p-4 bg-neutral-50 dark:bg-neutral-950">
         <div className="flex items-center justify-center h-full">
@@ -71,7 +71,7 @@ export function ChatBubbleMessages({
     );
   }
 
-  if (messages.length === 0) {
+  if (!isLoading && messages.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto p-4 bg-neutral-50 dark:bg-neutral-950">
         <div className="flex items-center justify-center h-full">

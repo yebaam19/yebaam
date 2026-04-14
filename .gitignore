@@ -103,6 +103,10 @@ insforge/migrations/*.sql
 # MCP config (contains API keys)
 .mcp.json
 
+# markdown docs — don't push to repo
+*.md
+!README.md
+
 # InsForge & AI agent skills
 .insforge
 .agent

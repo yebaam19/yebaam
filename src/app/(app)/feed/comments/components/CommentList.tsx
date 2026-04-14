@@ -38,6 +38,8 @@ export function CommentList({ postId, showInput = true, maxHeight, className = '
       postId,
       sortBy: 'newest',
       limit: 50,
+    }).catch((err) => {
+      console.warn('[CommentList] fetchCommentsByPost failed', err);
     })
   }, [postId, fetchCommentsByPost])
 

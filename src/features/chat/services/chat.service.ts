@@ -16,21 +16,69 @@ function channelForConversation(conversationId: string): string {
 type JsonRecord = Record<string, unknown>;
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-    credentials: 'same-origin',
-  });
+  // PostgREST returns 503 "Could not query the database for the schema cache"
+  // during Postgres crash recovery and brief restarts. Retry a few times
+  // before surfacing the error so the UI doesn't flicker on transient blips.
+  const method = (init?.method ?? 'GET').toUpperCase();
+  const isIdempotent = method === 'GET' || method === 'HEAD';
+  const maxAttempts = isIdempotent ? 4 : 1;
 
-  const payload = (await response.json().catch(() => ({}))) as JsonRecord;
-  if (!response.ok) {
-    const message = (payload as { error?: string }).error || `Request failed (${response.status})`;
-    throw new Error(message);
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(init?.headers ?? {}),
+        },
+        credentials: 'same-origin',
+      });
+    } catch (err) {
+      const networkError =
+        err instanceof Error
+          ? err
+          : new Error('Network error while contacting chat API');
+      if (!isIdempotent || attempt === maxAttempts - 1) {
+        throw new Error(networkError.message || 'Network error while contacting chat API');
+      }
+      lastError = networkError;
+      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+      continue;
+    }
+
+    if (response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as JsonRecord;
+      return payload as T;
+    }
+
+    // The body may be HTML (openresty 502) or JSON ({ error }) — try JSON,
+    // fall back to the status text so we never surface raw HTML to the UI.
+    const rawText = await response.text().catch(() => '');
+    let parsedError: string | null = null;
+    try {
+      const json = JSON.parse(rawText) as { error?: string };
+      parsedError = json?.error ?? null;
+    } catch {
+      // not JSON
+    }
+    const message = parsedError || `Request failed (${response.status})`;
+
+    const retriable =
+      isIdempotent &&
+      (response.status === 502 ||
+        response.status === 503 ||
+        response.status === 504 ||
+        /schema cache|recovery mode|bad gateway/i.test(message) ||
+        /schema cache|recovery mode|bad gateway/i.test(rawText));
+    if (!retriable || attempt === maxAttempts - 1) {
+      throw new Error(message);
+    }
+    lastError = new Error(message);
+    await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
   }
-  return payload as T;
+  throw lastError ?? new Error('Network request failed');
 }
 
 class ChatService {
@@ -127,14 +175,16 @@ class ChatService {
   async findConversationByParticipant(
     participantId: string,
   ): Promise<Conversation | null> {
-    const conversations = await this.getConversations();
-    const conversation = conversations.find((conv) => {
-      const typeValue = conv.type as unknown as string;
-      const isDirectOrOneToOne = typeValue === 'direct' || typeValue === 'one_to_one';
-      const includesParticipant = conv.participantIds?.includes(participantId);
-      return isDirectOrOneToOne && includesParticipant;
-    });
-    return conversation || null;
+    const payload = await jsonFetch<{ data: Conversation | null }>(
+      `${this.baseUrl}/by-participant/${encodeURIComponent(participantId)}`,
+      { method: 'GET' },
+    );
+    if (!payload?.data?.id) return null;
+    return {
+      ...payload.data,
+      createdAt: new Date(payload.data.createdAt as unknown as string),
+      updatedAt: new Date(payload.data.updatedAt as unknown as string),
+    };
   }
 
   async enableEncryption(

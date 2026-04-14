@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/features/auth';
 import { useReactionStore } from '../../store/reaction.store';
 import { REACTION_CONFIGS, ReactionType } from '../../interfaces/reaction.interfaces';
 import { ReactionPicker } from '../ReactionPicker/ReactionPicker';
@@ -17,8 +18,16 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
-  const { myReactionsByPost, reactToPost, unreactToPost } = useReactionStore();
+  const { user } = useAuth();
+  const { myReactionsByPost, reactToPost, unreactToPost, updateReaction, fetchMyReaction } =
+    useReactionStore();
   const myReaction = myReactionsByPost[postId];
+
+  // Cargar reacción del usuario desde InsForge (persiste entre sesiones; el store es solo en memoria)
+  useEffect(() => {
+    if (!postId || !user?.id) return;
+    void fetchMyReaction(postId);
+  }, [postId, user?.id, fetchMyReaction]);
 
   // Limpiar timeout al desmontar
   useEffect(() => {
@@ -61,7 +70,11 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
 
   const handleReactionSelect = async (type: ReactionType) => {
     setShowPicker(false);
-    await reactToPost(postId, type);
+    if (myReaction) {
+      await updateReaction(postId, type);
+    } else {
+      await reactToPost(postId, type);
+    }
   };
 
   // Configuración visual según el estado
