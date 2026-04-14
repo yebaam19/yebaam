@@ -101,6 +101,8 @@ export default function OwnersTable({ initial }: Props) {
             <option value="group">Grupos</option>
             <option value="page">Páginas</option>
             <option value="blog">Blogs</option>
+            <option value="profile">Perfiles</option>
+            <option value="portal">Portal</option>
           </select>
           <input
             type="search"

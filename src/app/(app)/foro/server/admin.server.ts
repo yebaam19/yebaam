@@ -46,7 +46,11 @@ function normalizeVisibility(raw: string | null | undefined): SpaceVisibility {
 export async function listForumOwnerCandidates(query?: string): Promise<OwnerCandidate[]> {
   const client = await getServerClient()
 
-  const [clubsRes, groupsRes, pagesRes, blogsRes, spacesRes] = await Promise.all([
+  const PORTAL_OWNER_ID = '00000000-0000-0000-0000-000000000000'
+  const { data: authData } = await client.auth.getUser()
+  const currentUserId = authData?.user?.id ?? null
+
+  const [clubsRes, groupsRes, pagesRes, blogsRes, spacesRes, profilesRes] = await Promise.all([
     client
       .from('clubs')
       .select('id, name, slug, privacy')
@@ -68,6 +72,11 @@ export async function listForumOwnerCandidates(query?: string): Promise<OwnerCan
       .order('created_at', { ascending: false })
       .limit(200),
     client.from('forum_spaces').select('id, owner_type, owner_id, slug, enabled'),
+    client
+      .from('profiles')
+      .select('id, username, display_name, first_name, last_name')
+      .order('username', { ascending: true })
+      .limit(50),
   ])
 
   const spaceByKey = new Map<
@@ -137,6 +146,26 @@ export async function listForumOwnerCandidates(query?: string): Promise<OwnerCan
   }>) {
     push('blog', { ...b, privacy: 'public' })
   }
+
+  for (const p of (profilesRes.data ?? []) as Array<{
+    id: string
+    username: string | null
+    display_name: string | null
+    first_name: string | null
+    last_name: string | null
+  }>) {
+    const name =
+      p.display_name ||
+      [p.first_name, p.last_name].filter(Boolean).join(' ').trim() ||
+      p.username ||
+      'Perfil'
+    push('profile', { id: p.id, name, slug: p.username, privacy: 'public' })
+  }
+
+  // Always include the singleton Portal option (platform-wide forum)
+  push('portal', { id: PORTAL_OWNER_ID, name: 'Portal', slug: 'portal', privacy: 'public' })
+
+  void currentUserId
 
   const q = query?.trim().toLowerCase()
   const filtered = q

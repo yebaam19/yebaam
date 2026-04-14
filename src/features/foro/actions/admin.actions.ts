@@ -106,10 +106,35 @@ async function resolveOwner(
         ownerUserId: (data as { owner_id: string | null }).owner_id ?? null,
       }
     }
+    case 'profile': {
+      const { data } = await client
+        .from('profiles')
+        .select('id, username, display_name, first_name, last_name')
+        .eq('id', ownerId)
+        .maybeSingle()
+      if (!data) return null
+      const p = data as {
+        id: string
+        username: string | null
+        display_name: string | null
+        first_name: string | null
+        last_name: string | null
+      }
+      const name =
+        p.display_name ||
+        [p.first_name, p.last_name].filter(Boolean).join(' ').trim() ||
+        p.username ||
+        'Perfil'
+      return { name, slug: p.username ?? null, privacy: 'public', ownerUserId: p.id }
+    }
+    case 'portal': {
+      return { name: 'Portal', slug: 'portal', privacy: 'public', ownerUserId: null }
+    }
     default:
       return null
   }
 }
+
 
 // --------- Platform admin actions ---------
 

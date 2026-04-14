@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useTransition } from 'react'
 import {
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
@@ -10,6 +11,7 @@ import {
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
 import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
   'squares-2x2': Squares2X2Icon,
@@ -25,6 +27,16 @@ interface Props {
 
 export default function AdminSidebar({ onNavigate }: Props) {
   const pathname = usePathname() ?? ''
+  const router = useRouter()
+  const logout = useAuthStore((s) => s.logout)
+  const [isLoggingOut, startLogout] = useTransition()
+
+  const handleLogout = () => {
+    startLogout(async () => {
+      await logout()
+      router.replace('/login')
+    })
+  }
 
   return (
     <nav className="flex h-full flex-col">
@@ -77,10 +89,29 @@ export default function AdminSidebar({ onNavigate }: Props) {
           )
         })}
       </ul>
-      <div className="border-t border-neutral-200 px-4 py-4 text-[11px] text-neutral-400 dark:border-neutral-800">
-        <Link href="/feed" className="block hover:text-primary-600">
-          ← Volver a Yebaam
-        </Link>
+      <div className="border-t border-neutral-200 px-3 py-3 dark:border-neutral-800">
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-900/20"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.8}
+            stroke="currentColor"
+            className="h-5 w-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
+            />
+          </svg>
+          <span>{isLoggingOut ? 'Cerrando…' : 'Cerrar sesión'}</span>
+        </button>
       </div>
     </nav>
   )
