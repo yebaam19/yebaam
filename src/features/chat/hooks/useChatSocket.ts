@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 import { useChatStore } from '../store/chat.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -123,6 +123,11 @@ export function useChatSocket({
 }: UseChatSocketProps = {}): UseChatSocketReturn {
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   const conversations = useChatStore((state) => state.conversations);
+  // Per-hook-instance nonce so two components mounting useChat() at once
+  // don't collide on the same realtime topic — @supabase/realtime-js reuses
+  // an existing channel when topics match, and calling .on('postgres_changes')
+  // on an already-joined channel throws.
+  const instanceId = useId();
   // Supabase's realtime connection is per-channel and lazy; we treat the
   // socket as "connected" for UI purposes as long as we have a channel.
   const [isConnected, setIsConnected] = useState(false);
@@ -148,7 +153,7 @@ export function useChatSocket({
     if (!currentUserId) return;
 
     const channel = subscribeToTable<DbMessageRow>({
-      channel: `chat:user:${currentUserId}:messages`,
+      channel: `chat:user:${currentUserId}:messages:${instanceId}`,
       table: 'messages',
       events: ['INSERT'],
       onChange: (payload) => {
@@ -168,7 +173,7 @@ export function useChatSocket({
       unsubscribe(channel);
       setIsConnected(false);
     };
-  }, [currentUserId]);
+  }, [currentUserId, instanceId]);
 
   // Separate channel for the read-receipt signal: a user's last_read_at on a
   // conversation_participants row bumps forward whenever they mark messages
@@ -178,7 +183,7 @@ export function useChatSocket({
     if (!currentUserId) return;
 
     const channel = subscribeToTable<DbParticipantRow>({
-      channel: `chat:user:${currentUserId}:reads`,
+      channel: `chat:user:${currentUserId}:reads:${instanceId}`,
       table: 'conversation_participants',
       events: ['UPDATE'],
       onChange: (payload) => {
@@ -195,7 +200,7 @@ export function useChatSocket({
     return () => {
       unsubscribe(channel);
     };
-  }, [currentUserId]);
+  }, [currentUserId, instanceId]);
 
   const joinConversation = useCallback(async (_conversationId: string): Promise<void> => {
     // No-op: the global channel above already covers every conversation the
