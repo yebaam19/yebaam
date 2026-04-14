@@ -30,12 +30,12 @@ export async function proxy(request: NextRequest) {
   }
 
   if (hasSession && user) {
-    const { data: adminRow } = await supabase
-      .from('platform_admins')
-      .select('user_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    const [{ data: adminRow }, { data: forumRoleRow }] = await Promise.all([
+      supabase.from('platform_admins').select('user_id').eq('user_id', user.id).maybeSingle(),
+      supabase.from('forum_global_roles').select('role').eq('user_id', user.id).maybeSingle(),
+    ]);
     const isPlatformAdmin = Boolean(adminRow);
+    const hasForumAccess = isPlatformAdmin || Boolean(forumRoleRow);
 
     const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
 
@@ -47,7 +47,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/foros', request.url));
     }
 
-    if (!isPlatformAdmin && isAdminRoute) {
+    if (!hasForumAccess && isAdminRoute) {
       return NextResponse.redirect(new URL('/feed', request.url));
     }
   }

@@ -2,7 +2,9 @@ import 'server-only'
 import { getServerClient } from '@/utils/supabase/server'
 import type {
   ForoAuthor,
+  ForoGlobalStaff,
   ForoRoleMember,
+  ForoRoleType,
   OwnerCandidate,
   OwnerType,
   SpaceVisibility,
@@ -216,4 +218,30 @@ export async function listPlatformAdmins(): Promise<ForoAuthor[]> {
     .select('id, username, first_name, last_name, display_name, avatar_url')
     .in('id', ids)
   return ((profiles ?? []) as ProfileRow[]).map(toAuthor)
+}
+
+export async function listForumGlobalStaff(): Promise<ForoGlobalStaff[]> {
+  const client = await getServerClient()
+  const { data } = await client
+    .from('forum_global_roles')
+    .select('user_id, role, granted_at')
+    .order('granted_at', { ascending: true })
+  const rows = (data ?? []) as Array<{
+    user_id: string
+    role: ForoRoleType
+    granted_at: string
+  }>
+  if (rows.length === 0) return []
+  const ids = Array.from(new Set(rows.map((r) => r.user_id)))
+  const { data: profiles } = await client
+    .from('profiles')
+    .select('id, username, first_name, last_name, display_name, avatar_url')
+    .in('id', ids)
+  const byId = new Map<string, ProfileRow>()
+  for (const p of (profiles ?? []) as ProfileRow[]) byId.set(p.id, p)
+  return rows.map((r) => ({
+    role: r.role,
+    grantedAt: r.granted_at,
+    user: toAuthor(byId.get(r.user_id)),
+  }))
 }

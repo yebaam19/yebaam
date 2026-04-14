@@ -73,6 +73,12 @@ export interface ForoPost {
   author: ForoAuthor
 }
 
+export interface ForoGlobalStaff {
+  role: ForoRoleType
+  user: ForoAuthor
+  grantedAt: string
+}
+
 export interface ForoRoleMember {
   spaceId: string
   userId: string

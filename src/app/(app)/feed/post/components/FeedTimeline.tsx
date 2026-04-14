@@ -1,21 +1,35 @@
 'use client';
 
+import { useRef } from 'react';
 import { usePostSocketEvents } from '../hooks/usePostSocketEvents';
 import { useReactionSocket } from '@/app/(app)/feed/reacions';
 import PostCard from './PostCard';
 import { usePosts } from '../hooks/usePosts';
+import { getCached, setCached } from '@/lib/hooks/cacheStore';
 import type { Post } from '../interfaces/post.interfaces';
 
 interface FeedTimelineProps {
   initialPosts?: Post[];
 }
 
+const TIMELINE_CACHE_KEY = 'posts::timeline';
+
 export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
-  const hasInitial = initialPosts !== undefined;
-  const query = usePosts({ enabled: !hasInitial });
-  const posts: Post[] = hasInitial ? initialPosts! : (query.data ?? []);
-  const isLoading = hasInitial ? false : query.isLoading;
-  const error = hasInitial ? null : query.error;
+  // Seed the shared cache with server-rendered posts exactly once so that
+  // `usePosts` (which reads from the same cache via useSyncExternalStore) can
+  // pick up optimistic inserts from createPost and re-render instantly.
+  const seeded = useRef(false);
+  if (!seeded.current && initialPosts && initialPosts.length > 0) {
+    if (!getCached(TIMELINE_CACHE_KEY)) {
+      setCached(TIMELINE_CACHE_KEY, { data: initialPosts, fetchedAt: Date.now() });
+    }
+    seeded.current = true;
+  }
+
+  const query = usePosts({ enabled: true });
+  const posts: Post[] = query.data ?? initialPosts ?? [];
+  const isLoading = posts.length === 0 && query.isLoading;
+  const error = query.error;
 
   // Activar WebSocket para actualizaciones en tiempo real
   usePostSocketEvents();

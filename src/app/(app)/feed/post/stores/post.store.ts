@@ -12,6 +12,10 @@ import {
   ReactionsCount
 } from '../interfaces/post.interfaces';
 import { postService } from '../services/post.service';
+import { updateCached } from '@/lib/hooks/cacheStore';
+
+const TIMELINE_CACHE_KEY = 'posts::timeline';
+type TimelineCache = { data: Post[]; fetchedAt: number };
 
 interface PostState {
   // Estado principal
@@ -218,7 +222,14 @@ export const usePostStore = create<PostState>((set, get) => ({
         isCreating: false,
         isCreateModalOpen: false,
       });
-      
+
+      // Also push into the shared cacheStore so FeedTimeline (which reads from
+      // usePosts → useFetch → cacheStore) re-renders instantly without reload.
+      updateCached<TimelineCache>(TIMELINE_CACHE_KEY, (record) => ({
+        data: record?.data ? [newPost, ...record.data] : [newPost],
+        fetchedAt: Date.now(),
+      }));
+
       console.log('[POST STORE] createPost - Estado actualizado. Total posts:', get().posts.length);
       toast.success('Post creado exitosamente');
       return newPost;

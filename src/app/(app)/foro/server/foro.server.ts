@@ -455,6 +455,8 @@ export async function isSpaceAdmin(spaceId: string): Promise<boolean> {
     .eq('role', 'admin')
     .limit(1)
   if ((data?.length ?? 0) > 0) return true
+  const global = await getForumGlobalRole()
+  if (global === 'admin') return true
   return isPlatformAdmin()
 }
 
@@ -469,6 +471,8 @@ export async function isSpaceModerator(spaceId: string): Promise<boolean> {
     .eq('user_id', auth.user.id)
     .limit(1)
   if ((data?.length ?? 0) > 0) return true
+  const global = await getForumGlobalRole()
+  if (global) return true
   return isPlatformAdmin()
 }
 
@@ -482,4 +486,21 @@ export async function isPlatformAdmin(): Promise<boolean> {
     .eq('user_id', auth.user.id)
     .maybeSingle()
   return !!data
+}
+
+export async function getForumGlobalRole(): Promise<'admin' | 'moderator' | null> {
+  const client = await getServerClient()
+  const { data: auth } = await client.auth.getUser()
+  if (!auth?.user) return null
+  const { data } = await client
+    .from('forum_global_roles')
+    .select('role')
+    .eq('user_id', auth.user.id)
+    .maybeSingle()
+  return (data as { role: 'admin' | 'moderator' } | null)?.role ?? null
+}
+
+export async function canAccessForumAdmin(): Promise<boolean> {
+  if (await isPlatformAdmin()) return true
+  return (await getForumGlobalRole()) !== null
 }

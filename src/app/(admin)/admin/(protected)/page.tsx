@@ -30,7 +30,7 @@ export default async function AdminOverviewPage() {
     client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', false),
     client.from('forum_topics').select('id', { count: 'exact', head: true }).gte('created_at', since),
     client.from('forum_posts').select('id', { count: 'exact', head: true }).gte('created_at', since),
-    client.from('platform_admins').select('user_id', { count: 'exact', head: true }),
+    client.from('forum_global_roles').select('user_id', { count: 'exact', head: true }),
   ])
 
   return (

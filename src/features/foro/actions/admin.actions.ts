@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getServerClient } from '@/utils/supabase/server'
-import type { ForoAuthor, OwnerType, SpaceVisibility } from '@/features/foro/types'
+import type { ForoAuthor, ForoRoleType, OwnerType, SpaceVisibility } from '@/features/foro/types'
 
 function slugify(input: string): string {
   return (
@@ -234,20 +234,16 @@ export async function disableForumSpaceBySlug(
   return { ok: true }
 }
 
-export async function grantPlatformAdmin(
-  userId: string,
-): Promise<{ ok: boolean; error?: string }> {
-  const client = await getServerClient()
-  const { error } = await client.from('platform_admins').insert({ user_id: userId })
-  if (error) return { ok: false, error: error.message }
-  revalidatePath('/admin/foros')
-  return { ok: true }
-}
-
-export async function grantPlatformAdminByUsername(
+export async function grantForumStaffByUsername(
   username: string,
+  role: ForoRoleType,
 ): Promise<{ ok: boolean; error?: string; user?: ForoAuthor }> {
+  if (role !== 'admin' && role !== 'moderator') {
+    return { ok: false, error: 'Rol no válido.' }
+  }
   const client = await getServerClient()
+  const { data: auth } = await client.auth.getUser()
+  if (!auth?.user) return { ok: false, error: 'No autenticado.' }
   const { data: profile } = await client
     .from('profiles')
     .select('id, username, first_name, last_name, display_name, avatar_url')
@@ -262,10 +258,10 @@ export async function grantPlatformAdminByUsername(
     display_name: string | null
     avatar_url: string | null
   }
-  const { error } = await client.from('platform_admins').insert({ user_id: p.id })
-  if (error && !error.message.includes('duplicate')) {
-    return { ok: false, error: error.message }
-  }
+  const { error } = await client
+    .from('forum_global_roles')
+    .upsert({ user_id: p.id, role, granted_by: auth.user.id }, { onConflict: 'user_id' })
+  if (error) return { ok: false, error: error.message }
   const displayName =
     p.display_name ||
     [p.first_name, p.last_name].filter(Boolean).join(' ').trim() ||
@@ -283,11 +279,11 @@ export async function grantPlatformAdminByUsername(
   }
 }
 
-export async function revokePlatformAdmin(
+export async function revokeForumStaff(
   userId: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const client = await getServerClient()
-  const { error } = await client.from('platform_admins').delete().eq('user_id', userId)
+  const { error } = await client.from('forum_global_roles').delete().eq('user_id', userId)
   if (error) return { ok: false, error: error.message }
   revalidatePath('/admin/foros')
   return { ok: true }

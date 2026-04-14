@@ -3,7 +3,7 @@ import 'rc-slider/assets/index.css';
 import React, { ReactNode } from 'react';
 import { ApplicationLayoutClient } from './application-layout-client';
 import { getAuthUser } from '@/features/auth/actions/auth.actions';
-import { isPlatformAdmin } from '@/app/(app)/foro/server/foro.server';
+import { canAccessForumAdmin } from '@/app/(app)/foro/server/foro.server';
 import Aside from '@/components/aside';
 
 interface Props {
@@ -26,7 +26,7 @@ const ApplicationLayout: React.FC<Props> = async ({ children, header }) => {
     );
   }
 
-  const staff = await isPlatformAdmin();
+  const staff = await canAccessForumAdmin();
 
   return (
     <ApplicationLayoutClient user={user} isPlatformAdmin={staff}>
