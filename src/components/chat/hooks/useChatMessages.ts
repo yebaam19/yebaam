@@ -1,7 +1,6 @@
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
-import { supabase } from '@/utils/supabase/client';
 
 interface UseChatMessagesProps {
   conversationId: string | null;
@@ -9,10 +8,12 @@ interface UseChatMessagesProps {
   setMessages: Dispatch<SetStateAction<any[]>>;
 }
 
-function channelForConversation(conversationId: string): string {
-  return `chat:conv:${conversationId}`;
-}
-
+/**
+ * Send + auto-scroll helper for an open chat conversation. Realtime inbound
+ * messages are handled by useChatConversation — this hook is intentionally
+ * narrow so both hooks don't register duplicate postgres_changes listeners
+ * against the same filter.
+ */
 export function useChatMessages({
   conversationId,
   messages,
@@ -21,65 +22,7 @@ export function useChatMessages({
   const user = useAuthStore((state) => state.user);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Listen for realtime message.created / messages.read events
-  useEffect(() => {
-    if (!conversationId) return;
-
-    const myChannel = channelForConversation(conversationId);
-
-    const handleMessageCreated = (payload: any) => {
-      const channel = payload?.meta?.channel ?? '';
-      const eventConvId = payload?.conversationId ?? payload?.message?.conversationId;
-      if (channel && channel !== myChannel) return;
-      if (eventConvId && eventConvId !== conversationId) return;
-
-      const incoming = payload?.message;
-      if (!incoming?.id) return;
-
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === incoming.id)) return prev;
-        const next = [...prev, incoming];
-        return next.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        );
-      });
-
-      // Auto-mark as read if the inbound message isn't mine
-      if (incoming.senderId && incoming.senderId !== user?.id && user?.id) {
-        fetch(`/api/conversations/${conversationId}/read`, {
-          method: 'POST',
-          credentials: 'same-origin',
-        }).catch(() => {});
-        supabase.realtime
-          .publish(myChannel, 'messages.read', { conversationId, userId: user.id })
-          .catch(() => {});
-      }
-    };
-
-    const handleMessagesRead = (payload: any) => {
-      const channel = payload?.meta?.channel ?? '';
-      const eventConvId = payload?.conversationId;
-      if (channel && channel !== myChannel) return;
-      if (eventConvId && eventConvId !== conversationId) return;
-      if (payload?.userId && payload.userId === user?.id) return;
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.senderId === user?.id && msg.status !== 'read' ? { ...msg, status: 'read' } : msg,
-        ),
-      );
-    };
-
-    supabase.realtime.on('message.created', handleMessageCreated);
-    supabase.realtime.on('messages.read', handleMessagesRead);
-
-    return () => {
-      supabase.realtime.off('message.created', handleMessageCreated);
-      supabase.realtime.off('messages.read', handleMessagesRead);
-    };
-  }, [conversationId, user?.id, setMessages]);
-
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive.
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -111,7 +54,6 @@ export function useChatMessages({
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
       });
-
       return true;
     } catch (error) {
       console.error('[useChatMessages] sendMessage failed:', error);

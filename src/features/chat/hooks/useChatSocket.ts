@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from '@/utils/supabase/client';
-import { ensureRealtimeConnected } from '@/lib/insforge/realtime';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 import { useChatStore } from '../store/chat.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -26,32 +25,37 @@ interface UseChatSocketReturn {
   isConnected: boolean;
 }
 
-type SocketMessage = {
-  meta?: { channel?: string };
-  message?: Message;
-  conversationId?: string;
-  userId?: string;
+type DbMessageRow = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  media: unknown;
+  status: string;
+  reply_to_id: string | null;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
-function channelForConversation(conversationId: string): string {
-  return `chat:conv:${conversationId}`;
-}
+type DbParticipantRow = {
+  conversation_id: string;
+  user_id: string;
+  last_read_at: string | null;
+};
 
-function hydrateMessage(raw: unknown): Message | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const obj = raw as Record<string, unknown>;
-  if (typeof obj.id !== 'string' || typeof obj.conversationId !== 'string') return null;
+function rowToMessage(row: DbMessageRow): Message {
   return {
-    id: obj.id,
-    conversationId: obj.conversationId,
-    senderId: String(obj.senderId ?? ''),
-    content: String(obj.content ?? ''),
-    media: (obj.media ?? null) as Message['media'],
-    status: (obj.status as MessageStatus) ?? MessageStatus.SENT,
-    replyToId: (obj.replyToId as string | null) ?? null,
-    isDeleted: Boolean(obj.isDeleted),
-    createdAt: new Date(obj.createdAt as string),
-    updatedAt: new Date((obj.updatedAt ?? obj.createdAt) as string),
+    id: row.id,
+    conversationId: row.conversation_id,
+    senderId: row.sender_id,
+    content: row.content,
+    media: (row.media ?? null) as Message['media'],
+    status: (row.status as MessageStatus) ?? MessageStatus.SENT,
+    replyToId: row.reply_to_id,
+    isDeleted: Boolean(row.is_deleted),
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at ?? row.created_at),
   };
 }
 
@@ -74,9 +78,7 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
       });
     } catch (err) {
       const networkError =
-        err instanceof Error
-          ? err
-          : new Error('Network error while contacting chat API');
+        err instanceof Error ? err : new Error('Network error while contacting chat API');
       if (!isIdempotent || attempt === maxAttempts - 1) {
         throw new Error(networkError.message || 'Network error while contacting chat API');
       }
@@ -105,7 +107,6 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
       response.status === 504 ||
       /schema cache|recovery mode|bad gateway/i.test(message) ||
       /schema cache|recovery mode|bad gateway/i.test(rawText);
-
     if (!retriable || attempt === maxAttempts - 1) {
       throw new Error(message);
     }
@@ -122,126 +123,90 @@ export function useChatSocket({
 }: UseChatSocketProps = {}): UseChatSocketReturn {
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   const conversations = useChatStore((state) => state.conversations);
+  // Supabase's realtime connection is per-channel and lazy; we treat the
+  // socket as "connected" for UI purposes as long as we have a channel.
   const [isConnected, setIsConnected] = useState(false);
-  const subscribedRef = useRef<Set<string>>(new Set());
   const callbacksRef = useRef({ onMessageReceived, onMessagesRead, onError });
-
   callbacksRef.current = { onMessageReceived, onMessagesRead, onError };
 
-  // Connect once per authenticated session and wire the generic listeners.
+  // Keep a stable Set of the conversation IDs we care about so the realtime
+  // handler can filter inbound message rows client-side without recreating
+  // the channel every time the list changes.
+  const conversationIdSet = useMemo(
+    () => new Set(conversations.map((c) => c.id)),
+    [conversations],
+  );
+  const conversationIdSetRef = useRef(conversationIdSet);
+  conversationIdSetRef.current = conversationIdSet;
+
+  // One channel on the `messages` table listens for new messages across
+  // every conversation the user is a participant in. We could also filter
+  // by conversation_id=in.(...) but Supabase realtime filters only support
+  // eq; client-side membership check is fine since RLS already guarantees
+  // we only see our own rows.
   useEffect(() => {
     if (!currentUserId) return;
 
-    let cancelled = false;
-
-    const handleMessageCreated = (payload: SocketMessage) => {
-      const message = hydrateMessage(payload?.message ?? payload);
-      const channel = payload?.meta?.channel ?? '';
-      const conversationId =
-        payload?.conversationId ?? message?.conversationId ?? channel.replace('chat:conv:', '');
-      if (!message || !conversationId) return;
-
-      callbacksRef.current.onMessageReceived?.({
-        message: { ...message, conversationId },
-        conversationId,
-      });
-    };
-
-    const handleMessagesRead = (payload: SocketMessage) => {
-      const channel = payload?.meta?.channel ?? '';
-      const conversationId = payload?.conversationId ?? channel.replace('chat:conv:', '');
-      const userId = payload?.userId ?? '';
-      if (!conversationId) return;
-      callbacksRef.current.onMessagesRead?.({ conversationId, userId });
-    };
-
-    const handleConnect = () => {
-      if (!cancelled) setIsConnected(true);
-    };
-    const handleDisconnect = () => {
-      if (!cancelled) setIsConnected(false);
-    };
-    const handleError = (err: unknown) => {
-      const message = err instanceof Error ? err.message : 'Realtime error';
-      callbacksRef.current.onError?.(message);
-    };
-
-    supabase.realtime.on('connect', handleConnect);
-    supabase.realtime.on('disconnect', handleDisconnect);
-    supabase.realtime.on('connect_error', handleError);
-    supabase.realtime.on('error', handleError);
-    supabase.realtime.on<SocketMessage>('message.created', handleMessageCreated);
-    supabase.realtime.on<SocketMessage>('messages.read', handleMessagesRead);
-
-    ensureRealtimeConnected().then((ok) => {
-      if (!cancelled) setIsConnected(ok);
+    const channel = subscribeToTable<DbMessageRow>({
+      channel: `chat:user:${currentUserId}:messages`,
+      table: 'messages',
+      events: ['INSERT'],
+      onChange: (payload) => {
+        const row = payload.new as DbMessageRow;
+        if (!row?.id) return;
+        if (!conversationIdSetRef.current.has(row.conversation_id)) return;
+        const message = rowToMessage(row);
+        callbacksRef.current.onMessageReceived?.({
+          message,
+          conversationId: row.conversation_id,
+        });
+      },
     });
+    setIsConnected(true);
 
     return () => {
-      cancelled = true;
-      supabase.realtime.off('connect', handleConnect);
-      supabase.realtime.off('disconnect', handleDisconnect);
-      supabase.realtime.off('connect_error', handleError);
-      supabase.realtime.off('error', handleError);
-      supabase.realtime.off<SocketMessage>('message.created', handleMessageCreated);
-      supabase.realtime.off<SocketMessage>('messages.read', handleMessagesRead);
+      unsubscribe(channel);
+      setIsConnected(false);
     };
   }, [currentUserId]);
 
-  // Auto-subscribe to every conversation the user is part of so new messages
-  // arrive even for non-active chats (for unread badges / notifications).
+  // Separate channel for the read-receipt signal: a user's last_read_at on a
+  // conversation_participants row bumps forward whenever they mark messages
+  // as read. Every other participant sees the UPDATE via postgres_changes
+  // and can advance their own "read" state.
   useEffect(() => {
     if (!currentUserId) return;
-    const desired = new Set(conversations.map((c) => channelForConversation(c.id)));
 
-    // Subscribe to any new channel
-    for (const channel of desired) {
-      if (!subscribedRef.current.has(channel)) {
-        supabase.realtime
-          .subscribe(channel)
-          .then(() => subscribedRef.current.add(channel))
-          .catch((err) => console.warn('[useChatSocket] subscribe failed', channel, err));
-      }
-    }
+    const channel = subscribeToTable<DbParticipantRow>({
+      channel: `chat:user:${currentUserId}:reads`,
+      table: 'conversation_participants',
+      events: ['UPDATE'],
+      onChange: (payload) => {
+        const row = payload.new as DbParticipantRow;
+        if (!row?.conversation_id || !row.user_id) return;
+        if (!conversationIdSetRef.current.has(row.conversation_id)) return;
+        callbacksRef.current.onMessagesRead?.({
+          conversationId: row.conversation_id,
+          userId: row.user_id,
+        });
+      },
+    });
 
-    // Unsubscribe from any channel that's no longer in the list
-    for (const channel of Array.from(subscribedRef.current)) {
-      if (!desired.has(channel)) {
-        supabase.realtime.unsubscribe(channel);
-        subscribedRef.current.delete(channel);
-      }
-    }
-  }, [conversations, currentUserId]);
-
-  // Cleanup all subscriptions on unmount.
-  useEffect(() => {
     return () => {
-      for (const channel of Array.from(subscribedRef.current)) {
-        supabase.realtime.unsubscribe(channel);
-      }
-      subscribedRef.current.clear();
+      unsubscribe(channel);
     };
+  }, [currentUserId]);
+
+  const joinConversation = useCallback(async (_conversationId: string): Promise<void> => {
+    // No-op: the global channel above already covers every conversation the
+    // user is in. Kept so call sites don't have to branch on the backend.
+    void _conversationId;
   }, []);
 
-  const joinConversation = useCallback(async (conversationId: string): Promise<void> => {
-    const channel = channelForConversation(conversationId);
-    if (subscribedRef.current.has(channel)) return;
-    try {
-      await supabase.realtime.subscribe(channel);
-      subscribedRef.current.add(channel);
-    } catch (err) {
-      console.error('[useChatSocket] joinConversation failed', err);
-      throw err instanceof Error ? err : new Error('Failed to join conversation');
-    }
-  }, []);
-
-  const leaveConversation = useCallback(async (conversationId: string): Promise<void> => {
-    const channel = channelForConversation(conversationId);
-    // Keep the subscription alive so we still get notifications for this
-    // conversation while sitting on another screen — only drop it when the
-    // conversation is removed from the user's list (handled by the effect
-    // above). This mirrors Facebook Messenger behavior.
-    void channel;
+  const leaveConversation = useCallback(async (_conversationId: string): Promise<void> => {
+    // No-op: we keep the global subscription alive for unread badges, just
+    // like Facebook Messenger.
+    void _conversationId;
   }, []);
 
   const sendMessage = useCallback(
@@ -254,52 +219,26 @@ export function useChatSocket({
           body: JSON.stringify({ content, media, replyToId }),
         },
       );
-
-      const saved = hydrateMessage({
-        ...payload.data,
-        conversationId,
-      });
-      if (!saved) return null;
-
-      // Broadcast the created message so other subscribers pick it up.
-      try {
-        await supabase.realtime.publish(channelForConversation(conversationId), 'message.created', {
-          message: saved,
-          conversationId,
-        });
-      } catch (err) {
-        console.warn('[useChatSocket] publish failed', err);
-      }
-
-      return saved;
+      if (!payload?.data?.id) return null;
+      // No manual publish — the INSERT the API just performed broadcasts
+      // via postgres_changes on its own.
+      return { ...payload.data, conversationId } as Message;
     },
     [],
   );
 
-  const markAsRead = useCallback(
-    async (conversationId: string): Promise<void> => {
-      try {
-        await jsonRequest<{ success: true }>(`/api/conversations/${conversationId}/read`, {
-          method: 'POST',
-        });
-      } catch (err) {
-        console.warn('[useChatSocket] markAsRead failed', err);
-      }
-
-      if (currentUserId) {
-        try {
-          await supabase.realtime.publish(
-            channelForConversation(conversationId),
-            'messages.read',
-            { conversationId, userId: currentUserId },
-          );
-        } catch (err) {
-          console.warn('[useChatSocket] publish read failed', err);
-        }
-      }
-    },
-    [currentUserId],
-  );
+  const markAsRead = useCallback(async (conversationId: string): Promise<void> => {
+    try {
+      await jsonRequest<{ success: true }>(`/api/conversations/${conversationId}/read`, {
+        method: 'POST',
+      });
+    } catch (err) {
+      console.warn('[useChatSocket] markAsRead failed', err);
+    }
+    // No manual publish — the /read route updates the participant's
+    // last_read_at column, which streams to the other participant via
+    // postgres_changes on conversation_participants.
+  }, []);
 
   return {
     chatSocket: null,

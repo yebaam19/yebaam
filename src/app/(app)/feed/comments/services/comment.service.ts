@@ -1,5 +1,4 @@
 import { supabase } from '@/utils/supabase/client';
-import { channelForPostComments } from '../hooks/useCommentSocket';
 import type {
   Comment,
   CommentAuthor,
@@ -10,14 +9,9 @@ import type {
   UpdateCommentDTO,
 } from '../interfaces/comment.interfaces';
 
-async function publishCommentEvent<T>(postId: string, event: string, payload: T): Promise<void> {
-  try {
-    await supabase.realtime.connect();
-    await supabase.realtime.publish(channelForPostComments(postId), event, payload);
-  } catch (error) {
-    console.error(`[commentService] failed to publish ${event}:`, error);
-  }
-}
+// Realtime delivery is handled entirely by Supabase's postgres_changes stream
+// on the `comments` table — subscribers receive INSERT/UPDATE/DELETE for any
+// row that matches their filter. No manual publish step needed.
 
 type DbComment = {
   id: string;
@@ -105,13 +99,7 @@ export class CommentService {
 
     const row = inserted as DbComment;
     const authors = await hydrateAuthors([row]);
-    const comment = rowToComment(row, authors);
-    await publishCommentEvent(comment.postId, 'comment.created', {
-      comment,
-      postId: comment.postId,
-      userId,
-    });
-    return comment;
+    return rowToComment(row, authors);
   }
 
   async update(data: UpdateCommentDTO): Promise<Comment> {
@@ -129,15 +117,7 @@ export class CommentService {
 
     const row = updated as DbComment;
     const authors = await hydrateAuthors([row]);
-    const comment = rowToComment(row, authors);
-    const { data: userData } = await supabase.auth.getUser();
-    await publishCommentEvent(comment.postId, 'comment.updated', {
-      comment,
-      postId: comment.postId,
-      userId: userData?.user?.id ?? comment.author.id,
-      oldContent: '',
-    });
-    return comment;
+    return rowToComment(row, authors);
   }
 
   async delete(data: DeleteCommentDTO): Promise<void> {
@@ -146,13 +126,6 @@ export class CommentService {
       .delete()
       .eq('id', data.commentId);
     if (error) throw new Error(error.message || 'Error al eliminar comentario');
-
-    const { data: userData } = await supabase.auth.getUser();
-    await publishCommentEvent(data.postId, 'comment.deleted', {
-      commentId: data.commentId,
-      postId: data.postId,
-      userId: userData?.user?.id ?? '',
-    });
   }
 
   async getByPost(filters: GetCommentsFilters): Promise<GetCommentsResponse> {

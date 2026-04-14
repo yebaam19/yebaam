@@ -2,15 +2,38 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
-import { supabase } from '@/utils/supabase/client';
-import { ensureRealtimeConnected } from '@/lib/insforge/realtime';
+import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 
 interface UseChatConversationProps {
   contactId: string;
 }
 
-function channelForConversation(conversationId: string): string {
-  return `chat:conv:${conversationId}`;
+type DbMessageRow = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  media: unknown;
+  status: string;
+  reply_to_id: string | null;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+function rowToMessage(row: DbMessageRow) {
+  return {
+    id: row.id,
+    conversationId: row.conversation_id,
+    senderId: row.sender_id,
+    content: row.content,
+    media: row.media ?? null,
+    status: row.status ?? 'sent',
+    replyToId: row.reply_to_id,
+    isDeleted: Boolean(row.is_deleted),
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at ?? row.created_at),
+  };
 }
 
 export function useChatConversation({ contactId }: UseChatConversationProps) {
@@ -23,7 +46,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
 
   useEffect(() => {
     let isMounted = true;
-    let realtimeCleanup: (() => void) | null = null;
+    let channel: ReturnType<typeof subscribeToTable> | null = null;
 
     const initializeConversation = async () => {
       try {
@@ -40,110 +63,61 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
         setConversationId(convId);
         markConversationAsOpen(convId);
 
-        // Wire the realtime listener BEFORE doing anything async so we never
-        // miss a message that arrives while the initial fetch is in flight.
-        const handleIncoming = (payload: unknown) => {
-          if (!isMounted) return;
-          const raw = (payload as { message?: unknown })?.message ?? payload;
-          if (!raw || typeof raw !== 'object') return;
-          const obj = raw as Record<string, unknown>;
-          const incomingConvId =
-            (obj.conversationId as string) ??
-            (obj.conversation_id as string) ??
-            convId;
-          if (incomingConvId !== convId) return;
-
-          const incoming = {
-            id: obj.id as string,
-            conversationId: incomingConvId,
-            senderId: (obj.senderId as string) ?? (obj.sender_id as string) ?? '',
-            content: (obj.content as string) ?? '',
-            media: obj.media ?? null,
-            status: (obj.status as string) ?? 'sent',
-            replyToId:
-              (obj.replyToId as string | null) ?? (obj.reply_to_id as string | null) ?? null,
-            isDeleted: Boolean(obj.isDeleted ?? obj.is_deleted),
-            createdAt: new Date(
-              (obj.createdAt as string) ?? (obj.created_at as string) ?? Date.now(),
-            ),
-            updatedAt: new Date(
-              (obj.updatedAt as string) ??
-                (obj.updated_at as string) ??
-                (obj.createdAt as string) ??
-                (obj.created_at as string) ??
-                Date.now(),
-            ),
-          };
-          if (!incoming.id) return;
-
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === incoming.id)) return prev;
-            return [...prev, incoming].sort(
-              (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-            );
-          });
-        };
-
-        supabase.realtime.on('message.created', handleIncoming);
-        realtimeCleanup = () => supabase.realtime.off('message.created', handleIncoming);
-
-        // Step B: fetch initial messages and connect realtime in parallel.
-        const fetchMessages = chatService
-          .getConversationMessages(convId, 50, 0)
-          .then((result) => {
+        // Subscribe to postgres_changes on the messages table, filtered to
+        // this conversation. Supabase delivers INSERTs from other users AND
+        // from ourselves — we dedup by id client-side. Kick this off BEFORE
+        // fetching history so nothing that lands mid-fetch is lost.
+        channel = subscribeToTable<DbMessageRow>({
+          channel: `chat:conv:${convId}`,
+          table: 'messages',
+          filter: `conversation_id=eq.${convId}`,
+          events: ['INSERT'],
+          onChange: (payload) => {
             if (!isMounted) return;
-            const sorted = result.messages.sort(
-              (a: any, b: any) =>
-                new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-            );
-            // Merge with anything realtime already delivered, preserving dedup.
+            const row = payload.new as DbMessageRow;
+            if (!row?.id) return;
+            const incoming = rowToMessage(row);
             setMessages((prev) => {
-              if (prev.length === 0) return sorted;
-              const seen = new Set(prev.map((m) => m.id));
-              const merged = [...prev];
-              for (const m of sorted) if (!seen.has(m.id)) merged.push(m);
-              return merged.sort(
-                (a, b) =>
-                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+              if (prev.some((m) => m.id === incoming.id)) return prev;
+              return [...prev, incoming].sort(
+                (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
               );
             });
-            return sorted;
-          });
+          },
+        });
 
-        const subscribeRealtime = ensureRealtimeConnected()
-          .then((ok) => {
-            if (!ok || !isMounted) return;
-            return supabase.realtime.subscribe(channelForConversation(convId));
-          })
-          .catch((err) => {
-            console.warn('[useChatConversation] realtime subscribe failed', err);
-          });
-
-        const [sortedMessages] = await Promise.all([fetchMessages, subscribeRealtime]);
+        // Step B: fetch initial messages.
+        const result = await chatService.getConversationMessages(convId, 50, 0);
         if (!isMounted) return;
+        const sorted = result.messages.sort(
+          (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
+
+        // Merge with anything realtime already delivered, preserving dedup.
+        setMessages((prev) => {
+          if (prev.length === 0) return sorted;
+          const seen = new Set(prev.map((m) => m.id));
+          const merged = [...prev];
+          for (const m of sorted) if (!seen.has(m.id)) merged.push(m);
+          return merged.sort(
+            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          );
+        });
         setIsLoadingMessages(false);
 
         // Mark unread inbound messages as read (best-effort, non-blocking).
-        if (sortedMessages && user?.id) {
-          const hasUnread = sortedMessages.some(
+        // The /read endpoint updates conversation_participants.last_read_at,
+        // which flows to the other participant via postgres_changes on that
+        // table. No manual broadcast needed.
+        if (user?.id) {
+          const hasUnread = sorted.some(
             (msg: any) => msg.senderId !== user.id && msg.status !== 'read',
           );
           if (hasUnread) {
-            void (async () => {
-              try {
-                await fetch(`/api/conversations/${convId}/read`, {
-                  method: 'POST',
-                  credentials: 'same-origin',
-                });
-                await supabase.realtime.publish(
-                  channelForConversation(convId),
-                  'messages.read',
-                  { conversationId: convId, userId: user.id },
-                );
-              } catch (err) {
-                console.warn('[useChatConversation] mark-as-read failed', err);
-              }
-            })();
+            void fetch(`/api/conversations/${convId}/read`, {
+              method: 'POST',
+              credentials: 'same-origin',
+            }).catch((err) => console.warn('[useChatConversation] mark-as-read failed', err));
           }
         }
       } catch (error) {
@@ -158,15 +132,8 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
 
     return () => {
       isMounted = false;
-      if (realtimeCleanup) {
-        try {
-          realtimeCleanup();
-        } catch {}
-      }
+      unsubscribe(channel);
       if (conversationId) {
-        try {
-          supabase.realtime.unsubscribe(channelForConversation(conversationId));
-        } catch {}
         markConversationAsClosed(conversationId);
       }
     };
@@ -177,9 +144,6 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
     conversationId,
     messages,
     setMessages,
-    // Public alias kept for backwards compat with existing consumers.
-    // The downstream UI also gates on `messages.length === 0`, so the
-    // spinner disappears the moment any message (fetch OR realtime) lands.
     isLoading: isLoadingMessages,
   };
 }

@@ -1,4 +1,3 @@
-import { supabase } from '@/utils/supabase/client';
 import {
   Conversation,
   GetMessagesResponse,
@@ -8,10 +7,6 @@ import {
   Message,
   MessageMedia,
 } from '../types';
-
-function channelForConversation(conversationId: string): string {
-  return `chat:conv:${conversationId}`;
-}
 
 type JsonRecord = Record<string, unknown>;
 
@@ -154,22 +149,11 @@ class ChatService {
     if (!payload?.data?.id) {
       throw new Error('Invalid message response from server');
     }
-    const saved = { ...payload.data, conversationId } as Message;
-
-    // Broadcast to other subscribers via InsForge realtime so the chat
-    // sidebar and open conversation windows of other participants update
-    // live without polling.
-    try {
-      await supabase.realtime.publish(channelForConversation(conversationId), 'message.created', {
-        message: saved,
-        conversationId,
-      });
-    } catch (err) {
-      // Realtime delivery is best-effort — the message is already persisted.
-      console.warn('[ChatService] realtime publish failed', err);
-    }
-
-    return saved;
+    // The message insert itself now broadcasts via Supabase Realtime's
+    // postgres_changes stream — every subscriber watching the `messages`
+    // table for this conversation_id gets the row for free. No manual
+    // publish step needed anymore.
+    return { ...payload.data, conversationId } as Message;
   }
 
   async findConversationByParticipant(

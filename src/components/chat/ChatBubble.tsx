@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/utils/supabase/client';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 import { useChatConversation } from './hooks/useChatConversation';
 import { useChatMessages } from './hooks/useChatMessages';
@@ -29,30 +28,13 @@ export default function ChatBubble({
   position = 0,
 }: ChatBubbleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isChatConnected, setIsChatConnected] = useState(false);
+  // Supabase channels connect lazily per subscription and stay up as long
+  // as any channel is active. Treat the bubble as connected for UI purposes;
+  // if a channel fails, useChatConversation will surface that through its
+  // own loading state rather than a global connection dot.
+  const isChatConnected = true;
 
   const isOnline = usePresenceStore((state) => state.isUserOnline(contactId));
-
-  // Track the InsForge realtime connection state so the header dot reflects it.
-  useEffect(() => {
-    let cancelled = false;
-    const handleConnect = () => !cancelled && setIsChatConnected(true);
-    const handleDisconnect = () => !cancelled && setIsChatConnected(false);
-
-    supabase.realtime.on('connect', handleConnect);
-    supabase.realtime.on('disconnect', handleDisconnect);
-
-    supabase.realtime
-      .connect()
-      .then(() => !cancelled && setIsChatConnected(true))
-      .catch(() => !cancelled && setIsChatConnected(false));
-
-    return () => {
-      cancelled = true;
-      supabase.realtime.off('connect', handleConnect);
-      supabase.realtime.off('disconnect', handleDisconnect);
-    };
-  }, []);
 
   const { conversationId, messages, setMessages, isLoading } = useChatConversation({
     contactId,

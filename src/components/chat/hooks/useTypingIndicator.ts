@@ -1,13 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { supabase } from '@/utils/supabase/client';
+import { subscribeToBroadcast, publishBroadcast, unsubscribe } from '@/utils/supabase/realtime';
 
 interface UseTypingIndicatorProps {
   conversationId: string | null;
 }
 
-function channelForConversation(conversationId: string): string {
-  return `chat:conv:${conversationId}`;
+interface TypingPayload {
+  conversationId: string;
+  userId: string;
+  isTyping: boolean;
+}
+
+function channelForTyping(conversationId: string): string {
+  return `chat:typing:${conversationId}`;
 }
 
 export function useTypingIndicator({ conversationId }: UseTypingIndicatorProps) {
@@ -17,58 +23,66 @@ export function useTypingIndicator({ conversationId }: UseTypingIndicatorProps) 
 
   useEffect(() => {
     if (!conversationId) return;
-    const myChannel = channelForConversation(conversationId);
+    const channelName = channelForTyping(conversationId);
 
-    const handleUserTyping = (payload: any) => {
-      const channel = payload?.meta?.channel ?? '';
-      if (channel && channel !== myChannel) return;
-      if (payload?.conversationId && payload.conversationId !== conversationId) return;
-      if (!payload?.userId || payload.userId === user?.id) return;
+    const channel = subscribeToBroadcast<TypingPayload>({
+      channel: channelName,
+      event: 'user.typing',
+      onMessage: (payload) => {
+        if (payload.conversationId !== conversationId) return;
+        if (!payload.userId || payload.userId === user?.id) return;
 
-      setIsTyping(Boolean(payload.isTyping));
+        setIsTyping(Boolean(payload.isTyping));
+        if (payload.isTyping) {
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+        }
+      },
+    });
 
-      if (payload.isTyping) {
-        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
-      }
-    };
-
-    supabase.realtime.on('user.typing', handleUserTyping);
     return () => {
-      supabase.realtime.off('user.typing', handleUserTyping);
+      unsubscribe(channel);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [conversationId, user?.id]);
 
-  const publishTyping = (isTypingValue: boolean) => {
-    if (!conversationId || !user?.id) return;
-    supabase.realtime
-      .publish(channelForConversation(conversationId), 'user.typing', {
-        conversationId,
-        userId: user.id,
-        isTyping: isTypingValue,
-      })
-      .catch(() => {});
-  };
+  const publishTyping = useCallback(
+    (isTypingValue: boolean) => {
+      if (!conversationId || !user?.id) return;
+      void publishBroadcast<TypingPayload>(
+        channelForTyping(conversationId),
+        'user.typing',
+        {
+          conversationId,
+          userId: user.id,
+          isTyping: isTypingValue,
+        },
+      );
+    },
+    [conversationId, user?.id],
+  );
 
-  const startTyping = () => publishTyping(true);
-  const stopTyping = () => publishTyping(false);
+  const startTyping = useCallback(() => publishTyping(true), [publishTyping]);
+  const stopTyping = useCallback(() => publishTyping(false), [publishTyping]);
 
-  const handleInputChange = (value: string, prevValue: string) => {
-    if (!conversationId) return;
+  const handleInputChange = useCallback(
+    (value: string, prevValue: string) => {
+      if (!conversationId) return;
 
-    if (value.length === 1 && prevValue.length === 0) {
-      startTyping();
-    }
+      if (value.length === 1 && prevValue.length === 0) {
+        startTyping();
+      }
 
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
-    if (value.length > 0) {
-      typingTimeoutRef.current = setTimeout(() => stopTyping(), 2000);
-    } else {
-      stopTyping();
-    }
-  };
+      if (value.length > 0) {
+        typingTimeoutRef.current = setTimeout(() => stopTyping(), 2000);
+      } else {
+        stopTyping();
+      }
+    },
+    [conversationId, startTyping, stopTyping],
+  );
 
   return {
     isTyping,
