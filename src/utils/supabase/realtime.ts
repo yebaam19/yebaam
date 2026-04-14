@@ -4,7 +4,7 @@ import { createClient } from './client';
 /**
  * Lightweight realtime adapter so the app talks to "subscribe to table changes"
  * and "broadcast ephemeral events" without reaching into the Supabase SDK
- * directly everywhere. Keeps the migration-from-InsForge surface area small.
+ * directly everywhere. Keeps the migration-from-Supabase surface area small.
  */
 
 let browserClient: ReturnType<typeof createClient> | null = null;
@@ -38,7 +38,7 @@ export interface SubscribeToTableOptions<T> {
 
 /**
  * Subscribe to row-level changes on a public-schema table. Replaces the
- * InsForge pattern of `realtime.publish(channel, event, payload)` +
+ * Supabase pattern of `realtime.publish(channel, event, payload)` +
  * `realtime.on(event)` — senders just INSERT/UPDATE the row and every
  * subscriber gets a payload for free.
  */
@@ -116,7 +116,7 @@ export async function publishBroadcast<T = Record<string, unknown>>(
 }
 
 /**
- * Compatibility shim for call sites that previously used InsForge's
+ * Compatibility shim for call sites that previously used Supabase's
  * `ensureRealtimeConnected`. Supabase's realtime connects lazily per
  * channel, so there's nothing to do here — we keep the function so
  * callers don't need to branch on which backend they're talking to.
@@ -139,5 +139,5 @@ export async function disconnectRealtime(): Promise<void> {
 }
 
 export function resetRealtimeFailure(): void {
-  // No-op on Supabase — kept for API parity with the InsForge adapter.
+  // No-op on Supabase — kept for API parity with the Supabase adapter.
 }

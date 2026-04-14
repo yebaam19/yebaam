@@ -29,7 +29,7 @@ interface CommentListProps {
 export function CommentList({ postId, showInput = true, maxHeight, className = '' }: CommentListProps) {
   const { commentsByPost, loadingStates, fetchCommentsByPost } = useCommentStore()
 
-  // Activar Realtime (InsForge) para actualizaciones en vivo de este post
+  // Activar Realtime (Supabase) para actualizaciones en vivo de este post
   useCommentSocket(postId)
 
   // Cargar comentarios al montar

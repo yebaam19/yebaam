@@ -181,7 +181,7 @@ export class PostService {
     _request: GenerateUploadUrlsRequest,
   ): Promise<GenerateUploadUrlsResponse> {
     throw new Error(
-      'Presigned S3 uploads are not available on InsForge. Use insforge.storage.from(bucket).upload() instead.',
+      'Presigned S3 uploads are not available on Supabase. Use supabase.storage.from(bucket).upload() instead.',
     );
   }
 }

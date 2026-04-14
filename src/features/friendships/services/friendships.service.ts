@@ -1,5 +1,4 @@
 import { supabase } from '@/utils/supabase/client';
-import { ensureInsforgeTokenFromCookie } from '@/lib/insforge/ensure-browser-token';
 
 export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
@@ -102,7 +101,6 @@ type DbFriendSettings = {
 };
 
 async function getCurrentUserId(): Promise<string | null> {
-  await ensureInsforgeTokenFromCookie();
   const { data } = await supabase.auth.getUser();
   return data?.user?.id ?? null;
 }

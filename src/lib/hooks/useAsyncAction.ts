@@ -25,7 +25,7 @@ interface UseAsyncActionResult<TResult, TArgs> {
 
 /**
  * Native React hook for one-shot async actions (mutations / form submits).
- * Replaces TanStack `useMutation` for our Next.js + InsForge stack.
+ * Replaces TanStack `useMutation` for our Next.js + Supabase stack.
  *
  * Usage:
  *   const { run, isPending, error } = useAsyncAction(async (id: string) => {

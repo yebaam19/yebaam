@@ -31,14 +31,14 @@ export async function GET(
 
 export async function POST() {
   return NextResponse.json(
-    { error: 'Live-stream backend is not yet migrated to InsForge.' },
+    { error: 'Live-stream backend is not yet migrated to Supabase.' },
     { status: 501 }
   );
 }
 
 export async function DELETE() {
   return NextResponse.json(
-    { error: 'Live-stream backend is not yet migrated to InsForge.' },
+    { error: 'Live-stream backend is not yet migrated to Supabase.' },
     { status: 501 }
   );
 }

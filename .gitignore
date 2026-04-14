@@ -97,8 +97,8 @@ docker-compose.override.yml
 dist/
 .cache/
 
-# InsForge SQL migrations (local only — do not commit)
-insforge/migrations/*.sql
+# SQL files — never commit (migrations, dumps, scratch queries)
+*.sql
 
 # MCP config (contains API keys)
 .mcp.json

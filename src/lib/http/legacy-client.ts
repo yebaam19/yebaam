@@ -7,7 +7,7 @@
  *
  * Services that still look like axios callers can import `getAxiosInstance`
  * from here and keep their code unchanged while data flows through the
- * proper `/api` route → InsForge SDK path.
+ * proper `/api` route → Supabase SDK path.
  */
 
 type StubResponse<T = any> = {

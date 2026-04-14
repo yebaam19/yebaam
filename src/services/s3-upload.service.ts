@@ -2,7 +2,7 @@
  * S3 Upload Service — STUB
  *
  * The old S3 presigned-URL flow is gone. Media uploads now go through
- * InsForge storage buckets via `@insforge/sdk` (see profile-media.service.ts
+ * Supabase storage buckets via `@supabase/supabase-js` (see profile-media.service.ts
  * and story.service.ts for the canonical pattern).
  *
  * This stub is kept so unmigrated callers surface a clear migration error
@@ -26,19 +26,19 @@ export interface UploadOptions {
 class S3UploadService {
   async generatePresignedUrl(_opts: UploadOptions): Promise<never> {
     throw new Error(
-      'S3 presigned-URL flow has been removed. Use insforge.storage.from(bucket).uploadAuto(file) instead.'
+      'S3 presigned-URL flow has been removed. Use supabase.storage.from(bucket).uploadAuto(file) instead.'
     )
   }
 
   async uploadToS3(_file: File, _uploadUrl: string): Promise<never> {
     throw new Error(
-      'S3 presigned-URL flow has been removed. Use insforge.storage.from(bucket).uploadAuto(file) instead.'
+      'S3 presigned-URL flow has been removed. Use supabase.storage.from(bucket).uploadAuto(file) instead.'
     )
   }
 
   async uploadFile(_file: File, _serviceId: string): Promise<S3UploadResult> {
     throw new Error(
-      'S3 upload not yet migrated. Create an InsForge storage bucket and use insforge.storage.from(bucket).uploadAuto(file).'
+      'S3 upload not yet migrated. Create an Supabase storage bucket and use supabase.storage.from(bucket).uploadAuto(file).'
     )
   }
 }

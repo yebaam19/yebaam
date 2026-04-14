@@ -35,7 +35,7 @@ type CachedRecord<T> = {
 
 /**
  * Native React data-fetching hook backed by a tiny module-level cache.
- * Replaces TanStack `useQuery` for our Next.js + InsForge stack.
+ * Replaces TanStack `useQuery` for our Next.js + Supabase stack.
  *
  * - Reads/writes go through `cacheStore` so multiple components hitting the
  *   same key share data and invalidations propagate.

@@ -1,146 +1,120 @@
 ---
-description: Instructions building apps with MCP
+description: Project conventions for the Next.js 16 + Supabase app
 globs: *
 alwaysApply: true
 ---
 
-# InsForge SDK Documentation - Overview
+# Project conventions
 
-## What is InsForge?
+This is a Next.js 16 (App Router, Turbopack) social app backed by **Supabase** for database, auth, storage, realtime, and edge functions. The frontend ships TypeScript only — no axios, no jQuery, no legacy HTTP wrappers.
 
-Backend-as-a-service (BaaS) platform providing:
+## Backend: Supabase
 
-- **Database**: PostgreSQL with PostgREST API
-- **Authentication**: Email/password + OAuth (Google, GitHub)
-- **Storage**: File upload/download
-- **AI**: Chat completions and image generation (OpenAI-compatible)
-- **Functions**: Serverless function deployment
-- **Realtime**: WebSocket pub/sub (database + client events)
+- **Database**: Postgres + PostgREST, accessed via `@supabase/supabase-js`.
+- **Auth**: `@supabase/ssr` for cookie-managed sessions across server + client.
+- **Storage**: `supabase.storage.from(bucket)` — buckets `avatars`, `covers`, `posts`, `profile-photos`, `profile-videos`, `stories`.
+- **Realtime**: `postgres_changes` on tables (the canonical pattern — write a row, every subscriber gets it for free) plus Broadcast channels for ephemeral signals like typing indicators. Both wrapped by [src/utils/supabase/realtime.ts](src/utils/supabase/realtime.ts).
+- **Edge Functions**: live under `supabase/functions/<name>/index.ts`. Three currently deployed: `feed`, `send-email`, `story-cleanup`.
 
-## Installation
+## Client wrappers — always import from these
 
-The following is a step-by-step guide to installing and using the InsForge TypeScript SDK for Web applications. If you are building other types of applications, please refer to:
-- [Swift SDK documentation](/sdks/swift/overview) for iOS, macOS, tvOS, and watchOS applications.
-- [Kotlin SDK documentation](/sdks/kotlin/overview) for Android applications.
-- [REST API documentation](/sdks/rest/overview) for direct HTTP API access.
+Never reach into `@supabase/supabase-js` or `@supabase/ssr` directly outside the `src/utils/supabase/` directory. Use:
 
-### 🚨 CRITICAL: Follow these steps in order
+| File | When |
+|---|---|
+| [`src/utils/supabase/client.ts`](src/utils/supabase/client.ts) | Browser code. Exports `createClient()` (memoized) and `supabase` singleton. |
+| [`src/utils/supabase/server.ts`](src/utils/supabase/server.ts) | Server code (route handlers, Server Actions, RSC). Exports `getServerClient()` (caller-bound, RLS applies), `getServiceClient()` (service role, bypasses RLS — server-only), `getServerAccessToken()`. |
+| [`src/utils/supabase/middleware.ts`](src/utils/supabase/middleware.ts) | Next.js middleware only. |
+| [`src/utils/supabase/with-retry.ts`](src/utils/supabase/with-retry.ts) | Wrap any PostgREST call that runs against a flaky backend (502/503/504 + `schema cache`/`recovery mode`/`bad gateway` retried 4× with backoff). |
+| [`src/utils/supabase/realtime.ts`](src/utils/supabase/realtime.ts) | `subscribeToTable()`, `subscribeToBroadcast()`, `publishBroadcast()`, `unsubscribe()`, `disconnectRealtime()`. |
 
-### Step 1: Download Template
+### `.maybeSingle()` vs `.single()`
 
-Use the `download-template` MCP tool to create a new project with your backend URL and anon key pre-configured.
+Use `.maybeSingle()` when a row may legitimately be missing — `.single()` returns HTTP 406 for zero rows, which the UI treats as a real error.
 
-### Step 2: Install SDK
+## HTTP layer
 
-```bash
-npm install @insforge/sdk@latest
-```
+Do **not** add or use any axios / legacy HTTP client. Anything that cannot be expressed as a direct `@supabase/supabase-js` call from the browser (server-only secrets, token stitching, aggregation, webhooks, OAuth callbacks) goes in **Next.js App Router Route Handlers** under `src/app/api/**/route.ts`:
 
-### Step 3: Create SDK Client
+- File convention: [Route Handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route)
+- Export named HTTP methods (`GET`, `POST`, `PATCH`, `PUT`, `DELETE`) from `route.ts`. Use `NextRequest` / `NextResponse`.
+- Read cookies/headers via `next/headers` (`await cookies()`, `await headers()`).
+- On the server, build a Supabase client with `getServerClient()` from `@/utils/supabase/server` so the caller's session is forwarded.
+- From the client, call the route with `fetch('/api/...')` — never through a shared axios-style wrapper.
 
-You must create a client instance using `createClient()` with your base URL and anon key:
+## Realtime — the canonical pattern
 
-```javascript
-import { createClient } from '@insforge/sdk';
+**Senders just write rows.** Do not call `.publish()` or any pub/sub method. The DB INSERT IS the broadcast.
 
-const client = createClient({
-  baseUrl: 'https://your-app.region.insforge.app',  // Your InsForge backend URL
-  anonKey: 'your-anon-key-here'       // Get this from backend metadata
+```ts
+// Sender — server-side or client-side, same pattern
+await supabase.from('messages').insert({ conversation_id, sender_id, content });
+
+// Subscriber — anywhere in client code
+const channel = subscribeToTable<DbMessageRow>({
+  channel: `chat:conv:${convId}`,
+  table: 'messages',
+  filter: `conversation_id=eq.${convId}`,
+  events: ['INSERT'],
+  onChange: (payload) => handleIncoming(payload.new),
 });
-
+return () => unsubscribe(channel);
 ```
 
-**API BASE URL**: Your API base URL is `https://your-app.region.insforge.app`.
+The only place where `subscribeToBroadcast` / `publishBroadcast` is appropriate is **ephemeral signals that should NOT touch the database** — typing indicators, presence cursors, "user is viewing this post". For anything that has a row, use `subscribeToTable`.
 
-## Getting Detailed Documentation
+Realtime publication membership is configured per table — currently enabled on `messages`, `comments`, `reactions`, `notifications`, `conversation_participants`, `conversations`. Add new tables via `ALTER PUBLICATION supabase_realtime ADD TABLE public.<name>;`.
 
-### 🚨 CRITICAL: Always Fetch Documentation Before Writing Code
+## Storage — folder ordering
 
-InsForge provides official SDKs and REST APIs, use them to interact with InsForge services from your application code.
+Storage RLS enforces `(storage.foldername(name))[1] = auth.uid()::text`. The first segment of every uploaded object key MUST be the user's UUID. Sub-folders hang off underneath:
 
-- [TypeScript SDK](/sdks/typescript/overview) - JavaScript/TypeScript
-- [Swift SDK](/sdks/swift/overview) - iOS, macOS, tvOS, and watchOS
-- [Kotlin SDK](/sdks/kotlin/overview) - Android and Kotlin Multiplatform
-- [REST API](/sdks/rest/overview) - Direct HTTP API access
+```
+<userId>/<file>            ← user-root upload
+<userId>/<sub>/<file>      ← optional sub-folder
+```
 
-Before writing or editing any InsForge integration code, you **MUST** call the `fetch-docs` or `fetch-sdk-docs` MCP tool to get the latest SDK documentation. This ensures you have accurate, up-to-date implementation patterns.
+[src/app/api/upload/route.ts](src/app/api/upload/route.ts) enforces this. Don't bypass it.
 
-### Use the InsForge `fetch-docs` MCP tool to get specific SDK documentation:
+## Edge functions
 
-Available documentation types:
+Three live in `supabase/functions/`:
 
-- `"instructions"` - Essential backend setup (START HERE)
-- `"real-time"` - Real-time pub/sub (database + client events) via WebSockets
-- `"db-sdk-typescript"` - Database operations with TypeScript SDK
-- **Authentication** - Choose based on implementation:
-  - `"auth-sdk-typescript"` - TypeScript SDK methods for custom auth flows
-  - `"auth-components-react"` - Pre-built auth UI for React+Vite (singlepage App)
-  - `"auth-components-react-router"` - Pre-built auth UI for React(Vite+React Router) (Multipage App)
-  - `"auth-components-nextjs"` - Pre-built auth UI for Nextjs (SSR App)
-- `"storage-sdk"` - File storage operations
-- `"functions-sdk"` - Serverless functions invocation
-- `"ai-integration-sdk"` - AI chat and image generation
-- `"real-time"` - Real-time pub/sub (database + client events) via WebSockets
-- `"deployment"` - Deploy frontend applications via MCP tool
+- `feed` — paginated post + author feed, JWT-verified, RLS-aware.
+- `send-email` — internal Resend wrapper, secret-gated by `EMAIL_WEBHOOK_SECRET`.
+- `story-cleanup` — calls `cleanup_expired_stories()` SQL function and removes orphaned storage objects, secret-gated by `CRON_SECRET`.
 
-These documentations are mostly for TypeScript SDK. For other languages, you can also use `fetch-sdk-docs` mcp tool to get specific documentation.
+Deploy via the Supabase MCP `deploy_edge_function` tool or `supabase functions deploy <name>` CLI. Secrets are configured in **Project Settings → Edge Functions → Secrets** or via `supabase secrets set <KEY>=<value>`.
 
-### Use the InsForge `fetch-sdk-docs` MCP tool to get specific SDK documentation
+## Stack and conventions
 
-You can fetch sdk documentation using the `fetch-sdk-docs` MCP tool with specific feature type and language.
+- **Package manager**: `pnpm` (use it for every install, never npm/yarn).
+- **Tailwind**: 3.4 (do NOT upgrade to v4). Lock the version in `package.json`.
+- **State**: Zustand for client stores. TanStack Query is in the codebase but Devtools were removed — don't re-add the floating devtools.
+- **Tests**: there is no test runner configured yet. UI changes must be hand-verified in a browser; type-checking + production build are the gating signals (`npx tsc --noEmit` then `pnpm build`).
+- **Email**: `RESEND_API_KEY` is server-only — never prefix it `NEXT_PUBLIC_*`. Mirror in `.env.example` with a placeholder.
 
-Available feature types:
-- db - Database operations
-- storage - File storage operations
-- functions - Serverless functions invocation
-- auth - User authentication
-- ai - AI chat and image generation
-- realtime - Real-time pub/sub (database + client events) via WebSockets
+## Layout
 
-Available languages:
-- typescript - JavaScript/TypeScript SDK
-- swift - Swift SDK (for iOS, macOS, tvOS, and watchOS)
-- kotlin - Kotlin SDK (for Android and JVM applications)
-- rest-api - REST API
+```
+src/
+  app/                    # Next.js App Router (UI + route handlers)
+    api/**/route.ts       # Server-side API surface, Supabase via getServerClient()
+    (app)/                # Authenticated app shell
+  features/               # Feature modules (auth, chat, profile, friendships, ...)
+  components/             # Shared UI components
+  utils/supabase/         # The ONLY place that imports from @supabase/*
+  lib/                    # Cross-cutting helpers (no Supabase client construction)
+supabase/
+  functions/<name>/       # Deno edge functions
+  migrations/             # SQL migrations applied via Supabase MCP apply_migration
+docs/
+  legacy/insforge-archive/  # The old InsForge schema + functions, kept for reference
+```
 
-## When to Use SDK vs MCP Tools
+## Learned user preferences
 
-### Always SDK for Application Logic:
-
-- Authentication (register, login, logout, profiles)
-- Database CRUD (select, insert, update, delete)
-- Storage operations (upload, download files)
-- AI operations (chat, image generation)
-- Serverless function invocation
-
-### Use MCP Tools for Infrastructure:
-
-- Project scaffolding (`download-template`) - Download starter templates with InsForge integration
-- Backend setup and metadata (`get-backend-metadata`)
-- Database schema management (`run-raw-sql`, `get-table-schema`)
-- Storage bucket creation (`create-bucket`, `list-buckets`, `delete-bucket`)
-- Serverless function deployment (`create-function`, `update-function`, `delete-function`)
-- Frontend deployment (`create-deployment`) - Deploy frontend apps to InsForge hosting
-
-## Important Notes
-
-- For auth: use `auth-sdk` for custom UI, or framework-specific components for pre-built UI
-- SDK returns `{data, error}` structure for all operations
-- Database inserts require array format: `[{...}]`
-- Serverless functions have single endpoint (no subpaths)
-- Storage: Upload files to buckets, store URLs in database
-- AI operations are OpenAI-compatible
-- **EXTRA IMPORTANT**: Use Tailwind CSS 3.4 (do not upgrade to v4). Lock these dependencies in `package.json`
-
-## Learned User Preferences
-
-- Do not commit InsForge SQL migration files under `insforge/migrations/*.sql`; keep migrations local or share through non-public channels for security.
-- Resend email uses server-only env var `RESEND_API_KEY` (never `NEXT_PUBLIC_*`); mirror it in `.env.example` with a placeholder value.
 - Use `pnpm` for installs and package changes in this repository.
+- Email: `RESEND_API_KEY` is server-only.
 - TanStack Query Devtools were removed from the app; keep `@tanstack/react-query` for existing data hooks and do not re-add floating devtools unless explicitly requested.
-
-## Learned Workspace Facts
-
-- `.gitignore` includes `insforge/migrations/*.sql` so migration SQL is not tracked by default.
-- Client auth bootstrap: when a local session hint indicates a prior login, resolve the user with `GET /api/auth/me` (httpOnly cookie) before calling `insforge.auth.getCurrentUser()`, so stale SDK access tokens do not trigger failing InsForge `/api/auth/refresh` requests; on failure, clear the SDK token, session hint, and synced session cookies.
-- Yebaam logo `next/image` components that use `max-w-*` width constraints or fixed height classes (`h-14`) may need `style={{ height: 'auto' }}` or `style={{ width: 'auto' }}` respectively to satisfy Next.js image sizing warnings.
+- Tailwind CSS 3.4 — do not upgrade to v4.

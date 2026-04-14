@@ -105,7 +105,7 @@ class CityServiceMock {
         total: payload?.total ?? mappedCities.length,
       }
     } catch {
-      // Cities backend is not yet migrated to InsForge — use mocks silently.
+      // Cities backend is not yet migrated to Supabase — use mocks silently.
       // Fallback a datos mock si falla el API
       await simulateNetworkDelay()
       let cities = [...MOCK_CITIES]
@@ -186,7 +186,7 @@ class CityServiceMock {
         cityMedia: [], // TODO: Implementar cuando exista endpoint de media
       }
     } catch {
-      // City backend is not yet migrated to InsForge — use mocks silently.
+      // City backend is not yet migrated to Supabase — use mocks silently.
       // Fallback a datos mock
       await simulateNetworkDelay()
       const cityName = unslugify(slug)

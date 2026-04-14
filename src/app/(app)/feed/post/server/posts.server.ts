@@ -1,5 +1,5 @@
 import 'server-only';
-import { getServerClient } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 import type { Post, MediaFile, ReactionsCount } from '../interfaces/post.interfaces';
 
 type PostRow = {
@@ -60,7 +60,7 @@ function mapRowToPost(row: PostRow, profileById: Map<string, ProfileRow>): Post 
 export async function listTimelinePosts(limit = 20): Promise<Post[]> {
   const client = await getServerClient();
 
-  const { data: rows, error } = await client.database
+  const { data: rows, error } = await client
     .from('posts')
     .select('*')
     .order('created_at', { ascending: false })
@@ -72,7 +72,7 @@ export async function listTimelinePosts(limit = 20): Promise<Post[]> {
   const authorIds = Array.from(new Set(posts.map((p) => p.author_id)));
   if (authorIds.length === 0) return [];
 
-  const { data: profiles } = await client.database
+  const { data: profiles } = await client
     .from('profiles')
     .select('id, username, first_name, last_name, avatar_url, is_verified')
     .in('id', authorIds);

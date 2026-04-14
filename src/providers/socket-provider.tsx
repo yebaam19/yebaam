@@ -125,7 +125,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }
 
     if (!isRealtimeEnabled()) {
-      // Legacy socket.io backend is gone. Stay dormant until the InsForge
+      // Legacy socket.io backend is gone. Stay dormant until the Supabase
       // Realtime migration replaces this provider.
       return;
     }

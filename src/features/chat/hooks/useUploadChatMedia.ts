@@ -24,9 +24,9 @@ interface ChatMediaResult {
  * Chat media upload hook — STUB.
  *
  * The old S3 presigned-URL flow is gone. Chat itself has not been migrated
- * to InsForge yet (no `messages` / `conversations` tables), so uploads
+ * to Supabase yet (no `messages` / `conversations` tables), so uploads
  * deliberately throw a migration error. Once chat is migrated, this hook
- * should call `insforge.storage.from('chat-media').uploadAuto(file)`.
+ * should call `supabase.storage.from('chat-media').uploadAuto(file)`.
  */
 export function useUploadChatMedia() {
   const [isUploading, setIsUploading] = useState(false);
@@ -39,7 +39,7 @@ export function useUploadChatMedia() {
     setIsUploading(false);
     setUploadProgress(0);
     const message =
-      'Chat media upload is not yet migrated to InsForge. Create a chat-media bucket and wire this hook to insforge.storage.';
+      'Chat media upload is not yet migrated to Supabase. Create a chat-media bucket and wire this hook to supabase.storage.';
     setError(message);
     console.warn('[useUploadChatMedia]', message);
     return null;

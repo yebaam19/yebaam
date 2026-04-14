@@ -23,7 +23,7 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
     useReactionStore();
   const myReaction = myReactionsByPost[postId];
 
-  // Cargar reacción del usuario desde InsForge (persiste entre sesiones; el store es solo en memoria)
+  // Cargar reacción del usuario desde Supabase (persiste entre sesiones; el store es solo en memoria)
   useEffect(() => {
     if (!postId || !user?.id) return;
     void fetchMyReaction(postId);

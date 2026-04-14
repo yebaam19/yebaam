@@ -1,5 +1,5 @@
 import 'server-only';
-import { getServerClient, getServerAccessToken } from '@/lib/insforge/server';
+import { getServerClient } from '@/utils/supabase/server';
 
 export interface User {
   id: string;
@@ -18,21 +18,18 @@ type ProfileRow = {
 };
 
 export async function getAuthUser(): Promise<User | null> {
-  const token = await getServerAccessToken();
-  if (!token) return null;
-
   const client = await getServerClient();
-  const { data: authResponse, error: authError } = await client.auth.getCurrentUser();
+  const { data: authResponse, error: authError } = await client.auth.getUser();
   if (authError || !authResponse?.user) return null;
 
   const userId = authResponse.user.id;
   const email = authResponse.user.email ?? '';
 
-  const { data: profile } = await client.database
+  const { data: profile } = await client
     .from('profiles')
     .select('id, username, first_name, last_name, display_name, avatar_url')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   const p = (profile as ProfileRow | null) ?? null;
   const fallbackName = email.split('@')[0] || 'user';

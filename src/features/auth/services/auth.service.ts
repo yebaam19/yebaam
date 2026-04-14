@@ -209,7 +209,7 @@ export class AuthService {
   }
 
   /**
-   * Kept for API parity with the old InsForge-backed service. Supabase's
+   * Kept for API parity with the old Supabase-backed service. Supabase's
    * `@supabase/ssr` package syncs the session cookie automatically, so
    * there's nothing to mark here.
    */

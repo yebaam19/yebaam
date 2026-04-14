@@ -213,9 +213,9 @@ async function getUserId(): Promise<string> {
   if (sdkId) return sdkId;
 
   // Cold reload fallback: the SDK has no token in memory because the
-  // InsForge refresh cookie is cross-origin and blocked in dev. Fetch the
+  // Supabase refresh cookie is cross-origin and blocked in dev. Fetch the
   // user from our own route handler which reads the httpOnly
-  // `insforge_access_token` cookie, then seed the SDK with that token so
+  // `supabase_access_token` cookie, then seed the SDK with that token so
   // subsequent `supabase.database` / `supabase.storage` calls carry it.
   if (typeof window === 'undefined') throw new Error('Not authenticated');
 
