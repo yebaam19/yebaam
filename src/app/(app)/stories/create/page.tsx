@@ -178,231 +178,249 @@ export default function CreateStoryPage() {
   if (!user) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-neutral-950">
-      {/* Header profesional */}
-      <header className="absolute top-0 left-0 right-0 z-20 bg-linear-to-b from-black/80 to-transparent">
-        <div className="flex items-center justify-between px-6 py-4">
+    <div className="fixed inset-0 z-50 flex bg-neutral-950 text-white">
+      {/* ============ SIDEBAR IZQUIERDO (estilo Facebook) ============ */}
+      <aside className="relative flex h-full w-full max-w-sm flex-col border-r border-neutral-800 bg-neutral-900 shadow-2xl">
+        {/* Header del sidebar */}
+        <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors"
+            aria-label="Volver"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800 text-white transition hover:bg-neutral-700"
           >
-            <ArrowLeftIcon className="w-6 h-6" />
-            <span className="font-medium">Cancelar</span>
+            <ArrowLeftIcon className="h-5 w-5" />
           </button>
-          
-          <div className="flex items-center gap-3">
-            <Avatar
-              initials={user.username.substring(0, 2).toUpperCase()}
-              src={user.avatar}
-              className="h-10 w-10"
-            />
-            <span className="text-white font-semibold">{user.username}</span>
-          </div>
-
-          {storyType && (
-            <button
-              onClick={handlePublish}
-              disabled={isCreating}
-              className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-600 text-white font-semibold rounded-full transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-            >
-              {isCreating ? 'Publicando...' : 'Publicar'}
-            </button>
-          )}
+          <h1 className="text-xl font-bold">Tu historia</h1>
         </div>
-      </header>
 
-      {/* Contenido Principal */}
-      <div className="h-full flex items-center justify-center">
-        {!storyType ? (
-          /* Selector de tipo de historia */
-          <div className="flex flex-col items-center gap-8 px-4">
-            <div className="text-center space-y-2 mb-4">
-              <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3">
-                <SparklesIcon className="w-10 h-10 text-primary-500" />
-                Crea tu historia
-              </h1>
-              <p className="text-neutral-400 text-lg">Comparte tu momento con el mundo</p>
-            </div>
+        {/* Tarjeta de usuario */}
+        <div className="flex items-center gap-3 px-5 py-4">
+          <Avatar
+            initials={user.username.substring(0, 2).toUpperCase()}
+            src={user.avatar}
+            className="h-11 w-11 ring-2 ring-primary-500/40"
+          />
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{user.username}</p>
+            <p className="text-xs text-neutral-400">Visible por 24 horas</p>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
-              {/* Opción: Texto */}
-              <button
-                onClick={() => handleTypeSelect('text')}
-                className="group relative overflow-hidden rounded-3xl p-8 bg-linear-to-br from-purple-600 to-pink-600 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-purple-500/50"
-              >
-                <div className="flex flex-col items-center gap-4 relative z-10">
-                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <PaintBrushIcon className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-white mb-1">Texto</h3>
-                    <p className="text-white/80 text-sm">Crea con palabras</p>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
-              </button>
+        {/* Contenido scrollable del sidebar */}
+        <div className="flex-1 overflow-y-auto px-5 pb-4">
+          {!storyType ? (
+            <div className="space-y-3">
+              <p className="mb-1 text-sm font-semibold text-neutral-300">Añadir a tu historia</p>
 
-              {/* Opción: Foto */}
               <button
                 onClick={() => handleTypeSelect('image')}
-                className="group relative overflow-hidden rounded-3xl p-8 bg-linear-to-br from-blue-600 to-cyan-600 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/50"
+                className="group flex w-full items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-800/60 p-4 text-left transition hover:border-primary-500/60 hover:bg-neutral-800"
               >
-                <div className="flex flex-col items-center gap-4 relative z-10">
-                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <PhotoIcon className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-white mb-1">Foto</h3>
-                    <p className="text-white/80 text-sm">Comparte imágenes</p>
-                  </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600/20 text-primary-400 ring-1 ring-primary-500/40 transition group-hover:bg-primary-600 group-hover:text-white">
+                  <PhotoIcon className="h-6 w-6" />
                 </div>
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+                <div>
+                  <p className="font-semibold">Crear historia con foto</p>
+                  <p className="text-xs text-neutral-400">Comparte una imagen</p>
+                </div>
               </button>
 
-              {/* Opción: Video */}
               <button
                 onClick={() => handleTypeSelect('video')}
-                className="group relative overflow-hidden rounded-3xl p-8 bg-linear-to-br from-orange-600 to-red-600 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-orange-500/50"
+                className="group flex w-full items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-800/60 p-4 text-left transition hover:border-primary-500/60 hover:bg-neutral-800"
               >
-                <div className="flex flex-col items-center gap-4 relative z-10">
-                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <VideoCameraIcon className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-white mb-1">Video</h3>
-                    <p className="text-white/80 text-sm">Graba momentos</p>
-                  </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600/20 text-primary-400 ring-1 ring-primary-500/40 transition group-hover:bg-primary-600 group-hover:text-white">
+                  <VideoCameraIcon className="h-6 w-6" />
                 </div>
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+                <div>
+                  <p className="font-semibold">Crear historia con video</p>
+                  <p className="text-xs text-neutral-400">Hasta {MAX_VIDEO_DURATION}s</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleTypeSelect('text')}
+                className="group flex w-full items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-800/60 p-4 text-left transition hover:border-primary-500/60 hover:bg-neutral-800"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600/20 text-primary-400 ring-1 ring-primary-500/40 transition group-hover:bg-primary-600 group-hover:text-white">
+                  <PaintBrushIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="font-semibold">Crear historia de texto</p>
+                  <p className="text-xs text-neutral-400">Fondo y tipografía personalizados</p>
+                </div>
               </button>
             </div>
+          ) : storyType === 'text' ? (
+            <div className="space-y-5">
+              {/* Fondo */}
+              <div>
+                <p className="mb-3 text-sm font-semibold text-neutral-300">Fondo</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {STORY_BACKGROUNDS.map((bg, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedBackground(bg)}
+                      aria-label={`Fondo ${index + 1}`}
+                      className={cn(
+                        'h-12 w-full rounded-lg transition',
+                        selectedBackground === bg
+                          ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-neutral-900'
+                          : 'hover:scale-105'
+                      )}
+                      style={{ background: bg.value }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Tamaño */}
+              <div>
+                <p className="mb-3 text-sm font-semibold text-neutral-300">Tamaño</p>
+                <div className="flex gap-2">
+                  {['S', 'M', 'L'].map((size, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setFontSize(index)}
+                      className={cn(
+                        'h-10 flex-1 rounded-lg font-bold transition',
+                        fontSize === index
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                      )}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Alineación */}
+              <div>
+                <p className="mb-3 text-sm font-semibold text-neutral-300">Alinear</p>
+                <div className="flex gap-2">
+                  {(['left', 'center', 'right'] as const).map((align) => (
+                    <button
+                      key={align}
+                      onClick={() => setTextAlign(align)}
+                      className={cn(
+                        'h-10 flex-1 rounded-lg transition',
+                        textAlign === align
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                      )}
+                    >
+                      {align === 'left' ? '⬅' : align === 'center' ? '⬌' : '➡'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-neutral-300">Archivo seleccionado</p>
+              <div className="rounded-xl border border-neutral-800 bg-neutral-800/60 p-4">
+                <p className="truncate text-sm font-medium">{selectedFile?.name}</p>
+                <p className="mt-1 text-xs text-neutral-400">
+                  {selectedFile && (selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                </p>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-2.5 text-sm font-semibold text-neutral-200 transition hover:bg-neutral-700"
+              >
+                Cambiar archivo
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer acciones */}
+        <div className="border-t border-neutral-800 p-4">
+          {storyType ? (
+            <div className="flex gap-3">
+              <button
+                onClick={handleBack}
+                className="flex-1 rounded-xl bg-neutral-800 py-3 font-semibold text-white transition hover:bg-neutral-700"
+              >
+                Descartar
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={isCreating}
+                className="flex-1 rounded-xl bg-primary-600 py-3 font-semibold text-white shadow-lg transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-700"
+              >
+                {isCreating ? 'Publicando…' : 'Compartir'}
+              </button>
+            </div>
+          ) : (
+            <p className="text-center text-xs text-neutral-500">
+              Tu historia será visible durante 24 horas
+            </p>
+          )}
+        </div>
+      </aside>
+
+      {/* ============ PANEL DE PREVIEW ============ */}
+      <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-linear-to-br from-neutral-950 via-neutral-900 to-primary-950/40 p-8">
+        {/* Glow decorativo */}
+        <div className="pointer-events-none absolute -left-20 top-1/4 h-96 w-96 rounded-full bg-primary-600/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 bottom-1/4 h-96 w-96 rounded-full bg-primary-500/10 blur-3xl" />
+
+        {!storyType ? (
+          <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+            <div className="aspect-9/16 w-40 rounded-2xl border border-dashed border-neutral-700" />
+            <h2 className="text-2xl font-semibold tracking-tight">Vista previa</h2>
+            <p className="max-w-xs text-sm text-neutral-500">
+              Elige una opción para comenzar.
+            </p>
           </div>
         ) : (
-          /* Vista de edición/preview */
-          <div className="w-full h-full flex items-center justify-center p-8">
-            {/* Preview Container - Aspecto ratio de stories (9:16) */}
-            <div className="relative w-full max-w-md aspect-9/16 rounded-3xl overflow-hidden shadow-2xl">
-              {storyType === 'text' && (
-                <div
-                  className="w-full h-full flex items-center justify-center p-8"
-                  style={{
-                    background: selectedBackground.value,
-                  }}
-                >
-                  <textarea
-                    value={textContent}
-                    onChange={(e) => setTextContent(e.target.value)}
-                    placeholder="Escribe tu historia..."
-                    maxLength={250}
-                    style={{
-                      color: selectedBackground.textColor,
-                      fontSize: FONT_SIZES[fontSize],
-                      textAlign: textAlign,
-                    }}
-                    className={cn(
-                      'w-full h-full bg-transparent border-none outline-none resize-none text-center',
-                      fontStyle.className
-                    )}
-                  />
-                </div>
-              )}
-
-              {storyType === 'image' && previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              )}
-
-              {storyType === 'video' && previewUrl && (
-                <video
-                  ref={videoRef}
-                  src={previewUrl}
-                  controls
-                  className="w-full h-full object-cover"
-                />
-              )}
-
-              {/* Contador de caracteres para texto */}
-              {storyType === 'text' && (
-                <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
-                  <span className="text-white text-sm font-medium">
-                    {textContent.length}/250
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Panel de herramientas para texto */}
+          <div className="relative z-10 aspect-9/16 w-full max-w-[360px] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/10">
             {storyType === 'text' && (
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col gap-4">
-                {/* Selector de fondo */}
-                <div className="bg-neutral-900/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
-                  <p className="text-white text-sm font-semibold mb-3">Fondo</p>
-                  <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto">
-                    {STORY_BACKGROUNDS.map((bg, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedBackground(bg)}
-                        className={cn(
-                          'w-12 h-12 rounded-xl transition-all',
-                          selectedBackground === bg
-                            ? 'ring-4 ring-white scale-110'
-                            : 'hover:scale-105'
-                        )}
-                        style={{ background: bg.value }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div
+                className="flex h-full w-full items-center justify-center p-8"
+                style={{ background: selectedBackground.value }}
+              >
+                <textarea
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  placeholder="Escribe tu historia..."
+                  maxLength={250}
+                  style={{
+                    color: selectedBackground.textColor,
+                    fontSize: FONT_SIZES[fontSize],
+                    textAlign: textAlign,
+                  }}
+                  className={cn(
+                    'h-full w-full resize-none border-none bg-transparent text-center outline-none placeholder:opacity-60',
+                    fontStyle.className
+                  )}
+                />
+              </div>
+            )}
 
-                {/* Tamaño de fuente */}
-                <div className="bg-neutral-900/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
-                  <p className="text-white text-sm font-semibold mb-3">Tamaño</p>
-                  <div className="flex gap-2">
-                    {['S', 'M', 'L'].map((size, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setFontSize(index)}
-                        className={cn(
-                          'w-10 h-10 rounded-lg font-bold transition-all',
-                          fontSize === index
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                        )}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            {storyType === 'image' && previewUrl && (
+              <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
+            )}
 
-                {/* Alineación */}
-                <div className="bg-neutral-900/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
-                  <p className="text-white text-sm font-semibold mb-3">Alinear</p>
-                  <div className="flex gap-2">
-                    {(['left', 'center', 'right'] as const).map((align) => (
-                      <button
-                        key={align}
-                        onClick={() => setTextAlign(align)}
-                        className={cn(
-                          'w-10 h-10 rounded-lg transition-all',
-                          textAlign === align
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                        )}
-                      >
-                        {align === 'left' ? '⬅' : align === 'center' ? '⬌' : '➡'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            {storyType === 'video' && previewUrl && (
+              <video
+                ref={videoRef}
+                src={previewUrl}
+                controls
+                className="h-full w-full object-cover"
+              />
+            )}
+
+            {storyType === 'text' && (
+              <div className="absolute bottom-4 right-4 rounded-full bg-black/50 px-3 py-1 backdrop-blur-sm">
+                <span className="text-sm font-medium text-white">{textContent.length}/250</span>
               </div>
             )}
           </div>
         )}
-      </div>
+      </main>
 
       {/* Input oculto para archivos */}
       <input

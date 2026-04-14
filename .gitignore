@@ -103,6 +103,48 @@ dist/
 
 # MCP config (contains API keys)
 .mcp.json
+.mcp.*.json
+mcp.json
+mcp-config.json
+**/.mcp.json
+**/mcp.json
+
+# API keys, tokens & generic secrets
+*api*key*
+*api-key*
+*apikey*
+*access*token*
+*auth*token*
+*bearer*token*
+*private*key*
+*.key.json
+*.token
+*.jwt
+.htpasswd
+
+# additional env / config leaks
+.env.backup
+.env.bak
+.env.old
+.env.save
+.envrc
+*.env
+config.local.*
+local.settings.json
+
+# Supabase local config & keys
+.supabase/
+supabase/.branches/
+supabase/.temp/
+supabase/config.local.toml
+
+# misc credentials
+credentials
+credentials.json
+client_secret*.json
+token.json
+tokens.json
+auth.json
 
 # markdown docs — don't push to repo
 *.md

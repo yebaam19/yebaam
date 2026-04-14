@@ -114,13 +114,24 @@ class StoryService {
     const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
-    const { data: uploaded, error: uploadError } = await supabase.storage
+    const ext = file.name.split('.').pop() || (options.type === 'video' ? 'mp4' : 'jpg');
+    const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
       .from(STORIES_BUCKET)
-      .uploadAuto(file);
-    if (uploadError || !uploaded) {
-      throw new Error(uploadError?.message || 'Error al subir archivo de story');
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || undefined,
+      });
+    if (uploadError) {
+      throw new Error(uploadError.message || 'Error al subir archivo de story');
     }
-    const mediaUrl = (uploaded as { url: string }).url;
+
+    const { data: publicUrlData } = supabase.storage
+      .from(STORIES_BUCKET)
+      .getPublicUrl(path);
+    const mediaUrl = publicUrlData.publicUrl;
 
     const { data: inserted, error } = await supabase
       .from('stories')
