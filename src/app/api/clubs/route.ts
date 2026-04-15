@@ -1,6 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
-import { loadClubContext, mapClub, slugify, type ClubRow } from '@/lib/api/clubs';
+import {
+  ensureClubForumSpace,
+  loadClubContext,
+  mapClub,
+  slugify,
+  type ClubRow,
+} from '@/lib/api/clubs';
 
 export async function GET() {
   const client = await getServerClient();
@@ -81,6 +87,19 @@ export async function POST(request: NextRequest) {
   }
 
   const row = data as ClubRow;
+
+  // Provision the club's forum space (idempotent, service-role) so the Foro tab
+  // works immediately. Non-fatal: we don't want a foro hiccup to break club creation.
+  await ensureClubForumSpace({
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    owner_id: row.owner_id,
+    privacy: row.privacy,
+  }).catch((err) => {
+    console.error('[clubs.POST] ensureClubForumSpace failed', err);
+  });
+
   const ctx = await loadClubContext(client, [row], userId);
   return NextResponse.json(mapClub(row, { userId, ...ctx }, ctx.owners.get(row.owner_id)));
 }

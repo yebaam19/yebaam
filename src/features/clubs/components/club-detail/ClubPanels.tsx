@@ -6,6 +6,7 @@ import type {
   ClubEventLite,
   ClubMemberLite,
   ClubPromotionLite,
+  ClubForoBoard,
 } from '@/features/clubs/server/clubs.server';
 import { CLUB_ROLE_LABELS } from '@/features/clubs/utils/clubHelpers';
 import {
@@ -128,21 +129,86 @@ export function PromotionsPanel({ promotions }: { promotions: ClubPromotionLite[
 
 export function ForoPanel({
   foroSpaceSlug,
+  foroBoard,
 }: {
   foroSpaceSlug: string | null;
+  foroBoard: ClubForoBoard;
 }) {
-  if (!foroSpaceSlug) {
+  if (!foroSpaceSlug || !foroBoard) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400">
         Este club aún no tiene foro habilitado.
       </p>
     );
   }
+
+  const totalForums = foroBoard.categories.reduce(
+    (acc, c) => acc + c.forums.length,
+    0,
+  );
+  const totalTopics = foroBoard.categories.reduce(
+    (acc, c) => acc + c.forums.reduce((f, forum) => f + (forum.topicCount ?? 0), 0),
+    0,
+  );
+
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        El foro del club funciona como un bulletin board: los miembros pueden abrir temas y responder en hilos.
-      </p>
+    <div className="space-y-4">
+      <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-400">
+        Bulletin board estilo phpBB · {totalForums} foro(s) · {totalTopics} tema(s)
+      </div>
+
+      {foroBoard.categories.length === 0 ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Aún no hay categorías en este foro.
+        </p>
+      ) : (
+        foroBoard.categories.map((cat) => (
+          <section key={cat.id}>
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {cat.name}
+            </h3>
+            <ul className="space-y-2">
+              {cat.forums.map((forum) => (
+                <li
+                  key={forum.id}
+                  className="rounded-md border border-gray-200 p-2 dark:border-gray-700"
+                >
+                  <Link
+                    href={`/foro/${foroSpaceSlug}/${forum.slug}`}
+                    className="block"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                          {forum.name}
+                        </div>
+                        {forum.description && (
+                          <div className="truncate text-xs text-gray-500 dark:text-gray-400">
+                            {forum.description}
+                          </div>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-right text-[11px] text-gray-500 dark:text-gray-400">
+                        <div>{forum.topicCount ?? 0} temas</div>
+                        <div>{forum.postCount ?? 0} posts</div>
+                      </div>
+                    </div>
+                    {forum.lastTopicTitle && forum.lastTopicSlug && (
+                      <div className="mt-1 truncate text-[11px] text-gray-500 dark:text-gray-400">
+                        Último: {forum.lastTopicTitle}
+                      </div>
+                    )}
+                  </Link>
+                </li>
+              ))}
+              {cat.forums.length === 0 && (
+                <li className="text-xs text-gray-400">Sin foros en esta categoría.</li>
+              )}
+            </ul>
+          </section>
+        ))
+      )}
+
       <Link
         href={`/foro/${foroSpaceSlug}`}
         className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"

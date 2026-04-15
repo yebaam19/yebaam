@@ -1,4 +1,5 @@
 import 'server-only';
+import { getServiceClient } from '@/utils/supabase/server';
 
 export type ClubRow = {
   id: string;
@@ -94,6 +95,144 @@ export function mapClub(
     website: row.website ?? undefined,
     tags: row.tags ?? [],
   };
+}
+
+function clubPrivacyToForumVisibility(privacy: string): 'public' | 'private' | 'secret' {
+  switch (privacy) {
+    case 'PUBLIC':
+      return 'public';
+    case 'PRIVATE':
+    case 'AFFILIATION':
+      return 'private';
+    case 'SECRET':
+      return 'secret';
+    default:
+      return 'public';
+  }
+}
+
+/**
+ * Provision (or top up) a `forum_spaces` row for a club so the club gets a
+ * working forum out of the box — space + "General" category + default
+ * "Discusión general" forum + owner admin role. Idempotent: safe to call
+ * multiple times. Uses the service-role client because `forum_spaces`
+ * INSERT is gated to platform admins by RLS.
+ */
+export async function ensureClubForumSpace(club: {
+  id: string;
+  name: string;
+  slug: string;
+  owner_id: string;
+  privacy: string;
+}): Promise<{ spaceId: string; spaceSlug: string } | null> {
+  const svc = getServiceClient();
+
+  // 1. Space
+  const { data: existing } = await svc
+    .from('forum_spaces')
+    .select('id, slug, enabled')
+    .eq('owner_type', 'club')
+    .eq('owner_id', club.id)
+    .maybeSingle();
+
+  let spaceId: string;
+  let spaceSlug: string;
+
+  if (existing) {
+    spaceId = (existing as { id: string }).id;
+    spaceSlug = (existing as { slug: string }).slug;
+    if (!(existing as { enabled: boolean }).enabled) {
+      await svc.from('forum_spaces').update({ enabled: true }).eq('id', spaceId);
+    }
+  } else {
+    const baseSlug = slugify(`club-${club.slug || club.name}`);
+    let candidate = baseSlug;
+    for (let i = 2; i < 50; i += 1) {
+      const { data: clash } = await svc
+        .from('forum_spaces')
+        .select('id')
+        .eq('slug', candidate)
+        .maybeSingle();
+      if (!clash) break;
+      candidate = `${baseSlug}-${i}`;
+    }
+
+    const { data: inserted, error: insertErr } = await svc
+      .from('forum_spaces')
+      .insert({
+        owner_type: 'club',
+        owner_id: club.id,
+        slug: candidate,
+        name: club.name,
+        visibility: clubPrivacyToForumVisibility(club.privacy),
+        enabled: true,
+        enabled_by: club.owner_id,
+      })
+      .select('id, slug')
+      .single();
+    if (insertErr || !inserted) return null;
+    spaceId = (inserted as { id: string }).id;
+    spaceSlug = (inserted as { slug: string }).slug;
+  }
+
+  // forum_categories.slug and forums.slug are globally unique in this schema,
+  // so we namespace them with the space slug to avoid collisions across clubs.
+  const categorySlug = `${spaceSlug}-general`;
+  const forumSlug = `${spaceSlug}-discusion-general`;
+
+  // 2. Default "General" category
+  const { data: cat } = await svc
+    .from('forum_categories')
+    .select('id')
+    .eq('space_id', spaceId)
+    .maybeSingle();
+
+  let categoryId: string;
+  if (cat) {
+    categoryId = (cat as { id: string }).id;
+  } else {
+    const { data: newCat } = await svc
+      .from('forum_categories')
+      .insert({ space_id: spaceId, name: 'General', slug: categorySlug, position: 0 })
+      .select('id')
+      .single();
+    if (!newCat) return { spaceId, spaceSlug };
+    categoryId = (newCat as { id: string }).id;
+  }
+
+  // 3. Default "Discusión general" forum inside the category
+  const { data: forum } = await svc
+    .from('forums')
+    .select('id')
+    .eq('category_id', categoryId)
+    .maybeSingle();
+  if (!forum) {
+    await svc.from('forums').insert({
+      category_id: categoryId,
+      name: 'Discusión general',
+      slug: forumSlug,
+      description: 'Tema libre para todos los miembros del club.',
+      position: 0,
+    });
+  }
+
+  // 4. Owner admin role
+  const { data: role } = await svc
+    .from('forum_roles')
+    .select('user_id')
+    .eq('space_id', spaceId)
+    .eq('user_id', club.owner_id)
+    .maybeSingle();
+  if (!role) {
+    await svc.from('forum_roles').insert({
+      space_id: spaceId,
+      user_id: club.owner_id,
+      role: 'admin',
+      granted_by: club.owner_id,
+    });
+  }
+
+  return { spaceId, spaceSlug };
 }
 
 export async function loadClubContext(

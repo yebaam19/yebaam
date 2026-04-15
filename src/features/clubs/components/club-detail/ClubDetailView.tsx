@@ -9,6 +9,7 @@ import type {
   ClubMemberLite,
   ClubEventLite,
   ClubPromotionLite,
+  ClubForoBoard,
 } from '@/features/clubs/server/clubs.server';
 import {
   joinClubAction,
@@ -57,6 +58,7 @@ interface ClubDetailViewProps {
   promotions: ClubPromotionLite[];
   publicChatId: string | null;
   foroSpaceSlug: string | null;
+  foroBoard: ClubForoBoard;
 }
 
 const NAV_ITEMS: { key: Exclude<DrawerKey, null>; label: string; icon: typeof UsersIcon }[] = [
@@ -77,6 +79,7 @@ export function ClubDetailView({
   promotions,
   publicChatId,
   foroSpaceSlug,
+  foroBoard,
 }: ClubDetailViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('acerca');
@@ -308,7 +311,9 @@ export function ClubDetailView({
         {drawer === 'members' && <MembersPanel members={members} />}
         {drawer === 'events' && <EventsPanel events={events} />}
         {drawer === 'promotions' && <PromotionsPanel promotions={promotions} />}
-        {drawer === 'foro' && <ForoPanel foroSpaceSlug={foroSpaceSlug} />}
+        {drawer === 'foro' && (
+          <ForoPanel foroSpaceSlug={foroSpaceSlug} foroBoard={foroBoard} />
+        )}
         {drawer === 'chat' && <PublicChatPanel publicChatId={publicChatId} />}
       </ClubDrawer>
     </div>

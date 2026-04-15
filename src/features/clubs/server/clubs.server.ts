@@ -2,7 +2,11 @@ import 'server-only';
 import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
+import { getSpaceBoard } from '@/app/(app)/foro/server/foro.server';
+import type { ForoCategory, ForoSpace } from '@/features/foro/types';
 import type { Club } from '../types/club.types';
+
+export type ClubForoBoard = { space: ForoSpace; categories: ForoCategory[] } | null;
 
 export type ClubPostKind = 'PHOTO' | 'VIDEO' | 'ARTICLE' | 'FILE';
 
@@ -371,4 +375,10 @@ export async function getClubForoSpaceSlug(clubId: string): Promise<string | nul
     .eq('owner_id', clubId)
     .maybeSingle();
   return data?.slug ?? null;
+}
+
+export async function getClubForoBoard(clubId: string): Promise<ClubForoBoard> {
+  const slug = await getClubForoSpaceSlug(clubId);
+  if (!slug) return null;
+  return await getSpaceBoard(slug);
 }
