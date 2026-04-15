@@ -47,7 +47,11 @@ export function subscribeToTable<T = Record<string, unknown>>(
 ): RealtimeChannel {
   const client = getClient();
   const events = opts.events ?? ['INSERT', 'UPDATE', 'DELETE'];
-  const channel = client.channel(opts.channel);
+  // Append a nonce so recent @supabase/realtime-js doesn't return an
+  // already-joined channel for the same topic (which would make `.on(
+  // 'postgres_changes', ...)` throw after Strict Mode / HMR re-runs).
+  const nonce = Math.random().toString(36).slice(2, 8);
+  const channel = client.channel(`${opts.channel}:${nonce}`);
 
   for (const event of events) {
     channel.on(
