@@ -50,7 +50,7 @@ export function FriendsStats({ totalFriends, closeFriends, pendingRequests, sent
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5 gap-2 sm:gap-4">
       {statsCards.map((stat, index) => (
         <div
           key={index}
