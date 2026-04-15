@@ -60,11 +60,11 @@ export function FriendsStats({ totalFriends, closeFriends, pendingRequests, sent
             <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${stat.bg}`}>
               <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-white leading-tight">
                 {stat.value}
               </p>
-              <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate">
+              <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 leading-tight">
                 {stat.label}
               </p>
             </div>

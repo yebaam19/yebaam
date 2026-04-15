@@ -209,7 +209,7 @@ export default function FriendsPage() {
           {/* Tab: Amigos */}
           {activeTab === 'friends' && (
             isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-48 rounded-xl" />
                 ))}
@@ -221,7 +221,7 @@ export default function FriendsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {friends.map((friend) => (
                   <FriendCard
                     key={friend.friendId}
@@ -238,7 +238,7 @@ export default function FriendsPage() {
           {/* Tab: Solicitudes recibidas */}
           {activeTab === 'requests' && (
             isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-64 rounded-xl" />
                 ))}
@@ -250,7 +250,7 @@ export default function FriendsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {pendingRequests.map((request) => (
                   <FriendRequestCard
                     key={request.id}
@@ -279,7 +279,7 @@ export default function FriendsPage() {
           {/* Tab: Solicitudes enviadas */}
           {activeTab === 'sent' && (
             isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="animate-pulse bg-neutral-100 dark:bg-neutral-800 h-64 rounded-xl" />
                 ))}
@@ -291,7 +291,7 @@ export default function FriendsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {sentRequests.map((request) => {
                   // Intentar obtener el perfil del destinatario
                   const profile = request.profile || request.recipientProfile;
@@ -311,15 +311,15 @@ export default function FriendsPage() {
                       className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-xl">
+                        <div className="shrink-0 w-16 h-16 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-xl">
                           {initial}
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-neutral-900 dark:text-white">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-neutral-900 dark:text-white truncate">
                             {displayName}
                           </h3>
                           {profile?.username && (
-                            <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
                               @{profile.username}
                             </p>
                           )}
