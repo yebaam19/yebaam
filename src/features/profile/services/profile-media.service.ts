@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 
 export interface ProfilePhoto {
   id: string;
@@ -207,10 +208,10 @@ function rowToAlbum(row: DbAlbum): ProfileAlbum {
 }
 
 async function getUserId(): Promise<string> {
-  // Try the SDK first (fast path — in-memory session after login).
-  const { data } = await supabase.auth.getUser();
-  const sdkId = data?.user?.id;
-  if (sdkId) return sdkId;
+  // Try the shared cache first (fast path — shared across services, avoids
+  // `navigator.locks` contention from parallel `auth.getUser()` calls).
+  const cachedId = await getCurrentUserId();
+  if (cachedId) return cachedId;
 
   // Cold reload fallback: the SDK has no token in memory because the
   // Supabase refresh cookie is cross-origin and blocked in dev. Fetch the

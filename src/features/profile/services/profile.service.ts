@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 import type {
   ProfileStatsResponse,
   UpdateInterestsDTO,
@@ -132,8 +133,8 @@ class ProfileService {
   }
 
   async getMyProfile(): Promise<UserProfile> {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData?.user;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
     if (!user) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
@@ -146,8 +147,7 @@ class ProfileService {
   }
 
   async updateProfile(data: UpdateProfileDTO): Promise<UserProfile> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     const { data: updated, error } = await supabase
@@ -178,8 +178,7 @@ class ProfileService {
   }
 
   async updateInterests(data: UpdateInterestsDTO): Promise<UserProfile> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     const { data: updated, error } = await supabase
@@ -203,8 +202,7 @@ class ProfileService {
 
     const url = (data as { url: string }).url;
 
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (userId) {
       const column = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
       await supabase

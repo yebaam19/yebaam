@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 import type {
   Comment,
   CommentAuthor,
@@ -79,8 +80,7 @@ function rowToComment(row: DbComment, authors: Map<string, DbProfile>): Comment 
 
 export class CommentService {
   async create(data: CreateCommentDTO): Promise<Comment> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     const { data: inserted, error } = await supabase

@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 import {
   ReactionType,
   type CreateReactionDTO,
@@ -83,8 +84,7 @@ function isDuplicateUserPostReactionError(err: { message?: string } | null | und
 
 export class ReactionService {
   async react(data: CreateReactionDTO): Promise<Reaction> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     const dbType = toDbType(data.type);
@@ -138,8 +138,7 @@ export class ReactionService {
   }
 
   async updateReaction(postId: string, data: UpdateReactionDTO): Promise<Reaction> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     const { data: updated, error } = await supabase
@@ -156,8 +155,7 @@ export class ReactionService {
   }
 
   async unreact(postId: string): Promise<void> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) return;
     const { error } = await supabase
       .from('reactions')
@@ -201,8 +199,7 @@ export class ReactionService {
   }
 
   async getMyReaction(postId: string): Promise<Reaction | null> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) return null;
 
     const { data, error } = await supabase

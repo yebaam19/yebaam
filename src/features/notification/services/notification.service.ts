@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 import {
   NotificationType,
   type GetNotificationsFilters,
@@ -161,8 +162,7 @@ export class NotificationService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) {
       return {
         notifications: [],
@@ -227,8 +227,7 @@ export class NotificationService {
   }
 
   async getStats(): Promise<NotificationStats> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) {
       return {
         totalCount: 0,
@@ -269,8 +268,7 @@ export class NotificationService {
   }
 
   async markAllAsRead(): Promise<void> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) return;
 
     const { error } = await supabase

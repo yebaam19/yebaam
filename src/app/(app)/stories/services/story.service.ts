@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 
 export interface StoryView {
   userId: string;
@@ -110,8 +111,7 @@ class StoryService {
     file: File,
     options: { type: 'image' | 'video'; caption?: string; backgroundColor?: string }
   ): Promise<Story> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     const ext = file.name.split('.').pop() || (options.type === 'video' ? 'mp4' : 'jpg');
@@ -168,8 +168,7 @@ class StoryService {
   }
 
   async getMyStories(): Promise<Story[]> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) return [];
 
     const { data, error } = await supabase
@@ -183,8 +182,7 @@ class StoryService {
   }
 
   async getFriendsStories(): Promise<UserStoriesDto[]> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) return [];
 
     const { data: friends } = await supabase
@@ -252,8 +250,7 @@ class StoryService {
   }
 
   async viewStory(storyId: string): Promise<Story> {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
     await supabase

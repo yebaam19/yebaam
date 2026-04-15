@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase/client';
+import { getCurrentUserId } from '@/utils/supabase/current-user';
 
 export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
@@ -99,11 +100,6 @@ type DbFriendSettings = {
   restricted: boolean;
   nickname: string | null;
 };
-
-async function getCurrentUserId(): Promise<string | null> {
-  const { data } = await supabase.auth.getUser();
-  return data?.user?.id ?? null;
-}
 
 async function hydrateProfiles(ids: string[]): Promise<Map<string, DbProfile>> {
   if (ids.length === 0) return new Map();
