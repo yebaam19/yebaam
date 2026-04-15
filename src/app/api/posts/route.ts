@@ -45,6 +45,20 @@ export async function GET(request: NextRequest) {
     query = query.eq('author_id', userId);
   } else if (scope === 'user' && userIdFilter) {
     query = query.eq('author_id', userIdFilter);
+  } else if (scope === 'timeline' && userId) {
+    // Facebook-style feed: only own posts + accepted friends' posts.
+    const { data: friendships } = await client
+      .from('friendships')
+      .select('requester_id, recipient_id')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
+
+    const friendIds = new Set<string>();
+    for (const f of (friendships ?? []) as Array<{ requester_id: string; recipient_id: string }>) {
+      friendIds.add(f.requester_id === userId ? f.recipient_id : f.requester_id);
+    }
+    const authorIds = [userId, ...friendIds];
+    query = query.in('author_id', authorIds);
   }
 
   const { data, error } = await query;
