@@ -51,7 +51,7 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Organiza eventos y actividades',
             'Conecta con personas afines',
         ],
-        href: '/clubs',
+        href: '/feed/clubs',
         bgColor: 'bg-feature-clubs',
         iconColor: 'text-emerald-500',
         buttonLabel: 'Explorar Clubs',

@@ -43,7 +43,7 @@ export const ClubCard: FC<ClubCardProps> = ({
   };
 
   return (
-    <Link href={`/clubs/${club.slug}`}>
+    <Link href={`/feed/clubs/${club.slug}`}>
       <div className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* Cover Image */}
         <div className="relative h-32 bg-linear-to-r from-blue-500 to-purple-500">

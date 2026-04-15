@@ -21,7 +21,7 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
       <ProfileSection 
         title="Clubes" 
         actionLabel="Ver todos" 
-        actionHref="/clubs"
+        actionHref="/feed/clubs"
       >
         <div className="text-center py-8">
           <div className="animate-pulse flex space-x-4">
@@ -41,7 +41,7 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
       <ProfileSection 
         title="Clubes" 
         actionLabel="Ver todos" 
-        actionHref="/clubs"
+        actionHref="/feed/clubs"
       >
         <div className="text-center py-8">
           <UserGroupIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
@@ -63,13 +63,13 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
     <ProfileSection 
       title="Clubes" 
       actionLabel="Ver todos" 
-      actionHref="/clubs"
+      actionHref="/feed/clubs"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {displayClubs.map((club) => (
           <Link 
             key={club.id} 
-            href={`/clubs/${club.slug}`}
+            href={`/feed/clubs/${club.slug}`}
             className="group"
           >
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">

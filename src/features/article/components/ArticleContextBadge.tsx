@@ -56,7 +56,7 @@ function getContextInfo(
         label: 'Artículo de Club',
         color: 'text-green-600 dark:text-green-400',
         bgColor: 'bg-green-50 dark:bg-green-900/30',
-        href: contextId ? `/clubs/${contextId}` : '#',
+        href: contextId ? `/feed/clubs/${contextId}` : '#',
       }
     case ArticleContextType.USER_PROFILE:
     default:

@@ -48,7 +48,7 @@ export const menuConfig: Record<string, any[]> = {
         {
           icon: SparklesIcon,
           label: 'Clubes',
-          href: '{basePath}/clubes',
+          href: '{basePath}/clubs',
           featureFlag: 'CLUBES_ENABLED' as FeatureFlag,
         },
         {

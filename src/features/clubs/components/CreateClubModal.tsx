@@ -44,7 +44,7 @@ export function CreateClubModal() {
       resetModal()
       // Navegar al club recién creado usando el slug
       if (club.slug) {
-        router.push(`/clubs/${club.slug}`)
+        router.push(`/feed/clubs/${club.slug}`)
       }
     } catch (error) {
       console.error('Error creating club:', error)

@@ -26,7 +26,7 @@ export async function joinClubAction(clubId: string): Promise<ActionResult> {
       { onConflict: 'club_id,user_id' },
     );
   if (error) return { ok: false, error: error.message };
-  revalidatePath(`/clubs/[slug]`, 'page');
+  revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }
 
@@ -40,7 +40,7 @@ export async function leaveClubAction(clubId: string): Promise<ActionResult> {
     .eq('club_id', clubId)
     .eq('user_id', userId);
   if (error) return { ok: false, error: error.message };
-  revalidatePath(`/clubs/[slug]`, 'page');
+  revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }
 
@@ -95,7 +95,7 @@ export async function createClubPostAction(
     .select('id')
     .maybeSingle();
   if (error || !data) return { ok: false, error: error?.message ?? 'No se pudo crear la publicación' };
-  revalidatePath(`/clubs/[slug]`, 'page');
+  revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true, data: { id: data.id as string } };
 }
 
@@ -120,7 +120,7 @@ export async function deleteClubPostAction(postId: string): Promise<ActionResult
 
   const { error } = await client.from('club_posts').delete().eq('id', postId);
   if (error) return { ok: false, error: error.message };
-  revalidatePath(`/clubs/[slug]`, 'page');
+  revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }
 
@@ -138,6 +138,6 @@ export async function assignClubRoleAction(
     .eq('club_id', clubId)
     .eq('user_id', targetUserId);
   if (error) return { ok: false, error: error.message };
-  revalidatePath(`/clubs/[slug]`, 'page');
+  revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }
