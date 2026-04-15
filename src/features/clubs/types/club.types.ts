@@ -16,7 +16,7 @@ export type ClubCategory =
   | 'NEGOCIOS'
   | 'OTRO';
 
-export type ClubPrivacy = 'PUBLIC' | 'PRIVATE';
+export type ClubPrivacy = 'PUBLIC' | 'PRIVATE' | 'SECRET' | 'AFFILIATION';
 
 export type MembershipTier = 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP';
 

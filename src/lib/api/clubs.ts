@@ -67,7 +67,7 @@ export function mapClub(
     description: row.description ?? '',
     category: row.category ?? 'OTRO',
     subcategory: row.subcategory ?? undefined,
-    privacy: (row.privacy ?? 'PUBLIC') as 'PUBLIC' | 'PRIVATE',
+    privacy: (row.privacy ?? 'PUBLIC') as 'PUBLIC' | 'PRIVATE' | 'SECRET' | 'AFFILIATION',
     profileImageUrl: row.profile_image_url ?? undefined,
     coverImageUrl: row.cover_image_url ?? undefined,
     stats: {

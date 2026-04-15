@@ -324,7 +324,7 @@ export default function ProfileAboutFull({
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Clubes
           </h2>
-          <a href="/feed/clubes" className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">
+          <a href="/clubs" className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">
             Ver todos
           </a>
         </div>

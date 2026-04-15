@@ -31,7 +31,7 @@ export interface ProfileFeature {
  * Configuración de todos los tipos de perfiles/espacios disponibles en Yebaam
  * 
  * Rutas actuales del proyecto:
- * - /feed/clubes - Clubs
+ * - /clubs - Clubs
  * - /feed/blogs - Blogs
  * - /feed/professional-profile - Perfil Profesional
  * - /feed/comunidades - Comunidades
@@ -51,7 +51,7 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Organiza eventos y actividades',
             'Conecta con personas afines',
         ],
-        href: '/feed/clubes',
+        href: '/clubs',
         bgColor: 'bg-feature-clubs',
         iconColor: 'text-emerald-500',
         buttonLabel: 'Explorar Clubs',
