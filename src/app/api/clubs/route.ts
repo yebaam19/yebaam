@@ -88,6 +88,15 @@ export async function POST(request: NextRequest) {
 
   const row = data as ClubRow;
 
+  // Enroll owner as a member so the club shows up under "Mis Clubes" and
+  // owner-scoped RLS checks (is_club_member) pass.
+  await client
+    .from('club_members')
+    .upsert(
+      { club_id: row.id, user_id: userId, role: 'OWNER', membership_tier: 'FREE' },
+      { onConflict: 'club_id,user_id' },
+    );
+
   // Provision the club's forum space (idempotent, service-role) so the Foro tab
   // works immediately. Non-fatal: we don't want a foro hiccup to break club creation.
   await ensureClubForumSpace({
