@@ -41,6 +41,14 @@ export function usePosts(options?: { enabled?: boolean }) {
   );
 }
 
+export function useSuggestedPosts(options?: { enabled?: boolean }) {
+  return useFetch<Post[]>(
+    ['posts', 'suggestions'],
+    () => postService.getSuggestedPosts({ limit: 10 }),
+    { enabled: options?.enabled ?? true, staleTime: 60_000 }
+  );
+}
+
 export function useUpdatePost() {
   return useAsyncAction(
     async ({ postId, data }: { postId: string; data: UpdatePostDTO }) => {

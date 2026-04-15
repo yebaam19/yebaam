@@ -60,9 +60,39 @@ function mapRowToPost(row: PostRow, profileById: Map<string, ProfileRow>): Post 
 export async function listTimelinePosts(limit = 20): Promise<Post[]> {
   const client = await getServerClient();
 
+  const { data: auth } = await client.auth.getUser();
+  const userId = auth?.user?.id;
+  if (!userId) return [];
+
+  // Own posts + accepted friends + fellow club-members (Facebook-style feed).
+  const [{ data: friendships }, { data: myMemberships }] = await Promise.all([
+    client
+      .from('friendships')
+      .select('requester_id, recipient_id')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
+    client.from('club_members').select('club_id').eq('user_id', userId),
+  ]);
+
+  const connectedIds = new Set<string>([userId]);
+  for (const f of (friendships ?? []) as Array<{ requester_id: string; recipient_id: string }>) {
+    connectedIds.add(f.requester_id === userId ? f.recipient_id : f.requester_id);
+  }
+  const myClubIds = ((myMemberships ?? []) as Array<{ club_id: string }>).map((m) => m.club_id);
+  if (myClubIds.length > 0) {
+    const { data: clubmates } = await client
+      .from('club_members')
+      .select('user_id')
+      .in('club_id', myClubIds);
+    for (const row of (clubmates ?? []) as Array<{ user_id: string }>) {
+      connectedIds.add(row.user_id);
+    }
+  }
+
   const { data: rows, error } = await client
     .from('posts')
     .select('*')
+    .in('author_id', Array.from(connectedIds))
     .order('created_at', { ascending: false })
     .limit(limit);
 

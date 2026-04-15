@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { usePostSocketEvents } from '../hooks/usePostSocketEvents';
 import { useReactionSocket } from '@/app/(app)/feed/reacions';
 import PostCard from './PostCard';
-import { usePosts } from '../hooks/usePosts';
+import { usePosts, useSuggestedPosts } from '../hooks/usePosts';
 import { getCached, setCached } from '@/lib/hooks/cacheStore';
 import type { Post } from '../interfaces/post.interfaces';
 
@@ -30,6 +30,11 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
   const posts: Post[] = query.data ?? initialPosts ?? [];
   const isLoading = posts.length === 0 && query.isLoading;
   const error = query.error;
+
+  // Fetch suggestions only when the friends-feed came back empty.
+  const showSuggestions = !isLoading && !error && posts.length === 0;
+  const suggestionsQuery = useSuggestedPosts({ enabled: showSuggestions });
+  const suggestedPosts: Post[] = suggestionsQuery.data ?? [];
 
   // Activar WebSocket para actualizaciones en tiempo real
   usePostSocketEvents();
@@ -117,30 +122,49 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
           ))}
         </>
       ) : (
-        // Estado vacío
-        <div className="bg-white dark:bg-neutral-900 rounded-xl p-12 text-center shadow-sm">
-          <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-            <svg
-              className="h-10 w-10 text-neutral-400 dark:text-neutral-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-              />
-            </svg>
+        <>
+          {/* Estado vacío del feed */}
+          <div className="bg-white dark:bg-neutral-900 rounded-xl p-8 text-center shadow-sm">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+              <svg
+                className="h-8 w-8 text-neutral-400 dark:text-neutral-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">
+              Tu feed está vacío
+            </h3>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+              Conecta con amigos o únete a clubes para ver sus publicaciones aquí.
+            </p>
           </div>
-          <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-            No hay posts aún
-          </h3>
-          <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-            Sé el primero en compartir algo con la comunidad. Los posts aparecerán aquí en tiempo real.
-          </p>
-        </div>
+
+          {/* Sugerencias: posts de personas que quizás conozcas */}
+          {suggestedPosts.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 px-1 pt-2">
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+                  Sugerencias
+                </h2>
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                  · posts de personas que quizás conozcas
+                </span>
+              </div>
+              {suggestedPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

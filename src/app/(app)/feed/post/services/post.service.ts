@@ -101,6 +101,12 @@ export class PostService {
     return Array.isArray(payload.data) ? payload.data : [];
   }
 
+  async getSuggestedPosts(filters?: GetPostsFilters): Promise<Post[]> {
+    const qs = buildQuery(filters, { scope: 'suggestions' });
+    const payload = await jsonFetch<{ data: Post[] }>(`/api/posts${qs}`);
+    return Array.isArray(payload.data) ? payload.data : [];
+  }
+
   async getUserPosts(userId: string, filters?: GetPostsFilters): Promise<Post[]> {
     const qs = buildQuery(filters, { scope: 'user', userId });
     const payload = await jsonFetch<{ data: Post[] }>(`/api/posts${qs}`);
