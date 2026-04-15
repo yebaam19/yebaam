@@ -1,10 +1,7 @@
 import { REACTION_CONFIGS, ReactionType } from '../../interfaces/reaction.interfaces';
 import type { ReactionsCount } from '@/app/(app)/feed/post/interfaces/post.interfaces';
-import Link from 'next/link';
 
 interface ReactionStatsProps {
-  postId: string;
-  username: string; // Necesario para construir la URL
   reactionsCount: ReactionsCount; // Recibir directamente del post
   className?: string;
   showTopReactions?: boolean;
@@ -17,8 +14,6 @@ interface ReactionStatsProps {
  * Los datos vienen directamente del post, no del store de reacciones
  */
 export function ReactionStats({
-  postId,
-  username,
   reactionsCount,
   className = '',
   showTopReactions = true,
@@ -76,13 +71,12 @@ export function ReactionStats({
       )}
 
       {/* Total de reacciones */}
-      <Link
-        href={`/${username}/posts/${postId}/statistics`}
-        className="text-sm text-gray-600 dark:text-gray-400 hover:underline cursor-pointer"
+      <span
+        className="text-sm text-gray-600 dark:text-gray-400"
         aria-label={`${total} reacciones en total`}
       >
         {total.toLocaleString()}
-      </Link>
+      </span>
     </div>
   );
 }

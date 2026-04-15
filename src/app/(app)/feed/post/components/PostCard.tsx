@@ -285,7 +285,7 @@ function PostCard({ post, className }: PostCardProps) {
 
       {/* Stats */}
       <div className="flex items-center justify-between px-4 py-2">
-        <ReactionStats postId={post.id} username={post.author.username} reactionsCount={post.reactionsCount} />
+        <ReactionStats reactionsCount={post.reactionsCount} />
       </div>
 
       {/* Actions */}

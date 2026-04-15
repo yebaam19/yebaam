@@ -15,19 +15,6 @@ export type {
   CreateCommentDTO,
 } from './interfaces/post.interfaces';
 
-// Interfaces de estadísticas
-export type {
-  PostStatistics,
-  PostStatisticsResponse,
-  ReactionStatistics,
-  ReactionWithUsers,
-  ReactionUser,
-  CurrentUserReaction,
-  CommentStatistics,
-  ShareStatistics,
-  ViewStatistics,
-} from './interfaces/statistics.interfaces';
-
 // Stores
 export { usePostStore } from './stores/post.store';
 

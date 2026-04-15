@@ -2,9 +2,7 @@
 
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeftIcon, ChartBarIcon } from '@/components/icons/heroicons-shim';
-import { useAuth } from '@/features/auth';
+import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { usePost } from '@/app/(app)/feed/post/hooks/usePosts';
 import { PostCard } from '@/features/post';
 import { useReactionStore, useReactionSocket } from '@/app/(app)/feed/reacions';
@@ -15,16 +13,14 @@ import { CommentList } from '@/app/(app)/feed/comments';
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
-  
+
   const postId = params.postId as string;
-  const username = params.username as string;
-  
+
   // Usar TanStack Query en lugar de Zustand
   const { data: currentPost, isLoading, error } = usePost(postId);
   
-  const { countsByPost, fetchCounts, fetchMyReaction } = useReactionStore();
-  
+  const { fetchCounts, fetchMyReaction } = useReactionStore();
+
   // Activar escucha de eventos de reacciones en tiempo real
   useReactionSocket();
 
@@ -35,12 +31,6 @@ export default function PostDetailPage() {
       fetchMyReaction(postId);
     }
   }, [postId, fetchCounts, fetchMyReaction]);
-
-  // Calcular total de reacciones
-  const counts = countsByPost[postId];
-  const totalReactions = counts 
-    ? Object.values(counts).reduce((sum, count) => sum + count, 0)
-    : 0;
 
   if (isLoading) {
     return (
@@ -135,23 +125,6 @@ export default function PostDetailPage() {
             </h1>
           </div>
 
-          {/* Botón de estadísticas - solo visible para el autor */}
-          {user && currentPost.author.id === user.id && (
-            <Link
-              href={`/${username}/posts/${postId}/statistics`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm border border-neutral-200 dark:border-neutral-700"
-            >
-              <ChartBarIcon className="h-5 w-5 text-neutral-700 dark:text-neutral-300" />
-              <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                Estadísticas
-              </span>
-              {totalReactions > 0 && (
-                <span className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-600 px-2 py-0.5 rounded-full">
-                  {totalReactions}
-                </span>
-              )}
-            </Link>
-          )}
         </div>
 
         {/* Post Card */}

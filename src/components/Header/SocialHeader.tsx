@@ -114,7 +114,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
                 src={YebaamLogo}
                 alt="Yebaam"
                 className="h-full w-auto"
-                style={{ width: 'auto', height: '100%' }}
+                style={{ width: 'auto' }}
                 priority
               />
             </Link>

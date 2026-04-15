@@ -6,7 +6,6 @@ import {
   ReactionType,
   UpdatePostDTO,
 } from '../interfaces/post.interfaces';
-import { PostStatisticsResponse } from '../interfaces/statistics.interfaces';
 
 export interface PresignedUrlData {
   uploadUrl: string;
@@ -170,14 +169,7 @@ export class PostService {
     return payload.data;
   }
 
-  async getStatistics(postId: string): Promise<PostStatisticsResponse> {
-    const payload = await jsonFetch<{ data: PostStatisticsResponse }>(
-      `/api/posts/${postId}/statistics`,
-    );
-    return payload.data;
-  }
-
-  async generateUploadUrls(
+async generateUploadUrls(
     _request: GenerateUploadUrlsRequest,
   ): Promise<GenerateUploadUrlsResponse> {
     throw new Error(
