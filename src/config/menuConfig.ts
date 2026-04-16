@@ -105,8 +105,6 @@ export const menuConfig: Record<string, any[]> = {
           icon: ChatBubbleLeftRightIcon,
           label: 'Chat Público',
           href: '{basePath}/chat-publico',
-          badge: 'Pronto',
-          badgeHideOnMobile: true,
           featureFlag: 'CHAT_PUBLICO_ENABLED' as FeatureFlag,
         },
         {
