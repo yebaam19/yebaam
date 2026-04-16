@@ -5,6 +5,7 @@ import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import {
+  ChatBubbleLeftIcon,
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   Squares2X2Icon,
@@ -18,6 +19,7 @@ import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
 const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
   'squares-2x2': Squares2X2Icon,
   'chat-bubble-left-right': ChatBubbleLeftRightIcon,
+  'chat-bubble-left': ChatBubbleLeftIcon,
   users: UsersIcon,
   cog: Cog6ToothIcon,
 }

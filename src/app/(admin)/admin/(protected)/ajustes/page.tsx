@@ -7,6 +7,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import { listPlatformAdmins } from '@/app/(app)/foro/server/admin.server'
 import UserAvatar from '@/features/foro/components/UserAvatar'
+import ThemeSettings from '@/features/admin/components/ThemeSettings'
 
 export const metadata = { title: 'Admin · Ajustes' }
 
@@ -50,6 +51,8 @@ export default async function AdminAjustesPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-6">
+          <ThemeSettings />
+
           <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
             <header className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
               <div>

@@ -6,6 +6,7 @@ export interface AdminNavItem {
   iconName:
     | 'squares-2x2'
     | 'chat-bubble-left-right'
+    | 'chat-bubble-left'
     | 'users'
     | 'cog'
   disabled?: boolean
@@ -19,6 +20,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/foros' as Route,
     iconName: 'chat-bubble-left-right',
     matchPrefix: '/admin/foros',
+  },
+  {
+    label: 'Chat Público',
+    href: '/admin/chat-publico' as Route,
+    iconName: 'chat-bubble-left',
+    matchPrefix: '/admin/chat-publico',
   },
   {
     label: 'Usuarios',

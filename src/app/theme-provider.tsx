@@ -1,8 +1,12 @@
 'use client'
 
-import { createContext, useCallback, useEffect, useState } from 'react'
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
+
+export type ThemeMode = 'light' | 'dark' | 'system'
 
 interface ThemeContextValue {
+  themeMode: ThemeMode
+  setThemeMode: (mode: ThemeMode) => void
   isDarkMode: boolean
   toggleDarkMode: () => void
   themeDir: 'rtl' | 'ltr'
@@ -11,92 +15,97 @@ interface ThemeContextValue {
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
-  const [themeDir, setThemeDir] = useState<'rtl' | 'ltr'>('ltr')
-  const [mounted, setMounted] = useState(false)
+const LEGACY_KEY = 'theme'
+const STORAGE_KEY = 'theme-mode'
 
-  // Marcar como montado cuando el componente se monta en el cliente
+function readInitialMode(): ThemeMode {
+  if (typeof window === 'undefined') return 'system'
+  const stored = window.localStorage.getItem(STORAGE_KEY)
+  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+  const legacy = window.localStorage.getItem(LEGACY_KEY)
+  if (legacy === 'dark-mode') return 'dark'
+  if (legacy === 'light-mode') return 'light'
+  return 'system'
+}
+
+function systemPrefersDark(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('system')
+  const [systemDark, setSystemDark] = useState(false)
+  const [themeDir, setThemeDir] = useState<'rtl' | 'ltr'>('ltr')
+
   useEffect(() => {
+    setThemeModeState(readInitialMode())
+    setSystemDark(systemPrefersDark())
     setMounted(true)
   }, [])
 
-  // themeMode
   useEffect(() => {
     if (!mounted) return
-    
-    if (localStorage.getItem('theme') === 'dark-mode') {
-      setIsDarkMode(true)
-      const root = document.querySelector('html')
-      if (root && !root.classList.contains('dark')) {
-        root.classList.add('dark')
-      }
-    } else {
-      setIsDarkMode(false)
-      const root = document.querySelector('html')
-      if (root) {
-        root.classList.remove('dark')
-      }
-    }
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [mounted])
 
-  // themeDir
+  const isDarkMode = useMemo(
+    () => themeMode === 'dark' || (themeMode === 'system' && systemDark),
+    [themeMode, systemDark],
+  )
+
   useEffect(() => {
     if (!mounted) return
-    
-    if (typeof window !== 'undefined') {
-      document.documentElement.getAttribute('dir') === 'rtl' ? setThemeDir('rtl') : setThemeDir('ltr')
-    }
-  }, [mounted])
+    const root = document.documentElement
+    if (isDarkMode) root.classList.add('dark')
+    else root.classList.remove('dark')
+  }, [mounted, isDarkMode])
 
-  // Update themeDir when it changes
-  // This ensures that the document's direction is set correctly
-  // when the themeDir state changes.
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      document.documentElement.setAttribute('dir', themeDir)
-    }
-  }, [themeDir])
-
-  // toggleDarkMode
-  // This function toggles the dark mode state and updates the localStorage
-  // and the HTML class accordingly
-  const toggleDarkMode = useCallback((): void => {
     if (!mounted) return
-    
-    if (localStorage.getItem('theme') === 'light-mode') {
-      setIsDarkMode(true)
-      const root = document.querySelector('html')
-      if (root && !root.classList.contains('dark')) {
-        root.classList.add('dark')
-      }
-      localStorage.setItem('theme', 'dark-mode')
-    } else {
-      setIsDarkMode(false)
-      const root = document.querySelector('html')
-      if (root) {
-        root.classList.remove('dark')
-      }
-      localStorage.setItem('theme', 'light-mode')
-    }
+    window.localStorage.setItem(STORAGE_KEY, themeMode)
+    window.localStorage.setItem(LEGACY_KEY, isDarkMode ? 'dark-mode' : 'light-mode')
+  }, [mounted, themeMode, isDarkMode])
+
+  useEffect(() => {
+    if (!mounted) return
+    setThemeDir(document.documentElement.getAttribute('dir') === 'rtl' ? 'rtl' : 'ltr')
   }, [mounted])
 
-  // No renderizar nada hasta que esté montado para evitar hidratación
-  if (!mounted) {
-    return null
-  }
+  useEffect(() => {
+    if (!mounted) return
+    document.documentElement.setAttribute('dir', themeDir)
+  }, [mounted, themeDir])
 
-  //
+  const setThemeMode = useCallback((mode: ThemeMode) => {
+    setThemeModeState(mode)
+  }, [])
+
+  const toggleDarkMode = useCallback(() => {
+    setThemeModeState((prev) => {
+      const effectiveDark = prev === 'dark' || (prev === 'system' && systemPrefersDark())
+      return effectiveDark ? 'light' : 'dark'
+    })
+  }, [])
+
+  if (!mounted) return null
+
   return (
     <ThemeContext.Provider
-        value={{
-          isDarkMode,
-          toggleDarkMode,
-          themeDir,
-          setThemeDir,
-        }}
-      >
-        {children}
-      </ThemeContext.Provider>
+      value={{
+        themeMode,
+        setThemeMode,
+        isDarkMode,
+        toggleDarkMode,
+        themeDir,
+        setThemeDir,
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
   )
 }
