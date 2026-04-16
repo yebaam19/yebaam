@@ -211,13 +211,6 @@ export const menuConfig: Record<string, any[]> = {
           featureFlag: 'PERFIL_PROFESIONAL_ENABLED' as FeatureFlag,
         },
         {
-          icon: ChatBubbleLeftRightIcon,
-          label: 'Mensajes',
-          href: '{basePath}/mensajes',
-          badge: '{badgeMessages}',
-          featureFlag: 'MENSAJES_ENABLED' as FeatureFlag,
-        },
-        {
           icon: ArrowTrendingUpIcon,
           label: 'Estadísticas',
           href: '{basePath}/estadisticas',
