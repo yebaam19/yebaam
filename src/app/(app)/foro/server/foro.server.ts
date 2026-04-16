@@ -36,8 +36,10 @@ type TopicRow = {
   is_pinned: boolean
   is_locked: boolean
   post_count: number
+  view_count?: number | null
   created_at: string
   last_post_at: string | null
+  last_post_id?: string | null
   last_post_author_id: string | null
 }
 type PostRow = {
@@ -47,6 +49,7 @@ type PostRow = {
   content: string
   created_at: string
   edited_at: string | null
+  post_number?: number | null
 }
 type ProfileRow = {
   id: string
@@ -165,8 +168,8 @@ export async function getSpaceBoard(spaceSlug: string): Promise<{
   const forumIds = forumRows.map((f) => f.id)
 
   // Aggregate topic/post counts + newest topic per forum
-  let topicCountByForum = new Map<string, number>()
-  let postSumByForum = new Map<string, number>()
+  const topicCountByForum = new Map<string, number>()
+  const postSumByForum = new Map<string, number>()
   const newestByForum = new Map<
     string,
     { title: string; slug: string; lastPostAt: string | null; lastPostAuthorId: string | null }
@@ -293,6 +296,28 @@ export async function getForumByslugInSpace(
   }
 }
 
+function topicRowToDomain(r: TopicRow, profiles: Map<string, ProfileRow>): ForoTopic {
+  return {
+    id: r.id,
+    forumId: r.forum_id,
+    title: r.title,
+    slug: r.slug,
+    isPinned: r.is_pinned,
+    isLocked: r.is_locked,
+    postCount: r.post_count,
+    viewCount: r.view_count ?? 0,
+    createdAt: r.created_at,
+    lastPostAt: r.last_post_at,
+    lastPostId: r.last_post_id ?? null,
+    author: toAuthor(profiles.get(r.author_id)),
+    lastPostAuthor: r.last_post_author_id ? toAuthor(profiles.get(r.last_post_author_id)) : null,
+  }
+}
+
+// Using '*' so the query is schema-resilient until the view_count/last_post_id
+// migration lands. Missing columns fall back to defaults in topicRowToDomain.
+const TOPIC_COLUMNS = '*'
+
 export async function listTopics(
   forumId: string,
   { limit = 30, offset = 0 }: { limit?: number; offset?: number } = {},
@@ -300,9 +325,7 @@ export async function listTopics(
   const client = await getServerClient()
   const { data } = await client
     .from('forum_topics')
-    .select(
-      'id, forum_id, author_id, title, slug, is_pinned, is_locked, post_count, created_at, last_post_at, last_post_author_id',
-    )
+    .select(TOPIC_COLUMNS)
     .eq('forum_id', forumId)
     .order('is_pinned', { ascending: false })
     .order('last_post_at', { ascending: false, nullsFirst: false })
@@ -315,20 +338,63 @@ export async function listTopics(
     (r) => [r.author_id, r.last_post_author_id].filter(Boolean) as string[],
   )
   const profiles = await loadProfiles(ids)
+  return rows.map((r) => topicRowToDomain(r, profiles))
+}
 
-  return rows.map((r) => ({
-    id: r.id,
-    forumId: r.forum_id,
-    title: r.title,
-    slug: r.slug,
-    isPinned: r.is_pinned,
-    isLocked: r.is_locked,
-    postCount: r.post_count,
-    createdAt: r.created_at,
-    lastPostAt: r.last_post_at,
-    author: toAuthor(profiles.get(r.author_id)),
-    lastPostAuthor: r.last_post_author_id ? toAuthor(profiles.get(r.last_post_author_id)) : null,
-  }))
+export interface TopicListPage {
+  stickies: ForoTopic[]
+  regular: ForoTopic[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export async function listTopicsPage(
+  forumId: string,
+  { page = 1, pageSize = 25 }: { page?: number; pageSize?: number } = {},
+): Promise<TopicListPage> {
+  const client = await getServerClient()
+  const safePage = Math.max(1, Math.floor(page))
+  const offset = (safePage - 1) * pageSize
+
+  const { count } = await client
+    .from('forum_topics')
+    .select('id', { count: 'exact', head: true })
+    .eq('forum_id', forumId)
+    .eq('is_pinned', false)
+
+  const [pinnedRes, regularRes] = await Promise.all([
+    client
+      .from('forum_topics')
+      .select(TOPIC_COLUMNS)
+      .eq('forum_id', forumId)
+      .eq('is_pinned', true)
+      .order('last_post_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false }),
+    client
+      .from('forum_topics')
+      .select(TOPIC_COLUMNS)
+      .eq('forum_id', forumId)
+      .eq('is_pinned', false)
+      .order('last_post_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1),
+  ])
+
+  const pinnedRows = (pinnedRes.data ?? []) as TopicRow[]
+  const regularRows = (regularRes.data ?? []) as TopicRow[]
+  const ids = [...pinnedRows, ...regularRows].flatMap(
+    (r) => [r.author_id, r.last_post_author_id].filter(Boolean) as string[],
+  )
+  const profiles = await loadProfiles(ids)
+
+  return {
+    stickies: pinnedRows.map((r) => topicRowToDomain(r, profiles)),
+    regular: regularRows.map((r) => topicRowToDomain(r, profiles)),
+    total: count ?? 0,
+    page: safePage,
+    pageSize,
+  }
 }
 
 export async function getTopicBySlug(
@@ -343,14 +409,11 @@ export async function getTopicBySlug(
   const client = await getServerClient()
   const { data } = await client
     .from('forum_topics')
-    .select(
-      'id, forum_id, author_id, title, slug, is_pinned, is_locked, post_count, created_at, last_post_at, last_post_author_id',
-    )
+    .select(TOPIC_COLUMNS)
     .eq('forum_id', forum.id)
     .eq('slug', topicSlug)
     .maybeSingle()
   if (!data) {
-    // redirect lookup
     const { data: redirect } = await client
       .from('forum_topic_redirects')
       .select('topic_id')
@@ -360,9 +423,7 @@ export async function getTopicBySlug(
     if (redirect) {
       const { data: redirected } = await client
         .from('forum_topics')
-        .select(
-          'id, forum_id, author_id, title, slug, is_pinned, is_locked, post_count, created_at, last_post_at, last_post_author_id',
-        )
+        .select(TOPIC_COLUMNS)
         .eq('id', (redirect as { topic_id: string }).topic_id)
         .maybeSingle()
       if (redirected) {
@@ -370,25 +431,7 @@ export async function getTopicBySlug(
         const profiles = await loadProfiles(
           [row.author_id, row.last_post_author_id].filter(Boolean) as string[],
         )
-        return {
-          space,
-          forum,
-          topic: {
-            id: row.id,
-            forumId: row.forum_id,
-            title: row.title,
-            slug: row.slug,
-            isPinned: row.is_pinned,
-            isLocked: row.is_locked,
-            postCount: row.post_count,
-            createdAt: row.created_at,
-            lastPostAt: row.last_post_at,
-            author: toAuthor(profiles.get(row.author_id)),
-            lastPostAuthor: row.last_post_author_id
-              ? toAuthor(profiles.get(row.last_post_author_id))
-              : null,
-          },
-        }
+        return { space, forum, topic: topicRowToDomain(row, profiles) }
       }
     }
     return null
@@ -397,25 +440,7 @@ export async function getTopicBySlug(
   const profiles = await loadProfiles(
     [row.author_id, row.last_post_author_id].filter(Boolean) as string[],
   )
-  return {
-    space,
-    forum,
-    topic: {
-      id: row.id,
-      forumId: row.forum_id,
-      title: row.title,
-      slug: row.slug,
-      isPinned: row.is_pinned,
-      isLocked: row.is_locked,
-      postCount: row.post_count,
-      createdAt: row.created_at,
-      lastPostAt: row.last_post_at,
-      author: toAuthor(profiles.get(row.author_id)),
-      lastPostAuthor: row.last_post_author_id
-        ? toAuthor(profiles.get(row.last_post_author_id))
-        : null,
-    },
-  }
+  return { space, forum, topic: topicRowToDomain(row, profiles) }
 }
 
 export async function listPosts(
@@ -425,22 +450,96 @@ export async function listPosts(
   const client = await getServerClient()
   const { data } = await client
     .from('forum_posts')
-    .select('id, topic_id, author_id, content, created_at, edited_at')
+    .select('*')
     .eq('topic_id', topicId)
     .order('created_at', { ascending: true })
     .range(offset, offset + limit - 1)
 
   const rows = (data ?? []) as PostRow[]
   if (rows.length === 0) return []
-  const profiles = await loadProfiles(rows.map((r) => r.author_id))
-  return rows.map((r) => ({
+  const authorIds = Array.from(new Set(rows.map((r) => r.author_id)))
+  const [profiles, metas] = await Promise.all([
+    loadProfiles(authorIds),
+    loadAuthorMeta(authorIds),
+  ])
+  return rows.map((r, idx) => ({
     id: r.id,
     topicId: r.topic_id,
     content: r.content,
     createdAt: r.created_at,
     editedAt: r.edited_at,
+    postNumber: r.post_number ?? offset + idx + 1,
     author: toAuthor(profiles.get(r.author_id)),
+    authorMeta: metas.get(r.author_id),
   }))
+}
+
+export interface TopicPostPage {
+  posts: ForoPost[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export async function listTopicPostsPage(
+  topicId: string,
+  { page = 1, pageSize = 15 }: { page?: number; pageSize?: number } = {},
+): Promise<TopicPostPage> {
+  const client = await getServerClient()
+  const safePage = Math.max(1, Math.floor(page))
+  const offset = (safePage - 1) * pageSize
+
+  const { count } = await client
+    .from('forum_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('topic_id', topicId)
+
+  const posts = await listPosts(topicId, { limit: pageSize, offset })
+  return { posts, total: count ?? 0, page: safePage, pageSize }
+}
+
+async function loadAuthorMeta(ids: string[]): Promise<Map<string, {
+  postCount: number
+  joinedAt: string | null
+  location: string | null
+  signature: string | null
+}>> {
+  const map = new Map<string, {
+    postCount: number
+    joinedAt: string | null
+    location: string | null
+    signature: string | null
+  }>()
+  const unique = Array.from(new Set(ids.filter(Boolean)))
+  if (unique.length === 0) return map
+  const client = await getServerClient()
+  const [profilesRes, countsRes] = await Promise.all([
+    client.from('profiles').select('*').in('id', unique),
+    client.from('forum_posts').select('author_id').in('author_id', unique),
+  ])
+  const counts = new Map<string, number>()
+  for (const row of (countsRes.data ?? []) as { author_id: string }[]) {
+    counts.set(row.author_id, (counts.get(row.author_id) ?? 0) + 1)
+  }
+  for (const p of (profilesRes.data ?? []) as Record<string, unknown>[]) {
+    const id = p.id as string
+    map.set(id, {
+      postCount: counts.get(id) ?? 0,
+      joinedAt: (p.created_at as string | null) ?? null,
+      location: (p.location as string | null) ?? null,
+      signature: (p.foro_signature as string | null) ?? (p.signature as string | null) ?? null,
+    })
+  }
+  return map
+}
+
+export async function incrementTopicView(topicId: string): Promise<void> {
+  const client = await getServerClient()
+  try {
+    await client.rpc('foro_increment_view', { p_topic_id: topicId })
+  } catch {
+    // RPC not yet deployed — silently skip; view_count stays at 0 until migration lands.
+  }
 }
 
 export async function isSpaceAdmin(spaceId: string): Promise<boolean> {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Route } from 'next'
@@ -15,9 +15,17 @@ import {
   setTopicLocked,
   setTopicPinned,
 } from '@/features/foro/actions/foro.actions'
-import type { ForoForum, ForoPost, ForoSpace, ForoTopic } from '@/features/foro/types'
+import { LockClosedIcon } from '@/components/icons/heroicons-shim'
+import type {
+  ForoForum,
+  ForoPost,
+  ForoPostAuthorMeta,
+  ForoSpace,
+  ForoTopic,
+} from '@/features/foro/types'
 import { formatRelativeDate } from '@/features/foro/utils/format'
-import ReplyForm from './ReplyForm'
+import ReplyForm, { type ReplyFormHandle } from './ReplyForm'
+import ForoPagination from './Pagination'
 
 interface Props {
   space: ForoSpace
@@ -26,6 +34,9 @@ interface Props {
   initialPosts: ForoPost[]
   isModerator: boolean
   spaceForums: { id: string; name: string }[]
+  page: number
+  pageSize: number
+  totalPosts: number
 }
 
 type PostInsertRow = {
@@ -35,6 +46,83 @@ type PostInsertRow = {
   content: string
   created_at: string
   edited_at: string | null
+  post_number?: number | null
+}
+
+function userRank(postCount: number): string {
+  if (postCount >= 1000) return 'Usuario leyenda'
+  if (postCount >= 500) return 'Usuario veterano'
+  if (postCount >= 100) return 'Usuario sénior'
+  if (postCount >= 20) return 'Usuario registrado'
+  return 'Usuario nuevo'
+}
+
+function UserCard({
+  author,
+  meta,
+  isOp,
+}: {
+  author: ForoPost['author']
+  meta?: ForoPostAuthorMeta
+  isOp: boolean
+}) {
+  return (
+    <aside className="w-full border-b border-neutral-200 p-4 sm:w-48 sm:shrink-0 sm:border-r sm:border-b-0 dark:border-neutral-800">
+      <div className="flex items-center gap-3 sm:block">
+        {author.avatarUrl ? (
+          <img
+            src={author.avatarUrl}
+            alt={author.displayName}
+            className="h-12 w-12 rounded-full object-cover sm:h-20 sm:w-20"
+          />
+        ) : (
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-200 text-sm font-semibold text-neutral-600 sm:h-20 sm:w-20 sm:text-xl dark:bg-neutral-800 dark:text-neutral-300">
+            {author.displayName.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="min-w-0 sm:mt-2">
+          <Link
+            href={`/@${author.username}` as Route}
+            className="block truncate text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {author.displayName}
+          </Link>
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {userRank(meta?.postCount ?? 0)}
+          </div>
+          {isOp && (
+            <span className="mt-1 inline-block rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700 uppercase dark:bg-blue-900/40 dark:text-blue-300">
+              Autor del tema
+            </span>
+          )}
+        </div>
+      </div>
+      <dl className="mt-3 hidden space-y-1 text-[11px] text-neutral-500 sm:block dark:text-neutral-400">
+        <div>
+          <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
+            Mensajes:
+          </dt>{' '}
+          <dd className="inline">{meta?.postCount ?? 0}</dd>
+        </div>
+        {meta?.joinedAt && (
+          <div>
+            <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
+              Se unió:
+            </dt>{' '}
+            <dd className="inline">{formatRelativeDate(meta.joinedAt)}</dd>
+          </div>
+        )}
+        {meta?.location && (
+          <div>
+            <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
+              Ubicación:
+            </dt>{' '}
+            <dd className="inline">{meta.location}</dd>
+          </div>
+        )}
+      </dl>
+    </aside>
+  )
 }
 
 export default function TopicThread({
@@ -44,6 +132,9 @@ export default function TopicThread({
   initialPosts,
   isModerator,
   spaceForums,
+  page,
+  pageSize,
+  totalPosts,
 }: Props) {
   const router = useRouter()
   const { user } = useAuth()
@@ -56,6 +147,12 @@ export default function TopicThread({
   const [editingDraft, setEditingDraft] = useState('')
   const [editError, setEditError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
+  const replyRef = useRef<ReplyFormHandle>(null)
+
+  const forumHref = `/foro/${space.slug}/${forum.slug}` as Route
+  const topicHref = `${forumHref}/${topic.slug}` as Route
+  const buildPageHref = (p: number) =>
+    p === 1 ? String(topicHref) : `${topicHref}?page=${p}`
 
   useEffect(() => {
     const channel = subscribeToTable<PostInsertRow>({
@@ -91,6 +188,7 @@ export default function TopicThread({
               content: row.content,
               createdAt: row.created_at,
               editedAt: row.edited_at,
+              postNumber: row.post_number ?? prev.length + 1 + (page - 1) * pageSize,
               author: {
                 id: row.author_id,
                 username: 'usuario',
@@ -131,20 +229,18 @@ export default function TopicThread({
       },
     })
     return () => unsubscribe(channel)
-  }, [topic.id])
+  }, [topic.id, page, pageSize])
 
   const startEditing = (post: ForoPost) => {
     setEditingPostId(post.id)
     setEditingDraft(post.content)
     setEditError(null)
   }
-
   const cancelEditing = () => {
     setEditingPostId(null)
     setEditingDraft('')
     setEditError(null)
   }
-
   const handleSaveEdit = (postId: string) => {
     const content = editingDraft.trim()
     if (!content) {
@@ -159,28 +255,27 @@ export default function TopicThread({
       }
       setPosts((prev) =>
         prev.map((p) =>
-          p.id === postId ? { ...p, content, editedAt: result.editedAt ?? new Date().toISOString() } : p,
+          p.id === postId
+            ? { ...p, content, editedAt: result.editedAt ?? new Date().toISOString() }
+            : p,
         ),
       )
       cancelEditing()
     })
   }
-
   const handleDeletePost = (postId: string) => {
     startTransition(async () => {
       const result = await deletePost(postId)
       if (result.ok) setPosts((prev) => prev.filter((p) => p.id !== postId))
     })
   }
-
   const handleDeleteTopic = () => {
     if (!confirm('¿Eliminar este tema y todos sus mensajes?')) return
     startTransition(async () => {
       const result = await deleteTopic(topic.id)
-      if (result.ok) router.push(`/foro/${space.slug}/${forum.slug}` as Route)
+      if (result.ok) router.push(forumHref)
     })
   }
-
   const handleTogglePinned = () => {
     startTransition(async () => {
       const next = !isPinned
@@ -188,7 +283,6 @@ export default function TopicThread({
       if (result.ok) setIsPinned(next)
     })
   }
-
   const handleToggleLocked = () => {
     startTransition(async () => {
       const next = !isLocked
@@ -196,7 +290,6 @@ export default function TopicThread({
       if (result.ok) setIsLocked(next)
     })
   }
-
   const handleMove = () => {
     if (!moveTargetId || moveTargetId === forum.id) {
       setShowMoveDialog(false)
@@ -206,12 +299,46 @@ export default function TopicThread({
       const result = await moveTopic(topic.id, moveTargetId)
       setShowMoveDialog(false)
       if (result.ok && result.spaceSlug && result.forumSlug && result.topicSlug) {
-        router.push(`/foro/${result.spaceSlug}/${result.forumSlug}/${result.topicSlug}` as Route)
+        router.push(
+          `/foro/${result.spaceSlug}/${result.forumSlug}/${result.topicSlug}` as Route,
+        )
       }
     })
   }
+  const handleQuote = (post: ForoPost) => {
+    const preview = post.content.length > 400 ? post.content.slice(0, 400) + '…' : post.content
+    const quoted = `[quote="${post.author.displayName}" post_id="${post.id}"]\n${preview}\n[/quote]\n\n`
+    replyRef.current?.prepend(quoted)
+  }
 
-  const moveCandidates = spaceForums.filter((f) => f.id !== forum.id)
+  const moveCandidates = useMemo(
+    () => spaceForums.filter((f) => f.id !== forum.id),
+    [spaceForums, forum.id],
+  )
+
+  const toolbar = (
+    <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+      <button
+        type="button"
+        onClick={() => replyRef.current?.focus()}
+        disabled={isLocked}
+        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isLocked ? 'Tema cerrado' : 'Responder'}
+      </button>
+      <div className="flex items-center gap-3">
+        <span>
+          <strong>{totalPosts}</strong> mensajes
+        </span>
+        <ForoPagination
+          page={page}
+          pageSize={pageSize}
+          total={totalPosts}
+          buildHref={buildPageHref}
+        />
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-4">
@@ -224,7 +351,7 @@ export default function TopicThread({
           {space.name}
         </Link>
         {' › '}
-        <Link href={`/foro/${space.slug}/${forum.slug}` as Route} className="hover:text-blue-600">
+        <Link href={forumHref} className="hover:text-blue-600">
           {forum.name}
         </Link>
         {' › '}
@@ -232,9 +359,10 @@ export default function TopicThread({
       </nav>
 
       <header className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
+            <h1 className="flex items-center gap-2 text-xl font-bold text-neutral-900 dark:text-neutral-100">
+              {isLocked && <LockClosedIcon className="h-4 w-4 text-neutral-400" />}
               {topic.title}
             </h1>
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -244,6 +372,8 @@ export default function TopicThread({
               </span>
               {' · '}
               {formatRelativeDate(topic.createdAt)}
+              {' · '}
+              {topic.viewCount} vistas
             </p>
           </div>
           {isModerator && (
@@ -325,93 +455,123 @@ export default function TopicThread({
         </div>
       )}
 
+      {toolbar}
+
       <ol className="space-y-3">
-        {posts.map((post, idx) => {
+        {posts.map((post) => {
           const isOwner = user?.id === post.author.id
           const canDelete = isModerator || isOwner
           const canEdit = isModerator || isOwner
           const isEditing = editingPostId === post.id
+          const isOp = post.postNumber === 1
           return (
             <li
               key={post.id}
-              className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+              id={`p${post.id}`}
+              className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm sm:flex dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                    {post.author.displayName}
-                  </span>
-                  {' · '}
-                  {formatRelativeDate(post.createdAt)}
-                  {post.editedAt && (
-                    <span className="ml-1 italic text-neutral-400">(editado)</span>
-                  )}
-                  {idx === 0 && (
-                    <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700 uppercase dark:bg-blue-900/40 dark:text-blue-300">
-                      OP
-                    </span>
+              <UserCard author={post.author} meta={post.authorMeta} isOp={isOp} />
+              <div className="min-w-0 flex-1 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-neutral-100 pb-2 dark:border-neutral-800">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <a
+                      href={`#p${post.id}`}
+                      className="font-semibold text-neutral-700 hover:text-blue-600 dark:text-neutral-300"
+                    >
+                      #{post.postNumber}
+                    </a>
+                    {' · '}
+                    {formatRelativeDate(post.createdAt)}
+                    {post.editedAt && (
+                      <span className="ml-1 text-neutral-400 italic">(editado)</span>
+                    )}
+                  </div>
+                  {!isEditing && (
+                    <div className="flex items-center gap-3 text-xs">
+                      {!isLocked && user && (
+                        <button
+                          type="button"
+                          onClick={() => handleQuote(post)}
+                          className="text-blue-600 hover:underline"
+                        >
+                          Citar
+                        </button>
+                      )}
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => startEditing(post)}
+                          className="text-blue-600 hover:underline"
+                        >
+                          Editar
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePost(post.id)}
+                          className="text-red-600 hover:underline"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
-                {!isEditing && (
-                  <div className="flex items-center gap-3">
-                    {canEdit && (
+                {isEditing ? (
+                  <div className="mt-3 space-y-2">
+                    <textarea
+                      value={editingDraft}
+                      onChange={(e) => setEditingDraft(e.target.value)}
+                      rows={4}
+                      className="block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+                    />
+                    {editError && <p className="text-xs text-red-600">{editError}</p>}
+                    <div className="flex justify-end gap-2">
                       <button
                         type="button"
-                        onClick={() => startEditing(post)}
-                        className="text-xs text-blue-600 hover:underline"
+                        onClick={cancelEditing}
+                        className="rounded-md px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300"
                       >
-                        Editar
+                        Cancelar
                       </button>
-                    )}
-                    {canDelete && (
                       <button
                         type="button"
-                        onClick={() => handleDeletePost(post.id)}
-                        className="text-xs text-red-600 hover:underline"
+                        onClick={() => handleSaveEdit(post.id)}
+                        className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700"
                       >
-                        Eliminar
+                        Guardar
                       </button>
-                    )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+                    {post.content}
+                  </div>
+                )}
+                {post.authorMeta?.signature && !isEditing && (
+                  <div className="mt-4 border-t border-dashed border-neutral-200 pt-2 text-[11px] whitespace-pre-wrap text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+                    {post.authorMeta.signature}
                   </div>
                 )}
               </div>
-              {isEditing ? (
-                <div className="mt-3 space-y-2">
-                  <textarea
-                    value={editingDraft}
-                    onChange={(e) => setEditingDraft(e.target.value)}
-                    rows={4}
-                    className="block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-                  />
-                  {editError && <p className="text-xs text-red-600">{editError}</p>}
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={cancelEditing}
-                      className="rounded-md px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSaveEdit(post.id)}
-                      className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700"
-                    >
-                      Guardar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-3 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-                  {post.content}
-                </div>
-              )}
             </li>
           )
         })}
       </ol>
 
-      <ReplyForm topicId={topic.id} isLocked={isLocked} />
+      {toolbar}
+
+      <ReplyForm ref={replyRef} topicId={topic.id} isLocked={isLocked} />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-xs dark:border-neutral-800">
+        <Link href={forumHref} className="text-blue-600 hover:underline">
+          ← Volver a «{forum.name}»
+        </Link>
+        <Link href="/foro" className="text-blue-600 hover:underline">
+          Ir al índice de foros
+        </Link>
+      </div>
     </div>
   )
 }

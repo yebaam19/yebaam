@@ -58,10 +58,19 @@ export interface ForoTopic {
   isPinned: boolean
   isLocked: boolean
   postCount: number
+  viewCount: number
   createdAt: string
   lastPostAt: string | null
+  lastPostId: string | null
   author: ForoAuthor
   lastPostAuthor: ForoAuthor | null
+}
+
+export interface ForoPostAuthorMeta {
+  postCount: number
+  joinedAt: string | null
+  location: string | null
+  signature: string | null
 }
 
 export interface ForoPost {
@@ -70,7 +79,9 @@ export interface ForoPost {
   content: string
   createdAt: string
   editedAt: string | null
+  postNumber: number
   author: ForoAuthor
+  authorMeta?: ForoPostAuthorMeta
 }
 
 export interface ForoGlobalStaff {
