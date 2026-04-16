@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim'
 
-// Minimal, safe BBCode-ish renderer for phpBB-style post content.
+// Minimal, safe inline-markup renderer for Yebaam post content.
 //
 // Supported tags (case-insensitive):
 //   [quote="author" post_id="id"]…[/quote]   block quote with jump link

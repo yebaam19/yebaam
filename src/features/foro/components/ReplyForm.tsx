@@ -77,11 +77,7 @@ const ReplyForm = forwardRef<ReplyFormHandle, Props>(function ReplyForm(
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <span className="text-[11px] text-neutral-400">
-          Formato: <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[b]</code>{' '}
-          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[i]</code>{' '}
-          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[url]</code>{' '}
-          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[code]</code>{' '}
-          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[quote]</code>
+          Selecciona texto y usa la barra de formato.
         </span>
         <Button
           type="submit"

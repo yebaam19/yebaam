@@ -154,7 +154,7 @@ export function ForoPanel({
   return (
     <div className="space-y-4">
       <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-400">
-        Bulletin board estilo phpBB · {totalForums} foro(s) · {totalTopics} tema(s)
+        Foro del club · {totalForums} foro(s) · {totalTopics} tema(s)
       </div>
 
       {foroBoard.categories.length === 0 ? (

@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import clsx from 'clsx'
 import PostContent from './PostContent'
+import EditorToolbar from './EditorToolbar'
 
 interface Props {
   id: string
@@ -19,9 +20,9 @@ export interface PostEditorHandle {
   prepend: (text: string) => void
 }
 
-// Shared editor with Write / Preview tabs, used by ReplyForm and NewTopicForm.
-// Preview renders the same BBCode/autolink output the final post will use, so
-// users can verify their formatting before submitting.
+// Shared editor with Write / Preview tabs + a formatting toolbar. Preview
+// renders the same output the final post will use so users can verify their
+// formatting before submitting.
 const PostEditor = forwardRef<PostEditorHandle, Props>(function PostEditor(
   { id, value, onChange, placeholder, rows = 6, disabled, ariaLabel },
   ref,
@@ -57,25 +58,35 @@ const PostEditor = forwardRef<PostEditorHandle, Props>(function PostEditor(
 
   return (
     <div>
-      <div role="tablist" className="mb-2 flex items-center gap-1">
-        <button
-          role="tab"
-          type="button"
-          aria-selected={tab === 'write'}
-          onClick={() => setTab('write')}
-          className={tabClass(tab === 'write')}
-        >
-          Escribir
-        </button>
-        <button
-          role="tab"
-          type="button"
-          aria-selected={tab === 'preview'}
-          onClick={() => setTab('preview')}
-          className={tabClass(tab === 'preview')}
-        >
-          Vista previa
-        </button>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div role="tablist" className="flex items-center gap-1">
+          <button
+            role="tab"
+            type="button"
+            aria-selected={tab === 'write'}
+            onClick={() => setTab('write')}
+            className={tabClass(tab === 'write')}
+          >
+            Escribir
+          </button>
+          <button
+            role="tab"
+            type="button"
+            aria-selected={tab === 'preview'}
+            onClick={() => setTab('preview')}
+            className={tabClass(tab === 'preview')}
+          >
+            Vista previa
+          </button>
+        </div>
+        {tab === 'write' && (
+          <EditorToolbar
+            textareaRef={textareaRef}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        )}
       </div>
 
       {tab === 'write' ? (
