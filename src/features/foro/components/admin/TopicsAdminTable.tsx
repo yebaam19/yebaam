@@ -157,12 +157,12 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           value={draft.q}
           onChange={(e) => setDraft({ ...draft, q: e.target.value })}
           placeholder="Buscar por título…"
-          className="min-w-[180px] flex-1 basis-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="min-w-45 flex-1 basis-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <select
           value={draft.space}
           onChange={(e) => setDraft({ ...draft, space: e.target.value, forum: '' })}
-          className="min-w-[160px] flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
           <option value="">Todos los espacios</option>
           {spaces.map((s) => (
@@ -174,7 +174,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
         <select
           value={draft.forum}
           onChange={(e) => setDraft({ ...draft, forum: e.target.value })}
-          className="min-w-[160px] flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
           <option value="">Todos los foros</option>
           {filteredForums.map((f) => (
@@ -188,12 +188,12 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           value={draft.author}
           onChange={(e) => setDraft({ ...draft, author: e.target.value })}
           placeholder="Autor (username)"
-          className="min-w-[140px] flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <select
           value={draft.pinned}
           onChange={(e) => setDraft({ ...draft, pinned: e.target.value })}
-          className="min-w-[140px] flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
           <option value="">Fijado: cualquiera</option>
           <option value="true">Solo fijados</option>
@@ -202,7 +202,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
         <select
           value={draft.locked}
           onChange={(e) => setDraft({ ...draft, locked: e.target.value })}
-          className="min-w-[140px] flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
           <option value="">Estado: cualquiera</option>
           <option value="true">Solo cerrados</option>
@@ -321,7 +321,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
 
       <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
+          <table className="w-full min-w-180 divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
           <thead className="bg-neutral-50 text-[11px] font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/60 dark:text-neutral-400">
             <tr>
               <th className="w-10 px-3 py-2">

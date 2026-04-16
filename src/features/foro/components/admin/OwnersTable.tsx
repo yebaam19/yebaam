@@ -121,7 +121,7 @@ export default function OwnersTable({ initial }: Props) {
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-180 text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-400">
               <th className="px-4 py-2">Nombre</th>
@@ -176,7 +176,7 @@ export default function OwnersTable({ initial }: Props) {
                           type="button"
                           disabled={isPending}
                           onClick={() => handleEnable(c)}
-                          className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+                          className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
                         >
                           Habilitar foro
                         </button>

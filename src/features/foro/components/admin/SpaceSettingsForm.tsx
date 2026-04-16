@@ -106,7 +106,7 @@ export default function SpaceSettingsForm({ space }: Props) {
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
         >
           {isPending ? 'Guardando…' : 'Guardar cambios'}
         </button>

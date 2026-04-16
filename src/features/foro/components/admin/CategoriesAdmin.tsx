@@ -122,18 +122,18 @@ export default function CategoriesAdmin({ space, categories }: Props) {
 
       <form
         onSubmit={handleCreateCategory}
-        className="flex gap-2 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+        className="flex flex-wrap gap-2 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
       >
         <input
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           placeholder="Nueva categoría"
-          className="flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+          className="min-w-45 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
         <button
           type="submit"
           disabled={isPending || !newCategoryName.trim()}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+          className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
         >
           Añadir categoría
         </button>
@@ -200,17 +200,17 @@ export default function CategoriesAdmin({ space, categories }: Props) {
               onSubmit={handleCreateForum(cat)}
               className="space-y-2 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800"
             >
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input
                   value={form.name}
                   onChange={(e) => updateForumForm(cat.id, 'name', e.target.value)}
                   placeholder="Nombre del foro"
-                  className="flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  className="min-w-40 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
                 <select
                   value={form.parent}
                   onChange={(e) => updateForumForm(cat.id, 'parent', e.target.value)}
-                  className="rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  className="min-w-40 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 >
                   <option value="">— Sin padre —</option>
                   {cat.forums
@@ -232,7 +232,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
                 <button
                   type="submit"
                   disabled={isPending || !form.name.trim()}
-                  className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+                  className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
                 >
                   Añadir foro
                 </button>

@@ -26,11 +26,11 @@ export default function SpaceAdminShell({ space, categories, roles }: Props) {
   return (
     <div className="space-y-4">
       <nav className="text-xs text-neutral-500 dark:text-neutral-400">
-        <Link href="/foro" className="hover:text-blue-600">
+        <Link href="/foro" className="hover:text-primary-700">
           Foros
         </Link>
         {' › '}
-        <Link href={`/foro/${space.slug}` as Route} className="hover:text-blue-600">
+        <Link href={`/foro/${space.slug}` as Route} className="hover:text-primary-700">
           {space.name}
         </Link>
         {' › '}
@@ -46,7 +46,7 @@ export default function SpaceAdminShell({ space, categories, roles }: Props) {
         </p>
       </header>
 
-      <div className="flex gap-1 border-b border-neutral-200 text-sm dark:border-neutral-800">
+      <div className="flex flex-wrap gap-1 border-b border-neutral-200 text-sm dark:border-neutral-800">
         {(
           [
             { key: 'categories', label: 'Categorías' },
@@ -58,9 +58,9 @@ export default function SpaceAdminShell({ space, categories, roles }: Props) {
             key={t.key}
             type="button"
             onClick={() => setTab(t.key)}
-            className={`border-b-2 px-4 py-2 font-medium ${
+            className={`-mb-px border-b-2 px-3 py-2 font-medium sm:px-4 ${
               tab === t.key
-                ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+                ? 'border-primary-600 text-primary-700 dark:text-primary-400'
                 : 'border-transparent text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
             }`}
           >

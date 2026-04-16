@@ -80,12 +80,12 @@ export default function ModeratorsAdmin({ space, initial }: Props) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="@username"
-          className="flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+          className="min-w-40 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as ForoRoleType)}
-          className="rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+          className="min-w-35 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         >
           <option value="moderator">Moderador</option>
           <option value="admin">Administrador</option>
@@ -93,14 +93,15 @@ export default function ModeratorsAdmin({ space, initial }: Props) {
         <button
           type="submit"
           disabled={isPending || !username.trim()}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+          className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
         >
           Añadir
         </button>
       </form>
 
-      <div className="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <table className="w-full text-sm">
+      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-120 text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-400">
               <th className="px-4 py-2">Usuario</th>
@@ -147,7 +148,8 @@ export default function ModeratorsAdmin({ space, initial }: Props) {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )

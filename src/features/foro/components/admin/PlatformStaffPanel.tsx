@@ -90,7 +90,7 @@ export default function PlatformStaffPanel({ initial }: Props) {
                   {entry.user.displayName}
                 </div>
                 <div className="truncate text-xs text-neutral-500">@{entry.user.username}</div>
-                <div className="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                <div className="mt-1 inline-flex rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
                   {ROLE_LABEL[entry.role]}
                 </div>
               </div>
@@ -130,7 +130,7 @@ export default function PlatformStaffPanel({ initial }: Props) {
         <button
           type="submit"
           disabled={isPending || !username.trim()}
-          className="self-end rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+          className="self-end rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
         >
           Añadir
         </button>
