@@ -39,18 +39,6 @@ export default function NotificationItem({
   // El usuario actual (userId) debería ser el destinatario (addressee) para poder aceptar
   const isRecipient = isFriendRequest && notification.actor?.id !== user?.id;
 
-  console.log('[NotificationItem] Renderizando:', {
-    id: notification.id,
-    type: notification.type,
-    isFriendRequest,
-    requestId,
-    actorId: notification.actor?.id,
-    currentUserId: user?.id,
-    isRecipient,
-    metadata: notification.metadata,
-    fullNotification: notification
-  });
-
   // Hook para acciones (aceptar/rechazar)
   const {
     isProcessing,
@@ -125,25 +113,14 @@ export default function NotificationItem({
 
         {/* Botones de aceptar/rechazar para solicitudes de amistad */}
         {/* SOLO mostrar si el usuario es el DESTINATARIO (no el remitente) */}
-        {isFriendRequest && isRecipient && (
-          <>
-            {requestId ? (
-              <FriendRequestActions
-                isProcessing={isProcessing}
-                isAccepted={isAccepted}
-                isRejected={isRejected}
-                onAccept={handleAcceptFriendRequest}
-                onReject={handleRejectFriendRequest}
-              />
-            ) : (
-              <div className="mt-3 text-sm text-red-500 dark:text-red-400">
-                 Error: No se encontró el ID de la solicitud. 
-                <span className="block text-xs mt-1">
-                  Metadata: {JSON.stringify(notification.metadata)}
-                </span>
-              </div>
-            )}
-          </>
+        {isFriendRequest && isRecipient && requestId && (
+          <FriendRequestActions
+            isProcessing={isProcessing}
+            isAccepted={isAccepted}
+            isRejected={isRejected}
+            onAccept={handleAcceptFriendRequest}
+            onReject={handleRejectFriendRequest}
+          />
         )}
 
         {/* Si es una solicitud que YO ENVIÉ, mostrar estado */}
