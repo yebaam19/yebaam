@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import type { Route } from 'next'
 import { getServerClient } from '@/utils/supabase/server'
 import {
   ChatBubbleLeftRightIcon,
@@ -10,6 +12,7 @@ export const metadata = { title: 'Admin · Dashboard' }
 type StatTone = 'primary' | 'sky' | 'amber' | 'violet'
 
 interface StatCardProps {
+  href: Route
   label: string
   value: string | number
   hint?: string
@@ -40,10 +43,13 @@ const TONE_STYLES: Record<StatTone, { bar: string; chip: string; icon: string }>
   },
 }
 
-function StatCard({ label, value, hint, tone = 'primary', icon: Icon }: StatCardProps) {
+function StatCard({ href, label, value, hint, tone = 'primary', icon: Icon }: StatCardProps) {
   const styles = TONE_STYLES[tone]
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+    <Link
+      href={href}
+      className="group relative block overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-md focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-primary-900/60"
+    >
       <span aria-hidden="true" className={`absolute inset-x-0 top-0 h-1 ${styles.bar}`} />
       <div className="flex items-start justify-between gap-3 p-5">
         <div className="min-w-0">
@@ -61,7 +67,7 @@ function StatCard({ label, value, hint, tone = 'primary', icon: Icon }: StatCard
           </span>
         )}
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -70,12 +76,12 @@ export default async function AdminOverviewPage() {
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [spacesEnabled, spacesDisabled, topicsWeek, postsWeek, staffCount] = await Promise.all([
+  const [spacesEnabled, spacesDisabled, topicsWeek, postsWeek, adminsCount] = await Promise.all([
     client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', true),
     client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', false),
     client.from('forum_topics').select('id', { count: 'exact', head: true }).gte('created_at', since),
     client.from('forum_posts').select('id', { count: 'exact', head: true }).gte('created_at', since),
-    client.from('forum_global_roles').select('user_id', { count: 'exact', head: true }),
+    client.from('platform_admins').select('user_id', { count: 'exact', head: true }),
   ])
 
   return (
@@ -89,6 +95,7 @@ export default async function AdminOverviewPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
+          href={'/admin/foros' as Route}
           tone="primary"
           icon={Squares2X2Icon}
           label="Espacios activos"
@@ -96,22 +103,25 @@ export default async function AdminOverviewPage() {
           hint={`${spacesDisabled.count ?? 0} inactivos`}
         />
         <StatCard
+          href={'/admin/foros/temas' as Route}
           tone="sky"
           icon={ChatBubbleLeftRightIcon}
           label="Temas (7 días)"
           value={topicsWeek.count ?? 0}
         />
         <StatCard
+          href={'/admin/foros/temas' as Route}
           tone="amber"
           icon={ChatBubbleLeftRightIcon}
           label="Mensajes (7 días)"
           value={postsWeek.count ?? 0}
         />
         <StatCard
+          href={'/admin/ajustes' as Route}
           tone="violet"
           icon={UsersIcon}
           label="Administradores"
-          value={staffCount.count ?? 0}
+          value={adminsCount.count ?? 0}
         />
       </div>
     </div>

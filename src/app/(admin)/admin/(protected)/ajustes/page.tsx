@@ -10,21 +10,6 @@ import UserAvatar from '@/features/foro/components/UserAvatar'
 
 export const metadata = { title: 'Admin · Ajustes' }
 
-const ENV_LABEL: Record<string, { text: string; className: string }> = {
-  development: {
-    text: 'Desarrollo',
-    className: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  },
-  production: {
-    text: 'Producción',
-    className: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
-  },
-  test: {
-    text: 'Test',
-    className: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
-  },
-}
-
 interface ShortcutCardProps {
   href: Route
   label: string
@@ -53,72 +38,18 @@ function ShortcutCard({ href, label, description, icon: Icon }: ShortcutCardProp
 
 export default async function AdminAjustesPage() {
   const admins = await listPlatformAdmins()
-  const envKey = process.env.NODE_ENV ?? 'development'
-  const env = ENV_LABEL[envKey] ?? ENV_LABEL.development
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Ajustes</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Información general de la plataforma y accesos directos.
+          Administradores de la plataforma y accesos directos.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                  Plataforma
-                </h2>
-                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                  Datos básicos de este entorno.
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${env.className}`}
-              >
-                {env.text}
-              </span>
-            </div>
-            <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border border-neutral-100 bg-neutral-50/60 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/40">
-                <dt className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                  Marca
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  Yebaam
-                </dd>
-              </div>
-              <div className="rounded-lg border border-neutral-100 bg-neutral-50/60 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/40">
-                <dt className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                  Idioma
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  Español (es)
-                </dd>
-              </div>
-              <div className="rounded-lg border border-neutral-100 bg-neutral-50/60 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/40">
-                <dt className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                  Backend
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  Supabase
-                </dd>
-              </div>
-              <div className="rounded-lg border border-neutral-100 bg-neutral-50/60 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/40">
-                <dt className="text-[10px] font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                  Framework
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  Next.js App Router
-                </dd>
-              </div>
-            </dl>
-          </section>
-
           <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
             <header className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
               <div>
