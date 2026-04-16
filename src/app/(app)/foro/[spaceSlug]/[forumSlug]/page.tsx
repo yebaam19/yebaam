@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
 import {
@@ -8,6 +7,9 @@ import {
 } from '../../server/foro.server'
 import ForumTopicList from '@/features/foro/components/ForumTopicList'
 import ForoPagination from '@/features/foro/components/Pagination'
+import ForoHeader from '@/features/foro/components/ForoHeader'
+import { Button } from '@/ui/Button'
+import { PlusIcon } from '@/components/icons/heroicons-shim'
 
 interface PageProps {
   params: Promise<{ spaceSlug: string; forumSlug: string }>
@@ -36,45 +38,34 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
   const totalWithStickies = total + stickies.length
 
   const newTopicButton = (
-    <Link
+    <Button
       href={`${basePath}/nuevo-tema` as Route}
-      className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+      color="primary"
+      className="w-full sm:w-auto"
     >
+      <PlusIcon data-slot="icon" />
       Nuevo tema
-    </Link>
+    </Button>
   )
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-4 px-4 py-6">
-      <nav className="text-xs text-neutral-500 dark:text-neutral-400">
-        <Link href="/foro" className="hover:text-blue-600">
-          Foros
-        </Link>
-        {' › '}
-        <Link href={`/foro/${space.slug}` as Route} className="hover:text-blue-600">
-          {space.name}
-        </Link>
-        {' › '}
-        <span className="text-neutral-700 dark:text-neutral-300">{forum.name}</span>
-      </nav>
+    <div className="container mx-auto max-w-6xl space-y-4 px-4 py-4 sm:py-6">
+      <ForoHeader
+        title={forum.name}
+        subtitle={forum.description ?? undefined}
+        crumbs={[
+          { href: '/foro', label: 'Foros' },
+          { href: `/foro/${space.slug}`, label: space.name },
+        ]}
+        action={newTopicButton}
+      />
 
-      <header>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-          {forum.name}
-        </h1>
-        {forum.description && (
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">{forum.description}</p>
-        )}
-      </header>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {newTopicButton}
-        <ForoPagination
-          page={page}
-          pageSize={PAGE_SIZE}
-          total={total}
-          buildHref={buildHref}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <ForoPagination page={page} pageSize={PAGE_SIZE} total={total} buildHref={buildHref} />
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          <strong>{totalWithStickies}</strong>{' '}
+          {totalWithStickies === 1 ? 'tema' : 'temas'} en total
+        </span>
       </div>
 
       <ForumTopicList
@@ -84,34 +75,20 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
         topics={regular}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
         {newTopicButton}
-        <ForoPagination
-          page={page}
-          pageSize={PAGE_SIZE}
-          total={total}
-          buildHref={buildHref}
-        />
+        <ForoPagination page={page} pageSize={PAGE_SIZE} total={total} buildHref={buildHref} />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500 dark:text-neutral-400">
-        <span>
-          <strong>{totalWithStickies}</strong> temas en total
-        </span>
-        <Link href={`/foro/${space.slug}` as Route} className="hover:text-blue-600">
-          ← Volver al índice de «{space.name}»
-        </Link>
-      </div>
-
-      <section className="rounded-lg border border-neutral-200 bg-neutral-50/50 p-3 text-[11px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900/40 dark:text-neutral-400">
+      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-[11px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400">
         <p className="font-semibold text-neutral-600 dark:text-neutral-300">
           Permisos del foro
         </p>
-        <ul className="mt-1 space-y-0.5">
-          <li>Puedes publicar nuevos temas en este foro</li>
-          <li>Puedes responder a los temas en este foro</li>
-          <li>Puedes editar tus propios mensajes</li>
-          <li>Puedes eliminar tus propios mensajes</li>
+        <ul className="mt-1 grid grid-cols-1 gap-y-0.5 sm:grid-cols-2">
+          <li>✓ Puedes publicar nuevos temas</li>
+          <li>✓ Puedes responder a los temas</li>
+          <li>✓ Puedes editar tus propios mensajes</li>
+          <li>✓ Puedes eliminar tus propios mensajes</li>
         </ul>
       </section>
     </div>

@@ -1,51 +1,80 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim'
 import { listPublicSpaces } from './server/foro.server'
+import { Badge } from '@/ui/Badge'
+import ForoHeader from '@/features/foro/components/ForoHeader'
+import { getOwnerMeta, initialsFrom } from '@/features/foro/utils/owner'
 
 export const metadata = {
-  title: 'Foros',
+  title: 'Foros · Yebaam',
 }
 
 export default async function ForoDiscoveryPage() {
   const spaces = await listPublicSpaces()
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-6">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Foros</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Explora los foros de clubes, comunidades, páginas y blogs.
-        </p>
-      </header>
+    <div className="container mx-auto max-w-6xl space-y-6 px-4 py-4 sm:py-6">
+      <ForoHeader
+        title="Foros de Yebaam"
+        subtitle="Comunidad, debate y soporte. Explora los espacios de clubes, grupos, páginas, blogs y la comunidad."
+      />
 
       {spaces.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-300 bg-white p-8 text-center text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900">
+        <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-10 text-center text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900">
           Todavía no hay foros disponibles.
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {spaces.map((space) => (
-            <li
-              key={space.id}
-              className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm transition-colors hover:border-blue-400 dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <Link href={`/foro/${space.slug}` as Route} className="block">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                    {space.name}
-                  </h2>
-                  <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-neutral-600 uppercase dark:bg-neutral-800 dark:text-neutral-400">
-                    {space.ownerType}
-                  </span>
-                </div>
-                {space.description && (
-                  <p className="mt-2 line-clamp-3 text-sm text-neutral-500 dark:text-neutral-400">
-                    {space.description}
-                  </p>
-                )}
-              </Link>
-            </li>
-          ))}
+          {spaces.map((space) => {
+            const owner = getOwnerMeta(space.ownerType)
+            return (
+              <li key={space.id}>
+                <Link
+                  href={`/foro/${space.slug}` as Route}
+                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-md focus-visible:border-primary-500 focus-visible:outline-hidden dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-primary-600"
+                >
+                  <div
+                    aria-hidden
+                    className="h-1.5 w-full"
+                    style={{ backgroundColor: owner.accent }}
+                  />
+                  <div className="flex flex-1 flex-col gap-3 p-5">
+                    <div className="flex items-start gap-3">
+                      <span
+                        aria-hidden
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm"
+                        style={{ backgroundColor: owner.accent }}
+                      >
+                        {initialsFrom(space.name)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="truncate text-base font-semibold text-neutral-900 group-hover:text-primary-700 dark:text-neutral-100 dark:group-hover:text-primary-400">
+                          {space.name}
+                        </h2>
+                        <Badge color={owner.badgeColor} className="mt-1">
+                          {owner.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    {space.description ? (
+                      <p className="line-clamp-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        {space.description}
+                      </p>
+                    ) : (
+                      <p className="line-clamp-3 text-sm text-neutral-400 italic">
+                        Entra para ver las categorías y los temas.
+                      </p>
+                    )}
+                    <div className="mt-auto flex items-center gap-2 pt-1 text-xs font-medium text-primary-700 dark:text-primary-400">
+                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                      Entrar al foro →
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

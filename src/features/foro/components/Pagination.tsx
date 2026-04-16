@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import clsx from 'clsx'
 
 interface Props {
   page: number
@@ -7,6 +8,9 @@ interface Props {
   total: number
   buildHref: (page: number) => string
 }
+
+const cell =
+  'inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium transition-colors'
 
 export default function ForoPagination({ page, pageSize, total, buildHref }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -32,22 +36,26 @@ export default function ForoPagination({ page, pageSize, total, buildHref }: Pro
       href={buildHref(p) as Route}
       aria-label={ariaLabel}
       aria-current={active ? 'page' : undefined}
-      className={
+      className={clsx(
+        cell,
         active
-          ? 'inline-flex h-7 min-w-7 items-center justify-center rounded bg-blue-600 px-2 text-xs font-semibold text-white'
-          : 'inline-flex h-7 min-w-7 items-center justify-center rounded border border-neutral-300 px-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'
-      }
+          ? 'bg-primary-600 text-white shadow-sm'
+          : 'border border-neutral-200 text-neutral-700 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-primary-600 dark:hover:bg-primary-900/20 dark:hover:text-primary-300',
+      )}
     >
       {label}
     </Link>
   )
 
   return (
-    <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="Paginación">
-      <span className="mr-2 text-neutral-500 dark:text-neutral-400">
+    <nav
+      className="flex flex-wrap items-center gap-1.5 text-xs"
+      aria-label="Paginación de foro"
+    >
+      <span className="mr-1 text-neutral-500 dark:text-neutral-400">
         Página <strong>{page}</strong> de <strong>{totalPages}</strong>
       </span>
-      {page > 1 && pageLink(page - 1, 'Anterior', false, 'Página anterior')}
+      {page > 1 && pageLink(page - 1, '‹', false, 'Página anterior')}
       {items.map((it, i) =>
         it === 'gap' ? (
           <span key={`gap-${i}`} className="px-1 text-neutral-400">
@@ -57,7 +65,7 @@ export default function ForoPagination({ page, pageSize, total, buildHref }: Pro
           pageLink(it, String(it), it === page)
         ),
       )}
-      {page < totalPages && pageLink(page + 1, 'Siguiente', false, 'Página siguiente')}
+      {page < totalPages && pageLink(page + 1, '›', false, 'Página siguiente')}
     </nav>
   )
 }

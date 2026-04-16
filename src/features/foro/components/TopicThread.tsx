@@ -15,7 +15,6 @@ import {
   setTopicLocked,
   setTopicPinned,
 } from '@/features/foro/actions/foro.actions'
-import { LockClosedIcon } from '@/components/icons/heroicons-shim'
 import type {
   ForoForum,
   ForoPost,
@@ -24,8 +23,13 @@ import type {
   ForoTopic,
 } from '@/features/foro/types'
 import { formatRelativeDate } from '@/features/foro/utils/format'
+import { Badge } from '@/ui/Badge'
+import { Button } from '@/ui/Button'
+import UserAvatar from './UserAvatar'
 import ReplyForm, { type ReplyFormHandle } from './ReplyForm'
 import ForoPagination from './Pagination'
+import ForoHeader from './ForoHeader'
+import PostContent from './PostContent'
 
 interface Props {
   space: ForoSpace
@@ -49,12 +53,12 @@ type PostInsertRow = {
   post_number?: number | null
 }
 
-function userRank(postCount: number): string {
-  if (postCount >= 1000) return 'Usuario leyenda'
-  if (postCount >= 500) return 'Usuario veterano'
-  if (postCount >= 100) return 'Usuario sénior'
-  if (postCount >= 20) return 'Usuario registrado'
-  return 'Usuario nuevo'
+function userRank(postCount: number): { label: string; color: React.ComponentProps<typeof Badge>['color'] } {
+  if (postCount >= 1000) return { label: 'Leyenda', color: 'purple' }
+  if (postCount >= 500) return { label: 'Veterano', color: 'indigo' }
+  if (postCount >= 100) return { label: 'Sénior', color: 'sky' }
+  if (postCount >= 20) return { label: 'Registrado', color: 'green' }
+  return { label: 'Nuevo', color: 'zinc' }
 }
 
 function UserCard({
@@ -66,38 +70,25 @@ function UserCard({
   meta?: ForoPostAuthorMeta
   isOp: boolean
 }) {
+  const rank = userRank(meta?.postCount ?? 0)
   return (
-    <aside className="w-full border-b border-neutral-200 p-4 sm:w-48 sm:shrink-0 sm:border-r sm:border-b-0 dark:border-neutral-800">
-      <div className="flex items-center gap-3 sm:block">
-        {author.avatarUrl ? (
-          <img
-            src={author.avatarUrl}
-            alt={author.displayName}
-            className="h-12 w-12 rounded-full object-cover sm:h-20 sm:w-20"
-          />
-        ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-200 text-sm font-semibold text-neutral-600 sm:h-20 sm:w-20 sm:text-xl dark:bg-neutral-800 dark:text-neutral-300">
-            {author.displayName.charAt(0).toUpperCase()}
-          </div>
-        )}
-        <div className="min-w-0 sm:mt-2">
-          <Link
-            href={`/@${author.username}` as Route}
-            className="block truncate text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
-          >
-            {author.displayName}
-          </Link>
-          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {userRank(meta?.postCount ?? 0)}
-          </div>
-          {isOp && (
-            <span className="mt-1 inline-block rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-blue-700 uppercase dark:bg-blue-900/40 dark:text-blue-300">
-              Autor del tema
-            </span>
-          )}
+    <aside className="flex w-full items-center gap-3 border-b border-neutral-100 bg-primary-50/40 p-4 sm:w-44 sm:shrink-0 sm:flex-col sm:items-center sm:border-r sm:border-b-0 sm:text-center dark:border-neutral-800 dark:bg-primary-900/10">
+      <Link href={`/@${author.username}` as Route} className="shrink-0">
+        <UserAvatar author={author} className="h-12 w-12 sm:h-20 sm:w-20" />
+      </Link>
+      <div className="min-w-0 flex-1 sm:flex-none">
+        <Link
+          href={`/@${author.username}` as Route}
+          className="block truncate text-sm font-semibold text-primary-700 hover:underline dark:text-primary-400"
+        >
+          {author.displayName}
+        </Link>
+        <div className="mt-0.5 flex flex-wrap gap-1 sm:justify-center">
+          <Badge color={rank.color}>{rank.label}</Badge>
+          {isOp && <Badge color="green">Autor</Badge>}
         </div>
       </div>
-      <dl className="mt-3 hidden space-y-1 text-[11px] text-neutral-500 sm:block dark:text-neutral-400">
+      <dl className="hidden w-full space-y-0.5 pt-2 text-[11px] text-neutral-500 sm:block dark:text-neutral-400">
         <div>
           <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
             Mensajes:
@@ -107,7 +98,7 @@ function UserCard({
         {meta?.joinedAt && (
           <div>
             <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
-              Se unió:
+              Miembro:
             </dt>{' '}
             <dd className="inline">{formatRelativeDate(meta.joinedAt)}</dd>
           </div>
@@ -117,7 +108,7 @@ function UserCard({
             <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
               Ubicación:
             </dt>{' '}
-            <dd className="inline">{meta.location}</dd>
+            <dd className="inline truncate">{meta.location}</dd>
           </div>
         )}
       </dl>
@@ -317,18 +308,19 @@ export default function TopicThread({
   )
 
   const toolbar = (
-    <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500 dark:text-neutral-400">
-      <button
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <Button
         type="button"
         onClick={() => replyRef.current?.focus()}
         disabled={isLocked}
-        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        color="primary"
       >
         {isLocked ? 'Tema cerrado' : 'Responder'}
-      </button>
-      <div className="flex items-center gap-3">
+      </Button>
+      <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
         <span>
-          <strong>{totalPosts}</strong> mensajes
+          <strong className="text-neutral-900 dark:text-neutral-100">{totalPosts}</strong>{' '}
+          {totalPosts === 1 ? 'mensaje' : 'mensajes'}
         </span>
         <ForoPagination
           page={page}
@@ -342,80 +334,39 @@ export default function TopicThread({
 
   return (
     <div className="space-y-4">
-      <nav className="text-xs text-neutral-500 dark:text-neutral-400">
-        <Link href="/foro" className="hover:text-blue-600">
-          Foros
-        </Link>
-        {' › '}
-        <Link href={`/foro/${space.slug}` as Route} className="hover:text-blue-600">
-          {space.name}
-        </Link>
-        {' › '}
-        <Link href={forumHref} className="hover:text-blue-600">
-          {forum.name}
-        </Link>
-        {' › '}
-        <span className="text-neutral-700 dark:text-neutral-300">{topic.title}</span>
-      </nav>
-
-      <header className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-2 text-xl font-bold text-neutral-900 dark:text-neutral-100">
-              {isLocked && <LockClosedIcon className="h-4 w-4 text-neutral-400" />}
-              {topic.title}
-            </h1>
-            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-              Iniciado por{' '}
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                {topic.author.displayName}
-              </span>
-              {' · '}
-              {formatRelativeDate(topic.createdAt)}
-              {' · '}
-              {topic.viewCount} vistas
-            </p>
-          </div>
-          {isModerator && (
+      <ForoHeader
+        title={topic.title}
+        subtitle={`Iniciado por ${topic.author.displayName} · ${formatRelativeDate(topic.createdAt)} · ${topic.viewCount} ${topic.viewCount === 1 ? 'vista' : 'vistas'}`}
+        crumbs={[
+          { href: '/foro', label: 'Foros' },
+          { href: `/foro/${space.slug}`, label: space.name },
+          { href: forumHref, label: forum.name },
+        ]}
+        action={
+          isModerator ? (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleTogglePinned}
-                className="rounded-md border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-              >
+              <Button type="button" onClick={handleTogglePinned} outline>
                 {isPinned ? 'Quitar fijado' : 'Fijar'}
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleLocked}
-                className="rounded-md border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-              >
+              </Button>
+              <Button type="button" onClick={handleToggleLocked} outline>
                 {isLocked ? 'Reabrir' : 'Cerrar'}
-              </button>
+              </Button>
               {moveCandidates.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowMoveDialog(true)}
-                  className="rounded-md border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                >
+                <Button type="button" onClick={() => setShowMoveDialog(true)} outline>
                   Mover
-                </button>
+                </Button>
               )}
-              <button
-                type="button"
-                onClick={handleDeleteTopic}
-                className="rounded-md border border-red-300 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-900/20"
-              >
-                Eliminar tema
-              </button>
+              <Button type="button" onClick={handleDeleteTopic} color="red">
+                Eliminar
+              </Button>
             </div>
-          )}
-        </div>
-      </header>
+          ) : null
+        }
+      />
 
       {showMoveDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl dark:bg-neutral-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl dark:bg-neutral-900">
             <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
               Mover tema
             </h2>
@@ -425,7 +376,7 @@ export default function TopicThread({
             <select
               value={moveTargetId}
               onChange={(e) => setMoveTargetId(e.target.value)}
-              className="mt-3 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+              className="mt-3 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
             >
               <option value="">— Elegir foro —</option>
               {moveCandidates.map((f) => (
@@ -435,21 +386,12 @@ export default function TopicThread({
               ))}
             </select>
             <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowMoveDialog(false)}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-neutral-600 hover:text-neutral-900"
-              >
+              <Button type="button" onClick={() => setShowMoveDialog(false)} plain>
                 Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleMove}
-                disabled={!moveTargetId}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
-              >
+              </Button>
+              <Button type="button" onClick={handleMove} disabled={!moveTargetId} color="primary">
                 Mover
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -468,15 +410,15 @@ export default function TopicThread({
             <li
               key={post.id}
               id={`p${post.id}`}
-              className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm sm:flex dark:border-neutral-800 dark:bg-neutral-900"
+              className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-colors target:border-primary-500 sm:flex dark:border-neutral-800 dark:bg-neutral-900"
             >
               <UserCard author={post.author} meta={post.authorMeta} isOp={isOp} />
-              <div className="min-w-0 flex-1 p-4">
+              <div className="min-w-0 flex-1 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-neutral-100 pb-2 dark:border-neutral-800">
                   <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     <a
                       href={`#p${post.id}`}
-                      className="font-semibold text-neutral-700 hover:text-blue-600 dark:text-neutral-300"
+                      className="font-semibold text-primary-700 hover:underline dark:text-primary-400"
                     >
                       #{post.postNumber}
                     </a>
@@ -487,12 +429,12 @@ export default function TopicThread({
                     )}
                   </div>
                   {!isEditing && (
-                    <div className="flex items-center gap-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
                       {!isLocked && user && (
                         <button
                           type="button"
                           onClick={() => handleQuote(post)}
-                          className="text-blue-600 hover:underline"
+                          className="text-primary-700 hover:underline dark:text-primary-400"
                         >
                           Citar
                         </button>
@@ -501,7 +443,7 @@ export default function TopicThread({
                         <button
                           type="button"
                           onClick={() => startEditing(post)}
-                          className="text-blue-600 hover:underline"
+                          className="text-primary-700 hover:underline dark:text-primary-400"
                         >
                           Editar
                         </button>
@@ -524,29 +466,25 @@ export default function TopicThread({
                       value={editingDraft}
                       onChange={(e) => setEditingDraft(e.target.value)}
                       rows={4}
-                      className="block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+                      className="block w-full resize-y rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
                     />
                     {editError && <p className="text-xs text-red-600">{editError}</p>}
                     <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={cancelEditing}
-                        className="rounded-md px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300"
-                      >
+                      <Button type="button" onClick={cancelEditing} plain>
                         Cancelar
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => handleSaveEdit(post.id)}
-                        className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700"
+                        color="primary"
                       >
                         Guardar
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-3 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-                    {post.content}
+                  <div className="mt-3">
+                    <PostContent content={post.content} topicHref={String(topicHref)} />
                   </div>
                 )}
                 {post.authorMeta?.signature && !isEditing && (
@@ -564,11 +502,14 @@ export default function TopicThread({
 
       <ReplyForm ref={replyRef} topicId={topic.id} isLocked={isLocked} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-xs dark:border-neutral-800">
-        <Link href={forumHref} className="text-blue-600 hover:underline">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-xs dark:border-neutral-800">
+        <Link
+          href={forumHref}
+          className="text-primary-700 hover:underline dark:text-primary-400"
+        >
           ← Volver a «{forum.name}»
         </Link>
-        <Link href="/foro" className="text-blue-600 hover:underline">
+        <Link href="/foro" className="text-primary-700 hover:underline dark:text-primary-400">
           Ir al índice de foros
         </Link>
       </div>
