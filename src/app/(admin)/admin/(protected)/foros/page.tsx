@@ -15,17 +15,23 @@ export default async function AdminForosPage() {
   ])
 
   return (
-    <div className="px-4 py-6 sm:px-6 lg:px-8">
-      <header className="mb-4">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Foros</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Habilita foros por perfil y gestiona los permisos de foros.
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-6 border-b border-neutral-200 pb-5 dark:border-neutral-800">
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+          Foros
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
+          Habilita foros por perfil y gestiona los permisos de moderación de toda la plataforma.
         </p>
       </header>
       <AdminForosNav />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <OwnersTable initial={candidates} />
-        <PlatformStaffPanel initial={staff} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0">
+          <OwnersTable initial={candidates} />
+        </div>
+        <div className="min-w-0">
+          <PlatformStaffPanel initial={staff} />
+        </div>
       </div>
     </div>
   )

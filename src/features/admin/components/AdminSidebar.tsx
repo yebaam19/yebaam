@@ -1,23 +1,24 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import {
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
-  FlagIcon,
   Squares2X2Icon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
 import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import Image from 'next/image'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
 
 const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
   'squares-2x2': Squares2X2Icon,
   'chat-bubble-left-right': ChatBubbleLeftRightIcon,
   users: UsersIcon,
-  flag: FlagIcon,
   cog: Cog6ToothIcon,
 }
 
@@ -40,7 +41,21 @@ export default function AdminSidebar({ onNavigate }: Props) {
 
   return (
     <nav className="flex h-full flex-col">
-      <div className="px-4 pt-6 pb-4">
+      <div className="flex items-center gap-2 border-b border-neutral-200 px-4 pt-5 pb-4 dark:border-neutral-800">
+        <Link href={'/feed' as Route} className="flex h-7 shrink-0 items-center">
+          <Image
+            src={YebaamLogo}
+            alt="Yebaam"
+            className="h-full w-auto"
+            style={{ width: 'auto' }}
+            priority
+          />
+        </Link>
+        <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-700 uppercase dark:bg-primary-900/30 dark:text-primary-300">
+          Admin
+        </span>
+      </div>
+      <div className="px-4 pt-5 pb-3">
         <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
           Administración
         </p>
@@ -78,12 +93,22 @@ export default function AdminSidebar({ onNavigate }: Props) {
                 onClick={onNavigate}
                 className={`${base} ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
                     : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800'
                 }`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon
+                  className={`h-5 w-5 ${
+                    isActive ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500 dark:text-neutral-400'
+                  }`}
+                />
                 <span>{item.label}</span>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500"
+                  />
+                )}
               </Link>
             </li>
           )

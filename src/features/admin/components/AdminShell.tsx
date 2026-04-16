@@ -1,8 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import type { Route } from 'next'
 import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import AdminSidebar from './AdminSidebar'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
 
 interface Props {
   children: React.ReactNode
@@ -25,9 +29,16 @@ export default function AdminShell({ children }: Props) {
             className="absolute inset-0 bg-black/50"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute top-0 bottom-0 left-0 w-64 bg-white shadow-xl dark:bg-neutral-900">
-            <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm font-semibold">Admin</span>
+          <div className="absolute top-0 bottom-0 left-0 flex w-64 flex-col bg-white shadow-xl dark:bg-neutral-900">
+            <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+              <Link href={'/feed' as Route} className="flex h-6 shrink-0 items-center">
+                <Image
+                  src={YebaamLogo}
+                  alt="Yebaam"
+                  className="h-full w-auto"
+                  style={{ width: 'auto' }}
+                />
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
@@ -37,7 +48,9 @@ export default function AdminShell({ children }: Props) {
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            <AdminSidebar onNavigate={() => setMobileOpen(false)} />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <AdminSidebar onNavigate={() => setMobileOpen(false)} />
+            </div>
           </div>
         </div>
       )}
@@ -52,7 +65,17 @@ export default function AdminShell({ children }: Props) {
           >
             <Bars3Icon className="h-5 w-5" />
           </button>
-          <span className="text-sm font-semibold">Admin</span>
+          <Link href={'/feed' as Route} className="flex h-6 shrink-0 items-center">
+            <Image
+              src={YebaamLogo}
+              alt="Yebaam"
+              className="h-full w-auto"
+              style={{ width: 'auto' }}
+            />
+          </Link>
+          <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-700 uppercase dark:bg-primary-900/30 dark:text-primary-300">
+            Admin
+          </span>
         </header>
         <main className="flex-1 overflow-x-auto">{children}</main>
       </div>
