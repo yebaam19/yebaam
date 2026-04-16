@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState, useTransition } from 'react'
 import { createPost } from '@/features/foro/actions/foro.actions'
 import { Button } from '@/ui/Button'
+import PostEditor, { type PostEditorHandle } from './PostEditor'
 
 interface Props {
   topicId: string
@@ -22,20 +23,11 @@ const ReplyForm = forwardRef<ReplyFormHandle, Props>(function ReplyForm(
   const [content, setContent] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<PostEditorHandle>(null)
 
   useImperativeHandle(ref, () => ({
-    focus: () => {
-      textareaRef.current?.focus()
-      textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    },
-    prepend: (text: string) => {
-      setContent((prev) => (prev ? text + prev : text))
-      setTimeout(() => {
-        textareaRef.current?.focus()
-        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }, 0)
-    },
+    focus: () => editorRef.current?.focus(),
+    prepend: (text: string) => editorRef.current?.prepend(text),
   }))
 
   if (isLocked) {
@@ -73,20 +65,23 @@ const ReplyForm = forwardRef<ReplyFormHandle, Props>(function ReplyForm(
       >
         Publicar respuesta
       </label>
-      <textarea
+      <PostEditor
+        ref={editorRef}
         id="reply-content"
-        ref={textareaRef}
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={setContent}
         placeholder="Escribe tu respuesta…"
-        rows={6}
-        className="block w-full resize-y rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+        ariaLabel="Publicar respuesta"
         disabled={isPending}
       />
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <span className="text-[11px] text-neutral-400">
-          Tip: usa <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[quote=autor]…[/quote]</code> para citar.
+          Formato: <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[b]</code>{' '}
+          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[i]</code>{' '}
+          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[url]</code>{' '}
+          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[code]</code>{' '}
+          <code className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] dark:bg-neutral-800">[quote]</code>
         </span>
         <Button
           type="submit"

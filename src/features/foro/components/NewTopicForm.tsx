@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { createTopic } from '@/features/foro/actions/foro.actions'
 import { Button } from '@/ui/Button'
+import PostEditor from './PostEditor'
 
 interface Props {
   spaceSlug: string
@@ -72,18 +73,17 @@ export default function NewTopicForm({
       <div>
         <label
           htmlFor="topic-content"
-          className="block text-sm font-semibold text-neutral-700 dark:text-neutral-200"
+          className="mb-1 block text-sm font-semibold text-neutral-700 dark:text-neutral-200"
         >
           Mensaje
         </label>
-        <textarea
+        <PostEditor
           id="topic-content"
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={setContent}
           rows={8}
-          required
           placeholder="Escribe el primer mensaje del tema…"
-          className="mt-1 block w-full resize-y rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+          ariaLabel="Mensaje"
           disabled={isPending}
         />
       </div>
@@ -95,10 +95,7 @@ export default function NewTopicForm({
       )}
 
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button
-          href={`/foro/${spaceSlug}/${forumSlug}` as Route}
-          plain
-        >
+        <Button href={`/foro/${spaceSlug}/${forumSlug}` as Route} plain>
           Cancelar
         </Button>
         <Button type="submit" disabled={!canSubmit} color="primary">
