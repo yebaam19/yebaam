@@ -202,6 +202,17 @@ export function formatDate(date: Date): string {
 }
 
 /**
+ * Short date variant for tight UI slots (e.g., "16 abr 2026").
+ */
+export function formatDateShort(date: Date): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
+/**
  * Formatear fecha y hora
  */
 export function formatDateTime(date: Date): string {

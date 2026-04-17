@@ -32,9 +32,9 @@ export const ClubCard: FC<ClubCardProps> = ({
   const handleMembershipClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isLoading) return;
-    
+
     if (club.isMember) {
       onLeave?.(club.id);
     } else {
@@ -42,50 +42,55 @@ export const ClubCard: FC<ClubCardProps> = ({
     }
   };
 
+  const isPrivate = club.privacy === 'PRIVATE';
+
   return (
-    <Link href={`/feed/clubs/${club.slug}`}>
-      <div className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
-        {/* Cover Image */}
-        <div className="relative h-32 bg-linear-to-r from-blue-500 to-purple-500">
+    <Link href={`/feed/clubs/${club.slug}`} className="group block h-full">
+      <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:ring-emerald-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-700 dark:hover:ring-emerald-900/40">
+        {/* Cover */}
+        <div className="relative h-24 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500">
           {club.coverImageUrl ? (
             <Image
               src={club.coverImageUrl}
-              alt={club.name}
+              alt=""
               fill
-              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               unoptimized
             />
           ) : null}
-          
-          {/* Privacy Badge */}
-          <div className="absolute top-2 right-2">
-            {club.privacy === 'PRIVATE' ? (
-              <div className="flex items-center gap-1 px-2 py-1 bg-gray-900/70 backdrop-blur-sm rounded-full text-xs text-white">
-                <LockClosedIcon className="w-3 h-3" />
-                <span>Privado</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 px-2 py-1 bg-gray-900/70 backdrop-blur-sm rounded-full text-xs text-white">
-                <GlobeAltIcon className="w-3 h-3" />
-                <span>Público</span>
-              </div>
-            )}
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
 
-          {/* Profile Image */}
-          <div className="absolute -bottom-8 left-4">
-            <div className="relative w-16 h-16 rounded-lg border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-700 overflow-hidden">
+          {/* Privacy Badge */}
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+            {isPrivate ? (
+              <>
+                <LockClosedIcon className="h-3 w-3" />
+                Privado
+              </>
+            ) : (
+              <>
+                <GlobeAltIcon className="h-3 w-3" />
+                Público
+              </>
+            )}
+          </span>
+
+          {/* Profile image */}
+          <div className="absolute -bottom-7 left-4">
+            <div className="relative h-14 w-14 overflow-hidden rounded-xl border-2 border-white bg-white shadow-md dark:border-neutral-900 dark:bg-neutral-800">
               {club.profileImageUrl ? (
                 <Image
                   src={club.profileImageUrl}
                   alt={club.name}
                   fill
+                  sizes="56px"
                   className="object-cover"
                   unoptimized
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-blue-400 to-purple-500">
-                  <span className="text-white font-bold text-xl">
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-400 to-sky-500">
+                  <span className="text-lg font-bold text-white">
                     {club.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -95,74 +100,75 @@ export const ClubCard: FC<ClubCardProps> = ({
         </div>
 
         {/* Content */}
-        <div className="pt-10 px-4 pb-4">
-          {/* Title and Verification */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {club.name}
-                </h3>
-                {club.isVerified && (
-                  <CheckBadgeIcon className="w-5 h-5 text-blue-500 shrink-0" />
-                )}
-              </div>
-              
-              {/* Category */}
-              <span
-                className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${getCategoryColor(club.category)}`}
-              >
-                {getCategoryLabel(club.category)}
-              </span>
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-            {club.description}
-          </p>
-
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
-            <div className="flex items-center gap-1">
-              <UsersIcon className="w-4 h-4" />
-              <span className="font-medium">
-                {formatMembersCount(club.stats.membersCount)}
-              </span>
-              <span className="text-xs">miembros</span>
-            </div>
-            
-            {club.stats.growthRate && club.stats.growthRate > 0 && (
-              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                <span className="text-xs">↑ {club.stats.growthRate.toFixed(1)}%</span>
-              </div>
+        <div className="flex flex-1 flex-col px-4 pb-4 pt-10">
+          {/* Title + verification */}
+          <div className="mb-2 flex items-start gap-1.5">
+            <h3 className="line-clamp-2 min-h-[2.75rem] flex-1 text-[15px] font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
+              {club.name}
+            </h3>
+            {club.isVerified && (
+              <CheckBadgeIcon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
             )}
           </div>
 
-          {/* User Membership Status */}
+          {/* Category */}
+          <div className="mb-2">
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${getCategoryColor(
+                club.category,
+              )}`}
+            >
+              {getCategoryLabel(club.category)}
+            </span>
+          </div>
+
+          {/* Description */}
+          <p className="mb-3 line-clamp-2 min-h-[2.5rem] text-sm text-neutral-600 dark:text-neutral-400">
+            {club.description}
+          </p>
+
+          {/* Stats row */}
+          <div className="mb-3 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
+            <div className="inline-flex items-center gap-1.5">
+              <UsersIcon className="h-4 w-4" />
+              <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                {formatMembersCount(club.stats.membersCount)}
+              </span>
+              <span>miembros</span>
+            </div>
+            {club.stats.growthRate && club.stats.growthRate > 0 && (
+              <span className="inline-flex items-center gap-0.5 font-medium text-emerald-600 dark:text-emerald-400">
+                ↑ {club.stats.growthRate.toFixed(1)}%
+              </span>
+            )}
+          </div>
+
+          {/* Membership tier */}
           {club.isMember && club.currentUserTier && (
             <div className="mb-3">
               <span
-                className={`inline-block text-xs font-medium px-2 py-1 rounded ${getTierBadgeColor(club.currentUserTier)}`}
+                className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium ${getTierBadgeColor(
+                  club.currentUserTier,
+                )}`}
               >
                 {getMembershipTierLabel(club.currentUserTier)}
               </span>
             </div>
           )}
 
-          {/* Action Button */}
+          {/* Action */}
           <button
             onClick={handleMembershipClick}
             disabled={isLoading}
-            className={`w-full py-2 px-4 rounded-lg font-medium text-sm transition-colors ${
+            className={`mt-auto w-full rounded-lg px-4 py-2 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
               club.isMember
-                ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                ? 'border border-neutral-200 bg-white text-neutral-700 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:border-red-900/40 dark:hover:bg-red-900/20 dark:hover:text-red-300'
+                : 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 hover:shadow-md dark:bg-emerald-500 dark:hover:bg-emerald-400'
+            }`}
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -178,7 +184,7 @@ export const ClubCard: FC<ClubCardProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Procesando...
+                Procesando…
               </span>
             ) : club.isMember ? (
               'Miembro'
@@ -187,7 +193,7 @@ export const ClubCard: FC<ClubCardProps> = ({
             )}
           </button>
         </div>
-      </div>
+      </article>
     </Link>
   );
 };

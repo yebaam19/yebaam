@@ -4,6 +4,7 @@ import type {
   UpdateClubDto,
   SearchClubsParams,
   ClubsListResponse,
+  ClubsPagedResponse,
 } from '../types/club.types';
 
 const API_BASE = '/api/clubs';
@@ -34,6 +35,12 @@ export const clubsService = {
 
   async getSuggestedClubs(limit = 10): Promise<Club[]> {
     return jsonFetch<Club[]>(`${API_BASE}/discovery/suggested?limit=${limit}`);
+  },
+
+  async getSuggestedClubsPage(page = 1, limit = 12): Promise<ClubsPagedResponse> {
+    return jsonFetch<ClubsPagedResponse>(
+      `${API_BASE}/discovery/suggested?page=${page}&limit=${limit}`,
+    );
   },
 
   async searchClubs(params: SearchClubsParams): Promise<ClubsListResponse> {
@@ -77,6 +84,12 @@ export const clubsService = {
 
   async getPopularClubs(limit = 10): Promise<Club[]> {
     return jsonFetch<Club[]>(`${API_BASE}/discovery/popular?limit=${limit}`);
+  },
+
+  async getPopularClubsPage(page = 1, limit = 12): Promise<ClubsPagedResponse> {
+    return jsonFetch<ClubsPagedResponse>(
+      `${API_BASE}/discovery/popular?page=${page}&limit=${limit}`,
+    );
   },
 
   async getTrendingClubs(limit = 10): Promise<Club[]> {

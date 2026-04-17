@@ -24,6 +24,14 @@ export function useSuggestedClubs(limit?: number) {
   );
 }
 
+export function useSuggestedClubsPage(page: number, limit: number = 12) {
+  return useFetch(
+    ['clubs', 'suggested', 'page', page, limit],
+    () => clubsService.getSuggestedClubsPage(page, limit),
+    { staleTime: 1000 * 60 * 5 }
+  );
+}
+
 export function useSearchClubs(params: SearchClubsParams) {
   return useFetch(
     ['clubs', 'search', JSON.stringify(params)],
@@ -64,6 +72,14 @@ export function usePopularClubs(limit?: number) {
     ['clubs', 'popular', limit],
     () => clubsService.getPopularClubs(limit),
     { staleTime: 1000 * 60 * 15 }
+  );
+}
+
+export function usePopularClubsPage(page: number, limit: number = 12) {
+  return useFetch(
+    ['clubs', 'popular', 'page', page, limit],
+    () => clubsService.getPopularClubsPage(page, limit),
+    { staleTime: 1000 * 60 * 10 }
   );
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 import { ClubesPageContainer } from './ClubesPageContainer'
 
@@ -25,5 +26,9 @@ export const metadata: Metadata = {
 }
 
 export default function ClubesPage() {
-  return <ClubesPageContainer />
+  return (
+    <Suspense>
+      <ClubesPageContainer />
+    </Suspense>
+  )
 }

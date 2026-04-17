@@ -1,31 +1,51 @@
 'use client'
 
-import { ClubsGrid, CreateClubModal } from '@/features/clubs/components'
+import { ClubsGrid, CreateClubModal, Pagination } from '@/features/clubs/components'
 import { ClubsHero } from '@/features/clubs/components/ClubsHero'
 import {
   useJoinClub,
   useLeaveClub,
   useMyClubs,
-  usePopularClubs,
-  useSuggestedClubs,
+  usePopularClubsPage,
+  useSuggestedClubsPage,
 } from '@/features/clubs/hooks/useClubs'
 import { useClubsUIStore } from '@/features/clubs/store/clubsUIStore'
 import { FireIcon, SparklesIcon, UsersIcon } from '@/components/icons/heroicons-shim'
-import { useState } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 type TabType = 'mis-clubes' | 'sugeridos' | 'descubrir'
 
+const PAGE_SIZE = 12
+
 export function ClubesPageContainer() {
-  const [activeTab, setActiveTab] = useState<TabType>('mis-clubes')
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const tabParam = (searchParams.get('tab') as TabType) || 'mis-clubes'
+  const pageParam = Math.max(1, Number(searchParams.get('page')) || 1)
+
+  const [activeTab, setActiveTab] = useState<TabType>(tabParam)
   const [loadingClubId, setLoadingClubId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setActiveTab(tabParam)
+  }, [tabParam])
 
   // UI Store
   const { setIsCreateModalOpen } = useClubsUIStore()
 
   // Queries
   const { data: myClubs, isLoading: isLoadingMyClubs } = useMyClubs()
-  const { data: suggestedClubs, isLoading: isLoadingSuggested } = useSuggestedClubs(12)
-  const { data: popularClubs, isLoading: isLoadingPopular } = usePopularClubs(12)
+  const { data: suggestedPage, isLoading: isLoadingSuggested } = useSuggestedClubsPage(
+    activeTab === 'sugeridos' ? pageParam : 1,
+    PAGE_SIZE,
+  )
+  const { data: popularPage, isLoading: isLoadingPopular } = usePopularClubsPage(
+    activeTab === 'descubrir' ? pageParam : 1,
+    PAGE_SIZE,
+  )
 
   // Mutations
   const joinMutation = useJoinClub()
@@ -49,6 +69,18 @@ export function ClubesPageContainer() {
     }
   }
 
+  const changeTab = (tab: TabType) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (tab === 'mis-clubes') {
+      params.delete('tab')
+    } else {
+      params.set('tab', tab)
+    }
+    params.delete('page')
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }
+
   const tabs = [
     {
       id: 'mis-clubes' as TabType,
@@ -60,20 +92,26 @@ export function ClubesPageContainer() {
       id: 'sugeridos' as TabType,
       label: 'Sugeridos',
       icon: SparklesIcon,
-      count: Array.isArray(suggestedClubs) ? suggestedClubs.length : undefined,
+      count: suggestedPage?.totalCount,
     },
     {
       id: 'descubrir' as TabType,
       label: 'Descubrir',
       icon: FireIcon,
-      count: Array.isArray(popularClubs) ? popularClubs.length : undefined,
+      count: popularPage?.totalCount,
     },
   ]
 
   const getActiveData = () => {
-    const data =
-      activeTab === 'mis-clubes' ? myClubs : activeTab === 'sugeridos' ? suggestedClubs : popularClubs
-    return Array.isArray(data) ? data : []
+    if (activeTab === 'mis-clubes') return Array.isArray(myClubs) ? myClubs : []
+    if (activeTab === 'sugeridos') return suggestedPage?.items ?? []
+    return popularPage?.items ?? []
+  }
+
+  const getTotalPages = () => {
+    if (activeTab === 'sugeridos') return suggestedPage?.totalPages ?? 1
+    if (activeTab === 'descubrir') return popularPage?.totalPages ?? 1
+    return 1
   }
 
   const isLoading = () => {
@@ -103,7 +141,10 @@ export function ClubesPageContainer() {
   return (
     <div className="container mx-auto max-w-7xl space-y-8 p-5">
       {/* Hero Section */}
-      <ClubsHero onCreateClick={() => setIsCreateModalOpen(true)} showCreateButton={activeTab === 'mis-clubes'} />
+      <ClubsHero
+        onCreateClick={() => setIsCreateModalOpen(true)}
+        showCreateButton={activeTab === 'mis-clubes'}
+      />
 
       {/* Tabs */}
       <div className="border-b border-neutral-200 dark:border-neutral-700">
@@ -115,7 +156,7 @@ export function ClubesPageContainer() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => changeTab(tab.id)}
                 className={`group inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
                   isActive
                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
@@ -143,30 +184,36 @@ export function ClubesPageContainer() {
 
       {/* Content */}
       {isLoading() ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="animate-pulse overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
+              className="animate-pulse overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <div className="h-32 bg-neutral-200 dark:bg-neutral-700" />
-              <div className="space-y-3 p-4">
-                <div className="h-6 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-4 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-4 w-5/6 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-10 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="relative h-24 bg-neutral-200 dark:bg-neutral-800">
+                <div className="absolute -bottom-7 left-4 h-14 w-14 rounded-xl border-2 border-white bg-neutral-300 dark:border-neutral-900 dark:bg-neutral-700" />
+              </div>
+              <div className="space-y-3 px-4 pb-4 pt-10">
+                <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-3 w-20 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-3 w-full rounded bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-3 w-5/6 rounded bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <ClubsGrid
-          clubs={getActiveData()}
-          onJoin={handleJoin}
-          onLeave={handleLeave}
-          loadingClubId={loadingClubId}
-          emptyMessage={getEmptyMessage()}
-        />
+        <>
+          <ClubsGrid
+            clubs={getActiveData()}
+            onJoin={handleJoin}
+            onLeave={handleLeave}
+            loadingClubId={loadingClubId}
+            emptyMessage={getEmptyMessage()}
+          />
+          {activeTab !== 'mis-clubes' && <Pagination totalPages={getTotalPages()} />}
+        </>
       )}
 
       {/* Modal de creación */}

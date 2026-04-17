@@ -180,3 +180,11 @@ export interface ClubsListResponse {
   limit: number;
   hasMore: boolean;
 }
+
+export interface ClubsPagedResponse {
+  items: Club[];
+  page: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+}

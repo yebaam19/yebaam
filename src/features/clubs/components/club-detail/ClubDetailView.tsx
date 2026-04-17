@@ -40,7 +40,7 @@ import {
   CheckBadgeIcon,
   GlobeAltIcon,
 } from '@/components/icons/heroicons-shim';
-import { formatDate, formatMembersCount } from '@/features/clubs/utils/clubHelpers';
+import { formatDate, formatDateShort, formatMembersCount } from '@/features/clubs/utils/clubHelpers';
 
 type DrawerKey = 'chat' | 'members' | 'foro' | 'events' | 'promotions' | null;
 
@@ -184,31 +184,38 @@ export function ClubDetailView({
         <main className="min-w-0 flex-1 space-y-4">
           {/* DETALLES card */}
           <section className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Detalles
             </h2>
-            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-              <div>
-                <div className="text-gray-500 dark:text-gray-400">Miembros</div>
-                <div className="font-semibold text-gray-900 dark:text-white">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-4">
+              <div className="min-w-0">
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Miembros</dt>
+                <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
                   {formatMembersCount(club.stats.membersCount)}
-                </div>
+                </dd>
               </div>
-              <div>
-                <div className="text-gray-500 dark:text-gray-400">Eventos</div>
-                <div className="font-semibold text-gray-900 dark:text-white">{events.length}</div>
+              <div className="min-w-0">
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Eventos</dt>
+                <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
+                  {events.length}
+                </dd>
               </div>
-              <div>
-                <div className="text-gray-500 dark:text-gray-400">Publicaciones</div>
-                <div className="font-semibold text-gray-900 dark:text-white">{initialPosts.length}</div>
+              <div className="min-w-0">
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Publicaciones</dt>
+                <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
+                  {initialPosts.length}
+                </dd>
               </div>
-              <div>
-                <div className="text-gray-500 dark:text-gray-400">Creado</div>
-                <div className="font-semibold text-gray-900 dark:text-white">
-                  {formatDate(new Date(club.createdAt))}
-                </div>
+              <div className="min-w-0">
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Creado</dt>
+                <dd
+                  className="mt-0.5 truncate font-semibold text-gray-900 dark:text-white"
+                  title={formatDate(new Date(club.createdAt))}
+                >
+                  {formatDateShort(new Date(club.createdAt))}
+                </dd>
               </div>
-            </div>
+            </dl>
             {(club.location || club.website) && (
               <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
                 {club.location && (
