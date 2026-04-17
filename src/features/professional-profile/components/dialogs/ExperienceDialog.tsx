@@ -31,7 +31,7 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
       position: '',
       company: '',
       startDate: '',
-      endDate: undefined,
+      endDate: '',
       description: '',
     },
   })
@@ -45,13 +45,13 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
       }
       reset({
         position: experience.position,
-        company: experience.company ?? undefined,
+        company: experience.company ?? '',
         startDate: formatDateForInput(experience.startDate),
         endDate: formatDateForInput(experience.endDate),
         description: experience.description ?? '',
       })
     } else {
-      reset({ position: '', company: '', startDate: '', endDate: undefined, description: '' })
+      reset({ position: '', company: '', startDate: '', endDate: '', description: '' })
     }
   }, [experience, reset])
 
