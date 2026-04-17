@@ -249,13 +249,8 @@ class ProfileMediaService {
   ): Promise<ProfilePhoto> {
     const userId = await getUserId();
 
-    const { data: uploaded, error: uploadError } = await supabase.storage
-      .from(PHOTOS_BUCKET)
-      .uploadAuto(file);
-    if (uploadError || !uploaded) {
-      throw new Error(uploadError?.message || 'Error al subir foto');
-    }
-    const { url, key } = uploaded as { url: string; key: string };
+    const { uploadService } = await import('@/lib/service/upload.service');
+    const { id, url } = await uploadService.uploadImage(file);
 
     const { data, error } = await supabase
       .from('profile_photos')
@@ -263,8 +258,8 @@ class ProfileMediaService {
         {
           user_id: userId,
           album_id: options.albumId ?? null,
-          storage_bucket: PHOTOS_BUCKET,
-          storage_key: key,
+          storage_bucket: 'cloudflare-images',
+          storage_key: id,
           url,
           caption: options.caption ?? null,
           size_bytes: file.size,
@@ -358,13 +353,8 @@ class ProfileMediaService {
   ): Promise<ProfileVideo> {
     const userId = await getUserId();
 
-    const { data: uploaded, error: uploadError } = await supabase.storage
-      .from(VIDEOS_BUCKET)
-      .uploadAuto(file);
-    if (uploadError || !uploaded) {
-      throw new Error(uploadError?.message || 'Error al subir video');
-    }
-    const { url, key } = uploaded as { url: string; key: string };
+    const { uploadService } = await import('@/lib/service/upload.service');
+    const { uid, duration, thumbnail } = await uploadService.uploadVideo(file);
 
     const { data, error } = await supabase
       .from('profile_videos')
@@ -372,11 +362,12 @@ class ProfileMediaService {
         {
           user_id: userId,
           album_id: options.albumId ?? null,
-          storage_bucket: VIDEOS_BUCKET,
-          storage_key: key,
-          url,
-          thumbnail_url: options.thumbnailUrl ?? null,
+          storage_bucket: 'cloudflare-stream',
+          storage_key: uid,
+          url: `https://iframe.videodelivery.net/${uid}`,
+          thumbnail_url: options.thumbnailUrl ?? thumbnail,
           caption: options.caption ?? null,
+          duration_seconds: Math.round(duration),
           size_bytes: file.size,
           mime_type: file.type,
           visibility: clientVisibilityToDb(options.visibility ?? 'friends'),

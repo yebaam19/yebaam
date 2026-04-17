@@ -8,6 +8,7 @@
 'use client'
 
 import { ArrowPathIcon, ArrowUpTrayIcon, LinkIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { uploadService } from '@/lib/service/upload.service'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -50,31 +51,13 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
       const localPreview = URL.createObjectURL(file)
       setPreviewUrl(localPreview)
 
-      const bucket = imageType === 'avatar' ? 'avatars' : 'covers'
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('bucket', bucket)
-      formData.append('folder', `professional-${imageType}`)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-      const payload = await response.json().catch(() => null)
-
-      if (!response.ok || !payload?.success) {
-        toast.error(payload?.error || 'Error al subir la imagen')
-        setPreviewUrl(currentImageUrl || null)
-        return
-      }
-
-      const url = payload.data.url as string
+      const { url } = await uploadService.uploadImage(file)
       setPreviewUrl(url)
       onImageChange(url)
       toast.success('Imagen subida correctamente')
     } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error('Error al subir la imagen')
+      toast.error(error instanceof Error ? error.message : 'Error al subir la imagen')
       setPreviewUrl(currentImageUrl || null)
     } finally {
       setIsUploading(false)

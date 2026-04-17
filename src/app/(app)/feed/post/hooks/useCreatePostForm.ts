@@ -104,7 +104,9 @@ export const useCreatePostForm = () => {
         type: result.type,
         size: result.fileSize,
         mimeType: result.fileType,
-        duration: undefined,
+        duration: result.duration,
+        streamUid: result.streamUid,
+        thumbnailUrl: result.thumbnailUrl,
       }));
 
       toast.success(`${selectedFiles.length} archivo(s) subido(s) exitosamente`);

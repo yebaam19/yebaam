@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { pageProductsService } from '@/services/page-products.service';
+import { uploadService } from '@/lib/service/upload.service';
 
 interface UseProductImageUploadOptions {
   onSuccess?: (fileUrl: string, s3Key: string) => void;
@@ -7,7 +7,7 @@ interface UseProductImageUploadOptions {
 }
 
 export function useProductImageUpload(
-  pageId: string,
+  _pageId: string,
   options?: UseProductImageUploadOptions
 ) {
   const [isUploading, setIsUploading] = useState(false);
@@ -20,39 +20,12 @@ export function useProductImageUpload(
     setError(null);
 
     try {
-      console.log('[useProductImageUpload] Starting upload for:', file.name);
-
-      // Step 1: Get presigned URL with file metadata
-      setProgress(20);
-      const uploadData = await pageProductsService.generateProductImageUploadUrl(pageId, {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-      });
-
-      console.log('[useProductImageUpload] Presigned URL received:', {
-        s3Key: uploadData.s3Key,
-        cloudFrontUrl: uploadData.cloudFrontUrl,
-      });
-
-      // Step 2: Upload to S3
-      setProgress(50);
-      await pageProductsService.uploadImageToS3(uploadData.uploadUrl, file);
-
-      // Step 3: Complete - use cloudFrontUrl as file URL
+      const { url, id } = await uploadService.uploadImage(file, (p) => setProgress(p));
       setProgress(100);
-      
-      console.log('[useProductImageUpload] Upload completed successfully');
-
-      options?.onSuccess?.(uploadData.cloudFrontUrl, uploadData.s3Key);
-
-      return {
-        url: uploadData.cloudFrontUrl,
-        s3Key: uploadData.s3Key,
-      };
+      options?.onSuccess?.(url, id);
+      return { url, s3Key: id };
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Error al subir imagen');
-      console.error('[useProductImageUpload] Upload failed:', error);
       setError(error.message);
       options?.onError?.(error);
       throw error;

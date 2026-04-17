@@ -221,15 +221,10 @@ export function useRemoveMember() {
   );
 }
 
-export function useUploadClubImage(type: 'profile' | 'cover') {
+export function useUploadClubImage(_type: 'profile' | 'cover') {
   return useAsyncAction(async (file: File) => {
-    const generateUrlFn =
-      type === 'profile'
-        ? clubsService.generateProfileImageUrl
-        : clubsService.generateCoverImageUrl;
-
-    const { uploadUrl, fileUrl } = await generateUrlFn(file.name, file.type, file.size);
-    await clubsService.uploadImageToS3(uploadUrl, file);
-    return { fileUrl };
+    const { uploadService } = await import('@/lib/service/upload.service');
+    const { url } = await uploadService.uploadImage(file);
+    return { fileUrl: url };
   });
 }

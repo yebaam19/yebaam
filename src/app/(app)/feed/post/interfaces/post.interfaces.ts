@@ -148,7 +148,9 @@ export interface MediaFile {
   size?: number;
   mimeType?: string;
   duration?: number; // Duración en segundos (para videos)
-  s3Key?: string; // Clave en S3
+  s3Key?: string; // Clave en S3 (legacy) o Cloudflare Image id
+  /** Cloudflare Stream uid — when present, video is served via Stream iframe. */
+  streamUid?: string;
 }
 
 /**

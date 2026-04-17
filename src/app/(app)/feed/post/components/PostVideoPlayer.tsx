@@ -1,6 +1,6 @@
 'use client';
 
-import { PlayIcon } from '@/components/icons/heroicons-shim';
+import { StreamVideo } from '@/components/media/StreamVideo';
 import type { MediaFile } from '../interfaces/post.interfaces';
 
 interface PostVideoPlayerProps {
@@ -10,6 +10,21 @@ interface PostVideoPlayerProps {
 
 export default function PostVideoPlayer({ video, isLiveStream = false }: PostVideoPlayerProps) {
   const isHLS = video.mimeType === 'application/x-mpegURL' || video.url.includes('.m3u8');
+
+  // Cloudflare Stream path — iframe player handles HLS, captions, analytics.
+  if (video.streamUid) {
+    return (
+      <div className="relative bg-black">
+        <StreamVideo uid={video.streamUid} aspectRatio="16 / 9" />
+        {isLiveStream && (
+          <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 pointer-events-none">
+            <span className="h-2 w-2 bg-white rounded-full animate-pulse" />
+            GRABACIÓN
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative bg-black aspect-video max-h-[600px]">

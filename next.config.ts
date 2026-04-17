@@ -33,6 +33,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'ws5s792r.us-east.insforge.app', pathname: '/**' },
       { protocol: 'https', hostname: '*.insforge.app', pathname: '/**' },
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/**' },
+      { protocol: 'https', hostname: 'imagedelivery.net', pathname: '/**' },
+      { protocol: 'https', hostname: 'videodelivery.net', pathname: '/**' },
+      { protocol: 'https', hostname: '*.cloudflarestream.com', pathname: '/**' },
     ],
   },
 }
