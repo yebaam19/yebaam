@@ -53,7 +53,12 @@ export async function proxy(request: NextRequest) {
   }
 
   if (hasSession && isPublicRoute && pathname !== '/') {
-    return NextResponse.redirect(new URL('/feed', request.url));
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
+    const safeRedirect =
+      redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+        ? redirectParam
+        : '/feed';
+    return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 
   return supabaseResponse;
