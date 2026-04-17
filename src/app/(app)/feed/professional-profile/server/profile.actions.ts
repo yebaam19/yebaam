@@ -146,31 +146,3 @@ export async function listPublicProfilesAction(
   return listPublicProfiles(limit, offset);
 }
 
-export async function uploadProfileImageAction(
-  formData: FormData,
-  kind: 'avatar' | 'cover',
-): Promise<ActionResult<{ url: string }>> {
-  const { userId } = await requireUser();
-  if (!userId) return { ok: false, error: 'No autenticado' };
-  const client = getServiceClient();
-
-  const file = formData.get('file');
-  if (!(file instanceof File)) return { ok: false, error: 'Archivo inválido' };
-
-  const maxBytes = (kind === 'avatar' ? 5 : 10) * 1024 * 1024;
-  if (file.size > maxBytes) return { ok: false, error: `El archivo supera ${maxBytes / (1024 * 1024)}MB` };
-  if (!file.type.startsWith('image/')) return { ok: false, error: 'Debe ser una imagen' };
-
-  const bucket = kind === 'avatar' ? 'avatars' : 'covers';
-  const ext = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : '';
-  const key = `${userId}/professional-${kind}-${Date.now()}${ext}`;
-
-  const { error: uploadError } = await client.storage.from(bucket).upload(key, file, {
-    contentType: file.type,
-    upsert: false,
-  });
-  if (uploadError) return { ok: false, error: uploadError.message };
-
-  const { data } = client.storage.from(bucket).getPublicUrl(key);
-  return { ok: true, data: { url: data.publicUrl } };
-}

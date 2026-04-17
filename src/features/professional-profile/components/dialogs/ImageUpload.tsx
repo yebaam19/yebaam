@@ -7,7 +7,6 @@
 
 'use client'
 
-import { uploadProfileImageAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
 import { ArrowPathIcon, ArrowUpTrayIcon, LinkIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
@@ -51,18 +50,27 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
       const localPreview = URL.createObjectURL(file)
       setPreviewUrl(localPreview)
 
+      const bucket = imageType === 'avatar' ? 'avatars' : 'covers'
       const formData = new FormData()
       formData.append('file', file)
-      const result = await uploadProfileImageAction(formData, imageType)
+      formData.append('bucket', bucket)
+      formData.append('folder', `professional-${imageType}`)
 
-      if (!result.ok || !result.data) {
-        toast.error(result.ok ? 'Error al subir la imagen' : result.error)
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const payload = await response.json().catch(() => null)
+
+      if (!response.ok || !payload?.success) {
+        toast.error(payload?.error || 'Error al subir la imagen')
         setPreviewUrl(currentImageUrl || null)
         return
       }
 
-      setPreviewUrl(result.data.url)
-      onImageChange(result.data.url)
+      const url = payload.data.url as string
+      setPreviewUrl(url)
+      onImageChange(url)
       toast.success('Imagen subida correctamente')
     } catch (error) {
       console.error('Error uploading image:', error)
