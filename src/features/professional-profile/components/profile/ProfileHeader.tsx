@@ -6,10 +6,12 @@
 
 'use client'
 
+import { followProfileAction, unfollowProfileAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
 import { CheckBadgeIcon, Cog6ToothIcon, ShareIcon, UserMinusIcon, UserPlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { useFollowProfile, useFollowStatus, useUnfollowProfile } from '../../hooks/queries/useProfileFollowers'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
 
 interface ProfileHeaderProps {
@@ -22,16 +24,41 @@ interface ProfileHeaderProps {
     avatar?: string | null
   }
   isOwner: boolean
+  initialIsFollowing?: boolean
   onEditProfile?: () => void
 }
 
-export function ProfileHeader({ profile, user, isOwner, onEditProfile }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = false, onEditProfile }: ProfileHeaderProps) {
   const fullName = `${user.firstName} ${user.lastName}`
+  const router = useRouter()
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
+  const [isPending, startTransition] = useTransition()
 
-  // Follow hooks (solo si no es owner)
-  const { data: isFollowing, isLoading: isLoadingFollowStatus } = useFollowStatus(!isOwner ? profile.id : undefined)
-  const followMutation = useFollowProfile()
-  const unfollowMutation = useUnfollowProfile()
+  const handleFollow = () => {
+    startTransition(async () => {
+      const result = await followProfileAction(profile.id)
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+      setIsFollowing(true)
+      toast.success('Ahora sigues este perfil')
+      router.refresh()
+    })
+  }
+
+  const handleUnfollow = () => {
+    startTransition(async () => {
+      const result = await unfollowProfileAction(profile.id)
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+      setIsFollowing(false)
+      toast.success('Dejaste de seguir este perfil')
+      router.refresh()
+    })
+  }
 
   // Generar la URL completa del perfil
   const profileUrl =
@@ -193,8 +220,8 @@ export function ProfileHeader({ profile, user, isOwner, onEditProfile }: Profile
                 <>
                   {isFollowing ? (
                     <button
-                      onClick={() => unfollowMutation.mutate(profile.id)}
-                      disabled={unfollowMutation.isPending || isLoadingFollowStatus}
+                      onClick={handleUnfollow}
+                      disabled={isPending}
                       className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                     >
                       <UserMinusIcon className="h-4 w-4" />
@@ -202,8 +229,8 @@ export function ProfileHeader({ profile, user, isOwner, onEditProfile }: Profile
                     </button>
                   ) : (
                     <button
-                      onClick={() => followMutation.mutate(profile.id)}
-                      disabled={followMutation.isPending || isLoadingFollowStatus}
+                      onClick={handleFollow}
+                      disabled={isPending}
                       className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
                     >
                       <UserPlusIcon className="h-4 w-4" />

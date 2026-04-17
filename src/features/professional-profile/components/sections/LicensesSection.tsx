@@ -6,13 +6,15 @@
 
 'use client'
 
+import { addLicenseAction, deleteLicenseAction, updateLicenseAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { DocumentTextIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddLicense, useUpdateLicense, useDeleteLicense } from '../../hooks'
-import type { License } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { License, LicenseFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { LicenseDialog } from '../dialogs/LicenseDialog'
-import { EmptyState, LoadingState, SectionHeader } from './shared'
+import { EmptyState, SectionHeader } from './shared'
 
 interface LicensesSectionProps {
   profileId: string
@@ -26,12 +28,23 @@ function formatDate(dateValue: string | Date): string {
 }
 
 export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSectionProps) {
-  const { mutateAsync: addLicense } = useAddLicense()
-  const { mutateAsync: updateLicense } = useUpdateLicense()
-  const { mutateAsync: deleteLicense } = useDeleteLicense()
+  const router = useRouter()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null)
+
+  const submit = async (data: LicenseFormData) => {
+    const result = selectedLicense
+      ? await updateLicenseAction(profileId, selectedLicense.id, data)
+      : await addLicenseAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedLicense ? 'Licencia actualizada correctamente' : 'Licencia agregada correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedLicense(null)
@@ -49,11 +62,16 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedLicense) {
-      await deleteLicense({ profileId, licenseId: selectedLicense.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedLicense(null)
+    if (!selectedLicense) return
+    const result = await deleteLicenseAction(profileId, selectedLicense.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Licencia eliminada')
+    setIsDeleteDialogOpen(false)
+    setSelectedLicense(null)
+    router.refresh()
   }
 
   return (
@@ -129,14 +147,7 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         license={selectedLicense}
-        onSubmit={async (data) => {
-          if (selectedLicense) {
-            await updateLicense({ profileId, licenseId: selectedLicense.id, data })
-          } else {
-            await addLicense({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

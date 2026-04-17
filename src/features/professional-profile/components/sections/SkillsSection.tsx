@@ -6,11 +6,13 @@
 
 'use client'
 
+import { addSkillAction, deleteSkillAction, updateSkillAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { cn } from '@/lib/utils'
 import { LightBulbIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddSkill, useDeleteSkill, useUpdateSkill } from '../../hooks'
-import type { Skill } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { Skill, SkillFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { SkillDialog } from '../dialogs/SkillDialog'
 import { EmptyState, SectionHeader } from './shared'
@@ -41,13 +43,24 @@ const getLevelColor = (level?: string | null): string => {
 }
 
 export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionProps) {
-  const { mutateAsync: addSkill } = useAddSkill()
-  const { mutateAsync: updateSkill } = useUpdateSkill()
-  const { mutateAsync: deleteSkill } = useDeleteSkill()
+  const router = useRouter()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null)
+
+  const submit = async (data: SkillFormData) => {
+    const result = selectedSkill
+      ? await updateSkillAction(profileId, selectedSkill.id, data)
+      : await addSkillAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedSkill ? 'Habilidad actualizada correctamente' : 'Habilidad agregada correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedSkill(null)
@@ -65,11 +78,16 @@ export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionP
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedSkill) {
-      await deleteSkill({ profileId, skillId: selectedSkill.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedSkill(null)
+    if (!selectedSkill) return
+    const result = await deleteSkillAction(profileId, selectedSkill.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Habilidad eliminada')
+    setIsDeleteDialogOpen(false)
+    setSelectedSkill(null)
+    router.refresh()
   }
 
   return (
@@ -134,14 +152,7 @@ export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionP
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         skill={selectedSkill}
-        onSubmit={async (data) => {
-          if (selectedSkill) {
-            await updateSkill({ profileId, skillId: selectedSkill.id, data })
-          } else {
-            await addSkill({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

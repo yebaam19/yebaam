@@ -6,13 +6,15 @@
 
 'use client'
 
+import { addTitleAction, deleteTitleAction, updateTitleAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { AcademicCapIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddTitle, useUpdateTitle, useDeleteTitle } from '../../hooks'
-import type { Title } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { Title, TitleFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { TitleDialog } from '../dialogs/TitleDialog'
-import { EmptyState, LoadingState, SectionHeader } from './shared'
+import { EmptyState, SectionHeader } from './shared'
 
 interface TitlesSectionProps {
   profileId: string
@@ -21,13 +23,24 @@ interface TitlesSectionProps {
 }
 
 export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionProps) {
-  const { mutateAsync: addTitle } = useAddTitle()
-  const { mutateAsync: updateTitle } = useUpdateTitle()
-  const { mutateAsync: deleteTitle } = useDeleteTitle()
-  
+  const router = useRouter()
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedTitle, setSelectedTitle] = useState<Title | null>(null)
+
+  const submit = async (data: TitleFormData) => {
+    const result = selectedTitle
+      ? await updateTitleAction(profileId, selectedTitle.id, data)
+      : await addTitleAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedTitle ? 'Título actualizado correctamente' : 'Título agregado correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedTitle(null)
@@ -45,11 +58,16 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedTitle) {
-      await deleteTitle({ profileId, titleId: selectedTitle.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedTitle(null)
+    if (!selectedTitle) return
+    const result = await deleteTitleAction(profileId, selectedTitle.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Título eliminado')
+    setIsDeleteDialogOpen(false)
+    setSelectedTitle(null)
+    router.refresh()
   }
 
   return (
@@ -122,14 +140,7 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         title={selectedTitle}
-        onSubmit={async (data) => {
-          if (selectedTitle) {
-            await updateTitle({ profileId, titleId: selectedTitle.id, data })
-          } else {
-            await addTitle({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

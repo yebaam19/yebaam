@@ -6,13 +6,15 @@
 
 'use client'
 
+import { addAssociationAction, deleteAssociationAction, updateAssociationAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { PencilIcon, TrashIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddAssociation, useUpdateAssociation, useDeleteAssociation } from '../../hooks'
-import type { Association } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { Association, AssociationFormData } from '../../interfaces/professional-profile.interfaces'
 import { AssociationDialog } from '../dialogs/AssociationDialog'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
-import { EmptyState, LoadingState, SectionHeader } from './shared'
+import { EmptyState, SectionHeader } from './shared'
 
 interface AssociationsSectionProps {
   profileId: string
@@ -21,13 +23,24 @@ interface AssociationsSectionProps {
 }
 
 export function AssociationsSection({ profileId, isOwner, items = [] }: AssociationsSectionProps) {
-  const { mutateAsync: addAssociation } = useAddAssociation()
-  const { mutateAsync: updateAssociation } = useUpdateAssociation()
-  const { mutateAsync: deleteAssociation } = useDeleteAssociation()
-  
+  const router = useRouter()
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedAssociation, setSelectedAssociation] = useState<Association | null>(null)
+
+  const submit = async (data: AssociationFormData) => {
+    const result = selectedAssociation
+      ? await updateAssociationAction(profileId, selectedAssociation.id, data)
+      : await addAssociationAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedAssociation ? 'Asociación actualizada correctamente' : 'Asociación agregada correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedAssociation(null)
@@ -45,11 +58,16 @@ export function AssociationsSection({ profileId, isOwner, items = [] }: Associat
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedAssociation) {
-      await deleteAssociation({ profileId, associationId: selectedAssociation.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedAssociation(null)
+    if (!selectedAssociation) return
+    const result = await deleteAssociationAction(profileId, selectedAssociation.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Asociación eliminada')
+    setIsDeleteDialogOpen(false)
+    setSelectedAssociation(null)
+    router.refresh()
   }
 
   return (
@@ -119,14 +137,7 @@ export function AssociationsSection({ profileId, isOwner, items = [] }: Associat
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         association={selectedAssociation}
-        onSubmit={async (data) => {
-          if (selectedAssociation) {
-            await updateAssociation({ profileId, associationId: selectedAssociation.id, data })
-          } else {
-            await addAssociation({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

@@ -6,13 +6,15 @@
 
 'use client'
 
+import { addExperienceAction, deleteExperienceAction, updateExperienceAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { BriefcaseIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddExperience, useUpdateExperience, useDeleteExperience } from '../../hooks'
-import type { Experience } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { Experience, ExperienceFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { ExperienceDialog } from '../dialogs/ExperienceDialog'
-import { EmptyState, LoadingState, SectionHeader } from './shared'
+import { EmptyState, SectionHeader } from './shared'
 
 interface ExperienceSectionProps {
   profileId: string
@@ -26,13 +28,24 @@ function formatDate(dateValue: string | Date): string {
 }
 
 export function ExperienceSection({ profileId, isOwner, items = [] }: ExperienceSectionProps) {
-  const { mutateAsync: addExperience } = useAddExperience()
-  const { mutateAsync: updateExperience } = useUpdateExperience()
-  const { mutateAsync: deleteExperience } = useDeleteExperience()
-  
+  const router = useRouter()
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null)
+
+  const submit = async (data: ExperienceFormData) => {
+    const result = selectedExperience
+      ? await updateExperienceAction(profileId, selectedExperience.id, data)
+      : await addExperienceAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedExperience ? 'Experiencia actualizada correctamente' : 'Experiencia agregada correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedExperience(null)
@@ -50,11 +63,16 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedExperience) {
-      await deleteExperience({ profileId, experienceId: selectedExperience.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedExperience(null)
+    if (!selectedExperience) return
+    const result = await deleteExperienceAction(profileId, selectedExperience.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Experiencia eliminada')
+    setIsDeleteDialogOpen(false)
+    setSelectedExperience(null)
+    router.refresh()
   }
 
   return (
@@ -130,14 +148,7 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         experience={selectedExperience}
-        onSubmit={async (data) => {
-          if (selectedExperience) {
-            await updateExperience({ profileId, experienceId: selectedExperience.id, data })
-          } else {
-            await addExperience({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

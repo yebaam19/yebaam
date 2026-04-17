@@ -7,11 +7,11 @@
 
 'use client'
 
+import { uploadProfileImageAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
 import { ArrowPathIcon, ArrowUpTrayIcon, LinkIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { uploadService } from '../../services/upload.service'
 
 interface ImageUploadProps {
   currentImageUrl?: string | null
@@ -48,17 +48,21 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
     try {
       setIsUploading(true)
 
-      // Crear preview local
       const localPreview = URL.createObjectURL(file)
       setPreviewUrl(localPreview)
 
-      // Subir archivo a S3
-      const cloudFrontUrl = await uploadService.uploadProfileImage(file, imageType)
+      const formData = new FormData()
+      formData.append('file', file)
+      const result = await uploadProfileImageAction(formData, imageType)
 
-      // Actualizar con la URL real de CloudFront
-      setPreviewUrl(cloudFrontUrl)
-      onImageChange(cloudFrontUrl)
+      if (!result.ok || !result.data) {
+        toast.error(result.ok ? 'Error al subir la imagen' : result.error)
+        setPreviewUrl(currentImageUrl || null)
+        return
+      }
 
+      setPreviewUrl(result.data.url)
+      onImageChange(result.data.url)
       toast.success('Imagen subida correctamente')
     } catch (error) {
       console.error('Error uploading image:', error)

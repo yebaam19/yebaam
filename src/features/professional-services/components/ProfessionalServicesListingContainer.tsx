@@ -2,11 +2,12 @@
 'use client'
 
 import { PlusIcon } from '@/components/icons/heroicons-shim'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useServices } from '../hooks/useServices'
 import { useFeaturedServices, useRecentServices } from '../hooks/useStats'
-import { useAllProfiles } from '@/features/professional-profile/hooks/queries/useProfessionalProfileQueries'
+import { listPublicProfilesAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
+import type { ProfessionalProfile } from '@/features/professional-profile/interfaces/professional-profile.interfaces'
 import {
   City,
   ProfessionalServiceBasic,
@@ -158,8 +159,22 @@ export function ProfessionalServicesListingContainer({
   const discoverServices = discoverData?.services || []
 
   // Perfiles profesionales para descubrir
-  const { data: profilesData, isLoading: isLoadingProfiles } = useAllProfiles(24, 0)
-  const professionalProfiles = profilesData?.profiles || []
+  const [professionalProfiles, setProfessionalProfiles] = useState<ProfessionalProfile[]>([])
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true)
+  useEffect(() => {
+    let cancelled = false
+    listPublicProfilesAction(24, 0)
+      .then((result) => {
+        if (cancelled) return
+        setProfessionalProfiles(result.profiles)
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingProfiles(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Search query - aplicar filtros cuando hay búsqueda. The underlying
   // `useServices` hook takes only one argument; display-gating on

@@ -6,10 +6,12 @@
 
 'use client'
 
+import { addStudyAction, deleteStudyAction, updateStudyAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { BookOpenIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddStudy, useDeleteStudy, useUpdateStudy } from '../../hooks'
-import type { Study } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { Study, StudyFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { StudyDialog } from '../dialogs/StudyDialog'
 import { EmptyState, SectionHeader } from './shared'
@@ -21,13 +23,24 @@ interface StudiesSectionProps {
 }
 
 export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectionProps) {
-  const { mutateAsync: addStudy } = useAddStudy()
-  const { mutateAsync: updateStudy } = useUpdateStudy()
-  const { mutateAsync: deleteStudy } = useDeleteStudy()
+  const router = useRouter()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedStudy, setSelectedStudy] = useState<Study | null>(null)
+
+  const submit = async (data: StudyFormData) => {
+    const result = selectedStudy
+      ? await updateStudyAction(profileId, selectedStudy.id, data)
+      : await addStudyAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedStudy ? 'Estudio actualizado correctamente' : 'Estudio agregado correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedStudy(null)
@@ -45,11 +58,16 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedStudy) {
-      await deleteStudy({ profileId, studyId: selectedStudy.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedStudy(null)
+    if (!selectedStudy) return
+    const result = await deleteStudyAction(profileId, selectedStudy.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Estudio eliminado')
+    setIsDeleteDialogOpen(false)
+    setSelectedStudy(null)
+    router.refresh()
   }
 
   return (
@@ -120,14 +138,7 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         study={selectedStudy}
-        onSubmit={async (data) => {
-          if (selectedStudy) {
-            await updateStudy({ profileId, studyId: selectedStudy.id, data })
-          } else {
-            await addStudy({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

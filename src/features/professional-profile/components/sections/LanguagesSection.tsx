@@ -6,11 +6,13 @@
 
 'use client'
 
+import { addLanguageAction, deleteLanguageAction, updateLanguageAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { cn } from '@/lib/utils'
 import { LanguageIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useAddLanguage, useDeleteLanguage, useUpdateLanguage } from '../../hooks'
-import type { Language } from '../../interfaces/professional-profile.interfaces'
+import { toast } from 'sonner'
+import type { Language, LanguageFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { LanguageDialog } from '../dialogs/LanguageDialog'
 import { EmptyState, SectionHeader } from './shared'
@@ -41,13 +43,24 @@ const getProficiencyColor = (proficiency?: string | null): string => {
 }
 
 export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSectionProps) {
-  const { mutateAsync: addLanguage } = useAddLanguage()
-  const { mutateAsync: updateLanguage } = useUpdateLanguage()
-  const { mutateAsync: deleteLanguage } = useDeleteLanguage()
+  const router = useRouter()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null)
+
+  const submit = async (data: LanguageFormData) => {
+    const result = selectedLanguage
+      ? await updateLanguageAction(profileId, selectedLanguage.id, data)
+      : await addLanguageAction(profileId, data)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(selectedLanguage ? 'Idioma actualizado correctamente' : 'Idioma agregado correctamente')
+    setIsDialogOpen(false)
+    router.refresh()
+  }
 
   const handleAdd = () => {
     setSelectedLanguage(null)
@@ -65,11 +78,16 @@ export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSe
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedLanguage) {
-      await deleteLanguage({ profileId, languageId: selectedLanguage.id })
-      setIsDeleteDialogOpen(false)
-      setSelectedLanguage(null)
+    if (!selectedLanguage) return
+    const result = await deleteLanguageAction(profileId, selectedLanguage.id)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
     }
+    toast.success('Idioma eliminado')
+    setIsDeleteDialogOpen(false)
+    setSelectedLanguage(null)
+    router.refresh()
   }
 
   return (
@@ -146,14 +164,7 @@ export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSe
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         language={selectedLanguage}
-        onSubmit={async (data) => {
-          if (selectedLanguage) {
-            await updateLanguage({ profileId, languageId: selectedLanguage.id, data })
-          } else {
-            await addLanguage({ profileId, data })
-          }
-          setIsDialogOpen(false)
-        }}
+        onSubmit={submit}
       />
 
       <DeleteConfirmDialog

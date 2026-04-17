@@ -6,6 +6,7 @@
 
 'use client'
 
+import { createProfileAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
 import { useMyProfile } from '@/features/user/hooks/useUserProfile'
 import { cn } from '@/lib/utils'
 import { Button } from '@/ui/Button'
@@ -13,8 +14,8 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { GlobeAltIcon, LockClosedIcon, UserGroupIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { useCreateProfile } from '../../hooks'
+import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import type { ProfessionalProfileVisibility } from '../../interfaces/professional-profile.interfaces'
 
 interface CreateProfileDialogProps {
@@ -50,20 +51,24 @@ const visibilityOptions: Array<{
 
 export function CreateProfileDialog({ isOpen, onClose }: CreateProfileDialogProps) {
   const router = useRouter()
-  const { mutateAsync: createProfile, isPending: isLoading } = useCreateProfile()
+  const [isPending, startTransition] = useTransition()
   const { profile: myProfile } = useMyProfile()
   const [visibility, setVisibility] = useState<ProfessionalProfileVisibility>('PUBLIC')
+  const isLoading = isPending
 
-  const handleSubmit = async () => {
-    try {
-      const profile = await createProfile({ visibility })
+  const handleSubmit = () => {
+    startTransition(async () => {
+      const result = await createProfileAction({ visibility })
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+      toast.success('Perfil profesional creado correctamente')
       onClose()
-      // Redirigir al perfil recién creado usando username
-      const username = myProfile?.username || profile.userId
+      const username = myProfile?.username || result.data?.userId
       router.push(`/feed/professional-profile/${username}`)
-    } catch (error) {
-      // El error ya se maneja en el mutation hook
-    }
+      router.refresh()
+    })
   }
 
   return (
