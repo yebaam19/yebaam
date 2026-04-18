@@ -116,18 +116,20 @@ export default function BlogDetailPage() {
           <div className="min-w-0 flex-1 space-y-6">
             <BlogIdentityBar blog={blog} stars={stars} />
 
-            <div className="flex items-center justify-between gap-4">
-              <BlogTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                photosCount={photosCount}
-                videosCount={videosCount}
-              />
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <BlogTabs
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  photosCount={photosCount}
+                  videosCount={videosCount}
+                />
+              </div>
               {blog.isOwner && (
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(true)}
-                  className="mt-1 mb-8 inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
+                  className="inline-flex shrink-0 items-center gap-1.5 self-end rounded-lg bg-neutral-100 px-3 py-2 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 sm:mb-4 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                 >
                   <PencilIcon className="h-3.5 w-3.5" />
                   Editar blog

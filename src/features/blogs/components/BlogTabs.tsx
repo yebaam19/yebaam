@@ -35,7 +35,7 @@ export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount 
 
   return (
     <div className="mt-6 mb-8 border-b border-neutral-200 dark:border-neutral-700">
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <nav className="-mb-px flex gap-4 overflow-x-auto sm:gap-8" aria-label="Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -44,13 +44,13 @@ export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`group inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
+              className={`group inline-flex shrink-0 items-center gap-1.5 border-b-2 px-1 py-3 text-xs font-medium transition-colors sm:gap-2 sm:py-4 sm:text-sm ${
                 isActive
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'
               } `}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               {getTabLabel(tab)}
             </button>
           )

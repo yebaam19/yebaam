@@ -85,7 +85,10 @@ export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
   ]
 
   return (
-    <nav className="flex shrink-0 flex-col gap-2 lg:w-44">
+    <nav
+      aria-label="Menú del blog"
+      className="-mx-1 flex shrink-0 flex-row gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:w-44 lg:flex-col lg:overflow-visible lg:pb-0"
+    >
       {entries.map((entry) => {
         const Icon = entry.icon
         return (
@@ -95,7 +98,7 @@ export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
             onClick={() => (!entry.locked ? onSelect(entry.key) : undefined)}
             title={entry.locked ? entry.reason : entry.label}
             disabled={entry.locked}
-            className={`group flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium transition-colors dark:border-neutral-700 dark:bg-neutral-800 ${
+            className={`group flex shrink-0 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-xs font-medium transition-colors sm:text-sm dark:border-neutral-700 dark:bg-neutral-800 ${
               entry.locked
                 ? 'cursor-not-allowed text-neutral-400 dark:text-neutral-500'
                 : 'text-neutral-700 hover:border-primary-400 hover:text-primary-600 dark:text-neutral-200 dark:hover:border-primary-400 dark:hover:text-primary-400'
