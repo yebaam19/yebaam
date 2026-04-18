@@ -55,7 +55,7 @@ export function mapBlog(
     name: row.name,
     slug: row.slug,
     description: row.description ?? '',
-    category: row.category ?? 'OTRO',
+    category: row.category ?? 'AMIGOS',
     subcategory: row.subcategory ?? undefined,
     profileImageUrl: row.profile_image_url ?? undefined,
     coverImageUrl: row.cover_image_url ?? undefined,

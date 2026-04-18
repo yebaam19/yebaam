@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     name,
     slug,
     description: typeof body.description === 'string' ? body.description : '',
-    category: typeof body.category === 'string' ? body.category : 'OTRO',
+    category: typeof body.category === 'string' ? body.category : 'AMIGOS',
     subcategory: typeof body.subcategory === 'string' ? body.subcategory : null,
     profile_image_url: typeof body.profileImageUrl === 'string' ? body.profileImageUrl : null,
     cover_image_url: typeof body.coverImageUrl === 'string' ? body.coverImageUrl : null,

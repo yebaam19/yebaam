@@ -1,21 +1,9 @@
 'use client'
 
-const BLOG_CATEGORIES = [
-  'TECNOLOGIA',
-  'NEGOCIOS',
-  'LIFESTYLE',
-  'VIAJES',
-  'GASTRONOMIA',
-  'MODA',
-  'DEPORTES',
-  'SALUD',
-  'CIENCIA',
-  'ARTE',
-  'MARKETING',
-  'FINANZAS',
-] as const
+import { BLOG_CATEGORIES, type BlogCategory } from '../types/blog.types'
+import { getCategoryLabel } from '../utils/blogHelpers'
 
-export type BlogCategory = (typeof BLOG_CATEGORIES)[number]
+export type { BlogCategory }
 
 export interface BlogFormData {
   name: string
@@ -82,7 +70,7 @@ export const BlogFormFields = ({ formData, onChange, disabled = false }: BlogFor
         >
           {BLOG_CATEGORIES.map((category) => (
             <option key={category} value={category}>
-              {category}
+              {getCategoryLabel(category)}
             </option>
           ))}
         </select>
@@ -139,3 +127,4 @@ export const BlogFormFields = ({ formData, onChange, disabled = false }: BlogFor
 }
 
 export { BLOG_CATEGORIES }
+

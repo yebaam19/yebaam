@@ -26,7 +26,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
   const [formData, setFormData] = useState<BlogFormData>({
     name: '',
     description: '',
-    category: 'TECNOLOGIA',
+    category: 'AMIGOS',
     subcategory: '',
     website: '',
     tags: '',
@@ -142,7 +142,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
         setFormData({
           name: '',
           description: '',
-          category: 'TECNOLOGIA',
+          category: 'AMIGOS',
           subcategory: '',
           website: '',
           tags: '',

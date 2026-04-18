@@ -16,10 +16,10 @@ interface BlogTabsProps {
 }
 
 const tabs: Tab[] = [
-  { id: 'posts', label: 'Publicaciones', icon: DocumentTextIcon },
+  { id: 'acerca-de', label: 'Acerca de Mí', icon: InformationCircleIcon },
   { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
   { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
-  { id: 'acerca-de', label: 'Acerca de', icon: InformationCircleIcon },
+  { id: 'posts', label: 'Artículos', icon: DocumentTextIcon },
 ]
 
 export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount = 0 }: BlogTabsProps) => {
