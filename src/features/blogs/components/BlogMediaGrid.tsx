@@ -2,6 +2,8 @@
 
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
 import { ChatBubbleLeftIcon, HeartIcon, PhotoIcon, PlayIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { StreamVideo } from '@/components/media/StreamVideo'
+import { streamThumb } from '@/lib/media/urls'
 import Image from 'next/image'
 import { useState } from 'react'
 
@@ -13,6 +15,7 @@ interface MediaItem {
   post: Post
   thumbnail?: string
   duration?: number
+  streamUid?: string
 }
 
 interface BlogMediaGridProps {
@@ -30,15 +33,22 @@ export const BlogMediaGrid = ({ posts, type }: BlogMediaGridProps) => {
   const mediaItems: MediaItem[] = posts.flatMap((post) =>
     (post.mediaFiles || [])
       .filter((media) => media.type?.toUpperCase() === normalizedType)
-      .map((media) => ({
-        id: media.s3Key || media.url,
-        url: media.url,
-        type: media.type || 'IMAGE',
-        postId: post.id,
-        post: post,
-        thumbnail: media.type?.toUpperCase() === 'VIDEO' ? media.url : undefined,
-        duration: media.duration,
-      }))
+      .map((media) => {
+        const isVideo = media.type?.toUpperCase() === 'VIDEO'
+        const streamUid = isVideo ? media.streamUid ?? media.s3Key : undefined
+        const poster =
+          isVideo && (media.thumbnailUrl ?? (streamUid ? streamThumb(streamUid, { width: 480 }) : undefined))
+        return {
+          id: media.s3Key || media.url,
+          url: media.url,
+          type: media.type || 'IMAGE',
+          postId: post.id,
+          post: post,
+          thumbnail: isVideo ? poster || undefined : undefined,
+          duration: media.duration,
+          streamUid,
+        }
+      })
   )
 
   const formatDuration = (seconds?: number) => {
@@ -79,11 +89,12 @@ export const BlogMediaGrid = ({ posts, type }: BlogMediaGridProps) => {
             className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-neutral-200 transition-opacity hover:opacity-90 dark:bg-neutral-800"
           >
             <Image
-              src={media.url}
+              src={normalizedType === 'VIDEO' ? media.thumbnail || media.url : media.url}
               alt={media.post.content || 'Media'}
               fill
               className="object-cover"
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+              unoptimized={normalizedType === 'VIDEO'}
             />
 
             {/* Overlay para videos */}
@@ -140,9 +151,13 @@ export const BlogMediaGrid = ({ posts, type }: BlogMediaGridProps) => {
               {/* Media */}
               <div className="relative flex min-h-[400px] items-center justify-center bg-black md:min-h-[600px]">
                 {selectedMedia.type?.toUpperCase() === 'VIDEO' ? (
-                  <video src={selectedMedia.url} controls autoPlay className="h-full w-full">
-                    Tu navegador no soporta el elemento de video.
-                  </video>
+                  selectedMedia.streamUid ? (
+                    <StreamVideo uid={selectedMedia.streamUid} autoplay muted controls aspectRatio="16 / 9" className="w-full" />
+                  ) : (
+                    <video src={selectedMedia.url} controls autoPlay className="h-full w-full">
+                      Tu navegador no soporta el elemento de video.
+                    </video>
+                  )
                 ) : (
                   <Image src={selectedMedia.url} alt="Media" fill className="object-contain" />
                 )}

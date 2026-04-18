@@ -70,6 +70,7 @@ function normalizeMedia(raw: unknown): Array<Record<string, unknown>> {
       size: media.size,
       duration: media.duration,
       mimeType: media.mimeType ?? media.mime_type,
+      streamUid: media.streamUid ?? media.stream_uid ?? media.cloudflare_stream_uid,
     };
   });
 }

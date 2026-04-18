@@ -2,6 +2,7 @@
 
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
 import { ChatBubbleLeftIcon, HeartIcon, PlayIcon } from '@/components/icons/heroicons-shim'
+import { streamThumb } from '@/lib/media/urls'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -27,6 +28,10 @@ export const BlogRecentStatesGrid = ({ posts }: BlogRecentStatesGridProps) => {
           {items.map((post) => {
             const firstMedia = post.mediaFiles?.[0]
             const isVideo = firstMedia?.type?.toUpperCase() === 'VIDEO'
+            const streamUid = isVideo ? firstMedia?.streamUid ?? firstMedia?.s3Key : undefined
+            const videoPoster =
+              firstMedia?.thumbnailUrl ?? (streamUid ? streamThumb(streamUid, { width: 480 }) : null)
+            const previewUrl = isVideo ? videoPoster : firstMedia?.url ?? null
             const likes = post.reactionsCount?.like ?? 0
             const comments = post.commentsCount ?? 0
 
@@ -36,24 +41,15 @@ export const BlogRecentStatesGrid = ({ posts }: BlogRecentStatesGridProps) => {
                 href={`/feed/post/${post.id}`}
                 className="group relative block aspect-square overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-800"
               >
-                {firstMedia?.url ? (
-                  isVideo ? (
-                    <video
-                      src={firstMedia.url}
-                      muted
-                      playsInline
-                      preload="metadata"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src={firstMedia.url}
-                      alt={post.content?.slice(0, 80) || 'Publicación'}
-                      fill
-                      sizes="(max-width: 640px) 50vw, 25vw"
-                      className="object-cover"
-                    />
-                  )
+                {previewUrl ? (
+                  <Image
+                    src={previewUrl}
+                    alt={post.content?.slice(0, 80) || 'Publicación'}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover"
+                    unoptimized={isVideo}
+                  />
                 ) : (
                   <div
                     className="flex h-full w-full items-center justify-center bg-linear-to-br from-secondary-600 to-secondary-800 p-3 text-center text-xs font-medium text-white"
