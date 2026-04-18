@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { uploadService } from '@/lib/service/upload.service';
 import type {
   ProfileStatsResponse,
   UpdateInterestsDTO,
@@ -41,9 +42,6 @@ type DbProfile = {
   created_at: string;
   updated_at: string;
 };
-
-const AVATAR_BUCKET = 'avatars';
-const COVER_BUCKET = 'covers';
 
 function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
   const displayName =
@@ -195,19 +193,16 @@ class ProfileService {
     if (type === 'idDocument') {
       throw new Error('ID document upload not yet supported — no storage bucket');
     }
-    const bucket = type === 'avatar' ? AVATAR_BUCKET : COVER_BUCKET;
 
-    const { data, error } = await supabase.storage.from(bucket).uploadAuto(file);
-    if (error || !data) throw new Error(error?.message || 'Error al subir imagen');
-
-    const url = (data as { url: string }).url;
+    const { id, url } = await uploadService.uploadImage(file);
 
     const userId = await getCurrentUserId();
     if (userId) {
-      const column = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
+      const urlColumn = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
+      const idColumn = type === 'avatar' ? 'avatar_cloudflare_id' : 'cover_cloudflare_id';
       await supabase
         .from('profiles')
-        .update({ [column]: url })
+        .update({ [urlColumn]: url, [idColumn]: id })
         .eq('id', userId);
     }
 
