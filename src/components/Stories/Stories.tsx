@@ -6,7 +6,18 @@ import { PlusIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useStoryStore } from '@/app/(app)/stories/store/story.store';
 import { useStorySocket } from '@/app/(app)/stories/hooks/useStorySocket';
+import type { Story } from '@/app/(app)/stories/services/story.service';
+import { streamThumb } from '@/lib/media/urls';
 import Avatar from '@/ui/Avatar';
+
+function storyPreviewSrc(story: Story): string | null {
+  if (story.type === 'video') {
+    if (story.cloudflareStreamUid) return streamThumb(story.cloudflareStreamUid, { width: 360 });
+    if (story.thumbnailUrl) return story.thumbnailUrl;
+    return null;
+  }
+  return story.mediaUrl ?? null;
+}
 
 interface StoriesProps {
   className?: string;
@@ -68,20 +79,18 @@ export default function Stories({ className }: StoriesProps) {
             // Ver mis historias
             <div className="w-full h-full relative">
               {/* Preview de la última historia */}
-              {myStories[0].type === 'image' && (
-                <img
-                  src={myStories[0].mediaUrl}
-                  alt="Mi historia"
-                  className="w-full h-full object-cover"
-                />
-              )}
-              {myStories[0].type === 'video' && (
-                <video
-                  src={myStories[0].mediaUrl}
-                  className="w-full h-full object-cover"
-                  muted
-                />
-              )}
+              {(() => {
+                const preview = storyPreviewSrc(myStories[0])
+                return preview ? (
+                  <img
+                    src={preview}
+                    alt={myStories[0].type === 'video' ? 'Mi historia (video)' : 'Mi historia'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-neutral-700" />
+                )
+              })()}
               
               {/* Overlay */}
               <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/60" />
@@ -137,20 +146,18 @@ export default function Stories({ className }: StoriesProps) {
           >
             <div className="w-full h-full relative">
               {/* Preview de la última historia */}
-              {userStories.stories[0].type === 'image' && (
-                <img
-                  src={userStories.stories[0].mediaUrl}
-                  alt={userStories.username}
-                  className="w-full h-full object-cover"
-                />
-              )}
-              {userStories.stories[0].type === 'video' && (
-                <video
-                  src={userStories.stories[0].mediaUrl}
-                  className="w-full h-full object-cover"
-                  muted
-                />
-              )}
+              {(() => {
+                const preview = storyPreviewSrc(userStories.stories[0])
+                return preview ? (
+                  <img
+                    src={preview}
+                    alt={userStories.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-neutral-700" />
+                )
+              })()}
               
               {/* Overlay */}
               <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/60" />

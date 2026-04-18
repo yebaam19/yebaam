@@ -2,6 +2,7 @@
 
 import Avatar from '@/ui/Avatar'
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { StreamVideo } from '@/components/media/StreamVideo'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useStorySocket } from '../../hooks/useStorySocket'
@@ -217,16 +218,27 @@ export default function ViewStoryPage() {
           )}
 
           {currentStory.type === 'video' && (
-            <video
-              ref={videoRef}
-              src={currentStory.mediaUrl}
-              className="h-full w-full object-cover"
-              autoPlay
-              playsInline
-              onEnded={handleNext}
-              onPause={() => setIsPaused(true)}
-              onPlay={() => setIsPaused(false)}
-            />
+            currentStory.cloudflareStreamUid ? (
+              <StreamVideo
+                uid={currentStory.cloudflareStreamUid}
+                autoplay
+                muted
+                controls={false}
+                aspectRatio="9 / 16"
+                className="h-full w-full"
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                src={currentStory.mediaUrl}
+                className="h-full w-full object-cover"
+                autoPlay
+                playsInline
+                onEnded={handleNext}
+                onPause={() => setIsPaused(true)}
+                onPlay={() => setIsPaused(false)}
+              />
+            )
           )}
 
           {/* Caption */}

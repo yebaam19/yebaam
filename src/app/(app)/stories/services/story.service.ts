@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { uploadService } from '@/lib/service/upload.service';
 
 export interface StoryView {
   userId: string;
@@ -24,6 +25,12 @@ export interface Story {
   duration?: number;
   width?: number;
   height?: number;
+  /** Cloudflare Images id — present when the story was uploaded via the CF pipeline. */
+  cloudflareImageId?: string;
+  /** Cloudflare Stream uid — present for video stories on the CF pipeline. */
+  cloudflareStreamUid?: string;
+  /** Static thumbnail URL (CF Stream returns one when ready). */
+  thumbnailUrl?: string;
 }
 
 export interface UserStoriesDto {
@@ -54,6 +61,8 @@ type DbStory = {
   view_count: number;
   expires_at: string;
   created_at: string;
+  cloudflare_image_id: string | null;
+  cloudflare_stream_uid: string | null;
 };
 
 type DbStoryView = {
@@ -70,14 +79,12 @@ type DbProfile = {
   avatar_url: string | null;
 };
 
-const STORIES_BUCKET = 'stories';
-
 function rowToStory(row: DbStory, views: DbStoryView[] = []): Story {
   return {
     id: row.id,
     userId: row.author_id,
     mediaUrl: row.media_url,
-    s3Key: row.media_url,
+    s3Key: row.cloudflare_image_id ?? row.cloudflare_stream_uid ?? row.media_url,
     type: row.media_type,
     status: new Date(row.expires_at).getTime() > Date.now() ? 'active' : 'expired',
     createdAt: row.created_at,
@@ -86,6 +93,8 @@ function rowToStory(row: DbStory, views: DbStoryView[] = []): Story {
     viewCount: row.view_count,
     caption: row.content ?? undefined,
     backgroundColor: row.background_color ?? undefined,
+    cloudflareImageId: row.cloudflare_image_id ?? undefined,
+    cloudflareStreamUid: row.cloudflare_stream_uid ?? undefined,
   };
 }
 
@@ -114,34 +123,20 @@ class StoryService {
     const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const ext = file.name.split('.').pop() || (options.type === 'video' ? 'mp4' : 'jpg');
-    const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(STORIES_BUCKET)
-      .upload(path, file, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: file.type || undefined,
-      });
-    if (uploadError) {
-      throw new Error(uploadError.message || 'Error al subir archivo de story');
-    }
-
-    const { data: publicUrlData } = supabase.storage
-      .from(STORIES_BUCKET)
-      .getPublicUrl(path);
-    const mediaUrl = publicUrlData.publicUrl;
+    const upload = await uploadService.uploadFile(file);
+    const isVideo = upload.type === 'video';
 
     const { data: inserted, error } = await supabase
       .from('stories')
       .insert([
         {
           author_id: userId,
-          media_url: mediaUrl,
+          media_url: upload.url,
           media_type: options.type,
           content: options.caption ?? null,
           background_color: options.backgroundColor ?? null,
+          cloudflare_image_id: isVideo ? null : upload.s3Key,
+          cloudflare_stream_uid: isVideo ? upload.streamUid ?? upload.s3Key : null,
         },
       ])
       .select('*')
