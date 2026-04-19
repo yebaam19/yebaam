@@ -175,6 +175,25 @@ export function useUpdateBlog() {
 }
 
 /**
+ * Hook para eliminar un blog (solo el dueño)
+ */
+export function useDeleteBlog() {
+  return useAsyncAction(
+    (blogId: string) => blogsService.deleteBlog(blogId),
+    {
+      onSuccess: (_, blogId) => {
+        invalidate(`blogs::${blogId}`);
+        invalidate('blogs::slug');
+        invalidate('blogs::my-blogs');
+        invalidate('blogs::popular');
+        invalidate('blogs::suggested');
+        invalidate('blogs::search');
+      },
+    }
+  );
+}
+
+/**
  * Hook para obtener posts de un blog
  */
 export function useBlogPosts(blogId: string, page?: number, limit?: number) {

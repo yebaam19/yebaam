@@ -1,6 +1,7 @@
 'use client'
 
 import { BlogAboutSection } from '@/features/blogs/components/BlogAboutSection'
+import { BlogForoTab } from '@/features/blogs/components/BlogForoTab'
 import { BlogMediaGrid } from '@/features/blogs/components/BlogMediaGrid'
 import { BlogPostsList } from '@/features/blogs/components/BlogPostsList'
 import { BlogTabs, TabType } from '@/features/blogs/components/BlogTabs'
@@ -13,9 +14,11 @@ import { BlogReel } from '@/features/blogs/components/detail/BlogReel'
 import { BlogSideMenu, type BlogSideMenuItem } from '@/features/blogs/components/detail/BlogSideMenu'
 import { EditBlogModal } from '@/features/blogs/components/EditBlogModal'
 import { useBlogBySlug, useBlogPosts, useFollowBlog, useUnfollowBlog } from '@/features/blogs/hooks/useBlogs'
+import { ensureBlogChatTopicAction } from '@/features/chat-publico/actions/chat-publico.actions'
 import { computeBlogStars } from '@/features/blogs/utils/rating'
 import { PencilIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import type { Route } from 'next'
 import { useMemo, useState } from 'react'
 
 const MENU_LABELS: Record<BlogSideMenuItem, string> = {
@@ -30,6 +33,7 @@ const MENU_LABELS: Record<BlogSideMenuItem, string> = {
 
 export default function BlogDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const slug = params.slug as string
 
   const [activeTab, setActiveTab] = useState<TabType>('acerca-de')
@@ -110,7 +114,33 @@ export default function BlogDetailPage() {
 
         <div className="mt-4 flex flex-col gap-4 lg:flex-row">
           {/* Left vertical menu */}
-          <BlogSideMenu stars={stars} onSelect={setOpenedMenu} />
+          <BlogSideMenu
+            stars={stars}
+            onSelect={async (item) => {
+              if (item === 'foro') {
+                setActiveTab('foro')
+                return
+              }
+              if (item === 'chat') {
+                if (blog.isOwner) {
+                  const result = await ensureBlogChatTopicAction({
+                    id: blog.id,
+                    name: blog.name,
+                    slug: blog.slug,
+                    ownerId: blog.owner.id,
+                  })
+                  if (result?.topicSlug) {
+                    router.push(`/feed/chat-publico/${result.topicSlug}` as Route)
+                    return
+                  }
+                }
+                const fallbackSlug = `blog-${blog.slug}`
+                router.push(`/feed/chat-publico/${fallbackSlug}` as Route)
+                return
+              }
+              setOpenedMenu(item)
+            }}
+          />
 
           {/* Main column */}
           <div className="min-w-0 flex-1 space-y-6">
@@ -158,6 +188,16 @@ export default function BlogDetailPage() {
             {activeTab === 'fotos' && <BlogMediaGrid posts={postsList} type="IMAGE" />}
 
             {activeTab === 'videos' && <BlogMediaGrid posts={postsList} type="VIDEO" />}
+
+            {activeTab === 'foro' && (
+              <BlogForoTab
+                blogId={blog.id}
+                blogSlug={blog.slug}
+                blogName={blog.name}
+                blogOwnerId={blog.owner.id}
+                isOwner={!!blog.isOwner}
+              />
+            )}
           </div>
         </div>
       </div>

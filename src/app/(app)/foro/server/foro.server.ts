@@ -136,12 +136,43 @@ export async function getSpaceBySlug(slug: string): Promise<ForoSpace | null> {
   return toSpace(data as SpaceRow)
 }
 
+export async function getSpaceByOwner(
+  ownerType: OwnerType,
+  ownerId: string,
+): Promise<ForoSpace | null> {
+  const client = await getServerClient()
+  const { data } = await client
+    .from('forum_spaces')
+    .select('*')
+    .eq('owner_type', ownerType)
+    .eq('owner_id', ownerId)
+    .maybeSingle()
+  if (!data) return null
+  return toSpace(data as SpaceRow)
+}
+
 export async function getSpaceBoard(spaceSlug: string): Promise<{
   space: ForoSpace
   categories: ForoCategory[]
 } | null> {
   const space = await getSpaceBySlug(spaceSlug)
   if (!space) return null
+  return loadSpaceBoard(space)
+}
+
+export async function getSpaceBoardByOwner(
+  ownerType: OwnerType,
+  ownerId: string,
+): Promise<{ space: ForoSpace; categories: ForoCategory[] } | null> {
+  const space = await getSpaceByOwner(ownerType, ownerId)
+  if (!space) return null
+  return loadSpaceBoard(space)
+}
+
+async function loadSpaceBoard(space: ForoSpace): Promise<{
+  space: ForoSpace
+  categories: ForoCategory[]
+}> {
   const client = await getServerClient()
 
   const { data: categories } = await client

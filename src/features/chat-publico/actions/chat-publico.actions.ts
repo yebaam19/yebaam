@@ -1,7 +1,27 @@
 'use server'
 
 import { getServerClient } from '@/utils/supabase/server'
+import { ensureBlogChatTopic } from '@/lib/api/blogs'
 import type { SendPublicMessageResult, SoftDeletePublicMessageResult } from '../types'
+
+/**
+ * Provisions (or finds) the public-chat topic for a blog and returns its slug
+ * so the caller can route to `/feed/chat-publico/<topicSlug>`.
+ * Owner-gated to prevent random users from spawning topics.
+ */
+export async function ensureBlogChatTopicAction(blog: {
+  id: string
+  name: string
+  slug: string
+  ownerId: string
+}): Promise<{ topicSlug: string } | null> {
+  const client = await getServerClient()
+  const { data: auth } = await client.auth.getUser()
+  if (!auth?.user || auth.user.id !== blog.ownerId) return null
+  const result = await ensureBlogChatTopic({ id: blog.id, name: blog.name, slug: blog.slug })
+  if (!result) return null
+  return { topicSlug: result.topicSlug }
+}
 
 const MAX_CONTENT_LENGTH = 2000
 const WINDOW_MS = 10_000

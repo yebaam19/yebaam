@@ -13,7 +13,7 @@ export async function listAdminTopics(): Promise<PublicChatTopic[]> {
   const client = await getServerClient()
   const { data } = await client
     .from('public_chat_topics')
-    .select('id, slug, name, description, position, is_archived')
+    .select('id, slug, name, description, position, is_archived, owner_type, owner_id')
     .order('position', { ascending: true })
     .order('name', { ascending: true })
   return (data as PublicChatTopic[] | null) ?? []

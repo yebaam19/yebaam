@@ -5,6 +5,8 @@ export interface PublicChatTopic {
   description: string | null
   position: number
   is_archived: boolean
+  owner_type: string | null
+  owner_id: string | null
 }
 
 export interface PublicMessageRow {

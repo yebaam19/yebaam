@@ -40,8 +40,7 @@ export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
       key: 'chat',
       label: 'Chat Público',
       icon: SpeakerWaveIcon,
-      locked: true,
-      reason: 'Activado por Yebaam',
+      locked: false,
     },
     {
       key: 'members',
@@ -60,8 +59,7 @@ export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
       key: 'foro',
       label: 'Foro',
       icon: ChatBubbleLeftRightIcon,
-      locked: true,
-      reason: 'Activado por Yebaam',
+      locked: false,
     },
     {
       key: 'events',

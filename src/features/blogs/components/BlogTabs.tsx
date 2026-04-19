@@ -1,6 +1,6 @@
-import { DocumentTextIcon, InformationCircleIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
+import { ChatBubbleLeftRightIcon, DocumentTextIcon, InformationCircleIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 
-export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de'
+export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de' | 'foro'
 
 interface Tab {
   id: TabType
@@ -20,6 +20,7 @@ const tabs: Tab[] = [
   { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
   { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
   { id: 'posts', label: 'Artículos', icon: DocumentTextIcon },
+  { id: 'foro', label: 'Foro', icon: ChatBubbleLeftRightIcon },
 ]
 
 export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount = 0 }: BlogTabsProps) => {

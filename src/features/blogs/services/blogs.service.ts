@@ -125,6 +125,10 @@ class BlogsService {
     });
   }
 
+  async deleteBlog(blogId: string): Promise<void> {
+    await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}`, { method: 'DELETE' });
+  }
+
   async generateProfileImageUrl(
     _fileName: string,
     _fileType: string,

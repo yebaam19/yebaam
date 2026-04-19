@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
-import { mapBlog, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
+import { mapBlog, tearDownBlogSideArtifacts, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -99,4 +99,30 @@ export async function PUT(
   if (owner) ownerMap.set(updated.owner_id, owner as OwnerProfile);
 
   return NextResponse.json(mapBlog(updated, ownerMap, { userId: updated.owner_id, followingIds: new Set() }));
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  context: { params: Promise<{ idOrSlug: string }> }
+) {
+  const { idOrSlug } = await context.params;
+  const client = await getServerClient();
+  const { data: auth } = await client.auth.getUser();
+  if (!auth?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const row = await loadBlog(client, idOrSlug);
+  if (!row) return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
+  if (row.owner_id !== auth.user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Clean up entity-scoped artefacts (forum space, public-chat topic) before
+  // dropping the blog row so they don't linger as orphans in shared tables.
+  await tearDownBlogSideArtifacts(row.id);
+
+  const { error } = await client.from('blogs').delete().eq('id', row.id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ success: true });
 }
