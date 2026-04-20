@@ -1,6 +1,7 @@
 'use client'
 
 import { BlogAboutSection } from '@/features/blogs/components/BlogAboutSection'
+import { BlogAskmeTab } from '@/features/blogs/components/BlogAskmeTab'
 import { BlogForoTab } from '@/features/blogs/components/BlogForoTab'
 import { BlogMediaGrid } from '@/features/blogs/components/BlogMediaGrid'
 import { BlogPostsList } from '@/features/blogs/components/BlogPostsList'
@@ -121,6 +122,10 @@ export default function BlogDetailPage() {
                 setActiveTab('foro')
                 return
               }
+              if (item === 'askme') {
+                setActiveTab('askme')
+                return
+              }
               if (item === 'chat') {
                 if (blog.isOwner) {
                   const result = await ensureBlogChatTopicAction({
@@ -197,6 +202,10 @@ export default function BlogDetailPage() {
                 blogOwnerId={blog.owner.id}
                 isOwner={!!blog.isOwner}
               />
+            )}
+
+            {activeTab === 'askme' && (
+              <BlogAskmeTab blogId={blog.id} blogName={blog.name} />
             )}
           </div>
         </div>

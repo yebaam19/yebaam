@@ -1,6 +1,6 @@
-import { ChatBubbleLeftRightIcon, DocumentTextIcon, InformationCircleIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
+import { ChatBubbleLeftRightIcon, DocumentTextIcon, InformationCircleIcon, PhotoIcon, QuestionMarkCircleIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 
-export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de' | 'foro'
+export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de' | 'foro' | 'askme'
 
 interface Tab {
   id: TabType
@@ -13,6 +13,7 @@ interface BlogTabsProps {
   onTabChange: (tab: TabType) => void
   photosCount?: number
   videosCount?: number
+  pendingAskmeCount?: number
 }
 
 const tabs: Tab[] = [
@@ -21,15 +22,19 @@ const tabs: Tab[] = [
   { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
   { id: 'posts', label: 'Artículos', icon: DocumentTextIcon },
   { id: 'foro', label: 'Foro', icon: ChatBubbleLeftRightIcon },
+  { id: 'askme', label: 'Askme', icon: QuestionMarkCircleIcon },
 ]
 
-export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount = 0 }: BlogTabsProps) => {
+export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount = 0, pendingAskmeCount = 0 }: BlogTabsProps) => {
   const getTabLabel = (tab: Tab) => {
     if (tab.id === 'fotos' && photosCount > 0) {
       return `${tab.label} (${photosCount})`
     }
     if (tab.id === 'videos' && videosCount > 0) {
       return `${tab.label} (${videosCount})`
+    }
+    if (tab.id === 'askme' && pendingAskmeCount > 0) {
+      return `${tab.label} · ${pendingAskmeCount}`
     }
     return tab.label
   }

@@ -52,8 +52,7 @@ export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
       key: 'askme',
       label: 'Askme',
       icon: QuestionMarkCircleIcon,
-      locked: stars < 1,
-      reason: stars < 1 ? 'Disponible al alcanzar ★1' : 'Activado por Yebaam',
+      locked: false,
     },
     {
       key: 'foro',
