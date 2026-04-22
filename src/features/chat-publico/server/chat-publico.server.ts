@@ -6,11 +6,14 @@ import type {
   PublicMessageWithSender,
 } from '../types'
 
+// Never expose session_token — it's a browser-session secret for guest identity.
+// Own-message detection on the client uses sender_id for auth'd users and
+// local optimistic tracking for guests.
 const MESSAGE_SELECT =
-  'id, content, sender_id, created_at, is_deleted, topic_id, sender:sender_id(username, display_name, avatar_url)'
+  'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url)'
 
 const TOPIC_COLUMNS =
-  'id, slug, name, description, position, is_archived, owner_type, owner_id'
+  'id, slug, name, description, position, is_archived, owner_type, owner_id, city_id, parent_topic_id, creator_id, visibility, max_capacity, duration_hours, expires_at, last_activity_at, closed_at, is_permanent'
 
 /**
  * Returns only canonical (non-scoped) topics so the global topic tab list

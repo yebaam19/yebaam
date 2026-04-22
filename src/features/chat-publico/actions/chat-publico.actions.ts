@@ -1,7 +1,10 @@
 'use server'
 
-import { getServerClient } from '@/utils/supabase/server'
+import { getServerClient, getServiceClient } from '@/utils/supabase/server'
 import { ensureBlogChatTopic } from '@/lib/api/blogs'
+import { getRoomIdentity } from '../lib/identity'
+import { hashSessionToken } from '../lib/session'
+import { capabilitiesFor } from '../lib/permissions'
 import type { SendPublicMessageResult, SoftDeletePublicMessageResult } from '../types'
 
 /**
@@ -77,6 +80,82 @@ export async function sendPublicMessage(
     return { ok: false, error: 'db_error', message: error.message }
   }
   return { ok: true }
+}
+
+/**
+ * Identity-aware send. Resolves the caller's room identity (profile / nick /
+ * guest) and writes the message with the appropriate sender fields.
+ *
+ * Guest and nick writes use the service-role client since existing RLS only
+ * permits authenticated inserts. The session token ties the write back to
+ * the browser session that claimed the nickname.
+ */
+export async function sendChatMessage(
+  roomId: string,
+  rawContent: string,
+): Promise<SendPublicMessageResult> {
+  const content = typeof rawContent === 'string' ? rawContent.trim() : ''
+  if (!roomId || typeof roomId !== 'string') return { ok: false, error: 'invalid' }
+  if (!content || content.length > MAX_CONTENT_LENGTH) return { ok: false, error: 'invalid' }
+
+  const identity = await getRoomIdentity(roomId)
+  if (!identity) return { ok: false, error: 'unauthorized' }
+
+  const caps = capabilitiesFor(identity)
+  if (!caps.canChat) return { ok: false, error: 'unauthorized' }
+
+  // Rate limit: 5 messages / 10s per session (covers all identity kinds).
+  const service = await getServiceClient()
+  const sessionHash = hashSessionToken(identity.sessionToken)
+  const since = new Date(Date.now() - WINDOW_MS).toISOString()
+  const { data: recent } = await service
+    .from('public_chat_messages')
+    .select('created_at')
+    .eq('session_hash', sessionHash)
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(MAX_PER_WINDOW)
+
+  if (recent && recent.length >= MAX_PER_WINDOW) {
+    const oldestTs = new Date(recent[recent.length - 1].created_at as string).getTime()
+    const retryAfterMs = Math.max(0, WINDOW_MS - (Date.now() - oldestTs))
+    return { ok: false, error: 'rate_limited', retryAfterMs }
+  }
+  if (recent && recent[0]) {
+    const gap = Date.now() - new Date(recent[0].created_at as string).getTime()
+    if (gap < MIN_GAP_MS) {
+      return { ok: false, error: 'rate_limited', retryAfterMs: MIN_GAP_MS - gap }
+    }
+  }
+
+  const senderKind = identity.kind
+  const senderUserId = identity.kind === 'guest' ? null : identity.userId
+  const senderNickname =
+    identity.kind === 'profile' ? identity.displayName : identity.nickname
+  const senderAvatar =
+    identity.kind === 'guest' ? null : identity.avatarUrl ?? null
+
+  const { data, error } = await service
+    .from('public_chat_messages')
+    .insert({
+      topic_id: roomId,
+      sender_id: senderUserId,
+      sender_kind: senderKind,
+      sender_nickname: senderNickname,
+      sender_avatar_url: senderAvatar,
+      session_hash: sessionHash,
+      content,
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (error) {
+    if (error.message?.toLowerCase().includes('rate_limited')) {
+      return { ok: false, error: 'rate_limited', retryAfterMs: WINDOW_MS }
+    }
+    return { ok: false, error: 'db_error', message: error.message }
+  }
+  return { ok: true, messageId: (data as { id: string } | null)?.id }
 }
 
 export async function softDeletePublicMessage(id: string): Promise<SoftDeletePublicMessageResult> {

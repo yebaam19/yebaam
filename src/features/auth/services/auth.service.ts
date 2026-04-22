@@ -1,4 +1,9 @@
 import { createClient } from '@/utils/supabase/client';
+import {
+  signupWithOtpAction,
+  verifyOtpAction,
+  resendOtpAction,
+} from '../actions/otp-signup.actions';
 import type {
   LoginDTO,
   RegisterDTO,
@@ -104,61 +109,15 @@ export class AuthService {
   }
 
   async register(userData: RegisterDTO): Promise<MessageResponse> {
-    const displayName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
-
-    const { data, error } = await this.supabase.auth.signUp({
-      email: userData.email,
-      password: userData.password,
-      options: {
-        data: { name: displayName },
-      },
-    });
-    if (error) throw new Error(error.message || 'Error al registrar usuario');
-
-    // handle_new_user trigger already created the profile row on the DB side.
-    // Fill it in with the rest of the signup data now.
-    if (data?.user?.id) {
-      await this.supabase
-        .from('profiles')
-        .update({
-          username: userData.email.split('@')[0] || null,
-          first_name: userData.firstName,
-          middle_name: userData.secondName ?? null,
-          last_name: userData.lastName,
-          second_last_name: userData.secondLastName ?? null,
-          birth_date: userData.birthDate,
-          gender: userData.gender,
-          country: userData.country,
-          state: userData.state,
-          city: userData.city,
-        })
-        .eq('id', data.user.id);
-    }
-
-    return {
-      message: data.session
-        ? 'Account created.'
-        : 'Account created. Check your email to verify your account.',
-    };
+    return signupWithOtpAction(userData);
   }
 
   async verifyEmail(verifyData: VerifyEmailRequest): Promise<MessageResponse> {
-    const { error } = await this.supabase.auth.verifyOtp({
-      email: verifyData.email,
-      token: verifyData.otp,
-      type: 'email',
-    });
-    if (error) throw new Error(error.message || 'Error al verificar email');
-    return { message: 'Email verified.' };
+    return verifyOtpAction(verifyData);
   }
 
   async resendOtp(resendData: ResendOtpRequest): Promise<MessageResponse> {
-    const { error } = await this.supabase.auth.resend({
-      type: 'signup',
-      email: resendData.email,
-    });
-    if (error) throw new Error(error.message || 'Error al reenviar código OTP');
-    return { message: 'Verification code resent.' };
+    return resendOtpAction(resendData);
   }
 
   async loginWithGoogle(redirectTo?: string): Promise<void> {

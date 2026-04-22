@@ -6,22 +6,20 @@ import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime'
 import type {
+  ClientChatIdentity,
   PublicChatTopic,
   PublicMessageRow,
   PublicMessageSender,
   PublicMessageWithSender,
+  ResolvedMessageAuthor,
 } from '../types'
-import {
-  sendPublicMessage,
-  softDeletePublicMessage,
-} from '../actions/chat-publico.actions'
-import TopicTabs from './TopicTabs'
+import { sendChatMessage, softDeletePublicMessage } from '../actions/chat-publico.actions'
+import { capabilitiesFor } from '../lib/permissions'
 
 interface Props {
   topic: PublicChatTopic
-  topics: PublicChatTopic[]
   initialMessages: PublicMessageWithSender[]
-  currentUserId: string
+  identity: ClientChatIdentity | null
 }
 
 const MAX_LENGTH = 2000
@@ -32,20 +30,45 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function senderLabel(sender: PublicMessageSender | null | undefined) {
-  if (!sender) return 'Usuario'
-  return sender.display_name || sender.username || 'Usuario'
+function resolveAuthor(message: PublicMessageWithSender): ResolvedMessageAuthor {
+  const kind = (message.sender_kind as ResolvedMessageAuthor['kind']) || 'profile'
+  if (kind === 'profile' || kind === 'nick') {
+    if (message.sender) {
+      const label =
+        message.sender.display_name ||
+        message.sender.username ||
+        message.sender_nickname ||
+        'Usuario'
+      return {
+        label,
+        avatarUrl: message.sender.avatar_url ?? message.sender_avatar_url ?? null,
+        kind,
+        userId: message.sender_id ?? null,
+      }
+    }
+    return {
+      label: message.sender_nickname || 'Usuario',
+      avatarUrl: message.sender_avatar_url ?? null,
+      kind,
+      userId: message.sender_id ?? null,
+    }
+  }
+  return {
+    label: message.sender_nickname || 'Invitado',
+    avatarUrl: null,
+    kind: 'guest',
+    userId: null,
+  }
 }
 
-function senderInitials(sender: PublicMessageSender | null | undefined) {
-  const label = senderLabel(sender)
+function authorInitials(label: string) {
   const parts = label.split(/\s+/).filter(Boolean)
   return (parts[0]?.[0] ?? 'U').concat(parts[1]?.[0] ?? '').toUpperCase().slice(0, 2)
 }
 
-export default function ChatPublicoView({ topic, topics, initialMessages, currentUserId }: Props) {
+export default function ChatPublicoView({ topic, initialMessages, identity }: Props) {
   const [messages, setMessages] = useState<PublicMessageWithSender[]>(() =>
-    [...initialMessages].reverse()
+    [...initialMessages].reverse(),
   )
   const [draft, setDraft] = useState('')
   const [isPending, startTransition] = useTransition()
@@ -57,14 +80,16 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
 
   const listRef = useRef<HTMLDivElement | null>(null)
   const atBottomRef = useRef(true)
+  const locallySentRef = useRef<Set<string>>(new Set())
   const profileCacheRef = useRef<Map<string, PublicMessageSender>>(
     new Map(
       initialMessages
-        .filter((m) => m.sender)
-        .map((m) => [m.sender_id, m.sender as PublicMessageSender])
-    )
+        .filter((m) => m.sender && m.sender_id)
+        .map((m) => [m.sender_id as string, m.sender as PublicMessageSender]),
+    ),
   )
 
+  const caps = capabilitiesFor(identity)
   const remainingMs = Math.max(0, cooldownUntil - cooldownNow)
   const cooling = remainingMs > 0
 
@@ -96,7 +121,7 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
   }, [])
 
   const fetchSenders = useCallback(async (ids: string[]) => {
-    const missing = ids.filter((id) => !profileCacheRef.current.has(id))
+    const missing = ids.filter((id) => id && !profileCacheRef.current.has(id))
     if (missing.length === 0) return
     const client = createClient()
     const { data } = await client
@@ -104,9 +129,7 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
       .select('id, username, display_name, avatar_url')
       .in('id', missing)
     if (!data) return
-    for (const row of data as Array<
-      PublicMessageSender & { id: string }
-    >) {
+    for (const row of data as Array<PublicMessageSender & { id: string }>) {
       profileCacheRef.current.set(row.id, {
         username: row.username,
         display_name: row.display_name,
@@ -115,8 +138,10 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
     }
     setMessages((prev) =>
       prev.map((m) =>
-        m.sender ? m : { ...m, sender: profileCacheRef.current.get(m.sender_id) ?? null }
-      )
+        m.sender || !m.sender_id
+          ? m
+          : { ...m, sender: profileCacheRef.current.get(m.sender_id) ?? null },
+      ),
     )
   }, [])
 
@@ -132,11 +157,13 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
           if (!row?.id || row.is_deleted) return
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev
-            const sender = profileCacheRef.current.get(row.sender_id) ?? null
+            const sender = row.sender_id
+              ? profileCacheRef.current.get(row.sender_id) ?? null
+              : null
             const enriched: PublicMessageWithSender = { ...row, sender }
             return [...prev, enriched]
           })
-          if (!profileCacheRef.current.has(row.sender_id)) {
+          if (row.sender_id && !profileCacheRef.current.has(row.sender_id)) {
             void fetchSenders([row.sender_id])
           }
           return
@@ -161,7 +188,7 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
       const { data } = await client
         .from('public_chat_messages')
         .select(
-          'id, content, sender_id, created_at, is_deleted, topic_id, sender:sender_id(username, display_name, avatar_url)'
+          'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url)',
         )
         .eq('topic_id', topic.id)
         .eq('is_deleted', false)
@@ -173,7 +200,8 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
         const el = listRef.current
         const prevHeight = el?.scrollHeight ?? 0
         for (const r of rows) {
-          if (r.sender) profileCacheRef.current.set(r.sender_id, r.sender)
+          if (r.sender && r.sender_id)
+            profileCacheRef.current.set(r.sender_id, r.sender)
         }
         setMessages((prev) => [...rows.slice().reverse(), ...prev])
         requestAnimationFrame(() => {
@@ -184,14 +212,15 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
     } finally {
       setIsLoadingOlder(false)
     }
-  }, [isLoadingOlder, hasMore, messages])
+  }, [isLoadingOlder, hasMore, messages, topic.id])
 
   const submit = useCallback(
     (content: string) => {
       setError(null)
       startTransition(async () => {
-        const res = await sendPublicMessage(content, topic.id)
+        const res = await sendChatMessage(topic.id, content)
         if (res.ok) {
+          if (res.messageId) locallySentRef.current.add(res.messageId)
           setDraft('')
           return
         }
@@ -203,19 +232,19 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
         } else if (res.error === 'invalid') {
           setError('El mensaje no puede estar vacío ni exceder 2000 caracteres.')
         } else if (res.error === 'unauthorized') {
-          setError('Debes iniciar sesión para enviar mensajes.')
+          setError('Debes entrar a la sala para enviar mensajes.')
         } else {
           setError('No se pudo enviar el mensaje. Intenta de nuevo.')
         }
       })
     },
-    [topic.id]
+    [topic.id],
   )
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const trimmed = draft.trim()
-    if (!trimmed || isPending || cooling) return
+    if (!trimmed || isPending || cooling || !caps.canChat) return
     submit(trimmed)
   }
 
@@ -223,7 +252,7 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       const trimmed = draft.trim()
-      if (!trimmed || isPending || cooling) return
+      if (!trimmed || isPending || cooling || !caps.canChat) return
       submit(trimmed)
     }
   }
@@ -239,32 +268,17 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
     return messages.map((m, i) => {
       const prev = messages[i - 1]
       const sameSenderAsPrev =
-        prev && prev.sender_id === m.sender_id &&
+        !!prev &&
+        prev.sender_id === m.sender_id &&
+        prev.sender_nickname === m.sender_nickname &&
+        prev.sender_kind === m.sender_kind &&
         new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() < 60_000
       return { message: m, showHeader: !sameSenderAsPrev }
     })
   }, [messages])
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] flex-col bg-white dark:bg-neutral-900">
-      <header className="flex items-center gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3h6m-7.125 8.25 3.375-3H18a3 3 0 0 0 3-3V6.75a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9.75a3 3 0 0 0 3 3h.375Z" />
-          </svg>
-        </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-base font-semibold text-neutral-900 dark:text-neutral-100">
-            Chat Público · {topic.name}
-          </h1>
-          <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-            {topic.description ?? 'Canal público'}
-          </p>
-        </div>
-      </header>
-
-      <TopicTabs topics={topics} activeSlug={topic.slug} />
-
+    <div className="flex h-full flex-col bg-white dark:bg-neutral-900">
       <div
         ref={listRef}
         onScroll={handleScroll}
@@ -291,9 +305,13 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
 
         <ul className="flex flex-col gap-1">
           {grouped.map(({ message, showHeader }) => {
-            const isOwn = message.sender_id === currentUserId
-            const sender = message.sender
-            const label = senderLabel(sender)
+            const author = resolveAuthor(message)
+            const isOwn =
+              !!identity &&
+              ((identity.kind !== 'guest' &&
+                !!message.sender_id &&
+                message.sender_id === identity.userId) ||
+                locallySentRef.current.has(message.id))
             return (
               <li
                 key={message.id}
@@ -302,17 +320,27 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
                 <div className="w-8 shrink-0">
                   {showHeader && !isOwn && (
                     <Avatar
-                      src={sender?.avatar_url ?? undefined}
-                      alt={label}
-                      initials={senderInitials(sender)}
+                      src={author.avatarUrl ?? undefined}
+                      alt={author.label}
+                      initials={authorInitials(author.label)}
                       className="h-8 w-8"
                     />
                   )}
                 </div>
                 <div className={cn('flex max-w-[75%] flex-col gap-0.5', isOwn && 'items-end')}>
                   {showHeader && !isOwn && (
-                    <span className="px-1 text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                      {label}
+                    <span className="flex items-center gap-1.5 px-1 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                      {author.label}
+                      {author.kind === 'guest' && (
+                        <span className="rounded-full bg-neutral-100 px-1.5 py-[1px] text-[9px] font-medium uppercase text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                          invitado
+                        </span>
+                      )}
+                      {author.kind === 'nick' && (
+                        <span className="rounded-full bg-neutral-100 px-1.5 py-[1px] text-[9px] font-medium uppercase text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                          nick
+                        </span>
+                      )}
                     </span>
                   )}
                   <div
@@ -322,11 +350,11 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
                         ? 'bg-neutral-100 italic text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
                         : isOwn
                           ? 'bg-primary-600 text-white'
-                          : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100'
+                          : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100',
                     )}
                   >
-                    {message.is_deleted ? 'Mensaje eliminado' : message.content}
-                    {isOwn && !message.is_deleted && (
+                    {message.is_deleted ? 'Mensaje eliminado' : message.content ?? ''}
+                    {isOwn && !message.is_deleted && identity?.kind !== 'guest' && (
                       <button
                         type="button"
                         onClick={() => handleDelete(message.id)}
@@ -354,9 +382,7 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
         onSubmit={onSubmit}
         className="border-t border-neutral-200 px-3 py-3 sm:px-6 dark:border-neutral-800"
       >
-        {error && (
-          <p className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>
-        )}
+        {error && <p className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
         <div className="flex items-end gap-2">
           <textarea
             value={draft}
@@ -364,12 +390,17 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
             onKeyDown={onKeyDown}
             rows={1}
             maxLength={MAX_LENGTH}
-            placeholder={`Escribe un mensaje en ${topic.name}…`}
-            className="min-h-[40px] flex-1 resize-none rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm text-neutral-900 outline-hidden focus:border-primary-500 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
+            disabled={!caps.canChat}
+            placeholder={
+              caps.canChat
+                ? `Escribe un mensaje en ${topic.name}…`
+                : 'Entra a la sala para chatear'
+            }
+            className="min-h-[40px] flex-1 resize-none rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm text-neutral-900 outline-hidden focus:border-primary-500 focus:bg-white disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
           />
           <button
             type="submit"
-            disabled={isPending || cooling || !draft.trim()}
+            disabled={isPending || cooling || !draft.trim() || !caps.canChat}
             className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cooling ? `Espera ${Math.ceil(remainingMs / 1000)}s` : isPending ? 'Enviando…' : 'Enviar'}
@@ -377,6 +408,8 @@ export default function ChatPublicoView({ topic, topics, initialMessages, curren
         </div>
         <p className="mt-1 px-1 text-[10px] text-neutral-400 dark:text-neutral-500">
           {draft.length}/{MAX_LENGTH} · Enter para enviar · Shift+Enter para salto de línea
+          {identity?.kind === 'guest' && ' · Invitado: solo texto'}
+          {identity?.kind === 'nick' && ' · Nick: texto + imágenes'}
         </p>
       </form>
     </div>

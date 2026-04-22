@@ -1,0 +1,178 @@
+'use server';
+
+import { randomInt, createHash } from 'crypto';
+
+import { getServiceClient } from '@/utils/supabase/server';
+import { sendOtpEmail } from '@/services/email/resend.service';
+import type { RegisterDTO, VerifyEmailRequest, ResendOtpRequest } from '../interfaces/auth.interfaces';
+
+const OTP_TTL_MINUTES = 10;
+const MAX_ATTEMPTS = 5;
+
+function generateCode(): string {
+  return randomInt(0, 1_000_000).toString().padStart(6, '0');
+}
+
+function hashCode(code: string): string {
+  return createHash('sha256').update(code).digest('hex');
+}
+
+async function issueOtpFor(userId: string, email: string, firstName?: string | null) {
+  const admin = getServiceClient();
+  const code = generateCode();
+  const codeHash = hashCode(code);
+  const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000).toISOString();
+
+  await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .is('consumed_at', null);
+
+  const { error: insertError } = await admin.from('otp_codes').insert({
+    user_id: userId,
+    email,
+    code_hash: codeHash,
+    expires_at: expiresAt,
+  });
+  if (insertError) {
+    throw new Error(insertError.message || 'No se pudo generar el código de verificación');
+  }
+
+  await sendOtpEmail({ to: email, code, firstName });
+}
+
+export async function signupWithOtpAction(userData: RegisterDTO): Promise<{ message: string }> {
+  if (!userData.email || !userData.password) {
+    throw new Error('Email y contraseña son requeridos');
+  }
+
+  const admin = getServiceClient();
+
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
+    email: userData.email,
+    password: userData.password,
+    email_confirm: false,
+    user_metadata: {
+      name: [userData.firstName, userData.lastName].filter(Boolean).join(' '),
+    },
+  });
+
+  if (createError || !created?.user) {
+    throw new Error(createError?.message || 'Error al registrar usuario');
+  }
+
+  const userId = created.user.id;
+
+  await admin
+    .from('profiles')
+    .update({
+      username: userData.email.split('@')[0] || null,
+      first_name: userData.firstName,
+      middle_name: userData.secondName ?? null,
+      last_name: userData.lastName,
+      second_last_name: userData.secondLastName ?? null,
+      birth_date: userData.birthDate,
+      gender: userData.gender,
+      country: userData.country,
+      state: userData.state,
+      city: userData.city,
+    })
+    .eq('id', userId);
+
+  await issueOtpFor(userId, userData.email, userData.firstName);
+
+  return { message: 'Account created. Check your email to verify your account.' };
+}
+
+export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<{ message: string }> {
+  const admin = getServiceClient();
+  const codeHash = hashCode(payload.otp);
+
+  const { data: row, error: selectError } = await admin
+    .from('otp_codes')
+    .select('id, user_id, email, expires_at, consumed_at, attempts')
+    .eq('email', payload.email)
+    .is('consumed_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (selectError) {
+    throw new Error(selectError.message || 'Error al verificar el código');
+  }
+  if (!row) {
+    throw new Error('No hay un código pendiente para este email');
+  }
+
+  if (new Date(row.expires_at).getTime() < Date.now()) {
+    await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
+    throw new Error('El código expiró. Solicita uno nuevo.');
+  }
+
+  if (row.attempts >= MAX_ATTEMPTS) {
+    await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
+    throw new Error('Demasiados intentos. Solicita un nuevo código.');
+  }
+
+  const { data: match, error: matchError } = await admin
+    .from('otp_codes')
+    .select('id')
+    .eq('id', row.id)
+    .eq('code_hash', codeHash)
+    .maybeSingle();
+
+  if (matchError) {
+    throw new Error(matchError.message || 'Error al verificar el código');
+  }
+
+  if (!match) {
+    await admin.from('otp_codes').update({ attempts: row.attempts + 1 }).eq('id', row.id);
+    throw new Error('Código inválido');
+  }
+
+  await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
+
+  const { error: confirmError } = await admin.auth.admin.updateUserById(row.user_id, {
+    email_confirm: true,
+  });
+  if (confirmError) {
+    throw new Error(confirmError.message || 'Error al confirmar el email');
+  }
+
+  return { message: 'Email verified.' };
+}
+
+export async function resendOtpAction(payload: ResendOtpRequest): Promise<{ message: string }> {
+  const admin = getServiceClient();
+
+  const { data: existing, error: existingError } = await admin
+    .from('otp_codes')
+    .select('user_id')
+    .eq('email', payload.email)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (existingError) {
+    throw new Error(existingError.message || 'Error al localizar el usuario');
+  }
+  if (!existing) {
+    throw new Error('No se encontró una cuenta pendiente de verificación para ese email');
+  }
+
+  const { data: userLookup, error: userError } = await admin.auth.admin.getUserById(existing.user_id);
+  if (userError || !userLookup?.user) {
+    throw new Error(userError?.message || 'No se encontró el usuario');
+  }
+  if (userLookup.user.email_confirmed_at) {
+    throw new Error('Este email ya está verificado');
+  }
+
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('first_name')
+    .eq('id', existing.user_id)
+    .maybeSingle();
+
+  await issueOtpFor(existing.user_id, payload.email, profile?.first_name ?? null);
+
+  return { message: 'Verification code resent.' };
+}
