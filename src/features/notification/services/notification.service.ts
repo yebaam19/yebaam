@@ -256,11 +256,25 @@ export class NotificationService {
 
   async markAsRead(notificationIds: string[]): Promise<void> {
     if (notificationIds.length === 0) return;
-    const { error } = await supabase
+
+    // Scope to the caller's own rows (defense in depth against session races
+    // that would otherwise make RLS silently match 0 rows). Also request the
+    // ids back so we can detect the 0-row case explicitly.
+    const userId = await getCurrentUserId();
+    if (!userId) throw new Error('No authenticated user');
+
+    const { data, error } = await supabase
       .from('notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
-      .in('id', notificationIds);
+      .in('id', notificationIds)
+      .eq('recipient_id', userId)
+      .select('id');
     if (error) throw new Error(error.message || 'Error al marcar como leídas');
+    if (!data || data.length === 0) {
+      // Nothing matched — surface it so the caller can log/ignore rather
+      // than silently pretend it worked and then get clobbered on refetch.
+      throw new Error('notification_not_updated');
+    }
   }
 
   async markOneAsRead(notificationId: string): Promise<void> {

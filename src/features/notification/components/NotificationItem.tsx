@@ -53,18 +53,21 @@ export default function NotificationItem({
     onDelete,
   });
 
-  // Modificar el comportamiento de click para navegar a la página de detalle si es friend request
-  const handleNotificationClick = () => {
+  // Mark-as-read BEFORE navigating, otherwise the await races with unmount
+  // and the bell popover's next fetchNotifications resurrects the unread
+  // state from the DB.
+  const handleNotificationClick = async () => {
     if (isFriendRequest && requestId) {
-      // Navegar a la página de detalle de solicitud de amistad
-      router.push(`/feed/friendships/requests/${requestId}`);
-      // Marcar como leída
       if (!notification.isRead) {
-        onRead(notification.id);
+        try {
+          await onRead(notification.id)
+        } catch {
+          // swallow — navigation proceeds either way
+        }
       }
+      router.push(`/feed/friendships/requests/${requestId}`)
     } else {
-      // Usar navegación normal para otros tipos de notificaciones
-      handleNavigationClick();
+      handleNavigationClick()
     }
   };
 

@@ -171,27 +171,37 @@ export const useNotificationStore = create<NotificationState>()(
       // ============================================
 
       markAsRead: async (notificationIds: string[]) => {
+        const existingIds = notificationIds.filter(id =>
+          get().notifications.some(n => n.id === id)
+        );
+        if (existingIds.length === 0) return;
+
+        // Optimistic local flip — avoids any flash of unread-state during
+        // nav/refetch. Rolled back if the DB write truly failed.
+        const prev = get().notifications;
+        const prevUnread = get().unreadCount;
+        const readAt = new Date().toISOString();
+        set({
+          notifications: prev.map(n =>
+            existingIds.includes(n.id) ? { ...n, isRead: true, readAt } : n
+          ),
+          unreadCount: Math.max(
+            0,
+            prevUnread - prev.filter(n => existingIds.includes(n.id) && !n.isRead).length
+          ),
+        });
+
         try {
-          const existingIds = notificationIds.filter(id => 
-            get().notifications.some(n => n.id === id)
-          );
-          
-          if (existingIds.length === 0) return;
-          
           await notificationService.markAsRead(existingIds);
-          
-          set({
-            notifications: get().notifications.map(notification =>
-              existingIds.includes(notification.id)
-                ? { ...notification, isRead: true, readAt: new Date().toISOString() }
-                : notification
-            ),
-            unreadCount: Math.max(0, get().unreadCount - existingIds.length),
-          });
         } catch (error: any) {
-          if (error.response?.status !== 404) {
-            toast.error('Error al marcar como leídas');
+          const msg = error?.message ?? '';
+          if (msg === 'notification_not_updated' || error?.response?.status === 404) {
+            // Row already gone / already read — keep the local flip, stay quiet.
+            return;
           }
+          // Real failure: roll back optimistic flip and surface it.
+          set({ notifications: prev, unreadCount: prevUnread });
+          toast.error('Error al marcar como leídas');
         }
       },
 
