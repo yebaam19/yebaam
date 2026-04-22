@@ -7,43 +7,66 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
 import { cn } from '@/lib/utils'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   const { isCollapsed } = useSidebar()
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const pathname = usePathname()
 
-  if (!user) {
+  // Public chat needs full viewport width + height (no right rail, no scroll
+  // container). It's also reachable to guests, so don't gate it on `user`.
+  const isChatFullscreen = pathname?.startsWith('/feed/chat-publico') ?? false
+
+  if (!user && !isChatFullscreen) {
     return null
   }
 
   return (
     <ChatNotificationProvider>
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-        {/* Header */}
+      <div
+        className={cn(
+          'bg-neutral-50 dark:bg-neutral-950',
+          isChatFullscreen ? 'h-screen overflow-hidden' : 'min-h-screen',
+        )}
+      >
         <SocialHeader onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
 
-        {/* Main Content Area */}
         <div className="flex min-w-0">
-          {/* Left Sidebar - Menu */}
-          <Sidebar user={user} isMobileOpen={isMobileSidebarOpen} onMobileClose={() => setIsMobileSidebarOpen(false)} />
+          {user && (
+            <Sidebar
+              user={user}
+              isMobileOpen={isMobileSidebarOpen}
+              onMobileClose={() => setIsMobileSidebarOpen(false)}
+            />
+          )}
 
-          {/* Main Feed Content - Se adapta al ancho del sidebar */}
           <main
             className={cn(
-              'min-h-screen min-w-0 w-full max-w-full flex-1 pt-[calc(3.5rem+env(safe-area-inset-top,0px))] transition-all duration-300 ease-in-out',
-              'lg:ml-64 xl:mr-80',
-              isCollapsed && 'lg:ml-20'
+              'min-w-0 w-full max-w-full flex-1 pt-[calc(3.5rem+env(safe-area-inset-top,0px))] transition-all duration-300 ease-in-out',
+              user && 'lg:ml-64',
+              user && isCollapsed && 'lg:ml-20',
+              isChatFullscreen
+                ? 'h-screen overflow-hidden'
+                : cn('min-h-screen', user && 'xl:mr-80'),
             )}
           >
-            {children}
+            {isChatFullscreen ? (
+              <div className="h-[calc(100vh-3.5rem-env(safe-area-inset-top,0px))]">
+                {children}
+              </div>
+            ) : (
+              children
+            )}
           </main>
 
-          {/* Right Sidebar - Social Features */}
-          <aside className="hidden bg-white xl:fixed xl:top-[calc(3.5rem+env(safe-area-inset-top,0px))] xl:right-0 xl:z-30 xl:block xl:h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] xl:w-80 xl:overflow-y-auto xl:overflow-x-hidden dark:bg-neutral-900">
-            <RightSidebar />
-          </aside>
+          {!isChatFullscreen && user && (
+            <aside className="hidden bg-white xl:fixed xl:top-[calc(3.5rem+env(safe-area-inset-top,0px))] xl:right-0 xl:z-30 xl:block xl:h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] xl:w-80 xl:overflow-y-auto xl:overflow-x-hidden dark:bg-neutral-900">
+              <RightSidebar />
+            </aside>
+          )}
         </div>
       </div>
     </ChatNotificationProvider>

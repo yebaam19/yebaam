@@ -278,11 +278,11 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
   }, [messages])
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-neutral-900">
+    <div className="flex min-h-0 h-full flex-col bg-white dark:bg-neutral-900">
       <div
         ref={listRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-3 py-4 sm:px-6"
+        className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-6"
       >
         {hasMore && (
           <div className="mb-4 flex justify-center">
@@ -380,7 +380,7 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
 
       <form
         onSubmit={onSubmit}
-        className="border-t border-neutral-200 px-3 py-3 sm:px-6 dark:border-neutral-800"
+        className="shrink-0 border-t border-neutral-200 bg-white px-3 py-3 sm:px-6 dark:border-neutral-800 dark:bg-neutral-900"
       >
         {error && <p className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
         <div className="flex items-end gap-2">

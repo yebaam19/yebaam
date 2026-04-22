@@ -85,13 +85,13 @@ export default function RoomUserList({ roomId, initialUsers, identity }: Props) 
   }, [users])
 
   return (
-    <aside className="hidden w-60 shrink-0 border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 lg:flex lg:flex-col">
-      <header className="border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+    <aside className="flex h-full w-full flex-col overflow-hidden border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <header className="shrink-0 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
           En la sala · {sorted.length}
         </h2>
       </header>
-      <ul className="flex-1 overflow-y-auto py-2">
+      <ul className="min-h-0 flex-1 overflow-y-auto py-2">
         {sorted.length === 0 && (
           <li className="px-4 py-3 text-xs text-neutral-400">Nadie por aquí todavía.</li>
         )}

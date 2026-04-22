@@ -10,13 +10,13 @@ interface Props {
 
 export default function RoomsSidebar({ topics, activeSlug }: Props) {
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
-      <header className="border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+    <aside className="flex h-full w-full flex-col overflow-hidden border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <header className="shrink-0 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
           Salas
         </h2>
       </header>
-      <nav aria-label="Lista de salas" className="flex-1 overflow-y-auto py-2">
+      <nav aria-label="Lista de salas" className="min-h-0 flex-1 overflow-y-auto py-2">
         <ul className="flex flex-col gap-0.5 px-2">
           {topics.length === 0 && (
             <li className="px-2 py-3 text-xs text-neutral-400">Sin salas todavía.</li>
@@ -51,7 +51,7 @@ export default function RoomsSidebar({ topics, activeSlug }: Props) {
           })}
         </ul>
       </nav>
-      <div className="border-t border-neutral-200 p-3 dark:border-neutral-800">
+      <div className="shrink-0 border-t border-neutral-200 p-3 dark:border-neutral-800">
         <div className="rounded-lg border border-dashed border-neutral-200 p-3 text-center dark:border-neutral-800">
           <p className="text-[11px] font-semibold uppercase text-neutral-500 dark:text-neutral-400">
             Promociones
