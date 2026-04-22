@@ -1,6 +1,10 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
 import {
+  markAllNotificationsRead as markAllNotificationsReadAction,
+  markNotificationsRead as markNotificationsReadAction,
+} from '../actions/notification.actions';
+import {
   NotificationType,
   type GetNotificationsFilters,
   type Notification,
@@ -256,25 +260,15 @@ export class NotificationService {
 
   async markAsRead(notificationIds: string[]): Promise<void> {
     if (notificationIds.length === 0) return;
-
-    // Scope to the caller's own rows (defense in depth against session races
-    // that would otherwise make RLS silently match 0 rows). Also request the
-    // ids back so we can detect the 0-row case explicitly.
-    const userId = await getCurrentUserId();
-    if (!userId) throw new Error('No authenticated user');
-
-    const { data, error } = await supabase
-      .from('notifications')
-      .update({ is_read: true, read_at: new Date().toISOString() })
-      .in('id', notificationIds)
-      .eq('recipient_id', userId)
-      .select('id');
-    if (error) throw new Error(error.message || 'Error al marcar como leídas');
-    if (!data || data.length === 0) {
-      // Nothing matched — surface it so the caller can log/ignore rather
-      // than silently pretend it worked and then get clobbered on refetch.
-      throw new Error('notification_not_updated');
+    // Use a Server Action so the UPDATE runs against the caller's cookie
+    // session — the browser client's access token races with session refresh
+    // and caused silent 0-row updates here.
+    const res = await markNotificationsReadAction(notificationIds);
+    if (!res.ok) {
+      if (res.error === 'unauthorized') throw new Error('No authenticated user');
+      throw new Error(res.message || 'Error al marcar como leídas');
     }
+    if (res.updated === 0) throw new Error('notification_not_updated');
   }
 
   async markOneAsRead(notificationId: string): Promise<void> {
@@ -282,15 +276,11 @@ export class NotificationService {
   }
 
   async markAllAsRead(): Promise<void> {
-    const userId = await getCurrentUserId();
-    if (!userId) return;
-
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true, read_at: new Date().toISOString() })
-      .eq('recipient_id', userId)
-      .eq('is_read', false);
-    if (error) throw new Error(error.message || 'Error al marcar todas como leídas');
+    const res = await markAllNotificationsReadAction();
+    if (!res.ok) {
+      if (res.error === 'unauthorized') return;
+      throw new Error(res.message || 'Error al marcar todas como leídas');
+    }
   }
 
   async delete(notificationId: string): Promise<void> {
