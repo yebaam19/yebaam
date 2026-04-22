@@ -8,7 +8,14 @@ const PUBLIC_ROUTES = [
   '/verify-email',
   '/forgot-password',
   '/auth/callback',
+  // Public chat: guests and authenticated users can enter. Identity (profile /
+  // nickname / guest) is resolved inside the page via ChatEntryGate.
+  '/feed/chat-publico',
 ];
+
+// Subset of PUBLIC_ROUTES that authenticated users should also be able to use
+// (i.e. do NOT bounce them to /feed the way /login does).
+const AUTH_ALLOWED_PUBLIC_ROUTES = ['/feed/chat-publico'];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -52,7 +59,11 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (hasSession && isPublicRoute && pathname !== '/') {
+  const isAuthAllowedPublic = AUTH_ALLOWED_PUBLIC_ROUTES.some((route) =>
+    pathname === route || pathname.startsWith(`${route}/`),
+  );
+
+  if (hasSession && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
     const redirectParam = request.nextUrl.searchParams.get('redirect');
     const safeRedirect =
       redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
