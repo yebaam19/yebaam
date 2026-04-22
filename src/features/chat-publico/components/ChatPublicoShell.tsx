@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import ChatPublicoView from './ChatPublicoView'
+import MediaGallery, { type MediaMode } from './MediaGallery'
 import RoomUserList from './RoomUserList'
 import RoomsSidebar from './RoomsSidebar'
 import type {
@@ -11,6 +12,8 @@ import type {
   PublicMessageWithSender,
   RoomPresenceRow,
 } from '../types'
+
+type ViewMode = 'chat' | MediaMode
 
 interface Props {
   topic: PublicChatTopic
@@ -33,6 +36,7 @@ export default function ChatPublicoShell({
 }: Props) {
   const [roomsOpen, setRoomsOpen] = useState(true)
   const [usersOpen, setUsersOpen] = useState(true)
+  const [view, setView] = useState<ViewMode>('chat')
 
   return (
     <div className="flex h-full flex-col bg-neutral-50 dark:bg-neutral-950">
@@ -57,9 +61,21 @@ export default function ChatPublicoShell({
         </div>
 
         <nav aria-label="Tabs de medios" className="hidden items-center gap-1 md:flex">
-          <TabStub label="Fotos y Gifs" />
-          <TabStub label="Videos" />
-          <TabStub label="Tendencia" />
+          <TabButton
+            label="Fotos y Gifs"
+            active={view === 'photos'}
+            onClick={() => setView((v) => (v === 'photos' ? 'chat' : 'photos'))}
+          />
+          <TabButton
+            label="Videos"
+            active={view === 'videos'}
+            onClick={() => setView((v) => (v === 'videos' ? 'chat' : 'videos'))}
+          />
+          <TabButton
+            label="Tendencia"
+            active={view === 'trending'}
+            onClick={() => setView((v) => (v === 'trending' ? 'chat' : 'trending'))}
+          />
         </nav>
 
         <button
@@ -93,12 +109,28 @@ export default function ChatPublicoShell({
           </div>
         </div>
 
-        <main className="flex min-w-0 flex-1 flex-col bg-white dark:bg-neutral-900">
-          <ChatPublicoView
-            topic={topic}
-            initialMessages={initialMessages}
-            identity={identity}
-          />
+        <main className="relative flex min-w-0 flex-1 flex-col bg-white dark:bg-neutral-900">
+          <div
+            className={cn(
+              'absolute inset-0 flex flex-col transition-opacity duration-200',
+              view === 'chat' ? 'opacity-100' : 'pointer-events-none opacity-0',
+            )}
+          >
+            <ChatPublicoView
+              topic={topic}
+              initialMessages={initialMessages}
+              identity={identity}
+            />
+          </div>
+          {view !== 'chat' && (
+            <div className="absolute inset-0">
+              <MediaGallery
+                roomId={topic.id}
+                mode={view}
+                onClose={() => setView('chat')}
+              />
+            </div>
+          )}
         </main>
 
         {/* Right users pane — animated collapse */}
@@ -128,11 +160,29 @@ export default function ChatPublicoShell({
   )
 }
 
-function TabStub({ label }: { label: string }) {
+function TabButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
   return (
-    <span className="inline-flex cursor-not-allowed items-center rounded-full border border-neutral-200 px-3 py-1 text-[11px] font-medium text-neutral-500 opacity-60 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800">
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        'inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition-all duration-200',
+        active
+          ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
+          : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700',
+      )}
+    >
       {label}
-    </span>
+    </button>
   )
 }
 
