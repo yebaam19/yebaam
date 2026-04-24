@@ -17,7 +17,7 @@ const Page = () => {
     <main className="relative flex min-h-screen items-center justify-center p-6">
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <Image src={BackgroundImage} alt="Background" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-black/10" />
+        <div className="pointer-events-none absolute inset-0 bg-black/10" />
       </div>
 
       <div className="relative z-10 w-full max-w-lg">
