@@ -1,12 +1,5 @@
 import type { Metadata } from 'next'
-
-import {
-  MOCK_CITIES,
-  MOCK_STATES,
-  professionalServiceService,
-  ProfessionalServicesListingContainer,
-  SERVICE_CATEGORIES,
-} from '@/features/professional-services'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Servicios Profesionales | Encuentra Expertos Cerca de Ti',
@@ -31,20 +24,27 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-export default async function ProfessionalServicesPage() {
-  const servicesResponse = await professionalServiceService
-    .getServices({ page: 1, limit: 12 })
-    .catch(() => ({ services: [], total: 0 }))
-
+export default function ProfessionalServicesPage() {
   return (
-    <div className="container mx-auto max-w-7xl p-5">
-      <ProfessionalServicesListingContainer
-        initialServices={servicesResponse.services}
-        initialTotal={servicesResponse.total}
-        states={MOCK_STATES}
-        cities={MOCK_CITIES}
-        categories={SERVICE_CATEGORIES}
-      />
-    </div>
+    <main className="mx-auto flex min-h-[62vh] w-full max-w-2xl items-center justify-center px-6">
+      <section className="w-full text-center">
+        <p className="mb-3 text-xs font-medium tracking-[0.18em] text-neutral-500 uppercase dark:text-neutral-400">
+          Proximamente
+        </p>
+        <h1 className="mb-3 text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          Servicios Profesionales
+        </h1>
+        <p className="mx-auto max-w-xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+          Estamos afinando esta seccion para que puedas encontrar profesionales verificados de forma simple y
+          confiable.
+        </p>
+        <Link
+          href="/feed"
+          className="mt-8 inline-block text-sm font-medium text-neutral-900 underline underline-offset-4 transition-colors hover:text-neutral-600 dark:text-neutral-100 dark:hover:text-neutral-300"
+        >
+          Volver al feed
+        </Link>
+      </section>
+    </main>
   )
 }

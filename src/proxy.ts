@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/utils/supabase/middleware';
+import { createClient, isInvalidRefreshTokenError } from '@/utils/supabase/middleware';
 
 const PUBLIC_ROUTES = [
   '/',
@@ -19,11 +19,34 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = ['/feed/chat-publico'];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const { supabase, supabaseResponse } = createClient(request);
+  const client = createClient(request);
+  const { supabase, clearAuthCookies } = client;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // `getUser()` can throw (or return an AuthApiError) when the stored refresh
+  // token is stale — common in dev after swapping Supabase projects or when
+  // a user was signed out elsewhere. Treat that as "anonymous" and expire the
+  // bad cookies so the browser stops resending them.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      if (isInvalidRefreshTokenError(error)) {
+        clearAuthCookies();
+      } else if (error.status && error.status !== 401) {
+        // Genuine unexpected failure — surface it but don't crash the request.
+        console.warn('[proxy] supabase.auth.getUser error:', error.message);
+      }
+    } else {
+      user = data.user;
+    }
+  } catch (err) {
+    if (isInvalidRefreshTokenError(err)) {
+      clearAuthCookies();
+    } else {
+      console.warn('[proxy] supabase.auth.getUser threw:', err);
+    }
+  }
+
   const hasSession = Boolean(user);
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
@@ -72,7 +95,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 
-  return supabaseResponse;
+  return client.supabaseResponse;
 }
 
 export const config = {

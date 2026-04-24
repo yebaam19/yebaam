@@ -54,8 +54,8 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
         href: '/feed/clubs',
         bgColor: 'bg-feature-clubs',
         iconColor: 'text-emerald-500',
-        buttonLabel: 'Explorar Clubs',
-        disabled: false,
+        buttonLabel: 'Próximamente',
+        disabled: true,
     },
     {
         id: 'blogs',
@@ -134,8 +134,8 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
         href: '/feed/professional-services',
         bgColor: 'bg-feature-services',
         iconColor: 'text-teal-500',
-        buttonLabel: 'Editar Servicios',
-        disabled: false,
+        buttonLabel: 'Próximamente',
+        disabled: true,
     },
     {
         id: 'companies',
@@ -182,7 +182,7 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
         href: '/feed/arbol-genealogico',
         bgColor: 'bg-feature-family',
         iconColor: 'text-yellow-500',
-        buttonLabel: 'Explorar Familia',
-        disabled: false,
+        buttonLabel: 'Próximamente',
+        disabled: true,
     },
 ];

@@ -15,14 +15,12 @@ import {
   MegaphoneIcon,
   NewspaperIcon,
   PhoneIcon,
-  PhotoIcon,
   RectangleStackIcon,
   ShoppingBagIcon,
   SparklesIcon,
   UserGroupIcon,
   UserIcon,
   UsersIcon,
-  VideoCameraIcon,
 } from '@/components/icons/heroicons-shim';
 import type { FeatureFlag } from './features-flag';
 import { isFeatureEnabled } from './features-flag';
@@ -37,6 +35,8 @@ export const menuConfig: Record<string, any[]> = {
           icon: RectangleStackIcon,
           label: 'Perfiles y Espacios',
           href: '{basePath}/profiles',
+          badge: 'Pronto',
+          badgeHideOnMobile: true,
         },
         { icon: UserGroupIcon, label: 'Amigos', href: '{basePath}/friends', badge: '{badgeFriendRequests}' },
         {
@@ -61,12 +61,8 @@ export const menuConfig: Record<string, any[]> = {
           icon: NewspaperIcon,
           label: 'Páginas',
           href: '{basePath}/paginas',
-        },
-        {
-          icon: PhotoIcon,
-          label: 'Fotos',
-          href: '{basePath}/fotos',
-          featureFlag: 'FOTOS_ENABLED' as FeatureFlag
+          badge: 'Pronto',
+          badgeHideOnMobile: true,
         },
       ],
     },
@@ -77,12 +73,16 @@ export const menuConfig: Record<string, any[]> = {
           icon: BriefcaseIcon,
           label: 'Servicios Profesionales',
           href: '{basePath}/professional-services',
+          badge: 'Pronto',
+          badgeHideOnMobile: true,
           featureFlag: 'SERVICIOS_PROFESIONALES_ENABLED' as FeatureFlag,
         },
         {
           icon: BuildingOfficeIcon,
           label: 'Negocios',
           href: '{basePath}/businesses',
+          badge: 'Pronto',
+          badgeHideOnMobile: true,
           featureFlag: 'NEGOCIOS_ENABLED' as FeatureFlag,
         },
         {
@@ -138,12 +138,6 @@ export const menuConfig: Record<string, any[]> = {
           badge: 'Pronto',
           badgeHideOnMobile: true,
           featureFlag: 'CLASIFICADOS_ENABLED' as FeatureFlag,
-        },
-        {
-          icon: VideoCameraIcon,
-          label: 'Videos',
-          href: '{basePath}/videos',
-          featureFlag: 'VIDEOS_ENABLED' as FeatureFlag
         },
       ],
     },
