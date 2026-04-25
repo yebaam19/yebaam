@@ -196,8 +196,9 @@ class ProfileService {
       .update({ interests: data.interests })
       .eq('id', userId)
       .select('*')
-      .single();
-    if (error || !updated) throw new Error(error?.message || 'Error al actualizar intereses');
+      .maybeSingle();
+    if (error) throw new Error(error.message || 'Error al actualizar intereses');
+    if (!updated) throw new Error('Perfil no encontrado o sin permiso para actualizar');
     return mapDbToProfile(updated as DbProfile, userData?.user?.email ?? undefined);
   }
 
