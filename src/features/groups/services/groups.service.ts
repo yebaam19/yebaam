@@ -1,3 +1,4 @@
+import { uploadService } from '@/lib/service/upload.service';
 import type { Group } from '../types/group.types';
 
 export interface GetGroupsResponse {
@@ -41,24 +42,8 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 async function uploadCover(file: File): Promise<string> {
-  const form = new FormData();
-  form.append('file', file);
-  form.append('bucket', 'covers');
-  form.append('folder', 'groups');
-
-  const response = await fetch('/api/upload', {
-    method: 'POST',
-    credentials: 'same-origin',
-    body: form,
-  });
-  const payload = (await response.json().catch(() => ({}))) as {
-    data?: { url?: string };
-    error?: string;
-  };
-  if (!response.ok || !payload.data?.url) {
-    throw new Error(payload.error || 'Failed to upload cover image');
-  }
-  return payload.data.url;
+  const { url } = await uploadService.uploadImage(file);
+  return url;
 }
 
 class GroupsService {

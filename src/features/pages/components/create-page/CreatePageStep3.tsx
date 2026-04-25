@@ -1,6 +1,6 @@
 import { FC, useState, useRef } from 'react';
 import type { CreatePageDto } from '../../types/page.types';
-import { pagesService } from '../../services/pages.service';
+import { uploadService } from '@/lib/service/upload.service';
 import { ImageUploadPreview } from './ImageUploadPreview';
 import { UploadingIndicator } from './UploadingIndicator';
 import { StepNavigationButtons } from './StepNavigationButtons';
@@ -69,25 +69,11 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
     }
   };
 
-  /**
-   * Sube la imagen de perfil a S3 y retorna la URL de CloudFront
-   */
   const uploadProfileImage = async (file: File): Promise<string> => {
     try {
       setUploadingAvatar(true);
-      
-      // 1. Obtener URL presignada
-      const { uploadUrl, cloudFrontUrl } = await pagesService.generateProfileImageUploadUrl({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-      });
-
-      // 2. Subir archivo a S3
-      await pagesService.uploadImageToS3(uploadUrl, file);
-
-      // 3. Retornar URL de CloudFront
-      return cloudFrontUrl;
+      const { url } = await uploadService.uploadImage(file);
+      return url;
     } catch (error) {
       console.error('Error uploading profile image:', error);
       throw new Error('No se pudo subir la imagen de perfil');
@@ -96,25 +82,11 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
     }
   };
 
-  /**
-   * Sube la imagen de portada a S3 y retorna la URL de CloudFront
-   */
   const uploadCoverImage = async (file: File): Promise<string> => {
     try {
       setUploadingCover(true);
-      
-      // 1. Obtener URL presignada
-      const { uploadUrl, cloudFrontUrl } = await pagesService.generateCoverImageUploadUrl({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-      });
-
-      // 2. Subir archivo a S3
-      await pagesService.uploadImageToS3(uploadUrl, file);
-
-      // 3. Retornar URL de CloudFront
-      return cloudFrontUrl;
+      const { url } = await uploadService.uploadImage(file);
+      return url;
     } catch (error) {
       console.error('Error uploading cover image:', error);
       throw new Error('No se pudo subir la imagen de portada');

@@ -113,41 +113,6 @@ export const pagesService = {
     await axios.delete(`${API_BASE}/${pageId}/team/${userId}`);
   },
 
-  // Images
-  async generateAvatarUploadUrl(pageId: string): Promise<{ uploadUrl: string; fileUrl: string }> {
-    const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/${pageId}/avatar-upload-url`);
-    return data;
-  },
-
-  // Image Upload - Generar presigned URLs para S3/CloudFront
-  async generateProfileImageUploadUrl(data: {
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-  }): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    const axios = getAxiosInstance();
-    const { data: response } = await axios.post(`${API_BASE}/generate-profile-image-url`, data);
-    return response;
-  },
-
-  async generateCoverImageUploadUrl(data: {
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-  }): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    const axios = getAxiosInstance();
-    const { data: response } = await axios.post(`${API_BASE}/generate-cover-image-url`, data);
-    return response;
-  },
-
-  async uploadImageToS3(uploadUrl: string, file: File): Promise<void> {
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-  },
+  // Images: page avatar/cover uploads go through uploadService → Cloudflare Images.
+  // See `src/lib/service/upload.service.ts`. Legacy presigned-URL methods removed.
 };

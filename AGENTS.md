@@ -65,16 +65,25 @@ The only place where `subscribeToBroadcast` / `publishBroadcast` is appropriate 
 
 Realtime publication membership is configured per table — currently enabled on `messages`, `comments`, `reactions`, `notifications`, `conversation_participants`, `conversations`. Add new tables via `ALTER PUBLICATION supabase_realtime ADD TABLE public.<name>;`.
 
-## Storage — folder ordering
+## Media uploads — Cloudflare only
 
-Storage RLS enforces `(storage.foldername(name))[1] = auth.uid()::text`. The first segment of every uploaded object key MUST be the user's UUID. Sub-folders hang off underneath:
+All image and video uploads MUST go through `uploadService` ([src/lib/service/upload.service.ts](src/lib/service/upload.service.ts)). Images land in **Cloudflare Images** via `/api/upload/image-url`; videos land in **Cloudflare Stream** via `/api/upload/video-url`. The service handles the Direct Creator Upload signing, the actual upload, and (for video) the transcode polling.
+
+Do NOT:
+- call `supabase.storage.from(...).upload(...)` for media
+- introduce new presigned-S3-URL flows (`PUT` to S3 with a signed URL)
+- add new media buckets to Supabase Storage
+
+The only legitimate non-Cloudflare media destination is the chat-attachment stub ([src/features/chat/hooks/useUploadChatMedia.ts](src/features/chat/hooks/useUploadChatMedia.ts)), which currently throws and is awaiting a backend implementation. When that lands, it must use `uploadService` per this rule.
+
+## Storage — folder ordering (non-media files)
+
+For non-media files only — Storage RLS enforces `(storage.foldername(name))[1] = auth.uid()::text`. The first segment of every uploaded object key MUST be the user's UUID. Sub-folders hang off underneath:
 
 ```
 <userId>/<file>            ← user-root upload
 <userId>/<sub>/<file>      ← optional sub-folder
 ```
-
-[src/app/api/upload/route.ts](src/app/api/upload/route.ts) enforces this. Don't bypass it.
 
 ## Edge functions
 

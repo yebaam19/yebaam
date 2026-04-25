@@ -1,4 +1,5 @@
 import { getAxiosInstance } from '@/lib/http/legacy-client';
+import { uploadService } from '@/lib/service/upload.service';
 import {
   PagePhoto,
   CreatePagePhotoDto,
@@ -12,9 +13,6 @@ class PagePhotosService {
     return getAxiosInstance();
   }
 
-  /**
-   * Get photos for a page
-   */
   async getPagePhotos(pageId: string): Promise<PagePhoto[]> {
     const response = await this.api.get<PagePhoto[]>(
       `${this.baseUrl}/${pageId}/photos`
@@ -22,9 +20,6 @@ class PagePhotosService {
     return response.data;
   }
 
-  /**
-   * Get photos count for a page
-   */
   async getPhotosCount(pageId: string): Promise<number> {
     const response = await this.api.get<{ count: number }>(
       `${this.baseUrl}/${pageId}/photos/count`
@@ -32,48 +27,18 @@ class PagePhotosService {
     return response.data.count;
   }
 
-  /**
-   * Upload a photo to a page
-   */
   async uploadPhoto(
     pageId: string,
     input: UploadPhotoInput
   ): Promise<PagePhoto> {
     const { file, caption } = input;
 
-    // Step 1: Generate presigned URL
-    const uploadUrlResponse = await this.api.post<{
-      uploadUrl: string;
-      fileUrl: string;
-      s3Key: string;
-    }[]>('/create-post/generate-upload-urls', {
-      files: [
-        {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-        },
-      ],
-    });
-
-    const { uploadUrl, fileUrl, s3Key } = uploadUrlResponse.data[0];
-
-    // Step 2: Upload to S3
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-
-    // Step 3: Determine aspect ratio
+    const { id, url } = await uploadService.uploadImage(file);
     const aspectRatio = await this.determineAspectRatio(file);
 
-    // Step 4: Create photo record
     const photoDto: CreatePagePhotoDto = {
-      url: fileUrl,
-      s3Key,
+      url,
+      s3Key: id,
       caption,
       aspectRatio,
       size: file.size,
@@ -88,16 +53,10 @@ class PagePhotosService {
     return response.data;
   }
 
-  /**
-   * Delete a photo
-   */
   async deletePhoto(pageId: string, photoId: string): Promise<void> {
     await this.api.delete(`${this.baseUrl}/${pageId}/photos/${photoId}`);
   }
 
-  /**
-   * Determine aspect ratio of image
-   */
   private async determineAspectRatio(
     file: File
   ): Promise<'vertical' | 'horizontal' | 'square'> {
@@ -122,7 +81,7 @@ class PagePhotosService {
 
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        resolve('square'); // Default fallback
+        resolve('square');
       };
 
       img.src = url;

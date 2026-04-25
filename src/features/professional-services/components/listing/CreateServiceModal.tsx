@@ -16,7 +16,7 @@ import { CreateProfessionalServiceDTO } from '../../interfaces/professional-serv
 import { useProfessionalServicesUIStore } from '../../store/professionalServicesUI.store'
 import { CreateServiceStep1, CreateServiceStep2, CreateServiceStep3, CreateServiceStep4, CreateServiceStep5 } from './create-service'
 import { useCreateService } from '../../hooks/useServices'
-import { s3UploadService } from '../../../../services/s3-upload.service'
+import { uploadService } from '@/lib/service/upload.service'
 import { mediaApiClient } from '../../api/media.api'
 
 export function CreateServiceModal() {
@@ -68,18 +68,14 @@ export function CreateServiceModal() {
               let finalUrl = media.url
               let thumbnailUrl: string | undefined = undefined
 
-              // Si hay un archivo, subirlo a S3
               if (media.file) {
-                console.log(`Subiendo archivo ${media.file.name} a S3...`)
-                finalUrl = await s3UploadService.uploadServiceMedia(media.file, serviceId)
-
-                // Generar thumbnail para videos (opcional)
                 if (media.type === 'video') {
-                  const thumbnailBlob = await s3UploadService.generateVideoThumbnail(media.file)
-                  if (thumbnailBlob) {
-                    const thumbnailFile = new File([thumbnailBlob], `${media.file.name}-thumb.jpg`, { type: 'image/jpeg' })
-                    thumbnailUrl = await s3UploadService.uploadServiceMedia(thumbnailFile, serviceId)
-                  }
+                  const result = await uploadService.uploadVideo(media.file)
+                  finalUrl = `https://iframe.videodelivery.net/${result.uid}`
+                  thumbnailUrl = result.thumbnail
+                } else {
+                  const result = await uploadService.uploadImage(media.file)
+                  finalUrl = result.url
                 }
               }
 

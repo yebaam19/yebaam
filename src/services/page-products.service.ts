@@ -148,32 +148,7 @@ export const pageProductsService = {
   /**
    * Generate presigned URL for product image upload
    */
-  async generateProductImageUploadUrl(
-    pageId: string,
-    data: {
-      fileName: string;
-      fileType: string;
-      fileSize: number;
-    }
-  ): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    const axios = await getAxiosInstance();
-    const response = await axios.post(
-      `${API_BASE}/${pageId}/products/generate-image-upload-url`,
-      data
-    );
-    return response.data as { uploadUrl: string; cloudFrontUrl: string; s3Key: string };
-  },
-
-  /**
-   * Upload image to S3 using presigned URL
-   */
-  async uploadImageToS3(uploadUrl: string, file: File): Promise<void> {
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-  },
+  // Product images: callers should use `uploadService.uploadImage(file)` from
+  // `@/lib/service/upload.service` (Cloudflare Images) and pass the returned URL
+  // to whatever endpoint persists the product. Legacy presigned-URL methods removed.
 };

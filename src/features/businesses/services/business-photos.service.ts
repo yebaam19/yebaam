@@ -2,37 +2,7 @@ import {
   BusinessPhoto,
   UploadPhotoInput,
 } from '../interfaces/business-photo.interface';
-
-type UploadRouteResponse = {
-  success?: boolean;
-  data?: {
-    url: string;
-    key: string;
-    bucket: string;
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-  };
-  error?: string;
-};
-
-async function postFileToUploadRoute(file: File): Promise<UploadRouteResponse['data']> {
-  const form = new FormData();
-  form.append('file', file);
-  form.append('bucket', 'posts');
-  form.append('folder', 'business');
-
-  const response = await fetch('/api/upload', {
-    method: 'POST',
-    credentials: 'same-origin',
-    body: form,
-  });
-  const payload = (await response.json().catch(() => ({}))) as UploadRouteResponse;
-  if (!response.ok || !payload.data) {
-    throw new Error(payload.error || 'Failed to upload business photo');
-  }
-  return payload.data;
-}
+import { uploadService } from '@/lib/service/upload.service';
 
 async function determineAspectRatio(file: File): Promise<'square' | 'portrait' | 'landscape' | 'panorama'> {
   return new Promise((resolve) => {
@@ -86,8 +56,7 @@ class BusinessPhotosService {
     input: UploadPhotoInput,
   ): Promise<BusinessPhoto> {
     const { file, caption, tags } = input;
-    const uploaded = await postFileToUploadRoute(file);
-    if (!uploaded) throw new Error('Upload failed');
+    const { url } = await uploadService.uploadImage(file);
 
     const aspectRatio = await determineAspectRatio(file);
     const response = await fetch(`${this.baseUrl}/${businessId}/photos`, {
@@ -95,7 +64,7 @@ class BusinessPhotosService {
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        url: uploaded.url,
+        url,
         type: 'IMAGE',
         caption,
         alt: Array.isArray(tags) ? tags.join(',') : undefined,

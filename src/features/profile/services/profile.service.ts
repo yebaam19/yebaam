@@ -100,6 +100,9 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
 }
 
 function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
+  // Empty strings are invalid for date/enum columns — coerce to null so clearing a field works.
+  const nullIfEmpty = <T,>(v: T): T | null => (typeof v === 'string' && v.trim() === '' ? null : v);
+
   const payload: Record<string, unknown> = {};
   if (data.firstName !== undefined) payload.first_name = data.firstName;
   if (data.secondName !== undefined) payload.middle_name = data.secondName;
@@ -109,9 +112,9 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
   if (data.coverPhotoUrl !== undefined) payload.cover_photo_url = data.coverPhotoUrl;
   if (data.bio !== undefined) payload.bio = data.bio;
   if (data.websiteUrl !== undefined) payload.website = data.websiteUrl;
-  if (data.relationshipStatus !== undefined) payload.relationship_status = data.relationshipStatus;
-  if (data.gender !== undefined) payload.gender = data.gender;
-  if (data.birthDate !== undefined) payload.birth_date = data.birthDate;
+  if (data.relationshipStatus !== undefined) payload.relationship_status = nullIfEmpty(data.relationshipStatus);
+  if (data.gender !== undefined) payload.gender = nullIfEmpty(data.gender);
+  if (data.birthDate !== undefined) payload.birth_date = nullIfEmpty(data.birthDate);
   if (data.residenceCity !== undefined) payload.city = data.residenceCity;
   if (data.birthCity !== undefined) payload.hometown = data.birthCity;
   if (data.phone !== undefined) payload.phone_number = data.phone;

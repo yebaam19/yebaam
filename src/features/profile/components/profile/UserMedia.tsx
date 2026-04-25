@@ -368,25 +368,39 @@ export function UserVideos({ userId }: UserMediaProps) {
           {selectedAlbum ? `Videos en "${selectedAlbum.name}"` : 'Todos los videos'} ({videos.length})
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {videos.map((video: any, index: number) => (
-            <div
-              key={video.id || index}
-              className="aspect-video relative overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
-            >
-              {video.url ? (
-                <video
-                  src={video.url}
-                  controls
-                  className="w-full h-full object-cover"
-                  poster={video.thumbnailUrl}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <span className="text-muted-foreground">Video</span>
-                </div>
-              )}
-            </div>
-          ))}
+          {videos.map((video: any, index: number) => {
+            const isCloudflareStream =
+              typeof video.url === 'string' && video.url.includes('iframe.videodelivery.net')
+            return (
+              <div
+                key={video.id || index}
+                className="aspect-video relative overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
+              >
+                {video.url ? (
+                  isCloudflareStream ? (
+                    <iframe
+                      src={`${video.url}?poster=${encodeURIComponent(video.thumbnailUrl ?? '')}`}
+                      className="w-full h-full"
+                      allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                      allowFullScreen
+                      title={video.caption || `Video ${index + 1}`}
+                    />
+                  ) : (
+                    <video
+                      src={video.url}
+                      controls
+                      className="w-full h-full object-cover"
+                      poster={video.thumbnailUrl}
+                    />
+                  )
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <span className="text-muted-foreground">Video</span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
       
