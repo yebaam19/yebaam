@@ -1,6 +1,12 @@
 'use client';
 
-import { UserGroupIcon, UserPlusIcon, SparklesIcon, PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
+import {
+  UserGroupIcon,
+  UserPlusIcon,
+  SparklesIcon,
+  PaperAirplaneIcon,
+  HeartIcon,
+} from '@/components/icons/heroicons-shim';
 
 interface FriendsStatsProps {
   totalFriends: number;
@@ -10,61 +16,37 @@ interface FriendsStatsProps {
   suggestions: number;
 }
 
-export function FriendsStats({ totalFriends, closeFriends, pendingRequests, sentRequests, suggestions }: FriendsStatsProps) {
+export function FriendsStats({
+  totalFriends,
+  closeFriends,
+  pendingRequests,
+  sentRequests,
+  suggestions,
+}: FriendsStatsProps) {
   const statsCards = [
-    {
-      label: 'Total de amigos',
-      value: totalFriends,
-      icon: UserGroupIcon,
-      color: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-50 dark:bg-blue-900/20',
-    },
-    {
-      label: 'Amigos cercanos',
-      value: closeFriends,
-      icon: SparklesIcon,
-      color: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-50 dark:bg-amber-900/20',
-    },
-    {
-      label: 'Solicitudes recibidas',
-      value: pendingRequests,
-      icon: UserPlusIcon,
-      color: 'text-green-600 dark:text-green-400',
-      bg: 'bg-green-50 dark:bg-green-900/20',
-    },
-    {
-      label: 'Solicitudes enviadas',
-      value: sentRequests,
-      icon: PaperAirplaneIcon,
-      color: 'text-purple-600 dark:text-purple-400',
-      bg: 'bg-purple-50 dark:bg-purple-900/20',
-    },
-    {
-      label: 'Sugerencias',
-      value: suggestions,
-      icon: SparklesIcon,
-      color: 'text-pink-600 dark:text-pink-400',
-      bg: 'bg-pink-50 dark:bg-pink-900/20',
-    },
+    { label: 'Total de amigos', value: totalFriends, icon: UserGroupIcon },
+    { label: 'Amigos cercanos', value: closeFriends, icon: HeartIcon },
+    { label: 'Solicitudes recibidas', value: pendingRequests, icon: UserPlusIcon },
+    { label: 'Solicitudes enviadas', value: sentRequests, icon: PaperAirplaneIcon },
+    { label: 'Sugerencias', value: suggestions, icon: SparklesIcon },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5 gap-2 sm:gap-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5">
       {statsCards.map((stat, index) => (
         <div
           key={index}
-          className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-4 shadow-sm border border-neutral-200 dark:border-neutral-800 min-w-0"
+          className="min-w-0 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
         >
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${stat.bg}`}>
-              <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
+              <stat.icon className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-white leading-tight">
+              <p className="text-lg leading-tight font-bold text-neutral-900 sm:text-xl dark:text-white">
                 {stat.value}
               </p>
-              <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 leading-tight">
+              <p className="truncate text-[11px] leading-tight text-neutral-500 dark:text-neutral-400">
                 {stat.label}
               </p>
             </div>

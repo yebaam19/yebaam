@@ -33,6 +33,7 @@ interface EditProfileModalProps {
     interests?: string[];
   };
   onSave: (updatedProfile: any) => void;
+  initialTab?: TabType;
 }
 
 export default function EditProfileModal({
@@ -40,8 +41,9 @@ export default function EditProfileModal({
   onClose,
   currentProfile,
   onSave,
+  initialTab,
 }: EditProfileModalProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('general');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
   const [formData, setFormData] = useState(currentProfile);
   const [coverPreview, setCoverPreview] = useState<string | null>(currentProfile.coverPhoto || null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(currentProfile.profilePhoto || null);

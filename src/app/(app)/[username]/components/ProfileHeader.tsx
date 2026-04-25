@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { 
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import {
   CameraIcon,
   PencilIcon,
   SparklesIcon,
@@ -15,6 +16,9 @@ import {
 import { CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import EditProfileModal from './EditProfileModal';
+
+type EditTab = 'general' | 'work-education' | 'contact' | 'interests';
+const VALID_EDIT_TABS: readonly EditTab[] = ['general', 'work-education', 'contact', 'interests'];
 
 type FriendshipStatus = 'none' | 'pending' | 'friends';
 
@@ -60,6 +64,33 @@ export default function ProfileHeader({
   const [isHoveringCover, setIsHoveringCover] = useState(false);
   const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [initialEditTab, setInitialEditTab] = useState<EditTab | undefined>(undefined);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Deep-link: ?edit=profile (optionally &tab=interests|general|...) auto-opens
+  // the edit modal on the requested tab. Used by /feed/friends "Tu progreso"
+  // steps so users land directly in the right form.
+  useEffect(() => {
+    if (!isOwnProfile) return;
+    if (searchParams?.get('edit') !== 'profile') return;
+
+    const requestedTab = searchParams.get('tab');
+    const tab =
+      requestedTab && (VALID_EDIT_TABS as readonly string[]).includes(requestedTab)
+        ? (requestedTab as EditTab)
+        : 'general';
+
+    setInitialEditTab(tab);
+    setIsEditModalOpen(true);
+
+    // Strip the deeplink params so refreshes/back navigation don't re-open it.
+    if (pathname) {
+      router.replace(pathname as any, { scroll: false });
+    }
+  }, [isOwnProfile, pathname, router, searchParams]);
 
   const handleSaveProfile = (updatedProfile: any) => {
     if (onProfileUpdate) {
@@ -321,6 +352,7 @@ export default function ProfileHeader({
         <EditProfileModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
+          initialTab={initialEditTab}
           currentProfile={{
             username,
             displayName,

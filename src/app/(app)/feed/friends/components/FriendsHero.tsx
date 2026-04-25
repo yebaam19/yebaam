@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Avatar from '@/ui/Avatar'
-import { UserPlusIcon, ArrowUpTrayIcon } from '@/components/icons/heroicons-shim'
+import { UserPlusIcon } from '@/components/icons/heroicons-shim'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { useAuth } from '@/features/auth/context/auth-context'
 
@@ -113,7 +113,7 @@ export function FriendsHero() {
             Hay miles de personas esperándote.
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2 sm:mt-5 sm:gap-3">
+          <div className="mt-4 sm:mt-5">
             <Link
               href="/feed/friends?tab=suggestions"
               className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700"
@@ -121,13 +121,6 @@ export function FriendsHero() {
               <UserPlusIcon className="size-4" />
               Encontrar amigos
             </Link>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
-            >
-              <ArrowUpTrayIcon className="size-4" />
-              Importar contactos
-            </button>
           </div>
         </div>
 

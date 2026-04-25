@@ -115,6 +115,9 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
   if (data.residenceCity !== undefined) payload.city = data.residenceCity;
   if (data.birthCity !== undefined) payload.hometown = data.birthCity;
   if (data.phone !== undefined) payload.phone_number = data.phone;
+  if ((data as { interests?: string[] }).interests !== undefined) {
+    payload.interests = (data as { interests?: string[] }).interests;
+  }
   return payload;
 }
 
@@ -145,16 +148,24 @@ class ProfileService {
   }
 
   async updateProfile(data: UpdateProfileDTO): Promise<UserProfile> {
-    const userId = await getCurrentUserId();
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
+
+    const payload = mapUpdateToDb(data);
+    if (Object.keys(payload).length === 0) {
+      // Nothing to update — return current profile to keep callers happy.
+      return this.getMyProfile();
+    }
 
     const { data: updated, error } = await supabase
       .from('profiles')
-      .update(mapUpdateToDb(data))
+      .update(payload)
       .eq('id', userId)
       .select('*')
-      .single();
-    if (error || !updated) throw new Error(error?.message || 'Error al actualizar perfil');
+      .maybeSingle();
+    if (error) throw new Error(error.message || 'Error al actualizar perfil');
+    if (!updated) throw new Error('Perfil no encontrado o sin permiso para actualizar');
     return mapDbToProfile(updated as DbProfile, userData?.user?.email ?? undefined);
   }
 
@@ -176,7 +187,8 @@ class ProfileService {
   }
 
   async updateInterests(data: UpdateInterestsDTO): Promise<UserProfile> {
-    const userId = await getCurrentUserId();
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
     if (!userId) throw new Error('Not authenticated');
 
     const { data: updated, error } = await supabase
