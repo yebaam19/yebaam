@@ -302,6 +302,65 @@ export async function ensureClubPublicChat(club: {
   return { conversationId };
 }
 
+/**
+ * Self-heal helper for the "Chat público" panel on the club detail page:
+ * for any authenticated viewer who is a member (or the owner) of the club,
+ * make sure (a) the conversation row exists and (b) they have a participant
+ * row so RLS lets them see the conversation. Idempotent and safe to call on
+ * every page load. Does nothing for non-members.
+ */
+export async function ensureClubChatMembership(clubId: string, userId: string): Promise<void> {
+  const svc = getServiceClient();
+
+  const { data: clubRow } = await svc
+    .from('clubs')
+    .select('id, name, owner_id')
+    .eq('id', clubId)
+    .maybeSingle();
+  if (!clubRow) return;
+  const club = clubRow as { id: string; name: string; owner_id: string };
+
+  const isOwner = club.owner_id === userId;
+  let isMember = isOwner;
+  if (!isOwner) {
+    const { data: membership } = await svc
+      .from('club_members')
+      .select('user_id')
+      .eq('club_id', clubId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    isMember = !!membership;
+  }
+  if (!isMember) return;
+
+  let conversationId: string | null = null;
+  const { data: existingConv } = await svc
+    .from('conversations')
+    .select('id')
+    .eq('club_id', clubId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (existingConv) {
+    conversationId = (existingConv as { id: string }).id;
+  } else {
+    const provisioned = await ensureClubPublicChat({
+      id: club.id,
+      name: club.name,
+      owner_id: club.owner_id,
+    });
+    if (!provisioned) return;
+    conversationId = provisioned.conversationId;
+  }
+
+  await svc
+    .from('conversation_participants')
+    .upsert(
+      { conversation_id: conversationId, user_id: userId },
+      { onConflict: 'conversation_id,user_id', ignoreDuplicates: true },
+    );
+}
+
 export async function loadClubContext(
   client: Awaited<
     ReturnType<typeof import('@/utils/supabase/server').getServerClient>

@@ -1,7 +1,6 @@
 import {
-  PhoneIcon,
-  VideoCameraIcon,
   InformationCircleIcon,
+  XMarkIcon,
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import EncryptionButton from './EncryptionButton';
@@ -13,14 +12,16 @@ interface ChatHeaderProps {
   conversationId?: string;
   isEncrypted?: boolean;
   onRefreshConversation?: () => void;
+  onClose?: () => void;
 }
 
-export default function ChatHeader({ 
-  contactName, 
-  contactAvatar, 
+export default function ChatHeader({
+  contactName,
+  contactAvatar,
   isOnline,
   conversationId,
   isEncrypted = false,
+  onClose,
 }: ChatHeaderProps) {
   return (
     <div className="h-14 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4">
@@ -57,15 +58,20 @@ export default function ChatHeader({
             isEncrypted={isEncrypted}
           />
         )}
-        <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-          <PhoneIcon className="h-5 w-5 text-primary-600" />
-        </button>
-        <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-          <VideoCameraIcon className="h-5 w-5 text-primary-600" />
-        </button>
-        <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-          <InformationCircleIcon className="h-5 w-5 text-primary-600" />
-        </button>
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar chat"
+            className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
+          </button>
+        ) : (
+          <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <InformationCircleIcon className="h-5 w-5 text-primary-600" />
+          </button>
+        )}
       </div>
     </div>
   );

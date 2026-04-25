@@ -11,7 +11,7 @@ import {
   getClubForoSpaceSlug,
   getClubForoBoard,
 } from '@/features/clubs/server/clubs.server';
-import { ensureClubPublicChat } from '@/lib/api/clubs';
+import { ensureClubChatMembership } from '@/lib/api/clubs';
 import { getServerClient } from '@/utils/supabase/server';
 import { ClubDetailView } from '@/features/clubs/components/club-detail/ClubDetailView';
 
@@ -26,18 +26,15 @@ export default async function ClubDetailPage({
   const club = await getClubBySlug(slug);
   if (!club) notFound();
 
-  // Self-heal legacy clubs that predate auto-provisioning: if the owner is
-  // viewing and the public chat row doesn't exist yet, create it now so the
-  // "Chat público" panel renders correctly.
+  // Self-heal: for any authenticated club member (including the owner)
+  // viewing the page, make sure the public-chat conversation exists and that
+  // the viewer has a participant row — otherwise RLS hides the conversation
+  // and the "Chat público" panel falls back to "no habilitado".
   const supabase = await getServerClient();
   const { data: auth } = await supabase.auth.getUser();
-  if (auth?.user?.id === club.ownerId) {
-    await ensureClubPublicChat({
-      id: club.id,
-      name: club.name,
-      owner_id: club.ownerId,
-    }).catch((err) => {
-      console.error('[ClubDetailPage] ensureClubPublicChat failed', err);
+  if (auth?.user?.id) {
+    await ensureClubChatMembership(club.id, auth.user.id).catch((err) => {
+      console.error('[ClubDetailPage] ensureClubChatMembership failed', err);
     });
   }
 

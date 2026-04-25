@@ -8,7 +8,6 @@ import { useSocket } from '@/providers/socket-provider';
 import ChatHeader from '@/components/chat/ChatHeader';
 import MessagesList from '@/components/chat/MessagesList';
 import ChatInput from '@/components/chat/ChatInput';
-import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import type { MessageMedia } from '@/features/chat/types';
 
 export default function ChatPage() {
@@ -34,24 +33,30 @@ export default function ChatPage() {
 
     const loadConversation = async () => {
       try {
-  
+
         setIsLoading(true);
 
-        // Buscar o crear conversación
-        let conversation = await chatService.findConversationByParticipant(contactId);
-
-        if (!conversation) {
- 
-          conversation = await chatService.createOrGetConversation(contactId);
-   
+        // The URL `id` may be either a CONVERSATION id (e.g. when entering
+        // a club's "Chat público" via /chat/<conversationId>) or a CONTACT
+        // user id (legacy 1:1 DM flow). Probe the messages endpoint first:
+        // if it succeeds, the viewer already participates in a conversation
+        // with that id and we can use it directly. Otherwise fall back to
+        // the contact-based find-or-create flow.
+        let resolvedConversationId: string;
+        let result: Awaited<ReturnType<typeof chatService.getConversationMessages>>;
+        try {
+          result = await chatService.getConversationMessages(contactId, 50, 0);
+          resolvedConversationId = contactId;
+        } catch {
+          let conversation = await chatService.findConversationByParticipant(contactId);
+          if (!conversation) {
+            conversation = await chatService.createOrGetConversation(contactId);
+          }
+          resolvedConversationId = conversation.id;
+          result = await chatService.getConversationMessages(resolvedConversationId, 50, 0);
         }
 
-
-        setConversationId(conversation.id);
-
-        // Cargar mensajes
-        console.log('📨 [CHAT PAGE] Cargando mensajes...');
-        const result = await chatService.getConversationMessages(conversation.id, 50, 0);
+        setConversationId(resolvedConversationId);
         
         console.log(' [CHAT PAGE] Resultado de mensajes:', {
           total: result.total,
@@ -81,7 +86,7 @@ export default function ChatPage() {
 
         // Unirse a la conversación por WebSocket
         if (chatSocket) {
-          chatSocket.emit('join_conversation', { conversationId: conversation.id });
+          chatSocket.emit('join_conversation', { conversationId: resolvedConversationId });
         }
 
       } catch (error) {
@@ -99,9 +104,10 @@ export default function ChatPage() {
     if (!chatSocket || !conversationId) return;
 
     const handleNewMessage = (data: any) => {
-      if (data.conversationId === conversationId) {
-        setMessages(prev => [...prev, data.message]);
-      }
+      if (data.conversationId !== conversationId) return;
+      const msg = data.message;
+      if (!msg?.id) return;
+      setMessages((prev) => (prev.some((m: any) => m?.id === msg.id) ? prev : [...prev, msg]));
     };
 
     const handleTypingStart = (data: any) => {
@@ -127,18 +133,34 @@ export default function ChatPage() {
     };
   }, [chatSocket, conversationId, user?.id]);
 
-  // Enviar mensaje
+  // Enviar mensaje. The WebSocket path is unreliable (header may show
+  // "Desconectado"); the HTTP route inserts the row, and Supabase's
+  // postgres_changes stream broadcasts to subscribers — see chat.service.ts.
   const handleSendMessage = async (content?: string, media?: MessageMedia): Promise<boolean> => {
-    if (!conversationId || !chatSocket) return false;
-
-    if (!content?.trim() && !media) return false;
+    if (!conversationId) return false;
+    const trimmed = content?.trim();
+    if (!trimmed && !media) return false;
 
     try {
-      chatSocket.emit('send_message', {
+      const sent = await chatService.sendMessage(
         conversationId,
-        content: content?.trim() || undefined,
-        media: media || undefined,
-      });
+        trimmed ?? '',
+        undefined,
+        media,
+      );
+      // Optimistically append so the sender sees their message immediately;
+      // the realtime listener will skip dupes when it receives the same id.
+      setMessages((prev) => (prev.some((m: any) => m?.id === sent.id) ? prev : [...prev, sent]));
+      // Best-effort socket nudge for typing indicators / presence.
+      if (chatSocket) {
+        try {
+          chatSocket.emit('send_message', {
+            conversationId,
+            content: trimmed || undefined,
+            media: media || undefined,
+          });
+        } catch {}
+      }
       return true;
     } catch (error) {
       console.error('Error sending message:', error);
@@ -169,21 +191,13 @@ export default function ChatPage() {
 
   return (
     <div className="flex max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] w-full min-w-0 flex-col overflow-hidden bg-white dark:bg-neutral-900">
-      {/* Header con botón de cerrar */}
-      <div className="relative">
-        <ChatHeader
-          contactName={contactInfo.name}
-          contactAvatar={contactInfo.avatar}
-          isOnline={contactInfo.isOnline}
-        />
-        <button
-          onClick={() => router.back()}
-          className="absolute top-3 right-4 rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-          aria-label="Cerrar chat"
-        >
-          <XMarkIcon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
-        </button>
-      </div>
+      {/* Header */}
+      <ChatHeader
+        contactName={contactInfo.name}
+        contactAvatar={contactInfo.avatar}
+        isOnline={contactInfo.isOnline}
+        onClose={() => router.back()}
+      />
 
       {/* Messages */}
       <MessagesList
