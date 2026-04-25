@@ -1,8 +1,61 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getServerClient } from '@/utils/supabase/server';
+import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { ensureClubPublicChat } from '@/lib/api/clubs';
 import type { ClubPostKind } from './clubs.server';
+
+async function addUserToClubPublicChat(clubId: string, userId: string): Promise<void> {
+  const svc = getServiceClient();
+
+  let { data: conv } = await svc
+    .from('conversations')
+    .select('id')
+    .eq('club_id', clubId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!conv) {
+    const { data: club } = await svc
+      .from('clubs')
+      .select('id, name, owner_id')
+      .eq('id', clubId)
+      .maybeSingle();
+    if (!club) return;
+    const provisioned = await ensureClubPublicChat({
+      id: (club as { id: string }).id,
+      name: (club as { name: string }).name,
+      owner_id: (club as { owner_id: string }).owner_id,
+    });
+    if (!provisioned) return;
+    conv = { id: provisioned.conversationId };
+  }
+
+  await svc
+    .from('conversation_participants')
+    .upsert(
+      { conversation_id: (conv as { id: string }).id, user_id: userId },
+      { onConflict: 'conversation_id,user_id', ignoreDuplicates: true },
+    );
+}
+
+async function removeUserFromClubPublicChat(clubId: string, userId: string): Promise<void> {
+  const svc = getServiceClient();
+  const { data: conv } = await svc
+    .from('conversations')
+    .select('id')
+    .eq('club_id', clubId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!conv) return;
+  await svc
+    .from('conversation_participants')
+    .delete()
+    .eq('conversation_id', (conv as { id: string }).id)
+    .eq('user_id', userId);
+}
 
 type ActionResult<T = undefined> =
   | { ok: true; data?: T }
@@ -26,6 +79,9 @@ export async function joinClubAction(clubId: string): Promise<ActionResult> {
       { onConflict: 'club_id,user_id' },
     );
   if (error) return { ok: false, error: error.message };
+  await addUserToClubPublicChat(clubId, userId).catch((err) => {
+    console.error('[joinClubAction] addUserToClubPublicChat failed', err);
+  });
   revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }
@@ -40,6 +96,9 @@ export async function leaveClubAction(clubId: string): Promise<ActionResult> {
     .eq('club_id', clubId)
     .eq('user_id', userId);
   if (error) return { ok: false, error: error.message };
+  await removeUserFromClubPublicChat(clubId, userId).catch((err) => {
+    console.error('[leaveClubAction] removeUserFromClubPublicChat failed', err);
+  });
   revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }

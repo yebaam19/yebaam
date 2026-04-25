@@ -235,6 +235,73 @@ export async function ensureClubForumSpace(club: {
   return { spaceId, spaceSlug };
 }
 
+/**
+ * Provision (or top up) a public chat `conversations` row for a club so the
+ * "Chat público" panel works out of the box. Idempotent: safe to call multiple
+ * times. Service-role because conversations RLS gates INSERT to the creator
+ * (`auth.uid()`), and we want to allow anyone with permission to provision the
+ * club's chat — including a backfill caller.
+ *
+ * Backfills `conversation_participants` from `club_members` so every existing
+ * member can read the chat (RLS gates SELECT on participation).
+ */
+export async function ensureClubPublicChat(club: {
+  id: string;
+  name: string;
+  owner_id: string;
+}): Promise<{ conversationId: string } | null> {
+  const svc = getServiceClient();
+
+  const { data: existing } = await svc
+    .from('conversations')
+    .select('id')
+    .eq('club_id', club.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    return { conversationId: (existing as { id: string }).id };
+  }
+
+  const { data: inserted, error } = await svc
+    .from('conversations')
+    .insert({
+      type: 'group',
+      name: `${club.name} · Chat público`,
+      club_id: club.id,
+      created_by: club.owner_id,
+    })
+    .select('id')
+    .single();
+  if (error || !inserted) return null;
+  const conversationId = (inserted as { id: string }).id;
+
+  const { data: members } = await svc
+    .from('club_members')
+    .select('user_id')
+    .eq('club_id', club.id);
+
+  const memberIds = new Set<string>(
+    ((members ?? []) as { user_id: string }[]).map((m) => m.user_id),
+  );
+  memberIds.add(club.owner_id);
+
+  if (memberIds.size > 0) {
+    await svc
+      .from('conversation_participants')
+      .upsert(
+        Array.from(memberIds).map((user_id) => ({
+          conversation_id: conversationId,
+          user_id,
+        })),
+        { onConflict: 'conversation_id,user_id', ignoreDuplicates: true },
+      );
+  }
+
+  return { conversationId };
+}
+
 export async function loadClubContext(
   client: Awaited<
     ReturnType<typeof import('@/utils/supabase/server').getServerClient>

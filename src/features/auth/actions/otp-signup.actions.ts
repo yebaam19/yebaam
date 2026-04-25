@@ -1,30 +1,19 @@
 'use server';
 
-import { randomInt, createHash } from 'crypto';
-
 import { getServiceClient } from '@/utils/supabase/server';
 import { sendOtpEmail } from '@/services/email/resend.service';
+import { generateCode, hashCode, otpExpiresAt, MAX_ATTEMPTS } from './_otp-shared';
 import type { RegisterDTO, VerifyEmailRequest, ResendOtpRequest } from '../interfaces/auth.interfaces';
-
-const OTP_TTL_MINUTES = 10;
-const MAX_ATTEMPTS = 5;
-
-function generateCode(): string {
-  return randomInt(0, 1_000_000).toString().padStart(6, '0');
-}
-
-function hashCode(code: string): string {
-  return createHash('sha256').update(code).digest('hex');
-}
 
 async function issueOtpFor(userId: string, email: string, firstName?: string | null) {
   const admin = getServiceClient();
   const code = generateCode();
   const codeHash = hashCode(code);
-  const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000).toISOString();
+  const expiresAt = otpExpiresAt();
 
   await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() })
     .eq('user_id', userId)
+    .eq('purpose', 'signup')
     .is('consumed_at', null);
 
   const { error: insertError } = await admin.from('otp_codes').insert({
@@ -32,6 +21,7 @@ async function issueOtpFor(userId: string, email: string, firstName?: string | n
     email,
     code_hash: codeHash,
     expires_at: expiresAt,
+    purpose: 'signup',
   });
   if (insertError) {
     throw new Error(insertError.message || 'No se pudo generar el código de verificación');
@@ -91,6 +81,7 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<{ me
     .from('otp_codes')
     .select('id, user_id, email, expires_at, consumed_at, attempts')
     .eq('email', payload.email)
+    .eq('purpose', 'signup')
     .is('consumed_at', null)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -148,6 +139,7 @@ export async function resendOtpAction(payload: ResendOtpRequest): Promise<{ mess
     .from('otp_codes')
     .select('user_id')
     .eq('email', payload.email)
+    .eq('purpose', 'signup')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   ensureClubForumSpace,
+  ensureClubPublicChat,
   loadClubContext,
   mapClub,
   slugify,
@@ -107,6 +108,16 @@ export async function POST(request: NextRequest) {
     privacy: row.privacy,
   }).catch((err) => {
     console.error('[clubs.POST] ensureClubForumSpace failed', err);
+  });
+
+  // Provision the club's public chat (idempotent, service-role) so the
+  // "Chat público" panel works out of the box.
+  await ensureClubPublicChat({
+    id: row.id,
+    name: row.name,
+    owner_id: row.owner_id,
+  }).catch((err) => {
+    console.error('[clubs.POST] ensureClubPublicChat failed', err);
   });
 
   const ctx = await loadClubContext(client, [row], userId);

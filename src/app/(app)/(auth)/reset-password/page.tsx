@@ -3,11 +3,12 @@ import Image from 'next/image';
 import T from '@/utils/getT';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ForgotPasswordForm } from './forgot-password-form';
+import { Suspense } from 'react';
+import { ResetPasswordForm } from './reset-password-form';
 
 export const metadata: Metadata = {
-  title: 'Recuperar Contraseña - Yebaam',
-  description: 'Restablece tu contraseña',
+  title: 'Restablecer Contraseña - Yebaam',
+  description: 'Crea una nueva contraseña para tu cuenta',
 };
 
 const Page = () => {
@@ -27,23 +28,30 @@ const Page = () => {
             />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">
-            Recuperar Contraseña
+            Restablecer contraseña
           </h1>
           <p className="text-white/80">
-            Ingresa tu email para restablecer tu contraseña
+            Ingresa el código que enviamos a tu correo y elige una nueva contraseña.
           </p>
         </div>
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <ForgotPasswordForm />
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+              </div>
+            }
+          >
+            <ResetPasswordForm />
+          </Suspense>
         </div>
 
         {/* Links */}
         <div className="mt-6 text-center text-sm text-white">
-          {T['login']['New user?']} {` `}
-          <Link href="/signup" className="font-semibold underline hover:text-white/80 transition-colors">
-            {T['login']['Create an account']}
+          <Link href="/forgot-password" className="font-semibold underline hover:text-white/80 transition-colors">
+            Reenviar código
           </Link>
           {`  o  `}
           <Link href="/login" className="font-semibold underline hover:text-white/80 transition-colors">

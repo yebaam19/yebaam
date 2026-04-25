@@ -112,7 +112,15 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
  * Schema para Reset Password
  */
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Token inválido'),
+  email: z
+    .string()
+    .min(1, 'El email es requerido')
+    .email('Email inválido'),
+  otp: z
+    .string()
+    .min(6, 'El código debe tener 6 dígitos')
+    .max(6, 'El código debe tener 6 dígitos')
+    .regex(/^\d{6}$/, 'El código debe contener solo números'),
   newPassword: z
     .string()
     .min(1, 'La contraseña es requerida')

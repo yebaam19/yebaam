@@ -7,6 +7,7 @@ const PUBLIC_ROUTES = [
   '/signup',
   '/verify-email',
   '/forgot-password',
+  '/reset-password',
   '/auth/callback',
   // Public chat: guests and authenticated users can enter. Identity (profile /
   // nickname / guest) is resolved inside the page via ChatEntryGate.

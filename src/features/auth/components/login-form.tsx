@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
@@ -18,6 +19,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
   // Pre-fill email if coming from verification
   const emailFromUrl = searchParams.get('email') || ''
   const verified = searchParams.get('verified') === 'true'
+  const reset = searchParams.get('reset') === 'true'
   const redirectTo = searchParams.get('redirect') || '/feed'
 
   const [identifier, setIdentifier] = useState(emailFromUrl)
@@ -28,6 +30,12 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
       toast.success('Email verificado correctamente! Ya puedes iniciar sesión')
     }
   }, [verified, emailFromUrl])
+
+  useEffect(() => {
+    if (reset) {
+      toast.success('Contraseña actualizada. Inicia sesión con tu nueva contraseña.')
+    }
+  }, [reset])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -97,6 +105,18 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
 
       {/* Error Message */}
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+
+      {/* Forgot password */}
+      {showForgotPassword && (
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-semibold text-green-600 transition-colors hover:text-amber-500"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
+      )}
 
       {/* Submit Button */}
       <button
