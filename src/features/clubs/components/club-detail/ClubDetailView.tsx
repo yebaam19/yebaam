@@ -261,33 +261,39 @@ export function ClubDetailView({
               <PaperAirplaneIcon className="h-4 w-4" />
               Messenger
             </button>
-            <div className="rounded-lg border border-gray-200 bg-white p-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-              <div className="mb-1 font-semibold text-gray-900 dark:text-white">Modo de vista</div>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setViewMode('cascade')}
-                  className={`flex-1 rounded px-2 py-1 text-xs ${
-                    viewMode === 'cascade'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                  }`}
-                  title="Cascada"
-                >
-                  <Bars3Icon className="mx-auto h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('paginated')}
-                  className={`flex-1 rounded px-2 py-1 text-xs ${
-                    viewMode === 'paginated'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                  }`}
-                  title="12 por página"
-                >
-                  <Squares2X2Icon className="mx-auto h-4 w-4" />
-                </button>
+            {activeTab !== 'acerca' && (
+              <div className="rounded-lg border border-gray-200 bg-white p-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                <div className="mb-1 font-semibold text-gray-900 dark:text-white">Modo de vista</div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('cascade')}
+                    className={`flex-1 rounded px-2 py-1 text-xs ${
+                      viewMode === 'cascade'
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                    }`}
+                    title="Cascada"
+                    aria-pressed={viewMode === 'cascade'}
+                  >
+                    <Bars3Icon className="mx-auto h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('paginated')}
+                    className={`flex-1 rounded px-2 py-1 text-xs ${
+                      viewMode === 'paginated'
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                    }`}
+                    title="12 por página"
+                    aria-pressed={viewMode === 'paginated'}
+                  >
+                    <Squares2X2Icon className="mx-auto h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </aside>
       </div>
