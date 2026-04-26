@@ -1,6 +1,7 @@
 import '@/styles/tailwind.css';
 import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
+import { Toaster } from 'sonner';
 import 'rc-slider/assets/index.css';
 
 import { AuthProvider } from '@/features/auth/context/auth-context';
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
               <SocketProvider>
                 <OfflineIndicator />
                 <div className="min-w-0">{children}</div>
+                <Toaster position="top-center" richColors />
               </SocketProvider>
             </AuthProvider>
           </ThemeProvider>

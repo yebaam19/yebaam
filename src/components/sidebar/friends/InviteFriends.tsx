@@ -1,13 +1,17 @@
 'use client'
 
-import { LinkIcon } from '@/components/icons/heroicons-shim'
+import { useEffect, useRef, useState } from 'react'
+import { CheckIcon, LinkIcon } from '@/components/icons/heroicons-shim'
 import { toast } from 'sonner'
 
 const INVITE_TEXT = '¡Únete a mí en Yebaam! Te encantará la red social donde conecto con mi gente:'
 
+// Canonical share URL: always link to the production app, never the current
+// dev/preview origin — otherwise the copied link is useless to recipients.
+const SHARE_URL = 'https://yebaam.com/'
+
 function shareUrl() {
-  if (typeof window === 'undefined') return 'https://yebaam.com'
-  return `${window.location.origin}/`
+  return SHARE_URL
 }
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -36,6 +40,12 @@ function GmailIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function InviteFriends() {
   const url = shareUrl()
+  const [copied, setCopied] = useState(false)
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current)
+  }, [])
 
   const openWhatsApp = () => {
     const text = encodeURIComponent(`${INVITE_TEXT} ${url}`)
@@ -56,6 +66,9 @@ export function InviteFriends() {
     try {
       await navigator.clipboard.writeText(url)
       toast.success('Enlace copiado al portapapeles')
+      setCopied(true)
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current)
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch {
       toast.error('No se pudo copiar el enlace')
     }
@@ -107,14 +120,29 @@ export function InviteFriends() {
         >
           <GmailIcon className="size-5" />
         </button>
-        <button
-          type="button"
-          onClick={copyLink}
-          aria-label="Copiar enlace"
-          className="flex size-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 shadow-sm transition-transform hover:scale-105 dark:bg-neutral-800 dark:text-neutral-200"
-        >
-          <LinkIcon className="size-4" />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={copyLink}
+            aria-label={copied ? 'Enlace copiado' : 'Copiar enlace'}
+            aria-live="polite"
+            className={`flex size-9 items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-105 ${
+              copied
+                ? 'bg-green-500 text-white scale-105'
+                : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200'
+            }`}
+          >
+            {copied ? <CheckIcon className="size-4" /> : <LinkIcon className="size-4" />}
+          </button>
+          <span
+            role="status"
+            className={`pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-0.5 text-[11px] font-medium text-white shadow-md transition-all duration-200 dark:bg-white dark:text-neutral-900 ${
+              copied ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+            }`}
+          >
+            ¡Copiado!
+          </span>
+        </div>
       </div>
 
       <button

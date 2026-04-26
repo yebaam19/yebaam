@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FriendCard } from '@/features/user/components/FriendCard';
 import { FriendRequestCard } from '@/features/user/components/FriendRequestCard';
 import { SuggestionCard } from '@/features/user/components/SuggestionCard';
@@ -33,11 +33,22 @@ interface ConfirmModalState {
 const VALID_TABS: TabType[] = ['friends', 'requests', 'sent', 'suggestions'];
 
 export default function FriendsPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get('tab');
   const initialTab = tabParam && (VALID_TABS as string[]).includes(tabParam) ? (tabParam as TabType) : 'friends';
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [managerOpen, setManagerOpen] = useState<boolean>(Boolean(tabParam));
+  const managerRef = useRef<HTMLDivElement>(null);
+
+  const handleFindFriends = useCallback(() => {
+    setActiveTab('suggestions');
+    setManagerOpen(true);
+    router.replace('/feed/friends?tab=suggestions', { scroll: false });
+    requestAnimationFrame(() => {
+      managerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [router]);
 
   useEffect(() => {
     const t = searchParams?.get('tab');
@@ -170,12 +181,15 @@ export default function FriendsPage() {
     <div className="min-w-0">
       <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
         <div className="space-y-5 sm:space-y-6">
-          <FriendsHero />
+          <FriendsHero onFindFriends={handleFindFriends} />
           <ProfileProgress />
           <SuggestedPeopleRail />
           <RecentActivity />
 
-          <div className="rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div
+            ref={managerRef}
+            className="rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+          >
             <button
               type="button"
               onClick={() => setManagerOpen((v) => !v)}

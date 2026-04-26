@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import Avatar from '@/ui/Avatar'
 import { UserPlusIcon } from '@/components/icons/heroicons-shim'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
@@ -83,7 +82,11 @@ function NetworkIllustration({ items }: { items: NetworkAvatar[] }) {
   )
 }
 
-export function FriendsHero() {
+interface FriendsHeroProps {
+  onFindFriends?: () => void
+}
+
+export function FriendsHero({ onFindFriends }: FriendsHeroProps = {}) {
   const { user } = useAuth()
   const { friends, suggestions } = useFriendships()
 
@@ -114,13 +117,14 @@ export function FriendsHero() {
           </p>
 
           <div className="mt-4 sm:mt-5">
-            <Link
-              href="/feed/friends?tab=suggestions"
+            <button
+              type="button"
+              onClick={onFindFriends}
               className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700"
             >
               <UserPlusIcon className="size-4" />
               Encontrar amigos
-            </Link>
+            </button>
           </div>
         </div>
 
