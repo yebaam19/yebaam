@@ -26,3 +26,7 @@ Do **not** add or use any axios / legacy HTTP client. For anything that cannot b
 **Senders just write rows.** The DB INSERT IS the broadcast. Subscribers use `subscribeToTable()` from `@/utils/supabase/realtime`. See AGENTS.md for the canonical pattern and the list of tables enabled on `supabase_realtime`.
 
 The only place where Broadcast (ephemeral, no DB) is appropriate is signals like typing indicators, presence, cursor positions — anything without a row.
+
+## Media uploads — Cloudflare only (TL;DR)
+
+**Every image and every video in this app goes to Cloudflare** — Cloudflare Images for photos, Cloudflare Stream for videos. Supabase Storage is for non-media files only. Always upload via `uploadService` from [src/lib/service/upload.service.ts](src/lib/service/upload.service.ts) (`uploadImage`, `uploadVideo`, or `uploadFile`); never call `supabase.storage.from(...).upload(...)` for media, never store the full delivery URL in the DB (store the Cloudflare `id`/`uid` only). For private media (e.g. ID documents) use `requireSignedURLs: true` and mint server-side HMAC-signed delivery URLs. See AGENTS.md "Media uploads — Cloudflare only" for the full rule.

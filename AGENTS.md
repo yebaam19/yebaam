@@ -12,7 +12,7 @@ This is a Next.js 16 (App Router, Turbopack) social app backed by **Supabase** f
 
 - **Database**: Postgres + PostgREST, accessed via `@supabase/supabase-js`.
 - **Auth**: `@supabase/ssr` for cookie-managed sessions across server + client.
-- **Storage**: `supabase.storage.from(bucket)` — buckets `avatars`, `covers`, `posts`, `profile-photos`, `profile-videos`, `stories`.
+- **Storage**: `supabase.storage.from(bucket)` is for **non-media files only**. All images and videos live on **Cloudflare** (Cloudflare Images + Cloudflare Stream) — see "Media uploads — Cloudflare only" below. The legacy buckets (`avatars`, `covers`, `posts`, `profile-photos`, `profile-videos`, `stories`) are not the source of truth for media; do not write new media there.
 - **Realtime**: `postgres_changes` on tables (the canonical pattern — write a row, every subscriber gets it for free) plus Broadcast channels for ephemeral signals like typing indicators. Both wrapped by [src/utils/supabase/realtime.ts](src/utils/supabase/realtime.ts).
 - **Edge Functions**: live under `supabase/functions/<name>/index.ts`. Three currently deployed: `feed`, `send-email`, `story-cleanup`.
 
@@ -65,14 +65,26 @@ The only place where `subscribeToBroadcast` / `publishBroadcast` is appropriate 
 
 Realtime publication membership is configured per table — currently enabled on `messages`, `comments`, `reactions`, `notifications`, `conversation_participants`, `conversations`. Add new tables via `ALTER PUBLICATION supabase_realtime ADD TABLE public.<name>;`.
 
-## Media uploads — Cloudflare only
+## Media uploads — Cloudflare only (HARD RULE)
 
-All image and video uploads MUST go through `uploadService` ([src/lib/service/upload.service.ts](src/lib/service/upload.service.ts)). Images land in **Cloudflare Images** via `/api/upload/image-url`; videos land in **Cloudflare Stream** via `/api/upload/video-url`. The service handles the Direct Creator Upload signing, the actual upload, and (for video) the transcode polling.
+**Every image and every video in this app — without exception — is stored on Cloudflare.** Images go to **Cloudflare Images**, videos go to **Cloudflare Stream**. Supabase Storage is for non-media files only (see "Storage — folder ordering" below).
+
+All uploads MUST go through `uploadService` ([src/lib/service/upload.service.ts](src/lib/service/upload.service.ts)):
+- `uploadService.uploadImage(file)` → Cloudflare Images via `/api/upload/image-url` → returns `{ id, url }` where `url = https://imagedelivery.net/{NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH}/{id}/public`.
+- `uploadService.uploadVideo(file)` → Cloudflare Stream via `/api/upload/video-url` → polls `/api/upload/video-status/[uid]` until `readyToStream`, then returns `{ uid, duration, thumbnail }`.
+- `uploadService.uploadFile(file)` dispatches to image or video based on MIME.
+
+Direct-upload signing helpers live in [src/lib/cloudflare/images.ts](src/lib/cloudflare/images.ts) and [src/lib/cloudflare/stream.ts](src/lib/cloudflare/stream.ts) — these are the only places that talk to the Cloudflare API. Persist the Cloudflare `id` / `uid` in your DB; never persist a delivery URL — derive it from the id at render time.
+
+**Private images** (e.g. ID documents, KYC photos): pass `requireSignedURLs: true` when minting the direct-upload URL, then mint short-lived HMAC-signed delivery URLs server-side via a `signImageUrl(id, …)` helper using `CLOUDFLARE_IMAGES_SIGNING_KEY`. Never expose the public variant URL for private content.
+
+**Required env**: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH`, plus `CLOUDFLARE_IMAGES_SIGNING_KEY` for any feature that uploads private images.
 
 Do NOT:
-- call `supabase.storage.from(...).upload(...)` for media
+- call `supabase.storage.from(...).upload(...)` for any image or video
 - introduce new presigned-S3-URL flows (`PUT` to S3 with a signed URL)
 - add new media buckets to Supabase Storage
+- store full Cloudflare delivery URLs in the database — store the `id`/`uid` only
 
 The only legitimate non-Cloudflare media destination is the chat-attachment stub ([src/features/chat/hooks/useUploadChatMedia.ts](src/features/chat/hooks/useUploadChatMedia.ts)), which currently throws and is awaiting a backend implementation. When that lands, it must use `uploadService` per this rule.
 
