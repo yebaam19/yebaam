@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
+import { useProfileStore } from '@/features/profile/store/profile.store'
 import { cn } from '@/lib/utils'
 
 interface Step {
@@ -53,7 +55,24 @@ function CircularProgress({ percent }: { percent: number }) {
 
 export function ProfileProgress() {
   const { user } = useAuth()
-  const { totalFriends } = useFriendships()
+  const { totalFriends, sentRequests } = useFriendships()
+  const profile = useProfileStore((s) => s.currentProfile)
+  const fetchProfileByUsername = useProfileStore((s) => s.fetchProfileByUsername)
+
+  // Ensure the profile store has the current user's data so completion checks
+  // use a single source of truth that reflects EditProfileDialog saves.
+  useEffect(() => {
+    if (user?.username && profile?.username !== user.username) {
+      fetchProfileByUsername(user.username).catch(() => undefined)
+    }
+  }, [user?.username, profile?.username, fetchProfileByUsername])
+
+  const firstName = profile?.firstName ?? user?.firstName
+  const lastName = profile?.lastName ?? user?.lastName
+  const residenceCity = profile?.residenceCity ?? user?.residenceCity
+  const avatar = profile?.avatarUrl ?? user?.avatarUrl ?? user?.avatar
+  const interests = profile?.interests ?? []
+  const emailVerified = user?.emailVerified ?? false
 
   // Deep-link each step into the profile's EditProfileModal via the
   // `?edit=profile&tab=...` query param read by ProfileHeader.tsx.
@@ -64,27 +83,30 @@ export function ProfileProgress() {
   const steps: Step[] = [
     {
       label: 'Foto de perfil',
-      done: Boolean(user?.avatarUrl || user?.avatar),
+      done: Boolean(avatar),
       href: editLink('general'),
     },
     {
       label: 'Información básica',
-      done: Boolean(user?.firstName && user?.lastName && user?.residenceCity),
+      done: Boolean(firstName && lastName && residenceCity),
       href: editLink('general'),
     },
     {
       label: 'Intereses',
-      done: Boolean((user as any)?.interests?.length),
+      done: interests.length > 0,
       href: editLink('interests'),
     },
     {
+      // Counts accepted friendships + outgoing pending requests so the user
+      // can flip this on their own (sending 5 invites is enough). Real
+      // acceptances still contribute to the same threshold.
       label: 'Conecta 5 amigos',
-      done: (totalFriends || 0) >= 5,
+      done: ((totalFriends || 0) + (sentRequests?.length || 0)) >= 5,
       href: '/feed/friends?tab=suggestions',
     },
     {
       label: 'Verificado',
-      done: Boolean(user?.emailVerified),
+      done: emailVerified,
       href: profileBase,
     },
   ]

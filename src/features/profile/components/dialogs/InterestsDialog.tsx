@@ -45,16 +45,35 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
     try {
+      // The DB profiles table only has an `interests` text[] column for tags.
+      // tvShows / musicBands / favoriteMovies / favoriteBooks / favoriteGames
+      // are kept as separate UI fields (comma-separated). Flatten them all
+      // into a single tag array so the data actually persists.
+      const flatten = (s: string) =>
+        s.split(',').map((x) => x.trim()).filter(Boolean)
+
+      const interests = [
+        ...flatten(tvShows),
+        ...flatten(musicBands),
+        ...flatten(favoriteMovies),
+        ...flatten(favoriteBooks),
+        ...flatten(favoriteGames),
+      ]
+
       await updateProfile({
+        // Persisted column.
+        interests,
+        // Kept for forward-compat — currently dropped by mapUpdateToDb but
+        // doesn't hurt to send.
         tvShows,
         musicBands,
         favoriteMovies,
         favoriteBooks,
         favoriteGames,
-      })
-      
+      } as any)
+
       toast.success('Intereses actualizados correctamente')
       onOpenChange(false)
     } catch (error) {
