@@ -232,6 +232,33 @@
     display: none;
   }
 }
+@utility thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 0.15) transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgb(0 0 0 / 0.15);
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(0 0 0 / 0.3);
+  }
+  :where(.dark, .dark *) & {
+    scrollbar-color: rgb(255 255 255 / 0.15) transparent;
+  }
+  :where(.dark, .dark *) &::-webkit-scrollbar-thumb {
+    background-color: rgb(255 255 255 / 0.15);
+  }
+  :where(.dark, .dark *) &::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(255 255 255 / 0.3);
+  }
+}
 @utility z-max {
   z-index: 999;
 }

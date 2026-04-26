@@ -78,7 +78,7 @@ export default function BaseDialog({
 
                 {/* Content */}
                 <form onSubmit={onSubmit}>
-                  <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+                  <div className="thin-scrollbar p-6 space-y-5 max-h-[60vh] overflow-y-auto">
                     {children}
                   </div>
 
