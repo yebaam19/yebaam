@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   typedRoutes: true,
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   images: {
     minimumCacheTTL: 2678400 * 6,
     dangerouslyAllowSVG: true,

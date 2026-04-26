@@ -16,10 +16,11 @@ const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 
 const FILES = ['goldprint.png', 'topleft.png', 'topwatermark.png', 'crown.png'];
 
-// Tuning knobs
-const FULL_TRANSPARENT_BRIGHTNESS = 248; // px above this brightness => fully transparent
-const FULL_OPAQUE_BRIGHTNESS = 220;       // px below this brightness => fully opaque
-const SAT_THRESHOLD = 18;                  // px with chroma above this stay opaque even if bright
+// Tuning knobs — tuned aggressive so the very light cream/off-white
+// backgrounds in the source ornaments fully fall away.
+const FULL_TRANSPARENT_BRIGHTNESS = 232; // px above this brightness => fully transparent
+const FULL_OPAQUE_BRIGHTNESS = 190;       // px below this brightness => fully opaque
+const SAT_THRESHOLD = 24;                  // px with chroma above this stay opaque even if bright
 
 function clamp(n, a, b) {
   return Math.max(a, Math.min(b, n));
