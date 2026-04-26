@@ -9,6 +9,7 @@ export interface AdminNavItem {
     | 'chat-bubble-left'
     | 'users'
     | 'cog'
+    | 'shield-check'
   disabled?: boolean
   matchPrefix?: string
 }
@@ -32,6 +33,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/usuarios' as Route,
     iconName: 'users',
     matchPrefix: '/admin/usuarios',
+  },
+  {
+    label: 'Verificaciones',
+    href: '/admin/verifications' as Route,
+    iconName: 'shield-check',
+    matchPrefix: '/admin/verifications',
   },
   {
     label: 'Ajustes',

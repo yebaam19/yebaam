@@ -28,6 +28,7 @@ export function RegisterForm() {
     country: '',
     state: '',
     city: '',
+    acceptedTerms: false,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -40,6 +41,11 @@ export function RegisterForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!formData.acceptedTerms) {
+      toast.error('Debes aceptar los Términos y Condiciones para continuar');
+      return;
+    }
 
     try {
       // Formatear fecha de nacimiento en formato YYYY-MM-DD
@@ -62,7 +68,7 @@ export function RegisterForm() {
         country: formData.country,
         state: formData.state,
         city: formData.city,
-        acceptedTerms: true,
+        acceptedTerms: formData.acceptedTerms,
         secondName: formData.secondName || undefined,
         secondLastName: formData.secondLastName || undefined,
       };
@@ -147,6 +153,9 @@ export function RegisterForm() {
         <label className="flex items-start gap-2 text-xs text-gray-600 leading-relaxed cursor-pointer">
           <input
             type="checkbox"
+            name="acceptedTerms"
+            checked={formData.acceptedTerms}
+            onChange={handleChange}
             required
             className="mt-0.5 w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
           />
@@ -154,6 +163,10 @@ export function RegisterForm() {
             Acepto los <a href="/terms" className="text-green-600 hover:underline">Términos y Condiciones</a> y la <a href="/privacy" className="text-green-600 hover:underline">Política de Datos</a>
           </span>
         </label>
+        <p className="mt-2 text-[11px] text-gray-500 leading-relaxed">
+          Tras crear tu cuenta, podrás autenticar tu perfil desde tu página de perfil para
+          desbloquear todas las funciones (crear páginas, chats, clasificados, etc.).
+        </p>
       </div>
 
       {/* Error message */}

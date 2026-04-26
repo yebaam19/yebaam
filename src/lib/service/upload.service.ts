@@ -75,10 +75,13 @@ export class UploadService {
   /**
    * Upload an image using Cloudflare Images Direct Creator Upload.
    * Returns the CF image id plus the full delivery URL (public variant).
+   * For sensitive content (ID documents), enforce privacy at the DB layer
+   * (RLS) — never expose the cf id to non-authorized users.
    */
   async uploadImage(
     file: File,
     onProgress?: (progress: number) => void,
+    options?: { metadata?: Record<string, string> },
   ): Promise<CloudflareImageUploadResult> {
     if (!file.type.startsWith('image/')) {
       throw new Error('uploadImage called with a non-image file');
@@ -87,7 +90,9 @@ export class UploadService {
     const signRes = await fetch('/api/upload/image-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ metadata: { filename: file.name } }),
+      body: JSON.stringify({
+        metadata: { filename: file.name, ...(options?.metadata ?? {}) },
+      }),
     });
     const signPayload = await signRes.json().catch(() => null);
     if (!signRes.ok || !signPayload?.data?.uploadURL) {

@@ -21,6 +21,7 @@ import {
 import { useProfile } from '@/features/profile/hooks/useProfile';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useFetch } from '@/lib/hooks/useFetch';
+import CompleteAuthenticationBanner from '@/features/verification/components/CompleteAuthenticationBanner';
 
 import {
   DocumentTextIcon,
@@ -124,6 +125,11 @@ export default function UserProfilePage() {
           friendCount,
         }}
       />
+
+      {/* Reminder banner for own profile — Pitnik-style "complete your authentication". */}
+      {isOwnProfile && currentUser?.id && (
+        <CompleteAuthenticationBanner ownerUserId={currentUser.id} />
+      )}
 
       {/* Tabs Navigation - EXACTO como páginas */}
       <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-10 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">

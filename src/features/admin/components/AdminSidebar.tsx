@@ -8,6 +8,7 @@ import {
   ChatBubbleLeftIcon,
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
+  ShieldCheckIcon,
   Squares2X2Icon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
@@ -22,6 +23,7 @@ const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: 
   'chat-bubble-left': ChatBubbleLeftIcon,
   users: UsersIcon,
   cog: Cog6ToothIcon,
+  'shield-check': ShieldCheckIcon,
 }
 
 interface Props {

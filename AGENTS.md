@@ -76,9 +76,9 @@ All uploads MUST go through `uploadService` ([src/lib/service/upload.service.ts]
 
 Direct-upload signing helpers live in [src/lib/cloudflare/images.ts](src/lib/cloudflare/images.ts) and [src/lib/cloudflare/stream.ts](src/lib/cloudflare/stream.ts) — these are the only places that talk to the Cloudflare API. Persist the Cloudflare `id` / `uid` in your DB; never persist a delivery URL — derive it from the id at render time.
 
-**Private images** (e.g. ID documents, KYC photos): pass `requireSignedURLs: true` when minting the direct-upload URL, then mint short-lived HMAC-signed delivery URLs server-side via a `signImageUrl(id, …)` helper using `CLOUDFLARE_IMAGES_SIGNING_KEY`. Never expose the public variant URL for private content.
+**Private images** (e.g. ID documents, KYC photos): enforce privacy at the **DB layer** with RLS — store the `cf_image_id` in a row whose SELECT policy restricts visibility to the authorized audience (admins, the owner, etc.). The id itself is unguessable, so non-authorized users can never discover a viewable URL. Do not introduce HMAC-signed delivery URLs unless the existing keys cover it.
 
-**Required env**: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH`, plus `CLOUDFLARE_IMAGES_SIGNING_KEY` for any feature that uploads private images.
+**Required env**: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH`. No additional Cloudflare keys are needed for private uploads — RLS does the gating.
 
 Do NOT:
 - call `supabase.storage.from(...).upload(...)` for any image or video

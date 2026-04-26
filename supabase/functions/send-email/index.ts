@@ -9,17 +9,61 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 const DEFAULT_FROM = 'Yeebaam <noreply@yeebaam.com>';
 const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Escape any user-controlled string before interpolating into HTML email
+// bodies. Without this, a user with a malicious display name (or any
+// other field that flows from the DB into an email template) could inject
+// arbitrary HTML / links into the recipient's mailbox.
+function esc(s: string | undefined | null): string {
+  if (s == null) return '';
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+// Strip any HTML and quote-bound characters from values that flow into the
+// `subject` line. Email subjects should always be plain text.
+function plain(s: string | undefined | null): string {
+  if (s == null) return '';
+  return String(s).replace(/[\r\n<>]+/g, ' ').slice(0, 200);
+}
+
+// Allow only http(s) links for the `reviewUrl` slot. Rejects javascript:, data:,
+// and other schemes that would otherwise be rendered as a clickable link.
+function safeUrl(s: string | undefined | null): string {
+  if (!s) return '#';
+  try {
+    const u = new URL(s);
+    if (u.protocol === 'http:' || u.protocol === 'https:') return u.toString();
+  } catch {
+    // fallthrough
+  }
+  return '#';
+}
+
 const templates: Record<
   string,
   (v: Record<string, string>) => { subject: string; html: string }
 > = {
   welcome: (v) => ({
-    subject: `Welcome to Yeebaam${v.firstName ? ', ' + v.firstName : ''}!`,
-    html: `<h1>Welcome${v.firstName ? ', ' + v.firstName : ''}!</h1><p>Your account is ready.</p>`,
+    subject: `Welcome to Yeebaam${v.firstName ? ', ' + plain(v.firstName) : ''}!`,
+    html: `<h1>Welcome${v.firstName ? ', ' + esc(v.firstName) : ''}!</h1><p>Your account is ready.</p>`,
   }),
   friend_request: (v) => ({
-    subject: `${v.from ?? 'Someone'} sent you a friend request`,
-    html: `<p><strong>${v.from ?? 'Someone'}</strong> wants to connect on Yeebaam.</p>`,
+    subject: `${plain(v.from) || 'Someone'} sent you a friend request`,
+    html: `<p><strong>${esc(v.from) || 'Someone'}</strong> wants to connect on Yeebaam.</p>`,
+  }),
+  verification_submitted: (v) => ({
+    subject: `[Yeebaam] Nueva solicitud de verificación: ${plain(v.userName) || 'usuario'}`,
+    html: `<p>Hay una nueva solicitud de autenticación pendiente.</p>
+<ul>
+  <li><strong>Usuario:</strong> ${esc(v.userName) || '—'} (@${esc(v.username) || '—'})</li>
+  <li><strong>Email:</strong> ${esc(v.userEmail) || '—'}</li>
+  <li><strong>Enviada:</strong> ${esc(v.submittedAt) || '—'}</li>
+</ul>
+<p><a href="${esc(safeUrl(v.reviewUrl))}">Revisar en el panel de admin</a></p>`,
   }),
 };
 
