@@ -55,16 +55,18 @@ export default function NotificationItem({
 
   // Mark-as-read BEFORE navigating, otherwise the await races with unmount
   // and the bell popover's next fetchNotifications resurrects the unread
-  // state from the DB.
+  // state from the DB. Run unconditionally — legacy friend_request rows can
+  // have a NULL related_id, so requestId may be missing even though the row
+  // is still a valid unread notification.
   const handleNotificationClick = async () => {
-    if (isFriendRequest && requestId) {
-      if (!notification.isRead) {
-        try {
-          await onRead(notification.id)
-        } catch {
-          // swallow — navigation proceeds either way
-        }
+    if (!notification.isRead) {
+      try {
+        await onRead(notification.id)
+      } catch {
+        // swallow — navigation proceeds either way
       }
+    }
+    if (isFriendRequest && requestId) {
       router.push(`/feed/friendships/requests/${requestId}`)
     } else {
       handleNavigationClick()
@@ -75,7 +77,6 @@ export default function NotificationItem({
   const { handleClick: handleNavigationClick } = useNotificationNavigation({
     notification,
     isFriendRequest,
-    onRead,
     onClick,
   });
 

@@ -1,10 +1,11 @@
 /**
  * useNotificationNavigation
- * 
+ *
  * Hook para manejar la navegación al hacer clic en notificaciones:
  * - Construcción de targetUrl con fallback
- * - Marcado como leída
  * - Navegación
+ *
+ * Mark-as-read is handled by the parent so it runs for every notification.
  */
 
 import type { Notification } from '../interfaces/notification.interfaces';
@@ -12,14 +13,12 @@ import type { Notification } from '../interfaces/notification.interfaces';
 interface UseNotificationNavigationProps {
   notification: Notification;
   isFriendRequest: boolean;
-  onRead: (id: string) => void;
   onClick?: (notification: Notification) => void;
 }
 
 export const useNotificationNavigation = ({
   notification,
   isFriendRequest,
-  onRead,
   onClick,
 }: UseNotificationNavigationProps) => {
   const handleClick = () => {
@@ -73,11 +72,10 @@ export const useNotificationNavigation = ({
       actorUsername: notification.actor?.username,
     });
 
-    // Marcar como leída si no lo está (pero no para friend requests)
-    if (!notification.isRead && !isFriendRequest) {
-      onRead(notification.id);
-    }
-    
+    // Mark-as-read is handled by the parent (NotificationItem) so it runs
+    // for every notification — including legacy friend_request rows that
+    // have no friendshipId/requestId and used to be skipped here.
+
     // Ejecutar callback de click si existe
     if (onClick) {
       onClick(notification);
