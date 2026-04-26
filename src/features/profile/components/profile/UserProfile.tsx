@@ -69,15 +69,45 @@ export default function UserProfile({
               <div className="flex w-full flex-col items-center space-y-1 lg:items-start">
                 <div className="flex w-full flex-col items-center justify-center gap-2 lg:flex-row lg:items-center lg:justify-start">
                   <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:justify-start">
-                    <h1 className="w-auto text-center text-2xl font-bold wrap-break-word whitespace-pre-line lg:text-left lg:text-3xl">
-                      {fullName || user.username}
+                    <h1 className="flex w-auto flex-wrap items-center justify-center gap-2 text-center text-2xl font-bold wrap-break-word whitespace-pre-line lg:justify-start lg:text-left lg:text-3xl">
+                      <span>{fullName || user.username}</span>
                       {user.documentStatus === 'ACCEPTED' && (
-                        <span className="ml-2 inline-block align-middle">
-                          <CheckBadgeIcon
-                            className="fill-primary dark:text-primary-foreground text-white"
-                            width={24}
-                            height={24}
-                          />
+                        <span
+                          title="Cuenta autenticada"
+                          aria-label="Cuenta autenticada"
+                          className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm ring-2 ring-white lg:h-7 lg:w-7 dark:ring-gray-800"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="h-4 w-4 lg:h-5 lg:w-5"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.5 7.6a1 1 0 0 1-1.42.005l-3.5-3.5a1 1 0 1 1 1.414-1.414l2.79 2.79 6.795-6.889a1 1 0 0 1 1.415-.006Z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      )}
+                      {user.pioneerNumber != null && (
+                        <span
+                          title={`Pionero #${user.pioneerNumber} · entre los primeros 5,000 usuarios autenticados`}
+                          aria-label={`Pionero número ${user.pioneerNumber}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide text-amber-950 shadow-sm ring-1 ring-amber-300/60"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="h-3 w-3"
+                            aria-hidden="true"
+                          >
+                            <path d="M12 2.75 14.39 8 20 8.81l-4 3.92.94 5.49L12 15.77l-4.94 2.45L8 12.73l-4-3.92L9.61 8 12 2.75Z" />
+                          </svg>
+                          Pionero #{user.pioneerNumber}
                         </span>
                       )}
                     </h1>

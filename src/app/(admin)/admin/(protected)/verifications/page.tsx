@@ -27,6 +27,12 @@ interface VerificationListRow {
     study_place: string | null;
     work_place: string | null;
   } | null;
+  idDocumentCfId: string | null;
+  photos: { slot: number; cf_image_id: string }[];
+}
+
+function cfUrl(hash: string, id: string) {
+  return `https://imagedelivery.net/${hash}/${id}/public`;
 }
 
 export default async function AdminVerificationsPage({
@@ -54,18 +60,51 @@ export default async function AdminVerificationsPage({
     .limit(100);
 
   let rows: VerificationListRow[] = [];
+  const cfHash = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? '';
+
   if (requests && requests.length > 0) {
+    const requestIds = requests.map((r) => r.id);
     const userIds = Array.from(new Set(requests.map((r) => r.user_id)));
-    const { data: profiles } = await sb
-      .from('profiles')
-      .select(
-        'id, username, first_name, last_name, avatar_url, birth_date, birth_place, residence_country, residence_state, residence_city, study_place, work_place',
-      )
-      .in('id', userIds);
+
+    const [{ data: profiles }, { data: idDocs }, { data: vphotos }] = await Promise.all([
+      sb
+        .from('profiles')
+        .select(
+          'id, username, first_name, last_name, avatar_url, birth_date, birth_place, residence_country, residence_state, residence_city, study_place, work_place',
+        )
+        .in('id', userIds),
+      // RLS on id_documents only allows admins to SELECT. We're already admin-gated
+      // by the redirect above, so this returns full data.
+      sb
+        .from('id_documents')
+        .select('request_id, cf_image_id, uploaded_at')
+        .in('request_id', requestIds)
+        .order('uploaded_at', { ascending: false }),
+      sb
+        .from('verification_photos')
+        .select('user_id, slot, cf_image_id')
+        .in('user_id', userIds)
+        .order('slot', { ascending: true }),
+    ]);
+
     const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
+    const idDocByRequest = new Map<string, string>();
+    (idDocs ?? []).forEach((d: { request_id: string; cf_image_id: string }) => {
+      // First seen wins (we ordered by uploaded_at desc, so it's the latest).
+      if (!idDocByRequest.has(d.request_id)) idDocByRequest.set(d.request_id, d.cf_image_id);
+    });
+    const photosByUser = new Map<string, { slot: number; cf_image_id: string }[]>();
+    (vphotos ?? []).forEach((p: { user_id: string; slot: number; cf_image_id: string }) => {
+      const arr = photosByUser.get(p.user_id) ?? [];
+      arr.push({ slot: p.slot, cf_image_id: p.cf_image_id });
+      photosByUser.set(p.user_id, arr);
+    });
+
     rows = requests.map((r) => ({
       ...r,
       profiles: (profileById.get(r.user_id) ?? null) as VerificationListRow['profiles'],
+      idDocumentCfId: idDocByRequest.get(r.id) ?? null,
+      photos: photosByUser.get(r.user_id) ?? [],
     }));
   }
 
@@ -110,7 +149,12 @@ export default async function AdminVerificationsPage({
       ) : (
         <ul className="space-y-3">
           {rows.map((row) => (
-            <VerificationRow key={row.id} row={row} />
+            <VerificationRow
+              key={row.id}
+              row={row}
+              idDocumentUrl={row.idDocumentCfId ? cfUrl(cfHash, row.idDocumentCfId) : null}
+              photoUrls={row.photos.map((p) => ({ slot: p.slot, url: cfUrl(cfHash, p.cf_image_id) }))}
+            />
           ))}
         </ul>
       )}

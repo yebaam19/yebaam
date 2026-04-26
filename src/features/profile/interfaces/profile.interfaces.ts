@@ -11,9 +11,12 @@ export interface UserProfile {
   avatarUrl?: string | null
   coverPhotoUrl?: string | null
   coverUrl?: string | null //TO DO: Deprecated: usar coverPhotoUrl
-  idDocumentUrl?: string | null 
+  idDocumentUrl?: string | null
   bio?: string | null
   documentStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'PUBLIC' | null
+  isVerified?: boolean
+  pioneerNumber?: number | null
+  uniqueIdCode?: string | null
 
   // Location info
   residenceCountry?: string | null

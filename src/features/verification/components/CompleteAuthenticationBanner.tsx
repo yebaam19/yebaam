@@ -86,9 +86,36 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
 
   if (!state) return null;
   if (state.isVerified) {
+    // Once verified, this banner is celebratory; don't camp on the profile forever.
+    // Dismissed state is keyed per user so multiple users on the same device don't
+    // see each other's "already dismissed" state.
+    const dismissKey = `yebaam.verifBanner.dismissed.${ownerUserId}`;
+    if (typeof window !== 'undefined' && window.localStorage.getItem(dismissKey) === '1') {
+      return null;
+    }
     return (
       <div className="mx-auto mt-3 max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">
+        <div className="relative flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 pr-10 text-emerald-900 sm:flex-row sm:items-center sm:justify-between dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">
+          <button
+            type="button"
+            aria-label="Ocultar este aviso"
+            title="Ocultar este aviso"
+            onClick={() => {
+              if (typeof window !== 'undefined') window.localStorage.setItem(dismissKey, '1');
+              setState(null);
+            }}
+            className="absolute top-2 right-2 rounded-full p-1 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-800/40"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="h-4 w-4"
+              aria-hidden="true"
+            >
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
           <div className="flex items-center gap-3">
             <CheckBadgeIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             <div>
@@ -112,6 +139,9 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
             </a>
           )}
         </div>
+        <p className="mt-1 text-right text-[11px] text-emerald-700/70 dark:text-emerald-400/70">
+          Puedes volver a abrirlo en cualquier momento desde tu menú de perfil.
+        </p>
       </div>
     );
   }
@@ -144,7 +174,11 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
                   onClick={() => setOpen(true)}
                   className="rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-yellow-700"
                 >
-                  {state.status === 'pending' ? 'Ver requisitos' : 'Continuar'}
+                  {state.status === 'pending'
+                    ? 'Ver requisitos'
+                    : state.status === 'rejected'
+                    ? 'Corregir y reenviar'
+                    : 'Continuar'}
                 </button>
               </div>
               <p className="mt-1 text-sm text-yellow-800 dark:text-yellow-300">

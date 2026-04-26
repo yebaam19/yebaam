@@ -39,6 +39,10 @@ type DbProfile = {
   videos_count: number | null;
   work_experience: unknown;
   education: unknown;
+  is_verified: boolean | null;
+  verification_status: 'unstarted' | 'pending' | 'approved' | 'rejected' | null;
+  pioneer_number: number | null;
+  unique_id_code: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -60,7 +64,19 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
     coverUrl: row.cover_photo_url ?? null,
     idDocumentUrl: null,
     bio: row.bio ?? null,
-    documentStatus: null,
+    // Map the new verification_status → legacy documentStatus enum used by the
+    // ProfileHeader badge. ACCEPTED lights up the checkmark.
+    documentStatus:
+      row.verification_status === 'approved' || row.is_verified === true
+        ? 'ACCEPTED'
+        : row.verification_status === 'pending'
+        ? 'PENDING'
+        : row.verification_status === 'rejected'
+        ? 'REJECTED'
+        : null,
+    isVerified: row.is_verified === true,
+    pioneerNumber: row.pioneer_number ?? null,
+    uniqueIdCode: row.unique_id_code ?? null,
     residenceCountry: row.country ?? null,
     residenceState: row.state ?? null,
     residenceCity: row.city ?? null,

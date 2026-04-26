@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, Transition, TransitionChild } from '@headlessui/react';
+import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/utils/supabase/client';
@@ -34,16 +34,23 @@ interface ProfileSnapshot {
   verification_status: string | null;
 }
 
+interface PendingDocSnapshot {
+  cf_image_id: string;
+  uploaded_at: string;
+}
+
 const SLOT_LABELS = ['Foto de perfil', 'Foto de portada', 'Foto adicional 1', 'Foto adicional 2', 'Foto adicional 3'];
 
 export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Props) {
   const [tab, setTab] = useState(0);
   const [profile, setProfile] = useState<ProfileSnapshot | null>(null);
   const [photos, setPhotos] = useState<Record<number, string>>({});
+  const [pendingDoc, setPendingDoc] = useState<PendingDocSnapshot | null>(null);
+  const [latestRejectionReason, setLatestRejectionReason] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const refresh = useCallback(async () => {
-    const [{ data: p }, { data: ph }] = await Promise.all([
+    const [{ data: p }, { data: ph }, { data: doc }, { data: rejected }] = await Promise.all([
       supabase
         .from('profiles')
         .select(
@@ -52,6 +59,21 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
         .eq('id', ownerUserId)
         .maybeSingle(),
       supabase.from('verification_photos').select('slot, cf_image_id').eq('user_id', ownerUserId),
+      supabase
+        .from('id_documents')
+        .select('cf_image_id, uploaded_at')
+        .eq('user_id', ownerUserId)
+        .order('uploaded_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('verification_requests')
+        .select('rejection_reason, status, reviewed_at')
+        .eq('user_id', ownerUserId)
+        .eq('status', 'rejected')
+        .order('reviewed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
     setProfile((p as ProfileSnapshot) ?? null);
     const map: Record<number, string> = {};
@@ -59,6 +81,8 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
       map[row.slot] = row.cf_image_id;
     });
     setPhotos(map);
+    setPendingDoc((doc as PendingDocSnapshot) ?? null);
+    setLatestRejectionReason((rejected as { rejection_reason: string | null } | null)?.rejection_reason ?? null);
   }, [ownerUserId]);
 
   useEffect(() => {
@@ -88,23 +112,25 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
 
   const canSubmit =
     requiredFilled && photoCount >= 5 && Boolean(profile?.terms_accepted_at) && !profile?.is_verified;
+  const alreadyPending = profile?.verification_status === 'pending';
+  const wasRejected = profile?.verification_status === 'rejected';
 
   return (
-    <Transition appear show={open} as={Fragment}>
-      <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={onClose}>
-        <div className="min-h-screen px-2 text-center md:px-4">
-          <TransitionChild
-            as={Fragment}
-            enter="ease-out duration-150"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-neutral-900/60" />
-          </TransitionChild>
-          <span className="inline-block h-screen align-middle" aria-hidden>&#8203;</span>
+    <Transition show={open} as={Fragment}>
+      <Dialog onClose={onClose} className="relative z-50">
+        <TransitionChild
+          as={Fragment}
+          enter="ease-out duration-150"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/50" />
+        </TransitionChild>
+
+        <div className="fixed inset-0 flex items-center justify-center p-4">
           <TransitionChild
             as={Fragment}
             enter="ease-out duration-150"
@@ -114,7 +140,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <div className="my-6 inline-block w-full max-w-2xl transform overflow-hidden rounded-2xl border border-black/5 bg-white text-left align-middle shadow-xl transition-all dark:border-neutral-700 dark:bg-neutral-800">
+            <DialogPanel className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-black/5 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-800">
               <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4 dark:border-neutral-700">
                 <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
                   Autenticación de perfil
@@ -128,7 +154,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                 </button>
               </div>
 
-              <div className="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6">
+              <div className="max-h-[calc(90vh-4rem)] overflow-y-auto px-4 py-4 sm:px-6">
                 <Tabs selectedIndex={tab} onChange={setTab}>
                   <TabsList>
                     <TabsTrigger>{`1. Información${requiredFilled ? ' ✓' : ''}`}</TabsTrigger>
@@ -172,6 +198,11 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                   <TabsContent>
                     <IdDocumentTab
                       canSubmit={canSubmit}
+                      alreadyPending={alreadyPending}
+                      wasRejected={wasRejected}
+                      rejectionReason={latestRejectionReason}
+                      pendingDocCfId={pendingDoc?.cf_image_id ?? null}
+                      hash={hash}
                       submitting={submitting}
                       onSubmit={async (cfImageId, mimeType) => {
                         try {
@@ -190,7 +221,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                   </TabsContent>
                 </Tabs>
               </div>
-            </div>
+            </DialogPanel>
           </TransitionChild>
         </div>
       </Dialog>
@@ -405,23 +436,58 @@ function TermsTab({ accepted, onAccepted }: { accepted: boolean; onAccepted: () 
 
 function IdDocumentTab({
   canSubmit,
+  alreadyPending,
+  wasRejected,
+  rejectionReason,
+  pendingDocCfId,
+  hash,
   submitting,
   onSubmit,
 }: {
   canSubmit: boolean;
+  alreadyPending: boolean;
+  wasRejected: boolean;
+  rejectionReason: string | null;
+  pendingDocCfId: string | null;
+  hash?: string;
   submitting: boolean;
   onSubmit: (cfImageId: string, mimeType: string) => Promise<void>;
 }) {
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const accept = (f: File | null | undefined) => {
+    if (!f) return;
+    if (!f.type.startsWith('image/')) {
+      toast.error('Solo se permiten imágenes (JPG/PNG/HEIC)');
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      toast.error('El archivo no puede superar 10 MB');
+      return;
+    }
+    setFile(f);
+  };
 
   const handleSubmit = async () => {
     if (!file) return;
     try {
       setUploading(true);
       // Upload to Cloudflare Images. Privacy is enforced at the DB layer:
-      // `id_documents` RLS restricts SELECT to platform_admins, so the
-      // unguessable CF image id is only ever visible to admins.
+      // `id_documents` RLS restricts SELECT to platform_admins + owner, so the
+      // unguessable CF image id is only ever visible to those roles.
       const { id } = await uploadService.uploadImage(file, undefined, {
         metadata: { kind: 'id_document' },
       });
@@ -433,18 +499,133 @@ function IdDocumentTab({
     }
   };
 
+  if (alreadyPending) {
+    const docUrl = pendingDocCfId && hash ? `https://imagedelivery.net/${hash}/${pendingDocCfId}/public` : null;
+    return (
+      <div className="space-y-3 py-4">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">
+          <p className="font-semibold">Tu solicitud ya fue enviada y está en revisión.</p>
+          <p className="mt-1 text-xs">
+            Los administradores revisarán tu documento de identidad. Recibirás una notificación cuando se apruebe o
+            rechace.
+          </p>
+        </div>
+
+        {docUrl && (
+          <div>
+            <p className="mb-2 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              Documento enviado:
+            </p>
+            <a href={docUrl} target="_blank" rel="noopener" className="block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={docUrl}
+                alt="Documento de identidad enviado"
+                className="max-h-64 w-full rounded-md border border-neutral-200 object-contain dark:border-neutral-700"
+              />
+            </a>
+            <p className="mt-1 text-[10px] text-neutral-500">Toca la imagen para verla en tamaño completo.</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 py-2">
+      {wasRejected && rejectionReason && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm dark:border-red-800 dark:bg-red-900/20">
+          <p className="font-semibold text-red-900 dark:text-red-200">
+            Tu solicitud anterior fue rechazada
+          </p>
+          <p className="mt-1 text-xs text-red-800 dark:text-red-300">
+            <span className="font-medium">Motivo:</span> {rejectionReason}
+          </p>
+          <p className="mt-2 text-xs text-red-800 dark:text-red-300">
+            Corrige lo indicado y vuelve a enviar tu solicitud. Tus fotos e información permanecen guardadas.
+          </p>
+        </div>
+      )}
       <p className="text-xs text-neutral-600 dark:text-neutral-400">
-        Sube tu cédula o documento de identidad. Solo el administrador podrá visualizarlo, mediante un enlace
-        firmado de corta duración. Aceptamos imágenes (JPG/PNG/HEIC).
+        Sube tu cédula o documento de identidad. Solo el administrador podrá visualizarlo. Aceptamos imágenes
+        (JPG/PNG/HEIC) hasta 10 MB.
       </p>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="block w-full text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100 dark:text-neutral-300"
-      />
+
+      <label
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          accept(e.dataTransfer.files?.[0]);
+        }}
+        className={`relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition ${
+          dragOver
+            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+            : 'border-neutral-300 bg-neutral-50 hover:border-emerald-400 hover:bg-emerald-50/40 dark:border-neutral-600 dark:bg-neutral-700/40 dark:hover:border-emerald-500 dark:hover:bg-emerald-900/10'
+        }`}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            accept(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+          className="absolute inset-0 cursor-pointer opacity-0"
+        />
+        {previewUrl ? (
+          <div className="flex w-full flex-col items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt="Vista previa del documento"
+              className="max-h-48 w-auto rounded-md border border-neutral-200 object-contain dark:border-neutral-600"
+            />
+            <p className="text-xs text-neutral-600 dark:text-neutral-300">
+              <span className="font-semibold">{file?.name}</span>
+              {file ? ` · ${(file.size / 1024 / 1024).toFixed(2)} MB` : ''}
+            </p>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFile(null);
+              }}
+              className="text-xs font-medium text-red-600 hover:underline"
+            >
+              Quitar archivo
+            </button>
+          </div>
+        ) : (
+          <>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-10 w-10 text-emerald-600 dark:text-emerald-400"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+              Arrastra tu documento aquí o{' '}
+              <span className="text-emerald-600 underline dark:text-emerald-400">selecciona un archivo</span>
+            </p>
+            <p className="text-[11px] text-neutral-500">JPG, PNG o HEIC · Máx. 10 MB</p>
+          </>
+        )}
+      </label>
+
       {!canSubmit && (
         <p className="text-xs text-yellow-700 dark:text-yellow-400">
           Completa los pasos 1, 2 y 3 antes de enviar tu solicitud.
@@ -457,7 +638,11 @@ function IdDocumentTab({
           onClick={handleSubmit}
           className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-neutral-400"
         >
-          {uploading || submitting ? 'Enviando…' : 'Enviar para revisión'}
+          {uploading || submitting
+            ? 'Enviando…'
+            : wasRejected
+            ? 'Reenviar para revisión'
+            : 'Enviar para revisión'}
         </button>
       </div>
     </div>
