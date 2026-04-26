@@ -43,16 +43,31 @@ export default async function AdminVerificationsPage({
   const status = sp.status === 'approved' || sp.status === 'rejected' ? sp.status : 'pending';
 
   const sb = await getServerClient();
-  const { data, error } = await sb
+  // Two-step fetch: PostgREST embedded resources require an FK in the same
+  // schema, and even with the new FK in place we want to be resilient to
+  // schema-cache lag. Fetch requests, then load profiles by user_id and merge.
+  const { data: requests, error } = await sb
     .from('verification_requests')
-    .select(
-      'id, user_id, status, submitted_at, reviewed_at, rejection_reason, admin_notes, profiles!inner(username, first_name, last_name, avatar_url, birth_date, birth_place, residence_country, residence_state, residence_city, study_place, work_place)',
-    )
+    .select('id, user_id, status, submitted_at, reviewed_at, rejection_reason, admin_notes')
     .eq('status', status)
     .order('submitted_at', { ascending: false })
     .limit(100);
 
-  const rows = (data ?? []) as unknown as VerificationListRow[];
+  let rows: VerificationListRow[] = [];
+  if (requests && requests.length > 0) {
+    const userIds = Array.from(new Set(requests.map((r) => r.user_id)));
+    const { data: profiles } = await sb
+      .from('profiles')
+      .select(
+        'id, username, first_name, last_name, avatar_url, birth_date, birth_place, residence_country, residence_state, residence_city, study_place, work_place',
+      )
+      .in('id', userIds);
+    const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
+    rows = requests.map((r) => ({
+      ...r,
+      profiles: (profileById.get(r.user_id) ?? null) as VerificationListRow['profiles'],
+    }));
+  }
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
