@@ -201,6 +201,8 @@ export default function EditPostModal() {
         size: number;
         mimeType: string;
         duration?: number;
+        streamUid?: string;
+        thumbnailUrl?: string;
       }> = [];
 
       // Subir nuevos archivos si hay archivos seleccionados

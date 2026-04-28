@@ -73,6 +73,8 @@ export default function CreatePostModal() {
         size: number
         mimeType: string
         duration?: number
+        streamUid?: string
+        thumbnailUrl?: string
       }> = []
 
       if (selectedFiles.length > 0) {
@@ -147,6 +149,8 @@ export default function CreatePostModal() {
           size: file.size,
           mimeType: file.mimeType,
           duration: file.duration,
+          streamUid: file.streamUid,
+          thumbnailUrl: file.thumbnailUrl,
         }))
       }
 
