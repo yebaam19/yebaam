@@ -20,13 +20,25 @@ interface UploadVideoDialogProps {
 }
 
 export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDialogProps) {
-  const { albums, uploadVideo, isUploading } = useProfileMediaStore()
-  
+  const { albums, uploadVideo, isUploading, uploadQueue } = useProfileMediaStore()
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [caption, setCaption] = useState('')
   const [albumId, setAlbumId] = useState<string>('')
   const [visibility, setVisibility] = useState<'public' | 'friends' | 'only_me'>('public')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const currentItem = selectedFile
+    ? uploadQueue.find((q) => q.fileName === selectedFile.name)
+    : undefined
+  const statusLabel = (() => {
+    if (!currentItem || !isUploading) return null
+    if (currentItem.status === 'uploading') return `Subiendo a Cloudflare… ${currentItem.progress}%`
+    if (currentItem.status === 'processing') return 'Procesando video (Cloudflare Stream)…'
+    if (currentItem.status === 'pending') return 'Preparando…'
+    return null
+  })()
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -49,6 +61,7 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
 
   const handleUpload = async () => {
     if (!selectedFile) return
+    setErrorMsg(null)
 
     try {
       await uploadVideo(selectedFile, {
@@ -56,23 +69,21 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
         albumId: albumId || undefined,
         visibility,
       })
-
-      // Limpiar y cerrar
       handleClose()
     } catch (error) {
-      console.error('Error uploading video:', error)
-      // TODO: Mostrar error al usuario
+      const msg = error instanceof Error ? error.message : 'Error al subir el video'
+      setErrorMsg(msg)
     }
   }
 
   const handleClose = () => {
-    // Limpiar preview
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setSelectedFile(null)
     setPreviewUrl('')
     setCaption('')
     setAlbumId('')
     setVisibility('public')
+    setErrorMsg(null)
     onOpenChange(false)
   }
 
@@ -237,21 +248,33 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
 
                 {/* Footer */}
                 {selectedFile && (
-                  <div className="flex gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-                    <ButtonSecondary
-                      onClick={handleClose}
-                      disabled={isUploading}
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </ButtonSecondary>
-                    <ButtonPrimary
-                      onClick={handleUpload}
-                      disabled={isUploading}
-                      className="flex-1"
-                    >
-                      {isUploading ? 'Subiendo...' : 'Subir video'}
-                    </ButtonPrimary>
+                  <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800 space-y-3">
+                    {statusLabel && (
+                      <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                        {statusLabel}
+                      </p>
+                    )}
+                    {errorMsg && (
+                      <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
+                        {errorMsg}
+                      </p>
+                    )}
+                    <div className="flex gap-3">
+                      <ButtonSecondary
+                        onClick={handleClose}
+                        disabled={isUploading}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </ButtonSecondary>
+                      <ButtonPrimary
+                        onClick={handleUpload}
+                        disabled={isUploading}
+                        className="flex-1"
+                      >
+                        {isUploading ? 'Subiendo...' : 'Subir video'}
+                      </ButtonPrimary>
+                    </div>
                   </div>
                 )}
               </DialogPanel>

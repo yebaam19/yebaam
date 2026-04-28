@@ -138,6 +138,83 @@ export async function POST(request: NextRequest) {
   }
 
   const row = data as PostRow;
+
+  // Mirror media into the profile gallery tables so photos/videos posted to
+  // the feed also show up under the user's profile Fotos/Videos tabs. Failure
+  // here must not block the post response — log and continue.
+  await mirrorMediaToProfileGallery(client, userId, privacy, insertRow.media_files);
+
   const profiles = await loadProfilesForPosts(client, [row]);
   return NextResponse.json({ success: true, data: mapPost(row, profiles) });
+}
+
+type PostMediaFile = {
+  s3Key?: string;
+  url?: string;
+  type?: 'image' | 'video' | string;
+  size?: number;
+  mimeType?: string;
+  duration?: number;
+  streamUid?: string;
+  thumbnailUrl?: string;
+};
+
+type SupabaseClient = Awaited<ReturnType<typeof getServerClient>>;
+
+const POST_TO_GALLERY_VISIBILITY: Record<string, 'public' | 'friends' | 'private'> = {
+  public: 'public',
+  friends: 'friends',
+  private: 'private',
+};
+
+async function mirrorMediaToProfileGallery(
+  client: SupabaseClient,
+  userId: string,
+  postPrivacy: string,
+  mediaFiles: unknown,
+): Promise<void> {
+  if (!Array.isArray(mediaFiles) || mediaFiles.length === 0) return;
+  const visibility = POST_TO_GALLERY_VISIBILITY[postPrivacy] ?? 'public';
+
+  const photos: Array<Record<string, unknown>> = [];
+  const videos: Array<Record<string, unknown>> = [];
+
+  for (const raw of mediaFiles as PostMediaFile[]) {
+    if (!raw || typeof raw !== 'object') continue;
+    const key = raw.streamUid ?? raw.s3Key;
+    if (!key || !raw.url) continue;
+
+    if (raw.type === 'video') {
+      videos.push({
+        user_id: userId,
+        storage_bucket: 'cloudflare-stream',
+        storage_key: key,
+        url: raw.url,
+        thumbnail_url: raw.thumbnailUrl ?? null,
+        duration_seconds: typeof raw.duration === 'number' ? Math.round(raw.duration) : null,
+        size_bytes: typeof raw.size === 'number' ? raw.size : null,
+        mime_type: typeof raw.mimeType === 'string' ? raw.mimeType : null,
+        visibility,
+      });
+    } else if (raw.type === 'image') {
+      photos.push({
+        user_id: userId,
+        storage_bucket: 'cloudflare-images',
+        storage_key: key,
+        url: raw.url,
+        size_bytes: typeof raw.size === 'number' ? raw.size : null,
+        mime_type: typeof raw.mimeType === 'string' ? raw.mimeType : null,
+        visibility,
+      });
+    }
+  }
+
+  if (photos.length > 0) {
+    const { error: photoErr } = await client.from('profile_photos').insert(photos);
+    if (photoErr) console.error('[posts] mirror profile_photos failed:', photoErr.message);
+  }
+  if (videos.length > 0) {
+    const { error: videoErr } = await client.from('profile_videos').insert(videos);
+    if (videoErr) console.error('[posts] mirror profile_videos failed:', videoErr.message);
+  }
 }

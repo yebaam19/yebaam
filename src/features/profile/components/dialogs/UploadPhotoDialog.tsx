@@ -29,6 +29,7 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
   const [caption, setCaption] = useState('')
   const [albumId, setAlbumId] = useState<string>('')
   const [visibility, setVisibility] = useState<'public' | 'friends' | 'only_me'>('public')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -59,9 +60,9 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return
+    setErrorMsg(null)
 
     try {
-      // Subir cada foto
       for (const file of selectedFiles) {
         await uploadPhoto(file, {
           caption: caption || undefined,
@@ -69,26 +70,21 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
           visibility,
         })
       }
-
-      // Limpiar y cerrar - las fotos ya se agregaron al store automáticamente
       handleClose()
-      
-      // No necesitamos recargar manualmente porque el store ya tiene las fotos
-      // y el componente se re-renderizará automáticamente
     } catch (error) {
-      console.error('Error uploading photos:', error)
-      // TODO: Mostrar error al usuario
+      const msg = error instanceof Error ? error.message : 'Error al subir las fotos'
+      setErrorMsg(msg)
     }
   }
 
   const handleClose = () => {
-    // Limpiar previews
     previewUrls.forEach((url) => URL.revokeObjectURL(url))
     setSelectedFiles([])
     setPreviewUrls([])
     setCaption('')
     setAlbumId('')
     setVisibility('public')
+    setErrorMsg(null)
     onOpenChange(false)
   }
 
@@ -240,21 +236,28 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
 
                 {/* Footer */}
                 {selectedFiles.length > 0 && (
-                  <div className="flex gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-                    <ButtonSecondary
-                      onClick={handleClose}
-                      disabled={isUploading}
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </ButtonSecondary>
-                    <ButtonPrimary
-                      onClick={handleUpload}
-                      disabled={isUploading}
-                      className="flex-1"
-                    >
-                      {isUploading ? 'Subiendo...' : `Subir ${selectedFiles.length} foto${selectedFiles.length > 1 ? 's' : ''}`}
-                    </ButtonPrimary>
+                  <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800 space-y-3">
+                    {errorMsg && (
+                      <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
+                        {errorMsg}
+                      </p>
+                    )}
+                    <div className="flex gap-3">
+                      <ButtonSecondary
+                        onClick={handleClose}
+                        disabled={isUploading}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </ButtonSecondary>
+                      <ButtonPrimary
+                        onClick={handleUpload}
+                        disabled={isUploading}
+                        className="flex-1"
+                      >
+                        {isUploading ? 'Subiendo...' : `Subir ${selectedFiles.length} foto${selectedFiles.length > 1 ? 's' : ''}`}
+                      </ButtonPrimary>
+                    </div>
                   </div>
                 )}
               </DialogPanel>

@@ -349,12 +349,17 @@ class ProfileMediaService {
       caption?: string;
       thumbnailUrl?: string;
       visibility?: ProfileVideo['visibility'];
+      onProgress?: (progress: number) => void;
+      onTranscode?: (state: string) => void;
     } = {}
   ): Promise<ProfileVideo> {
     const userId = await getUserId();
 
     const { uploadService } = await import('@/lib/service/upload.service');
-    const { uid, duration, thumbnail } = await uploadService.uploadVideo(file);
+    const { uid, duration, thumbnail } = await uploadService.uploadVideo(file, {
+      onProgress: options.onProgress,
+      onTranscode: options.onTranscode,
+    });
 
     const { data, error } = await supabase
       .from('profile_videos')

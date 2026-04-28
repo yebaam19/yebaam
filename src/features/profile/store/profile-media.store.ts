@@ -209,6 +209,10 @@ export const useProfileMediaStore = create<ProfileMediaState>((set, get) => ({
         albumId: data.albumId,
         caption: data.caption,
         visibility: data.visibility || 'public',
+        onProgress: (p) => get().updateUploadProgress(file.name, p),
+        onTranscode: (state) => {
+          if (state !== 'ready') get().updateUploadStatus(file.name, 'processing')
+        },
       })
       get().updateUploadProgress(file.name, 100)
       get().updateUploadStatus(file.name, 'processing')
