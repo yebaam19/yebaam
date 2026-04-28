@@ -1,8 +1,19 @@
 # CLAUDE.md
 
-See [AGENTS.md](AGENTS.md) for all project conventions (package manager, stack, layout, Next.js 16 features, code style, Supabase client wrappers, realtime patterns, storage RLS).
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-This file exists so Claude Code picks up the same rules as other AI tools. All guidance lives in `AGENTS.md` — keep them in sync by editing `AGENTS.md` only.
+See [AGENTS.md](AGENTS.md) for the full project conventions (package manager, stack, layout, Next.js 16 features, code style, Supabase client wrappers, realtime patterns, storage RLS). This file exists so Claude Code picks up the same rules as other AI tools — keep them in sync by editing `AGENTS.md` only.
+
+> Note: [README.md](README.md) is **outdated** — it still describes Next.js 14 + InsForge + Socket.IO. The real stack is Next.js 16 (App Router, Turbopack) + Supabase. Trust AGENTS.md and this file over the README.
+
+## Commands
+
+- `pnpm dev` — Turbopack dev server (Node heap raised to 8 GB; use `pnpm dev:webpack` to fall back to webpack).
+- `pnpm build` — production build via Turbopack. This is one of the gating checks for any change.
+- `pnpm start` — serve the production build.
+- `pnpm lint` — ESLint (config in `eslint.config.mjs`, extends `eslint-config-next`).
+- `npx tsc --noEmit` — typecheck. **There is no test runner configured**, so typecheck + `pnpm build` + manual browser verification are the gating signals for UI changes.
+- Always use `pnpm` (never `npm` / `yarn`) for installs.
 
 ## Backend (TL;DR)
 
