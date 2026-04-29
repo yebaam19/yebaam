@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { emptyToNull, revalidateProfile } from './entities.utils';
 import type {
   Association,
   AssociationFormData,
@@ -40,16 +41,8 @@ export async function requireOwner(profileId: string) {
   return { client: db, userId: auth.user.id };
 }
 
-export function revalidateProfile() {
-  revalidatePath('/feed/professional-profile/[username]', 'page');
-}
-
 function revalidate() {
   revalidateProfile();
-}
-
-export function emptyToNull<T>(v: T | undefined | ''): T | null {
-  return v === undefined || v === '' ? null : (v as T);
 }
 
 function norm(v: string | null | undefined): string {
