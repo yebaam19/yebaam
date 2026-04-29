@@ -157,6 +157,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               src={coverImage}
               alt="Cover preview"
               fill
+              sizes="(max-width: 768px) 100vw, 600px"
               className="object-cover"
             />
           ) : (
@@ -224,6 +225,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
                 src={profileImage}
                 alt="Profile preview"
                 fill
+                sizes="128px"
                 className="object-cover"
               />
             ) : (

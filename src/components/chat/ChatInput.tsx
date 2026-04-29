@@ -156,6 +156,7 @@ export default function ChatInput({
               src={previewUrl}
               alt="Preview"
               fill
+              sizes="160px"
               className="object-cover"
             />
             <button

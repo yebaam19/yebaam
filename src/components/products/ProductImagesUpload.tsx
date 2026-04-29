@@ -127,6 +127,7 @@ export function ProductImagesUpload({
                 src={image.url}
                 alt={image.alt || `Producto ${index + 1}`}
                 fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
                 className="object-cover"
               />
               

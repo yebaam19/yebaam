@@ -108,6 +108,7 @@ export function BusinessMediaGallery({ media, businessName, initialDisplayCount 
               src={item.type === BusinessMediaType.VIDEO ? item.thumbnailUrl || item.url : item.url}
               alt={item.alt || `${businessName} - Imagen ${index + 1}`}
               fill
+              sizes="(max-width: 640px) 50vw, 33vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
 
@@ -205,6 +206,7 @@ export function BusinessMediaGallery({ media, businessName, initialDisplayCount 
                           src={selectedMedia.url}
                           alt={selectedMedia.alt || `${businessName}`}
                           fill
+                          sizes="(max-width: 1024px) 100vw, 80vw"
                           className="object-contain"
                         />
                       )}

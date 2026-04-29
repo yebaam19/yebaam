@@ -218,6 +218,7 @@ export function FriendRequestsList() {
                         src={profile.avatar}
                         alt={`${profile.firstName} ${profile.lastName}`}
                         fill
+                        sizes="56px"
                         className="object-cover"
                       />
                     ) : (

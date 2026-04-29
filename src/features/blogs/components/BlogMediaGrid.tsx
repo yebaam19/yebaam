@@ -159,7 +159,7 @@ export const BlogMediaGrid = ({ posts, type }: BlogMediaGridProps) => {
                     </video>
                   )
                 ) : (
-                  <Image src={selectedMedia.url} alt="Media" fill className="object-contain" />
+                  <Image src={selectedMedia.url} alt="Media" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain" />
                 )}
               </div>
 

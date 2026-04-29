@@ -28,7 +28,7 @@ export const BlogCoverBar = ({ blog, stars, onFollowToggle, isFollowLoading }: B
   return (
     <div className="relative h-48 overflow-hidden rounded-b-2xl bg-linear-to-r from-secondary-700 via-secondary-800 to-secondary-900 sm:h-64 md:h-80">
       {blog.coverImageUrl && (
-        <Image src={blog.coverImageUrl} alt={blog.name} fill className="object-cover" unoptimized priority />
+        <Image src={blog.coverImageUrl} alt={blog.name} fill sizes="100vw" className="object-cover" unoptimized priority />
       )}
 
       <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-black/20" />

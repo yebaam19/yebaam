@@ -74,6 +74,7 @@ export function ClubPostsGrid({ posts, filterKind, viewMode, onOpen }: ClubPosts
                     src={post.thumbnailUrl || post.mediaUrl || ''}
                     alt={post.title ?? 'post'}
                     fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
                     className="object-cover transition group-hover:scale-105"
                     unoptimized
                   />

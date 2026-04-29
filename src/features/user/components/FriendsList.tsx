@@ -63,7 +63,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
       {/* Avatar/Cover */}
       <div className="relative h-40 overflow-hidden rounded-t-lg bg-linear-to-br from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600">
         {friend.avatar ? (
-          <Image src={friend.avatar} alt={`${friend.firstName} ${friend.lastName}`} fill className="object-cover" />
+          <Image src={friend.avatar} alt={`${friend.firstName} ${friend.lastName}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="text-5xl font-bold text-gray-400 dark:text-gray-500">

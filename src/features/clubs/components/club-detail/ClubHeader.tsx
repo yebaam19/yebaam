@@ -52,6 +52,7 @@ export function ClubHeader({
             src={club.coverImageUrl}
             alt={`Portada de ${club.name}`}
             fill
+            sizes="100vw"
             className="object-cover"
             unoptimized
             priority
@@ -76,6 +77,7 @@ export function ClubHeader({
                 src={club.profileImageUrl}
                 alt={club.name}
                 fill
+                sizes="56px"
                 className="object-cover"
                 unoptimized
               />

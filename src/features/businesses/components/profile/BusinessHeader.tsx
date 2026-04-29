@@ -106,7 +106,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
       {/* Cover Image */}
       <div className="relative h-48 bg-linear-to-r from-amber-500 to-yellow-600 sm:h-64">
         {business.coverUrl && (
-          <Image src={business.coverUrl} alt={`Cover de ${business.name}`} fill className="object-cover" priority />
+          <Image src={business.coverUrl} alt={`Cover de ${business.name}`} fill sizes="100vw" className="object-cover" priority />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
 
@@ -132,7 +132,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
         <div className="relative -mt-16 mb-4 sm:-mt-20">
           <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-lg sm:h-36 sm:w-36 dark:border-neutral-800 dark:bg-neutral-700">
             {business.logoUrl ? (
-              <Image src={business.logoUrl} alt={business.name} fill className="object-cover" />
+              <Image src={business.logoUrl} alt={business.name} fill sizes="(max-width: 640px) 112px, 144px" className="object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-amber-100 text-4xl font-bold text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
                 {business.name.charAt(0)}

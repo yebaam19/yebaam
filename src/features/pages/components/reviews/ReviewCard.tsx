@@ -60,6 +60,7 @@ export const ReviewCard: FC<ReviewCardProps> = ({
                 src={review.user.profilePicture}
                 alt={review.user.fullName}
                 fill
+                sizes="48px"
                 className="object-cover"
               />
             ) : (
@@ -140,6 +141,7 @@ export const ReviewCard: FC<ReviewCardProps> = ({
                 src={photo}
                 alt={`Review photo ${index + 1}`}
                 fill
+                sizes="(max-width: 640px) 50vw, 33vw"
                 className="object-cover"
               />
             </div>

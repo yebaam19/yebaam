@@ -218,6 +218,7 @@ export default function FeedVideosPage() {
                         src={album.coverPhotoUrl}
                         alt={album.name}
                         fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                         className="object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
@@ -286,6 +287,7 @@ export default function FeedVideosPage() {
                           src={video.thumbnailUrl}
                           alt={video.caption || 'Video'}
                           fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                           className="object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                       ) : (

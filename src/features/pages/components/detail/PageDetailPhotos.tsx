@@ -53,6 +53,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({ pageId }) => {
               src={photo}
               alt={`Photo ${index + 1}`}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />

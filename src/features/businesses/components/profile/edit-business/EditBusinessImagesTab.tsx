@@ -42,7 +42,7 @@ export function EditBusinessImagesTab({
           {coverUrl ? (
             <div className="group relative">
               <div className="relative aspect-3/1 w-full">
-                <Image src={coverUrl} alt="Portada" fill className="object-cover" />
+                <Image src={coverUrl} alt="Portada" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                 <button
@@ -106,7 +106,7 @@ export function EditBusinessImagesTab({
           <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-700/50">
             {logoUrl ? (
               <div className="group relative h-full w-full">
-                <Image src={logoUrl} alt="Logo" fill className="object-cover" />
+                <Image src={logoUrl} alt="Logo" fill sizes="112px" className="object-cover" />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                   <button
                     onClick={() => onLogoChange('')}

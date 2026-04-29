@@ -102,6 +102,7 @@ export function AddMemberModal({
                   src={photoPreview}
                   alt="Preview"
                   fill
+                  sizes="128px"
                   className="object-cover"
                 />
               ) : (

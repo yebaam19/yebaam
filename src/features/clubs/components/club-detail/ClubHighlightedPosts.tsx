@@ -62,6 +62,7 @@ function Card({
             src={post.thumbnailUrl || post.mediaUrl || ''}
             alt={post.title ?? title}
             fill
+            sizes="(max-width: 640px) 100vw, 33vw"
             className="object-cover"
             unoptimized
           />

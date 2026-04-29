@@ -81,6 +81,7 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
                       src={member.avatar}
                       alt={member.name}
                       fill
+                      sizes="48px"
                       className="object-cover"
                     />
                   </div>
@@ -130,6 +131,7 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
                     src={follower.avatar}
                     alt={follower.name}
                     fill
+                    sizes="48px"
                     className="object-cover"
                   />
                 </div>

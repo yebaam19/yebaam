@@ -69,6 +69,7 @@ function ReviewCard({ review }: { review: ProfessionalServiceReview }) {
               src={review.user.avatarUrl}
               alt={`${review.user.firstName} ${review.user.lastName}`}
               fill
+              sizes="40px"
               className="object-cover"
             />
           ) : (

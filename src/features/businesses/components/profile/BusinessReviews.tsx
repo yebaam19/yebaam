@@ -66,7 +66,7 @@ function ReviewCard({ review }: { review: BusinessReview }) {
         {/* Avatar */}
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
           {review.user.avatarUrl ? (
-            <Image src={review.user.avatarUrl} alt={review.user.username} fill className="object-cover" />
+            <Image src={review.user.avatarUrl} alt={review.user.username} fill sizes="40px" className="object-cover" />
           ) : (
             <UserCircleIcon className="h-full w-full text-neutral-400" />
           )}

@@ -141,6 +141,7 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
                 src={photo.url}
                 alt={photo.caption || 'Foto del negocio'}
                 fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
 

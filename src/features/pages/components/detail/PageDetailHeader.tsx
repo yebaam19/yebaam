@@ -109,6 +109,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
             src={page.coverImageUrl}
             alt={`${page.name} cover`}
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />

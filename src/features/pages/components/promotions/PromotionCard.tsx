@@ -130,6 +130,7 @@ export const PromotionCard: FC<PromotionCardProps> = ({
                 src={promotion.imageUrl}
                 alt={promotion.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
                 onError={() => setImageError(true)}
               />

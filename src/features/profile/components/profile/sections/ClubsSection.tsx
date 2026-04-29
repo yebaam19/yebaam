@@ -80,6 +80,7 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
                     src={club.coverImageUrl}
                     alt={club.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className="object-cover"
                     unoptimized
                   />
@@ -96,6 +97,7 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
                         src={club.profileImageUrl}
                         alt={club.name}
                         fill
+                        sizes="40px"
                         className="object-cover"
                         unoptimized
                       />

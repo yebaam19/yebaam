@@ -61,6 +61,7 @@ export function FamilyMemberCard({
               src={member.photo}
               alt={member.name}
               fill
+              sizes="80px"
               className="object-cover"
             />
           ) : (

@@ -49,7 +49,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
           className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-neutral-200 ring-2 ring-primary-100 ring-offset-2 transition-all hover:ring-primary-300 dark:bg-neutral-700 dark:ring-primary-900/30 dark:hover:ring-primary-700"
         >
           {owner.avatarUrl ? (
-            <Image src={owner.avatarUrl} alt={owner.username} fill className="object-cover" />
+            <Image src={owner.avatarUrl} alt={owner.username} fill sizes="64px" className="object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-amber-400 to-yellow-500 text-2xl font-bold text-white">
               {owner.username.charAt(0).toUpperCase()}

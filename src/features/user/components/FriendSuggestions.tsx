@@ -97,6 +97,7 @@ export function FriendSuggestions() {
                     src={suggestion.avatar}
                     alt={`${suggestion.firstName} ${suggestion.lastName}`}
                     fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
                     className="object-cover"
                   />
                 ) : (

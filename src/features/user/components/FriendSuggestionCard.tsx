@@ -70,7 +70,7 @@ export function FriendSuggestionCard({
       <Link href={`/${username}` as Route} className="block">
         <div className="relative h-28 w-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600">
           {avatar ? (
-            <Image src={avatar} alt={`${displayFirstName} ${displayLastName}`} fill className="object-cover" />
+            <Image src={avatar} alt={`${displayFirstName} ${displayLastName}`} fill sizes="160px" className="object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center text-3xl font-bold text-gray-400 dark:text-gray-500">
               {displayFirstName.charAt(0).toUpperCase()}

@@ -207,7 +207,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                     <>
                       {/* Preview */}
                       <div className="relative h-96 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-900">
-                        {previewUrl && <Image src={previewUrl} alt="Preview" fill className="object-contain" />}
+                        {previewUrl && <Image src={previewUrl} alt="Preview" fill sizes="(max-width: 768px) 100vw, 600px" className="object-contain" />}
                         <button
                           onClick={() => {
                             setSelectedFile(null)

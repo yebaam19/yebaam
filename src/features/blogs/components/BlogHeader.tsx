@@ -22,7 +22,7 @@ export const BlogHeader = ({ blog, onEdit, onFollowToggle, isFollowLoading }: Bl
       {/* Cover Image */}
       <div className="relative h-64 bg-linear-to-r from-secondary-700 via-secondary-800 to-secondary-900 md:h-80">
         {blog.coverImageUrl && (
-          <Image src={blog.coverImageUrl} alt={blog.name} fill className="object-cover" unoptimized priority />
+          <Image src={blog.coverImageUrl} alt={blog.name} fill sizes="100vw" className="object-cover" unoptimized priority />
         )}
       </div>
 

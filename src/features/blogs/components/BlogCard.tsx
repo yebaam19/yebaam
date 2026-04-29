@@ -32,7 +32,7 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
         {/* Cover Image */}
         <div className="relative h-40 bg-linear-to-r from-secondary-700 via-secondary-800 to-secondary-900">
           {blog.coverImageUrl ? (
-            <Image src={blog.coverImageUrl} alt={blog.name} fill className="object-cover" unoptimized />
+            <Image src={blog.coverImageUrl} alt={blog.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized />
           ) : null}
         </div>
 
@@ -46,6 +46,7 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
                   src={blog.owner.avatar}
                   alt={blog.owner.name || 'Usuario'}
                   fill
+                  sizes="40px"
                   className="object-cover"
                   unoptimized
                 />

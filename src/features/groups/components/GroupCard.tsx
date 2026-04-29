@@ -39,6 +39,7 @@ export function GroupCard({ group }: GroupCardProps) {
             src={group.coverImageUrl}
             alt={group.name}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover"
           />
         ) : (
@@ -80,6 +81,7 @@ export function GroupCard({ group }: GroupCardProps) {
                   src={group.creatorAvatar}
                   alt={group.creatorName}
                   fill
+                  sizes="24px"
                   className="object-cover"
                 />
               ) : (

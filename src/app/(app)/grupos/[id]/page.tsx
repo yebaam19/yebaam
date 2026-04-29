@@ -75,6 +75,7 @@ export default function GroupDetailPage() {
             src={group.coverImageUrl}
             alt={group.name}
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />
@@ -113,6 +114,7 @@ export default function GroupDetailPage() {
                           src={group.creatorAvatar}
                           alt={group.creatorName}
                           fill
+                          sizes="32px"
                           className="object-cover"
                         />
                       ) : (
