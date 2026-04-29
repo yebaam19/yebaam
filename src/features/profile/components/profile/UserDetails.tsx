@@ -6,7 +6,6 @@
  * Muestra detalles e información personal del usuario
  */
 
-import { Divider } from '@/ui/divider'
 import {
   AcademicCapIcon,
   BriefcaseIcon,
@@ -16,158 +15,170 @@ import {
   HomeIcon,
   LinkIcon,
   MapPinIcon,
-  PencilIcon,
   UserIcon,
 } from '@/components/icons/heroicons-shim'
 import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import Link from 'next/link'
-import { useState } from 'react'
+import type { Route } from 'next'
+import type { ComponentType, ReactNode } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
-import PersonalDialog from '../dialogs/PersonalDialog'
-import type { Route } from 'next';
+
+type DetailRowProps = {
+  icon: ComponentType<{ className?: string }>
+  label: string
+  value: ReactNode
+}
+
+const genderLabels: Record<string, string> = {
+  MALE: 'Hombre',
+  FEMALE: 'Mujer',
+  OTHER: 'Otro',
+}
+
+const relationshipLabels: Record<string, string> = {
+  SINGLE: 'Soltero/a',
+  IN_RELATIONSHIP: 'En una relación',
+  MARRIED: 'Casado/a',
+  DIVORCED: 'Divorciado/a',
+  WIDOWED: 'Viudo/a',
+}
+
+function DetailRow({ icon: Icon, label, value }: DetailRowProps) {
+  return (
+    <div className="grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-3 text-sm">
+      <Icon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+      <span className="min-w-0 font-semibold text-gray-800 dark:text-gray-100">{label}</span>
+      <span className="ml-3 max-w-[45%] text-right text-gray-500 dark:text-gray-400">{value}</span>
+    </div>
+  )
+}
+
+function formatLongDate(date: Date | string) {
+  return format(new Date(date), "d 'de' MMMM 'de' yyyy", { locale: es })
+}
+
+function formatLocation(...parts: Array<string | null | undefined>) {
+  return parts.filter(Boolean).join(', ')
+}
 
 interface UserDetailsProps {
   user: UserProfile
   loggedInUserId: string
 }
 
-export default function UserDetails({ user, loggedInUserId }: UserDetailsProps) {
-  const [personalOpen, setPersonalOpen] = useState(false)
-
+export default function UserDetails({ user }: UserDetailsProps) {
   // Usar el perfil actualizado del store si existe, sino usar el de props
   const { currentProfile } = useProfileStore()
-  const displayUser = currentProfile || user
+  const displayUser = currentProfile && currentProfile.userId === user.userId ? currentProfile : user
 
-  const isOwner = displayUser.userId === loggedInUserId
+  const residenceLocation = formatLocation(
+    displayUser.residenceCity,
+    displayUser.residenceState,
+    displayUser.residenceCountry
+  )
+  const birthLocation = formatLocation(displayUser.birthCity, displayUser.birthState, displayUser.birthCountry)
+  const genderLabel = displayUser.gender ? genderLabels[displayUser.gender] || displayUser.gender : null
+  const relationshipLabel = displayUser.relationshipStatus
+    ? relationshipLabels[displayUser.relationshipStatus] || displayUser.relationshipStatus
+    : null
 
   return (
     <div className="h-auto w-full rounded-2xl bg-white p-5 shadow-sm dark:bg-gray-800">
-      {/* Header with Edit Button */}
-      <div className="mb-3">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold">Detalles</h2>
-          {isOwner && (
-            <button
-              onClick={() => setPersonalOpen(true)}
-              className="text-muted-foreground hover:text-foreground cursor-pointer"
-              title="Editar información personal"
-            >
-              <PencilIcon width={20} height={20} />
-            </button>
-          )}
-        </div>
-
-        {/* Bio */}
-        {displayUser.bio && (
-          <div className="text-foreground text-sm wrap-break-word whitespace-pre-line">
-            <div className="overflow-hidden wrap-break-word whitespace-pre-line">{displayUser.bio}</div>
-          </div>
-        )}
-      </div>
-
-      <Divider />
+      <h2 className="mb-5 text-lg font-bold text-gray-900 dark:text-white">Detalles</h2>
 
       {/* Details List */}
-      <div className="my-3 flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {/* Birthdate */}
         {displayUser.birthDate && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <CakeIcon className="h-4 w-4" />
-            <span className="font-semibold">Cumpleaños:</span>
-            <span>{format(new Date(displayUser.birthDate), 'MMM d, yyyy')}</span>
-          </div>
+          <DetailRow icon={CakeIcon} label="Cumpleaños" value={formatLongDate(displayUser.birthDate)} />
         )}
 
         {/* Residence City */}
-        {displayUser.residenceCity && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <HomeIcon className="h-4 w-4" />
-            <span className="font-semibold">Ciudad de residencia:</span>
-            <Link
-              href={`/cities/${displayUser.residenceCity.toLowerCase().replace(/\s+/g, '-')}` as Route}
-              className="text-primary hover:text-primary/80 hover:underline"
-            >
-              {displayUser.residenceCity}
-            </Link>
-          </div>
+        {residenceLocation && (
+          <DetailRow
+            icon={HomeIcon}
+            label="Ciudad de residencia"
+            value={
+              displayUser.residenceCity ? (
+                <Link
+                  href={`/cities/${displayUser.residenceCity.toLowerCase().replace(/\s+/g, '-')}` as Route}
+                  className="hover:text-gray-700 hover:underline dark:hover:text-gray-200"
+                >
+                  {residenceLocation}
+                </Link>
+              ) : (
+                residenceLocation
+              )
+            }
+          />
         )}
 
         {/* Birth City */}
-        {displayUser.birthCity && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <MapPinIcon className="h-4 w-4" />
-            <span className="font-semibold">Ciudad de origen:</span>
-            <Link
-              href={`/cities/${displayUser.birthCity.toLowerCase().replace(/\s+/g, '-')}` as Route}
-              className="text-primary hover:text-primary/80 hover:underline"
-            >
-              {displayUser.birthCity}
-            </Link>
-          </div>
+        {birthLocation && (
+          <DetailRow
+            icon={MapPinIcon}
+            label="Ciudad de origen"
+            value={
+              displayUser.birthCity ? (
+                <Link
+                  href={`/cities/${displayUser.birthCity.toLowerCase().replace(/\s+/g, '-')}` as Route}
+                  className="hover:text-gray-700 hover:underline dark:hover:text-gray-200"
+                >
+                  {birthLocation}
+                </Link>
+              ) : (
+                birthLocation
+              )
+            }
+          />
         )}
 
         {/* Relationship Status */}
-        {displayUser.relationshipStatus && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <HeartIcon className="h-4 w-4" />
-            <span className="font-semibold">Estado civil:</span>
-            <span>{displayUser.relationshipStatus}</span>
-          </div>
-        )}
+        {relationshipLabel && <DetailRow icon={HeartIcon} label="Estado civil" value={relationshipLabel} />}
 
         {/* Study Place */}
         {displayUser.studyPlace && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <AcademicCapIcon className="h-4 w-4" />
-            <span className="font-semibold">Lugar de estudio:</span>
-            <span>{displayUser.studyPlace}</span>
-          </div>
+          <DetailRow icon={AcademicCapIcon} label="Lugar de estudio" value={displayUser.studyPlace} />
         )}
 
         {/* Work Place */}
         {displayUser.workPlace && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <BriefcaseIcon className="h-4 w-4" />
-            <span className="font-semibold">Lugar de trabajo:</span>
-            <span>{displayUser.workPlace}</span>
-          </div>
+          <DetailRow icon={BriefcaseIcon} label="Lugar de trabajo" value={displayUser.workPlace} />
         )}
 
         {/* Gender */}
-        {displayUser.gender && (
-          <div className="text-foreground flex items-center gap-2 text-sm">
-            <UserIcon className="h-4 w-4" />
-            <span className="font-semibold">Género:</span>
-            <span>{displayUser.gender}</span>
-          </div>
-        )}
+        {genderLabel && <DetailRow icon={UserIcon} label="Género" value={genderLabel} />}
 
         {/* Website */}
         {displayUser.websiteUrl && (
-          <div className="text-foreground flex items-center gap-2">
-            <LinkIcon className="h-4 w-4" />
-            <a
-              href={displayUser.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary font-medium hover:underline"
-            >
-              {displayUser.websiteUrl}
-            </a>
-          </div>
+          <DetailRow
+            icon={LinkIcon}
+            label="Sitio web"
+            value={
+              <a
+                href={displayUser.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gray-700 hover:underline dark:hover:text-gray-200"
+              >
+                {displayUser.websiteUrl}
+              </a>
+            }
+          />
         )}
 
         {/* Member Since */}
-        <div className="text-foreground flex items-center gap-2 text-sm">
-          <HandRaisedIcon className="h-4 w-4" />
-          <span className="font-semibold">Miembro desde:</span>
-          <span className="text-foreground text-sm">{format(new Date(displayUser.createdAt), 'MMM d, yyyy')}</span>
-        </div>
+        <DetailRow icon={HandRaisedIcon} label="Miembro desde" value={formatLongDate(displayUser.createdAt)} />
       </div>
 
-      {/* Diálogo de edición */}
-      <PersonalDialog user={displayUser} open={personalOpen} onOpenChange={setPersonalOpen} />
+      <Link
+        href={`/${displayUser.username}?tab=acerca-de` as Route}
+        className="mt-5 block w-full rounded-lg bg-gray-100 px-4 py-3 text-center text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 dark:focus-visible:ring-offset-gray-800"
+      >
+        Ver toda la información
+      </Link>
     </div>
   )
 }

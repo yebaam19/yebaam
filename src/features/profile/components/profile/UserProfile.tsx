@@ -1,20 +1,42 @@
 'use client';
 
-import coverPlaceholder from '@/images/cover-placeholder.png';
 import { formatNumber } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
-import { CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { FriendshipStatus, UserProfile as UserProfileType } from '../../interfaces/profile.interfaces';
 import EditProfileButton from './EditProfileButton';
 import { FriendButton } from '@/features/friendships/components/FriendButton';
+import MessageButton from './MessageButton';
+import ProfileActionsMenu from './ProfileActionsMenu';
 
 interface UserProfileProps {
   user: UserProfileType;
   loggedInUserId: string;
   friendshipInfo?: FriendshipStatus;
   customActions?: React.ReactNode; // Botones personalizados (ej: solicitud de amistad)
+}
+
+function GradientCover() {
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-linear-to-br from-emerald-300 via-emerald-100 to-blue-200">
+      <svg
+        viewBox="0 0 1440 320"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <path
+          fill="rgba(255,255,255,0.35)"
+          d="M0,160 C240,260 480,60 720,140 C960,220 1200,80 1440,180 L1440,320 L0,320 Z"
+        />
+        <path
+          fill="rgba(255,255,255,0.55)"
+          d="M0,220 C240,300 480,160 720,210 C960,260 1200,180 1440,240 L1440,320 L0,320 Z"
+        />
+      </svg>
+    </div>
+  );
 }
 
 export default function UserProfile({
@@ -25,6 +47,7 @@ export default function UserProfile({
 }: UserProfileProps) {
   const isOwnProfile = user.userId === loggedInUserId;
   const fullName = [user.firstName, user.secondName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
+  const coverSrc = user.coverPhotoUrl || user.coverUrl || null;
 
   return (
     <div className="w-full bg-white dark:bg-gray-800">
@@ -32,14 +55,18 @@ export default function UserProfile({
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-lg">
           <div className="relative h-[260px] w-full sm:h-80 lg:h-[380px]">
-            <Image
-              src={user.coverPhotoUrl || user.coverUrl || coverPlaceholder}
-              alt="Cover"
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1280px"
-            />
+            {coverSrc ? (
+              <Image
+                src={coverSrc}
+                alt="Cover"
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1280px"
+              />
+            ) : (
+              <GradientCover />
+            )}
           </div>
         </div>
       </div>
@@ -124,7 +151,7 @@ export default function UserProfile({
                     publicaciones
                   </span>
                   {friendshipInfo && (
-                    <Link href={`/${user.username}/friends`} className="hover:underline">
+                    <Link href={`/${user.username}?tab=amigos`} className="hover:underline">
                       <span>
                         <span className="font-semibold text-gray-900 dark:text-white">
                           {formatNumber(friendshipInfo.friendCount)}
@@ -137,13 +164,17 @@ export default function UserProfile({
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 flex w-full justify-center lg:mt-0 lg:mr-6 lg:w-auto">
+              <div className="mt-4 flex w-full items-center justify-center gap-2 lg:mt-0 lg:mr-6 lg:w-auto">
                 {customActions ? (
                   customActions
                 ) : isOwnProfile ? (
                   <EditProfileButton user={user} />
                 ) : (
-                  <FriendButton userId={user.userId} variant="default" size="md" />
+                  <>
+                    <FriendButton userId={user.userId} variant="default" size="md" />
+                    <MessageButton userId={user.userId} />
+                    <ProfileActionsMenu userId={user.userId} />
+                  </>
                 )}
               </div>
             </div>

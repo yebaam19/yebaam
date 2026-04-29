@@ -140,3 +140,4 @@ docs/
 - TanStack Query Devtools were removed from the app; keep `@tanstack/react-query` for existing data hooks and do not re-add floating devtools unless explicitly requested.
 - Tailwind CSS 3.4 — do not upgrade to v4.
 - For backend infra/debug tasks, prefer InsForge MCP/CLI workflows because this workspace runs on InsForge as the active backend platform.
+- When feature entry points are incomplete, mock-backed, or not fully wired, mark them as `Pronto`/`Proximamente` instead of exposing unfinished flows in navigation.
