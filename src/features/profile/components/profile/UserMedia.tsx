@@ -379,7 +379,11 @@ export function UserVideos({ userId }: UserMediaProps) {
                 {video.url ? (
                   isCloudflareStream ? (
                     <iframe
-                      src={`${video.url}?poster=${encodeURIComponent(video.thumbnailUrl ?? '')}`}
+                      src={
+                        video.thumbnailUrl
+                          ? `${video.url}?poster=${encodeURIComponent(video.thumbnailUrl)}`
+                          : video.url
+                      }
                       className="w-full h-full"
                       allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                       allowFullScreen
