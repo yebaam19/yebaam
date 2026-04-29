@@ -47,10 +47,12 @@ const relationshipLabels: Record<string, string> = {
 
 function DetailRow({ icon: Icon, label, value }: DetailRowProps) {
   return (
-    <div className="grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-3 text-sm">
-      <Icon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-      <span className="min-w-0 font-semibold text-gray-800 dark:text-gray-100">{label}</span>
-      <span className="ml-3 max-w-[45%] text-right text-gray-500 dark:text-gray-400">{value}</span>
+    <div className="flex items-start gap-3 text-sm">
+      <Icon className="mt-0.5 h-5 w-5 shrink-0 text-gray-500 dark:text-gray-400" />
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 wrap-break-word">
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
+        <span className="font-medium text-gray-800 wrap-break-word dark:text-gray-100">{value}</span>
+      </div>
     </div>
   )
 }
