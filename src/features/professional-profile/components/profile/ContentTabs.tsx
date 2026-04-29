@@ -15,6 +15,7 @@ import {
   DocumentTextIcon,
   LanguageIcon,
   LightBulbIcon,
+  Squares2X2Icon,
   UserGroupIcon,
 } from '@/components/icons/heroicons-shim'
 
@@ -27,6 +28,7 @@ import {
   SectionSkeleton,
   SkillsSection,
   StudiesSection,
+  SummarySection,
   TitlesSection,
 } from '../sections'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
@@ -38,6 +40,7 @@ interface ContentTabsProps {
 }
 
 const tabs = [
+  { name: 'Resumen', icon: Squares2X2Icon, component: SummarySection },
   { name: 'Titulos', icon: AcademicCapIcon, component: TitlesSection },
   { name: 'Estudios', icon: BookOpenIcon, component: StudiesSection },
   { name: 'Experiencia', icon: BriefcaseIcon, component: ExperienceSection },
@@ -70,9 +73,13 @@ export function ContentTabs({ profile, isOwner, isRefetching = false }: ContentT
       </div>
 
       <TabsContent>
+        <SummarySection profile={profile} isOwner={isOwner} />
+      </TabsContent>
+
+      <TabsContent>
         <TitlesSection profileId={profile.id} isOwner={isOwner} items={profile.titles} />
       </TabsContent>
-      
+
       <TabsContent>
         <StudiesSection profileId={profile.id} isOwner={isOwner} items={profile.studies} />
       </TabsContent>

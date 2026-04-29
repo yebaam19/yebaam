@@ -1,6 +1,11 @@
 import { notFound } from 'next/navigation';
 
-import { checkIsFollowing, getMyProfile, getProfileByUsername } from '../server/profile.server';
+import {
+  checkIsFollowing,
+  getMyProfile,
+  getProfileByUsername,
+  hydrateOwnerExtras,
+} from '../server/profile.server';
 import { ProfessionalProfileView } from './ProfessionalProfileView';
 
 interface ProfessionalProfilePageProps {
@@ -18,6 +23,22 @@ export default async function ProfessionalProfilePage({ params }: ProfessionalPr
   ]);
 
   const isOwner = !!myProfile && myProfile.userId === profile.userId;
+
+  if (isOwner) {
+    const extras = await hydrateOwnerExtras(profile.id);
+    if (profile.titles) {
+      profile.titles = profile.titles.map((t) => ({
+        ...t,
+        diplomaCfImageId: extras.titleDiplomas.get(t.id) ?? null,
+      }));
+    }
+    if (profile.studies) {
+      profile.studies = profile.studies.map((s) => ({
+        ...s,
+        diplomaCfImageId: extras.studyDiplomas.get(s.id) ?? null,
+      }));
+    }
+  }
 
   return (
     <ProfessionalProfileView

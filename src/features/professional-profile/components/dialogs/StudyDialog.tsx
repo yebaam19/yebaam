@@ -11,6 +11,7 @@ import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import type { Study, StudyFormData } from '../../interfaces/professional-profile.interfaces'
+import { STUDY_TYPE_OPTIONS, studyTypeLabel } from '../../lib/credentials'
 
 interface StudyDialogProps {
   isOpen: boolean
@@ -30,39 +31,41 @@ export function StudyDialog({ isOpen, study, onClose, onSubmit }: StudyDialogPro
       name: '',
       institution: '',
       year: new Date().getFullYear(),
+      studyType: null,
     },
   })
 
-  // Resetear formulario cuando se abre/cierra el dialog o cambia el estudio
   useEffect(() => {
     if (isOpen) {
       if (study) {
-        // Modo edición: cargar datos del estudio existente
         reset({
           name: study.name ?? '',
           institution: study.institution ?? '',
           year: study.year ?? new Date().getFullYear(),
+          studyType: study.studyType ?? null,
         })
       } else {
-        // Modo creación: formulario vacío
         reset({
           name: '',
           institution: '',
           year: new Date().getFullYear(),
+          studyType: null,
         })
       }
     }
   }, [isOpen, study, reset])
 
   const submit = async (data: StudyFormData) => {
-    // Limpiar y transformar datos antes de enviar
     const cleanData: StudyFormData = {
       name: data.name.trim(),
       institution: data.institution && data.institution.trim() ? data.institution.trim() : undefined,
       year: data.year ? Number(data.year) : undefined,
+      studyType: data.studyType ?? null,
     }
     await onSubmit(cleanData)
   }
+
+  const isApproved = study?.credentialStatus === 'approved'
 
   return (
     <Transition show={isOpen}>
@@ -92,8 +95,38 @@ export function StudyDialog({ isOpen, study, onClose, onSubmit }: StudyDialogPro
                 {study ? 'Editar Estudio' : 'Agregar Estudio'}
               </DialogTitle>
 
+              {isApproved && (
+                <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-700/40 dark:bg-amber-900/20 dark:text-amber-200">
+                  Editar abrirá una nueva revisión administrativa y pausará la verificación hasta que un admin decida.
+                </div>
+              )}
+
               <form className="mt-4 space-y-4" onSubmit={handleSubmit(submit)}>
                 <div className="grid gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                      Tipo de estudio
+                    </label>
+                    <Controller
+                      control={control}
+                      name="studyType"
+                      render={({ field }) => (
+                        <select
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                          className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                        >
+                          <option value="">— Selecciona —</option>
+                          {STUDY_TYPE_OPTIONS.map((s) => (
+                            <option key={s} value={s}>
+                              {studyTypeLabel(s)}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                  </div>
+
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
                       Nombre del estudio *

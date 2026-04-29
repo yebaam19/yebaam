@@ -10,6 +10,7 @@ export interface AdminNavItem {
     | 'users'
     | 'cog'
     | 'shield-check'
+    | 'academic-cap'
   disabled?: boolean
   matchPrefix?: string
 }
@@ -39,6 +40,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/verifications' as Route,
     iconName: 'shield-check',
     matchPrefix: '/admin/verifications',
+  },
+  {
+    label: 'Credenciales Profesionales',
+    href: '/admin/professional-credentials' as Route,
+    iconName: 'academic-cap',
+    matchPrefix: '/admin/professional-credentials',
   },
   {
     label: 'Ajustes',

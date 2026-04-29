@@ -23,7 +23,7 @@ type ActionResult<T = undefined> =
   | { ok: true; data?: T }
   | { ok: false; error: string };
 
-async function requireOwner(profileId: string) {
+export async function requireOwner(profileId: string) {
   const authClient = await getServerClient();
   const { data: auth } = await authClient.auth.getUser();
   if (!auth?.user) return { client: null, userId: null as string | null };
@@ -40,12 +40,54 @@ async function requireOwner(profileId: string) {
   return { client: db, userId: auth.user.id };
 }
 
-function revalidate() {
+export function revalidateProfile() {
   revalidatePath('/feed/professional-profile/[username]', 'page');
 }
 
-function emptyToNull<T>(v: T | undefined | ''): T | null {
+function revalidate() {
+  revalidateProfile();
+}
+
+export function emptyToNull<T>(v: T | undefined | ''): T | null {
   return v === undefined || v === '' ? null : (v as T);
+}
+
+function norm(v: string | null | undefined): string {
+  return (v ?? '').trim().toLowerCase();
+}
+
+type TitleSnapshotFields = {
+  name: string | null;
+  category: string | null;
+  distinction: string | null;
+  institution: string | null;
+  year: number | null;
+};
+
+type StudySnapshotFields = {
+  name: string | null;
+  study_type: string | null;
+  institution: string | null;
+  year: number | null;
+};
+
+function titleDrifted(prev: TitleSnapshotFields, next: TitleSnapshotFields): boolean {
+  return (
+    norm(prev.name) !== norm(next.name) ||
+    (prev.category ?? '') !== (next.category ?? '') ||
+    (prev.distinction ?? '') !== (next.distinction ?? '') ||
+    norm(prev.institution) !== norm(next.institution) ||
+    (prev.year ?? null) !== (next.year ?? null)
+  );
+}
+
+function studyDrifted(prev: StudySnapshotFields, next: StudySnapshotFields): boolean {
+  return (
+    norm(prev.name) !== norm(next.name) ||
+    (prev.study_type ?? '') !== (next.study_type ?? '') ||
+    norm(prev.institution) !== norm(next.institution) ||
+    (prev.year ?? null) !== (next.year ?? null)
+  );
 }
 
 // ============================================================================
@@ -59,6 +101,7 @@ export async function addTitleAction(
   const { client, userId } = await requireOwner(profileId);
   if (!client || !userId) return { ok: false, error: 'No autorizado' };
 
+  const focuses = (data.focuses ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12);
   const { data: row, error } = await client
     .from('professional_profile_titles')
     .insert({
@@ -66,19 +109,34 @@ export async function addTitleAction(
       name: data.name,
       institution: emptyToNull(data.institution),
       year: data.year ?? null,
+      category: emptyToNull(data.category ?? null),
+      distinction: emptyToNull(data.distinction ?? null),
+      focuses,
+      institution_slug: emptyToNull(data.institutionSlug ?? null),
     })
     .select('*')
     .maybeSingle();
   if (error || !row) return { ok: false, error: error?.message ?? 'Error al agregar título' };
   revalidate();
+  const r = row as Record<string, unknown>;
   return {
     ok: true,
     data: {
-      id: (row as { id: string }).id,
+      id: r.id as string,
       professionalProfileId: profileId,
-      name: (row as { name: string }).name,
-      institution: (row as { institution: string | null }).institution,
-      year: (row as { year: number | null }).year,
+      name: r.name as string,
+      institution: (r.institution as string | null) ?? null,
+      year: (r.year as number | null) ?? null,
+      category: (r.category as Title['category']) ?? null,
+      distinction: (r.distinction as Title['distinction']) ?? null,
+      focuses: ((r.focuses as string[] | null) ?? []),
+      credentialStatus: (r.credential_status as Title['credentialStatus']) ?? 'none',
+      credentialRequestId: (r.credential_request_id as string | null) ?? null,
+      verifiedAt: (r.verified_at as string | null) ?? null,
+      verifiedBy: (r.verified_by as string | null) ?? null,
+      verifiedSnapshot: (r.verified_snapshot as Record<string, unknown> | null) ?? null,
+      institutionPageId: (r.institution_page_id as string | null) ?? null,
+      institutionSlug: (r.institution_slug as string | null) ?? null,
     },
   };
 }
@@ -91,16 +149,91 @@ export async function updateTitleAction(
   const { client, userId } = await requireOwner(profileId);
   if (!client || !userId) return { ok: false, error: 'No autorizado' };
 
+  // Snapshot the pre-update verified state so we can open a review_needed
+  // request if a material field changes on an approved credential.
+  const { data: prev } = await client
+    .from('professional_profile_titles')
+    .select(
+      'id, name, category, distinction, institution, year, focuses, credential_status, verified_snapshot, diploma_cf_image_id, credential_request_id',
+    )
+    .eq('id', titleId)
+    .eq('professional_profile_id', profileId)
+    .maybeSingle();
+  if (!prev) return { ok: false, error: 'Título no encontrado' };
+
+  const focuses = (data.focuses ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12);
+  const nextFields: TitleSnapshotFields = {
+    name: data.name,
+    category: data.category ?? null,
+    distinction: data.distinction ?? null,
+    institution: emptyToNull(data.institution) as string | null,
+    year: data.year ?? null,
+  };
+
   const { error } = await client
     .from('professional_profile_titles')
     .update({
       name: data.name,
       institution: emptyToNull(data.institution),
       year: data.year ?? null,
+      category: emptyToNull(data.category ?? null),
+      distinction: emptyToNull(data.distinction ?? null),
+      focuses,
+      institution_slug: emptyToNull(data.institutionSlug ?? null),
     })
     .eq('id', titleId)
     .eq('professional_profile_id', profileId);
   if (error) return { ok: false, error: error.message };
+
+  const prevRow = prev as {
+    name: string | null;
+    category: string | null;
+    distinction: string | null;
+    institution: string | null;
+    year: number | null;
+    credential_status: string;
+    verified_snapshot: Record<string, unknown> | null;
+    diploma_cf_image_id: string | null;
+    credential_request_id: string | null;
+  };
+  const wasApproved = prevRow.credential_status === 'approved';
+  const drifted = wasApproved && titleDrifted(prevRow, nextFields);
+  if (drifted) {
+    // The BEFORE UPDATE drift trigger has already flipped the row to
+    // 'review_needed'. Open a corresponding review_needed request that
+    // carries the prior verified snapshot + evidence so admins can compare.
+    const evidenceId = prevRow.diploma_cf_image_id;
+    if (evidenceId) {
+      // Avoid duplicates if a review_needed request already exists for this title.
+      const { data: existing } = await client
+        .from('professional_credential_requests')
+        .select('id')
+        .eq('target_kind', 'title')
+        .eq('title_id', titleId)
+        .in('status', ['pending', 'review_needed'])
+        .maybeSingle();
+      if (!existing) {
+        await client.from('professional_credential_requests').insert({
+          user_id: userId,
+          target_kind: 'title',
+          title_id: titleId,
+          evidence_cf_image_id: evidenceId,
+          mime_type: null,
+          submitted_snapshot:
+            prevRow.verified_snapshot ?? {
+              name: prevRow.name,
+              category: prevRow.category,
+              distinction: prevRow.distinction,
+              institution: prevRow.institution,
+              year: prevRow.year,
+            },
+          status: 'review_needed',
+        });
+      }
+    }
+    revalidatePath('/admin/professional-credentials');
+  }
+
   revalidate();
   return { ok: true };
 }
@@ -130,6 +263,7 @@ export async function addStudyAction(
   const { client, userId } = await requireOwner(profileId);
   if (!client || !userId) return { ok: false, error: 'No autorizado' };
 
+  const focuses = (data.focuses ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12);
   const { data: row, error } = await client
     .from('professional_profile_studies')
     .insert({
@@ -137,19 +271,32 @@ export async function addStudyAction(
       name: data.name,
       institution: emptyToNull(data.institution),
       year: data.year ?? null,
+      study_type: emptyToNull(data.studyType ?? null),
+      focuses,
+      institution_slug: emptyToNull(data.institutionSlug ?? null),
     })
     .select('*')
     .maybeSingle();
   if (error || !row) return { ok: false, error: error?.message ?? 'Error al agregar estudio' };
   revalidate();
+  const r = row as Record<string, unknown>;
   return {
     ok: true,
     data: {
-      id: (row as { id: string }).id,
+      id: r.id as string,
       professionalProfileId: profileId,
-      name: (row as { name: string }).name,
-      institution: (row as { institution: string | null }).institution,
-      year: (row as { year: number | null }).year,
+      name: r.name as string,
+      institution: (r.institution as string | null) ?? null,
+      year: (r.year as number | null) ?? null,
+      studyType: (r.study_type as Study['studyType']) ?? null,
+      focuses: ((r.focuses as string[] | null) ?? []),
+      credentialStatus: (r.credential_status as Study['credentialStatus']) ?? 'none',
+      credentialRequestId: (r.credential_request_id as string | null) ?? null,
+      verifiedAt: (r.verified_at as string | null) ?? null,
+      verifiedBy: (r.verified_by as string | null) ?? null,
+      verifiedSnapshot: (r.verified_snapshot as Record<string, unknown> | null) ?? null,
+      institutionPageId: (r.institution_page_id as string | null) ?? null,
+      institutionSlug: (r.institution_slug as string | null) ?? null,
     },
   };
 }
@@ -162,16 +309,81 @@ export async function updateStudyAction(
   const { client, userId } = await requireOwner(profileId);
   if (!client || !userId) return { ok: false, error: 'No autorizado' };
 
+  const { data: prev } = await client
+    .from('professional_profile_studies')
+    .select(
+      'id, name, study_type, institution, year, focuses, credential_status, verified_snapshot, diploma_cf_image_id, credential_request_id',
+    )
+    .eq('id', studyId)
+    .eq('professional_profile_id', profileId)
+    .maybeSingle();
+  if (!prev) return { ok: false, error: 'Estudio no encontrado' };
+
+  const focuses = (data.focuses ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12);
+  const nextFields: StudySnapshotFields = {
+    name: data.name,
+    study_type: data.studyType ?? null,
+    institution: emptyToNull(data.institution) as string | null,
+    year: data.year ?? null,
+  };
+
   const { error } = await client
     .from('professional_profile_studies')
     .update({
       name: data.name,
       institution: emptyToNull(data.institution),
       year: data.year ?? null,
+      study_type: emptyToNull(data.studyType ?? null),
+      focuses,
+      institution_slug: emptyToNull(data.institutionSlug ?? null),
     })
     .eq('id', studyId)
     .eq('professional_profile_id', profileId);
   if (error) return { ok: false, error: error.message };
+
+  const prevRow = prev as {
+    name: string | null;
+    study_type: string | null;
+    institution: string | null;
+    year: number | null;
+    credential_status: string;
+    verified_snapshot: Record<string, unknown> | null;
+    diploma_cf_image_id: string | null;
+    credential_request_id: string | null;
+  };
+  const wasApproved = prevRow.credential_status === 'approved';
+  const drifted = wasApproved && studyDrifted(prevRow, nextFields);
+  if (drifted) {
+    const evidenceId = prevRow.diploma_cf_image_id;
+    if (evidenceId) {
+      const { data: existing } = await client
+        .from('professional_credential_requests')
+        .select('id')
+        .eq('target_kind', 'study')
+        .eq('study_id', studyId)
+        .in('status', ['pending', 'review_needed'])
+        .maybeSingle();
+      if (!existing) {
+        await client.from('professional_credential_requests').insert({
+          user_id: userId,
+          target_kind: 'study',
+          study_id: studyId,
+          evidence_cf_image_id: evidenceId,
+          mime_type: null,
+          submitted_snapshot:
+            prevRow.verified_snapshot ?? {
+              name: prevRow.name,
+              study_type: prevRow.study_type,
+              institution: prevRow.institution,
+              year: prevRow.year,
+            },
+          status: 'review_needed',
+        });
+      }
+    }
+    revalidatePath('/admin/professional-credentials');
+  }
+
   revalidate();
   return { ok: true };
 }

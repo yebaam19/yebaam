@@ -8,6 +8,46 @@
 // Enums
 export type ProfessionalProfileVisibility = 'PUBLIC' | 'PRIVATE' | 'LIMITED'
 
+export type TitleCategory =
+  | 'bachiller'
+  | 'tecnico'
+  | 'tecnologo'
+  | 'asociado'
+  | 'licenciatura'
+  | 'maestria'
+  | 'doctorado'
+
+export type TitleDistinction =
+  | 'cum_laude'
+  | 'magna_cum_laude'
+  | 'summa_cum_laude'
+  | 'mejor_estudiante'
+  | 'segundo_mejor_estudiante'
+  | 'tercer_mejor_estudiante'
+
+export type StudyType = 'certificado' | 'diploma' | 'diplomado' | 'curso' | 'bootcamp'
+
+export type CredentialStatus =
+  | 'none'
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'review_needed'
+
+export type CredentialTargetKind = 'title' | 'study'
+
+export interface CredentialFields {
+  credentialStatus: CredentialStatus
+  credentialRequestId?: string | null
+  verifiedAt?: string | Date | null
+  verifiedBy?: string | null
+  // Owner-only field. Public hydration omits this.
+  diplomaCfImageId?: string | null
+  verifiedSnapshot?: Record<string, unknown> | null
+  institutionPageId?: string | null
+  institutionSlug?: string | null
+}
+
 // Main Professional Profile
 export interface ProfessionalProfile {
   id: string
@@ -34,6 +74,8 @@ export interface ProfessionalProfile {
     lastName: string
     username: string
     avatar?: string | null
+    identityVerified?: boolean
+    identityVerifiedAt?: string | null
   }
   _count?: {
     titles: number
@@ -49,20 +91,25 @@ export interface ProfessionalProfile {
 }
 
 // Related entities (según modelos de Prisma)
-export interface Title {
+export interface Title extends CredentialFields {
   id: string
   professionalProfileId: string
   name: string
   institution?: string | null
   year?: number | null
+  category?: TitleCategory | null
+  distinction?: TitleDistinction | null
+  focuses: string[]
 }
 
-export interface Study {
+export interface Study extends CredentialFields {
   id: string
   professionalProfileId: string
   name: string
   institution?: string | null
   year?: number | null
+  studyType?: StudyType | null
+  focuses: string[]
 }
 
 export interface Association {
@@ -139,12 +186,19 @@ export interface TitleFormData {
   name: string
   institution?: string
   year?: number
+  category?: TitleCategory | null
+  distinction?: TitleDistinction | null
+  focuses?: string[]
+  institutionSlug?: string | null
 }
 
 export interface StudyFormData {
   name: string
   institution?: string
   year?: number
+  studyType?: StudyType | null
+  focuses?: string[]
+  institutionSlug?: string | null
 }
 
 export interface AssociationFormData {
@@ -182,4 +236,34 @@ export interface ProfileAccessInfo {
   hasAccess: boolean
   visibility: ProfessionalProfileVisibility
   isOwnProfile: boolean
+}
+
+export type CredentialRequestStatus = Exclude<CredentialStatus, 'none'>
+
+export interface ProfessionalCredentialRequest {
+  id: string
+  userId: string
+  targetKind: CredentialTargetKind
+  titleId?: string | null
+  studyId?: string | null
+  evidenceCfImageId: string
+  mimeType?: string | null
+  submittedSnapshot: Record<string, unknown>
+  status: CredentialRequestStatus
+  submittedAt: string | Date
+  reviewedAt?: string | Date | null
+  reviewedBy?: string | null
+  adminNotes?: string | null
+  rejectionReason?: string | null
+}
+
+export interface DegreeBadge {
+  kind: CredentialTargetKind
+  itemId: string
+  category?: TitleCategory | null
+  studyType?: StudyType | null
+  distinction?: TitleDistinction | null
+  institution?: string | null
+  institutionSlug?: string | null
+  verifiedAt: string | Date
 }

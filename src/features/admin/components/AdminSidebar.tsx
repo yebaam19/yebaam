@@ -5,6 +5,7 @@ import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import {
+  AcademicCapIcon,
   ChatBubbleLeftIcon,
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
@@ -24,6 +25,7 @@ const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: 
   users: UsersIcon,
   cog: Cog6ToothIcon,
   'shield-check': ShieldCheckIcon,
+  'academic-cap': AcademicCapIcon,
 }
 
 interface Props {

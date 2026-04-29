@@ -2,6 +2,7 @@ import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
 import type {
   Association,
+  CredentialStatus,
   Experience,
   Language,
   License,
@@ -9,7 +10,10 @@ import type {
   ProfessionalProfileVisibility,
   Skill,
   Study,
+  StudyType,
   Title,
+  TitleCategory,
+  TitleDistinction,
 } from '@/features/professional-profile/interfaces/professional-profile.interfaces';
 
 type ProfileRow = {
@@ -29,10 +33,50 @@ type UserProfileRow = {
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
+  is_verified: boolean | null;
+  verified_at: string | null;
 };
 
-type TitleRow = { id: string; professional_profile_id: string; name: string; institution: string | null; year: number | null };
-type StudyRow = TitleRow;
+type TitleRow = {
+  id: string;
+  professional_profile_id: string;
+  name: string;
+  institution: string | null;
+  year: number | null;
+  category: TitleCategory | null;
+  distinction: TitleDistinction | null;
+  focuses: string[] | null;
+  credential_status: CredentialStatus;
+  credential_request_id: string | null;
+  verified_at: string | null;
+  verified_by: string | null;
+  verified_snapshot: Record<string, unknown> | null;
+  institution_page_id: string | null;
+  institution_slug: string | null;
+};
+type StudyRow = {
+  id: string;
+  professional_profile_id: string;
+  name: string;
+  institution: string | null;
+  year: number | null;
+  study_type: StudyType | null;
+  focuses: string[] | null;
+  credential_status: CredentialStatus;
+  credential_request_id: string | null;
+  verified_at: string | null;
+  verified_by: string | null;
+  verified_snapshot: Record<string, unknown> | null;
+  institution_page_id: string | null;
+  institution_slug: string | null;
+};
+
+// Public column lists — diploma_cf_image_id is intentionally excluded.
+// Owner-only data fetched separately via hydrateOwnerExtras.
+const TITLE_PUBLIC_COLUMNS =
+  'id, professional_profile_id, name, institution, year, category, distinction, focuses, credential_status, credential_request_id, verified_at, verified_by, verified_snapshot, institution_page_id, institution_slug';
+const STUDY_PUBLIC_COLUMNS =
+  'id, professional_profile_id, name, institution, year, study_type, focuses, credential_status, credential_request_id, verified_at, verified_by, verified_snapshot, institution_page_id, institution_slug';
 type AssociationRow = { id: string; professional_profile_id: string; name: string; role: string | null };
 type LicenseRow = { id: string; professional_profile_id: string; name: string; number: string | null; issued_by: string | null; issued_at: string | null };
 type SkillRow = { id: string; professional_profile_id: string; name: string; level: string | null };
@@ -48,10 +92,41 @@ type ExperienceRow = {
 };
 
 function toTitle(row: TitleRow): Title {
-  return { id: row.id, professionalProfileId: row.professional_profile_id, name: row.name, institution: row.institution, year: row.year };
+  return {
+    id: row.id,
+    professionalProfileId: row.professional_profile_id,
+    name: row.name,
+    institution: row.institution,
+    year: row.year,
+    category: row.category,
+    distinction: row.distinction,
+    focuses: row.focuses ?? [],
+    credentialStatus: row.credential_status,
+    credentialRequestId: row.credential_request_id,
+    verifiedAt: row.verified_at,
+    verifiedBy: row.verified_by,
+    verifiedSnapshot: row.verified_snapshot,
+    institutionPageId: row.institution_page_id,
+    institutionSlug: row.institution_slug,
+  };
 }
 function toStudy(row: StudyRow): Study {
-  return toTitle(row);
+  return {
+    id: row.id,
+    professionalProfileId: row.professional_profile_id,
+    name: row.name,
+    institution: row.institution,
+    year: row.year,
+    studyType: row.study_type,
+    focuses: row.focuses ?? [],
+    credentialStatus: row.credential_status,
+    credentialRequestId: row.credential_request_id,
+    verifiedAt: row.verified_at,
+    verifiedBy: row.verified_by,
+    verifiedSnapshot: row.verified_snapshot,
+    institutionPageId: row.institution_page_id,
+    institutionSlug: row.institution_slug,
+  };
 }
 function toAssociation(row: AssociationRow): Association {
   return { id: row.id, professionalProfileId: row.professional_profile_id, name: row.name, role: row.role };
@@ -101,6 +176,8 @@ function toProfile(row: ProfileRow, user?: UserProfileRow | null): ProfessionalP
           lastName: user.last_name ?? '',
           username: user.username ?? '',
           avatar: user.avatar_url,
+          identityVerified: user.is_verified === true,
+          identityVerifiedAt: user.verified_at,
         }
       : undefined,
   };
@@ -129,8 +206,8 @@ async function hydrateProfile(
     postsCount,
     followersCount,
   ] = await Promise.all([
-    client.from('professional_profile_titles').select('*').eq('professional_profile_id', profileId).order('year', { ascending: false, nullsFirst: false }),
-    client.from('professional_profile_studies').select('*').eq('professional_profile_id', profileId).order('year', { ascending: false, nullsFirst: false }),
+    client.from('professional_profile_titles').select(TITLE_PUBLIC_COLUMNS).eq('professional_profile_id', profileId).order('year', { ascending: false, nullsFirst: false }),
+    client.from('professional_profile_studies').select(STUDY_PUBLIC_COLUMNS).eq('professional_profile_id', profileId).order('year', { ascending: false, nullsFirst: false }),
     client.from('professional_profile_associations').select('*').eq('professional_profile_id', profileId).order('created_at', { ascending: false }),
     client.from('professional_profile_licenses').select('*').eq('professional_profile_id', profileId).order('issued_at', { ascending: false, nullsFirst: false }),
     client.from('professional_profile_skills').select('*').eq('professional_profile_id', profileId).order('created_at', { ascending: false }),
@@ -176,7 +253,7 @@ async function loadUserById(
 ): Promise<UserProfileRow | null> {
   const { data } = await client
     .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url')
+    .select('id, username, first_name, last_name, avatar_url, is_verified, verified_at')
     .eq('id', userId)
     .maybeSingle();
   return (data as UserProfileRow | null) ?? null;
@@ -204,7 +281,7 @@ export async function getProfileByUsername(username: string): Promise<Profession
 
   const { data: user } = await client
     .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url')
+    .select('id, username, first_name, last_name, avatar_url, is_verified, verified_at')
     .eq('username', username)
     .maybeSingle();
   if (!user) return null;
@@ -253,13 +330,40 @@ export async function listPublicProfiles(
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   const { data: users } = await client
     .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url')
+    .select('id, username, first_name, last_name, avatar_url, is_verified, verified_at')
     .in('id', userIds);
   const userById = new Map<string, UserProfileRow>();
   for (const u of (users ?? []) as UserProfileRow[]) userById.set(u.id, u);
 
   const profiles = rows.map((r) => toProfile(r, userById.get(r.user_id) ?? null));
   return { profiles, total: count ?? profiles.length };
+}
+
+export type OwnerExtras = {
+  titleDiplomas: Map<string, string | null>;
+  studyDiplomas: Map<string, string | null>;
+};
+
+/**
+ * Owner-only fetch for credential evidence references.
+ * Public hydration deliberately omits diploma_cf_image_id; this helper merges
+ * those values back in for the profile owner only. Caller must guard via isOwner.
+ */
+export async function hydrateOwnerExtras(profileId: string): Promise<OwnerExtras> {
+  const client = await getServerClient();
+  const [titles, studies] = await Promise.all([
+    client.from('professional_profile_titles').select('id, diploma_cf_image_id').eq('professional_profile_id', profileId),
+    client.from('professional_profile_studies').select('id, diploma_cf_image_id').eq('professional_profile_id', profileId),
+  ]);
+  const titleDiplomas = new Map<string, string | null>();
+  const studyDiplomas = new Map<string, string | null>();
+  for (const r of (titles.data ?? []) as Array<{ id: string; diploma_cf_image_id: string | null }>) {
+    titleDiplomas.set(r.id, r.diploma_cf_image_id);
+  }
+  for (const r of (studies.data ?? []) as Array<{ id: string; diploma_cf_image_id: string | null }>) {
+    studyDiplomas.set(r.id, r.diploma_cf_image_id);
+  }
+  return { titleDiplomas, studyDiplomas };
 }
 
 export async function checkIsFollowing(profileId: string): Promise<boolean> {

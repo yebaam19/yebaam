@@ -13,6 +13,8 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
+import { getHighestVerifiedDegree } from '../../lib/credentials'
+import { DegreeBadge } from './DegreeBadge'
 
 interface ProfileHeaderProps {
   profile: ProfessionalProfile
@@ -33,6 +35,9 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
   const router = useRouter()
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const [isPending, startTransition] = useTransition()
+
+  const identityVerified = profile.user?.identityVerified === true
+  const topDegree = getHighestVerifiedDegree(profile.titles)
 
   const handleFollow = () => {
     startTransition(async () => {
@@ -129,10 +134,12 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
               )}
             </div>
 
-            {/* Badge de verificado */}
-            <div className="absolute right-0 bottom-0 rounded-full bg-white p-1 shadow dark:bg-neutral-900">
-              <CheckBadgeIcon className="h-6 w-6 text-primary-500" />
-            </div>
+            {/* Identity-verified badge (avatar overlay). Driven by profiles.is_verified. */}
+            {identityVerified && (
+              <div className="absolute right-0 bottom-0 rounded-full bg-white p-1 shadow dark:bg-neutral-900">
+                <CheckBadgeIcon className="h-6 w-6 text-primary-500" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -145,7 +152,13 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
                 <h1 className="min-w-0 text-xl font-bold break-words text-neutral-900 sm:text-2xl dark:text-white">
                   {fullName}
                 </h1>
-                <CheckBadgeIcon className="h-5 w-5 text-primary-500" />
+                {identityVerified && (
+                  <CheckBadgeIcon
+                    className="h-5 w-5 text-primary-500"
+                    aria-label="Identidad verificada"
+                  />
+                )}
+                {topDegree && <DegreeBadge category={topDegree} />}
               </div>
               <p className="text-neutral-500 dark:text-neutral-400">@{user.username}</p>
               {profile.bio && (

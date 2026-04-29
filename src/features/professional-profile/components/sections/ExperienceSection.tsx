@@ -117,7 +117,7 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
                     </p>
                   )}
                   {exp.description && (
-                    <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{exp.description}</p>
+                    <p className="mt-2 whitespace-pre-line text-sm text-neutral-600 dark:text-neutral-400">{exp.description}</p>
                   )}
                 </div>
               </div>
