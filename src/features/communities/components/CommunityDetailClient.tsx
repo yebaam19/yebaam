@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   useCommunityBySlug,
   useCommunityPosts,
   useCommunityMembers,
-  useJoinCommunity,
   useLeaveCommunity,
 } from '@/features/communities/hooks/useCommunities';
+import {
+  cancelJoinRequest,
+  joinCommunity,
+} from '@/features/communities/actions/communities.actions';
 import { CommunityPostComposer } from '@/features/communities/components/CommunityPostComposer';
+import { CommunityAdminPanel } from '@/features/communities/components/CommunityAdminPanel';
+import type {
+  PendingJoinRequest,
+  ViewerJoinState,
+} from '@/features/communities/server/communities.server';
 import {
   Community,
   CommunityMember,
@@ -42,6 +50,8 @@ interface CommunityDetailClientProps {
   initialCommunity: Community;
   initialPosts: { posts: CommunityPost[]; total: number };
   initialMembers: { members: CommunityMember[]; total: number };
+  initialViewerState: ViewerJoinState;
+  initialPendingRequests: PendingJoinRequest[];
 }
 
 export function CommunityDetailClient({
@@ -49,9 +59,13 @@ export function CommunityDetailClient({
   initialCommunity,
   initialPosts,
   initialMembers,
+  initialViewerState,
+  initialPendingRequests,
 }: CommunityDetailClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('publicaciones');
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [joinTransition, startJoinTransition] = useTransition();
 
   const { data: community } = useCommunityBySlug(slug, initialCommunity);
   const { data: postsData } = useCommunityPosts(community?.id ?? initialCommunity.id, 1, 10, initialPosts);
@@ -61,26 +75,69 @@ export function CommunityDetailClient({
     20,
     initialMembers,
   );
-  const joinMutation = useJoinCommunity();
   const leaveMutation = useLeaveCommunity();
 
   const c = community ?? initialCommunity;
   const posts = postsData?.data ?? initialPosts.posts;
   const members = membersData?.data ?? initialMembers.members;
+  const viewerState = initialViewerState;
 
-  const handleJoinToggle = async () => {
-    if (!c) return;
-    try {
-      if (c.isMember) {
-        await leaveMutation.mutateAsync(c.id);
-      } else {
-        await joinMutation.mutateAsync(c.id);
+  const isOwnerOrMember =
+    viewerState.kind === 'owner' || viewerState.kind === 'member' || c.isMember;
+
+  const handleJoinClick = async () => {
+    setJoinError(null);
+    startJoinTransition(async () => {
+      // Member already → leave (only valid for non-owners).
+      if (viewerState.kind === 'member' || (c.isMember && viewerState.kind !== 'owner')) {
+        try {
+          await leaveMutation.mutateAsync(c.id);
+        } catch (err) {
+          setJoinError(err instanceof Error ? err.message : 'No se pudo salir');
+          return;
+        }
+        router.refresh();
+        return;
+      }
+
+      // Pending request → cancel.
+      if (viewerState.kind === 'request_pending') {
+        const result = await cancelJoinRequest(c.id);
+        if (!result.ok) setJoinError(result.error);
+        else router.refresh();
+        return;
+      }
+
+      // Otherwise → join (action branches on privacy + invitation).
+      const result = await joinCommunity(c.id);
+      if (!result.ok) {
+        setJoinError(result.error);
+        return;
       }
       router.refresh();
-    } catch {
-      // surface no-op — error already lives on the mutation
-    }
+    });
   };
+
+  const joinButtonLabel = (() => {
+    if (joinTransition || leaveMutation.isPending) return 'Procesando...';
+    if (viewerState.kind === 'guest') return 'Inicia sesión para unirte';
+    if (viewerState.kind === 'owner') return 'Propietario';
+    if (viewerState.kind === 'member' || c.isMember) return 'Miembro';
+    if (viewerState.kind === 'request_pending') return 'Solicitud enviada';
+    if (viewerState.kind === 'request_declined') return 'Solicitud rechazada';
+    if (viewerState.kind === 'invited') return 'Aceptar invitación';
+    if (c.privacy === 'PRIVATE') return 'Solicitar acceso';
+    if (c.privacy === 'SECRET') return 'Solo por invitación';
+    return 'Unirse';
+  })();
+
+  const joinButtonDisabled =
+    joinTransition ||
+    leaveMutation.isPending ||
+    viewerState.kind === 'guest' ||
+    viewerState.kind === 'owner' ||
+    viewerState.kind === 'request_declined' ||
+    (viewerState.kind === 'none' && c.privacy === 'SECRET');
 
   const tabs = [
     { id: 'publicaciones' as TabType, label: 'Publicaciones', icon: DocumentTextIcon, count: c.stats.postsCount },
@@ -88,8 +145,9 @@ export function CommunityDetailClient({
     { id: 'acerca-de' as TabType, label: 'Acerca de', icon: InformationCircleIcon },
   ];
 
-  const isOwner = false; // owner-specific UI is out of scope for the MVP
-  const showComposer = c.isMember && (c.allowMemberPosts || isOwner);
+  const isOwner = viewerState.kind === 'owner';
+  const showComposer = isOwnerOrMember && (c.allowMemberPosts || isOwner);
+  const showAdminPanel = isOwner;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -162,23 +220,30 @@ export function CommunityDetailClient({
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleJoinToggle}
-                    disabled={joinMutation.isPending || leaveMutation.isPending}
-                    className={`shrink-0 px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                      c.isMember
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {joinMutation.isPending || leaveMutation.isPending
-                      ? 'Procesando...'
-                      : c.isMember
-                        ? 'Miembro'
-                        : c.requireApproval
-                          ? 'Solicitar Acceso'
-                          : 'Unirse'}
-                  </button>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <button
+                      onClick={handleJoinClick}
+                      disabled={joinButtonDisabled}
+                      className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                        viewerState.kind === 'member' ||
+                        viewerState.kind === 'owner' ||
+                        c.isMember
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          : viewerState.kind === 'request_pending'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 hover:bg-yellow-200'
+                            : viewerState.kind === 'invited'
+                              ? 'bg-green-600 text-white hover:bg-green-700'
+                              : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {joinButtonLabel}
+                    </button>
+                    {joinError && (
+                      <p className="text-xs text-red-600 dark:text-red-400 max-w-xs text-right">
+                        {joinError}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-6 text-sm">
@@ -209,6 +274,16 @@ export function CommunityDetailClient({
             </div>
           </div>
         </div>
+
+        {showAdminPanel && (
+          <div className="mt-6">
+            <CommunityAdminPanel
+              communityId={c.id}
+              privacy={c.privacy}
+              pendingRequests={initialPendingRequests}
+            />
+          </div>
+        )}
 
         <div className="mt-6 mb-8 border-b border-gray-200 dark:border-gray-700">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">

@@ -3,6 +3,8 @@ import {
   getCommunityBySlug,
   getCommunityMembers,
   getCommunityPosts,
+  getPendingJoinRequests,
+  getViewerJoinState,
 } from '@/features/communities/server/communities.server';
 import { CommunityDetailClient } from '@/features/communities/components/CommunityDetailClient';
 
@@ -15,9 +17,11 @@ export default async function CommunityDetailPage({ params }: PageProps) {
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
-  const [posts, members] = await Promise.all([
+  const [posts, members, viewerState, pendingRequests] = await Promise.all([
     getCommunityPosts(community.id, { page: 1, limit: 10 }),
     getCommunityMembers(community.id, { page: 1, limit: 20 }),
+    getViewerJoinState(community.id),
+    getPendingJoinRequests(community.id),
   ]);
 
   return (
@@ -26,6 +30,8 @@ export default async function CommunityDetailPage({ params }: PageProps) {
       initialCommunity={community}
       initialPosts={posts}
       initialMembers={members}
+      initialViewerState={viewerState}
+      initialPendingRequests={pendingRequests}
     />
   );
 }

@@ -318,6 +318,31 @@ export async function cancelJoinRequest(communityId: string): Promise<ActionResu
 // Owner / admin: invitations and request review
 // ---------------------------------------------------------------------------
 
+export async function inviteByUsername(input: {
+  communityId: string;
+  username: string;
+}): Promise<ActionResult<{ inviteId: string; invitee: { id: string; username: string } }>> {
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
+
+  const username = input.username.trim().replace(/^@/, '');
+  if (!username) return { ok: false, error: 'Ingresa un usuario.' };
+
+  const client = await getServerClient();
+  const { data: profile } = await client
+    .from('profiles')
+    .select('id, username')
+    .ilike('username', username)
+    .maybeSingle();
+  const p = profile as { id: string; username: string } | null;
+  if (!p) return { ok: false, error: `No se encontró el usuario @${username}.` };
+  if (p.id === userId) return { ok: false, error: 'No puedes invitarte a ti mismo.' };
+
+  const result = await inviteToCommunity({ communityId: input.communityId, inviteeId: p.id });
+  if (!result.ok) return result;
+  return { ok: true, data: { inviteId: result.data.inviteId, invitee: p } };
+}
+
 export async function inviteToCommunity(input: {
   communityId: string;
   inviteeId: string;
@@ -334,6 +359,19 @@ export async function inviteToCommunity(input: {
     .eq('id', input.communityId)
     .maybeSingle();
   if (!c) return { ok: false, error: 'Comunidad no encontrada.' };
+
+  // Idempotent: if there's already a pending invite for this user, return it.
+  const { data: existing } = await client
+    .from('community_invitations')
+    .select('id')
+    .eq('community_id', input.communityId)
+    .eq('invitee_id', input.inviteeId)
+    .eq('status', 'pending')
+    .maybeSingle();
+  if (existing) {
+    revalidateCommunityPaths((c as { slug: string }).slug);
+    return { ok: true, data: { inviteId: (existing as { id: string }).id } };
+  }
 
   const { data: invite, error } = await client
     .from('community_invitations')
