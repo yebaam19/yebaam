@@ -168,7 +168,7 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
       {/* Tabs Navigation */}
       <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-10 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <div className="mx-auto max-w-5xl min-w-0 px-3 sm:px-6 lg:px-8">
-          <nav className="-mb-px flex gap-4 overflow-x-auto pb-px sm:gap-6">
+          <nav className="-mb-px flex gap-2 overflow-x-auto pb-px sm:gap-4 md:justify-between">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -177,14 +177,14 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`group inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors hover:cursor-pointer ${
+                  className={`group inline-flex shrink-0 items-center gap-1.5 border-b-2 px-1.5 py-3.5 text-sm font-medium whitespace-nowrap transition-colors hover:cursor-pointer sm:gap-2 sm:px-2 ${
                     isActive
                       ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
                   <Icon
-                    className={`h-5 w-5 ${isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500'}`}
+                    className={`h-5 w-5 shrink-0 ${isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500'}`}
                   />
                   <span>{tab.label}</span>
                 </button>

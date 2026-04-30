@@ -56,9 +56,9 @@ export default function UserProfile({
   return (
     <div className="w-full bg-white dark:bg-gray-800">
       {/* Cover Photo - Constrained Width with margins */}
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-lg">
-          <div className="relative h-[260px] w-full sm:h-80 lg:h-[380px]">
+          <div className="relative h-48 w-full sm:h-64 md:h-72 lg:h-80">
             {coverSrc ? (
               <Image
                 src={coverSrc}
@@ -77,9 +77,10 @@ export default function UserProfile({
 
       {/* Profile Info Section - Constrained Width */}
       <div>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="relative -mt-12 flex w-full flex-col items-center gap-4 pb-4 lg:flex-row lg:items-end lg:gap-6">
-            {/* Avatar */}
+        <div className="mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
+          <div className="relative -mt-14 flex w-full min-w-0 flex-col items-center gap-3 pb-4 sm:-mt-16 lg:-mt-20 lg:flex-row lg:items-start lg:gap-5">
+            {/* Avatar peeks over the cover. Info column below uses lg:pt-20 so the
+                heading sits below the cover instead of overlapping it. */}
             <div className="shrink-0 lg:ml-6">
               <Avatar
                 src={user.avatarUrl}
@@ -90,18 +91,20 @@ export default function UserProfile({
                   .join('')
                   .slice(0, 2)
                   .toUpperCase()}
-                className="size-36 min-h-36 min-w-36 border-4 border-white bg-white outline-white sm:size-40 sm:min-h-40 sm:min-w-40 md:size-[150px] md:min-h-[150px] md:min-w-[150px] lg:size-[150px] lg:min-h-[150px] lg:min-w-[150px] dark:border-gray-800 dark:bg-gray-800 dark:outline-gray-800"
+                className="size-28 min-h-28 min-w-28 border-4 border-white bg-white outline-white sm:size-36 sm:min-h-36 sm:min-w-36 md:size-40 md:min-h-40 md:min-w-40 lg:size-[150px] lg:min-h-[150px] lg:min-w-[150px] dark:border-gray-800 dark:bg-gray-800 dark:outline-gray-800"
               />
             </div>
 
-            {/* Info and Actions */}
-            <div className="flex w-full flex-col items-center lg:flex-1 lg:flex-row lg:items-center lg:justify-between">
+            {/* Info and Actions — on lg the row is pulled up by `-mt-20` above
+                so the avatar peeks. We add `lg:pt-20` here so the heading itself
+                drops back to align with the cover bottom and never overlaps. */}
+            <div className="flex w-full min-w-0 flex-col items-center lg:flex-1 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:pt-20">
               {/* User Info */}
-              <div className="flex w-full flex-col items-center space-y-1 lg:items-start">
-                <div className="flex w-full flex-col items-center justify-center gap-2 lg:flex-row lg:items-center lg:justify-start">
-                  <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:justify-start">
-                    <h1 className="flex w-auto flex-wrap items-center justify-center gap-2 text-center text-2xl font-bold wrap-break-word whitespace-pre-line lg:justify-start lg:text-left lg:text-3xl">
-                      <span>{fullName || user.username}</span>
+              <div className="flex w-full min-w-0 flex-col items-center space-y-1 lg:items-start">
+                <div className="flex w-full min-w-0 flex-col items-center justify-center gap-2 lg:flex-row lg:items-center lg:justify-start">
+                  <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-2 lg:justify-start">
+                    <h1 className="flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 text-center text-2xl leading-tight font-bold wrap-break-word text-gray-900 sm:text-3xl lg:justify-start lg:text-left dark:text-white">
+                      <span className="min-w-0 max-w-full wrap-anywhere">{fullName || user.username}</span>
                       {user.documentStatus === 'ACCEPTED' && (
                         <span
                           title="Cuenta autenticada"
@@ -144,10 +147,10 @@ export default function UserProfile({
                     </h1>
                   </div>
                 </div>
-                <div className="text-gray-500 dark:text-gray-400">@{user.username}</div>
+                <div className="max-w-full text-center text-sm break-all text-gray-500 sm:text-base lg:text-left dark:text-gray-400">@{user.username}</div>
 
                 {/* Stats */}
-                <div className="flex flex-col items-center gap-1 text-sm text-gray-600 lg:flex-row lg:items-center lg:gap-3 dark:text-gray-400">
+                <div className="flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-gray-600 lg:justify-start dark:text-gray-400">
                   <span>
                     <span className="font-semibold text-gray-900 dark:text-white">
                       {formatNumber(user._count?.posts || 0)}
@@ -168,7 +171,7 @@ export default function UserProfile({
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 flex w-full flex-wrap items-center justify-center gap-2 lg:mt-0 lg:mr-6 lg:w-auto">
+              <div className="mt-4 flex w-full max-w-full flex-wrap items-center justify-center gap-2 lg:mt-0 lg:mr-6 lg:w-auto lg:justify-end *:max-w-full">
                 {customActions ? (
                   customActions
                 ) : isOwnProfile ? (
