@@ -143,7 +143,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
                 {/* Media Preview */}
                 <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-700">
                   {item.type === 'image' ? (
-                    <Image src={item.url} alt={item.caption || 'Imagen del servicio'} fill className="object-cover" />
+                    <Image src={item.url} alt={item.caption || 'Imagen del servicio'} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center">
                       <PhotoIcon className="h-12 w-12 text-neutral-400" />

@@ -30,7 +30,7 @@ export function MembersPanel({ members }: { members: ClubMemberLite[] }) {
         >
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
             {m.avatarUrl ? (
-              <Image src={m.avatarUrl} alt={m.displayName ?? 'user'} fill unoptimized className="object-cover" />
+              <Image src={m.avatarUrl} alt={m.displayName ?? 'user'} fill sizes="40px" unoptimized className="object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-gray-400">
                 <UserCircleIcon className="h-7 w-7" />
@@ -95,7 +95,7 @@ export function PromotionsPanel({ promotions }: { promotions: ClubPromotionLite[
         <li key={p.id} className="flex gap-3 rounded-md border border-gray-200 p-3 dark:border-gray-700">
           {p.imageUrl && (
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded">
-              <Image src={p.imageUrl} alt={p.title} fill unoptimized className="object-cover" />
+              <Image src={p.imageUrl} alt={p.title} fill sizes="64px" unoptimized className="object-cover" />
             </div>
           )}
           <div className="min-w-0 flex-1">

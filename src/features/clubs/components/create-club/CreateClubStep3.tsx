@@ -65,7 +65,7 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
         <div className="flex items-center gap-4">
           {profileImageUrl ? (
             <div className="relative h-24 w-24 overflow-hidden rounded-full">
-              <Image src={profileImageUrl} alt="Profile preview" fill className="object-cover" />
+              <Image src={profileImageUrl} alt="Profile preview" fill sizes="96px" className="object-cover" />
             </div>
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
@@ -100,7 +100,7 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
         <div className="space-y-3">
           {coverImageUrl ? (
             <div className="relative h-48 w-full overflow-hidden rounded-lg">
-              <Image src={coverImageUrl} alt="Cover preview" fill className="object-cover" />
+              <Image src={coverImageUrl} alt="Cover preview" fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
             </div>
           ) : (
             <div className="flex h-48 w-full items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">

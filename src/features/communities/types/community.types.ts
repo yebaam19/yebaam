@@ -53,6 +53,16 @@ export interface CommunityMember {
   isVerified?: boolean;
 }
 
+// Community Post Media Item — union of image and video flavours.
+// Images carry a resolved Cloudflare delivery URL.
+// Videos carry the Cloudflare Stream `uid` and an optional poster URL.
+export interface CommunityPostMediaItem {
+  kind: 'image' | 'video';
+  url?: string;
+  cfVideoUid?: string;
+  thumbnail?: string;
+}
+
 // Community Post Interface
 export interface CommunityPost {
   id: string;
@@ -61,7 +71,10 @@ export interface CommunityPost {
   authorName: string;
   authorAvatar?: string;
   content: string;
+  /** Resolved Cloudflare image URLs — kept for backwards compatibility with existing consumers. */
   images?: string[];
+  /** Structured media items — preferred for rendering on the detail page (images + videos). */
+  media?: CommunityPostMediaItem[];
   likesCount: number;
   commentsCount: number;
   sharesCount: number;

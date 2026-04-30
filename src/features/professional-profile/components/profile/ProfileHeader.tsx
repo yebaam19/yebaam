@@ -106,7 +106,7 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
       {/* Cover Image */}
       <div className="relative h-32 overflow-hidden rounded-t-2xl sm:h-40 lg:h-48">
         {profile.coverUrl ? (
-          <Image src={profile.coverUrl} alt="Cover" fill className="object-cover" priority />
+          <Image src={profile.coverUrl} alt="Cover" fill sizes="100vw" className="object-cover" priority />
         ) : (
           <div className="h-full w-full bg-linear-to-r from-primary-500 via-primary-600 to-primary-700" />
         )}

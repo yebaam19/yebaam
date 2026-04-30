@@ -33,7 +33,7 @@ export function ServiceOwnerCard({ owner }: ServiceOwnerCardProps) {
         {/* Avatar */}
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
           {owner.avatarUrl ? (
-            <Image src={owner.avatarUrl} alt={displayName} fill className="object-cover" />
+            <Image src={owner.avatarUrl} alt={displayName} fill sizes="64px" className="object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xl font-semibold text-neutral-500">
               {initials}

@@ -7,7 +7,7 @@ export const FEATURE_FLAGS = {
   GRUPOS_ENABLED: false, // Grupos - Solo UI/UX implementado
   CLUBES_ENABLED: true, // Clubes - Solo UI/UX implementado
   BLOGS_ENABLED: true, // Blogs - Funcional 
-  COMUNIDADES_ENABLED: false, // Comunidades - Solo UI/UX implementado
+  COMUNIDADES_ENABLED: true, // Comunidades - MVP funcional (Supabase)
   CITIES_ENABLED: true, // Portal de Ciudades - Funcional 
   VIDEOS_ENABLED: true, // Videos/Watch - Solo UI/UX implementado
 

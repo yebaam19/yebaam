@@ -15,7 +15,7 @@ const Page = () => {
   return (
     <main className="relative flex min-h-screen w-full flex-col md:flex-row">
       <div className="absolute inset-0 z-0">
-        <Image src={BackgroundImage} alt="Background" fill className="object-cover" priority />
+        <Image src={BackgroundImage} alt="Background" fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0 bg-black/10" />
       </div>
 

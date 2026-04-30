@@ -167,6 +167,7 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                               src={url}
                               alt={`Preview ${index + 1}`}
                               fill
+                              sizes="(max-width: 640px) 33vw, 200px"
                               className="object-cover"
                             />
                             <button

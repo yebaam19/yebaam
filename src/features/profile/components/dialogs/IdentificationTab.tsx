@@ -96,6 +96,7 @@ export default function IdentificationTab({ currentIdDocumentUrl, uploadHook }: 
                 src={displayPreview}
                 alt="Documento de identificación"
                 fill
+                sizes="(max-width: 768px) 100vw, 600px"
                 className="object-contain"
               />
             </div>

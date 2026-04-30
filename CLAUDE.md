@@ -41,3 +41,18 @@ The only place where Broadcast (ephemeral, no DB) is appropriate is signals like
 ## Media uploads — Cloudflare only (TL;DR)
 
 **Every image and every video in this app goes to Cloudflare** — Cloudflare Images for photos, Cloudflare Stream for videos. Supabase Storage is for non-media files only. Always upload via `uploadService` from [src/lib/service/upload.service.ts](src/lib/service/upload.service.ts) (`uploadImage`, `uploadVideo`, or `uploadFile`); never call `supabase.storage.from(...).upload(...)` for media, never store the full delivery URL in the DB (store the Cloudflare `id`/`uid` only). For private media (e.g. ID documents) enforce privacy at the DB layer — store the `cf_image_id` in a row whose SELECT policy restricts visibility (e.g. admins-only). The existing Cloudflare keys (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH`) cover all use cases. See AGENTS.md "Media uploads — Cloudflare only" for the full rule.
+
+## Comunidades — periodic counter-drift check
+
+The `communities.member_count` and `communities.post_count` columns are kept in sync by `AFTER INSERT/DELETE` triggers (`tg_community_member_counter`, `tg_community_post_counter`). Triggers can drift if a migration disables them, a bulk operation bypasses the trigger, or a transaction half-fails. **After ~1 month of usage, spot-check via the Supabase MCP**:
+
+```sql
+select c.id, c.slug, c.member_count, c.post_count,
+       (select count(*) from community_members where community_id = c.id) as actual_members,
+       (select count(*) from community_posts   where community_id = c.id) as actual_posts
+  from communities c
+ where c.member_count <> (select count(*) from community_members where community_id = c.id)
+    or c.post_count   <> (select count(*) from community_posts   where community_id = c.id);
+```
+
+For each row returned, run `select recompute_community_counts('{id}')` to fix it. Same call also lets you backfill counts on any future bulk import.

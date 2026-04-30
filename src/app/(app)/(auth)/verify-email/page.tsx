@@ -14,7 +14,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <Image src={BackgroundImage} alt="Background" fill className="object-cover" priority />
+        <Image src={BackgroundImage} alt="Background" fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0 bg-black/10" />
       </div>
 

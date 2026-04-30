@@ -14,7 +14,7 @@ export function PortalHeader({ title, subtitle, description, heroImage }: Portal
     <div className="relative isolate h-72 overflow-hidden rounded-2xl bg-linear-to-br from-red-600 via-amber-500 to-green-600 text-white shadow-2xl sm:h-96 md:h-120">
       {heroImage && (
         <div className="absolute inset-0 z-0">
-          <Image src={heroImage} alt={title} fill className="object-cover brightness-[0.5]" priority />
+          <Image src={heroImage} alt={title} fill sizes="100vw" className="object-cover brightness-[0.5]" priority />
         </div>
       )}
 

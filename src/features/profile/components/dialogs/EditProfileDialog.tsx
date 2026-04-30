@@ -188,6 +188,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                           src={coverPreview || user.coverPhotoUrl || user.coverUrl || coverPlaceholder}
                           alt="Cover"
                           fill
+                          sizes="(max-width: 1024px) 100vw, 600px"
                           className="object-cover"
                         />
                       </div>

@@ -75,6 +75,7 @@ export default function GroupDetailPage() {
             src={group.coverImageUrl}
             alt={group.name}
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />

@@ -99,8 +99,6 @@ export const menuConfig: Record<string, any[]> = {
           icon: BuildingOfficeIcon,
           label: 'Comunidades',
           href: '{basePath}/comunidades',
-          badge: 'Pronto',
-          badgeHideOnMobile: true,
           featureFlag: 'COMUNIDADES_ENABLED' as FeatureFlag,
         },
         {
