@@ -9,6 +9,7 @@ import {
   inviteByUsername,
 } from '@/features/communities/actions/communities.actions';
 import type { PendingJoinRequest } from '@/features/communities/server/communities.server';
+import { invalidate } from '@/lib/hooks/cacheStore';
 import { CheckBadgeIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface CommunityAdminPanelProps {
@@ -32,8 +33,14 @@ export function CommunityAdminPanel({
     setError(null);
     startTransition(async () => {
       const result = await approveJoinRequest(requestId);
-      if (!result.ok) setError(result.error);
-      else router.refresh();
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      invalidate('communities::detail');
+      invalidate('communities::members');
+      invalidate('communities::my');
+      router.refresh();
     });
   };
 
@@ -41,8 +48,12 @@ export function CommunityAdminPanel({
     setError(null);
     startTransition(async () => {
       const result = await declineJoinRequest(requestId);
-      if (!result.ok) setError(result.error);
-      else router.refresh();
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      invalidate('communities::detail');
+      router.refresh();
     });
   };
 
