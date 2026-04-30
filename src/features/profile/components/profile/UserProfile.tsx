@@ -8,6 +8,7 @@ import type { FriendshipStatus, UserProfile as UserProfileType } from '../../int
 import EditProfileButton from './EditProfileButton';
 import { FriendButton } from '@/features/friendships/components/FriendButton';
 import MessageButton from './MessageButton';
+import ProfessionalProfileButton from './ProfessionalProfileButton';
 import ProfileActionsMenu from './ProfileActionsMenu';
 
 interface UserProfileProps {
@@ -15,6 +16,8 @@ interface UserProfileProps {
   loggedInUserId: string;
   friendshipInfo?: FriendshipStatus;
   customActions?: React.ReactNode; // Botones personalizados (ej: solicitud de amistad)
+  /** Whether the user has a professional profile visible to the current viewer. */
+  professionalProfileExists?: boolean;
 }
 
 function GradientCover() {
@@ -44,6 +47,7 @@ export default function UserProfile({
   loggedInUserId,
   friendshipInfo,
   customActions,
+  professionalProfileExists = false,
 }: UserProfileProps) {
   const isOwnProfile = user.userId === loggedInUserId;
   const fullName = [user.firstName, user.secondName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
@@ -164,13 +168,25 @@ export default function UserProfile({
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 flex w-full items-center justify-center gap-2 lg:mt-0 lg:mr-6 lg:w-auto">
+              <div className="mt-4 flex w-full flex-wrap items-center justify-center gap-2 lg:mt-0 lg:mr-6 lg:w-auto">
                 {customActions ? (
                   customActions
                 ) : isOwnProfile ? (
-                  <EditProfileButton user={user} />
+                  <>
+                    <ProfessionalProfileButton
+                      username={user.username}
+                      isOwnProfile
+                      hasProfessionalProfile={professionalProfileExists}
+                    />
+                    <EditProfileButton user={user} />
+                  </>
                 ) : (
                   <>
+                    <ProfessionalProfileButton
+                      username={user.username}
+                      isOwnProfile={false}
+                      hasProfessionalProfile={professionalProfileExists}
+                    />
                     <FriendButton userId={user.userId} variant="default" size="md" />
                     <MessageButton userId={user.userId} />
                     <ProfileActionsMenu userId={user.userId} />

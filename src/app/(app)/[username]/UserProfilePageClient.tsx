@@ -97,6 +97,22 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
   );
   const friendCount = friendCountData?.count ?? 0;
 
+  // Whether this user has a professional profile visible to the viewer.
+  const { data: professionalProfileData } = useFetch<{ exists: boolean }>(
+    ['professional-profile', 'exists', user?.username],
+    async () => {
+      if (!user?.username) return { exists: false };
+      const res = await fetch(
+        `/api/users/${encodeURIComponent(user.username)}/has-professional-profile`,
+        { credentials: 'same-origin' },
+      );
+      if (!res.ok) return { exists: false };
+      return (await res.json()) as { exists: boolean };
+    },
+    { enabled: Boolean(user?.username), staleTime: 60_000 }
+  );
+  const professionalProfileExists = professionalProfileData?.exists ?? false;
+
   // Get friendship status and fetch functions
   const initializeFriendships = useFriendshipsStore((state) => state.initializeFriendships);
   const isFriendshipsInitialized = useFriendshipsStore((state) => state.isInitialized);
@@ -141,6 +157,7 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
           isRequester: false,
           friendCount,
         }}
+        professionalProfileExists={professionalProfileExists}
       />
 
       {/* Reminder banner for own profile - Pitnik-style "complete your authentication". */}
