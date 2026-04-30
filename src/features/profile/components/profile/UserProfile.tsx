@@ -65,6 +65,9 @@ export default function UserProfile({
                 alt="Cover"
                 fill
                 className="object-cover"
+                style={{
+                  objectPosition: `${user.coverOffsetX ?? 50}% ${user.coverOffsetY ?? 50}%`,
+                }}
                 priority
                 sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1280px"
               />

@@ -6,11 +6,12 @@ import ButtonPrimary from '@/ui/ButtonPrimary'
 import ButtonSecondary from '@/ui/ButtonSecondary'
 import Input from '@/ui/Input'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
-import { CameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { ArrowsPointingOutIcon, CameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { Fragment, useRef, useState } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
+import CoverRepositionEditor from './CoverRepositionEditor'
 
 interface EditProfileDialogProps {
   user: UserProfile
@@ -27,6 +28,10 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [coverOffsetX, setCoverOffsetX] = useState<number>(user.coverOffsetX ?? 50)
+  const [coverOffsetY, setCoverOffsetY] = useState<number>(user.coverOffsetY ?? 50)
+  const [isRepositioning, setIsRepositioning] = useState(false)
+  const initialOffsetRef = useRef({ x: user.coverOffsetX ?? 50, y: user.coverOffsetY ?? 50 })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { updateProfile, uploadImage } = useProfileStore()
@@ -52,6 +57,10 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
     const file = e.target.files?.[0]
     if (file) {
       setCoverFile(file)
+      // Reset positioning to center for the freshly-uploaded image.
+      setCoverOffsetX(50)
+      setCoverOffsetY(50)
+      setIsRepositioning(false)
       const reader = new FileReader()
       reader.onloadend = () => {
         setCoverPreview(reader.result as string)
@@ -63,13 +72,22 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     try {
       const updateData: any = {
         firstName,
         secondName,
         lastName,
         secondLastName,
+      }
+
+      // Persist cover position if it changed.
+      if (
+        coverOffsetX !== initialOffsetRef.current.x ||
+        coverOffsetY !== initialOffsetRef.current.y
+      ) {
+        updateData.coverOffsetX = coverOffsetX
+        updateData.coverOffsetY = coverOffsetY
       }
 
       let newAvatarUrl: string | undefined
@@ -181,21 +199,47 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
 
                   {/* Cover Section */}
                   <div className="w-full space-y-3 lg:w-2/3">
-                    <label className="text-sm font-medium">Portada</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Portada</label>
+                      {(coverPreview || user.coverPhotoUrl || user.coverUrl) && (
+                        <button
+                          type="button"
+                          onClick={() => setIsRepositioning((v) => !v)}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                        >
+                          <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
+                          {isRepositioning ? 'Listo' : 'Reposicionar'}
+                        </button>
+                      )}
+                    </div>
                     <div className="relative">
-                      <div className="relative h-48 w-full overflow-hidden rounded-xl">
-                        <Image
-                          src={coverPreview || user.coverPhotoUrl || user.coverUrl || coverPlaceholder}
-                          alt="Cover"
-                          fill
-                          sizes="(max-width: 1024px) 100vw, 600px"
-                          className="object-cover"
+                      {isRepositioning ? (
+                        <CoverRepositionEditor
+                          src={(coverPreview || user.coverPhotoUrl || user.coverUrl || (coverPlaceholder as unknown as string)) as string}
+                          offsetX={coverOffsetX}
+                          offsetY={coverOffsetY}
+                          onChange={(x, y) => {
+                            setCoverOffsetX(x)
+                            setCoverOffsetY(y)
+                          }}
                         />
-                      </div>
+                      ) : (
+                        <div className="relative h-48 w-full overflow-hidden rounded-xl">
+                          <Image
+                            src={coverPreview || user.coverPhotoUrl || user.coverUrl || coverPlaceholder}
+                            alt="Cover"
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 600px"
+                            className="object-cover"
+                            style={{ objectPosition: `${coverOffsetX}% ${coverOffsetY}%` }}
+                          />
+                        </div>
+                      )}
                       <button
                         type="button"
                         onClick={() => coverInputRef.current?.click()}
                         className="bg-primary hover:bg-primary/90 absolute right-3 bottom-3 rounded-full p-2 text-white shadow-lg"
+                        title="Subir nueva portada"
                       >
                         <CameraIcon className="h-5 w-5" />
                       </button>

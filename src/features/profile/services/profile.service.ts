@@ -30,6 +30,8 @@ type DbProfile = {
   phone_number: string | null;
   avatar_url: string | null;
   cover_photo_url: string | null;
+  cover_offset_x: number | null;
+  cover_offset_y: number | null;
   relationship_status: string | null;
   interests: string[] | null;
   friends_count: number | null;
@@ -62,6 +64,8 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
     avatarUrl: row.avatar_url ?? null,
     coverPhotoUrl: row.cover_photo_url ?? null,
     coverUrl: row.cover_photo_url ?? null,
+    coverOffsetX: row.cover_offset_x ?? 50,
+    coverOffsetY: row.cover_offset_y ?? 50,
     idDocumentUrl: null,
     bio: row.bio ?? null,
     // Map the new verification_status → legacy documentStatus enum used by the
@@ -126,6 +130,12 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
   if (data.secondLastName !== undefined) payload.second_last_name = data.secondLastName;
   if (data.avatarUrl !== undefined) payload.avatar_url = data.avatarUrl;
   if (data.coverPhotoUrl !== undefined) payload.cover_photo_url = data.coverPhotoUrl;
+  if (data.coverOffsetX !== undefined) {
+    payload.cover_offset_x = Math.max(0, Math.min(100, Math.round(data.coverOffsetX)));
+  }
+  if (data.coverOffsetY !== undefined) {
+    payload.cover_offset_y = Math.max(0, Math.min(100, Math.round(data.coverOffsetY)));
+  }
   if (data.bio !== undefined) payload.bio = data.bio;
   if (data.websiteUrl !== undefined) payload.website = data.websiteUrl;
   if (data.relationshipStatus !== undefined) payload.relationship_status = nullIfEmpty(data.relationshipStatus);

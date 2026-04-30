@@ -11,6 +11,10 @@ export interface UserProfile {
   avatarUrl?: string | null
   coverPhotoUrl?: string | null
   coverUrl?: string | null //TO DO: Deprecated: usar coverPhotoUrl
+  /** Saved object-position X (0..100). Default 50 = horizontally centered. */
+  coverOffsetX?: number | null
+  /** Saved object-position Y (0..100). Default 50 = vertically centered. */
+  coverOffsetY?: number | null
   idDocumentUrl?: string | null
   bio?: string | null
   documentStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'PUBLIC' | null
@@ -77,6 +81,10 @@ export interface UpdateProfileDTO {
   secondLastName?: string
   avatarUrl?: string
   coverPhotoUrl?: string
+  /** 0..100 — saved object-position X for the cover. */
+  coverOffsetX?: number
+  /** 0..100 — saved object-position Y for the cover. */
+  coverOffsetY?: number
   idDocumentUrl?: string
   bio?: string
   websiteUrl?: string
