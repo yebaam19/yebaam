@@ -36,7 +36,6 @@ import {
   TagIcon,
   Squares2X2Icon,
   Bars3Icon,
-  PaperAirplaneIcon,
   CheckBadgeIcon,
   GlobeAltIcon,
 } from '@/components/icons/heroicons-shim';
@@ -129,16 +128,14 @@ export function ClubDetailView({
         onMessage={handleMessage}
       />
 
-      {/* Badge strip */}
-      <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            Badges
-          </span>
-          {badges.length === 0 ? (
-            <span className="text-xs text-gray-400">Sin badges</span>
-          ) : (
-            badges.map((b) => (
+      {/* Badge strip — only when there are badges */}
+      {badges.length > 0 && (
+        <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-2.5 sm:px-6">
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Badges
+            </span>
+            {badges.map((b) => (
               <span
                 key={b.id}
                 title={b.description ?? undefined}
@@ -147,26 +144,43 @@ export function ClubDetailView({
                 <CheckBadgeIcon className="h-3.5 w-3.5" />
                 {b.label}
               </span>
-            ))
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top tabs */}
       <ClubTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Main body: left nav | main | right rail */}
-      <div className="mx-auto flex max-w-7xl gap-4 px-2 py-4 md:px-4">
-        {/* Left nav */}
-        <nav className="hidden w-44 shrink-0 lg:block">
-          <ul className="sticky top-4 space-y-2">
+      {/* Mobile section nav — horizontal scroll above main */}
+      <nav className="flex gap-2 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-800">
+        {NAV_ITEMS.map((n) => {
+          const Icon = n.icon;
+          return (
+            <button
+              key={n.key}
+              onClick={() => setDrawer(n.key)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-700 dark:text-gray-200 dark:hover:border-primary-500"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {n.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Main body: left nav | main */}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[200px_minmax(0,1fr)]">
+        {/* Left nav (desktop) */}
+        <nav className="hidden lg:block">
+          <ul className="sticky top-4 space-y-1.5">
             {NAV_ITEMS.map((n) => {
               const Icon = n.icon;
               return (
                 <li key={n.key}>
                   <button
                     onClick={() => setDrawer(n.key)}
-                    className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-primary-500 dark:hover:text-primary-300"
+                    className="flex w-full items-center gap-2.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-primary-400 hover:bg-primary-50/40 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-primary-500 dark:hover:bg-primary-900/20 dark:hover:text-primary-300"
                   >
                     <Icon className="h-4 w-4" />
                     {n.label}
@@ -177,17 +191,14 @@ export function ClubDetailView({
           </ul>
         </nav>
 
-        {/* Mobile nav — horizontal scroll */}
-        <div className="lg:hidden" />
-
         {/* Main column */}
-        <main className="min-w-0 flex-1 space-y-4">
+        <main className="min-w-0 space-y-4">
           {/* DETALLES card */}
           <section className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Detalles
             </h2>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
               <div className="min-w-0">
                 <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Miembros</dt>
                 <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
@@ -217,7 +228,7 @@ export function ClubDetailView({
               </div>
             </dl>
             {(club.location || club.website) && (
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+              <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-3 text-xs text-gray-600 dark:border-gray-700 dark:text-gray-400">
                 {club.location && (
                   <span className="inline-flex items-center gap-1">
                     <GlobeAltIcon className="h-3.5 w-3.5" />
@@ -238,6 +249,46 @@ export function ClubDetailView({
             )}
           </section>
 
+          {/* View-mode toggle (only in non-acerca tabs) */}
+          {activeTab !== 'acerca' && (
+            <div className="flex justify-end">
+              <div
+                role="group"
+                aria-label="Modo de vista"
+                className="inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800"
+              >
+                <button
+                  type="button"
+                  onClick={() => setViewMode('cascade')}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                    viewMode === 'cascade'
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                  title="Cascada"
+                  aria-pressed={viewMode === 'cascade'}
+                >
+                  <Bars3Icon className="h-3.5 w-3.5" />
+                  Cascada
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('paginated')}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                    viewMode === 'paginated'
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                  title="Paginado"
+                  aria-pressed={viewMode === 'paginated'}
+                >
+                  <Squares2X2Icon className="h-3.5 w-3.5" />
+                  Paginado
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Highlights row */}
           <ClubHighlightedPosts highlights={highlights} onOpen={openPost} />
 
@@ -250,70 +301,7 @@ export function ClubDetailView({
             onOpenPost={openPost}
           />
         </main>
-
-        {/* Right rail */}
-        <aside className="hidden w-36 shrink-0 md:block">
-          <div className="sticky top-4 space-y-3">
-            <button
-              onClick={handleMessage}
-              className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-primary-500"
-            >
-              <PaperAirplaneIcon className="h-4 w-4" />
-              Messenger
-            </button>
-            {activeTab !== 'acerca' && (
-              <div className="rounded-lg border border-gray-200 bg-white p-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                <div className="mb-1 font-semibold text-gray-900 dark:text-white">Modo de vista</div>
-                <div className="flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('cascade')}
-                    className={`flex-1 rounded px-2 py-1 text-xs ${
-                      viewMode === 'cascade'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                    }`}
-                    title="Cascada"
-                    aria-pressed={viewMode === 'cascade'}
-                  >
-                    <Bars3Icon className="mx-auto h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('paginated')}
-                    className={`flex-1 rounded px-2 py-1 text-xs ${
-                      viewMode === 'paginated'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                    }`}
-                    title="12 por página"
-                    aria-pressed={viewMode === 'paginated'}
-                  >
-                    <Squares2X2Icon className="mx-auto h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </aside>
       </div>
-
-      {/* Mobile left-nav as bottom sheet trigger list */}
-      <nav className="flex gap-2 overflow-x-auto border-t border-gray-200 bg-white px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-800">
-        {NAV_ITEMS.map((n) => {
-          const Icon = n.icon;
-          return (
-            <button
-              key={n.key}
-              onClick={() => setDrawer(n.key)}
-              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-gray-700 dark:text-gray-200"
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {n.label}
-            </button>
-          );
-        })}
-      </nav>
 
       {/* Drawer */}
       <ClubDrawer
