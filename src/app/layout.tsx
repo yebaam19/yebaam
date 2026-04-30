@@ -1,6 +1,7 @@
 import '@/styles/tailwind.css';
 import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'sonner';
 import 'rc-slider/assets/index.css';
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
             </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );
