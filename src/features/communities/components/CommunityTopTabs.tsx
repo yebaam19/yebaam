@@ -18,7 +18,7 @@ function buildTabs(slug: string): TabItem[] {
     { id: 'home', label: 'Publicaciones', href: base },
     { id: 'fotos', label: 'Fotos', href: `${base}/fotos` },
     { id: 'videos', label: 'Videos', href: `${base}/videos` },
-    { id: 'articulos', label: 'Articulos', href: `${base}/articulos`, comingSoon: true },
+    { id: 'articulos', label: 'Articulos', href: `${base}/articulos` },
     { id: 'archivos', label: 'Archivos', href: `${base}/archivos`, comingSoon: true },
     { id: 'pdf', label: 'PDF', href: `${base}/pdf`, comingSoon: true },
   ];
