@@ -12,6 +12,7 @@ import { Fragment, useRef, useState } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import CoverRepositionEditor from './CoverRepositionEditor'
+import { coverTransformStyle } from '../../utils/coverTransform'
 
 interface EditProfileDialogProps {
   user: UserProfile
@@ -30,8 +31,13 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverOffsetX, setCoverOffsetX] = useState<number>(user.coverOffsetX ?? 50)
   const [coverOffsetY, setCoverOffsetY] = useState<number>(user.coverOffsetY ?? 50)
+  const [coverZoom, setCoverZoom] = useState<number>(user.coverZoom ?? 100)
   const [isRepositioning, setIsRepositioning] = useState(false)
-  const initialOffsetRef = useRef({ x: user.coverOffsetX ?? 50, y: user.coverOffsetY ?? 50 })
+  const initialCoverRef = useRef({
+    x: user.coverOffsetX ?? 50,
+    y: user.coverOffsetY ?? 50,
+    z: user.coverZoom ?? 100,
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { updateProfile, uploadImage } = useProfileStore()
@@ -57,9 +63,10 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
     const file = e.target.files?.[0]
     if (file) {
       setCoverFile(file)
-      // Reset positioning to center for the freshly-uploaded image.
+      // Reset positioning + zoom for the freshly-uploaded image.
       setCoverOffsetX(50)
       setCoverOffsetY(50)
+      setCoverZoom(100)
       setIsRepositioning(false)
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -81,13 +88,15 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
         secondLastName,
       }
 
-      // Persist cover position if it changed.
+      // Persist cover position / zoom if any of them changed.
       if (
-        coverOffsetX !== initialOffsetRef.current.x ||
-        coverOffsetY !== initialOffsetRef.current.y
+        coverOffsetX !== initialCoverRef.current.x ||
+        coverOffsetY !== initialCoverRef.current.y ||
+        coverZoom !== initialCoverRef.current.z
       ) {
         updateData.coverOffsetX = coverOffsetX
         updateData.coverOffsetY = coverOffsetY
+        updateData.coverZoom = coverZoom
       }
 
       let newAvatarUrl: string | undefined
@@ -218,9 +227,16 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                           src={(coverPreview || user.coverPhotoUrl || user.coverUrl || (coverPlaceholder as unknown as string)) as string}
                           offsetX={coverOffsetX}
                           offsetY={coverOffsetY}
-                          onChange={(x, y) => {
-                            setCoverOffsetX(x)
-                            setCoverOffsetY(y)
+                          zoom={coverZoom}
+                          onChange={({ offsetX, offsetY, zoom }) => {
+                            setCoverOffsetX(offsetX)
+                            setCoverOffsetY(offsetY)
+                            setCoverZoom(zoom)
+                          }}
+                          onReset={() => {
+                            setCoverOffsetX(50)
+                            setCoverOffsetY(50)
+                            setCoverZoom(100)
                           }}
                         />
                       ) : (
@@ -231,7 +247,11 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                             fill
                             sizes="(max-width: 1024px) 100vw, 600px"
                             className="object-cover"
-                            style={{ objectPosition: `${coverOffsetX}% ${coverOffsetY}%` }}
+                            style={coverTransformStyle({
+                              offsetX: coverOffsetX,
+                              offsetY: coverOffsetY,
+                              zoom: coverZoom,
+                            })}
                           />
                         </div>
                       )}

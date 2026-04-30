@@ -11,10 +11,12 @@ export interface UserProfile {
   avatarUrl?: string | null
   coverPhotoUrl?: string | null
   coverUrl?: string | null //TO DO: Deprecated: usar coverPhotoUrl
-  /** Saved object-position X (0..100). Default 50 = horizontally centered. */
+  /** Saved transform offset X (0..100). Default 50 = horizontally centered. */
   coverOffsetX?: number | null
-  /** Saved object-position Y (0..100). Default 50 = vertically centered. */
+  /** Saved transform offset Y (0..100). Default 50 = vertically centered. */
   coverOffsetY?: number | null
+  /** Zoom factor as integer percent (100..400). 100 = 1.0×. */
+  coverZoom?: number | null
   idDocumentUrl?: string | null
   bio?: string | null
   documentStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'PUBLIC' | null
@@ -81,10 +83,12 @@ export interface UpdateProfileDTO {
   secondLastName?: string
   avatarUrl?: string
   coverPhotoUrl?: string
-  /** 0..100 — saved object-position X for the cover. */
+  /** 0..100 — saved cover X offset percentage. */
   coverOffsetX?: number
-  /** 0..100 — saved object-position Y for the cover. */
+  /** 0..100 — saved cover Y offset percentage. */
   coverOffsetY?: number
+  /** 100..400 — zoom factor in integer percent. */
+  coverZoom?: number
   idDocumentUrl?: string
   bio?: string
   websiteUrl?: string

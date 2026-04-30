@@ -10,6 +10,7 @@ import { FriendButton } from '@/features/friendships/components/FriendButton';
 import MessageButton from './MessageButton';
 import ProfessionalProfileButton from './ProfessionalProfileButton';
 import ProfileActionsMenu from './ProfileActionsMenu';
+import { coverTransformStyle } from '../../utils/coverTransform';
 
 interface UserProfileProps {
   user: UserProfileType;
@@ -65,9 +66,11 @@ export default function UserProfile({
                 alt="Cover"
                 fill
                 className="object-cover"
-                style={{
-                  objectPosition: `${user.coverOffsetX ?? 50}% ${user.coverOffsetY ?? 50}%`,
-                }}
+                style={coverTransformStyle({
+                  offsetX: user.coverOffsetX ?? 50,
+                  offsetY: user.coverOffsetY ?? 50,
+                  zoom: user.coverZoom ?? 100,
+                })}
                 priority
                 sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1280px"
               />

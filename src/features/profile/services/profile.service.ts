@@ -32,6 +32,7 @@ type DbProfile = {
   cover_photo_url: string | null;
   cover_offset_x: number | null;
   cover_offset_y: number | null;
+  cover_zoom: number | null;
   relationship_status: string | null;
   interests: string[] | null;
   friends_count: number | null;
@@ -66,6 +67,7 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
     coverUrl: row.cover_photo_url ?? null,
     coverOffsetX: row.cover_offset_x ?? 50,
     coverOffsetY: row.cover_offset_y ?? 50,
+    coverZoom: row.cover_zoom ?? 100,
     idDocumentUrl: null,
     bio: row.bio ?? null,
     // Map the new verification_status → legacy documentStatus enum used by the
@@ -135,6 +137,9 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
   }
   if (data.coverOffsetY !== undefined) {
     payload.cover_offset_y = Math.max(0, Math.min(100, Math.round(data.coverOffsetY)));
+  }
+  if (data.coverZoom !== undefined) {
+    payload.cover_zoom = Math.max(100, Math.min(400, Math.round(data.coverZoom)));
   }
   if (data.bio !== undefined) payload.bio = data.bio;
   if (data.websiteUrl !== undefined) payload.website = data.websiteUrl;
