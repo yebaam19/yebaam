@@ -14,7 +14,7 @@ import { CreateProfessionalServiceDTO } from '../../../interfaces/professional-s
 interface MediaItem {
   id: string
   type: 'image' | 'video'
-  url: string // URL temporal o de Cloudinary
+  url: string // URL temporal de preview o de Cloudflare tras la subida
   file: File // Archivo original para subir después
   caption?: string
   order: number
@@ -32,7 +32,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
-  // Crear URL temporal para preview (sin subir a Cloudinary todavía)
+  // Crear URL temporal para preview (sin subir a Cloudflare todavía)
   const createPreviewUrl = (file: File): string => {
     return URL.createObjectURL(file)
   }

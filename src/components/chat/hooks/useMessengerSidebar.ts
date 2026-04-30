@@ -2,9 +2,17 @@ import { useState, useMemo, useEffect } from 'react';
 import { useChat } from '@/features/chat/hooks/useChat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
-import { userService, type UserBasicInfo } from '@/features/user/services/user.service';
+import { supabase } from '@/utils/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+interface UserBasicInfo {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+}
 
 export function useMessengerSidebar() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,24 +59,29 @@ export function useMessengerSidebar() {
           return;
         }
 
-        // Obtener datos de usuarios en batch
         const userIds = Array.from(allParticipantIds);
-        const users = await userService.getUsersBatch(userIds);
-        
-        // Validar que users sea un array antes de procesar
-        if (!users || !Array.isArray(users)) {
-          console.warn('getUsersBatch returned invalid data:', users);
+        const { data: rows, error } = await supabase
+          .from('profiles')
+          .select('id, username, first_name, last_name, avatar_url')
+          .in('id', userIds);
+
+        if (error || !rows) {
+          if (error) console.warn('Failed to load participant profiles:', error);
           setIsLoadingUsers(false);
           return;
         }
-        
-        // Convertir a Map para acceso O(1)
+
         const newUsersMap = new Map<string, UserBasicInfo>();
-        users.forEach(user => {
-          if (user && user.id) {
-            newUsersMap.set(user.id, user);
-          }
-        });
+        for (const row of rows) {
+          if (!row?.id) continue;
+          newUsersMap.set(row.id, {
+            id: row.id,
+            username: row.username ?? '',
+            firstName: row.first_name ?? undefined,
+            lastName: row.last_name ?? undefined,
+            avatar: row.avatar_url ?? undefined,
+          });
+        }
         
         setUsersMap(newUsersMap);
       } catch (error) {
