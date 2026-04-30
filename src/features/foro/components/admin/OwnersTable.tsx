@@ -21,6 +21,7 @@ const TYPE_LABELS: Record<OwnerType, string> = {
   city: 'Ciudad',
   profile: 'Perfil',
   portal: 'Portal',
+  community: 'Comunidad',
 }
 
 export default function OwnersTable({ initial }: Props) {

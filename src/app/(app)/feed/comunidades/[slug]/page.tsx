@@ -1,37 +1,33 @@
 import { notFound } from 'next/navigation';
 import {
   getCommunityBySlug,
-  getCommunityMembers,
   getCommunityPosts,
   getPendingJoinRequests,
   getViewerJoinState,
 } from '@/features/communities/server/communities.server';
-import { CommunityDetailClient } from '@/features/communities/components/CommunityDetailClient';
+import { CommunityHomeMain } from '@/features/communities/components/CommunityHomeMain';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function CommunityDetailPage({ params }: PageProps) {
+export default async function CommunityHomePage({ params }: PageProps) {
   const { slug } = await params;
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
-  const [posts, members, viewerState, pendingRequests] = await Promise.all([
+  const [posts, viewerState, pendingRequests] = await Promise.all([
     getCommunityPosts(community.id, { page: 1, limit: 10 }),
-    getCommunityMembers(community.id, { page: 1, limit: 20 }),
     getViewerJoinState(community.id),
     getPendingJoinRequests(community.id),
   ]);
 
   return (
-    <CommunityDetailClient
-      slug={slug}
-      initialCommunity={community}
-      initialPosts={posts}
-      initialMembers={members}
-      initialViewerState={viewerState}
-      initialPendingRequests={pendingRequests}
+    <CommunityHomeMain
+      community={community}
+      posts={posts.posts}
+      viewerState={viewerState}
+      pendingRequests={pendingRequests}
     />
   );
 }

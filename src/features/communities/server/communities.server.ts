@@ -178,13 +178,14 @@ export async function getCommunityPosts(
   const to = from + limit - 1;
 
   const client = await getServerClient();
-  const { data, count } = await client
+  const { data, count, error } = await client
     .from('community_posts')
     .select('id,community_id,author_id,body,media,created_at,updated_at', { count: 'exact' })
     .eq('community_id', communityId)
     .order('created_at', { ascending: false })
     .range(from, to);
 
+  if (error) console.error('[getCommunityPosts]', error);
   const rows = (data ?? []) as CommunityPostRow[];
   if (rows.length === 0) return { posts: [], total: count ?? 0 };
 

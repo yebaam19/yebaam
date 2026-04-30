@@ -130,6 +130,20 @@ async function resolveOwner(
     case 'portal': {
       return { name: 'Portal', slug: 'portal', privacy: 'public', ownerUserId: null }
     }
+    case 'community': {
+      const { data } = await client
+        .from('communities')
+        .select('name, slug, privacy, owner_id')
+        .eq('id', ownerId)
+        .maybeSingle()
+      if (!data) return null
+      return {
+        name: (data as { name: string }).name,
+        slug: (data as { slug: string | null }).slug ?? null,
+        privacy: normalizeVisibility((data as { privacy: string | null }).privacy),
+        ownerUserId: (data as { owner_id: string | null }).owner_id ?? null,
+      }
+    }
     default:
       return null
   }

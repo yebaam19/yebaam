@@ -1,4 +1,4 @@
-export type OwnerType = 'club' | 'group' | 'blog' | 'page' | 'city' | 'profile' | 'portal'
+export type OwnerType = 'club' | 'group' | 'blog' | 'page' | 'city' | 'profile' | 'portal' | 'community'
 export type SpaceVisibility = 'public' | 'private' | 'secret'
 export type ForoRoleType = 'admin' | 'moderator'
 

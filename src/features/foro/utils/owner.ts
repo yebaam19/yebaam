@@ -29,6 +29,7 @@ const OWNER: Record<OwnerType, OwnerMeta> = {
   city: { label: 'Ciudad', accent: 'var(--color-feature-associations)', dot: 'bg-[var(--color-feature-associations)]', badgeColor: 'teal', glyph: 'C' },
   profile: { label: 'Perfil', accent: 'var(--color-feature-family)', dot: 'bg-[var(--color-feature-family)]', badgeColor: 'rose', glyph: 'U' },
   portal: { label: 'Comunidad', accent: 'var(--color-primary-600)', dot: 'bg-primary-600', badgeColor: 'green', glyph: 'Y' },
+  community: { label: 'Comunidad', accent: 'var(--color-feature-communities)', dot: 'bg-[var(--color-feature-communities)]', badgeColor: 'orange', glyph: 'C' },
 }
 
 export function getOwnerMeta(type: OwnerType): OwnerMeta {
