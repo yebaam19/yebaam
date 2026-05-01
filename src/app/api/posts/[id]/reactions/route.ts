@@ -16,26 +16,14 @@ async function requireUser() {
   return { client, userId: data?.user?.id ?? null };
 }
 
-async function refreshReactionCounts(
-  client: Awaited<ReturnType<typeof getServerClient>>,
-  postId: string
-) {
-  const counts = { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 };
-  const { data } = await client
-    .from('reactions')
-    .select('type')
-    .eq('post_id', postId);
-
-  for (const row of (data ?? []) as { type: string }[]) {
-    const t = row.type?.toLowerCase() as ReactionType;
-    if (t && t in counts) counts[t] += 1;
-  }
-
-  await client
-    .from('posts')
-    .update({ reactions_count: counts, updated_at: new Date().toISOString() })
-    .eq('id', postId);
-}
+// posts.reactions_count is kept in sync by the
+// `trg_reactions_sync_post_count` SECURITY DEFINER trigger on the reactions
+// table (migration: posts_reactions_count_trigger). The handler used to
+// recompute and UPDATE posts.reactions_count under the caller's session,
+// but the posts_update_own RLS policy restricts UPDATE to the author, so
+// non-authors silently failed and the denormalization drifted. The trigger
+// handles every write path (this route, browser-direct supabase client,
+// edge functions) without granting non-authors UPDATE rights on posts.
 
 export async function POST(
   request: NextRequest,
@@ -72,7 +60,6 @@ export async function POST(
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  await refreshReactionCounts(client, postId);
   return NextResponse.json({ success: true });
 }
 
@@ -102,6 +89,5 @@ export async function DELETE(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  await refreshReactionCounts(client, postId);
   return NextResponse.json({ success: true });
 }
