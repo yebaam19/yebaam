@@ -71,3 +71,18 @@ export function isInvalidRefreshTokenError(err: unknown): boolean {
   }
   return false;
 }
+
+/**
+ * "Auth session missing!" is what Supabase returns when getUser() is called
+ * without any auth cookies — i.e. an anonymous request, which is the normal
+ * case for `/`, `/login`, `/signup`, etc. It is NOT an error condition; the
+ * proxy should treat it as "no user" and stop logging it.
+ */
+export function isAnonymousSessionError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const anyErr = err as { message?: unknown };
+  return (
+    typeof anyErr.message === 'string' &&
+    /Auth session missing/i.test(anyErr.message)
+  );
+}

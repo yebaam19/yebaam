@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient, isInvalidRefreshTokenError } from '@/utils/supabase/middleware';
+import {
+  createClient,
+  isAnonymousSessionError,
+  isInvalidRefreshTokenError,
+} from '@/utils/supabase/middleware';
 
 const PUBLIC_ROUTES = [
   '/',
@@ -36,6 +40,8 @@ export async function proxy(request: NextRequest) {
     if (error) {
       if (isInvalidRefreshTokenError(error)) {
         clearAuthCookies();
+      } else if (isAnonymousSessionError(error)) {
+        // Normal case: no cookies → no user. Not an error, do not log.
       } else if (error.status && error.status !== 401) {
         // Genuine unexpected failure — surface it but don't crash the request.
         console.warn('[proxy] supabase.auth.getUser error:', error.message);
@@ -46,6 +52,8 @@ export async function proxy(request: NextRequest) {
   } catch (err) {
     if (isInvalidRefreshTokenError(err)) {
       clearAuthCookies();
+    } else if (isAnonymousSessionError(err)) {
+      // Normal case: no cookies → no user. Not an error, do not log.
     } else {
       console.warn('[proxy] supabase.auth.getUser threw:', err);
     }
