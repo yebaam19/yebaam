@@ -2,6 +2,7 @@
 export { ReactionButton } from './components/ReactionButton/ReactionButton';
 export { ReactionPicker } from './components/ReactionPicker/ReactionPicker';
 export { ReactionStats } from './components/ReactionStats/ReactionStats';
+export { ReactionListModal } from './components/ReactionListModal/ReactionListModal';
 
 // Hooks
 export { useReactionSocket } from './hooks/useReactionSocket';

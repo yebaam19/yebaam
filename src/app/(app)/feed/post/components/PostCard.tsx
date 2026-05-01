@@ -28,9 +28,16 @@ import PostMedia from './PostMedia'
 interface PostCardProps {
   post: Post
   className?: string
+  /**
+   * Opt-in: when provided, the reaction summary row ("👍 2") becomes
+   * clickable and fires this callback. Used by the post-detail page to open
+   * a "who reacted" modal. Omit on every other surface (feed timeline,
+   * profile) to preserve the current static behavior.
+   */
+  onShowReactions?: () => void
 }
 
-function PostCard({ post, className }: PostCardProps) {
+function PostCard({ post, className, onShowReactions }: PostCardProps) {
   const { user } = useAuth()
   const { deletePost, openEditModal } = usePostStore()
   const [showComments, setShowComments] = useState(false)
@@ -285,7 +292,7 @@ function PostCard({ post, className }: PostCardProps) {
 
       {/* Stats */}
       <div className="flex items-center justify-between px-4 py-2">
-        <ReactionStats reactionsCount={post.reactionsCount} />
+        <ReactionStats reactionsCount={post.reactionsCount} onShowReactions={onShowReactions} />
       </div>
 
       {/* Actions */}
@@ -332,6 +339,8 @@ export default memo(PostCard, (prevProps, nextProps) => {
     prevProps.post.content === nextProps.post.content &&
     prevProps.post.backgroundColor === nextProps.post.backgroundColor &&
     prevProps.post.updatedAt === nextProps.post.updatedAt &&
-    prevProps.className === nextProps.className
+    prevProps.post.reactionsCount === nextProps.post.reactionsCount &&
+    prevProps.className === nextProps.className &&
+    prevProps.onShowReactions === nextProps.onShowReactions
   )
 })

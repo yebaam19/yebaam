@@ -6,6 +6,13 @@ interface ReactionStatsProps {
   className?: string;
   showTopReactions?: boolean;
   maxTopReactions?: number;
+  /**
+   * Opt-in click handler. When provided, the row becomes a button that fires
+   * this callback on click — used by the post-detail page to open a "who
+   * reacted" modal. When omitted, the component renders as static markup
+   * (current behavior in the feed timeline and elsewhere).
+   */
+  onShowReactions?: () => void;
 }
 
 /**
@@ -18,6 +25,7 @@ export function ReactionStats({
   className = '',
   showTopReactions = true,
   maxTopReactions = 3,
+  onShowReactions,
 }: ReactionStatsProps) {
   if (!reactionsCount) return null;
 
@@ -43,8 +51,11 @@ export function ReactionStats({
     .slice(0, maxTopReactions)
     .map(([type]) => type as ReactionType);
 
-  return (
-    <div className={`flex items-center gap-2 ${className}`}>
+  const baseClassName = `flex items-center gap-2 ${className}`;
+  const interactiveClassName = `${baseClassName} rounded-md -mx-1 px-1 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer`;
+
+  const inner = (
+    <>
       {/* Top reacciones (emojis) */}
       {showTopReactions && topReactions.length > 0 && (
         <div className="flex items-center -space-x-1">
@@ -77,6 +88,21 @@ export function ReactionStats({
       >
         {total.toLocaleString()}
       </span>
-    </div>
+    </>
   );
+
+  if (onShowReactions) {
+    return (
+      <button
+        type="button"
+        onClick={onShowReactions}
+        className={interactiveClassName}
+        aria-label={`Ver las ${total} reacciones`}
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return <div className={baseClassName}>{inner}</div>;
 }
