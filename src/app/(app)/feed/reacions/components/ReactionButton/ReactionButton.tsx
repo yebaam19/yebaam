@@ -10,13 +10,16 @@ interface ReactionButtonProps {
 }
 
 /**
- * Botón de reacción con hover para mostrar picker
- * Muestra el estado actual de la reacción del usuario
+ * Botón estilo Facebook: click rápido alterna "Me gusta", hover en escritorio
+ * o long-press en móvil revela el picker con las 6 reacciones.
  */
 export function ReactionButton({ postId, className = '' }: ReactionButtonProps) {
   const [showPicker, setShowPicker] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const buttonRef = useRef<HTMLDivElement>(null);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressFiredRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
   const { myReactionsByPost, reactToPost, unreactToPost, updateReaction, fetchMyReaction } =
@@ -29,41 +32,70 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
     void fetchMyReaction(postId);
   }, [postId, user?.id, fetchMyReaction]);
 
-  // Limpiar timeout al desmontar
+  // Limpieza al desmontar
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+      if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
     };
   }, []);
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+  // Cerrar el picker al tocar fuera (móvil) o presionar Escape
+  useEffect(() => {
+    if (!showPicker) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowPicker(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [showPicker]);
+
+  const cancelHide = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
     }
-    // Mostrar picker después de 300ms (como Facebook)
-    timeoutRef.current = setTimeout(() => {
+  };
+
+  const scheduleShow = () => {
+    cancelHide();
+    if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+    showTimeoutRef.current = setTimeout(() => {
       setShowPicker(true);
     }, 300);
   };
 
-  const handleMouseLeave = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+  const scheduleHide = () => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
     }
-    // Ocultar picker después de 200ms
-    timeoutRef.current = setTimeout(() => {
+    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    hideTimeoutRef.current = setTimeout(() => {
       setShowPicker(false);
-    }, 200);
+    }, 250);
   };
 
   const handleClick = async () => {
+    // Si el long-press disparó el picker, no procesar el click sintético posterior
+    if (longPressFiredRef.current) {
+      longPressFiredRef.current = false;
+      return;
+    }
     if (myReaction) {
-      // Si ya reaccionó, quitar reacción
       await unreactToPost(postId);
     } else {
-      // Si no ha reaccionado, dar Like por defecto
       await reactToPost(postId, ReactionType.LIKE);
     }
   };
@@ -77,40 +109,61 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
     }
   };
 
-  // Configuración visual según el estado
+  // Long-press en móvil: tras 350 ms muestra el picker y cancela el click
+  const handleTouchStart = () => {
+    longPressFiredRef.current = false;
+    if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
+    longPressTimeoutRef.current = setTimeout(() => {
+      longPressFiredRef.current = true;
+      setShowPicker(true);
+    }, 350);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+  };
+
   const config = myReaction ? REACTION_CONFIGS[myReaction.type] : null;
-  const buttonColor = config?.color || 'text-gray-500';
   const buttonLabel = config?.label || 'Me gusta';
   const emoji = config?.emoji;
+  const colorStyle = config?.color ? { color: config.color } : undefined;
 
   return (
     <div
-      ref={buttonRef}
+      ref={containerRef}
       className="relative inline-block"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={scheduleShow}
+      onMouseLeave={scheduleHide}
     >
-      {/* Botón principal */}
       <button
+        type="button"
         onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        style={colorStyle}
         className={`
           flex items-center gap-1.5 px-4 py-2 rounded-lg
-          font-medium text-sm transition-all
+          font-medium text-sm transition-all select-none
           hover:bg-gray-100 dark:hover:bg-gray-800
-          ${myReaction ? buttonColor : 'text-gray-600 dark:text-gray-400'}
+          ${myReaction ? '' : 'text-gray-600 dark:text-gray-400'}
           ${className}
         `}
         aria-label={buttonLabel}
+        aria-expanded={showPicker}
+        aria-haspopup="menu"
       >
         {emoji ? (
-          <span className="text-lg" aria-hidden="true">
+          <span className="text-lg leading-none" aria-hidden="true">
             {emoji}
           </span>
         ) : (
-          // Icono de Like por defecto
           <svg
             className="w-5 h-5"
-            fill={myReaction ? 'currentColor' : 'none'}
+            fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -126,11 +179,10 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
         <span>{buttonLabel}</span>
       </button>
 
-      {/* Picker flotante */}
       {showPicker && (
         <div
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={cancelHide}
+          onMouseLeave={scheduleHide}
         >
           <ReactionPicker
             onSelect={handleReactionSelect}

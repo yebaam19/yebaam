@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { memo, useState } from 'react'
 
 import { CommentList } from '@/app/(app)/feed/comments'
-import { ReactionButton, ReactionStats } from '@/app/(app)/feed/reacions'
+import { ReactionButton, ReactionListModal, ReactionStats } from '@/app/(app)/feed/reacions'
 import { useAuth } from '@/features/auth'
 import { getUserInitials } from '@/lib/user-helpers'
 import { cn } from '@/lib/utils'
@@ -29,10 +29,11 @@ interface PostCardProps {
   post: Post
   className?: string
   /**
-   * Opt-in: when provided, the reaction summary row ("👍 2") becomes
-   * clickable and fires this callback. Used by the post-detail page to open
-   * a "who reacted" modal. Omit on every other surface (feed timeline,
-   * profile) to preserve the current static behavior.
+   * Opt-in override for the reaction summary click. When omitted, the card
+   * opens its own embedded ReactionListModal — that's how the feed timeline,
+   * profile grids, and any other surface get the "who reacted" list for
+   * free. Pass a callback only when the host page wants to manage modal
+   * state itself (e.g. the post-detail page already does).
    */
   onShowReactions?: () => void
 }
@@ -43,6 +44,7 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
   const [showComments, setShowComments] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [reactionsModalOpen, setReactionsModalOpen] = useState(false)
 
   // Defensive checks - retornar null silenciosamente si el post es inválido
   if (!post || !post.author || !post.id) {
@@ -292,7 +294,10 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
 
       {/* Stats */}
       <div className="flex items-center justify-between px-4 py-2">
-        <ReactionStats reactionsCount={post.reactionsCount} onShowReactions={onShowReactions} />
+        <ReactionStats
+          reactionsCount={post.reactionsCount}
+          onShowReactions={onShowReactions ?? (() => setReactionsModalOpen(true))}
+        />
       </div>
 
       {/* Actions */}
@@ -330,6 +335,15 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
         onConfirm={handleConfirmDelete}
         isDeleting={isDeleting}
       />
+
+      {/* "Quién reaccionó" — solo se monta si el host no ya gestiona el modal */}
+      {!onShowReactions && (
+        <ReactionListModal
+          isOpen={reactionsModalOpen}
+          onClose={() => setReactionsModalOpen(false)}
+          postId={post.id}
+        />
+      )}
     </article>
   )
 }

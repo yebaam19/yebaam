@@ -6,8 +6,9 @@ interface ReactionPickerProps {
 }
 
 /**
- * Picker flotante con todas las reacciones disponibles
- * Estilo similar a Facebook
+ * Picker flotante con las 6 reacciones disponibles, estilo Facebook.
+ * Centrado horizontalmente sobre el botón ancla. El elemento padre debe
+ * tener `position: relative`.
  */
 export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProps) {
   const reactions = Object.values(ReactionType);
@@ -15,14 +16,14 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
   return (
     <div
       className="
-        absolute bottom-full left-0 mb-2
+        absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30
         flex items-center gap-1
         bg-white dark:bg-gray-800
         rounded-full shadow-lg
         p-2 border border-gray-200 dark:border-gray-700
         animate-in fade-in zoom-in-95 duration-200
       "
-      role="toolbar"
+      role="menu"
       aria-label="Seleccionar reacción"
     >
       {reactions.map(type => {
@@ -32,6 +33,7 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
         return (
           <button
             key={type}
+            type="button"
             onClick={() => onSelect(type)}
             className={`
               relative group
@@ -43,8 +45,8 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
             `}
             aria-label={config.label}
             title={config.label}
+            role="menuitem"
           >
-            {/* Emoji */}
             <span
               className="text-2xl transition-transform group-hover:scale-110"
               aria-hidden="true"
@@ -52,7 +54,6 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
               {config.emoji}
             </span>
 
-            {/* Indicador de selección */}
             {isSelected && (
               <span
                 className="
@@ -63,7 +64,6 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
               />
             )}
 
-            {/* Tooltip */}
             <span
               className="
                 absolute -top-8 left-1/2 -translate-x-1/2

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { usePost } from '@/app/(app)/feed/post/hooks/usePosts';
 import { PostCard } from '@/features/post';
-import { useReactionStore, useReactionSocket } from '@/app/(app)/feed/reacions';
+import { useReactionStore, useReactionSocket, ReactionListModal } from '@/app/(app)/feed/reacions';
 import { CommentList } from '@/app/(app)/feed/comments';
 
 
@@ -20,6 +20,10 @@ export default function PostDetailPage() {
   const { data: currentPost, isLoading, error } = usePost(postId);
   
   const { fetchCounts, fetchMyReaction } = useReactionStore();
+
+  const [reactionListOpen, setReactionListOpen] = useState(false);
+  const handleShowReactions = useCallback(() => setReactionListOpen(true), []);
+  const handleCloseReactions = useCallback(() => setReactionListOpen(false), []);
 
   // Activar escucha de eventos de reacciones en tiempo real
   useReactionSocket();
@@ -128,7 +132,7 @@ export default function PostDetailPage() {
         </div>
 
         {/* Post Card */}
-        <PostCard post={currentPost} />
+        <PostCard post={currentPost} onShowReactions={handleShowReactions} />
 
         {/* Sección de Comentarios */}
         <div className="mt-4 rounded-xl bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
@@ -137,14 +141,20 @@ export default function PostDetailPage() {
               Comentarios
             </h2>
           </div>
-          
-          <CommentList 
+
+          <CommentList
             postId={postId}
             showInput={true}
             maxHeight="600px"
           />
         </div>
       </div>
+
+      <ReactionListModal
+        isOpen={reactionListOpen}
+        onClose={handleCloseReactions}
+        postId={postId}
+      />
     </div>
   );
 }
