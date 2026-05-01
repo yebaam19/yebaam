@@ -6,6 +6,7 @@ import {
   mapPost,
   type PostRow,
 } from '@/lib/api/posts';
+import { fromPostMedia } from '@/lib/media/parse';
 
 async function getUserId() {
   const client = await getServerClient();
@@ -148,17 +149,6 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ success: true, data: mapPost(row, profiles) });
 }
 
-type PostMediaFile = {
-  s3Key?: string;
-  url?: string;
-  type?: 'image' | 'video' | string;
-  size?: number;
-  mimeType?: string;
-  duration?: number;
-  streamUid?: string;
-  thumbnailUrl?: string;
-};
-
 type SupabaseClient = Awaited<ReturnType<typeof getServerClient>>;
 
 const POST_TO_GALLERY_VISIBILITY: Record<string, 'public' | 'friends' | 'private'> = {
@@ -167,6 +157,17 @@ const POST_TO_GALLERY_VISIBILITY: Record<string, 'public' | 'friends' | 'private
   private: 'private',
 };
 
+/**
+ * Mirror a post's media into the profile gallery tables. Decisions about
+ * "what is this entry, where does its Cloudflare id live, what's the
+ * duration" are delegated to `fromPostMedia` from `src/lib/media/parse.ts`.
+ *
+ * Wire-only fields the canonical `MediaItem` doesn't carry (`url` and
+ * `size_bytes` — both stored verbatim on the gallery row) are read from the
+ * raw JSONB entry alongside the parsed item. The two arrays stay in
+ * lockstep: `fromPostMedia` returns one `MediaItem` per parsed entry, and we
+ * skip raw entries it dropped.
+ */
 async function mirrorMediaToProfileGallery(
   client: SupabaseClient,
   userId: string,
@@ -179,31 +180,38 @@ async function mirrorMediaToProfileGallery(
   const photos: Array<Record<string, unknown>> = [];
   const videos: Array<Record<string, unknown>> = [];
 
-  for (const raw of mediaFiles as PostMediaFile[]) {
+  for (const raw of mediaFiles) {
     if (!raw || typeof raw !== 'object') continue;
-    const key = raw.streamUid ?? raw.s3Key;
-    if (!key || !raw.url) continue;
+    const rawObj = raw as Record<string, unknown>;
+    const [item] = fromPostMedia([rawObj]);
+    // The legacy mirror also required a delivery URL — keep that requirement
+    // (we persist it verbatim on the gallery row).
+    if (!item) continue;
+    const url = typeof rawObj.url === 'string' ? rawObj.url : null;
+    if (!url) continue;
+    const size = typeof rawObj.size === 'number' ? rawObj.size : null;
 
-    if (raw.type === 'video') {
+    if (item.kind === 'video') {
       videos.push({
         user_id: userId,
         storage_bucket: 'cloudflare-stream',
-        storage_key: key,
-        url: raw.url,
-        thumbnail_url: raw.thumbnailUrl ?? null,
-        duration_seconds: typeof raw.duration === 'number' ? Math.round(raw.duration) : null,
-        size_bytes: typeof raw.size === 'number' ? raw.size : null,
-        mime_type: typeof raw.mimeType === 'string' ? raw.mimeType : null,
+        storage_key: item.cfId,
+        url,
+        thumbnail_url: item.thumbnailUrl ?? null,
+        duration_seconds:
+          typeof item.durationSeconds === 'number' ? Math.round(item.durationSeconds) : null,
+        size_bytes: size,
+        mime_type: item.mimeType ?? null,
         visibility,
       });
-    } else if (raw.type === 'image') {
+    } else {
       photos.push({
         user_id: userId,
         storage_bucket: 'cloudflare-images',
-        storage_key: key,
-        url: raw.url,
-        size_bytes: typeof raw.size === 'number' ? raw.size : null,
-        mime_type: typeof raw.mimeType === 'string' ? raw.mimeType : null,
+        storage_key: item.cfId,
+        url,
+        size_bytes: size,
+        mime_type: item.mimeType ?? null,
         visibility,
       });
     }

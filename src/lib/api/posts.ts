@@ -1,5 +1,6 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { fromPostMedia } from '@/lib/media/parse';
 
 export type PostRow = {
   id: string;
@@ -56,21 +57,41 @@ function normalizeReactionsCount(raw: unknown): ReactionsCount {
   };
 }
 
+/**
+ * Project a `posts.media_files` JSONB row into the legacy `MediaFile` shape
+ * the UI still consumes (keys: `url`, `id`, `s3Key`, `size`, `type='IMAGE'|'VIDEO'`).
+ *
+ * Canonical fields (kind, thumbnailUrl, durationSeconds, mimeType, streamUid)
+ * are derived through `fromPostMedia` so the JSONB key-aliasing rules live in
+ * one module (`src/lib/media/parse.ts`). Wire-only fields (`id`, `url`,
+ * `s3Key`, `size`) pass through from the raw row — the canonical `MediaItem`
+ * doesn't carry them and shouldn't.
+ *
+ * Output shape is preserved bit-for-bit so existing consumers (PostMedia,
+ * PostVideoPlayer, PostImageGallery, EditPostModal) keep compiling and rows
+ * that the legacy parser kept (e.g. malformed entries with a `url` but no
+ * recognizable kind) keep flowing through with `type='IMAGE'`.
+ */
 function normalizeMedia(raw: unknown): Array<Record<string, unknown>> {
   if (!Array.isArray(raw)) return [];
-  return raw.map((m) => {
-    const media = (m ?? {}) as Record<string, unknown>;
-    const type = String(media.type ?? '').toUpperCase();
+  return raw.map((entry) => {
+    const rawObj = (entry ?? {}) as Record<string, unknown>;
+    // Parse THIS entry alone through the canonical adapter. `fromPostMedia`
+    // returns an empty array when the entry has no recognizable kind/cfId —
+    // in that case we fall back to the legacy "default to IMAGE, pass url
+    // through" behavior so we don't accidentally drop UI-rendered rows.
+    const [item] = fromPostMedia([entry]);
+    const rawType = String(rawObj.type ?? '').toUpperCase();
     return {
-      id: media.id ?? media._id,
-      url: media.url,
-      type: type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
-      thumbnailUrl: media.thumbnailUrl ?? media.thumbnail_url,
-      s3Key: media.s3Key ?? media.s3_key,
-      size: media.size,
-      duration: media.duration,
-      mimeType: media.mimeType ?? media.mime_type,
-      streamUid: media.streamUid ?? media.stream_uid ?? media.cloudflare_stream_uid,
+      id: rawObj.id ?? rawObj._id,
+      url: rawObj.url,
+      type: item ? (item.kind === 'video' ? 'VIDEO' : 'IMAGE') : rawType === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+      thumbnailUrl: item?.thumbnailUrl ?? rawObj.thumbnailUrl ?? rawObj.thumbnail_url,
+      s3Key: rawObj.s3Key ?? rawObj.s3_key,
+      size: rawObj.size,
+      duration: item?.durationSeconds ?? rawObj.duration,
+      mimeType: item?.mimeType ?? rawObj.mimeType ?? rawObj.mime_type,
+      streamUid: item?.kind === 'video' ? item.cfId : undefined,
     };
   });
 }

@@ -1,5 +1,12 @@
 import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
+import {
+  fromCommunityMedia,
+  fromPostMedia,
+  fromProfileVideoRow,
+  type ProfileVideoRow as ProfileVideoMediaRow,
+} from '@/lib/media/parse';
+import type { MediaItem } from '@/lib/media/types';
 
 export type WatchVideoSource = 'post' | 'profile_video' | 'community_post';
 
@@ -46,13 +53,10 @@ type PostRow = {
   created_at: string;
 };
 
-type ProfileVideoRow = {
+type ProfileVideoRow = ProfileVideoMediaRow & {
   id: string;
   user_id: string;
-  storage_key: string;
-  thumbnail_url: string | null;
   caption: string | null;
-  duration_seconds: number | null;
   width: number | null;
   height: number | null;
   visibility: 'public' | 'friends' | 'private' | 'only_me';
@@ -75,27 +79,6 @@ type CommunityRow = {
   privacy: 'PUBLIC' | 'PRIVATE' | 'SECRET' | null;
 };
 
-type PostMediaItem = {
-  type?: string;
-  kind?: string;
-  streamUid?: string;
-  cfVideoUid?: string;
-  cf_video_uid?: string;
-  url?: string;
-  thumbnailUrl?: string;
-  thumbnail?: string;
-  duration?: number;
-};
-
-function pickVideoUid(item: PostMediaItem): string | undefined {
-  return item.streamUid || item.cfVideoUid || item.cf_video_uid || undefined;
-}
-
-function isVideoItem(item: PostMediaItem): boolean {
-  const t = (item.type || item.kind || '').toString().toLowerCase();
-  return t === 'video' && Boolean(pickVideoUid(item));
-}
-
 function buildAuthor(row: ProfileRow | undefined, fallbackId: string): WatchVideo['author'] {
   return {
     id: row?.id ?? fallbackId,
@@ -107,15 +90,22 @@ function buildAuthor(row: ProfileRow | undefined, fallbackId: string): WatchVide
   };
 }
 
+function isVideo(m: MediaItem): boolean {
+  return m.kind === 'video';
+}
+
 /**
  * Aggregates every public video the viewer is allowed to see across:
  *  - `posts.media_files[]` where `type='VIDEO'`
  *  - `profile_videos` (gallery uploads)
- *  - `community_posts.media[]` where `kind='video'` (only visible communities)
+ *  - `community_posts.media[]` where `kind='video'` (only PUBLIC communities)
  *
- * Sorted newest-first. RLS does most of the visibility filtering — the SQL
- * filter we add on top (`privacy/visibility = 'public'`) just keeps the feed
- * scoped to broadly shareable content for guests and viewers.
+ * Sorted newest-first. RLS does the per-row visibility filtering — the SQL
+ * filter we add on top (`privacy/visibility = 'public'`) keeps the feed scoped
+ * to broadly shareable content for guests and viewers.
+ *
+ * JSONB shape parsing is delegated to `src/lib/media/parse.ts` so this module
+ * never touches the on-disk key casing directly.
  */
 export async function listWatchVideos(limit = 60): Promise<WatchVideo[]> {
   const client = await getServerClient();
@@ -131,7 +121,7 @@ export async function listWatchVideos(limit = 60): Promise<WatchVideo[]> {
     client
       .from('profile_videos')
       .select(
-        'id, user_id, storage_key, thumbnail_url, caption, duration_seconds, width, height, visibility, uploaded_at',
+        'id, user_id, storage_key, thumbnail_url, caption, duration_seconds, mime_type, width, height, visibility, uploaded_at',
       )
       .eq('visibility', 'public')
       .order('uploaded_at', { ascending: false })
@@ -180,38 +170,35 @@ export async function listWatchVideos(limit = 60): Promise<WatchVideo[]> {
   const out: WatchVideo[] = [];
 
   for (const row of postRows) {
-    const media = Array.isArray(row.media_files) ? (row.media_files as PostMediaItem[]) : [];
-    for (let i = 0; i < media.length; i++) {
-      const item = media[i];
-      if (!isVideoItem(item)) continue;
-      const uid = pickVideoUid(item);
-      if (!uid) continue;
+    const items = fromPostMedia(row.media_files).filter(isVideo);
+    items.forEach((m, i) => {
       out.push({
         id: `${row.id}:${i}`,
         source: 'post',
-        cfVideoUid: uid,
-        thumbnailUrl: item.thumbnailUrl || item.thumbnail,
+        cfVideoUid: m.cfId,
+        thumbnailUrl: m.thumbnailUrl,
         caption: row.content?.trim() || undefined,
         aspectRatio: row.aspect_ratio ?? undefined,
-        durationSeconds: typeof item.duration === 'number' ? item.duration : undefined,
+        durationSeconds: m.durationSeconds,
         createdAt: row.created_at,
         author: buildAuthor(profileById.get(row.author_id), row.author_id),
       });
-    }
+    });
   }
 
   for (const row of profileVideoRows) {
-    if (!row.storage_key) continue;
-    const ar =
+    const m = fromProfileVideoRow(row);
+    if (!m) continue;
+    const aspectRatio =
       row.width && row.height && row.height > 0 ? `${row.width} / ${row.height}` : undefined;
     out.push({
       id: `pv:${row.id}`,
       source: 'profile_video',
-      cfVideoUid: row.storage_key,
-      thumbnailUrl: row.thumbnail_url ?? undefined,
+      cfVideoUid: m.cfId,
+      thumbnailUrl: m.thumbnailUrl,
       caption: row.caption?.trim() || undefined,
-      aspectRatio: ar,
-      durationSeconds: row.duration_seconds ?? undefined,
+      aspectRatio,
+      durationSeconds: m.durationSeconds,
       createdAt: row.uploaded_at,
       author: buildAuthor(profileById.get(row.user_id), row.user_id),
     });
@@ -222,29 +209,24 @@ export async function listWatchVideos(limit = 60): Promise<WatchVideo[]> {
     if (!community) continue; // RLS hid the community → skip
     if (community.privacy && community.privacy !== 'PUBLIC') continue;
 
-    const media = Array.isArray(row.media) ? (row.media as PostMediaItem[]) : [];
-    for (let i = 0; i < media.length; i++) {
-      const item = media[i];
-      if (!isVideoItem(item)) continue;
-      const uid = pickVideoUid(item);
-      if (!uid) continue;
+    const items = fromCommunityMedia(row.media).filter(isVideo);
+    items.forEach((m, i) => {
       out.push({
         id: `cp:${row.id}:${i}`,
         source: 'community_post',
-        cfVideoUid: uid,
-        thumbnailUrl: item.thumbnail || item.thumbnailUrl,
+        cfVideoUid: m.cfId,
+        thumbnailUrl: m.thumbnailUrl,
         caption: row.body?.trim() || undefined,
-        durationSeconds: typeof item.duration === 'number' ? item.duration : undefined,
+        durationSeconds: m.durationSeconds,
         createdAt: row.created_at,
         author: buildAuthor(profileById.get(row.author_id), row.author_id),
         community: { id: community.id, slug: community.slug, name: community.name },
       });
-    }
+    });
   }
 
-  // De-duplicate by Cloudflare UID (a feed post mirrored to profile_videos
-  // would otherwise show twice). Keep the earliest source — posts win over
-  // profile_video mirrors.
+  // De-duplicate by Cloudflare uid — a feed post mirrored to profile_videos
+  // would otherwise show twice. Newest-first wins.
   const seen = new Set<string>();
   const deduped: WatchVideo[] = [];
   out.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));

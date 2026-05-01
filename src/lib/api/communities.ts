@@ -1,5 +1,6 @@
 import 'server-only';
 import { imageUrl } from '@/lib/media/urls';
+import { fromCommunityMedia } from '@/lib/media/parse';
 import {
   Community,
   CommunityCategory,
@@ -125,21 +126,22 @@ export type CommunityPostMedia = {
   thumbnail?: string;
 };
 
+/**
+ * Parse the `community_posts.media` JSONB column into the local
+ * `CommunityPostMedia` shape. The canonical adapter (`fromCommunityMedia` in
+ * `src/lib/media/parse.ts`) owns the snake-case key resolution and the
+ * kind-validation rules; this function only re-projects the resulting
+ * `MediaItem` into the kind-split `cfImageId` / `cfVideoUid` shape that the
+ * `mapPost` logic below already consumes.
+ */
 export function toPostMedia(value: unknown): CommunityPostMedia[] {
-  if (!Array.isArray(value)) return [];
-  const out: CommunityPostMedia[] = [];
-  for (const entry of value) {
-    if (!entry || typeof entry !== 'object') continue;
-    const r = entry as Record<string, unknown>;
-    const kind = r.kind === 'video' ? 'video' : r.kind === 'image' ? 'image' : null;
-    if (!kind) continue;
-    const item: CommunityPostMedia = { kind };
-    if (typeof r.cf_image_id === 'string') item.cfImageId = r.cf_image_id;
-    if (typeof r.cf_video_uid === 'string') item.cfVideoUid = r.cf_video_uid;
-    if (typeof r.thumbnail === 'string') item.thumbnail = r.thumbnail;
-    out.push(item);
-  }
-  return out;
+  return fromCommunityMedia(value).map((m) => {
+    const item: CommunityPostMedia = { kind: m.kind };
+    if (m.kind === 'image') item.cfImageId = m.cfId;
+    else item.cfVideoUid = m.cfId;
+    if (m.thumbnailUrl) item.thumbnail = m.thumbnailUrl;
+    return item;
+  });
 }
 
 export function buildOwnerMember(
