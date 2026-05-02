@@ -287,15 +287,15 @@ export async function shareCommunityArticleToFeed(
   const communitySlug = (community as { slug: string } | null)?.slug;
   if (!communitySlug) return { ok: false, error: 'Comunidad no encontrada.' };
 
-  // The body carries an optional author message plus a stable link back to
-  // the article. The list of fields below mirrors the article-card preview;
-  // the feed renderer can later upgrade plain article links to a richer card,
-  // but we keep the link in plain text so existing renderers don't break.
-  const articleUrl = `/feed/comunidades/${communitySlug}/articulos/${row.slug}`;
+  // Body format: optional author message, then a single marker line at the end
+  // that `mapPost` parses to render a rich article preview card. The marker
+  // line is intentionally machine-friendly and is stripped from the visible
+  // text by the renderer, so users only see their own message.
+  //   [[community-article: <slug>|<title>]]
   const trimmedMessage = (message ?? '').trim().slice(0, 1000);
-  const body = trimmedMessage
-    ? `${trimmedMessage}\n\nArtículo: ${row.title}\n${articleUrl}`
-    : `Artículo: ${row.title}\n${articleUrl}`;
+  const safeTitle = row.title.replace(/[\r\n|\]]/g, ' ').slice(0, 200);
+  const marker = `[[community-article: ${row.slug}|${safeTitle}]]`;
+  const body = trimmedMessage ? `${trimmedMessage}\n${marker}` : marker;
 
   const { error } = await client.from('community_posts').insert({
     community_id: row.community_id,

@@ -6,11 +6,37 @@ import {
   CommunityCategory,
   CommunityMember,
   CommunityPost,
+  CommunityPostArticleRef,
   CommunityPostMediaItem,
   CommunityPrivacy,
   CommunityRole,
   CommunityRule,
 } from '@/features/communities/types/community.types';
+
+// Marker line format embedded by `shareCommunityArticleToFeed`:
+//   [[community-article: <slug>|<title>]]
+// Lives on its own line; trailing/leading whitespace is tolerated.
+const ARTICLE_MARKER_RE = /\n?\s*\[\[community-article:\s*([^|\]]+)\|([^\]]+)\]\]\s*$/;
+
+function extractArticleRef(
+  body: string,
+  communitySlug: string | undefined,
+): { content: string; articleRef?: CommunityPostArticleRef } {
+  if (!communitySlug) return { content: body };
+  const match = body.match(ARTICLE_MARKER_RE);
+  if (!match) return { content: body };
+  const slug = match[1].trim();
+  const title = match[2].trim();
+  if (!slug || !title) return { content: body };
+  return {
+    content: body.slice(0, match.index ?? 0).trim(),
+    articleRef: {
+      slug,
+      title,
+      href: `/feed/comunidades/${communitySlug}/articulos/${slug}`,
+    },
+  };
+}
 
 export type CommunityRow = {
   id: string;
@@ -218,6 +244,7 @@ export function mapMember(
 export function mapPost(
   row: CommunityPostRow,
   author: ProfileLite | undefined,
+  communitySlug?: string,
 ): CommunityPost {
   const rawMedia = toPostMedia(row.media);
 
@@ -244,15 +271,18 @@ export function mapPost(
     .filter((m): m is CommunityPostMediaItem & { url: string } => m.kind === 'image' && !!m.url)
     .map((m) => m.url);
 
+  const { content, articleRef } = extractArticleRef(row.body, communitySlug);
+
   return {
     id: row.id,
     communityId: row.community_id,
     authorId: row.author_id,
     authorName: profileDisplayName(author ?? null),
     authorAvatar: author?.avatar_url ?? undefined,
-    content: row.body,
+    content,
     images: images.length > 0 ? images : undefined,
     media: media.length > 0 ? media : undefined,
+    articleRef,
     likesCount: 0,
     commentsCount: 0,
     sharesCount: 0,

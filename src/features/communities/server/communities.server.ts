@@ -190,15 +190,19 @@ export async function getCommunityPosts(
   if (rows.length === 0) return { posts: [], total: count ?? 0 };
 
   const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
-  const { data: profiles } = await client
-    .from('profiles')
-    .select('id,username,first_name,last_name,avatar_url')
-    .in('id', authorIds);
+  const [{ data: profiles }, { data: communityRow }] = await Promise.all([
+    client
+      .from('profiles')
+      .select('id,username,first_name,last_name,avatar_url')
+      .in('id', authorIds),
+    client.from('communities').select('slug').eq('id', communityId).maybeSingle(),
+  ]);
   const profileMap = new Map<string, ProfileLite>();
   for (const p of (profiles ?? []) as ProfileLite[]) profileMap.set(p.id, p);
+  const communitySlug = (communityRow as { slug: string } | null)?.slug;
 
   return {
-    posts: rows.map((row) => mapPost(row, profileMap.get(row.author_id))),
+    posts: rows.map((row) => mapPost(row, profileMap.get(row.author_id), communitySlug)),
     total: count ?? rows.length,
   };
 }

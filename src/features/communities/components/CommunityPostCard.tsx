@@ -1,5 +1,8 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import type { Route } from 'next';
 import { StreamVideo } from '@/components/media/StreamVideo';
+import { NewspaperIcon } from '@/components/icons/heroicons-shim';
 import type { CommunityPost } from '@/features/communities/types/community.types';
 
 interface CommunityPostCardProps {
@@ -17,6 +20,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
             width={36}
             height={36}
             className="rounded-full"
+            style={{ width: 36, height: 36 }}
             unoptimized
           />
         )}
@@ -31,6 +35,24 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
         <p className="text-sm text-gray-900 dark:text-white mb-3 whitespace-pre-wrap">
           {post.content}
         </p>
+      )}
+      {post.articleRef && (
+        <Link
+          href={post.articleRef.href as Route}
+          className="mb-3 flex items-center gap-3 rounded-lg border border-gray-200 bg-linear-to-br from-blue-50 to-indigo-50 p-3 transition-colors hover:border-blue-300 hover:from-blue-100 hover:to-indigo-100 dark:border-gray-700 dark:from-blue-950/30 dark:to-indigo-950/30 dark:hover:border-blue-700"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm">
+            <NewspaperIcon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+              Artículo de la comunidad
+            </p>
+            <p className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-white">
+              {post.articleRef.title}
+            </p>
+          </div>
+        </Link>
       )}
       {post.media && post.media.length > 0 && (
         <div className="mb-3 space-y-2">

@@ -63,6 +63,17 @@ export interface CommunityPostMediaItem {
   thumbnail?: string;
 }
 
+/**
+ * Reference to a community article rendered as a preview card inside a feed
+ * post. Populated when an author shared one of their own articles via
+ * `shareCommunityArticleToFeed`.
+ */
+export interface CommunityPostArticleRef {
+  slug: string;
+  title: string;
+  href: string;
+}
+
 // Community Post Interface
 export interface CommunityPost {
   id: string;
@@ -75,6 +86,8 @@ export interface CommunityPost {
   images?: string[];
   /** Structured media items — preferred for rendering on the detail page (images + videos). */
   media?: CommunityPostMediaItem[];
+  /** Set when the post is a share of a community article. */
+  articleRef?: CommunityPostArticleRef;
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
