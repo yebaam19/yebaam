@@ -1,0 +1,103 @@
+'use client';
+
+import { useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { uploadService } from '@/lib/service/upload.service';
+import { updateCommunity } from '@/features/communities/actions/communities.actions';
+import { CameraIcon } from '@/components/icons/heroicons-shim';
+
+interface CommunityHeaderImageButtonProps {
+  communityId: string;
+  /**
+   * Which slot we're editing — drives copy and which DTO field updateCommunity
+   * receives. Cover = top banner, profile = round avatar tile.
+   */
+  target: 'cover' | 'profile';
+  className?: string;
+}
+
+/**
+ * Tiny camera-button overlay that owners see on the community banner / avatar.
+ * Uploads the picked file directly to Cloudflare Images via uploadService, then
+ * persists only the Cloudflare image id on the community row (per the
+ * Cloudflare-only media rule). The visible URL is re-derived on the next
+ * server render — no need to mutate local state for the image itself.
+ */
+export function CommunityHeaderImageButton({
+  communityId,
+  target,
+  className,
+}: CommunityHeaderImageButtonProps) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [, startTransition] = useTransition();
+
+  const handlePick = () => {
+    setError(null);
+    inputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Selecciona una imagen.');
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const { id } = await uploadService.uploadImage(file);
+      const result = await updateCommunity({
+        id: communityId,
+        coverImageId: target === 'cover' ? id : undefined,
+        profileImageId: target === 'profile' ? id : undefined,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      startTransition(() => router.refresh());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error subiendo la imagen.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const label = target === 'cover' ? 'Cambiar portada' : 'Cambiar foto de perfil';
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handlePick}
+        disabled={uploading}
+        aria-label={label}
+        title={label}
+        className={
+          className ??
+          'inline-flex items-center justify-center rounded-full bg-black/55 p-2 text-white shadow-md backdrop-blur-sm transition-colors hover:bg-black/70 disabled:opacity-60'
+        }
+      >
+        <CameraIcon className="h-4 w-4" />
+        {uploading && <span className="ml-1.5 text-xs font-medium">Subiendo…</span>}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      {error && (
+        <p className="absolute -bottom-7 left-0 right-0 mx-auto w-fit max-w-xs rounded bg-red-50 px-2 py-1 text-xs text-red-700 dark:bg-red-900/40 dark:text-red-300">
+          {error}
+        </p>
+      )}
+    </>
+  );
+}

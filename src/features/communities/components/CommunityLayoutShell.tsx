@@ -25,6 +25,7 @@ import {
 } from '@/features/communities/utils/communityHelpers';
 import { CommunitySidebar } from './CommunitySidebar';
 import { CommunityOwnerMenu } from './CommunityOwnerMenu';
+import { CommunityHeaderImageButton } from './CommunityHeaderImageButton';
 
 interface CommunityLayoutShellProps {
   community: Community;
@@ -107,6 +108,11 @@ export function CommunityLayoutShell({
             priority
           />
         )}
+        {viewerState.kind === 'owner' && (
+          <div className="absolute right-4 top-4">
+            <CommunityHeaderImageButton communityId={c.id} target="cover" />
+          </div>
+        )}
         <div className="absolute right-4 bottom-4 flex flex-col items-end gap-1">
           <div className="flex items-center gap-2">
             <button
@@ -143,21 +149,32 @@ export function CommunityLayoutShell({
           <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
             <div className="flex flex-col md:flex-row gap-5">
               <div className="shrink-0">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-gray-800">
-                  {c.profileImageUrl ? (
-                    <Image
-                      src={c.profileImageUrl}
-                      alt={c.name}
-                      fill
-                      sizes="80px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                      <span className="text-white font-bold text-2xl">
-                        {c.name.charAt(0)}
-                      </span>
+                <div className="relative w-20 h-20">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-gray-800">
+                    {c.profileImageUrl ? (
+                      <Image
+                        src={c.profileImageUrl}
+                        alt={c.name}
+                        width={80}
+                        height={80}
+                        className="h-full w-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-2xl">
+                          {c.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {viewerState.kind === 'owner' && (
+                    <div className="absolute bottom-0 right-0">
+                      <CommunityHeaderImageButton
+                        communityId={c.id}
+                        target="profile"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md ring-2 ring-white transition-colors hover:bg-blue-700 disabled:opacity-60 dark:ring-gray-800"
+                      />
                     </div>
                   )}
                 </div>
