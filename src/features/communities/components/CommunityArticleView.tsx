@@ -36,13 +36,13 @@ export function CommunityArticleView({
           Volver a artículos
         </Link>
         <div className="flex items-center gap-1">
-          {isAuthor && (
-            <CommunityArticleShareButton
-              articleId={article.id}
-              articleTitle={article.title}
-              communitySlug={communitySlug}
-            />
-          )}
+          <CommunityArticleShareButton
+            articleId={article.id}
+            articleTitle={article.title}
+            articlePath={`/feed/comunidades/${communitySlug}/articulos/${article.slug}`}
+            communitySlug={communitySlug}
+            isAuthor={isAuthor}
+          />
           {canManage && (
             <CommunityArticleActionsMenu
               articleId={article.id}
