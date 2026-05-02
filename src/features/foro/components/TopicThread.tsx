@@ -41,6 +41,8 @@ interface Props {
   page: number
   pageSize: number
   totalPosts: number
+  /** Optional back-link to the forum's owning resource (e.g. the community). */
+  ownerBack?: { href: string; label: string } | null
 }
 
 type PostInsertRow = {
@@ -126,6 +128,7 @@ export default function TopicThread({
   page,
   pageSize,
   totalPosts,
+  ownerBack,
 }: Props) {
   const router = useRouter()
   const { user } = useAuth()
@@ -338,6 +341,7 @@ export default function TopicThread({
         title={topic.title}
         subtitle={`Iniciado por ${topic.author.displayName} · ${formatRelativeDate(topic.createdAt)} · ${topic.viewCount} ${topic.viewCount === 1 ? 'vista' : 'vistas'}`}
         crumbs={[
+          ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
           { href: '/foro', label: 'Foros' },
           { href: `/foro/${space.slug}`, label: space.name },
           { href: forumHref, label: forum.name },

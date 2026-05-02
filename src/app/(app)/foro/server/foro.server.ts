@@ -151,6 +151,28 @@ export async function getSpaceByOwner(
   return toSpace(data as SpaceRow)
 }
 
+/**
+ * Returns the public-facing URL of the resource that owns this forum space, so
+ * forum pages can render a "Back to <owner>" breadcrumb. Currently wired for
+ * communities; add other resource types here as their forum integrations land.
+ */
+export async function getSpaceOwnerBackLink(
+  space: ForoSpace,
+): Promise<{ href: string; label: string } | null> {
+  if (space.ownerType === 'community') {
+    const client = await getServerClient()
+    const { data } = await client
+      .from('communities')
+      .select('slug, name')
+      .eq('id', space.ownerId)
+      .maybeSingle()
+    const row = data as { slug: string; name: string } | null
+    if (!row) return null
+    return { href: `/feed/comunidades/${row.slug}`, label: row.name }
+  }
+  return null
+}
+
 export async function getSpaceBoard(spaceSlug: string): Promise<{
   space: ForoSpace
   categories: ForoCategory[]

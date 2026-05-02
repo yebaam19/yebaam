@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import {
   getForumByslugInSpace,
   getSpaceBySlug,
+  getSpaceOwnerBackLink,
   listTopicsPage,
 } from '../../server/foro.server'
 import ForumTopicList from '@/features/foro/components/ForumTopicList'
@@ -27,6 +28,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
   if (!space) notFound()
   const forum = await getForumByslugInSpace(space.id, forumSlug)
   if (!forum) notFound()
+  const ownerBack = await getSpaceOwnerBackLink(space)
 
   const { stickies, regular, total } = await listTopicsPage(forum.id, {
     page,
@@ -54,6 +56,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
         title={forum.name}
         subtitle={forum.description ?? undefined}
         crumbs={[
+          ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
           { href: '/foro', label: 'Foros' },
           { href: `/foro/${space.slug}`, label: space.name },
         ]}

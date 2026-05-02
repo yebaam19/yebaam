@@ -1,6 +1,6 @@
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
-import { getSpaceBoard, isSpaceAdmin } from '../server/foro.server'
+import { getSpaceBoard, getSpaceOwnerBackLink, isSpaceAdmin } from '../server/foro.server'
 import SpaceBoard from '@/features/foro/components/SpaceBoard'
 import ForoHeader from '@/features/foro/components/ForoHeader'
 import { getOwnerMeta } from '@/features/foro/utils/owner'
@@ -18,6 +18,11 @@ export default async function SpacePage({ params }: PageProps) {
   const { space, categories } = result
   const userIsAdmin = await isSpaceAdmin(space.id)
   const owner = getOwnerMeta(space.ownerType)
+  const ownerBack = await getSpaceOwnerBackLink(space)
+  const crumbs = [
+    ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
+    { href: '/foro', label: 'Foros' },
+  ]
 
   const subtitleLine = (
     <span className="flex flex-wrap items-center gap-2">
@@ -35,7 +40,7 @@ export default async function SpacePage({ params }: PageProps) {
     <div className="container mx-auto max-w-6xl space-y-5 px-4 py-4 sm:py-6">
       <ForoHeader
         title={space.name}
-        crumbs={[{ href: '/foro', label: 'Foros' }]}
+        crumbs={crumbs}
         subtitle={undefined}
         action={
           userIsAdmin ? (

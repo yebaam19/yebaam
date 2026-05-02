@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { Route } from 'next'
 import {
   getSpaceBoard,
+  getSpaceOwnerBackLink,
   getTopicBySlug,
   incrementTopicView,
   isSpaceModerator,
@@ -48,10 +49,11 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
 
   const page = Math.max(1, Number(pageParam) || 1)
 
-  const [postsPage, isModerator, board] = await Promise.all([
+  const [postsPage, isModerator, board, ownerBack] = await Promise.all([
     listTopicPostsPage(result.topic.id, { page, pageSize: PAGE_SIZE }),
     isSpaceModerator(result.space.id),
     getSpaceBoard(spaceSlug),
+    getSpaceOwnerBackLink(result.space),
   ])
 
   // Increment view only on first page to avoid inflation.
@@ -85,6 +87,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
         page={postsPage.page}
         pageSize={postsPage.pageSize}
         totalPosts={postsPage.total}
+        ownerBack={ownerBack}
       />
     </div>
   )
