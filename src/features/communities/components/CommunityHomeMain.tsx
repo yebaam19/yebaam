@@ -88,53 +88,64 @@ export function CommunityHomeMain({
         )}
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Publicaciones</h2>
+      <section className="@container">
+        <div className="mb-4 flex items-baseline justify-between gap-3">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
+            Publicaciones
+          </h2>
+          {posts.length > 0 && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {posts.length} {posts.length === 1 ? 'publicación' : 'publicaciones'}
+            </span>
+          )}
+        </div>
+
+        <div className="mx-auto max-w-2xl space-y-4 @[900px]:max-w-3xl">
           {showComposer ? (
             <CommunityPostComposer communityId={c.id} />
           ) : !isMember ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="rounded-lg bg-white p-4 text-sm text-gray-600 shadow-sm dark:bg-gray-800 dark:text-gray-400">
               Únete a la comunidad para publicar.
             </div>
           ) : !c.allowMemberPosts ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="rounded-lg bg-white p-4 text-sm text-gray-600 shadow-sm dark:bg-gray-800 dark:text-gray-400">
               Solo el propietario puede publicar en esta comunidad.
             </div>
           ) : null}
+
           {posts.length > 0 ? (
             posts.map((post) => <CommunityPostCard key={post.id} post={post} />)
           ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-sm text-gray-600 dark:text-gray-400 text-center">
+            <div className="rounded-xl border border-dashed border-gray-200 bg-white p-10 text-center text-sm text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
               No hay publicaciones aún. ¡Sé el primero en publicar!
             </div>
           )}
         </div>
+      </section>
 
-        <div className="space-y-4">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Videos</h2>
-          {videos.length > 0 ? (
-            <div className="space-y-3">
-              {videos.map((m) => (
-                <StreamVideo
-                  key={m.cfVideoUid}
-                  uid={m.cfVideoUid as string}
-                  aspectRatio="16 / 9"
-                  controls
-                  className="rounded-md overflow-hidden"
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-              Aún no hay videos.
-            </div>
-          )}
-        </div>
-      </div>
+      {videos.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
+            Videos destacados
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {videos.map((m) => (
+              <StreamVideo
+                key={m.cfVideoUid}
+                uid={m.cfVideoUid as string}
+                aspectRatio="16 / 9"
+                controls
+                className="overflow-hidden rounded-lg shadow-sm"
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">Fotos destacadas</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
+          Fotos destacadas
+        </h2>
         <CommunityFeaturedPhotos posts={posts} />
       </section>
     </div>
