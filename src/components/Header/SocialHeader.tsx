@@ -90,6 +90,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
       iconSolid: NewspaperIconSolid,
       label: 'Foro',
       isActive: pathname?.startsWith('/foro'),
+      featureFlag: 'FOROS_ENABLED' as FeatureFlag,
     },
   ].filter((item) => !item.featureFlag || isFeatureEnabled(item.featureFlag))
 

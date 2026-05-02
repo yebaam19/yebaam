@@ -10,6 +10,8 @@ import { useCommentStore } from '../store/comment.store'
 import { CommentActions } from './CommentActions'
 import { CommentContent } from './CommentContent'
 import { CommentHeader } from './CommentHeader'
+import { CommentReactionButton } from '@/app/(app)/feed/reacions/components/CommentReactionButton'
+import { useReactionStore } from '@/app/(app)/feed/reacions/store/reaction.store'
 
 interface CommentItemProps {
   comment: Comment
@@ -47,6 +49,15 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
   useEffect(() => {
     setLocalComment(comment)
   }, [comment])
+
+  // Cargar reacciones del comentario (mi reacción + contadores) — la fuente
+  // de verdad es la tabla `reactions` en Supabase. El store cachea por id.
+  useEffect(() => {
+    const fetchMy = useReactionStore.getState().fetchMyReactionsForComments
+    const fetchCounts = useReactionStore.getState().fetchCountsForComments
+    void fetchMy([localComment.id])
+    void fetchCounts([localComment.id])
+  }, [localComment.id])
 
   // Escuchar actualizaciones en tiempo real de este comentario y sus replies
   useEffect(() => {
@@ -174,6 +185,9 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
 
                   {/* Acciones del comentario */}
                   <div className="mt-1.5 ml-1 flex items-center gap-4">
+                    {/* Reacción */}
+                    {!isEditing && <CommentReactionButton commentId={localComment.id} />}
+
                     {/* Botón Responder */}
                     {canReply && user && !isEditing && (
                       <button

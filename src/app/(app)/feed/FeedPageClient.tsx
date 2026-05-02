@@ -1,38 +1,12 @@
 'use client'
 
-import LiveVideoModal from '@/app/(app)/feed/post/components/LiveVideoModal'
 import { CreatePostCard } from '@/components/CreatePostCard'
 import FabComposer from '@/components/FabComposer'
 import { Stories } from '@/components/Stories'
 import { useAuth } from '@/features/auth'
-import { VideoPlayerModal } from '@/features/live-stream'
 import { CreatePostModal, EditPostModal, FeedTimeline, usePostStore } from '@/features/post'
 import { FriendSuggestionsCompact } from '@/features/user/components/FriendSuggestionCard'
-import { useState } from 'react'
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
-
-interface RecordedStream {
-  id: string
-  title: string
-  description?: string
-  playbackUrl?: string
-  recordingUrl?: string
-  author: {
-    id: string
-    username: string
-    firstName: string
-    lastName?: string
-    avatar?: string
-  }
-  stats: {
-    duration: number
-    viewerCount: number
-    peakViewerCount: number
-    endedAt?: string
-  }
-  privacy: string
-  createdAt: string
-}
 
 interface FeedPageClientProps {
   initialPosts: Post[]
@@ -41,14 +15,6 @@ interface FeedPageClientProps {
 export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
   const { user } = useAuth()
   const { openCreateModal } = usePostStore()
-  const [isLiveVideoModalOpen, setIsLiveVideoModalOpen] = useState(false)
-  const [isVideoPlayerModalOpen, setIsVideoPlayerModalOpen] = useState(false)
-  const [selectedStream, setSelectedStream] = useState<RecordedStream | null>(null)
-
-  const handleClosePlayer = () => {
-    setIsVideoPlayerModalOpen(false)
-    setSelectedStream(null)
-  }
 
   if (!user) return null
 
@@ -58,8 +24,6 @@ export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
         <Stories />
         <CreatePostModal />
         <EditPostModal />
-        <LiveVideoModal isOpen={isLiveVideoModalOpen} onClose={() => setIsLiveVideoModalOpen(false)} />
-        <VideoPlayerModal isOpen={isVideoPlayerModalOpen} onClose={handleClosePlayer} stream={selectedStream} />
 
         <CreatePostCard
           user={{
@@ -67,7 +31,6 @@ export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
             username: user.username,
           }}
           onCreateClick={() => openCreateModal()}
-          onLiveVideoClick={() => setIsLiveVideoModalOpen(true)}
         />
 
         <FeedTimeline initialPosts={initialPosts} />

@@ -26,11 +26,12 @@ export interface ReactionConfig {
 export interface Reaction {
   id: string;
   postId: string;
+  commentId?: string;
   userId: string;
   type: ReactionType;
   createdAt: string;
   updatedAt: string;
-  
+
   // Datos del usuario (populados)
   user?: {
     id: string;

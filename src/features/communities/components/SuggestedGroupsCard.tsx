@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useSuggestedCommunities, useJoinCommunity } from '@/features/communities/hooks/useCommunities'
 import { PlusIcon } from '@/components/icons/heroicons-shim'
+import { isFeatureEnabled } from '@/config/features-flag'
 
 const MAX_VISIBLE = 3
 
@@ -14,9 +15,12 @@ function formatMemberCount(n: number): string {
 }
 
 export function SuggestedGroupsCard() {
+  const enabled = isFeatureEnabled('GRUPOS_ENABLED') || isFeatureEnabled('COMUNIDADES_ENABLED')
   const { data, refetch } = useSuggestedCommunities(6)
   const join = useJoinCommunity()
   const [joinedIds, setJoinedIds] = useState<Set<string>>(() => new Set())
+
+  if (!enabled) return null
 
   const items = (data?.data ?? []).filter((c) => !c.isMember && !joinedIds.has(c.id)).slice(0, MAX_VISIBLE)
 

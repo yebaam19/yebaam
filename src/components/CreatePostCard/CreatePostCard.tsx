@@ -2,7 +2,7 @@
 
 import { getFirstName, getUserInitials } from '@/lib/user-helpers'
 import Avatar from '@/ui/Avatar'
-import { FaceSmileIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
+import { FaceSmileIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
 
 interface CreatePostCardProps {
   user: {
@@ -10,7 +10,6 @@ interface CreatePostCardProps {
     username?: string
   }
   onCreateClick: () => void
-  onLiveVideoClick?: () => void
   onFeelingClick?: () => void
   className?: string
 }
@@ -18,20 +17,11 @@ interface CreatePostCardProps {
 export default function CreatePostCard({
   user,
   onCreateClick,
-  onLiveVideoClick,
   onFeelingClick,
   className,
 }: CreatePostCardProps) {
   const firstName = getFirstName(user.username)
   const initials = getUserInitials(user.username)
-
-  const handleLiveVideoClick = () => {
-    if (onLiveVideoClick) {
-      onLiveVideoClick()
-    } else {
-      onCreateClick()
-    }
-  }
 
   const handleFeelingClick = () => {
     if (onFeelingClick) {
@@ -55,13 +45,6 @@ export default function CreatePostCard({
 
       <div className="mt-3 border-t border-neutral-200 pt-2 dark:border-neutral-800">
         <div className="flex items-center justify-around gap-1">
-          <button
-            onClick={handleLiveVideoClick}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            <VideoCameraIcon className="h-6 w-6 text-red-500" />
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Video en vivo</span>
-          </button>
           <button
             onClick={onCreateClick}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
