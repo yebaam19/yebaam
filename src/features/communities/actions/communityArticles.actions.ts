@@ -242,6 +242,75 @@ export async function updateCommunityArticle(input: UpdateCommunityArticleInput)
   return { ok: true, slug: (data as { slug: string }).slug };
 }
 
+/**
+ * Share an article into the community feed by creating a `community_posts`
+ * row that links back to the article. Members of the community will see the
+ * post in their feed. Only the article's author may share it.
+ */
+export async function shareCommunityArticleToFeed(
+  articleId: string,
+  message?: string,
+): Promise<DeleteResult> {
+  const svc = getServiceClient();
+  const { data: article } = await svc
+    .from('community_articles')
+    .select('id, community_id, author_id, slug, title, subtitle, summary, cf_image_id')
+    .eq('id', articleId)
+    .maybeSingle();
+  const row = article as
+    | {
+        id: string;
+        community_id: string;
+        author_id: string;
+        slug: string;
+        title: string;
+        subtitle: string | null;
+        summary: string | null;
+        cf_image_id: string | null;
+      }
+    | null;
+  if (!row) return { ok: false, error: 'Artículo no encontrado.' };
+
+  const client = await getServerClient();
+  const { data: auth } = await client.auth.getUser();
+  const userId = auth?.user?.id;
+  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
+  if (userId !== row.author_id) {
+    return { ok: false, error: 'Solo el autor del artículo puede compartirlo.' };
+  }
+
+  const { data: community } = await svc
+    .from('communities')
+    .select('slug')
+    .eq('id', row.community_id)
+    .maybeSingle();
+  const communitySlug = (community as { slug: string } | null)?.slug;
+  if (!communitySlug) return { ok: false, error: 'Comunidad no encontrada.' };
+
+  // The body carries an optional author message plus a stable link back to
+  // the article. The list of fields below mirrors the article-card preview;
+  // the feed renderer can later upgrade plain article links to a richer card,
+  // but we keep the link in plain text so existing renderers don't break.
+  const articleUrl = `/feed/comunidades/${communitySlug}/articulos/${row.slug}`;
+  const trimmedMessage = (message ?? '').trim().slice(0, 1000);
+  const body = trimmedMessage
+    ? `${trimmedMessage}\n\nArtículo: ${row.title}\n${articleUrl}`
+    : `Artículo: ${row.title}\n${articleUrl}`;
+
+  const { error } = await client.from('community_posts').insert({
+    community_id: row.community_id,
+    author_id: userId,
+    body,
+    media: [],
+  });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/feed/comunidades/${communitySlug}`);
+  revalidatePath(`/feed/comunidades/${communitySlug}/articulos/${row.slug}`);
+
+  return { ok: true };
+}
+
 export async function deleteCommunityArticle(articleId: string): Promise<DeleteResult> {
   const loaded = await loadArticleForManage(articleId);
   if (!loaded.ok) return { ok: false, error: loaded.error };

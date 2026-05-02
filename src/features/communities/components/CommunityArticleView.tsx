@@ -4,17 +4,20 @@ import type { Route } from 'next';
 import { ArrowLeftIcon, ClockIcon } from '@/components/icons/heroicons-shim';
 import type { CommunityArticle } from '@/features/communities/types/communityArticle.types';
 import { CommunityArticleActionsMenu } from './CommunityArticleActionsMenu';
+import { CommunityArticleShareButton } from './CommunityArticleShareButton';
 
 interface CommunityArticleViewProps {
   communitySlug: string;
   article: CommunityArticle;
   canManage?: boolean;
+  isAuthor?: boolean;
 }
 
 export function CommunityArticleView({
   communitySlug,
   article,
   canManage = false,
+  isAuthor = false,
 }: CommunityArticleViewProps) {
   const date = new Date(article.publishedAt).toLocaleDateString('es-MX', {
     day: 'numeric',
@@ -32,14 +35,23 @@ export function CommunityArticleView({
           <ArrowLeftIcon className="h-4 w-4" />
           Volver a artículos
         </Link>
-        {canManage && (
-          <CommunityArticleActionsMenu
-            articleId={article.id}
-            communitySlug={communitySlug}
-            articleSlug={article.slug}
-            articleTitle={article.title}
-          />
-        )}
+        <div className="flex items-center gap-1">
+          {isAuthor && (
+            <CommunityArticleShareButton
+              articleId={article.id}
+              articleTitle={article.title}
+              communitySlug={communitySlug}
+            />
+          )}
+          {canManage && (
+            <CommunityArticleActionsMenu
+              articleId={article.id}
+              communitySlug={communitySlug}
+              articleSlug={article.slug}
+              articleTitle={article.title}
+            />
+          )}
+        </div>
       </div>
 
       <header className="space-y-3">
