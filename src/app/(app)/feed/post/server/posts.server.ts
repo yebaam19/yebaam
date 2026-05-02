@@ -64,35 +64,24 @@ export async function listTimelinePosts(limit = 20): Promise<Post[]> {
   const userId = auth?.user?.id;
   if (!userId) return [];
 
-  // Own posts + accepted friends + fellow club-members (Facebook-style feed).
-  const [{ data: friendships }, { data: myMemberships }] = await Promise.all([
-    client
-      .from('friendships')
-      .select('requester_id, recipient_id')
-      .eq('status', 'accepted')
-      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
-    client.from('club_members').select('club_id').eq('user_id', userId),
-  ]);
+  // Friends-only feed: own posts (any privacy) + accepted-friend posts whose
+  // privacy is 'public' or 'friends'. Private friend posts stay hidden.
+  const { data: friendships } = await client
+    .from('friendships')
+    .select('requester_id, recipient_id')
+    .eq('status', 'accepted')
+    .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
 
-  const connectedIds = new Set<string>([userId]);
+  const allowedAuthorIds = new Set<string>([userId]);
   for (const f of (friendships ?? []) as Array<{ requester_id: string; recipient_id: string }>) {
-    connectedIds.add(f.requester_id === userId ? f.recipient_id : f.requester_id);
-  }
-  const myClubIds = ((myMemberships ?? []) as Array<{ club_id: string }>).map((m) => m.club_id);
-  if (myClubIds.length > 0) {
-    const { data: clubmates } = await client
-      .from('club_members')
-      .select('user_id')
-      .in('club_id', myClubIds);
-    for (const row of (clubmates ?? []) as Array<{ user_id: string }>) {
-      connectedIds.add(row.user_id);
-    }
+    allowedAuthorIds.add(f.requester_id === userId ? f.recipient_id : f.requester_id);
   }
 
   const { data: rows, error } = await client
     .from('posts')
     .select('*')
-    .in('author_id', Array.from(connectedIds))
+    .in('author_id', Array.from(allowedAuthorIds))
+    .or(`author_id.eq.${userId},privacy.in.(public,friends)`)
     .order('created_at', { ascending: false })
     .limit(limit);
 
