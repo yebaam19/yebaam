@@ -26,6 +26,20 @@ export async function reviewVerificationRequestAction(input: {
   const parsed = adminReviewSchema.parse(input);
   const { sb, adminId } = await requireAdmin();
 
+  // An admin must not review their own verification request — verified status
+  // is a public trust signal and requires an independent reviewer. RLS only
+  // checks `is_platform_admin()`, so this guard has to live here.
+  const { data: target, error: targetErr } = await sb
+    .from('verification_requests')
+    .select('user_id')
+    .eq('id', parsed.requestId)
+    .maybeSingle();
+  if (targetErr) throw new Error(targetErr.message);
+  if (!target) throw new Error('Solicitud no encontrada');
+  if ((target as { user_id: string }).user_id === adminId) {
+    throw new Error('No puedes revisar tu propia solicitud de verificación');
+  }
+
   const { error } = await sb
     .from('verification_requests')
     .update({
