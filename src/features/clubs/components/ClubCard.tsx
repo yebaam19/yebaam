@@ -12,8 +12,6 @@ import {
   getCategoryLabel,
   getCategoryColor,
   formatMembersCount,
-  getTierBadgeColor,
-  getMembershipTierLabel,
 } from '../utils/clubHelpers';
 
 interface ClubCardProps {
@@ -23,46 +21,48 @@ interface ClubCardProps {
   isLoading?: boolean;
 }
 
-export const ClubCard: FC<ClubCardProps> = ({
-  club,
-  onJoin,
-  onLeave,
-  isLoading = false,
-}) => {
-  const handleMembershipClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+const AVATAR_PALETTE = [
+  'from-emerald-400 to-teal-500',
+  'from-purple-500 to-indigo-600',
+  'from-cyan-400 to-sky-500',
+  'from-orange-400 to-amber-500',
+  'from-pink-500 to-rose-500',
+  'from-blue-400 to-indigo-500',
+  'from-fuchsia-500 to-pink-500',
+  'from-lime-400 to-emerald-500',
+];
 
-    if (isLoading) return;
+function pickAvatarGradient(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+}
 
-    if (club.isMember) {
-      onLeave?.(club.id);
-    } else {
-      onJoin?.(club.id);
-    }
-  };
-
+export const ClubCard: FC<ClubCardProps> = ({ club }) => {
   const isPrivate = club.privacy === 'PRIVATE';
+  const avatarGradient = pickAvatarGradient(club.id || club.slug || club.name);
 
   return (
     <Link href={`/feed/clubs/${club.slug}`} className="group block h-full">
       <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:ring-emerald-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-700 dark:hover:ring-emerald-900/40">
         {/* Cover */}
-        <div className="relative h-24 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500">
+        <div className="relative h-32 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500">
           {club.coverImageUrl ? (
             <Image
               src={club.coverImageUrl}
               alt=""
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               unoptimized
             />
           ) : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
           {/* Privacy Badge */}
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
             {isPrivate ? (
               <>
                 <LockClosedIcon className="h-3 w-3" />
@@ -77,20 +77,22 @@ export const ClubCard: FC<ClubCardProps> = ({
           </span>
 
           {/* Profile image */}
-          <div className="absolute -bottom-7 left-4">
-            <div className="relative h-14 w-14 overflow-hidden rounded-xl border-2 border-white bg-white shadow-md dark:border-neutral-900 dark:bg-neutral-800">
+          <div className="absolute -bottom-6 left-4">
+            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md dark:border-neutral-900 dark:bg-neutral-800">
               {club.profileImageUrl ? (
                 <Image
                   src={club.profileImageUrl}
                   alt={club.name}
                   fill
-                  sizes="56px"
+                  sizes="64px"
                   className="object-cover"
                   unoptimized
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-400 to-sky-500">
-                  <span className="text-lg font-bold text-white">
+                <div
+                  className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${avatarGradient}`}
+                >
+                  <span className="text-xl font-bold text-white">
                     {club.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -128,70 +130,20 @@ export const ClubCard: FC<ClubCardProps> = ({
           </p>
 
           {/* Stats row */}
-          <div className="mb-3 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
+          <div className="mb-4 flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
             <div className="inline-flex items-center gap-1.5">
               <UsersIcon className="h-4 w-4" />
-              <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                {formatMembersCount(club.stats.membersCount)}
-              </span>
-              <span>miembros</span>
+              <span>{formatMembersCount(club.stats.membersCount)} miembros</span>
             </div>
-            {club.stats.growthRate && club.stats.growthRate > 0 && (
-              <span className="inline-flex items-center gap-0.5 font-medium text-emerald-600 dark:text-emerald-400">
-                ↑ {club.stats.growthRate.toFixed(1)}%
-              </span>
-            )}
+            <span className="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              Gratis
+            </span>
           </div>
 
-          {/* Membership tier */}
-          {club.isMember && club.currentUserTier && (
-            <div className="mb-3">
-              <span
-                className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium ${getTierBadgeColor(
-                  club.currentUserTier,
-                )}`}
-              >
-                {getMembershipTierLabel(club.currentUserTier)}
-              </span>
-            </div>
-          )}
-
           {/* Action */}
-          <button
-            onClick={handleMembershipClick}
-            disabled={isLoading}
-            className={`mt-auto w-full rounded-lg px-4 py-2 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
-              club.isMember
-                ? 'border border-neutral-200 bg-white text-neutral-700 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:border-red-900/40 dark:hover:bg-red-900/20 dark:hover:text-red-300'
-                : 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 hover:shadow-md dark:bg-emerald-500 dark:hover:bg-emerald-400'
-            }`}
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Procesando…
-              </span>
-            ) : club.isMember ? (
-              'Miembro'
-            ) : (
-              'Unirse'
-            )}
-          </button>
+          <span className="mt-auto inline-flex w-full items-center justify-center rounded-lg border border-emerald-500/70 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-all group-hover:border-emerald-600 group-hover:bg-emerald-50 dark:border-emerald-600/70 dark:bg-transparent dark:text-emerald-400 dark:group-hover:bg-emerald-900/20">
+            Ver detalles
+          </span>
         </div>
       </article>
     </Link>
