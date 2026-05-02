@@ -3,6 +3,8 @@
 import ChatBubble from '@/components/chat/ChatBubble'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { usePresenceStore } from '@/features/presence/store/presence.store'
+import { FriendRequestsCard } from '@/features/friendships/components/FriendRequestsCard'
+import { SuggestedGroupsCard } from '@/features/communities/components/SuggestedGroupsCard'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -10,7 +12,6 @@ import BirthdaysSection from './BirthdaysSection'
 import OnlineContacts from './OnlineContacts'
 import { PortalAd } from './PortalAd'
 import { InviteFriends } from './friends/InviteFriends'
-import { TrendingTopics } from './friends/TrendingTopics'
 import { resolveRailExtras } from './rail-registry'
 
 interface OnlineContact {
@@ -74,8 +75,9 @@ function DefaultRail() {
   return (
     <>
       <InviteFriends />
+      <FriendRequestsCard />
+      <SuggestedGroupsCard />
       <PortalAd />
-      <TrendingTopics />
       <BirthdaysSection birthdays={[]} />
       <OnlineContacts contacts={onlineContacts} onContactClick={handleOpenChat} />
 
@@ -108,13 +110,13 @@ export default function RightSidebar() {
         <DefaultRail />
 
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <Link href="/privacidad" className="hover:underline">
               Privacidad
             </Link>
             <span>·</span>
             <Link href="/terminos" className="hover:underline">
-              Términos
+              Condiciones
             </Link>
             <span>·</span>
             <Link href="/publicidad" className="hover:underline">
@@ -124,8 +126,13 @@ export default function RightSidebar() {
             <Link href="/cookies" className="hover:underline">
               Cookies
             </Link>
+            <span>·</span>
+            <Link href={'/mas' as never} className="hover:underline">
+              Más
+            </Link>
+            <span>·</span>
+            <span>© {new Date().getFullYear()} Yebaam</span>
           </div>
-          <p className="mt-2">yebaam © 2025</p>
         </div>
       </div>
     </aside>

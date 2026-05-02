@@ -22,15 +22,9 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
-  const { myReactionsByPost, reactToPost, unreactToPost, updateReaction, fetchMyReaction } =
+  const { myReactionsByPost, reactToPost, unreactToPost, updateReaction } =
     useReactionStore();
   const myReaction = myReactionsByPost[postId];
-
-  // Cargar reacción del usuario desde Supabase (persiste entre sesiones; el store es solo en memoria)
-  useEffect(() => {
-    if (!postId || !user?.id) return;
-    void fetchMyReaction(postId);
-  }, [postId, user?.id, fetchMyReaction]);
 
   // Limpieza al desmontar
   useEffect(() => {

@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePostSocketEvents } from '../hooks/usePostSocketEvents';
-import { useReactionSocket } from '@/app/(app)/feed/reacions';
+import { useReactionSocket, useReactionStore } from '@/app/(app)/feed/reacions';
+import { useAuth } from '@/features/auth';
 import PostCard from './PostCard';
 import { usePosts, useSuggestedPosts } from '../hooks/usePosts';
 import { getCached, setCached } from '@/lib/hooks/cacheStore';
@@ -39,6 +40,16 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
   // Activar WebSocket para actualizaciones en tiempo real
   usePostSocketEvents();
   useReactionSocket();
+
+  // Bulk-load the current user's reaction for every visible post in one query.
+  // Replaces the per-post fetchMyReaction effect that fired N requests on render.
+  const { user } = useAuth();
+  const fetchMyReactionsForPosts = useReactionStore((s) => s.fetchMyReactionsForPosts);
+  const visibleIds = posts.length > 0 ? posts.map((p) => p.id).join(',') : '';
+  useEffect(() => {
+    if (!user?.id || !visibleIds) return;
+    void fetchMyReactionsForPosts(visibleIds.split(','));
+  }, [user?.id, visibleIds, fetchMyReactionsForPosts]);
 
   // Mostrar mensaje de error si falla la carga
   if (error) {

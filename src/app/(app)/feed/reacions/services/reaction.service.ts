@@ -213,6 +213,29 @@ export class ReactionService {
     return rowToReaction(row, new Map());
   }
 
+  async getMyReactionsForPosts(postIds: string[]): Promise<Record<string, Reaction | null>> {
+    const result: Record<string, Reaction | null> = {};
+    for (const id of postIds) result[id] = null;
+
+    if (postIds.length === 0) return result;
+
+    const userId = await getCurrentUserId();
+    if (!userId) return result;
+
+    const { data, error } = await supabase
+      .from('reactions')
+      .select('*')
+      .eq('user_id', userId)
+      .in('post_id', postIds);
+    if (error || !data) return result;
+
+    for (const row of data as DbReaction[]) {
+      const postId = row.post_id;
+      if (postId) result[postId] = rowToReaction(row, new Map());
+    }
+    return result;
+  }
+
   async getCounts(postId: string): Promise<ReactionCounts> {
     const { data, error } = await supabase
       .from('reactions')

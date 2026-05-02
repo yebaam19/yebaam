@@ -2,9 +2,7 @@
 
 import { getFirstName, getUserInitials } from '@/lib/user-helpers'
 import Avatar from '@/ui/Avatar'
-import { PencilIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
-import Link from 'next/link'
-import { isFeatureEnabled } from '@/config/features-flag'
+import { FaceSmileIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 
 interface CreatePostCardProps {
   user: {
@@ -13,10 +11,17 @@ interface CreatePostCardProps {
   }
   onCreateClick: () => void
   onLiveVideoClick?: () => void
+  onFeelingClick?: () => void
   className?: string
 }
 
-export default function CreatePostCard({ user, onCreateClick, onLiveVideoClick, className }: CreatePostCardProps) {
+export default function CreatePostCard({
+  user,
+  onCreateClick,
+  onLiveVideoClick,
+  onFeelingClick,
+  className,
+}: CreatePostCardProps) {
   const firstName = getFirstName(user.username)
   const initials = getUserInitials(user.username)
 
@@ -28,10 +33,17 @@ export default function CreatePostCard({ user, onCreateClick, onLiveVideoClick, 
     }
   }
 
+  const handleFeelingClick = () => {
+    if (onFeelingClick) {
+      onFeelingClick()
+    } else {
+      onCreateClick()
+    }
+  }
+
   return (
     <div className={`rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900 ${className || ''}`}>
-      {/* Input de creación */}
-      <div className="mb-3 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <Avatar src={user.avatar} className="size-10" initials={initials} />
         <button
           onClick={onCreateClick}
@@ -41,9 +53,8 @@ export default function CreatePostCard({ user, onCreateClick, onLiveVideoClick, 
         </button>
       </div>
 
-      {/* Botones de acción */}
-      <div className="mt-3 border-t border-neutral-200 pt-3 dark:border-neutral-800">
-        <div className="flex items-center justify-around gap-2">
+      <div className="mt-3 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+        <div className="flex items-center justify-around gap-1">
           <button
             onClick={handleLiveVideoClick}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -58,15 +69,13 @@ export default function CreatePostCard({ user, onCreateClick, onLiveVideoClick, 
             <PhotoIcon className="h-6 w-6 text-green-500" />
             <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Foto/Video</span>
           </button>
-          {isFeatureEnabled('ARTICLES_ENABLED') && (
-            <Link
-              href="/feed/article/new"
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            >
-              <PencilIcon className="h-6 w-6 text-primary-500" />
-              <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Escribir Artículo</span>
-            </Link>
-          )}
+          <button
+            onClick={handleFeelingClick}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          >
+            <FaceSmileIcon className="h-6 w-6 text-yellow-500" />
+            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Sentimiento/Actividad</span>
+          </button>
         </div>
       </div>
     </div>

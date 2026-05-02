@@ -150,12 +150,9 @@ export const useFriendshipsStore = create<FriendshipsState>()(
      
 
         } catch (error) {
-          console.error('[FriendshipsStore]  Error al cargar solicitudes:', error);
           const errorMsg = error instanceof Error ? error.message : 'Error al cargar solicitudes';
           set({ error: errorMsg, isLoading: false });
           toast.error(errorMsg);
-
-
         }
       },
 
@@ -260,7 +257,6 @@ export const useFriendshipsStore = create<FriendshipsState>()(
           );
 
           if (friendRequestNotification) {
-            console.log('[FriendshipsStore] Eliminando notificación de solicitud aceptada:', friendRequestNotification.id);
             notificationStore.removeNotificationFromList(friendRequestNotification.id);
             
             // Actualizar contador de no leídas
@@ -305,7 +301,6 @@ export const useFriendshipsStore = create<FriendshipsState>()(
           );
 
           if (friendRequestNotification) {
-            console.log('[FriendshipsStore] Eliminando notificación de solicitud rechazada:', friendRequestNotification.id);
             notificationStore.removeNotificationFromList(friendRequestNotification.id);
             
             // Actualizar contador de no leídas
@@ -519,36 +514,15 @@ export const useFriendshipsStore = create<FriendshipsState>()(
        */
       getFriendshipStatus: (userId: string) => {
         const state = get();
-    
-        
-        // Verificar si es amigo
-        const isFriend = state.friends.some(f => f.friendId === userId);
-        if (isFriend) {
-          console.log('Es AMIGO');
-      
-          return 'friends';
-        }
-        
-        // Verificar si hay solicitud enviada
+
+        if (state.friends.some(f => f.friendId === userId)) return 'friends';
+
         const sentRequest = state.sentRequests.find(r => r.addresseeId === userId && r.status === 'pending');
-        if (sentRequest) {
-          console.log('   Solicitud ENVIADA (pending)');
-       
-      
-          return 'pending-sent';
-        }
-        
-        // Verificar si hay solicitud recibida
+        if (sentRequest) return 'pending-sent';
+
         const receivedRequest = state.pendingRequests.find(r => r.requesterId === userId && r.status === 'pending');
-        if (receivedRequest) {
-      
-          console.log('  Request ID:', receivedRequest.id);
-      
-          return 'pending-received';
-        }
-        
-        console.log('   Sin relación');
-    
+        if (receivedRequest) return 'pending-received';
+
         return 'none';
       },
 

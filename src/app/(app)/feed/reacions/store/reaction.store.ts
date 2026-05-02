@@ -26,6 +26,7 @@ interface ReactionState {
   updateReaction: (postId: string, type: ReactionType) => Promise<void>;
   fetchReactionsByPost: (postId: string, filters?: GetReactionsFilters) => Promise<void>;
   fetchMyReaction: (postId: string) => Promise<void>;
+  fetchMyReactionsForPosts: (postIds: string[]) => Promise<void>;
   fetchCounts: (postId: string) => Promise<void>;
 
   // Acciones - WebSocket
@@ -58,11 +59,8 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    */
   reactToPost: async (postId: string, type: ReactionType) => {
     try {
-      console.log('[REACTION STORE] reactToPost:', postId, type);
-
       const reaction = await reactionService.react({ postId, type });
 
-      // Actualizar estado local
       set(state => ({
         myReactionsByPost: {
           ...state.myReactionsByPost,
@@ -70,12 +68,8 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
         },
       }));
 
-      // Incrementar contador
       get().incrementCount(postId, type);
-
-      console.log('[REACTION STORE] Reacción creada:', reaction);
     } catch (error) {
-      console.error('[REACTION STORE] reactToPost - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al reaccionar';
       set({ error: errorMessage });
       toast.error(errorMessage);
@@ -88,30 +82,20 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    */
   unreactToPost: async (postId: string) => {
     try {
-      console.log('[REACTION STORE] unreactToPost:', postId);
-
       const currentReaction = get().myReactionsByPost[postId];
-      if (!currentReaction) {
-        console.warn('[REACTION STORE] No hay reacción para quitar');
-        return;
-      }
+      if (!currentReaction) return;
 
       await reactionService.unreact(postId);
 
-      // Decrementar contador
       get().decrementCount(postId, currentReaction.type);
 
-      // Actualizar estado local
       set(state => ({
         myReactionsByPost: {
           ...state.myReactionsByPost,
           [postId]: null,
         },
       }));
-
-      console.log('[REACTION STORE] Reacción eliminada');
     } catch (error) {
-      console.error('[REACTION STORE] unreactToPost - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al quitar reacción';
       set({ error: errorMessage });
       toast.error(errorMessage);
@@ -124,34 +108,25 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    */
   updateReaction: async (postId: string, type: ReactionType) => {
     try {
-      console.log('[REACTION STORE] updateReaction:', postId, type);
-
       const currentReaction = get().myReactionsByPost[postId];
       if (!currentReaction) {
-        // Si no hay reacción actual, crear una nueva
         await get().reactToPost(postId, type);
         return;
       }
 
-      // Decrementar contador anterior
       get().decrementCount(postId, currentReaction.type);
 
       const reaction = await reactionService.updateReaction(postId, { type });
 
-      // Incrementar nuevo contador
       get().incrementCount(postId, type);
 
-      // Actualizar estado local
       set(state => ({
         myReactionsByPost: {
           ...state.myReactionsByPost,
           [postId]: reaction,
         },
       }));
-
-      console.log('[REACTION STORE] Reacción actualizada:', reaction);
     } catch (error) {
-      console.error('[REACTION STORE] updateReaction - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al actualizar reacción';
       set({ error: errorMessage });
       toast.error(errorMessage);
@@ -165,8 +140,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
   fetchReactionsByPost: async (postId: string, filters?: GetReactionsFilters) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('[REACTION STORE] fetchReactionsByPost:', postId);
-
       const response = await reactionService.getByPost(postId, filters);
 
       set(state => ({
@@ -184,10 +157,7 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
         },
         isLoading: false,
       }));
-
-      console.log('[REACTION STORE] Reacciones cargadas:', response.reactions.length);
     } catch (error) {
-      console.error('[REACTION STORE] fetchReactionsByPost - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al cargar reacciones';
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
@@ -199,8 +169,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    */
   fetchMyReaction: async (postId: string) => {
     try {
-      console.log('[REACTION STORE] fetchMyReaction:', postId);
-
       const reaction = await reactionService.getMyReaction(postId);
 
       set(state => ({
@@ -209,11 +177,33 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
           [postId]: reaction,
         },
       }));
+    } catch {
+      // Silent — used during render; surface errors via UI on user actions only
+    }
+  },
 
-      console.log('[REACTION STORE] Mi reacción:', reaction);
-    } catch (error) {
-      console.error('[REACTION STORE] fetchMyReaction - Error:', error);
-      // No mostrar toast para este error
+  /**
+   * Bulk-load the current user's reaction for a list of posts in a single request.
+   * Replaces the per-post fetchMyReaction effect that caused N+1 round-trips.
+   * Skips ids already cached so a second feed page only queries the new ones.
+   */
+  fetchMyReactionsForPosts: async (postIds: string[]) => {
+    if (postIds.length === 0) return;
+
+    const cached = get().myReactionsByPost;
+    const missing = postIds.filter(id => !(id in cached));
+    if (missing.length === 0) return;
+
+    try {
+      const reactions = await reactionService.getMyReactionsForPosts(missing);
+      set(state => ({
+        myReactionsByPost: {
+          ...state.myReactionsByPost,
+          ...reactions,
+        },
+      }));
+    } catch {
+      // Silent
     }
   },
 
@@ -222,8 +212,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    */
   fetchCounts: async (postId: string) => {
     try {
-      console.log('[REACTION STORE] fetchCounts:', postId);
-
       const counts = await reactionService.getCounts(postId);
 
       set(state => ({
@@ -232,10 +220,8 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
           [postId]: counts,
         },
       }));
-
-      console.log('[REACTION STORE] Contadores:', counts);
-    } catch (error) {
-      console.error('[REACTION STORE] fetchCounts - Error:', error);
+    } catch {
+      // Silent
     }
   },
 
@@ -247,8 +233,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    * [WebSocket] Agregar nueva reacción
    */
   addReaction: (reaction: Reaction) => {
-    console.log('[REACTION STORE] addReaction:', reaction);
-
     set(state => {
       const postReactions = state.reactionsByPost[reaction.postId] || [];
 
@@ -268,8 +252,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    * [WebSocket] Remover reacción
    */
   removeReaction: (postId: string, userId: string) => {
-    console.log('[REACTION STORE] removeReaction:', postId, userId);
-
     set(state => {
       const postReactions = state.reactionsByPost[postId] || [];
       const removedReaction = postReactions.find(r => r.userId === userId);
@@ -289,8 +271,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    * [WebSocket] Actualizar reacción existente
    */
   updateReactionInList: (reaction: Reaction) => {
-    console.log('[REACTION STORE] updateReactionInList:', reaction);
-
     set(state => {
       const postReactions = state.reactionsByPost[reaction.postId] || [];
 
@@ -366,7 +346,6 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
   },
 
   reset: () => {
-    console.log('[REACTION STORE] reset');
     set({
       reactions: [],
       reactionsByPost: {},

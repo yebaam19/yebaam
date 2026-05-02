@@ -100,13 +100,10 @@ export const usePostStore = create<PostState>((set, get) => ({
   fetchTimeline: async (filters?: GetPostsFilters) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('[POST STORE] fetchTimeline - Iniciando...');
       const posts = await postService.getAll(filters);
-      console.log('[POST STORE] fetchTimeline - Posts recibidos:', posts.length);
-      
       const safePosts = Array.isArray(get().posts) ? get().posts : [];
       const newPosts = filters?.page === 1 ? posts : [...safePosts, ...posts];
-      
+
       set({
         posts: newPosts,
         currentPage: filters?.page || 1,
@@ -114,10 +111,7 @@ export const usePostStore = create<PostState>((set, get) => ({
         totalPosts: filters?.page === 1 ? posts.length : get().totalPosts + posts.length,
         isLoading: false,
       });
-      
-      console.log('[POST STORE] fetchTimeline - Total posts:', get().posts.length);
     } catch (error) {
-      console.error('[POST STORE] fetchTimeline - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al cargar posts';
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
@@ -130,12 +124,10 @@ export const usePostStore = create<PostState>((set, get) => ({
   fetchUserPosts: async (userId: string, filters?: GetPostsFilters) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('[POST STORE] fetchUserPosts - Usuario:', userId);
       const posts = await postService.getUserPosts(userId, filters);
-      
       const safePosts = Array.isArray(get().posts) ? get().posts : [];
       const newPosts = filters?.page === 1 ? posts : [...safePosts, ...posts];
-      
+
       set({
         posts: newPosts,
         currentPage: filters?.page || 1,
@@ -144,7 +136,6 @@ export const usePostStore = create<PostState>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error('[POST STORE] fetchUserPosts - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al cargar posts del usuario';
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
@@ -157,12 +148,10 @@ export const usePostStore = create<PostState>((set, get) => ({
   fetchMyPosts: async (filters?: GetPostsFilters) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('[POST STORE] fetchMyPosts - Iniciando...');
       const posts = await postService.getMyPosts(filters);
-      
       const safePosts = Array.isArray(get().posts) ? get().posts : [];
       const newPosts = filters?.page === 1 ? posts : [...safePosts, ...posts];
-      
+
       set({
         posts: newPosts,
         currentPage: filters?.page || 1,
@@ -170,10 +159,7 @@ export const usePostStore = create<PostState>((set, get) => ({
         totalPosts: filters?.page === 1 ? posts.length : get().totalPosts + posts.length,
         isLoading: false,
       });
-      
-      console.log('[POST STORE] fetchMyPosts - Total posts:', get().posts.length);
     } catch (error) {
-      console.error('[POST STORE] fetchMyPosts - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al cargar tus posts';
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
@@ -186,11 +172,9 @@ export const usePostStore = create<PostState>((set, get) => ({
   fetchPostById: async (postId: string) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('[POST STORE] fetchPostById:', postId);
       const post = await postService.getById(postId);
       set({ currentPost: post, isLoading: false });
     } catch (error) {
-      console.error('[POST STORE] fetchPostById - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al cargar post';
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
@@ -203,19 +187,10 @@ export const usePostStore = create<PostState>((set, get) => ({
   createPost: async (data: CreatePostDTO) => {
     set({ isCreating: true, error: null });
     try {
-      console.log('[POST STORE] createPost - Datos:', data);
-      
       const newPost = await postService.create(data);
-      console.log('[POST STORE] createPost - Post creado:', newPost.id);
-      console.log('[POST STORE] createPost - Post completo:', newPost);
-      
-      // Agregar al inicio de la lista
       const safePosts = Array.isArray(get().posts) ? get().posts : [];
-      console.log('[POST STORE] createPost - Posts actuales:', safePosts.length);
-      
       const updatedPosts = [newPost, ...safePosts];
-      console.log('[POST STORE] createPost - Posts después de agregar:', updatedPosts.length);
-      
+
       set({
         posts: updatedPosts,
         totalPosts: safePosts.length + 1,
@@ -223,18 +198,15 @@ export const usePostStore = create<PostState>((set, get) => ({
         isCreateModalOpen: false,
       });
 
-      // Also push into the shared cacheStore so FeedTimeline (which reads from
-      // usePosts → useFetch → cacheStore) re-renders instantly without reload.
+      // Mirror into shared cache so FeedTimeline (usePosts → useFetch → cacheStore) re-renders.
       updateCached<TimelineCache>(TIMELINE_CACHE_KEY, (record) => ({
         data: record?.data ? [newPost, ...record.data] : [newPost],
         fetchedAt: Date.now(),
       }));
 
-      console.log('[POST STORE] createPost - Estado actualizado. Total posts:', get().posts.length);
       toast.success('Post creado exitosamente');
       return newPost;
     } catch (error) {
-      console.error('[POST STORE] createPost - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al crear post';
       set({ error: errorMessage, isCreating: false });
       toast.error(errorMessage);
@@ -248,33 +220,21 @@ export const usePostStore = create<PostState>((set, get) => ({
   updatePost: async (postId: string, data: UpdatePostDTO) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('[POST STORE] updatePost - Actualizando post:', postId);
-      console.log('[POST STORE] updatePost - Data:', data);
-      
       const updatedPost = await postService.update(postId, data);
-      console.log('[POST STORE] updatePost - Post actualizado:', {
-        id: updatedPost.id,
-        backgroundColor: updatedPost.backgroundColor,
-        content: updatedPost.content?.substring(0, 50),
-      });
 
-      // Actualizar el post en la lista
       get().updatePostInList(postId, updatedPost);
-      
-      // Si el currentPost es el mismo que estamos actualizando, refrescarlo también
+
       if (get().currentPost?.id === postId) {
-        console.log('[POST STORE] updatePost - Actualizando currentPost también');
         set({ currentPost: updatedPost });
       }
-      
-      set({ 
-        isLoading: false, 
+
+      set({
+        isLoading: false,
         isEditModalOpen: false,
         postToEdit: null,
       });
       toast.success('Post actualizado');
     } catch (error) {
-      console.error('🔴 [POST STORE] updatePost - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al actualizar post';
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
@@ -286,13 +246,11 @@ export const usePostStore = create<PostState>((set, get) => ({
    */
   deletePost: async (postId: string) => {
     try {
-      console.log('[POST STORE] deletePost:', postId);
       await postService.delete(postId);
-      
+
       get().removePostFromList(postId);
       set({ totalPosts: Math.max(0, get().totalPosts - 1) });
 
-      // Mirror the removal into the shared cache so FeedTimeline re-renders.
       updateCached<TimelineCache>(TIMELINE_CACHE_KEY, (record) => ({
         data: record?.data ? record.data.filter((p) => p.id !== postId) : [],
         fetchedAt: Date.now(),
@@ -300,7 +258,6 @@ export const usePostStore = create<PostState>((set, get) => ({
 
       toast.success('Post eliminado');
     } catch (error) {
-      console.error('[POST STORE] deletePost - Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al eliminar post';
       toast.error(errorMessage);
       throw error;
@@ -312,46 +269,33 @@ export const usePostStore = create<PostState>((set, get) => ({
    */
   reactToPost: async (postId: string, reactionType: ReactionType) => {
     try {
-      console.log('[POST STORE] reactToPost:', postId, reactionType);
       const updatedPost = await postService.react(postId, reactionType);
       get().updatePostInList(postId, updatedPost);
     } catch (error) {
-      console.error('[POST STORE] reactToPost - Error:', error);
       toast.error('Error al reaccionar');
       throw error;
     }
   },
 
-  /**
-   * Quitar reacción de un post
-   */
   unreactToPost: async (postId: string) => {
     try {
-      console.log('[POST STORE] unreactToPost:', postId);
       const updatedPost = await postService.unreact(postId);
       get().updatePostInList(postId, updatedPost);
     } catch (error) {
-      console.error('[POST STORE] unreactToPost - Error:', error);
       toast.error('Error al quitar reacción');
       throw error;
     }
   },
 
-  /**
-   * Comentar en un post
-   */
   commentOnPost: async (data: CreateCommentDTO) => {
     try {
-      console.log('[POST STORE] commentOnPost:', data.postId);
       await postService.comment(data);
-      
-      // Recargar el post para obtener el contador actualizado
+
       const updatedPost = await postService.getById(data.postId);
       get().updatePostInList(data.postId, updatedPost);
-      
+
       toast.success('Comentario agregado');
     } catch (error) {
-      console.error('[POST STORE] commentOnPost - Error:', error);
       toast.error('Error al comentar');
       throw error;
     }
@@ -365,42 +309,28 @@ export const usePostStore = create<PostState>((set, get) => ({
    * [WebSocket] Agregar nuevo post al feed
    */
   addPostToList: (post: Post) => {
-    console.log('[POST STORE] addPostToList:', post.id);
-    
     const safePosts = Array.isArray(get().posts) ? get().posts : [];
-    
-    // Verificar si el post ya existe
     const exists = safePosts.some(p => p.id === post.id);
-    
-    if (exists) {
-      console.log('[POST STORE] Post ya existe, ignorando duplicado');
-      return;
-    }
-    
-    // Agregar al inicio de la lista
-    set({ 
+    if (exists) return;
+
+    set({
       posts: [post, ...safePosts],
       totalPosts: get().totalPosts + 1,
     });
-    
-    console.log('[POST STORE] Post agregado. Total:', get().posts.length);
   },
 
   /**
    * [WebSocket] Actualizar post existente
    */
   updatePostInList: (postId: string, updates: Partial<Post>) => {
-    console.log('[POST STORE] updatePostInList:', postId);
-    
     const safePosts = Array.isArray(get().posts) ? get().posts : [];
-    
+
     const newPosts = safePosts.map(post =>
       post.id === postId ? { ...post, ...updates } : post
     );
-    
+
     set({ posts: newPosts });
-    
-    // También actualizar currentPost si es el mismo
+
     if (get().currentPost?.id === postId) {
       set({ currentPost: { ...get().currentPost!, ...updates } });
     }
@@ -410,15 +340,12 @@ export const usePostStore = create<PostState>((set, get) => ({
    * [WebSocket] Remover post del feed
    */
   removePostFromList: (postId: string) => {
-    console.log('[POST STORE] removePostFromList:', postId);
-    
     const safePosts = Array.isArray(get().posts) ? get().posts : [];
-    
+
     set({
       posts: safePosts.filter(post => post.id !== postId),
     });
-    
-    // También limpiar currentPost si es el mismo
+
     if (get().currentPost?.id === postId) {
       set({ currentPost: null });
     }
@@ -428,8 +355,6 @@ export const usePostStore = create<PostState>((set, get) => ({
    * [WebSocket] Incrementar contador de una reacción
    */
   incrementReactionCount: (postId: string, reactionType: ReactionType) => {
-    console.log('[POST STORE] incrementReactionCount:', postId, reactionType);
-    
     const safePosts = Array.isArray(get().posts) ? get().posts : [];
     const reactionKey = reactionType.toLowerCase();
     
@@ -468,8 +393,6 @@ export const usePostStore = create<PostState>((set, get) => ({
    * [WebSocket] Decrementar contador de una reacción
    */
   decrementReactionCount: (postId: string, reactionType: ReactionType) => {
-    console.log('[POST STORE] decrementReactionCount:', postId, reactionType);
-    
     const safePosts = Array.isArray(get().posts) ? get().posts : [];
     const reactionKey = reactionType.toLowerCase();
     
@@ -508,8 +431,6 @@ export const usePostStore = create<PostState>((set, get) => ({
    * [WebSocket] Establecer reacción del usuario actual
    */
   setCurrentUserReaction: (postId: string, reactionType: ReactionType | null) => {
-    console.log('[POST STORE] setCurrentUserReaction:', postId, reactionType);
-    
     const safePosts = Array.isArray(get().posts) ? get().posts : [];
     
     const newPosts = safePosts.map(post =>
@@ -534,9 +455,8 @@ export const usePostStore = create<PostState>((set, get) => ({
   // ============================================
 
   openCreateModal: (blogId?: string, pageId?: string) => {
-    console.log('[POST STORE] openCreateModal', { blogId, pageId });
-    set({ 
-      isCreateModalOpen: true, 
+    set({
+      isCreateModalOpen: true,
       error: null,
       contextBlogId: blogId,
       contextPageId: pageId,
@@ -544,9 +464,8 @@ export const usePostStore = create<PostState>((set, get) => ({
   },
 
   closeCreateModal: () => {
-    console.log('[POST STORE] closeCreateModal');
-    set({ 
-      isCreateModalOpen: false, 
+    set({
+      isCreateModalOpen: false,
       error: null,
       contextBlogId: undefined,
       contextPageId: undefined,
@@ -554,9 +473,8 @@ export const usePostStore = create<PostState>((set, get) => ({
   },
 
   openEditModal: (post: Post) => {
-    console.log('[POST STORE] openEditModal:', post.id);
-    set({ 
-      isEditModalOpen: true, 
+    set({
+      isEditModalOpen: true,
       postToEdit: post,
       error: null,
     });

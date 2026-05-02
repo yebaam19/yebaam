@@ -77,11 +77,11 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
       featureFlag: 'VIDEOS_ENABLED' as FeatureFlag,
     },
     {
-      href: '/groups',
+      href: '/grupos',
       icon: UserGroupIcon,
       iconSolid: UserGroupIconSolid,
       label: 'Grupos',
-      isActive: pathname?.startsWith('/groups'),
+      isActive: pathname?.startsWith('/grupos') || pathname?.startsWith('/groups'),
       featureFlag: 'GRUPOS_ENABLED' as FeatureFlag,
     },
     {

@@ -29,19 +29,18 @@ interface CommentListProps {
 export function CommentList({ postId, showInput = true, maxHeight, className = '' }: CommentListProps) {
   const { commentsByPost, loadingStates, fetchCommentsByPost } = useCommentStore()
 
-  // Activar Realtime (Supabase) para actualizaciones en vivo de este post
   useCommentSocket(postId)
 
-  // Cargar comentarios al montar
+  // Skip the round-trip when a previous mount already cached the thread —
+  // toggling the comments section open/closed must not re-query.
   useEffect(() => {
-    fetchCommentsByPost({
+    if (commentsByPost[postId]) return
+    void fetchCommentsByPost({
       postId,
       sortBy: 'newest',
       limit: 50,
-    }).catch((err) => {
-      console.warn('[CommentList] fetchCommentsByPost failed', err);
     })
-  }, [postId, fetchCommentsByPost])
+  }, [postId, fetchCommentsByPost, commentsByPost])
 
   const comments = commentsByPost[postId] || []
   const isLoading = loadingStates[postId]?.isLoading || false

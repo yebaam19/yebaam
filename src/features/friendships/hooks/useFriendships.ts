@@ -68,51 +68,27 @@ export function useFriendships() {
     if (!friendshipsSocket || !isFriendshipsConnected) return;
 
 
-    /**
-     * friend_request_sent: Nueva solicitud recibida
-     */
     const onFriendRequestSent = (data: FriendRequest) => {
-
       handleFriendRequestSent(data);
     };
 
-    /**
-     * friend_request_accepted: Tu solicitud fue aceptada
-     */
     const onFriendRequestAccepted = (data: FriendRequest) => {
-      console.log('[WS] friend_request_accepted:', data);
       handleFriendRequestAccepted(data);
     };
 
-    /**
-     * friend_request_rejected: Tu solicitud fue rechazada
-     */
     const onFriendRequestRejected = (data: FriendRequest) => {
-      console.log('[WS] friend_request_rejected:', data);
       handleFriendRequestRejected(data);
     };
 
-    /**
-     * friend_request_cancelled: Cancelaron una solicitud que te enviaron
-     */
     const onFriendRequestCancelled = (data: FriendRequest) => {
-      console.log('[WS] friend_request_cancelled:', data);
       handleFriendRequestCancelled(data);
     };
 
-    /**
-     * friend_added: Nuevo amigo confirmado
-     */
     const onFriendAdded = (data: { userId: string; friendId: string }) => {
-      console.log('[WS] friend_added:', data);
       handleFriendAdded(data);
     };
 
-    /**
-     * friend_removed: Amigo eliminado
-     */
     const onFriendRemoved = (data: { userId: string; friendId: string }) => {
-      console.log('[WS] friend_removed:', data);
       handleFriendRemoved(data);
     };
 
@@ -158,9 +134,7 @@ export function useFriendships() {
       
     });
 
-    return () => {
-      console.log(' Leaving friendship room');
-    };
+    return () => {};
   }, [friendshipsSocket, isFriendshipsConnected, user?.id]);
 
   // ============================================================================

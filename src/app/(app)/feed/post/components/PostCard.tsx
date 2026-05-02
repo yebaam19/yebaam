@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
 import { memo, useState } from 'react'
+import { toast } from 'sonner'
 
 import { CommentList } from '@/app/(app)/feed/comments'
 import { ReactionButton, ReactionListModal, ReactionStats } from '@/app/(app)/feed/reacions'
@@ -46,13 +47,7 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [reactionsModalOpen, setReactionsModalOpen] = useState(false)
 
-  // Defensive checks - retornar null silenciosamente si el post es inválido
-  if (!post || !post.author || !post.id) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Post inválido omitido:', post)
-    }
-    return null
-  }
+  if (!post || !post.author || !post.id) return null
 
   const isOwner = user?.id === post.author.id
 
@@ -75,9 +70,31 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
     openEditModal(post)
   }
 
-  const handleShare = () => {
-    // TODO: Implementar compartir
-    console.log('Share post:', post.id)
+  const handleShare = async () => {
+    if (typeof window === 'undefined') return
+    const url = `${window.location.origin}/${post.author.username}/posts/${post.id}`
+    const shareData = {
+      title: `Publicación de ${post.author.firstName ?? post.author.username}`,
+      text: post.content?.slice(0, 140) ?? '',
+      url,
+    }
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData)
+        return
+      }
+    } catch (err) {
+      // User dismissed the share sheet, or share failed — fall through to clipboard.
+      if ((err as DOMException)?.name === 'AbortError') return
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('Enlace copiado')
+    } catch {
+      toast.error('No se pudo copiar el enlace')
+    }
   }
 
   // Formatear fecha
@@ -323,10 +340,13 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
         </div>
       </div>
 
-      {/* Comments Section - Siempre mostrar comentarios como Facebook */}
-      <div className="border-t border-neutral-200 dark:border-neutral-800">
-        <CommentList postId={post.id} showInput={showComments} maxHeight="400px" />
-      </div>
+      {/* Comments Section — only mounted when the user opens it, so the comment
+          query (one per post) doesn't fire for every visible card on render. */}
+      {showComments && (
+        <div className="border-t border-neutral-200 dark:border-neutral-800">
+          <CommentList postId={post.id} showInput maxHeight="400px" />
+        </div>
+      )}
 
       {/* Modal de confirmación de eliminación */}
       <DeletePostModal

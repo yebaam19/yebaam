@@ -2,6 +2,7 @@
 
 import LiveVideoModal from '@/app/(app)/feed/post/components/LiveVideoModal'
 import { CreatePostCard } from '@/components/CreatePostCard'
+import FabComposer from '@/components/FabComposer'
 import { Stories } from '@/components/Stories'
 import { useAuth } from '@/features/auth'
 import { VideoPlayerModal } from '@/features/live-stream'
@@ -80,6 +81,8 @@ export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
           <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
         </div>
       </div>
+
+      <FabComposer onClick={() => openCreateModal()} />
     </div>
   )
 }
