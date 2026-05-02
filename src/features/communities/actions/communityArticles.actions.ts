@@ -3,10 +3,18 @@
 import { revalidatePath } from 'next/cache';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { slugifyCommunity } from '@/lib/api/communities';
-import { canPublishCommunityArticle } from '../server/community-articles.server';
-import type { CreateCommunityArticleInput } from '../types/communityArticle.types';
+import { deleteImage as deleteCloudflareImage } from '@/lib/cloudflare/images';
+import {
+  canManageCommunityArticle,
+  canPublishCommunityArticle,
+} from '../server/community-articles.server';
+import type {
+  CreateCommunityArticleInput,
+  UpdateCommunityArticleInput,
+} from '../types/communityArticle.types';
 
 type Result = { ok: true; slug: string } | { ok: false; error: string };
+type DeleteResult = { ok: true } | { ok: false; error: string };
 
 const MAX_TITLE = 160;
 const MAX_SUBTITLE = 240;
@@ -100,4 +108,160 @@ export async function createCommunityArticle(input: CreateCommunityArticleInput)
   revalidatePath(`/feed/comunidades/${communitySlug}`);
 
   return { ok: true, slug: (data as { slug: string }).slug };
+}
+
+type ArticleRow = {
+  id: string;
+  community_id: string;
+  slug: string;
+  title: string;
+  cf_image_id: string | null;
+};
+
+async function loadArticleForManage(
+  articleId: string,
+): Promise<{ ok: true; row: ArticleRow; communitySlug: string } | { ok: false; error: string }> {
+  const svc = getServiceClient();
+  const { data: article } = await svc
+    .from('community_articles')
+    .select('id, community_id, slug, title, cf_image_id')
+    .eq('id', articleId)
+    .maybeSingle();
+  const row = article as ArticleRow | null;
+  if (!row) return { ok: false, error: 'Artículo no encontrado.' };
+
+  const allowed = await canManageCommunityArticle(row.community_id);
+  if (!allowed) return { ok: false, error: 'Solo el propietario de la comunidad puede gestionar este artículo.' };
+
+  const { data: communityRow } = await svc
+    .from('communities')
+    .select('slug')
+    .eq('id', row.community_id)
+    .maybeSingle();
+  const communitySlug = (communityRow as { slug: string } | null)?.slug;
+  if (!communitySlug) return { ok: false, error: 'Comunidad no encontrada.' };
+
+  return { ok: true, row, communitySlug };
+}
+
+export async function updateCommunityArticle(input: UpdateCommunityArticleInput): Promise<Result> {
+  const title = (input.title ?? '').trim();
+  const subtitle = (input.subtitle ?? '').trim();
+  const content = (input.content ?? '').trim();
+  const tags = (input.tags ?? []).map((t) => t.trim()).filter(Boolean).slice(0, 12);
+
+  if (!title) return { ok: false, error: 'El título es obligatorio.' };
+  if (title.length > MAX_TITLE) return { ok: false, error: 'El título es demasiado largo.' };
+  if (subtitle.length > MAX_SUBTITLE) return { ok: false, error: 'El subtítulo es demasiado largo.' };
+  if (!content || content === '<p></p>') return { ok: false, error: 'El contenido es obligatorio.' };
+  if (content.length > MAX_CONTENT) return { ok: false, error: 'El contenido es demasiado largo.' };
+  if (stripTags(content).length < MIN_CONTENT) {
+    return { ok: false, error: 'El contenido es demasiado corto.' };
+  }
+
+  const loaded = await loadArticleForManage(input.articleId);
+  if (!loaded.ok) return { ok: false, error: loaded.error };
+  const { row, communitySlug } = loaded;
+
+  const svc = getServiceClient();
+
+  // Re-slug only when the title changes; otherwise keep the existing slug to
+  // preserve permalinks.
+  let slug = row.slug;
+  if (title !== row.title) {
+    const baseSlug = slugifyCommunity(title);
+    slug = baseSlug;
+    for (let i = 2; i < 50; i += 1) {
+      const { data: clash } = await svc
+        .from('community_articles')
+        .select('id')
+        .eq('community_id', row.community_id)
+        .eq('slug', slug)
+        .neq('id', row.id)
+        .maybeSingle();
+      if (!clash) break;
+      slug = `${baseSlug}-${i}`;
+    }
+  }
+
+  // cfImageId semantics:
+  //   undefined → keep existing cover
+  //   string    → replace cover (delete previous from CF if it changes)
+  //   null      → remove cover (delete previous from CF)
+  let nextCfImageId: string | null | undefined = undefined;
+  let imageToDelete: string | null = null;
+  if (input.cfImageId === null) {
+    nextCfImageId = null;
+    imageToDelete = row.cf_image_id;
+  } else if (typeof input.cfImageId === 'string' && input.cfImageId.trim()) {
+    const next = input.cfImageId.trim();
+    nextCfImageId = next;
+    if (row.cf_image_id && row.cf_image_id !== next) imageToDelete = row.cf_image_id;
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    slug,
+    title,
+    subtitle: subtitle || null,
+    content,
+    summary: buildSummary(content),
+    read_time: calculateReadTime(content),
+    tags,
+    updated_at: new Date().toISOString(),
+  };
+  if (nextCfImageId !== undefined) updatePayload.cf_image_id = nextCfImageId;
+
+  const client = await getServerClient();
+  const { data, error } = await client
+    .from('community_articles')
+    .update(updatePayload)
+    .eq('id', row.id)
+    .select('slug')
+    .maybeSingle();
+
+  if (error || !data) {
+    return { ok: false, error: error?.message ?? 'No se pudo actualizar el artículo.' };
+  }
+
+  if (imageToDelete) {
+    // Best-effort: orphan CF image cleanup must not fail the action.
+    try {
+      await deleteCloudflareImage(imageToDelete);
+    } catch {
+      /* swallow — image cleanup is non-critical */
+    }
+  }
+
+  revalidatePath(`/feed/comunidades/${communitySlug}/articulos`);
+  revalidatePath(`/feed/comunidades/${communitySlug}/articulos/${row.slug}`);
+  if (slug !== row.slug) {
+    revalidatePath(`/feed/comunidades/${communitySlug}/articulos/${slug}`);
+  }
+  revalidatePath(`/feed/comunidades/${communitySlug}`);
+
+  return { ok: true, slug: (data as { slug: string }).slug };
+}
+
+export async function deleteCommunityArticle(articleId: string): Promise<DeleteResult> {
+  const loaded = await loadArticleForManage(articleId);
+  if (!loaded.ok) return { ok: false, error: loaded.error };
+  const { row, communitySlug } = loaded;
+
+  const client = await getServerClient();
+  const { error } = await client.from('community_articles').delete().eq('id', row.id);
+  if (error) return { ok: false, error: error.message };
+
+  if (row.cf_image_id) {
+    try {
+      await deleteCloudflareImage(row.cf_image_id);
+    } catch {
+      /* swallow */
+    }
+  }
+
+  revalidatePath(`/feed/comunidades/${communitySlug}/articulos`);
+  revalidatePath(`/feed/comunidades/${communitySlug}/articulos/${row.slug}`);
+  revalidatePath(`/feed/comunidades/${communitySlug}`);
+
+  return { ok: true };
 }

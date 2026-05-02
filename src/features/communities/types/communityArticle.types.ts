@@ -33,3 +33,16 @@ export interface CreateCommunityArticleInput {
   cfImageId?: string;
   tags?: string[];
 }
+
+export interface UpdateCommunityArticleInput {
+  articleId: string;
+  title: string;
+  subtitle?: string;
+  content: string;
+  /**
+   * Cloudflare image id for the cover. `null` removes the existing cover;
+   * `undefined` leaves it untouched.
+   */
+  cfImageId?: string | null;
+  tags?: string[];
+}

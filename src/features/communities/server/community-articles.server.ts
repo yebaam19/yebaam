@@ -142,6 +142,25 @@ export async function getCommunityArticleBySlug(
 }
 
 /**
+ * Same as getCommunityArticleBySlug but also returns the raw cf_image_id, so the
+ * edit page can preload the existing cover into the composer state.
+ */
+export async function getCommunityArticleForEdit(
+  communityId: string,
+  slug: string,
+): Promise<{ article: CommunityArticle; cfImageId: string | null } | null> {
+  const article = await getCommunityArticleBySlug(communityId, slug);
+  if (!article) return null;
+  const client = await getServerClient();
+  const { data } = await client
+    .from('community_articles')
+    .select('cf_image_id')
+    .eq('id', article.id)
+    .maybeSingle();
+  return { article, cfImageId: (data as { cf_image_id: string | null } | null)?.cf_image_id ?? null };
+}
+
+/**
  * Returns true when the viewer is the community owner or holds the OWNER/ADMIN
  * role on community_members. Used by both the create page (to gate UI) and the
  * server action (defense in depth — RLS already blocks unauthorized inserts).
@@ -168,4 +187,22 @@ export async function canPublishCommunityArticle(communityId: string): Promise<b
     .maybeSingle();
   const role = (m as { role: string } | null)?.role;
   return role === 'OWNER' || role === 'ADMIN';
+}
+
+/**
+ * Owner-only gate for editing/deleting articles. RLS allows the article author
+ * or the community owner; we tighten the UI/server-action layer to OWNER only.
+ */
+export async function canManageCommunityArticle(communityId: string): Promise<boolean> {
+  const client = await getServerClient();
+  const { data: auth } = await client.auth.getUser();
+  const userId = auth?.user?.id;
+  if (!userId) return false;
+
+  const { data: c } = await client
+    .from('communities')
+    .select('owner_id')
+    .eq('id', communityId)
+    .maybeSingle();
+  return Boolean(c && (c as { owner_id: string }).owner_id === userId);
 }

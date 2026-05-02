@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
-import { getCommunityArticleBySlug } from '@/features/communities/server/community-articles.server';
+import {
+  canManageCommunityArticle,
+  getCommunityArticleBySlug,
+} from '@/features/communities/server/community-articles.server';
 import { CommunityArticleView } from '@/features/communities/components/CommunityArticleView';
 
 interface PageProps {
@@ -12,8 +15,11 @@ export default async function CommunityArticleDetailPage({ params }: PageProps) 
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
-  const article = await getCommunityArticleBySlug(community.id, articleSlug);
+  const [article, canManage] = await Promise.all([
+    getCommunityArticleBySlug(community.id, articleSlug),
+    canManageCommunityArticle(community.id),
+  ]);
   if (!article) notFound();
 
-  return <CommunityArticleView communitySlug={slug} article={article} />;
+  return <CommunityArticleView communitySlug={slug} article={article} canManage={canManage} />;
 }

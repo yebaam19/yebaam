@@ -24,6 +24,7 @@ import {
   getPrivacyLabel,
 } from '@/features/communities/utils/communityHelpers';
 import { CommunitySidebar } from './CommunitySidebar';
+import { CommunityOwnerMenu } from './CommunityOwnerMenu';
 
 interface CommunityLayoutShellProps {
   community: Community;
@@ -107,23 +108,28 @@ export function CommunityLayoutShell({
           />
         )}
         <div className="absolute right-4 bottom-4 flex flex-col items-end gap-1">
-          <button
-            onClick={handleJoinClick}
-            disabled={joinButtonDisabled}
-            className={`px-5 py-2 rounded-lg font-medium text-sm shadow-md transition-colors ${
-              viewerState.kind === 'member' ||
-              viewerState.kind === 'owner' ||
-              c.isMember
-                ? 'bg-white text-gray-700 hover:bg-gray-100'
-                : viewerState.kind === 'request_pending'
-                  ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                  : viewerState.kind === 'invited'
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {joinButtonLabel}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleJoinClick}
+              disabled={joinButtonDisabled}
+              className={`px-5 py-2 rounded-lg font-medium text-sm shadow-md transition-colors ${
+                viewerState.kind === 'member' ||
+                viewerState.kind === 'owner' ||
+                c.isMember
+                  ? 'bg-white text-gray-700 hover:bg-gray-100'
+                  : viewerState.kind === 'request_pending'
+                    ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                    : viewerState.kind === 'invited'
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {joinButtonLabel}
+            </button>
+            {viewerState.kind === 'owner' && (
+              <CommunityOwnerMenu communityId={c.id} communityName={c.name} />
+            )}
+          </div>
           {joinError && (
             <p className="text-xs text-red-600 bg-white/90 rounded px-2 py-1 max-w-xs text-right">
               {joinError}

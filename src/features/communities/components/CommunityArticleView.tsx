@@ -3,13 +3,19 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { ArrowLeftIcon, ClockIcon } from '@/components/icons/heroicons-shim';
 import type { CommunityArticle } from '@/features/communities/types/communityArticle.types';
+import { CommunityArticleActionsMenu } from './CommunityArticleActionsMenu';
 
 interface CommunityArticleViewProps {
   communitySlug: string;
   article: CommunityArticle;
+  canManage?: boolean;
 }
 
-export function CommunityArticleView({ communitySlug, article }: CommunityArticleViewProps) {
+export function CommunityArticleView({
+  communitySlug,
+  article,
+  canManage = false,
+}: CommunityArticleViewProps) {
   const date = new Date(article.publishedAt).toLocaleDateString('es-MX', {
     day: 'numeric',
     month: 'long',
@@ -18,13 +24,23 @@ export function CommunityArticleView({ communitySlug, article }: CommunityArticl
 
   return (
     <article className="space-y-6">
-      <Link
-        href={`/feed/comunidades/${communitySlug}/articulos` as Route}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        Volver a artículos
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={`/feed/comunidades/${communitySlug}/articulos` as Route}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          Volver a artículos
+        </Link>
+        {canManage && (
+          <CommunityArticleActionsMenu
+            articleId={article.id}
+            communitySlug={communitySlug}
+            articleSlug={article.slug}
+            articleTitle={article.title}
+          />
+        )}
+      </div>
 
       <header className="space-y-3">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">

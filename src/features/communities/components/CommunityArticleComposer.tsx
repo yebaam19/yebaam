@@ -6,7 +6,11 @@ import type { Route } from 'next';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { uploadService } from '@/lib/service/upload.service';
-import { createCommunityArticle } from '@/features/communities/actions/communityArticles.actions';
+import {
+  createCommunityArticle,
+  updateCommunityArticle,
+} from '@/features/communities/actions/communityArticles.actions';
+import type { CommunityArticle } from '@/features/communities/types/communityArticle.types';
 import { PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
 const RichTextEditor = dynamic(
@@ -24,16 +28,30 @@ const RichTextEditor = dynamic(
 interface CommunityArticleComposerProps {
   communityId: string;
   communitySlug: string;
+  /** When provided, the composer renders in edit mode and submits to updateCommunityArticle. */
+  initialArticle?: CommunityArticle;
+  /** Cloudflare image id of the current cover (only when editing). */
+  initialCoverImageId?: string | null;
 }
 
-export function CommunityArticleComposer({ communityId, communitySlug }: CommunityArticleComposerProps) {
+export function CommunityArticleComposer({
+  communityId,
+  communitySlug,
+  initialArticle,
+  initialCoverImageId,
+}: CommunityArticleComposerProps) {
   const router = useRouter();
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [coverImageId, setCoverImageId] = useState<string | null>(null);
+  const isEditing = Boolean(initialArticle);
+
+  const [title, setTitle] = useState(initialArticle?.title ?? '');
+  const [subtitle, setSubtitle] = useState(initialArticle?.subtitle ?? '');
+  const [content, setContent] = useState(initialArticle?.content ?? '');
+  const [tagsInput, setTagsInput] = useState(initialArticle?.tags.join(', ') ?? '');
+  const [coverPreview, setCoverPreview] = useState<string | null>(
+    initialArticle?.coverImageUrl ?? null,
+  );
+  const [coverImageId, setCoverImageId] = useState<string | null>(initialCoverImageId ?? null);
+  const [coverDirty, setCoverDirty] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -51,10 +69,11 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
       const { id, url } = await uploadService.uploadImage(file);
       setCoverImageId(id);
       setCoverPreview(url);
+      setCoverDirty(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error subiendo la portada.');
-      setCoverPreview(null);
-      setCoverImageId(null);
+      setCoverPreview(initialArticle?.coverImageUrl ?? null);
+      setCoverImageId(initialCoverImageId ?? null);
     } finally {
       setUploadingCover(false);
     }
@@ -63,6 +82,7 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
   const removeCover = () => {
     setCoverPreview(null);
     setCoverImageId(null);
+    setCoverDirty(true);
   };
 
   const handleEditorImageUpload = async (file: File): Promise<string | null> => {
@@ -74,7 +94,7 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
     }
   };
 
-  const handlePublish = () => {
+  const handleSubmit = () => {
     setError(null);
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
@@ -91,6 +111,33 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
       .filter(Boolean);
 
     startTransition(async () => {
+      if (isEditing && initialArticle) {
+        // Map UI cover state → cfImageId update semantics:
+        //   not changed     → undefined (omit)
+        //   removed         → null
+        //   replaced/added  → string id
+        const cfImageIdField = !coverDirty
+          ? undefined
+          : coverImageId === null
+            ? null
+            : coverImageId;
+
+        const result = await updateCommunityArticle({
+          articleId: initialArticle.id,
+          title: trimmedTitle,
+          subtitle: subtitle.trim() || undefined,
+          content,
+          cfImageId: cfImageIdField,
+          tags,
+        });
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        router.push(`/feed/comunidades/${communitySlug}/articulos/${result.slug}` as Route);
+        return;
+      }
+
       const result = await createCommunityArticle({
         communityId,
         title: trimmedTitle,
@@ -107,10 +154,20 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
     });
   };
 
+  const submitLabel = isPending
+    ? isEditing
+      ? 'Guardando...'
+      : 'Publicando...'
+    : isEditing
+      ? 'Guardar cambios'
+      : 'Publicar';
+
   return (
     <div className="space-y-5">
       <header className="flex items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Nuevo artículo</h1>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {isEditing ? 'Editar artículo' : 'Nuevo artículo'}
+        </h1>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -121,11 +178,11 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
           </button>
           <button
             type="button"
-            onClick={handlePublish}
+            onClick={handleSubmit}
             disabled={isPending || uploadingCover}
             className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isPending ? 'Publicando...' : 'Publicar'}
+            {submitLabel}
           </button>
         </div>
       </header>
@@ -192,7 +249,7 @@ export function CommunityArticleComposer({ communityId, communitySlug }: Communi
         />
         <input
           type="text"
-          value={subtitle}
+          value={subtitle ?? ''}
           onChange={(e) => setSubtitle(e.target.value.slice(0, 240))}
           placeholder="Subtítulo (opcional)"
           className="w-full border-0 bg-transparent text-base text-gray-600 dark:text-gray-400 placeholder:text-gray-400 focus:outline-none focus:ring-0"
