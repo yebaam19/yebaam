@@ -70,6 +70,7 @@ export function CommunityArticleView({
                 width={28}
                 height={28}
                 className="rounded-full"
+                style={{ width: 28, height: 28 }}
                 unoptimized
               />
             )}

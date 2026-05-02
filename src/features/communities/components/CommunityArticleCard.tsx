@@ -69,7 +69,8 @@ export function CommunityArticleCard({ communitySlug, article }: CommunityArticl
                 alt={article.author.name}
                 width={24}
                 height={24}
-                className="h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
+                className="rounded-full ring-2 ring-white dark:ring-gray-800"
+                style={{ width: 24, height: 24 }}
                 unoptimized
               />
             ) : (
