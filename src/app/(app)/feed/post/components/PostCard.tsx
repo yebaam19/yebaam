@@ -25,6 +25,7 @@ import type { Post } from '../interfaces/post.interfaces'
 import { usePostStore } from '../stores/post.store'
 import DeletePostModal from './DeletePostModal'
 import PostMedia from './PostMedia'
+import { PostArticleLinkPreview, parseFirstArticleLink } from './PostArticleLinkPreview'
 
 interface PostCardProps {
   post: Post
@@ -229,28 +230,52 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
         )}
 
         {/* Contenido con fondo de color o texto normal */}
-        {post.backgroundColor ? (
-          <div
-            className="overflow-hidden rounded-xl p-8 text-center"
-            style={{
-              backgroundColor: post.backgroundColor,
-              color:
-                post.backgroundColor === '#ffffff' ||
-                post.backgroundColor === '#FFFFFF' ||
-                post.backgroundColor.toLowerCase() === 'white' ||
-                post.backgroundColor === '#f1c40f' || // Amarillo
-                post.backgroundColor === '#32CD32' // Lima
-                  ? '#000000'
-                  : '#ffffff',
-            }}
-          >
-            <p className="overflow-wrap-anywhere text-2xl font-medium wrap-break-word drop-shadow-lg">{post.content}</p>
-          </div>
-        ) : (
-          <p className="overflow-wrap-anywhere wrap-break-word whitespace-pre-wrap text-neutral-900 dark:text-white">
-            {post.content}
-          </p>
-        )}
+        {(() => {
+          const articleLink = parseFirstArticleLink(post.content)
+          // When the only thing in the post is an article URL, hide the raw text
+          // entirely so the preview card stands on its own.
+          const visibleContent = articleLink
+            ? post.content?.replace(articleLink.matchedUrl, '').trim() ?? ''
+            : post.content
+          const hasVisibleText = Boolean(visibleContent && visibleContent.length > 0)
+
+          if (post.backgroundColor && hasVisibleText) {
+            return (
+              <div
+                className="overflow-hidden rounded-xl p-8 text-center"
+                style={{
+                  backgroundColor: post.backgroundColor,
+                  color:
+                    post.backgroundColor === '#ffffff' ||
+                    post.backgroundColor === '#FFFFFF' ||
+                    post.backgroundColor.toLowerCase() === 'white' ||
+                    post.backgroundColor === '#f1c40f' || // Amarillo
+                    post.backgroundColor === '#32CD32' // Lima
+                      ? '#000000'
+                      : '#ffffff',
+                }}
+              >
+                <p className="overflow-wrap-anywhere text-2xl font-medium wrap-break-word drop-shadow-lg">{visibleContent}</p>
+              </div>
+            )
+          }
+
+          return (
+            <>
+              {hasVisibleText && (
+                <p className="overflow-wrap-anywhere wrap-break-word whitespace-pre-wrap text-neutral-900 dark:text-white">
+                  {visibleContent}
+                </p>
+              )}
+              {articleLink && (
+                <PostArticleLinkPreview
+                  communitySlug={articleLink.communitySlug}
+                  articleSlug={articleLink.articleSlug}
+                />
+              )}
+            </>
+          )
+        })()}
 
         {/* Ubicación */}
         {post.location && (
