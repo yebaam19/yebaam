@@ -50,10 +50,12 @@ export function CommunityOwnerMenu({ communityId, communityName }: CommunityOwne
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Acciones de la comunidad"
-        className="rounded-full bg-white/90 p-2 text-gray-700 shadow-md hover:bg-white"
+        aria-label="Gestionar comunidad"
+        title="Gestionar comunidad"
+        className="inline-flex items-center gap-1.5 rounded-full border-2 border-white bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-lg ring-1 ring-black/15 transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:px-4"
       >
         <EllipsisHorizontalIcon className="h-5 w-5" />
+        <span className="hidden sm:inline">Gestionar</span>
       </button>
 
       {open && (

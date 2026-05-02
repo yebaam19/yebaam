@@ -24,7 +24,6 @@ import {
   getPrivacyLabel,
 } from '@/features/communities/utils/communityHelpers';
 import { CommunitySidebar } from './CommunitySidebar';
-import { CommunityOwnerMenu } from './CommunityOwnerMenu';
 import { CommunityHeaderImageButton } from './CommunityHeaderImageButton';
 
 interface CommunityLayoutShellProps {
@@ -76,7 +75,6 @@ export function CommunityLayoutShell({
   const joinButtonLabel = (() => {
     if (joinTransition || leaveMutation.isPending) return 'Procesando...';
     if (viewerState.kind === 'guest') return 'Inicia sesión para unirte';
-    if (viewerState.kind === 'owner') return 'Propietario';
     if (viewerState.kind === 'member' || c.isMember) return 'Miembro';
     if (viewerState.kind === 'request_pending') return 'Solicitud enviada';
     if (viewerState.kind === 'request_declined') return 'Solicitud rechazada';
@@ -90,7 +88,6 @@ export function CommunityLayoutShell({
     joinTransition ||
     leaveMutation.isPending ||
     viewerState.kind === 'guest' ||
-    viewerState.kind === 'owner' ||
     viewerState.kind === 'request_declined' ||
     (viewerState.kind === 'none' && c.privacy === 'SECRET');
 
@@ -109,19 +106,17 @@ export function CommunityLayoutShell({
           />
         )}
         {viewerState.kind === 'owner' && (
-          <div className="absolute right-4 top-4">
+          <div className="absolute right-4 top-4 z-10">
             <CommunityHeaderImageButton communityId={c.id} target="cover" />
           </div>
         )}
-        <div className="absolute right-4 bottom-4 flex flex-col items-end gap-1">
-          <div className="flex items-center gap-2">
+        {viewerState.kind !== 'owner' && (
+          <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-1">
             <button
               onClick={handleJoinClick}
               disabled={joinButtonDisabled}
               className={`px-5 py-2 rounded-lg font-medium text-sm shadow-md transition-colors ${
-                viewerState.kind === 'member' ||
-                viewerState.kind === 'owner' ||
-                c.isMember
+                viewerState.kind === 'member' || c.isMember
                   ? 'bg-white text-gray-700 hover:bg-gray-100'
                   : viewerState.kind === 'request_pending'
                     ? 'bg-yellow-500 text-white hover:bg-yellow-600'
@@ -132,16 +127,13 @@ export function CommunityLayoutShell({
             >
               {joinButtonLabel}
             </button>
-            {viewerState.kind === 'owner' && (
-              <CommunityOwnerMenu communityId={c.id} communityName={c.name} />
+            {joinError && (
+              <p className="text-xs text-red-600 bg-white/90 rounded px-2 py-1 max-w-xs text-right">
+                {joinError}
+              </p>
             )}
           </div>
-          {joinError && (
-            <p className="text-xs text-red-600 bg-white/90 rounded px-2 py-1 max-w-xs text-right">
-              {joinError}
-            </p>
-          )}
-        </div>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -233,7 +225,12 @@ export function CommunityLayoutShell({
 
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 pb-12">
           <aside className="lg:sticky lg:top-20 lg:self-start">
-            <CommunitySidebar slug={c.slug} />
+            <CommunitySidebar
+              slug={c.slug}
+              isOwner={viewerState.kind === 'owner'}
+              communityId={c.id}
+              communityName={c.name}
+            />
           </aside>
           <main className="min-w-0">{children}</main>
         </div>
