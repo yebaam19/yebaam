@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { LockClosedIcon, CheckCircleIcon } from '@/components/icons/heroicons-shim';
+import {
+    LockClosedIcon,
+    ArrowRightIcon,
+} from '@/components/icons/heroicons-shim';
+import { BackgroundPattern } from '@/components/BackgroundPattern';
 import type { ProfileFeature } from '../config/features.config';
 import type { Route } from 'next';
 
@@ -11,94 +15,85 @@ interface FeatureCardProps {
     canCreate: boolean;
 }
 
-/**
- * Card individual para cada tipo de perfil/espacio
- */
 export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
     const IconComponent = feature.icon;
-    const isDisabled = feature.disabled || !canCreate;
+    const isDisabled = feature.disabled;
     const showVerificationOverlay = !canCreate && !feature.disabled;
 
     return (
-        <div className="relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
-            {/* Header con icono y título */}
-            <div
-                className={cn(
-                    'p-5 text-white',
-                    feature.bgColor,
-                    feature.disabled && 'opacity-75'
-                )}
-            >
-                <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-white/20 p-2.5 shrink-0">
-                        <IconComponent className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-lg font-bold leading-tight">{feature.title}</h3>
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
+            {/* Cover band */}
+            <div className="relative h-28 overflow-hidden">
+                <div className={cn('absolute inset-0', feature.bgColor)} />
+                <BackgroundPattern opacity={0.12} color="white" />
+                <div className="absolute inset-0 bg-linear-to-br from-black/0 via-black/0 to-black/25" />
+
+                {/* Floating icon badge */}
+                <div className="absolute -bottom-6 left-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-md dark:border-neutral-700 dark:bg-neutral-900">
+                    <IconComponent className={cn('h-7 w-7', feature.iconColor)} />
                 </div>
             </div>
 
-            {/* Contenido */}
-            <div className="p-5 space-y-4 bg-neutral-50 dark:bg-neutral-800/50 flex-1 flex flex-col">
-                <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed min-h-10">
-                    {feature.description}
-                </p>
+            {/* Body */}
+            <div className="flex flex-1 flex-col gap-4 px-5 pb-5 pt-10">
+                <div className="space-y-1.5">
+                    <h3 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
+                        {feature.title}
+                    </h3>
+                    <p className="line-clamp-2 min-h-10 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+                        {feature.description}
+                    </p>
+                </div>
 
-                {/* Lista de beneficios */}
-                <ul className="space-y-2.5 flex-1">
-                    {feature.benefits.map((benefit) => (
-                        <li key={benefit} className="flex items-start gap-2.5">
-                            <CheckCircleIcon className={cn(
-                                'h-4 w-4 mt-0.5 shrink-0',
-                                feature.iconColor
-                            )} />
-                            <span className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                <div className="mt-auto space-y-4">
+                    <div className="flex flex-wrap gap-1.5">
+                        {feature.benefits.map((benefit) => (
+                            <span
+                                key={benefit}
+                                className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+                            >
                                 {benefit}
                             </span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+                        ))}
+                    </div>
 
-            {/* Footer con botón */}
-            <div className="p-5 pt-0 bg-neutral-50 dark:bg-neutral-800/50">
-                {feature.disabled ? (
-                    <button
-                        disabled
-                        className="w-full py-2.5 px-4 rounded-lg text-sm font-medium bg-neutral-300 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
-                    >
-                        {feature.buttonLabel}
-                    </button>
-                ) : (
-                    <Link href={feature.href as Route} className="block">
+                    {isDisabled ? (
                         <button
-                            className={cn(
-                                'w-full py-2.5 px-4 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer',
-                                'bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
-                            )}
+                            disabled
+                            className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                         >
                             {feature.buttonLabel}
                         </button>
-                    </Link>
-                )}
+                    ) : (
+                        <Link
+                            href={feature.href as Route}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+                        >
+                            {feature.buttonLabel}
+                            <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                        </Link>
+                    )}
+                </div>
             </div>
 
-            {/* Overlay de verificación requerida */}
+            {/* Verification required overlay */}
             {showVerificationOverlay && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm">
-                    <div className="mx-4 p-5 rounded-xl border border-red-200 dark:border-red-800 bg-white dark:bg-neutral-800 shadow-lg text-center max-w-xs">
-                        <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-3">
+                <div className="absolute inset-0 flex items-center justify-center bg-white/95 backdrop-blur-sm dark:bg-neutral-900/95">
+                    <div className="mx-4 max-w-xs rounded-2xl border border-red-200 bg-white p-5 text-center shadow-lg dark:border-red-800 dark:bg-neutral-800">
+                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                             <LockClosedIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
                         </div>
-                        <h4 className="text-base font-semibold text-red-600 dark:text-red-400 mb-1">
+                        <h4 className="mb-1 text-base font-semibold text-red-600 dark:text-red-400">
                             Verificación requerida
                         </h4>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                        <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
                             Verifica tu email para crear espacios
                         </p>
-                        <Link href={'/settings/account' as Route} className="block">
-                            <button className="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
-                                Verificar cuenta
-                            </button>
+                        <Link
+                            href={'/settings/account' as Route}
+                            className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                        >
+                            Verificar cuenta
                         </Link>
                     </div>
                 </div>

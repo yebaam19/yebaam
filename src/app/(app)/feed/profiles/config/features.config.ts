@@ -3,11 +3,7 @@ import {
     DocumentTextIcon,
     BriefcaseIcon,
     UserGroupIcon,
-    BuildingStorefrontIcon,
-    WrenchScrewdriverIcon,
     BuildingOffice2Icon,
-    HeartIcon,
-    UsersIcon,
 } from '@/components/icons/heroicons-shim';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -28,17 +24,8 @@ export interface ProfileFeature {
 }
 
 /**
- * Configuración de todos los tipos de perfiles/espacios disponibles en Yebaam
- * 
- * Rutas actuales del proyecto:
- * - /clubs - Clubs
- * - /feed/blogs - Blogs
- * - /feed/professional-profile - Perfil Profesional
- * - /feed/comunidades - Comunidades
- * - /feed/businesses - Negocios
- * - /feed/professional-services - Servicios Profesionales
- * - /feed/grupos - Grupos (similar a empresas)
- * - /feed/arbol-genealogico - Árbol genealógico (para familia)
+ * Configuración de tipos de perfiles/espacios disponibles en Yebaam.
+ * Sólo se listan secciones cuya página real ya está activa.
  */
 export const PROFILE_FEATURES: ProfileFeature[] = [
     {
@@ -52,10 +39,10 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Conecta con personas afines',
         ],
         href: '/feed/clubs',
-        bgColor: 'bg-feature-clubs',
-        iconColor: 'text-emerald-500',
-        buttonLabel: 'Próximamente',
-        disabled: true,
+        bgColor: 'bg-primary-600',
+        iconColor: 'text-primary-600',
+        buttonLabel: 'Explorar Clubs',
+        disabled: false,
     },
     {
         id: 'blogs',
@@ -68,8 +55,8 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Comparte tu experiencia',
         ],
         href: '/feed/blogs',
-        bgColor: 'bg-feature-blogs',
-        iconColor: 'text-amber-500',
+        bgColor: 'bg-secondary-500',
+        iconColor: 'text-secondary-600',
         buttonLabel: 'Explorar Blogs',
         disabled: false,
     },
@@ -84,8 +71,8 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Oportunidades de carrera',
         ],
         href: '/feed/professional-profile',
-        bgColor: 'bg-feature-professional',
-        iconColor: 'text-amber-500',
+        bgColor: 'bg-primary-700',
+        iconColor: 'text-primary-700',
         buttonLabel: 'Editar Perfil',
         disabled: false,
     },
@@ -100,42 +87,10 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Eventos regionales y nacionales',
         ],
         href: '/feed/comunidades',
-        bgColor: 'bg-feature-communities',
-        iconColor: 'text-red-500',
-        buttonLabel: 'Próximamente',
-        disabled: true,
-    },
-    {
-        id: 'businesses',
-        title: 'Negocios',
-        description: 'Crea y promociona tu negocio con herramientas de gestión y marketing digital.',
-        icon: BuildingStorefrontIcon,
-        benefits: [
-            'Escaparate digital completo',
-            'Herramientas de marketing',
-            'Gestión de clientes',
-        ],
-        href: '/feed/businesses',
-        bgColor: 'bg-feature-businesses',
-        iconColor: 'text-orange-500',
-        buttonLabel: 'Explorar Negocios',
+        bgColor: 'bg-secondary-700',
+        iconColor: 'text-secondary-700',
+        buttonLabel: 'Explorar Comunidades',
         disabled: false,
-    },
-    {
-        id: 'professional-services',
-        title: 'Servicios Profesionales',
-        description: 'Ofrece tus servicios profesionales y conecta con potenciales clientes.',
-        icon: WrenchScrewdriverIcon,
-        benefits: [
-            'Catálogo de servicios',
-            'Sistema de citas y reservas',
-            'Reseñas y calificaciones',
-        ],
-        href: '/feed/professional-services',
-        bgColor: 'bg-feature-services',
-        iconColor: 'text-teal-500',
-        buttonLabel: 'Próximamente',
-        disabled: true,
     },
     {
         id: 'companies',
@@ -148,41 +103,9 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
             'Proyectos colaborativos',
         ],
         href: '/feed/grupos',
-        bgColor: 'bg-feature-companies',
-        iconColor: 'text-lime-500',
-        buttonLabel: 'Próximamente',
-        disabled: true,
-    },
-    {
-        id: 'associations',
-        title: 'Asociaciones',
-        description: 'Plataforma para organizaciones sin fines de lucro y asociaciones civiles.',
-        icon: HeartIcon,
-        benefits: [
-            'Gestión de miembros',
-            'Organización de eventos benéficos',
-            'Transparencia en donaciones',
-        ],
-        href: '#',
-        bgColor: 'bg-feature-associations',
-        iconColor: 'text-green-500',
-        buttonLabel: 'Próximamente',
-        disabled: true,
-    },
-    {
-        id: 'family',
-        title: 'Grupo Familiar',
-        description: 'Espacio privado para familias donde compartir momentos, eventos y tradiciones.',
-        icon: UsersIcon,
-        benefits: [
-            'Álbum familiar privado',
-            'Calendario de eventos familiares',
-            'Árbol genealógico interactivo',
-        ],
-        href: '/feed/arbol-genealogico',
-        bgColor: 'bg-feature-family',
-        iconColor: 'text-yellow-500',
-        buttonLabel: 'Próximamente',
-        disabled: true,
+        bgColor: 'bg-primary-800',
+        iconColor: 'text-primary-800',
+        buttonLabel: 'Explorar Empresas',
+        disabled: false,
     },
 ];

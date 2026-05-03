@@ -16,47 +16,40 @@ const verificationSteps = [
     'Soporte prioritario',
 ];
 
-/**
- * Card informativa sobre los beneficios de verificar el perfil
- */
 export function VerificationCard() {
     return (
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="bg-primary-50 dark:bg-primary-900/20 border-b border-neutral-200 dark:border-neutral-700 px-6 py-4">
+        <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="border-b border-neutral-200 bg-linear-to-r from-primary-50 to-primary-100/60 px-6 py-4 dark:border-neutral-800 dark:from-primary-900/30 dark:to-primary-900/10">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-primary-700 dark:text-primary-400">
                     <NewspaperIcon className="h-5 w-5" />
                     ¿Por qué verificar mi perfil?
                 </h3>
             </div>
 
-            {/* Content */}
-            <div className="p-6 bg-neutral-50 dark:bg-neutral-900/50">
+            <div className="bg-white p-6 dark:bg-neutral-900">
                 <div className="grid gap-6 sm:grid-cols-2">
-                    {/* Beneficios */}
                     <div className="space-y-3">
-                        <h4 className="font-medium text-primary-700 dark:text-primary-400">
+                        <h4 className="font-semibold text-primary-700 dark:text-primary-400">
                             Beneficios de la verificación
                         </h4>
                         <ul className="space-y-2">
                             {verificationBenefits.map((benefit) => (
                                 <li key={benefit} className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-300">
-                                    <CheckCircleIcon className="h-4 w-4 mt-0.5 text-primary-500 shrink-0" />
+                                    <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
                                     <span>{benefit}</span>
                                 </li>
                             ))}
                         </ul>
                     </div>
 
-                    {/* Pasos */}
                     <div className="space-y-3">
-                        <h4 className="font-medium text-primary-700 dark:text-primary-400">
+                        <h4 className="font-semibold text-primary-700 dark:text-primary-400">
                             Proceso simple y rápido
                         </h4>
                         <ul className="space-y-2">
                             {verificationSteps.map((step, index) => (
                                 <li key={step} className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-300">
-                                    <span className="flex items-center justify-center h-5 w-5 rounded-full bg-primary-100 dark:bg-primary-900/50 text-xs font-medium text-primary-700 dark:text-primary-400 shrink-0">
+                                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-900/50 dark:text-primary-400">
                                         {index + 1}
                                     </span>
                                     <span>{step}</span>

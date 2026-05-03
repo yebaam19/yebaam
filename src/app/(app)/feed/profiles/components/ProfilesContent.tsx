@@ -6,32 +6,37 @@ import { FeatureCard } from './FeatureCard'
 import { ProfileBenefits } from './ProfileBenefits'
 import { VerificationCard } from './VerificationCard'
 
-/**
- * Contenido principal de la página de Perfiles
- * Muestra los diferentes tipos de espacios digitales disponibles en Yebaam
- */
 export function ProfilesContent() {
   const { user } = useAuth()
-
-  // Determinar si el usuario puede crear espacios (por ahora siempre true, adaptar según lógica de negocio)
   const canCreate = user?.emailVerified ?? false
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-5">
-      {/* Hero Section */}
-      <ProfileBenefits />
+    <div className="bg-linear-to-b from-primary-50/40 via-white to-neutral-50 dark:from-primary-900/10 dark:via-neutral-950 dark:to-neutral-950">
+      <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 sm:space-y-10 sm:px-6 sm:py-8 lg:px-8">
+        <ProfileBenefits />
 
-      {/* Features Grid */}
-      <div className="rounded-xl bg-white p-6 shadow-sm dark:bg-neutral-900">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PROFILE_FEATURES.map((feature) => (
-            <FeatureCard key={feature.id} feature={feature} canCreate={canCreate} />
-          ))}
-        </div>
+        <section id="explora-espacios" className="space-y-5">
+          <header className="space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:text-primary-400">
+              Explora tus espacios
+            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl dark:text-white">
+              Elige dónde quieres crecer hoy
+            </h2>
+            <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
+              Cada espacio tiene su propósito. Únete, crea y conecta a tu ritmo.
+            </p>
+          </header>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            {PROFILE_FEATURES.map((feature) => (
+              <FeatureCard key={feature.id} feature={feature} canCreate={canCreate} />
+            ))}
+          </div>
+        </section>
+
+        {!canCreate && <VerificationCard />}
       </div>
-
-      {/* Verification Card - Solo mostrar si no puede crear */}
-      {!canCreate && <VerificationCard />}
     </div>
   )
 }

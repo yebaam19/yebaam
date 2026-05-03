@@ -35,8 +35,6 @@ export const menuConfig: Record<string, any[]> = {
           icon: RectangleStackIcon,
           label: 'Perfiles y Espacios',
           href: '{basePath}/profiles',
-          badge: 'Pronto',
-          badgeHideOnMobile: true,
         },
         { icon: UserGroupIcon, label: 'Amigos', href: '{basePath}/friends', badge: '{badgeFriendRequests}' },
         {
@@ -58,13 +56,6 @@ export const menuConfig: Record<string, any[]> = {
           label: 'Blogs',
           href: '{basePath}/blogs',
           featureFlag: 'BLOGS_ENABLED' as FeatureFlag,
-        },
-        {
-          icon: NewspaperIcon,
-          label: 'Páginas',
-          href: '{basePath}/paginas',
-          badge: 'Pronto',
-          badgeHideOnMobile: true,
         },
       ],
     },
