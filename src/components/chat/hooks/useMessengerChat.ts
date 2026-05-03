@@ -242,105 +242,63 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
   // ============================================================================
   // ENVIAR MENSAJE
   // ============================================================================
+  // Envío vía REST → INSERT en `messages`. Supabase Realtime se encarga del
+  // broadcast a los suscriptores (ver AGENTS.md, sección Realtime).
   const sendMessage = async (
     messageContent?: string,
     media?: MessageMedia
   ): Promise<boolean> => {
-   
-    // Validar que haya al menos contenido o media
     if (!messageContent?.trim() && !media) {
-   
       return false;
     }
 
-    if (!chatSocket?.connected) {
-      return false;
-      return false;
-    }
-
-    // Si no hay conversationId aún, esperar a que se cree (máx 5 segundos)
     let currentConversationId = conversationId;
-    
+
     if (!currentConversationId) {
-      console.log(' [useMessengerChat] No hay conversationId, intentando crear conversación...');
-      
       try {
-        // Intentar crear la conversación ahora
-        const conversation = await chatService.createOrGetConversation(contactId);
-        currentConversationId = conversation.id;
+        const created = await chatService.createOrGetConversation(contactId);
+        currentConversationId = created.id;
         setConversationId(currentConversationId);
-        
-        // Unirse a la conversación
-        if (chatSocket) {
-          chatSocket.emit('join_conversation', { conversationId: currentConversationId });
-        }
-        
+        setConversation(created);
       } catch (error) {
-        console.error(' [useMessengerChat] Error creando conversación:', error);
+        console.error('[useMessengerChat] Error creando conversación:', error);
         return false;
       }
     }
 
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      id: tempId,
+      content: messageContent || '',
+      media: media || null,
+      conversationId: currentConversationId,
+      senderId: user?.id,
+      createdAt: new Date().toISOString(),
+      status: 'sending',
+      isTemporary: true,
+    };
+
+    setMessages((prev) => [...prev, tempMessage]);
+
     try {
-      const tempMessage = {
-        id: `temp-${Date.now()}`,
-        content: messageContent || '',
-        media: media || null,
-        conversationId: currentConversationId,
-        senderId: user?.id,
-        createdAt: new Date().toISOString(),
-        status: 'sending',
-        isTemporary: true,
-      };
+      const sent = await chatService.sendMessage(
+        currentConversationId,
+        messageContent ?? '',
+        undefined,
+        media,
+      );
 
-      setMessages(prev => [...prev, tempMessage]);
-
-      // Obtener contraseña de encriptación si la conversación está encriptada
-      const encryptionPassword = currentConversationId ? getPassword(currentConversationId) : null;
-
-      return new Promise((resolve) => {
-        const timeout = setTimeout(() => {
-          setMessages(prev => prev.filter(m => m.id !== tempMessage.id));
-          resolve(false);
-        }, 10000);
-
-        chatSocket.emit('send_message', {
-          senderId: user?.id,
-          conversationId: currentConversationId,
-          content: messageContent,
-          media: media || undefined,
-          encryptionPassword: encryptionPassword || undefined, // Enviar contraseña si existe
-        }, (response: any) => {
-          clearTimeout(timeout);
-
-          if (response?.success) {
-            const newMessage = response.message || response.data?.message;
-
-            if (newMessage) {
-              setMessages(prev => {
-                const filtered = prev.filter(m => m.id !== tempMessage.id);
-                const exists = filtered.some(m => m.id === newMessage.id);
-                if (exists) return filtered;
-
-                const newMessages = [...filtered, newMessage];
-                return newMessages.sort((a, b) =>
-                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                );
-              });
-              resolve(true);
-            } else {
-              setMessages(prev => prev.filter(m => m.id !== tempMessage.id));
-              resolve(false);
-            }
-          } else {
-            console.error(' [useMessengerChat] Error al enviar mensaje:', response?.error || response);
-            setMessages(prev => prev.filter(m => m.id !== tempMessage.id));
-            resolve(false);
-          }
-        });
+      setMessages((prev) => {
+        const withoutTemp = prev.filter((m) => m.id !== tempId);
+        if (withoutTemp.some((m) => m.id === sent.id)) return withoutTemp;
+        return [...withoutTemp, sent].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
       });
+      return true;
     } catch (error) {
-      console.error(' [useMessengerChat] Error:', error);
+      console.error('[useMessengerChat] Error al enviar mensaje:', error);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       return false;
     }
   };

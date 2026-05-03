@@ -29,20 +29,22 @@ export function useMessengerSidebar() {
 
   // Recargar conversaciones cuando se monta el componente
   useEffect(() => {
-    console.log(' [useMessengerSidebar] Component mounted, loading conversations...');
     loadConversations();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cargar información de todos los participantes cuando cambien las conversaciones
   useEffect(() => {
-    console.log(' [useMessengerSidebar] Conversations changed:', conversations.length);
     if (!conversations || conversations.length === 0 || !currentUser?.id) {
-      console.log(' [useMessengerSidebar] No conversations or user, skipping users load');
+      setIsLoadingUsers(false);
       return;
     }
 
+    // Flip loading on synchronously so the consumer's combined loading flag
+    // stays truthy across the gap between "conversations arrived" and "user
+    // profiles arrived" — that gap is what causes the avatar/name flicker.
+    setIsLoadingUsers(true);
+
     const loadUsersData = async () => {
-      setIsLoadingUsers(true);
       try {
         // Obtener todos los IDs únicos de participantes (excluyendo el usuario actual)
         const allParticipantIds = new Set<string>();
@@ -154,24 +156,8 @@ export function useMessengerSidebar() {
 
   // Procesar conversaciones para agregar datos derivados
   const processedConversations = useMemo(() => {
-    console.log(' [useMessengerSidebar] Processing conversations:', conversations.length);
-    console.log(' [useMessengerSidebar] First conversation structure:', conversations[0]);
-    console.log(' [useMessengerSidebar] participantIds:', conversations[0]?.participantIds);
-    console.log(' [useMessengerSidebar] Is array?:', Array.isArray(conversations[0]?.participantIds));
-    
     const processed = conversations
-      .filter(conv => {
-        const isValid = conv && conv.participantIds && Array.isArray(conv.participantIds);
-        if (!isValid) {
-          console.warn(' [useMessengerSidebar] Filtering out invalid conversation:', {
-            hasConv: !!conv,
-            hasParticipantIds: !!conv?.participantIds,
-            isArray: Array.isArray(conv?.participantIds),
-            conversation: conv,
-          });
-        }
-        return isValid;
-      })
+      .filter((conv) => Boolean(conv && conv.participantIds && Array.isArray(conv.participantIds)))
       .map(conv => {
         const otherParticipantId = getOtherParticipantId(conv.participantIds);
         
@@ -189,9 +175,8 @@ export function useMessengerSidebar() {
           formattedTimestamp: conv.lastMessage ? formatTimestamp(conv.lastMessage.createdAt) : '',
         };
       });
-    
-    console.log(' [useMessengerSidebar] Processed conversations:', processed.length);
-    return processed;;
+
+    return processed;
   }, [conversations, currentUser?.id, usersMap, isUserOnlineStore]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filtrar por tab (Bandejas = directos; Comunidades = grupos)
