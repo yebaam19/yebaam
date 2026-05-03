@@ -16,9 +16,10 @@ interface ActiveChat {
 interface MessengerSidebarProps {
   activeChat: ActiveChat | null;
   onSelectChat: (chat: ActiveChat) => void;
+  onNewMessage: () => void;
 }
 
-export default function MessengerSidebar({ activeChat, onSelectChat }: MessengerSidebarProps) {
+export default function MessengerSidebar({ activeChat, onSelectChat, onNewMessage }: MessengerSidebarProps) {
   const {
     searchQuery,
     setSearchQuery,
@@ -26,6 +27,8 @@ export default function MessengerSidebar({ activeChat, onSelectChat }: Messenger
     setActiveTab,
     conversations,
     isLoadingConversations,
+    hasUnreadInActiveTab,
+    markAllReadInActiveTab,
   } = useMessengerSidebar();
 
   if (isLoadingConversations) {
@@ -46,6 +49,8 @@ export default function MessengerSidebar({ activeChat, onSelectChat }: Messenger
       <SidebarTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        hasUnread={hasUnreadInActiveTab}
+        onMarkAllRead={markAllReadInActiveTab}
       />
 
       <ConversationsList
@@ -55,7 +60,7 @@ export default function MessengerSidebar({ activeChat, onSelectChat }: Messenger
         onSelectChat={onSelectChat}
       />
 
-      <NewMessageButton />
+      <NewMessageButton onClick={onNewMessage} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import MessengerChatView from './MessengerChatView';
 import MessengerSidebar from './MessengerSidebar';
+import NewMessageDialog from './NewMessageDialog';
 
 
 interface MessengerPanelProps {
@@ -20,6 +21,7 @@ interface ActiveChat {
 
 export default function MessengerPanel({ isOpen, onClose }: MessengerPanelProps) {
   const [activeChat, setActiveChat] = useState<ActiveChat | null>(null);
+  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -56,6 +58,7 @@ export default function MessengerPanel({ isOpen, onClose }: MessengerPanelProps)
             <MessengerSidebar
               activeChat={activeChat}
               onSelectChat={setActiveChat}
+              onNewMessage={() => setIsNewMessageOpen(true)}
             />
 
             {/* Chat View */}
@@ -70,6 +73,12 @@ export default function MessengerPanel({ isOpen, onClose }: MessengerPanelProps)
           </div>
         </div>
       </div>
+
+      <NewMessageDialog
+        open={isNewMessageOpen}
+        onClose={() => setIsNewMessageOpen(false)}
+        onConversationOpened={(chat) => setActiveChat(chat)}
+      />
     </>
   );
 }

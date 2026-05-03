@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useChat } from '@/features/chat/hooks/useChat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
+import { useChatStore } from '@/features/chat/store/chat.store';
+import { ConversationType } from '@/features/chat/types';
 import { supabase } from '@/utils/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -23,6 +25,7 @@ export function useMessengerSidebar() {
   const { conversations, isLoadingConversations, loadConversations } = useChat();
   const { user: currentUser } = useAuthStore();
   const isUserOnlineStore = usePresenceStore(state => state.isUserOnline);
+  const resetUnreadCount = useChatStore(state => state.resetUnreadCount);
 
   // Recargar conversaciones cuando se monta el componente
   useEffect(() => {
@@ -191,14 +194,45 @@ export function useMessengerSidebar() {
     return processed;;
   }, [conversations, currentUser?.id, usersMap, isUserOnlineStore]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Filtrar por tab (Bandejas = directos; Comunidades = grupos)
+  const tabFilteredConversations = useMemo(() => {
+    return processedConversations.filter((conv) => {
+      const type = (conv as { type?: ConversationType }).type;
+      const isGroup = type === ConversationType.GROUP;
+      return activeTab === 'community' ? isGroup : !isGroup;
+    });
+  }, [processedConversations, activeTab]);
+
   // Filtrar conversaciones por búsqueda
   const filteredConversations = useMemo(() => {
-    if (!searchQuery) return processedConversations;
-    
-    return processedConversations.filter(conv => {
+    if (!searchQuery) return tabFilteredConversations;
+
+    return tabFilteredConversations.filter(conv => {
       return conv.displayName.toLowerCase().includes(searchQuery.toLowerCase());
     });
-  }, [processedConversations, searchQuery]);
+  }, [tabFilteredConversations, searchQuery]);
+
+  const hasUnreadInActiveTab = useMemo(
+    () => tabFilteredConversations.some((c) => (c.unreadCount ?? 0) > 0),
+    [tabFilteredConversations],
+  );
+
+  const markAllReadInActiveTab = useCallback(async () => {
+    const targets = tabFilteredConversations.filter((c) => (c.unreadCount ?? 0) > 0);
+    if (targets.length === 0) return;
+    // Optimistic local reset
+    targets.forEach((c) => resetUnreadCount(c.id));
+    // Best-effort persistence — server marks each conversation as read
+    await Promise.allSettled(
+      targets.map((c) =>
+        fetch(`/api/conversations/${c.id}/read`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ),
+    );
+  }, [tabFilteredConversations, resetUnreadCount]);
 
   return {
     searchQuery,
@@ -207,5 +241,7 @@ export function useMessengerSidebar() {
     setActiveTab,
     conversations: filteredConversations,
     isLoadingConversations: isLoadingConversations || isLoadingUsers,
+    hasUnreadInActiveTab,
+    markAllReadInActiveTab,
   };
 }
