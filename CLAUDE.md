@@ -25,6 +25,14 @@ The backend is **Supabase** — accessed via `@supabase/supabase-js` and `@supab
 
 Use `.maybeSingle()` (not `.single()`) when a row may legitimately be missing — `.single()` returns HTTP 406 for zero rows.
 
+For schema changes, ad-hoc SQL, edge-function deploys, and log inspection, use the **Supabase MCP** (`apply_migration`, `execute_sql`, `deploy_edge_function`, `get_logs`). The legacy InsForge MCP/CLI is **not** in use — disregard any older doc that references it.
+
+## Proxy (Next.js 16) — `src/proxy.ts`
+
+Next.js 16 renamed `middleware.ts` to **`proxy.ts`**. This repo's session-refresh + redirect logic lives in [`src/proxy.ts`](src/proxy.ts) — do **not** create a `middleware.ts` (the runtime would ignore it). The proxy calls `supabase.auth.getUser()` on every matched request to refresh `sb-*` cookies, redirects anonymous users away from non-public routes, and gates admin routes.
+
+Its matcher **excludes `/api/**`**, so route handlers do not get session refresh from the proxy. Each `/api/**/route.ts` must build its own session-bound client via `getServerClient()` and handle 401s itself. A 401 from a route handler while the client UI thinks it's signed in usually means the cookies are missing/expired, not a logic bug in the handler.
+
 ## HTTP layer (TL;DR)
 
 Do **not** add or use any axios / legacy HTTP client. For anything that cannot be expressed as a direct `@supabase/supabase-js` call from the browser (server-only secrets, token stitching, aggregation, webhooks, OAuth callbacks), use **Next.js App Router Route Handlers** under `src/app/api/**/route.ts`:

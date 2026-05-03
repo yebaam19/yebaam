@@ -24,13 +24,27 @@ Never reach into `@supabase/supabase-js` or `@supabase/ssr` directly outside the
 |---|---|
 | [`src/utils/supabase/client.ts`](src/utils/supabase/client.ts) | Browser code. Exports `createClient()` (memoized) and `supabase` singleton. |
 | [`src/utils/supabase/server.ts`](src/utils/supabase/server.ts) | Server code (route handlers, Server Actions, RSC). Exports `getServerClient()` (caller-bound, RLS applies), `getServiceClient()` (service role, bypasses RLS — server-only), `getServerAccessToken()`. |
-| [`src/utils/supabase/middleware.ts`](src/utils/supabase/middleware.ts) | Next.js middleware only. |
+| [`src/utils/supabase/middleware.ts`](src/utils/supabase/middleware.ts) | Used by `src/proxy.ts` (Next.js 16 proxy — see below). Do not import from app code. |
 | [`src/utils/supabase/with-retry.ts`](src/utils/supabase/with-retry.ts) | Wrap any PostgREST call that runs against a flaky backend (502/503/504 + `schema cache`/`recovery mode`/`bad gateway` retried 4× with backoff). |
 | [`src/utils/supabase/realtime.ts`](src/utils/supabase/realtime.ts) | `subscribeToTable()`, `subscribeToBroadcast()`, `publishBroadcast()`, `unsubscribe()`, `disconnectRealtime()`. |
 
 ### `.maybeSingle()` vs `.single()`
 
 Use `.maybeSingle()` when a row may legitimately be missing — `.single()` returns HTTP 406 for zero rows, which the UI treats as a real error.
+
+## Proxy (Next.js 16) — `src/proxy.ts`
+
+Next.js 16 renamed `middleware.ts` to **`proxy.ts`** at the project root. This repo uses [`src/proxy.ts`](src/proxy.ts) — it is the canonical place for session refresh, redirect rules, and admin gating. Do **not** create a `middleware.ts`; the runtime expects `proxy.ts` and would silently ignore the old name.
+
+What it does:
+- Calls `supabase.auth.getUser()` on every matched request, which refreshes the `sb-*` cookies if the access token is near expiry.
+- Clears stale auth cookies on `invalid_refresh_token` / `refresh_token_not_found`.
+- Redirects unauthenticated users away from non-public routes and routes platform admins to `/admin/foros`.
+- Returns `client.supabaseResponse` so refreshed cookies are written back.
+
+The `config.matcher` excludes `api`, `_next/*`, and static assets — so **API route handlers do not pass through the proxy**. Each route handler must therefore build its own session-bound client via `getServerClient()` (which reads the same cookies) and handle the unauthenticated case explicitly. If you add a new auth-gated `/api/**/route.ts`, do not assume the proxy has already validated the session for you.
+
+When the user lands on the app fresh, the first navigated page goes through `proxy.ts` and the session cookies get re-minted — that's why GET conversations works but a POST done immediately after a long idle period can still race. If you see a 401 from a route handler while the client thinks it is signed in, the cookies are missing or expired, not the route logic.
 
 ## HTTP layer
 
@@ -139,5 +153,5 @@ docs/
 - Email: `RESEND_API_KEY` is server-only.
 - TanStack Query Devtools were removed from the app; keep `@tanstack/react-query` for existing data hooks and do not re-add floating devtools unless explicitly requested.
 - Tailwind CSS 3.4 — do not upgrade to v4.
-- For backend infra/debug tasks, prefer InsForge MCP/CLI workflows because this workspace runs on InsForge as the active backend platform.
+- For backend infra / schema / debug tasks, use the **Supabase MCP** (available in this workspace). Apply migrations via `apply_migration`, run ad-hoc SQL via `execute_sql`, deploy edge functions via `deploy_edge_function`, and read logs via `get_logs`. Never edit Supabase data through screenshots / guessing — query the live DB through the MCP. The legacy InsForge MCP/CLI is **not** the active backend; ignore older docs that reference it.
 - When feature entry points are incomplete, mock-backed, or not fully wired, mark them as `Pronto`/`Proximamente` instead of exposing unfinished flows in navigation.

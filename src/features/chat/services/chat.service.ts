@@ -10,6 +10,21 @@ import {
 
 type JsonRecord = Record<string, unknown>;
 
+let sessionExpiredHandled = false;
+
+async function handleExpiredSession() {
+  if (sessionExpiredHandled || typeof window === 'undefined') return;
+  sessionExpiredHandled = true;
+  try {
+    const { useAuthStore } = await import('@/features/auth/store/auth.store');
+    useAuthStore.getState().setUser(null);
+  } catch {
+    // ignore — fall through to redirect
+  }
+  const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+  window.location.replace(`/login?redirect=${redirect}`);
+}
+
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   // PostgREST returns 503 "Could not query the database for the schema cache"
   // during Postgres crash recovery and brief restarts. Retry a few times
@@ -46,6 +61,11 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
     if (response.ok) {
       const payload = (await response.json().catch(() => ({}))) as JsonRecord;
       return payload as T;
+    }
+
+    if (response.status === 401) {
+      void handleExpiredSession();
+      throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
     }
 
     // The body may be HTML (openresty 502) or JSON ({ error }) — try JSON,

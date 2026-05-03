@@ -36,11 +36,11 @@ export default function MessengerPanel({ isOpen, onClose }: MessengerPanelProps)
       {/* Panel Container */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="w-full max-w-6xl h-[calc(100vh-120px)] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl overflow-hidden flex pointer-events-auto"
+          className="relative w-full max-w-6xl h-[calc(100vh-120px)] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl overflow-hidden flex pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="absolute top-0 left-0 right-0 h-14 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4 bg-white dark:bg-neutral-900 z-10">
+          <div className="absolute top-0 left-0 right-0 h-14 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4 bg-white dark:bg-neutral-900 z-10 rounded-t-xl">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
               Chats
             </h2>
