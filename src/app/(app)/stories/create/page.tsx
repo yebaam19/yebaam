@@ -55,7 +55,7 @@ export default function CreateStoryPage() {
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
   const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
   const MAX_IMAGE_SIZE_MB = 10;
-  const MAX_VIDEO_SIZE_MB = 50;
+  const MAX_VIDEO_SIZE_MB = 2048;
   const MAX_VIDEO_DURATION = 60;
 
   const handleTypeSelect = (type: StoryType) => {

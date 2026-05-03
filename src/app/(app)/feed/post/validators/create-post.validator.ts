@@ -29,7 +29,7 @@ export const FILE_VALIDATION = {
   ],
   MAX_IMAGES: 10,
   MAX_IMAGE_SIZE_MB: 10,
-  MAX_VIDEO_SIZE_MB: 100,
+  MAX_VIDEO_SIZE_MB: 2048,
 } as const;
 
 /**
