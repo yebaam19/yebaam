@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { getServerClient } from '@/utils/supabase/server';
 import { isPlatformAdmin } from '@/app/(app)/foro/server/foro.server';
+import { signImageDeliveryUrl } from '@/lib/cloudflare/images';
 import VerificationRow from './components/VerificationRow';
 
 export const metadata = { title: 'Admin · Verificaciones' };
@@ -31,9 +32,8 @@ interface VerificationListRow {
   photos: { slot: number; cf_image_id: string }[];
 }
 
-function cfUrl(hash: string, id: string) {
-  return `https://imagedelivery.net/${hash}/${id}/public`;
-}
+// Verification photos and ID documents are uploaded with requireSignedURLs=true,
+// so we mint short-lived signed delivery URLs (HMAC-SHA256) for admin viewing.
 
 export default async function AdminVerificationsPage({
   searchParams,
@@ -60,7 +60,7 @@ export default async function AdminVerificationsPage({
     .limit(100);
 
   let rows: VerificationListRow[] = [];
-  const cfHash = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? '';
+  const signedUrls = new Map<string, string>();
 
   if (requests && requests.length > 0) {
     const requestIds = requests.map((r) => r.id);
@@ -106,6 +106,22 @@ export default async function AdminVerificationsPage({
       idDocumentCfId: idDocByRequest.get(r.id) ?? null,
       photos: photosByUser.get(r.user_id) ?? [],
     }));
+
+    // Mint signed URLs in parallel (one signing key fetch up front, then HMAC is local).
+    const allCfIds = new Set<string>();
+    rows.forEach((r) => {
+      if (r.idDocumentCfId) allCfIds.add(r.idDocumentCfId);
+      r.photos.forEach((p) => allCfIds.add(p.cf_image_id));
+    });
+    await Promise.all(
+      Array.from(allCfIds).map(async (cfId) => {
+        try {
+          signedUrls.set(cfId, await signImageDeliveryUrl(cfId, { expirySeconds: 60 * 30 }));
+        } catch {
+          // Skip — admin will see a broken image and can request manual review.
+        }
+      }),
+    );
   }
 
   return (
@@ -152,8 +168,10 @@ export default async function AdminVerificationsPage({
             <VerificationRow
               key={row.id}
               row={row}
-              idDocumentUrl={row.idDocumentCfId ? cfUrl(cfHash, row.idDocumentCfId) : null}
-              photoUrls={row.photos.map((p) => ({ slot: p.slot, url: cfUrl(cfHash, p.cf_image_id) }))}
+              idDocumentUrl={row.idDocumentCfId ? (signedUrls.get(row.idDocumentCfId) ?? null) : null}
+              photoUrls={row.photos
+                .map((p) => ({ slot: p.slot, url: signedUrls.get(p.cf_image_id) ?? '' }))
+                .filter((x) => x.url)}
             />
           ))}
         </ul>

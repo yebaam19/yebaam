@@ -12,6 +12,10 @@ import {
   saveRequiredInfoAction,
   submitVerificationRequestAction,
 } from '../actions/verification.actions';
+import {
+  getOwnIdDocumentUrlAction,
+  getOwnVerificationPhotoUrlsAction,
+} from '../actions/signed-urls.actions';
 
 interface Props {
   open: boolean;
@@ -35,8 +39,7 @@ interface ProfileSnapshot {
 }
 
 interface PendingDocSnapshot {
-  cf_image_id: string;
-  uploaded_at: string;
+  url: string;
 }
 
 const SLOT_LABELS = ['Foto de perfil', 'Foto de portada', 'Foto adicional 1', 'Foto adicional 2', 'Foto adicional 3'];
@@ -44,13 +47,14 @@ const SLOT_LABELS = ['Foto de perfil', 'Foto de portada', 'Foto adicional 1', 'F
 export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Props) {
   const [tab, setTab] = useState(0);
   const [profile, setProfile] = useState<ProfileSnapshot | null>(null);
-  const [photos, setPhotos] = useState<Record<number, string>>({});
+  /** Map slot number → signed delivery URL (minted server-side, expires in ~15 min). */
+  const [photoUrls, setPhotoUrls] = useState<Record<number, string>>({});
   const [pendingDoc, setPendingDoc] = useState<PendingDocSnapshot | null>(null);
   const [latestRejectionReason, setLatestRejectionReason] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const refresh = useCallback(async () => {
-    const [{ data: p }, { data: ph }, { data: doc }, { data: rejected }] = await Promise.all([
+    const [{ data: p }, photoRows, idDocUrl, { data: rejected }] = await Promise.all([
       supabase
         .from('profiles')
         .select(
@@ -58,14 +62,8 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
         )
         .eq('id', ownerUserId)
         .maybeSingle(),
-      supabase.from('verification_photos').select('slot, cf_image_id').eq('user_id', ownerUserId),
-      supabase
-        .from('id_documents')
-        .select('cf_image_id, uploaded_at')
-        .eq('user_id', ownerUserId)
-        .order('uploaded_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      getOwnVerificationPhotoUrlsAction().catch(() => [] as { slot: number; url: string }[]),
+      getOwnIdDocumentUrlAction().catch(() => null),
       supabase
         .from('verification_requests')
         .select('rejection_reason, status, reviewed_at')
@@ -77,11 +75,11 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
     ]);
     setProfile((p as ProfileSnapshot) ?? null);
     const map: Record<number, string> = {};
-    (ph ?? []).forEach((row: { slot: number; cf_image_id: string }) => {
-      map[row.slot] = row.cf_image_id;
+    photoRows.forEach((row) => {
+      map[row.slot] = row.url;
     });
-    setPhotos(map);
-    setPendingDoc((doc as PendingDocSnapshot) ?? null);
+    setPhotoUrls(map);
+    setPendingDoc(idDocUrl ? { url: idDocUrl } : null);
     setLatestRejectionReason((rejected as { rejection_reason: string | null } | null)?.rejection_reason ?? null);
   }, [ownerUserId]);
 
@@ -92,8 +90,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
     }
   }, [open, refresh]);
 
-  const photoCount = Object.keys(photos).length;
-  const hash = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH;
+  const photoCount = Object.keys(photoUrls).length;
 
   const requiredFilled = useMemo(() => {
     if (!profile) return false;
@@ -176,8 +173,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
 
                   <TabsContent>
                     <PhotosTab
-                      photos={photos}
-                      hash={hash}
+                      photoUrls={photoUrls}
                       onUploaded={async () => {
                         await refresh();
                       }}
@@ -201,8 +197,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                       alreadyPending={alreadyPending}
                       wasRejected={wasRejected}
                       rejectionReason={latestRejectionReason}
-                      pendingDocCfId={pendingDoc?.cf_image_id ?? null}
-                      hash={hash}
+                      pendingDocUrl={pendingDoc?.url ?? null}
                       submitting={submitting}
                       onSubmit={async (cfImageId, mimeType) => {
                         try {
@@ -314,12 +309,10 @@ function RequiredInfoTab({
 }
 
 function PhotosTab({
-  photos,
-  hash,
+  photoUrls,
   onUploaded,
 }: {
-  photos: Record<number, string>;
-  hash?: string;
+  photoUrls: Record<number, string>;
   onUploaded: () => Promise<void>;
 }) {
   const [busySlot, setBusySlot] = useState<number | null>(null);
@@ -334,7 +327,10 @@ function PhotosTab({
     }
     try {
       setBusySlot(slot);
-      const { id } = await uploadService.uploadImage(file);
+      const { id } = await uploadService.uploadImage(file, undefined, {
+        metadata: { kind: 'verification_photo', slot: String(slot) },
+        requireSignedURLs: true,
+      });
       await savePhotoSlotAction({ slot, cfImageId: id });
       await onUploaded();
     } catch (err) {
@@ -351,8 +347,7 @@ function PhotosTab({
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[1, 2, 3, 4, 5].map((slot) => {
-          const id = photos[slot];
-          const url = id && hash ? `https://imagedelivery.net/${hash}/${id}/public` : null;
+          const url = photoUrls[slot] ?? null;
           return (
             <label
               key={slot}
@@ -439,8 +434,7 @@ function IdDocumentTab({
   alreadyPending,
   wasRejected,
   rejectionReason,
-  pendingDocCfId,
-  hash,
+  pendingDocUrl,
   submitting,
   onSubmit,
 }: {
@@ -448,8 +442,7 @@ function IdDocumentTab({
   alreadyPending: boolean;
   wasRejected: boolean;
   rejectionReason: string | null;
-  pendingDocCfId: string | null;
-  hash?: string;
+  pendingDocUrl: string | null;
   submitting: boolean;
   onSubmit: (cfImageId: string, mimeType: string) => Promise<void>;
 }) {
@@ -490,6 +483,7 @@ function IdDocumentTab({
       // unguessable CF image id is only ever visible to those roles.
       const { id } = await uploadService.uploadImage(file, undefined, {
         metadata: { kind: 'id_document' },
+        requireSignedURLs: true,
       });
       await onSubmit(id, file.type);
     } catch (e) {
@@ -500,7 +494,7 @@ function IdDocumentTab({
   };
 
   if (alreadyPending) {
-    const docUrl = pendingDocCfId && hash ? `https://imagedelivery.net/${hash}/${pendingDocCfId}/public` : null;
+    const docUrl = pendingDocUrl;
     return (
       <div className="space-y-3 py-4">
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">

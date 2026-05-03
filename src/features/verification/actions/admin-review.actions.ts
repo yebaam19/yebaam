@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getServerClient } from '@/utils/supabase/server';
+import { signImageDeliveryUrl } from '@/lib/cloudflare/images';
 import { adminReviewSchema } from '../validators/verification.schemas';
 
 async function requireAdmin() {
@@ -40,10 +41,11 @@ export async function reviewVerificationRequestAction(input: {
   revalidatePath('/admin/verifications');
 }
 
-/** Resolve the Cloudflare delivery URL for the ID document of a verification request.
- *  Privacy model: RLS on `id_documents` already restricts SELECT to platform_admins,
- *  so non-admins can never discover the `cf_image_id`. The id itself is an unguessable
- *  Cloudflare-generated identifier, so the public delivery URL is effectively admin-only. */
+/** Resolve the Cloudflare-signed delivery URL for the ID document of a verification request.
+ *  ID documents are uploaded with requireSignedURLs=true (or backfilled via the one-shot
+ *  script), so we mint an HMAC-signed URL that expires in 15 minutes. RLS on `id_documents`
+ *  restricts SELECT to platform_admins + owner, but `requireAdmin()` above narrows this caller
+ *  to admins only. */
 export async function getIdDocumentSignedUrlAction(requestId: string): Promise<string> {
   const { sb } = await requireAdmin();
   const { data, error } = await sb
@@ -55,7 +57,5 @@ export async function getIdDocumentSignedUrlAction(requestId: string): Promise<s
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error('Documento no encontrado');
-  const hash = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH;
-  if (!hash) throw new Error('NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH is not set');
-  return `https://imagedelivery.net/${hash}/${data.cf_image_id}/public`;
+  return signImageDeliveryUrl(data.cf_image_id, { expirySeconds: 60 * 15 });
 }

@@ -81,7 +81,12 @@ export class UploadService {
   async uploadImage(
     file: File,
     onProgress?: (progress: number) => void,
-    options?: { metadata?: Record<string, string> },
+    options?: {
+      metadata?: Record<string, string>;
+      /** Required for KYC photos / ID documents. When true, the returned `url` is null
+       *  (the image cannot be fetched without a server-minted signed URL). */
+      requireSignedURLs?: boolean;
+    },
   ): Promise<CloudflareImageUploadResult> {
     if (!file.type.startsWith('image/')) {
       throw new Error('uploadImage called with a non-image file');
@@ -92,6 +97,7 @@ export class UploadService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         metadata: { filename: file.name, ...(options?.metadata ?? {}) },
+        requireSignedURLs: options?.requireSignedURLs === true,
       }),
     });
     const signPayload = await signRes.json().catch(() => null);
@@ -102,6 +108,10 @@ export class UploadService {
     const { uploadURL, id } = signPayload.data as { uploadURL: string; id: string };
     await uploadToCloudflare(uploadURL, file, onProgress);
 
+    if (options?.requireSignedURLs) {
+      // Caller must mint a signed URL server-side via signImageDeliveryUrl().
+      return { id, url: '' };
+    }
     const hash = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH;
     if (!hash) throw new Error('NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH is not set');
     return { id, url: `https://imagedelivery.net/${hash}/${id}/public` };
