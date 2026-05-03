@@ -46,7 +46,7 @@ export const ClubsGrid: FC<ClubsGridProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+    <div className="grid w-full gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))]">
       {clubs.map((club) => (
         <ClubCard
           key={club.id}

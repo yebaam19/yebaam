@@ -35,7 +35,7 @@ export function ServicesGrid({ services, isLoading = false, className }: Service
   }
 
   return (
-    <div className={cn('grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4', className)}>
+    <div className={cn('grid w-full gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))]', className)}>
       {services.map((service) => (
         <ServiceListCard key={service.id} service={service} />
       ))}
@@ -49,7 +49,7 @@ export function ServicesGrid({ services, isLoading = false, className }: Service
 
 function ServicesGridSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4', className)}>
+    <div className={cn('grid w-full gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))]', className)}>
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}

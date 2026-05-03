@@ -46,7 +46,7 @@ export function BusinessesGrid({
 }: BusinessesGridProps) {
   if (isLoading) {
     return (
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid w-full gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))]">
         {Array.from({ length: 6 }).map((_, i) => (
           <LoadingSkeleton key={i} />
         ))}

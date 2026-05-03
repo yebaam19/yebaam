@@ -33,7 +33,7 @@ export function CitiesGrid({ cities, citiesPerPage = 9 }: CitiesGridProps) {
     <section className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-900">
       <div className="mx-auto space-y-6">
         {/* Grid de ciudades */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" style={{ minHeight: '400px' }}>
+        <div className="grid w-full gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))]" style={{ minHeight: '400px' }}>
           {currentCities.map((city) => (
             <CityCard key={city.id} city={city} />
           ))}

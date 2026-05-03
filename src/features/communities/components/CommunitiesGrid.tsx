@@ -40,7 +40,7 @@ export function CommunitiesGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid w-full gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))]">
       {communities.map((community) => (
         <CommunityCard
           key={community.id}
