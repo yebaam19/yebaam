@@ -2,11 +2,12 @@
 
 import { Field, Input, Label } from '@headlessui/react';
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 
 import ButtonPrimary from '@/ui/ButtonPrimary';
 import T from '@/utils/getT';
+import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget';
 import { requestPasswordResetAction } from '@/features/auth/actions/password-recovery.actions';
 import { forgotPasswordSchema } from '@/features/auth/validators/auth.schemas';
 
@@ -15,6 +16,8 @@ export function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,14 +29,25 @@ export function ForgotPasswordForm() {
       return;
     }
 
+    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    if (turnstileEnabled && !captchaToken) {
+      setError('Completa la verificación de seguridad para continuar.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const result = await requestPasswordResetAction({ email: parsed.data.email });
+      const result = await requestPasswordResetAction({
+        email: parsed.data.email,
+        captchaToken: captchaToken ?? undefined,
+      });
       toast.success(result.message);
       router.push(`/reset-password?email=${encodeURIComponent(parsed.data.email)}`);
     } catch (err: any) {
       setError(err?.message ?? 'No se pudo enviar el código');
       toast.error(err?.message ?? 'No se pudo enviar el código');
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -53,6 +67,14 @@ export function ForgotPasswordForm() {
           className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </Field>
+
+      <TurnstileWidget
+        ref={turnstileRef}
+        action="password-reset"
+        onSuccess={setCaptchaToken}
+        onExpire={() => setCaptchaToken(null)}
+        onError={() => setCaptchaToken(null)}
+      />
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">

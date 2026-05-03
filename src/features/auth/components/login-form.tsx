@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
+import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { useAuthStore } from '../store/auth.store'
 
 interface LoginFormProps {
@@ -24,6 +25,8 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
 
   const [identifier, setIdentifier] = useState(emailFromUrl)
   const [password, setPassword] = useState('')
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null)
 
   useEffect(() => {
     if (verified && emailFromUrl) {
@@ -49,16 +52,26 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+    if (turnstileEnabled && !captchaToken) {
+      toast.error('Completa la verificación de seguridad para continuar.')
+      return
+    }
+
     try {
       await login({
         email: identifier,
         password,
+        captchaToken: captchaToken ?? undefined,
       })
 
       toast.success('¡Bienvenido de nuevo!')
       router.push(redirectTo as unknown as Parameters<typeof router.push>[0])
     } catch (err: any) {
       toast.error(err.message || 'Error al iniciar sesión')
+      // Turnstile tokens are single-use — refresh the widget so the user can retry.
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
     }
   }
 
@@ -105,6 +118,15 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
 
       {/* Error Message */}
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+
+      {/* Cloudflare Turnstile — verifies the request before hitting Supabase auth */}
+      <TurnstileWidget
+        ref={turnstileRef}
+        action="login"
+        onSuccess={setCaptchaToken}
+        onExpire={() => setCaptchaToken(null)}
+        onError={() => setCaptchaToken(null)}
+      />
 
       {/* Forgot password */}
       {showForgotPassword && (

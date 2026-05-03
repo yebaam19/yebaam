@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/auth.store';
 import { toast } from 'sonner';
+import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget';
 import { NameFields } from './NameFields';
 import { BirthDateFields } from './BirthDateFields';
 import { GenderField } from './GenderField';
@@ -30,6 +31,8 @@ export function RegisterForm() {
     city: '',
     acceptedTerms: false,
   });
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -44,6 +47,12 @@ export function RegisterForm() {
 
     if (!formData.acceptedTerms) {
       toast.error('Debes aceptar los Términos y Condiciones para continuar');
+      return;
+    }
+
+    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    if (turnstileEnabled && !captchaToken) {
+      toast.error('Completa la verificación de seguridad para continuar.');
       return;
     }
 
@@ -71,15 +80,18 @@ export function RegisterForm() {
         acceptedTerms: formData.acceptedTerms,
         secondName: formData.secondName || undefined,
         secondLastName: formData.secondLastName || undefined,
+        captchaToken: captchaToken ?? undefined,
       };
 
       await register(payload);
-      
+
       toast.success('Registro exitoso! Verifica tu email');
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
       console.error('[RegisterForm] Error en registro:', err);
       toast.error(err.message || 'Error al registrar usuario');
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     }
   };
 
@@ -168,6 +180,15 @@ export function RegisterForm() {
           desbloquear todas las funciones (crear páginas, chats, clasificados, etc.).
         </p>
       </div>
+
+      {/* Cloudflare Turnstile — verifies the request before signupWithOtpAction runs */}
+      <TurnstileWidget
+        ref={turnstileRef}
+        action="signup"
+        onSuccess={setCaptchaToken}
+        onExpire={() => setCaptchaToken(null)}
+        onError={() => setCaptchaToken(null)}
+      />
 
       {/* Error message */}
       {error && (

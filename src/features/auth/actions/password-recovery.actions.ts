@@ -1,11 +1,24 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { getServiceClient } from '@/utils/supabase/server';
 import { sendPasswordResetEmail } from '@/services/email/resend.service';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import { generateCode, hashCode, OTP_TTL_MINUTES, MAX_ATTEMPTS } from './_otp-shared';
+
+async function getRemoteIp(): Promise<string | null> {
+  const h = await headers();
+  return (
+    h.get('cf-connecting-ip') ||
+    h.get('x-real-ip') ||
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    null
+  );
+}
 
 interface RequestPasswordResetInput {
   email: string;
+  captchaToken?: string;
 }
 
 interface ResetPasswordInput {
@@ -49,6 +62,14 @@ export async function requestPasswordResetAction(
   const email = input.email?.trim().toLowerCase();
   if (!email) {
     throw new Error('El email es requerido');
+  }
+
+  const captcha = await verifyTurnstileToken(input.captchaToken, {
+    remoteIp: await getRemoteIp(),
+    expectedAction: 'password-reset',
+  });
+  if (!captcha.ok) {
+    throw new Error(captcha.reason);
   }
 
   const user = await findUserByEmail(email);

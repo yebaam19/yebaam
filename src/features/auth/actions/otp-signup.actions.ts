@@ -1,9 +1,21 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { getServiceClient } from '@/utils/supabase/server';
 import { sendOtpEmail } from '@/services/email/resend.service';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import { generateCode, hashCode, otpExpiresAt, MAX_ATTEMPTS } from './_otp-shared';
 import type { RegisterDTO, VerifyEmailRequest, ResendOtpRequest } from '../interfaces/auth.interfaces';
+
+async function getRemoteIp(): Promise<string | null> {
+  const h = await headers();
+  return (
+    h.get('cf-connecting-ip') ||
+    h.get('x-real-ip') ||
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    null
+  );
+}
 
 async function issueOtpFor(userId: string, email: string, firstName?: string | null) {
   const admin = getServiceClient();
@@ -33,6 +45,14 @@ async function issueOtpFor(userId: string, email: string, firstName?: string | n
 export async function signupWithOtpAction(userData: RegisterDTO): Promise<{ message: string }> {
   if (!userData.email || !userData.password) {
     throw new Error('Email y contraseña son requeridos');
+  }
+
+  const captcha = await verifyTurnstileToken(userData.captchaToken, {
+    remoteIp: await getRemoteIp(),
+    expectedAction: 'signup',
+  });
+  if (!captcha.ok) {
+    throw new Error(captcha.reason);
   }
 
   const admin = getServiceClient();
@@ -133,6 +153,14 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<{ me
 }
 
 export async function resendOtpAction(payload: ResendOtpRequest): Promise<{ message: string }> {
+  const captcha = await verifyTurnstileToken(payload.captchaToken, {
+    remoteIp: await getRemoteIp(),
+    expectedAction: 'resend-otp',
+  });
+  if (!captcha.ok) {
+    throw new Error(captcha.reason);
+  }
+
   const admin = getServiceClient();
 
   const { data: existing, error: existingError } = await admin

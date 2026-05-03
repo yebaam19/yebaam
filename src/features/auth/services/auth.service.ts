@@ -90,6 +90,7 @@ export class AuthService {
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email: credentials.email,
       password: credentials.password,
+      options: credentials.captchaToken ? { captchaToken: credentials.captchaToken } : undefined,
     });
     if (error || !data?.user || !data.session) {
       throw new Error(error?.message || 'Error al iniciar sesión');

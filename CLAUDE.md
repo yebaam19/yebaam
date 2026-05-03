@@ -54,6 +54,10 @@ The only place where Broadcast (ephemeral, no DB) is appropriate is signals like
 
 **Every image and every video in this app goes to Cloudflare** — Cloudflare Images for photos, Cloudflare Stream for videos. Supabase Storage is for non-media files only. Always upload via `uploadService` from [src/lib/service/upload.service.ts](src/lib/service/upload.service.ts) (`uploadImage`, `uploadVideo`, or `uploadFile`); never call `supabase.storage.from(...).upload(...)` for media, never store the full delivery URL in the DB (store the Cloudflare `id`/`uid` only). For private media (e.g. ID documents) enforce privacy at the DB layer — store the `cf_image_id` in a row whose SELECT policy restricts visibility (e.g. admins-only). The existing Cloudflare keys (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH`) cover all use cases. See AGENTS.md "Media uploads — Cloudflare only" for the full rule.
 
+## Auth abuse protection (TL;DR)
+
+Public auth forms (login, signup, password reset, OTP resend) gate on a **Cloudflare Turnstile** token via [`<TurnstileWidget>`](src/components/auth/TurnstileWidget.tsx). Login uses Supabase's native captcha (`options.captchaToken` on `signInWithPassword`, with the secret configured in Supabase Dashboard → Auth → Bot and Abuse Protection). Signup, OTP resend, and password reset run through `admin.*` endpoints, so they verify the token themselves with `verifyTurnstileToken()` from [`src/lib/turnstile.ts`](src/lib/turnstile.ts) before doing any work. Env: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`. For raw flood protection, enable Bot Fight Mode + WAF rate limits in the Cloudflare dashboard — those run at the edge.
+
 ## Comunidades — periodic counter-drift check
 
 The `communities.member_count` and `communities.post_count` columns are kept in sync by `AFTER INSERT/DELETE` triggers (`tg_community_member_counter`, `tg_community_post_counter`). Triggers can drift if a migration disables them, a bulk operation bypasses the trigger, or a transaction half-fails. **After ~1 month of usage, spot-check via the Supabase MCP**:

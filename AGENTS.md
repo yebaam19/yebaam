@@ -121,6 +121,25 @@ Three live in `supabase/functions/`:
 
 Deploy via the Supabase MCP `deploy_edge_function` tool or `supabase functions deploy <name>` CLI. Secrets are configured in **Project Settings → Edge Functions → Secrets** or via `supabase secrets set <KEY>=<value>`.
 
+## Auth abuse protection — Cloudflare Turnstile
+
+All public auth surfaces (login, signup, password reset, OTP resend) MUST render a **Cloudflare Turnstile** widget and gate the request on a verified token. The integration uses two paths because some auth flows go through the regular Supabase auth API and others use the service-role admin API:
+
+| Flow | Verification path |
+|---|---|
+| `signInWithPassword` (login) | Supabase native CAPTCHA — token is passed in `options.captchaToken` and Supabase verifies it server-side. Configure the Turnstile **secret** in Supabase Dashboard → Authentication → Bot and Abuse Protection. |
+| `signupWithOtpAction`, `resendOtpAction`, `requestPasswordResetAction` | Manual server-side verification via [`verifyTurnstileToken()`](src/lib/turnstile.ts). These actions use `admin.*` endpoints which bypass Supabase's CAPTCHA middleware, so we must verify the token ourselves before calling the admin API. |
+
+Client widget: [`<TurnstileWidget>`](src/components/auth/TurnstileWidget.tsx) — wraps `@marsidev/react-turnstile`, exposes a `ref.reset()` so the form can refresh the token after a failed attempt (Turnstile tokens are single-use and expire after ~5 minutes).
+
+Env vars (both required):
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — public widget key.
+- `TURNSTILE_SECRET_KEY` — server-only secret used by `verifyTurnstileToken()` against `https://challenges.cloudflare.com/turnstile/v0/siteverify`.
+
+When adding a new auth-adjacent action (e.g. invite acceptance, account deletion), follow the same pattern: render `<TurnstileWidget action="...">`, pass `captchaToken` in the action payload, and call `verifyTurnstileToken(captchaToken, { remoteIp, expectedAction })` first thing in the server action.
+
+For volumetric DDoS protection that Turnstile can't address (raw HTTP floods), enable Cloudflare **Bot Fight Mode** and add WAF rate-limit rules per route in the Cloudflare dashboard — those run at the edge before traffic reaches Vercel.
+
 ## Stack and conventions
 
 - **Package manager**: `pnpm` (use it for every install, never npm/yarn).

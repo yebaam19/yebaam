@@ -4,10 +4,12 @@ export interface LoginDTO {
   email?: string;
   username?: string;
   password: string;
+  captchaToken?: string;
 }
 
 export interface ResendOtpRequest {
   email: string;
+  captchaToken?: string;
 }
 export interface MessageResponse {
   message: string;
@@ -31,6 +33,7 @@ export interface RegisterDTO {
   state: string;
   city: string;
   acceptedTerms: boolean;
+  captchaToken?: string;
 }
 
 /**
