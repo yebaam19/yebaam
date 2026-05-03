@@ -116,83 +116,99 @@ export function BlogsPageContainer() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-5">
-      {/* Hero */}
-      <BlogsHero onCreateClick={() => setIsCreateModalOpen(true)} showCreateButton={activeTab === 'mis-blogs'} />
+    <div className="bg-linear-to-b from-secondary-50/40 via-white to-neutral-50 dark:from-secondary-900/10 dark:via-neutral-950 dark:to-neutral-950">
+      <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:space-y-10 sm:px-6 sm:py-8 lg:px-8">
+        {/* Hero */}
+        <BlogsHero onCreateClick={() => setIsCreateModalOpen(true)} showCreateButton={activeTab === 'mis-blogs'} />
 
-      {/* Create Blog Modal */}
-      <CreateBlogModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+        {/* Create Blog Modal */}
+        <CreateBlogModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
 
-      {/* Tabs */}
-      <div className="mt-8 mb-8 border-b border-neutral-200 dark:border-neutral-700">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.id
+        <section className="space-y-5">
+          <header className="space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-700 dark:text-secondary-400">
+              Explora blogs
+            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl dark:text-white">
+              Encuentra voces que te inspiren
+            </h2>
+            <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
+              Sigue a creadores, descubre nuevos temas y haz crecer tu propia audiencia.
+            </p>
+          </header>
 
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`group inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                    : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'
-                } `}
-              >
-                <Icon className="h-5 w-5" />
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+          {/* Tabs */}
+          <div className="rounded-2xl border border-neutral-200/80 bg-white p-1.5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <nav className="flex flex-wrap gap-1" aria-label="Tabs">
+              {tabs.map((tab) => {
+                const Icon = tab.icon
+                const isActive = activeTab === tab.id
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`group inline-flex flex-1 min-w-[7.5rem] items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
                       isActive
-                        ? 'bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300'
-                        : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
-                    } `}
+                        ? 'bg-secondary-600 text-white shadow-sm'
+                        : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
+                    }`}
                   >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
-      </div>
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                    {tab.count !== undefined && (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                          isActive
+                            ? 'bg-white/25 text-white'
+                            : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                        }`}
+                      >
+                        {tab.count ?? 0}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
+          </div>
 
-      {/* Content */}
-      {isLoading() ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
-            >
-              <div className="h-40 bg-neutral-200 dark:bg-neutral-700" />
-              <div className="space-y-3 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-2/3 rounded bg-neutral-200 dark:bg-neutral-700" />
-                    <div className="h-3 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
+          {/* Content */}
+          {isLoading() ? (
+            <div className="grid w-full gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))]">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="animate-pulse overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                  <div className="h-36 bg-neutral-200 dark:bg-neutral-800" />
+                  <div className="space-y-3 p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3.5 w-2/3 rounded bg-neutral-200 dark:bg-neutral-800" />
+                        <div className="h-3 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800" />
+                      </div>
+                    </div>
+                    <div className="h-5 w-3/4 rounded bg-neutral-200 dark:bg-neutral-800" />
+                    <div className="h-3.5 rounded bg-neutral-200 dark:bg-neutral-800" />
+                    <div className="h-3.5 w-5/6 rounded bg-neutral-200 dark:bg-neutral-800" />
+                    <div className="h-9 rounded-xl bg-neutral-200 dark:bg-neutral-800" />
                   </div>
                 </div>
-                <div className="h-6 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-4 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-4 w-5/6 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-10 rounded bg-neutral-200 dark:bg-neutral-700" />
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <BlogsGrid
-          blogs={getActiveData()}
-          onFollow={handleFollow}
-          onUnfollow={handleUnfollow}
-          loadingBlogId={loadingBlogId}
-          emptyMessage={getEmptyMessage()}
-        />
-      )}
+          ) : (
+            <BlogsGrid
+              blogs={getActiveData()}
+              onFollow={handleFollow}
+              onUnfollow={handleUnfollow}
+              loadingBlogId={loadingBlogId}
+              emptyMessage={getEmptyMessage()}
+            />
+          )}
+        </section>
+      </div>
     </div>
   )
 }
