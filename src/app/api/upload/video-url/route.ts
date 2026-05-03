@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerAccessToken, getServerClient } from '@/utils/supabase/server';
 import { createStreamDirectUploadUrl } from '@/lib/cloudflare/stream';
 
-const DEFAULT_MAX_DURATION_SECONDS = 60 * 30; // 30 minutes — hard ceiling; client can request less.
-const HARD_CAP_SECONDS = 60 * 60 * 2; // 2 h, reject anything larger.
+const DEFAULT_MAX_DURATION_SECONDS = 60 * 60 * 4; // 4 hours — matches Facebook's feed video limit.
+const HARD_CAP_SECONDS = 60 * 60 * 4; // 4 h hard cap, reject anything larger.
 
 export async function POST(request: NextRequest) {
   const token = await getServerAccessToken();
