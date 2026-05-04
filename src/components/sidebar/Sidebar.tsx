@@ -18,6 +18,36 @@ import { useSidebarExpanded } from './hooks/useSidebarExpanded'
 
 const MAX_VISIBLE_ITEMS = 7
 
+const isExternalHref = (href: string) => /^https?:\/\//i.test(href)
+
+interface SmartLinkProps {
+  href: string
+  className?: string
+  title?: string
+  children: React.ReactNode
+}
+
+function SmartLink({ href, className, title, children }: SmartLinkProps) {
+  if (isExternalHref(href)) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        title={title}
+      >
+        {children}
+      </a>
+    )
+  }
+  return (
+    <Link href={href as never} className={className} title={title}>
+      {children}
+    </Link>
+  )
+}
+
 interface SidebarProps {
   className?: string
   user: AuthUser
@@ -158,7 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
             const showExpanded = isMobile || !isCollapsed
 
             return (
-              <Link
+              <SmartLink
                 key={item.href}
                 href={item.href}
                 title={!showExpanded ? item.label : undefined}
@@ -199,7 +229,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
                 {!showExpanded && item.badge && (
                   <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-red-500" />
                 )}
-              </Link>
+              </SmartLink>
             )
           })}
 
@@ -228,7 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
               const IconComponent = item.icon
 
               return (
-                <Link
+                <SmartLink
                   key={item.href}
                   href={item.href}
                   className={cn(
@@ -258,7 +288,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
                       {item.badge}
                     </span>
                   )}
-                </Link>
+                </SmartLink>
               )
             })}
         </div>

@@ -64,6 +64,16 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                         >
                             {feature.buttonLabel}
                         </button>
+                    ) : feature.external ? (
+                        <a
+                            href={feature.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+                        >
+                            {feature.buttonLabel}
+                            <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                        </a>
                     ) : (
                         <Link
                             href={feature.href as Route}

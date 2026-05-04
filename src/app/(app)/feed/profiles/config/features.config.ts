@@ -4,6 +4,7 @@ import {
     BriefcaseIcon,
     UserGroupIcon,
     BuildingOffice2Icon,
+    CakeIcon,
 } from '@/components/icons/heroicons-shim';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -17,6 +18,13 @@ export interface ProfileFeature {
     icon: ComponentType<SVGProps<SVGSVGElement>>;
     benefits: string[];
     href: string;
+    /**
+     * When the destination lives outside this app (a separate Vercel project /
+     * subdomain like `food.yebaam.com`), set `external: true` so the card
+     * renders as a plain `<a>` with the absolute `href`. Otherwise the card
+     * uses `next/link` for client-side navigation within this app.
+     */
+    external?: boolean;
     bgColor: string;
     iconColor: string;
     buttonLabel: string;
@@ -106,6 +114,23 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
         bgColor: 'bg-primary-800',
         iconColor: 'text-primary-800',
         buttonLabel: 'Explorar Empresas',
+        disabled: false,
+    },
+    {
+        id: 'food',
+        title: 'Food',
+        description: 'Explora y comparte la mejor gastronomía: restaurantes, recetas y experiencias culinarias.',
+        icon: CakeIcon,
+        benefits: [
+            'Descubre restaurantes locales',
+            'Comparte recetas y reseñas',
+            'Conecta con foodies y chefs',
+        ],
+        href: 'http://food.yebaam.com/?fbclid=IwY2xjawRk9YVleHRuA2FlbQIxMABicmlkETFGOThUMHJEcEpLUjNlSlRRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHqaDv09UQU7l43k9NGfHzgQtyEl-9GMczTX4bbl8SQ54bvLzpXvnegcacxqB_aem_gLe6_akUqnvd2jSKiom8dg',
+        external: true,
+        bgColor: 'bg-amber-500',
+        iconColor: 'text-amber-600',
+        buttonLabel: 'Explorar Food',
         disabled: false,
     },
 ];

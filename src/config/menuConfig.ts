@@ -57,6 +57,13 @@ export const menuConfig: Record<string, any[]> = {
           href: '{basePath}/blogs',
           featureFlag: 'BLOGS_ENABLED' as FeatureFlag,
         },
+        {
+          icon: ShoppingBagIcon,
+          label: 'Comida',
+          href: 'http://food.yebaam.com/?fbclid=IwY2xjawRk9YVleHRuA2FlbQIxMABicmlkETFGOThUMHJEcEpLUjNlSlRRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHqaDv09UQU7l43k9NGfHzgQtyEl-9GMczTX4bbl8SQ54bvLzpXvnegcacxqB_aem_gLe6_akUqnvd2jSKiom8dg',
+          badge: 'Nuevo',
+          badgeHideOnMobile: true,
+        },
       ],
     },
     {
