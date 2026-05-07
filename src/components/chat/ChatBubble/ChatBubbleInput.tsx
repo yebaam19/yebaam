@@ -8,13 +8,8 @@ import {
   PlusIcon,
   HandThumbUpIcon,
 } from '@/components/icons/heroicons-shim';
-  FormEvent,
-  KeyboardEvent,
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import type { FormEvent, KeyboardEvent } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface ChatBubbleInputProps {
