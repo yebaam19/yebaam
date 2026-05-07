@@ -7,6 +7,7 @@ import Link from 'next/link';
 import type { FriendshipStatus, UserProfile as UserProfileType } from '../../interfaces/profile.interfaces';
 import EditProfileButton from './EditProfileButton';
 import { FriendButton } from '@/features/friendships/components/FriendButton';
+import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import MessageButton from './MessageButton';
 import ProfileFollowStub from './ProfileFollowStub';
 import ProfessionalProfileButton from './ProfessionalProfileButton';
@@ -54,6 +55,8 @@ export default function UserProfile({
   const isOwnProfile = user.userId === loggedInUserId;
   const fullName = [user.firstName, user.secondName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
   const coverSrc = user.coverPhotoUrl || user.coverUrl || null;
+  const friendshipState = useFriendshipsStore((state) => state.getFriendshipStatus(user.userId));
+  const isFriends = friendshipState === 'friends';
 
   return (
     <div className="w-full bg-white dark:bg-gray-800">
@@ -209,10 +212,12 @@ export default function UserProfile({
                       isOwnProfile={false}
                       hasProfessionalProfile={professionalProfileExists}
                     />
-                    <FriendButton userId={user.userId} variant="default" size="md" showDropdown />
+                    {!isFriends && (
+                      <FriendButton userId={user.userId} variant="default" size="md" />
+                    )}
                     <ProfileFollowStub />
                     <MessageButton userId={user.userId} />
-                    <ProfileActionsMenu userId={user.userId} />
+                    <ProfileActionsMenu userId={user.userId} isFriends={isFriends} />
                   </>
                 )}
               </div>
