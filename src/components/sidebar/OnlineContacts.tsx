@@ -155,12 +155,14 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
               
               {/* Nombre - Abre el chat */}
               <button
+                type="button"
+                aria-label={`Abrir chat con ${contact.name}`}
                 onClick={() => onContactClick(contact)}
-                className="flex-1 text-left"
+                className="flex min-h-11 min-w-0 flex-1 items-center rounded-lg text-left hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 dark:hover:bg-neutral-800"
               >
-                <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
+                <span className="truncate text-sm font-medium text-neutral-900 dark:text-white">
                   {contact.name}
-                </p>
+                </span>
               </button>
             </div>
           ))

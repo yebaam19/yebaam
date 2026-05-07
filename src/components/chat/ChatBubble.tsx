@@ -58,7 +58,7 @@ export default function ChatBubble({
   return (
     <div
       className={cn(
-        'fixed bottom-0 z-40 flex w-[328px] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-900',
+        'fixed bottom-0 z-[150] flex w-[328px] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-900',
         isMinimized ? 'h-14' : 'h-[480px]',
       )}
       style={{ right: `${rightPosition}px` }}

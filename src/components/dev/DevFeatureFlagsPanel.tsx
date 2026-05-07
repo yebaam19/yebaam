@@ -30,7 +30,7 @@ export default function DevFeatureFlagsPanel() {
   const disabledCount = flags.length - enabledCount;
 
   return (
-    <div className="fixed bottom-4 right-4 z-9999">
+    <div className="fixed right-6 bottom-[max(6rem,calc(env(safe-area-inset-bottom,0px)+6rem))] z-[115]">
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
