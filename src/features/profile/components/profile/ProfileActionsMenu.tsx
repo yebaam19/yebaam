@@ -34,7 +34,7 @@ export default function ProfileActionsMenu(props: ProfileActionsMenuProps) {
       <button
         onClick={() => setOpen(!open)}
         aria-label="Más acciones"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-900 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
       >
         <EllipsisHorizontalIcon className="h-5 w-5" />
       </button>

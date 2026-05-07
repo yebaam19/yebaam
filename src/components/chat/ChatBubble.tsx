@@ -50,12 +50,15 @@ export default function ChatBubble({
     conversationId,
   });
 
-  const rightPosition = 320 + position * 340;
+  const bubbleWidthPx = 328;
+  /** ~12px gutter between stacked docked chats (same footprint as antes con w-80). */
+  const stackStepPx = bubbleWidthPx + 12;
+  const rightPosition = 320 + position * stackStepPx;
 
   return (
     <div
       className={cn(
-        'fixed bottom-0 w-80 bg-white dark:bg-neutral-900 rounded-t-xl shadow-2xl border-x border-t border-neutral-200 dark:border-neutral-800 flex flex-col transition-all duration-200 z-40',
+        'fixed bottom-0 z-40 flex w-[328px] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-900',
         isMinimized ? 'h-14' : 'h-[480px]',
       )}
       style={{ right: `${rightPosition}px` }}
@@ -77,6 +80,8 @@ export default function ChatBubble({
             isLoading={isLoading}
             isTyping={isTyping}
             messagesEndRef={messagesEndRef}
+            contactAvatar={contactAvatar}
+            contactName={contactName}
           />
 
           <ChatBubbleInput

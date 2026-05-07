@@ -1,11 +1,42 @@
-import { useState, FormEvent } from 'react';
-import { PaperAirplaneIcon, PhotoIcon, FaceSmileIcon } from '@/components/icons/heroicons-shim';
-import { cn } from '@/lib/utils';
+'use client';
+
+import {
+  FaceSmileIcon,
+  PaperAirplaneIcon,
+  CameraIcon,
+  PhotoIcon,
+  PlusIcon,
+  HandThumbUpIcon,
+} from '@/components/icons/heroicons-shim';
+  FormEvent,
+  KeyboardEvent,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { toast } from 'sonner';
 
 interface ChatBubbleInputProps {
   onSendMessage: (message: string) => Promise<boolean>;
   onTypingChange: (value: string, prevValue: string) => void;
   onStopTyping: () => void;
+}
+
+/** Auto-resize helper for multiline textarea. */
+function useAutoResizeTextArea(value: string, maxPx: number, minRows = 1) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const ta = ref.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    const lh = Number.parseFloat(getComputedStyle(ta).lineHeight) || 18;
+    const minH = minRows * lh + 14;
+    ta.style.height = `${Math.min(Math.max(ta.scrollHeight, minH), maxPx)}px`;
+  }, [value, maxPx, minRows]);
+
+  return ref;
 }
 
 export function ChatBubbleInput({
@@ -15,89 +46,128 @@ export function ChatBubbleInput({
 }: ChatBubbleInputProps) {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const textareaRef = useAutoResizeTextArea(message, 120, 1);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     const prevValue = message;
     setMessage(newValue);
     onTypingChange(newValue, prevValue);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-
-    }
+  const sendText = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isSending) return;
+    setIsSending(true);
+    onStopTyping();
+    setMessage('');
+    const ok = await onSendMessage(trimmed);
+    if (!ok) setMessage(trimmed);
+    setIsSending(false);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    await sendText(message);
+  };
 
-    if (!message.trim() || isSending) {
- 
-      return;
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      void sendText(message);
     }
+  };
 
-    const messageContent = message.trim();
+  const stubSoon = useCallback(() => toast.info('Pronto'), []);
 
+  const trimmedEmpty = message.trim() === '';
+
+  const handleThumb = async () => {
+    if (isSending || !trimmedEmpty) return;
     setIsSending(true);
     onStopTyping();
-    setMessage(''); // Limpiar input inmediatamente
-
-    const success = await onSendMessage(messageContent);
-
-    if (!success) {
-      // Si falla, restaurar el mensaje
-
-      setMessage(messageContent);
-    }
-    
+    await onSendMessage('👍');
     setIsSending(false);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-      <div className="flex items-center gap-2 p-3">
-        <button
-          type="button"
-          className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
-          title="Adjuntar imagen"
-        >
-          <PhotoIcon className="w-5 h-5 text-primary-600 dark:text-primary-500" />
-        </button>
-        
-        <div className="flex-1 relative">
-          <input
-            type="text"
+    <form
+      onSubmit={handleSubmit}
+      className="border-t border-neutral-200 bg-[#f0f2f5] px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900"
+    >
+      <div className="flex items-end gap-1.5">
+        <div className="flex shrink-0 items-center gap-0.5 pb-1">
+          <button
+            type="button"
+            onClick={stubSoon}
+            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
+            title="Más"
+          >
+            <PlusIcon className="h-7 w-7" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={stubSoon}
+            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
+            title="Foto desde cámara"
+          >
+            <CameraIcon className="h-6 w-6" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={stubSoon}
+            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
+            title="Adjuntar"
+          >
+            <PhotoIcon className="h-6 w-6" aria-hidden />
+          </button>
+        </div>
+
+        <div className="min-w-0 flex-1 pb-px">
+          <textarea
+            ref={textareaRef}
             value={message}
+            rows={1}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Escribe un mensaje..."
+            placeholder="Aa"
             disabled={isSending}
-            className="w-full px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-full text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+            aria-label="Escribe un mensaje"
+            className="max-h-[120px] w-full resize-none rounded-[20px] border-0 bg-white px-3 py-2 text-sm leading-[1.36] wrap-break-word text-neutral-900 shadow-sm outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-blue-500/35 disabled:opacity-60 dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500"
           />
         </div>
 
-        <button
-          type="button"
-          className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
-          title="Emoji"
-        >
-          <FaceSmileIcon className="w-5 h-5 text-primary-600 dark:text-primary-500" />
-        </button>
+        <div className="flex shrink-0 items-center gap-0 pb-2">
+          <button
+            type="button"
+            onClick={stubSoon}
+            className="rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+            title="Emoji"
+          >
+            <FaceSmileIcon className="h-6 w-6 text-[#0084ff] dark:text-blue-400" />
+          </button>
 
-        <button
-          type="submit"
-          disabled={!message.trim() || isSending}
-          className={cn(
-            "p-2 rounded-full transition-colors",
-            message.trim() && !isSending
-              ? "bg-primary-600 hover:bg-primary-700 text-white"
-              : "text-neutral-400 cursor-not-allowed"
+          {trimmedEmpty ? (
+            <button
+              type="button"
+              onClick={() => void handleThumb()}
+              disabled={isSending}
+              className="rounded-full p-2 transition-colors hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
+              title="Enviar Me gusta"
+            >
+              <HandThumbUpIcon className="h-7 w-7 text-[#0084ff] dark:text-blue-400" aria-hidden />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSending}
+              className="rounded-full bg-[#0084ff] p-2 text-white shadow-sm transition-colors hover:bg-[#1877f2] disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
+              title="Enviar"
+            >
+              <PaperAirplaneIcon className="h-5 w-5 rtl:rotate-180" aria-hidden />
+            </button>
           )}
-          title="Enviar"
-        >
-          <PaperAirplaneIcon className="w-5 h-5" />
-        </button>
+        </div>
       </div>
     </form>
   );

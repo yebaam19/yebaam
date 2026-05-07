@@ -8,6 +8,7 @@ import type { FriendshipStatus, UserProfile as UserProfileType } from '../../int
 import EditProfileButton from './EditProfileButton';
 import { FriendButton } from '@/features/friendships/components/FriendButton';
 import MessageButton from './MessageButton';
+import ProfileFollowStub from './ProfileFollowStub';
 import ProfessionalProfileButton from './ProfessionalProfileButton';
 import ProfileActionsMenu from './ProfileActionsMenu';
 import { coverTransformStyle } from '../../utils/coverTransform';
@@ -155,28 +156,40 @@ export default function UserProfile({
                 </div>
                 <div className="max-w-full text-center text-sm break-all text-gray-500 sm:text-base lg:text-left dark:text-gray-400">@{user.username}</div>
 
-                {/* Stats */}
-                <div className="flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-gray-600 lg:justify-start dark:text-gray-400">
+                {/* Stats — métricas del perfil visualizado (`user`), no desde currentProfile */}
+                <div className="flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-gray-600 lg:justify-start dark:text-gray-400">
                   <span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatNumber(user._count?.posts || 0)}
+                      {formatNumber(user._count?.posts ?? 0)}
                     </span>{' '}
                     publicaciones
                   </span>
+                  <span className="hidden text-gray-300 sm:inline dark:text-gray-600" aria-hidden>
+                    ·
+                  </span>
+                  <span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {formatNumber(user._count?.followers ?? 0)}
+                    </span>{' '}
+                    seguidores
+                  </span>
                   {friendshipInfo && (
-                    <Link href={`/${user.username}?tab=amigos`} className="hover:underline">
-                      <span>
+                    <>
+                      <span className="hidden text-gray-300 sm:inline dark:text-gray-600" aria-hidden>
+                        ·
+                      </span>
+                      <Link href={`/${user.username}?tab=amigos`} className="hover:underline focus:underline focus:outline-none">
                         <span className="font-semibold text-gray-900 dark:text-white">
                           {formatNumber(friendshipInfo.friendCount)}
                         </span>{' '}
                         amigos
-                      </span>
-                    </Link>
+                      </Link>
+                    </>
                   )}
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {/* Action cluster — estilo cercano a PageDetailHeader: primaria amigos, mensaje secundaria, ⋯ */}
               <div className="mt-4 flex w-full max-w-full flex-wrap items-center justify-center gap-2 lg:mt-0 lg:mr-6 lg:w-auto lg:justify-end *:max-w-full">
                 {customActions ? (
                   customActions
@@ -197,6 +210,7 @@ export default function UserProfile({
                       hasProfessionalProfile={professionalProfileExists}
                     />
                     <FriendButton userId={user.userId} variant="default" size="md" showDropdown />
+                    <ProfileFollowStub />
                     <MessageButton userId={user.userId} />
                     <ProfileActionsMenu userId={user.userId} />
                   </>

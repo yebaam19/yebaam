@@ -1,10 +1,12 @@
-import { XMarkIcon, MinusIcon, PhoneIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
+import { MinusIcon, PhoneIcon, VideoCameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
+import { toast } from 'sonner';
 
 interface ChatBubbleHeaderProps {
   contactName: string;
   contactAvatar: string;
   isOnline: boolean;
+  /** Kept so callers do not churn; estado de capa realtime no replica el copy de Messenger. */
   isChatConnected: boolean;
   isMinimized: boolean;
   onToggleMinimize: () => void;
@@ -20,56 +22,69 @@ export function ChatBubbleHeader({
   onToggleMinimize,
   onClose,
 }: ChatBubbleHeaderProps) {
+  void isChatConnected;
+
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-t-xl">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="relative">
+    <div className="flex items-center justify-between rounded-t-xl border-b border-neutral-200/90 bg-[#f0f2f5] px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className="relative shrink-0">
           <Avatar
-            className="h-8 w-8"
+            className="h-9 w-9 border border-white shadow-sm dark:border-neutral-700"
             src={contactAvatar}
-            initials={contactName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            initials={contactName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)}
           />
           {isOnline && (
-            <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-neutral-900" />
+            <div className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-[#f0f2f5] bg-emerald-500 dark:border-neutral-900" />
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+        <div className="min-w-0 flex-1 py-0.5">
+          <h3 className="truncate text-[15px] font-bold leading-tight text-neutral-900 dark:text-white">
             {contactName}
           </h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            {isOnline ? 'Activo ahora' : 'Desconectado'}
-            {isChatConnected && ' • Chat conectado'}
-          </p>
+          {!isMinimized && isOnline && (
+            <p className="truncate text-[12px] text-neutral-500 dark:text-neutral-400">
+              Activo ahora
+            </p>
+          )}
         </div>
       </div>
-      
-      <div className="flex items-center gap-1">
+
+      <div className="flex shrink-0 items-center gap-0.5">
         <button
-          className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+          type="button"
+          onClick={() => toast.info('Las llamadas de voz estarán disponibles pronto')}
+          className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
           title="Llamada de voz"
         >
-          <PhoneIcon className="w-4 h-4 text-primary-600 dark:text-primary-500" />
+          <PhoneIcon className="size-7" aria-hidden />
         </button>
         <button
-          className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+          type="button"
+          onClick={() => toast.info('Las videollamadas estarán disponibles pronto')}
+          className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
           title="Videollamada"
         >
-          <VideoCameraIcon className="w-4 h-4 text-primary-600 dark:text-primary-500" />
+          <VideoCameraIcon className="size-7" aria-hidden />
         </button>
         <button
+          type="button"
           onClick={onToggleMinimize}
-          className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+          className="rounded-full p-1.5 text-neutral-600 transition-colors hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10"
           title={isMinimized ? 'Expandir' : 'Minimizar'}
         >
-          <MinusIcon className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+          <MinusIcon className="h-6 w-6" aria-hidden />
         </button>
         <button
+          type="button"
           onClick={onClose}
-          className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+          className="rounded-full p-1.5 text-neutral-600 transition-colors hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10"
           title="Cerrar"
         >
-          <XMarkIcon className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+          <XMarkIcon className="h-6 w-6" aria-hidden />
         </button>
       </div>
     </div>

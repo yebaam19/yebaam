@@ -1,11 +1,40 @@
+import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-interface ChatBubbleMessagesProps {
+export interface ChatBubbleMessagesProps {
   messages: any[];
   isLoading: boolean;
   isTyping: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  contactAvatar: string;
+  contactName: string;
+}
+
+function getContentText(content: unknown): string {
+  if (!content) return '';
+  if (typeof content === 'string') return content;
+  if (typeof content === 'object' && content !== null) {
+    const o = content as Record<string, unknown>;
+    return String(o.text ?? o._value ?? o.value ?? JSON.stringify(content));
+  }
+  return '';
+}
+
+function outgoingBubbleRadii(prevSame: boolean, nextSame: boolean): string {
+  if (!prevSame && !nextSame) return 'rounded-2xl rounded-br-md';
+  if (!prevSame && nextSame) return 'rounded-2xl rounded-br-lg rounded-bl-2xl';
+  if (prevSame && nextSame)
+    return 'rounded-r-2xl rounded-l-2xl rounded-tr-md rounded-br-md rounded-tl-2xl';
+  return 'rounded-2xl rounded-tr-md rounded-tl-2xl rounded-br-md';
+}
+
+function incomingBubbleRadii(prevSame: boolean, nextSame: boolean): string {
+  if (!prevSame && !nextSame) return 'rounded-2xl rounded-bl-md';
+  if (!prevSame && nextSame) return 'rounded-2xl rounded-bl-lg rounded-br-2xl';
+  if (prevSame && nextSame)
+    return 'rounded-l-2xl rounded-r-2xl rounded-tl-md rounded-bl-md rounded-tr-2xl';
+  return 'rounded-2xl rounded-tl-md rounded-tr-2xl rounded-bl-md';
 }
 
 export function ChatBubbleMessages({
@@ -13,18 +42,10 @@ export function ChatBubbleMessages({
   isLoading,
   isTyping,
   messagesEndRef,
+  contactAvatar,
+  contactName,
 }: ChatBubbleMessagesProps) {
   const user = useAuthStore((state) => state.user);
-
-  // Función para extraer texto del contenido (puede ser string u objeto)
-  const getContentText = (content: any): string => {
-    if (!content) return '';
-    if (typeof content === 'string') return content;
-    if (typeof content === 'object') {
-      return content.text || content._value || content.value || JSON.stringify(content);
-    }
-    return '';
-  };
 
   const formatTime = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -38,19 +59,20 @@ export function ChatBubbleMessages({
     switch (status) {
       case 'read':
         return (
-          <span className="text-xs text-primary-100 font-bold ml-1" title="Leído">
+          <span className="ml-1 text-xs font-bold text-white/80" title="Leído">
             ✓✓
           </span>
         );
       case 'delivered':
         return (
-          <span className="text-xs text-primary-200 font-bold ml-1" title="Entregado">
+          <span className="ml-1 text-xs font-bold text-white/70" title="Entregado">
             ✓
           </span>
         );
       case 'sent':
+      case 'sending':
         return (
-          <span className="text-xs text-primary-300 font-bold ml-1" title="Enviado">
+          <span className="ml-1 text-xs font-bold text-white/60" title="Enviado">
             ✓
           </span>
         );
@@ -59,10 +81,18 @@ export function ChatBubbleMessages({
     }
   };
 
+  const initials = contactName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2);
+
+  const scrollPadding = 'flex flex-1 flex-col overflow-y-auto bg-neutral-50 p-3 dark:bg-neutral-950';
+
   if (isLoading && messages.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-4 bg-neutral-50 dark:bg-neutral-950">
-        <div className="flex items-center justify-center h-full">
+      <div className={scrollPadding}>
+        <div className="flex flex-1 items-center justify-center">
           <div className="text-sm text-neutral-500 dark:text-neutral-400">
             Cargando mensajes...
           </div>
@@ -73,13 +103,11 @@ export function ChatBubbleMessages({
 
   if (!isLoading && messages.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-4 bg-neutral-50 dark:bg-neutral-950">
-        <div className="flex items-center justify-center h-full">
+      <div className={scrollPadding}>
+        <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              No hay mensajes aún
-            </p>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">No hay mensajes aún</p>
+            <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
               Envía el primer mensaje
             </p>
           </div>
@@ -89,61 +117,115 @@ export function ChatBubbleMessages({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-neutral-50 dark:bg-neutral-950">
-      {messages.map((msg, index) => {
-        const isOwn = msg.senderId === user?.id;
-        
-        return (
-          <div
-            key={msg.id || `msg-${index}`}
-            className={cn(
-              "flex",
-              isOwn ? "justify-end" : "justify-start"
-            )}
-          >
+    <div className={scrollPadding}>
+      <div className="flex flex-col">
+        {messages.map((msg, index) => {
+          const prev = messages[index - 1];
+          const next = messages[index + 1];
+          const sameSenderAsPrev = Boolean(prev) && prev.senderId === msg.senderId;
+          const sameSenderAsNext = Boolean(next) && next.senderId === msg.senderId;
+          const isOwn = msg.senderId === user?.id;
+          const showPeerAvatar =
+            !isOwn && (!prev || prev.senderId !== msg.senderId);
+
+          const bubbleRadii = isOwn
+            ? outgoingBubbleRadii(sameSenderAsPrev, sameSenderAsNext)
+            : incomingBubbleRadii(sameSenderAsPrev, sameSenderAsNext);
+
+          return (
             <div
+              key={msg.id || `msg-${index}`}
               className={cn(
-                "max-w-[75%] rounded-2xl px-4 py-2",
-                isOwn
-                  ? "bg-primary-600 text-white rounded-br-sm"
-                  : "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm"
+                'flex w-full items-end gap-2',
+                isOwn ? 'justify-end' : 'justify-start',
+                sameSenderAsPrev ? 'mt-0.5' : 'mt-3',
               )}
             >
-              <p className="text-sm whitespace-pre-wrap wrap-break-word">
-                {getContentText(msg.content)}
-              </p>
-              <div className="flex items-center gap-1 mt-1">
-                <p
+              {!isOwn && (
+                <div className="flex w-7 shrink-0 flex-col justify-end pb-5">
+                  {contactAvatar ? (
+                    showPeerAvatar ? (
+                      <Avatar
+                        src={contactAvatar}
+                        initials={initials}
+                        alt={contactName}
+                        className="size-7"
+                      />
+                    ) : (
+                      <span className="block size-7 shrink-0" aria-hidden />
+                    )
+                  ) : (
+                    showPeerAvatar ? (
+                      <Avatar initials={initials} alt={contactName} className="size-7" />
+                    ) : (
+                      <span className="block size-7 shrink-0" aria-hidden />
+                    )
+                  )}
+                </div>
+              )}
+              <div className={cn('max-w-[min(75%,216px)]', isOwn && 'flex flex-col items-end')}>
+                <div
                   className={cn(
-                    "text-xs",
+                    'px-3 py-2',
+                    bubbleRadii,
                     isOwn
-                      ? "text-primary-100"
-                      : "text-neutral-500 dark:text-neutral-400"
+                      ? 'bg-linear-to-br from-[#0084ff] to-[#5a67d8] text-white shadow-sm dark:from-[#2374e8] dark:to-[#4f5fcf]'
+                      : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white',
                   )}
                 >
-                  {formatTime(msg.createdAt)}
-                </p>
-                {isOwn && getMessageStatusIcon(msg.status)}
+                  <p className="wrap-break-word text-sm whitespace-pre-wrap">{getContentText(msg.content)}</p>
+                  <div className="mt-1 flex items-center gap-1">
+                    <p
+                      className={cn(
+                        'text-xs',
+                        isOwn ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400',
+                      )}
+                    >
+                      {formatTime(msg.createdAt)}
+                    </p>
+                    {isOwn && getMessageStatusIcon(msg.status)}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
-      
-      {/* Indicador de "está escribiendo" */}
+          );
+        })}
+      </div>
+
       {isTyping && (
-        <div className="flex justify-start">
-          <div className="bg-neutral-200 dark:bg-neutral-700 rounded-2xl px-4 py-3 rounded-bl-sm">
+        <div className="mt-2 flex justify-start gap-2">
+          <div className="flex w-7 shrink-0 flex-col justify-end pb-5">
+            {contactAvatar ? (
+              <Avatar
+                src={contactAvatar}
+                initials={initials}
+                alt={contactName}
+                className="size-7"
+              />
+            ) : (
+              <Avatar initials={initials} alt={contactName} className="size-7" />
+            )}
+          </div>
+          <div className="rounded-2xl rounded-bl-md bg-neutral-100 px-4 py-3 dark:bg-neutral-800">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-neutral-500 dark:bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-neutral-500 dark:bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-neutral-500 dark:bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div
+                className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 dark:bg-neutral-500"
+                style={{ animationDelay: '0ms' }}
+              />
+              <div
+                className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 dark:bg-neutral-500"
+                style={{ animationDelay: '150ms' }}
+              />
+              <div
+                className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 dark:bg-neutral-500"
+                style={{ animationDelay: '300ms' }}
+              />
             </div>
           </div>
         </div>
       )}
-      
-      <div ref={messagesEndRef} />
+
+      <div ref={messagesEndRef} className="h-px shrink-0" />
     </div>
   );
 }
