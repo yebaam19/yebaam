@@ -213,6 +213,7 @@ export function FriendButton({
       await removeFriend(friendshipId);
       onUnfriended?.(friendshipId);
       setShowOptions(false);
+      setShowUnfriendConfirm(false);
     } catch (error) {
       // Error handled by store with toast
     } finally {

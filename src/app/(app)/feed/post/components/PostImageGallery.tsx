@@ -52,7 +52,8 @@ export default function PostImageGallery({ images }: PostImageGalleryProps) {
   };
 
   const getImageAspect = (count: number, index: number) => {
-    if (count === 1) return 'aspect-[4/3] max-h-[600px]';
+    /** Altura acotada + contain evita recortes (retratos, 4:3 distinto del box). */
+    if (count === 1) return 'min-h-[160px] h-[min(600px,85vh)] w-full';
     if (count === 3 && index === 2) return 'col-span-2 aspect-[2/1]';
     return 'aspect-square';
   };
@@ -77,7 +78,7 @@ export default function PostImageGallery({ images }: PostImageGalleryProps) {
                 src={image.url}
                 alt={`Imagen ${index + 1}`}
                 fill
-                className="object-cover transition-transform group-hover:scale-105"
+                className="object-contain object-center transition-opacity group-hover:opacity-95"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 priority={index === 0}
               />

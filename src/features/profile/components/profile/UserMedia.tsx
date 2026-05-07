@@ -198,7 +198,7 @@ export function UserPhotos({ userId }: UserMediaProps) {
               key={photo.id || index}
               className="relative aspect-square overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
             >
-              {photo.url && <Image src={photo.url} alt={`Photo ${index + 1}`} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />}
+              {photo.url && <Image src={photo.url} alt={`Photo ${index + 1}`} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-contain object-center" />}
             </div>
           ))}
         </div>

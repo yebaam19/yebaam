@@ -72,7 +72,7 @@ export default function ProfilePhotosPreview({ userId, username }: ProfilePhotos
                 src={photo.url}
                 alt={photo.caption || 'Foto'}
                 fill
-                className="object-cover transition-transform group-hover:scale-105"
+                className="object-contain object-center transition-opacity group-hover:opacity-95"
                 sizes="(max-width: 1024px) 33vw, 120px"
               />
             </Link>

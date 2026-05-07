@@ -196,7 +196,7 @@ export default function UserProfile({
                       isOwnProfile={false}
                       hasProfessionalProfile={professionalProfileExists}
                     />
-                    <FriendButton userId={user.userId} variant="default" size="md" />
+                    <FriendButton userId={user.userId} variant="default" size="md" showDropdown />
                     <MessageButton userId={user.userId} />
                     <ProfileActionsMenu userId={user.userId} />
                   </>

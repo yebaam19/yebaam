@@ -6,7 +6,7 @@
  * Componente principal que orquesta todas las secciones del perfil
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import InterestsDialog from '../dialogs/InterestsDialog'
@@ -31,9 +31,10 @@ interface AboutMeProps {
 export default function AboutMe({ user: initialUser, loggedInUserId }: AboutMeProps) {
   const isOwner = initialUser.userId === loggedInUserId
   
-  // Usar el perfil del store si está disponible (para ver actualizaciones)
+  // Solo fusionar currentProfile si es el mismo usuario (currentProfile puede quedar stale al navegar entre perfiles cacheados).
   const { currentProfile } = useProfileStore()
-  const user = currentProfile || initialUser
+  const user =
+    currentProfile?.userId === initialUser.userId ? currentProfile : initialUser
   
   // Estados para controlar cada modal
   const [bioOpen, setBioOpen] = useState(false)
