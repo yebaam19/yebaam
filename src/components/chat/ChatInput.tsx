@@ -9,6 +9,7 @@ import {
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';
 import Image from 'next/image';
+import ChatEmojiPopover from './ChatEmojiPopover';
 
 interface ChatInputProps {
   onSendMessage: (content?: string, media?: MessageMedia) => Promise<boolean>;
@@ -26,7 +27,28 @@ export default function ChatInput({
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEmojiSelect = (emoji: string) => {
+    const el = textInputRef.current;
+    if (!el) {
+      setMessage((m) => m + emoji);
+      setEmojiOpen(false);
+      return;
+    }
+    const start = el.selectionStart ?? message.length;
+    const end = el.selectionEnd ?? message.length;
+    const next = message.slice(0, start) + emoji + message.slice(end);
+    setMessage(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
+    setEmojiOpen(false);
+  };
 
   const { uploadMedia, isUploading, uploadProgress, error } = useUploadChatMedia();
 
@@ -198,9 +220,21 @@ export default function ChatInput({
           >
             <PhotoIcon className="h-5 w-5 text-primary-600" />
           </button>
-          <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-            <FaceSmileIcon className="h-5 w-5 text-primary-600" />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setEmojiOpen((v) => !v)}
+              title="Insertar emoji"
+              className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <FaceSmileIcon className="h-5 w-5 text-primary-600" />
+            </button>
+            <ChatEmojiPopover
+              open={emojiOpen}
+              onClose={() => setEmojiOpen(false)}
+              onSelect={handleEmojiSelect}
+            />
+          </div>
           <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
             <EllipsisVerticalIcon className="h-5 w-5 text-primary-600" />
           </button>
@@ -208,6 +242,7 @@ export default function ChatInput({
 
         <div className="flex-1 relative">
           <input
+            ref={textInputRef}
             type="text"
             value={message}
             onChange={handleInputChange}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { uploadService } from '@/lib/service/upload.service';
 
 export enum MediaType {
   IMAGE = 'image',
@@ -20,29 +21,54 @@ interface ChatMediaResult {
   filename: string;
 }
 
-/**
- * Chat media upload hook — STUB.
- *
- * The old S3 presigned-URL flow is gone. Chat itself has not been migrated
- * to Supabase yet (no `messages` / `conversations` tables), so uploads
- * deliberately throw a migration error. Once chat is migrated, this hook
- * should call `supabase.storage.from('chat-media').uploadAuto(file)`.
- */
 export function useUploadChatMedia() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const uploadMedia = async (
-    _params: UploadChatMediaParams
+    params: UploadChatMediaParams
   ): Promise<ChatMediaResult | null> => {
-    setIsUploading(false);
+    const { file, mediaType } = params;
+    setIsUploading(true);
     setUploadProgress(0);
-    const message =
-      'Chat media upload is not yet migrated to Supabase. Create a chat-media bucket and wire this hook to supabase.storage.';
-    setError(message);
-    console.warn('[useUploadChatMedia]', message);
-    return null;
+    setError(null);
+
+    try {
+      if (mediaType === MediaType.IMAGE) {
+        const { id, url } = await uploadService.uploadImage(file, (p) =>
+          setUploadProgress(p),
+        );
+        return {
+          url,
+          s3Key: id,
+          type: MediaType.IMAGE,
+          size: file.size,
+          filename: file.name,
+        };
+      }
+
+      if (mediaType === MediaType.VIDEO) {
+        const { uid } = await uploadService.uploadVideo(file, {
+          onProgress: (p) => setUploadProgress(p),
+        });
+        return {
+          url: `https://iframe.videodelivery.net/${uid}`,
+          s3Key: uid,
+          type: MediaType.VIDEO,
+          size: file.size,
+          filename: file.name,
+        };
+      }
+
+      throw new Error(`Unsupported media type for chat upload: ${mediaType}`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Error al subir el archivo';
+      setError(message);
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return {
