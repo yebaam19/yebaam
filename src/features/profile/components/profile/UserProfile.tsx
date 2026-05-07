@@ -59,7 +59,7 @@ export default function UserProfile({
       {/* Cover Photo - Constrained Width with margins */}
       <div className="mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-lg">
-          <div className="relative h-48 w-full sm:h-64 md:h-72 lg:h-80">
+          <div className="relative h-56 w-full sm:h-72 md:h-80 lg:h-96">
             {coverSrc ? (
               <Image
                 src={coverSrc}

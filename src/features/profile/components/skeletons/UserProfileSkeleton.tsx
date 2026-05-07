@@ -13,7 +13,7 @@ export function UserProfileSkeleton() {
       {/* Cover Photo Skeleton */}
       <div className="mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-lg">
-          <Skeleton className="h-48 w-full sm:h-64 md:h-72 lg:h-80" />
+          <Skeleton className="h-56 w-full sm:h-72 md:h-80 lg:h-96" />
         </div>
       </div>
 
