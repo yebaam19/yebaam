@@ -47,7 +47,8 @@ export default function ChatEmojiPopover({ open, onClose, onSelect }: ChatEmojiP
         onEmojiClick={(data: EmojiClickData) => onSelect(data.emoji)}
         lazyLoadEmojis
         width={320}
-        height={400}
+        height={350}
+        previewConfig={{ showPreview: false }}
       />
     </div>
   );
