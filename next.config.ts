@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  async redirects() {
+    return [
+      { source: '/messages/:id', destination: '/chat/:id', permanent: true },
+      { source: '/messages', destination: '/feed', permanent: true },
+    ]
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

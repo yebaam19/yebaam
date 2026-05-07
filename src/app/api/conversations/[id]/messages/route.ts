@@ -49,6 +49,31 @@ export async function GET(
 
   const client = await getServerClient();
 
+  const { data: authUser } = await client.auth.getUser();
+  const viewerId = authUser?.user?.id;
+  if (!viewerId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Reject lookups by arbitrary UUID: without this, `/chat/<userId>` was treated as a
+  // conversation id when the messages query returned zero rows under RLS, breaking sends.
+  const { data: membership, error: memberErr } = await client
+    .from('conversation_participants')
+    .select('conversation_id')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', viewerId)
+    .maybeSingle();
+
+  if (memberErr) {
+    return NextResponse.json({ error: memberErr.message }, { status: 500 });
+  }
+  if (!membership) {
+    return NextResponse.json(
+      { error: 'Not a participant in this conversation' },
+      { status: 403 },
+    );
+  }
+
   const { data, error, count } = await client
     .from('messages')
     .select('*', { count: 'exact' })
@@ -103,6 +128,23 @@ export async function POST(
   const { data: me } = await client.auth.getUser();
   const senderId = me?.user?.id;
   if (!senderId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data: membership, error: memberErr } = await client
+    .from('conversation_participants')
+    .select('conversation_id')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', senderId)
+    .maybeSingle();
+
+  if (memberErr) {
+    return NextResponse.json({ error: memberErr.message }, { status: 500 });
+  }
+  if (!membership) {
+    return NextResponse.json(
+      { error: 'Not a participant in this conversation' },
+      { status: 403 },
+    );
+  }
 
   const { data: inserted, error } = await client
     .from('messages')

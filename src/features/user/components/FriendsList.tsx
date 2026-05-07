@@ -118,7 +118,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
         {/* Acciones */}
         <div className="mt-4 flex gap-2">
           <Link
-            href={`/messages/${friend.friendId}` as Route}
+            href={`/chat/${friend.friendId}` as Route}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           >
             <ChatBubbleLeftIcon className="h-4 w-4" />

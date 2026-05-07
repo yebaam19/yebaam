@@ -45,6 +45,16 @@ export default function MessageBubble({
 
   const contentText = getContentText(message.content);
 
+  const peerInitials =
+    contactName && contactName !== 'Chat'
+      ? contactName
+          .split(/\s+/)
+          .map((n) => n[0])
+          .filter(Boolean)
+          .join('')
+          .slice(0, 2)
+          .toUpperCase()
+      : '•';
 
   return (
     <div
@@ -52,8 +62,9 @@ export default function MessageBubble({
     >
       {!isOwn && (
         <Avatar
-          src={contactAvatar}
+          src={contactAvatar || null}
           alt={contactName}
+          initials={contactAvatar?.trim() ? undefined : peerInitials}
           className="h-7 w-7"
         />
       )}
