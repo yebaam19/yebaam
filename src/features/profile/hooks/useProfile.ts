@@ -8,6 +8,7 @@
 import React from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useProfileStore } from '../store/profile.store'
+import { profileMapKey } from '../store/profile-map-key'
 
 /**
  * Hook para obtener el perfil actual
@@ -90,7 +91,10 @@ export const useUserVideos = () => {
  * Hook para obtener perfil por username (con carga automática)
  */
 export const useProfile = (username: string) => {
-  const profile = useProfileStore((state) => state.profiles.get(username))
+  const profile = useProfileStore(
+    (state) =>
+      state.profiles.get(profileMapKey(username)) ?? (username?.trim() ? state.profiles.get(username) : undefined)
+  )
   const currentProfile = useProfileStore((state) => state.currentProfile)
   const isLoading = useProfileStore((state) => state.isLoading)
   const fetchProfileByUsername = useProfileStore((state) => state.fetchProfileByUsername)
@@ -104,15 +108,34 @@ export const useProfile = (username: string) => {
       hasAttemptedFetch.current = true
       fetchProfileByUsername(username)
     }
-  }, [username, profile, isLoading])
+  }, [username, profile, isLoading, fetchProfileByUsername])
 
   // Reset el flag cuando cambia el username
   React.useEffect(() => {
     hasAttemptedFetch.current = false
   }, [username])
 
-  // Retornar el perfil de cache o el currentProfile si coincide
-  const effectiveProfile = profile || (currentProfile?.username === username ? currentProfile : null)
+  const routeKey = username?.trim() ? profileMapKey(username) : ''
+
+  const effectiveProfile =
+    profile ||
+    (currentProfile && routeKey && profileMapKey(currentProfile.username) === routeKey
+      ? currentProfile
+      : null)
+
+  // Al navegar a un perfil ya cacheado fetch no corre; mantener currentProfile alineado con la ruta
+  React.useEffect(() => {
+    if (!routeKey) return
+    const cached = useProfileStore.getState().profiles.get(routeKey)
+    const current = useProfileStore.getState().currentProfile
+    const aligned =
+      cached ||
+      (current && profileMapKey(current.username || '') === routeKey ? current : null)
+    if (!aligned || profileMapKey(aligned.username || '') !== routeKey) return
+    if (useProfileStore.getState().currentProfile?.userId !== aligned.userId) {
+      useProfileStore.setState({ currentProfile: aligned })
+    }
+  }, [routeKey, profile?.userId, currentProfile?.userId])
 
   return {
     profile: effectiveProfile,

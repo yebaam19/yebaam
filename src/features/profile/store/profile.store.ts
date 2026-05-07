@@ -16,6 +16,7 @@ import type {
   UserProfile,
 } from '../interfaces/profile.interfaces'
 import { profileService } from '../services/profile.service'
+import { profileMapKey, putProfileInProfilesMap } from './profile-map-key'
 
 // ============================================================================
 // TYPES
@@ -116,7 +117,7 @@ export const useProfileStore = create<ProfileState>()(
         set({ isLoading: true, error: null })
         try {
           // Verificar cache primero
-          const cachedProfile = get().profiles.get(username)
+          const cachedProfile = get().profiles.get(profileMapKey(username))
           if (cachedProfile) {
             set({ currentProfile: cachedProfile, isLoading: false })
             return
@@ -129,9 +130,8 @@ export const useProfileStore = create<ProfileState>()(
             return
           }
 
-          // Actualizar cache
           const profiles = new Map(get().profiles)
-          profiles.set(username, profile)
+          putProfileInProfilesMap(profiles, profile, username)
 
           set({
             currentProfile: profile,
@@ -153,9 +153,8 @@ export const useProfileStore = create<ProfileState>()(
         try {
           const profile = await profileService.getMyProfile()
 
-          // Actualizar cache
           const profiles = new Map(get().profiles)
-          profiles.set(profile.username, profile)
+          putProfileInProfilesMap(profiles, profile)
 
           set({
             currentProfile: profile,
@@ -179,7 +178,7 @@ export const useProfileStore = create<ProfileState>()(
 
           // Actualizar cache
           const profiles = new Map(get().profiles)
-          profiles.set(updatedProfile.username, updatedProfile)
+          putProfileInProfilesMap(profiles, updatedProfile)
 
           set({
             currentProfile: updatedProfile,
@@ -205,7 +204,7 @@ export const useProfileStore = create<ProfileState>()(
           const updatedProfile = await profileService.updatePersonalInfo(data)
 
           const profiles = new Map(get().profiles)
-          profiles.set(updatedProfile.username, updatedProfile)
+          putProfileInProfilesMap(profiles, updatedProfile)
 
           set({
             currentProfile: updatedProfile,
@@ -231,7 +230,7 @@ export const useProfileStore = create<ProfileState>()(
           const updatedProfile = await profileService.updateSocialLinks(data)
 
           const profiles = new Map(get().profiles)
-          profiles.set(updatedProfile.username, updatedProfile)
+          putProfileInProfilesMap(profiles, updatedProfile)
 
           set({
             currentProfile: updatedProfile,
@@ -257,7 +256,7 @@ export const useProfileStore = create<ProfileState>()(
           const updatedProfile = await profileService.updateInterests(data)
 
           const profiles = new Map(get().profiles)
-          profiles.set(updatedProfile.username, updatedProfile)
+          putProfileInProfilesMap(profiles, updatedProfile)
 
           set({
             currentProfile: updatedProfile,
@@ -393,10 +392,13 @@ export const useProfileStore = create<ProfileState>()(
 
       handleProfileUpdated: (profile: UserProfile) => {
         const profiles = new Map(get().profiles)
-        profiles.set(profile.username, profile)
+        putProfileInProfilesMap(profiles, profile)
 
         const currentProfile = get().currentProfile
-        if (currentProfile && currentProfile.username === profile.username) {
+        if (
+          currentProfile &&
+          profileMapKey(currentProfile.username) === profileMapKey(profile.username)
+        ) {
           set({ currentProfile: profile, profiles })
         } else {
           set({ profiles })
