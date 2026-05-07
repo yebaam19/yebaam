@@ -1,7 +1,6 @@
 'use client'
 
 import Aside from '@/components/aside'
-import DevFeatureFlagsPanel from '@/components/dev/DevFeatureFlagsPanel'
 import SocialHeader from '@/components/Header/SocialHeader'
 
 import { CurrentUserProvider } from '@/features/auth/context/current-user.context'
@@ -50,7 +49,6 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
             <main className="min-h-0 min-w-0 w-full max-w-full pb-0 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
               <div className="mx-auto min-h-0 w-full max-w-none">{children}</div>
             </main>
-            <DevFeatureFlagsPanel />
             <UploadProgress />
           </Aside.Provider>
         </ChatNotificationProvider>
@@ -97,7 +95,6 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
         <ChatNotificationProvider>
           <Aside.Provider>
             {children}
-            <DevFeatureFlagsPanel />
             <UploadProgress />
           </Aside.Provider>
         </ChatNotificationProvider>
@@ -129,9 +126,6 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
 
           {/* Chat Flotante 
           <ChatContainer />*/}
-
-          {/* Dev: Feature Flags Panel (solo visible en desarrollo) */}
-          <DevFeatureFlagsPanel />
 
           {/* Upload Progress Indicator (global) */}
           <UploadProgress />

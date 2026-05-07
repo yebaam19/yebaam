@@ -10,20 +10,19 @@ export default function MessageImage({ media, onClick }: MessageImageProps) {
   if (media.type !== 'image') return null;
 
   return (
-    <div 
-      className="relative w-full cursor-pointer hover:opacity-90 transition-opacity" 
-      style={{ maxWidth: '300px' }}
+    <button
+      type="button"
       onClick={onClick}
+      className="relative block aspect-[3/2] w-[300px] max-w-full cursor-pointer overflow-hidden rounded-t-2xl hover:opacity-90 transition-opacity"
     >
       <Image
         src={media.url}
         alt={media.filename || 'Imagen'}
-        width={300}
-        height={200}
-        className="w-full h-auto rounded-t-2xl object-cover"
-        style={{ width: '100%', height: 'auto' }}
+        fill
+        sizes="300px"
+        className="object-cover"
         unoptimized
       />
-    </div>
+    </button>
   );
 }

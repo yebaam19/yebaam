@@ -1,49 +1,27 @@
 import { cn } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import MessageContent from './MessageContent';
 import MessageStatus from './MessageStatus';
 import ImageModal from './ImageModal';
+import type { Message } from '@/features/chat/types';
 
 interface MessageBubbleProps {
-  message: any;
+  message: Message;
   isOwn: boolean;
   contactAvatar?: string;
   contactName?: string;
 }
 
-export default function MessageBubble({ 
-  message, 
-  isOwn, 
-  contactAvatar, 
-  contactName 
+export default function MessageBubble({
+  message,
+  isOwn,
+  contactAvatar,
+  contactName
 }: MessageBubbleProps) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  // Debug: log para ver el status y cuando cambia
-  useEffect(() => {
-    if (isOwn && message.status) {
-      console.log(`${message.id?.slice(0, 8)} - Status: ${message.status}`);
-    }
-  }, [message.status, message.id, isOwn]);
-
-  // Extraer el texto del content - puede ser string u objeto {type, text} o {_value}
-  const getContentText = (content: any): string => {
- 
-    if (!content) return '';
-    if (typeof content === 'string') {
-    
-      return content;
-    }
-    if (typeof content === 'object') {
-      const text = content.text || content._value || content.value || '';
-    
-      return text;
-    }
-    return '';
-  };
-
-  const contentText = getContentText(message.content);
+  const contentText = typeof message.content === 'string' ? message.content : '';
 
   const peerInitials =
     contactName && contactName !== 'Chat'

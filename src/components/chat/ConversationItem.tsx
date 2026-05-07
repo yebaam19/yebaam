@@ -4,7 +4,7 @@ interface ConversationItemProps {
   id: string;
   displayName: string;
   displayAvatar: string;
-  lastMessageContent?: string | any; // Puede ser string u objeto {type, text}
+  lastMessageContent?: string;
   formattedTimestamp?: string;
   unreadCount: number;
   isActive: boolean;
@@ -22,17 +22,8 @@ export default function ConversationItem({
   isOnline = false,
   onClick,
 }: ConversationItemProps) {
-  // Extraer el texto del content - puede ser string u objeto
-  const getContentText = (content: any): string => {
-    if (!content) return 'Sin mensajes';
-    if (typeof content === 'string') return content;
-    if (typeof content === 'object') {
-      return content.text || content._value || content.value || 'Sin mensajes';
-    }
-    return 'Sin mensajes';
-  };
-
-  const messageText = getContentText(lastMessageContent);
+  const messageText =
+    lastMessageContent && lastMessageContent.length > 0 ? lastMessageContent : 'Sin mensajes';
 
   return (
     <button

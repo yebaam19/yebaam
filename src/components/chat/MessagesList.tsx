@@ -22,10 +22,6 @@ export default function MessagesList({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
- 
-  }, [messages, isLoading, currentUserId]);
-
-  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 

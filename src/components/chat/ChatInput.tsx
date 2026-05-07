@@ -3,7 +3,6 @@ import {
   PaperAirplaneIcon,
   PhotoIcon,
   FaceSmileIcon,
-  EllipsisVerticalIcon,
   XMarkIcon,
 } from '@/components/icons/heroicons-shim';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
@@ -235,9 +234,6 @@ export default function ChatInput({
               onSelect={handleEmojiSelect}
             />
           </div>
-          <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-            <EllipsisVerticalIcon className="h-5 w-5 text-primary-600" />
-          </button>
         </div>
 
         <div className="flex-1 relative">
