@@ -57,10 +57,11 @@ export function useChat() {
             content: message.content,
             senderId: message.senderId,
             createdAt: message.createdAt,
+            media: message.media ?? null,
           },
           updatedAt: message.createdAt,
           unreadCount: shouldIncrementUnread
-            ? conversation.unreadCount + 1 
+            ? conversation.unreadCount + 1
             : conversation.unreadCount,
         });
       } else {
@@ -108,6 +109,7 @@ export function useChat() {
             content: message.content,
             senderId: message.senderId,
             createdAt: message.createdAt,
+            media: message.media ?? null,
           },
           updatedAt: message.createdAt,
         });

@@ -44,6 +44,7 @@ export interface LastMessage {
   content: string;
   senderId: string;
   createdAt: Date;
+  media?: MessageMedia | null;
 }
 
 export interface Conversation {

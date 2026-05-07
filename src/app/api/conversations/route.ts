@@ -24,6 +24,7 @@ type MessageRow = {
   conversation_id: string;
   sender_id: string;
   content: string;
+  media: unknown;
   created_at: string;
 };
 
@@ -84,7 +85,7 @@ export async function GET() {
       withRetry(() =>
         client
           .from('messages')
-          .select('id,conversation_id,sender_id,content,created_at')
+          .select('id,conversation_id,sender_id,content,media,created_at')
           .eq('conversation_id', cid)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
@@ -128,6 +129,7 @@ export async function GET() {
             content: last.content,
             senderId: last.sender_id,
             createdAt: last.created_at,
+            media: last.media ?? null,
           }
         : null,
       unreadCount: 0,

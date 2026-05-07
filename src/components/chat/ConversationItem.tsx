@@ -1,10 +1,16 @@
 import Avatar from '@/ui/Avatar';
+import type { MessageMedia } from '@/features/chat/types';
+
+interface LastMessagePreview {
+  content: string;
+  media?: MessageMedia | null;
+}
 
 interface ConversationItemProps {
   id: string;
   displayName: string;
   displayAvatar: string;
-  lastMessageContent?: string;
+  lastMessage?: LastMessagePreview | null;
   formattedTimestamp?: string;
   unreadCount: number;
   isActive: boolean;
@@ -12,18 +18,27 @@ interface ConversationItemProps {
   onClick: () => void;
 }
 
+function getPreviewText(lastMessage: LastMessagePreview | null | undefined): string {
+  if (!lastMessage) return 'Sin mensajes';
+  if (lastMessage.content && lastMessage.content.length > 0) return lastMessage.content;
+  const media = lastMessage.media;
+  if (media?.type === 'image') return '📷 Foto';
+  if (media?.type === 'video') return '🎥 Video';
+  if (media) return '📎 Archivo';
+  return 'Sin mensajes';
+}
+
 export default function ConversationItem({
   displayName,
   displayAvatar,
-  lastMessageContent,
+  lastMessage,
   formattedTimestamp,
   unreadCount,
   isActive,
   isOnline = false,
   onClick,
 }: ConversationItemProps) {
-  const messageText =
-    lastMessageContent && lastMessageContent.length > 0 ? lastMessageContent : 'Sin mensajes';
+  const messageText = getPreviewText(lastMessage);
 
   return (
     <button

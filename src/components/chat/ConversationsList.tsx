@@ -1,4 +1,5 @@
 import ConversationItem from './ConversationItem';
+import type { MessageMedia } from '@/features/chat/types';
 
 interface ProcessedConversation {
   id: string;
@@ -9,6 +10,7 @@ interface ProcessedConversation {
   lastMessage?: {
     content: string;
     createdAt: Date;
+    media?: MessageMedia | null;
   } | null;
   formattedTimestamp: string;
   unreadCount: number;
@@ -64,7 +66,7 @@ export default function ConversationsList({
           id={conversation.id}
           displayName={conversation.displayName}
           displayAvatar={conversation.displayAvatar}
-          lastMessageContent={conversation.lastMessage?.content}
+          lastMessage={conversation.lastMessage ?? null}
           formattedTimestamp={conversation.formattedTimestamp}
           unreadCount={conversation.unreadCount}
           isActive={isActiveRow}
