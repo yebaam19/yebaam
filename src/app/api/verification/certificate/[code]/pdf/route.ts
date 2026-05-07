@@ -106,7 +106,6 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
 
     // Wait for fonts so signatures/serif text are crisp in the PDF
     await page.evaluate(async () => {
-      // @ts-expect-error - document.fonts is widely available in modern browsers
       if (document.fonts?.ready) await document.fonts.ready;
     });
 

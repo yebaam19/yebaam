@@ -2,6 +2,7 @@
 
 import { FC } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import type { Route } from 'next';
 import Link from 'next/link';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim';
 
@@ -36,7 +37,7 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
     >
       <PageArrow
         direction="prev"
-        href={createPageURL(currentPage - 1)}
+        href={createPageURL(currentPage - 1) as Route}
         disabled={currentPage <= 1}
       />
       <ul className="flex items-center gap-1">
@@ -56,7 +57,7 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
           return (
             <li key={page}>
               <Link
-                href={createPageURL(page)}
+                href={createPageURL(page) as Route}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={`Ir a la página ${page}`}
                 className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors ${
@@ -73,7 +74,7 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
       </ul>
       <PageArrow
         direction="next"
-        href={createPageURL(currentPage + 1)}
+        href={createPageURL(currentPage + 1) as Route}
         disabled={currentPage >= totalPages}
       />
     </nav>
@@ -82,7 +83,7 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
 
 interface PageArrowProps {
   direction: 'prev' | 'next';
-  href: string;
+  href: Route;
   disabled: boolean;
 }
 

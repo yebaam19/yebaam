@@ -38,6 +38,25 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
 
   // Si estamos en /messages, no mostrar sidebars (tiene su propio layout)
   const isMessengerRoute = pathname?.startsWith('/messages')
+  const isChatShellRoute = pathname?.startsWith('/chat')
+
+  // Messenger-style /chat: sin footer ni padding estrecho; el contenido arma dos columnas
+  if (isChatShellRoute) {
+    return (
+      <CurrentUserProvider user={user}>
+        <ChatNotificationProvider>
+          <Aside.Provider>
+            <SocialHeader isPlatformAdmin={isPlatformAdmin} />
+            <main className="min-h-0 min-w-0 w-full max-w-full pb-0 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
+              <div className="mx-auto min-h-0 w-full max-w-none">{children}</div>
+            </main>
+            <DevFeatureFlagsPanel />
+            <UploadProgress />
+          </Aside.Provider>
+        </ChatNotificationProvider>
+      </CurrentUserProvider>
+    )
+  }
 
   if (isMessengerRoute) {
     return (

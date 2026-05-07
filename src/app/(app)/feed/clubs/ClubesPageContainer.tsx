@@ -18,6 +18,7 @@ import {
   StarIcon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
+import type { Route } from 'next'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -83,7 +84,7 @@ export function ClubesPageContainer() {
     }
     params.delete('page')
     const qs = params.toString()
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    router.replace((qs ? `${pathname}?${qs}` : pathname) as Route, { scroll: false })
   }
 
   const tabs = [

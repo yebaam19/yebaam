@@ -24,6 +24,8 @@ interface ActiveChat {
 interface ConversationsListProps {
   conversations: ProcessedConversation[];
   activeChat: ActiveChat | null;
+  /** When set (full-page messenger), highlights by conversation row id. */
+  highlightConversationId?: string | null;
   searchQuery: string;
   onSelectChat: (chat: ActiveChat) => void;
 }
@@ -31,6 +33,7 @@ interface ConversationsListProps {
 export default function ConversationsList({
   conversations,
   activeChat,
+  highlightConversationId,
   searchQuery,
   onSelectChat,
 }: ConversationsListProps) {
@@ -48,7 +51,14 @@ export default function ConversationsList({
 
   return (
     <div className="flex-1 overflow-y-auto">
-      {conversations.map((conversation) => (
+      {conversations.map((conversation) => {
+        const isActiveRow = highlightConversationId
+          ? conversation.id === highlightConversationId
+          : Boolean(
+              activeChat &&
+                (activeChat.id === conversation.otherParticipantId || activeChat.id === conversation.id),
+            );
+        return (
         <ConversationItem
           key={conversation.id}
           id={conversation.id}
@@ -57,7 +67,7 @@ export default function ConversationsList({
           lastMessageContent={conversation.lastMessage?.content}
           formattedTimestamp={conversation.formattedTimestamp}
           unreadCount={conversation.unreadCount}
-          isActive={activeChat?.id === conversation.id}
+          isActive={isActiveRow}
           isOnline={conversation.isOnline}
           onClick={() =>
             onSelectChat({
@@ -68,7 +78,8 @@ export default function ConversationsList({
             })
           }
         />
-      ))}
+      );
+      })}
 
       <div className="mt-4 px-3">
         <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">

@@ -15,11 +15,18 @@ interface ActiveChat {
 
 interface MessengerSidebarProps {
   activeChat: ActiveChat | null;
+  /** Highlights the open thread in full-page messenger (matches `conversations.id`). */
+  highlightConversationId?: string | null;
   onSelectChat: (chat: ActiveChat) => void;
   onNewMessage: () => void;
 }
 
-export default function MessengerSidebar({ activeChat, onSelectChat, onNewMessage }: MessengerSidebarProps) {
+export default function MessengerSidebar({
+  activeChat,
+  highlightConversationId,
+  onSelectChat,
+  onNewMessage,
+}: MessengerSidebarProps) {
   const {
     searchQuery,
     setSearchQuery,
@@ -33,14 +40,14 @@ export default function MessengerSidebar({ activeChat, onSelectChat, onNewMessag
 
   if (isLoadingConversations) {
     return (
-      <div className="w-80 border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center bg-white dark:bg-neutral-900">
+      <div className="flex h-full min-h-0 w-full shrink-0 flex-col items-center justify-center border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:w-80">
         <p className="text-neutral-500">Cargando conversaciones...</p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="w-80 border-r border-neutral-200 dark:border-neutral-800 flex flex-col bg-white dark:bg-neutral-900">
+    <div className="flex h-full min-h-0 w-full shrink-0 flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:w-80">
       <SearchBar
         value={searchQuery}
         onChange={setSearchQuery}
@@ -56,6 +63,7 @@ export default function MessengerSidebar({ activeChat, onSelectChat, onNewMessag
       <ConversationsList
         conversations={conversations}
         activeChat={activeChat}
+        highlightConversationId={highlightConversationId}
         searchQuery={searchQuery}
         onSelectChat={onSelectChat}
       />

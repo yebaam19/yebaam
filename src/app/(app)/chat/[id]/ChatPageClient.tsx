@@ -1,7 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import type { Route } from 'next';
+import { useCallback, useEffect, useState } from 'react';
+
+import MessengerSidebar from '@/components/chat/MessengerSidebar';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { ConversationType, type Conversation, type MessageMedia } from '@/features/chat/types';
@@ -10,6 +13,7 @@ import ChatHeader from '@/components/chat/ChatHeader';
 import MessagesList from '@/components/chat/MessagesList';
 import ChatInput from '@/components/chat/ChatInput';
 import { supabase } from '@/utils/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface ChatPageClientProps {
   contactId: string;
@@ -125,11 +129,20 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [headerEncrypted, setHeaderEncrypted] = useState(false);
+  const [inboxDrawerOpen, setInboxDrawerOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({
     name: 'Chat',
     avatar: '',
     isOnline: false,
   });
+
+  const handleSelectConversation = useCallback(
+    (chat: { id: string }) => {
+      setInboxDrawerOpen(false);
+      router.push(`/chat/${chat.id}` as Route);
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (!contactId || !user) return;
@@ -267,31 +280,71 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   }
 
   return (
-    <div className="flex max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] w-full min-w-0 flex-col overflow-hidden bg-white dark:bg-neutral-900">
-      <ChatHeader
-        contactName={contactInfo.name}
-        contactAvatar={contactInfo.avatar}
-        isOnline={contactInfo.isOnline}
-        conversationId={conversationId ?? undefined}
-        isEncrypted={headerEncrypted}
-        onClose={() => router.back()}
-      />
+    <div className="relative flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-0 w-full bg-neutral-50 dark:bg-neutral-950">
+      {inboxDrawerOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          aria-label="Cerrar lista de chats"
+          onClick={() => setInboxDrawerOpen(false)}
+        />
+      )}
 
-      <MessagesList
-        messages={messages}
-        isLoading={isLoading}
-        isTyping={isTyping}
-        currentUserId={user?.id}
-        contactAvatar={contactInfo.avatar}
-        contactName={contactInfo.name}
-      />
+      <div
+        className={cn(
+          'relative z-40 flex h-full min-h-0 shrink-0 shadow-xl md:static md:z-auto md:shadow-none',
+          inboxDrawerOpen ? 'fixed bottom-0 left-0 md:static' : 'hidden md:flex',
+        )}
+      >
+        <MessengerSidebar
+          activeChat={null}
+          highlightConversationId={conversationId}
+          onSelectChat={handleSelectConversation}
+          onNewMessage={() => {
+            setInboxDrawerOpen(false);
+            router.push('/feed/friends' as Route);
+          }}
+        />
+      </div>
 
-      <ChatInput
-        onSendMessage={handleSendMessage}
-        onTypingStart={handleTypingStartWs}
-        onTypingStop={handleTypingStopWs}
-        typingTimeoutRef={{ current: null }}
-      />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-neutral-200 bg-white md:border-l dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex h-11 shrink-0 items-center gap-2 border-b border-neutral-200 px-2 dark:border-neutral-800 md:hidden">
+          <button
+            type="button"
+            onClick={() => setInboxDrawerOpen(true)}
+            className="rounded-lg px-3 py-1.5 text-sm font-semibold text-primary-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          >
+            Conversaciones
+          </button>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <ChatHeader
+            contactName={contactInfo.name}
+            contactAvatar={contactInfo.avatar}
+            isOnline={contactInfo.isOnline}
+            conversationId={conversationId ?? undefined}
+            isEncrypted={headerEncrypted}
+            onClose={() => router.back()}
+          />
+
+          <MessagesList
+            messages={messages}
+            isLoading={isLoading}
+            isTyping={isTyping}
+            currentUserId={user?.id}
+            contactAvatar={contactInfo.avatar}
+            contactName={contactInfo.name}
+          />
+
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            onTypingStart={handleTypingStartWs}
+            onTypingStop={handleTypingStopWs}
+            typingTimeoutRef={{ current: null }}
+          />
+        </div>
+      </div>
     </div>
   );
 }

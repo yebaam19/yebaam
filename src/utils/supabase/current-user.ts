@@ -1,3 +1,5 @@
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+
 import { supabase } from './client';
 
 /**
@@ -15,7 +17,7 @@ let cachedUserId: string | null | undefined;
 let inflight: Promise<string | null> | null = null;
 
 if (typeof window !== 'undefined') {
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
     cachedUserId = session?.user?.id ?? null;
   });
 }
@@ -25,7 +27,7 @@ export async function getCurrentUserId(): Promise<string | null> {
   if (inflight) return inflight;
   inflight = supabase.auth
     .getSession()
-    .then(({ data }) => {
+    .then(({ data }: { data: { session: Session | null } }) => {
       cachedUserId = data.session?.user?.id ?? null;
       return cachedUserId;
     })
