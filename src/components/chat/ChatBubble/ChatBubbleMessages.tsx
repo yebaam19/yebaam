@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import MessageImage from '../MessageImage';
+import ImageModal from '../ImageModal';
+import type { MessageMedia } from '@/features/chat/types';
 
 export interface ChatBubbleMessagesProps {
   messages: any[];
@@ -46,6 +50,7 @@ export function ChatBubbleMessages({
   contactName,
 }: ChatBubbleMessagesProps) {
   const user = useAuthStore((state) => state.user);
+  const [zoomMedia, setZoomMedia] = useState<MessageMedia | null>(null);
 
   const formatTime = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -163,29 +168,53 @@ export function ChatBubbleMessages({
                   )}
                 </div>
               )}
-              <div className={cn('max-w-[min(75%,216px)]', isOwn && 'flex flex-col items-end')}>
-                <div
-                  className={cn(
-                    'px-3 py-2',
-                    bubbleRadii,
-                    isOwn
-                      ? 'bg-linear-to-br from-[#0084ff] to-[#5a67d8] text-white shadow-sm dark:from-[#2374e8] dark:to-[#4f5fcf]'
-                      : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white',
-                  )}
-                >
-                  <p className="wrap-break-word text-sm whitespace-pre-wrap">{getContentText(msg.content)}</p>
-                  <div className="mt-1 flex items-center gap-1">
-                    <p
+              <div className={cn('max-w-[min(75%,240px)]', isOwn && 'flex flex-col items-end')}>
+                {(() => {
+                  const hasImage =
+                    msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);
+                  const contentText = getContentText(msg.content);
+                  return (
+                    <div
                       className={cn(
-                        'text-xs',
-                        isOwn ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400',
+                        'overflow-hidden',
+                        bubbleRadii,
+                        isOwn
+                          ? 'bg-linear-to-br from-[#0084ff] to-[#5a67d8] text-white shadow-sm dark:from-[#2374e8] dark:to-[#4f5fcf]'
+                          : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white',
                       )}
                     >
-                      {formatTime(msg.createdAt)}
-                    </p>
-                    {isOwn && getMessageStatusIcon(msg.status)}
-                  </div>
-                </div>
+                      {hasImage && (
+                        <MessageImage
+                          media={msg.media as MessageMedia}
+                          onClick={() => setZoomMedia(msg.media as MessageMedia)}
+                        />
+                      )}
+                      <div className="px-3 py-2">
+                        {contentText && (
+                          <p className="wrap-break-word text-sm whitespace-pre-wrap">
+                            {contentText}
+                          </p>
+                        )}
+                        <div
+                          className={cn(
+                            'flex items-center gap-1',
+                            contentText && 'mt-1',
+                          )}
+                        >
+                          <p
+                            className={cn(
+                              'text-xs',
+                              isOwn ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400',
+                            )}
+                          >
+                            {formatTime(msg.createdAt)}
+                          </p>
+                          {isOwn && getMessageStatusIcon(msg.status)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           );
@@ -226,6 +255,14 @@ export function ChatBubbleMessages({
       )}
 
       <div ref={messagesEndRef} className="h-px shrink-0" />
+
+      {zoomMedia && (
+        <ImageModal
+          media={zoomMedia}
+          isOpen
+          onClose={() => setZoomMedia(null)}
+        />
+      )}
     </div>
   );
 }

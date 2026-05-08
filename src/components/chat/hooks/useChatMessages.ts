@@ -1,6 +1,7 @@
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
+import type { MessageMedia } from '@/features/chat/types';
 
 interface UseChatMessagesProps {
   conversationId: string | null;
@@ -27,14 +28,19 @@ export function useChatMessages({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = async (messageContent: string): Promise<boolean> => {
-    const trimmed = messageContent.trim();
-    if (!trimmed || !conversationId) return false;
+  const sendMessage = async (
+    content?: string,
+    media?: MessageMedia,
+  ): Promise<boolean> => {
+    const trimmed = content?.trim() ?? '';
+    if (!conversationId) return false;
+    if (!trimmed && !media) return false;
 
     const tempId = `temp-${Date.now()}`;
     const tempMessage = {
       id: tempId,
       content: trimmed,
+      media: media ?? null,
       conversationId,
       senderId: user?.id,
       createdAt: new Date().toISOString(),
@@ -45,7 +51,12 @@ export function useChatMessages({
     setMessages((prev) => [...prev, tempMessage]);
 
     try {
-      const newMessage = await chatService.sendMessage(conversationId, trimmed);
+      const newMessage = await chatService.sendMessage(
+        conversationId,
+        trimmed,
+        undefined,
+        media,
+      );
 
       setMessages((prev) => {
         const filtered = prev.filter((m) => m.id !== tempId);

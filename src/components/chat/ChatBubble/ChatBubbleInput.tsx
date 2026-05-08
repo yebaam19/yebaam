@@ -7,14 +7,18 @@ import {
   PhotoIcon,
   PlusIcon,
   HandThumbUpIcon,
+  XMarkIcon,
 } from '@/components/icons/heroicons-shim';
+import Image from 'next/image';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import ChatEmojiPopover from '../ChatEmojiPopover';
+import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
+import type { MessageMedia } from '@/features/chat/types';
 
 interface ChatBubbleInputProps {
-  onSendMessage: (message: string) => Promise<boolean>;
+  onSendMessage: (content?: string, media?: MessageMedia) => Promise<boolean>;
   onTypingChange: (value: string, prevValue: string) => void;
   onStopTyping: () => void;
 }
@@ -43,7 +47,35 @@ export function ChatBubbleInput({
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useAutoResizeTextArea(message, 120, 1);
+
+  const { uploadMedia, isUploading, uploadProgress } = useUploadChatMedia();
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor selecciona una imagen');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('La imagen no puede superar 10MB');
+      return;
+    }
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setPreviewUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
@@ -74,26 +106,46 @@ export function ChatBubbleInput({
     setEmojiOpen(false);
   };
 
-  const sendText = async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed || isSending) return;
+  const submit = async () => {
+    const trimmed = message.trim();
+    if ((!trimmed && !selectedFile) || isSending || isUploading) return;
+
     setIsSending(true);
     onStopTyping();
+
+    let mediaData: MessageMedia | undefined;
+    if (selectedFile) {
+      const result = await uploadMedia({ file: selectedFile, mediaType: MediaType.IMAGE });
+      if (!result) {
+        toast.error('Error al subir la imagen');
+        setIsSending(false);
+        return;
+      }
+      mediaData = {
+        type: result.type,
+        cf_image_id: result.s3Key,
+        size: result.size,
+        filename: result.filename,
+      };
+    }
+
     setMessage('');
-    const ok = await onSendMessage(trimmed);
+    handleRemoveFile();
+
+    const ok = await onSendMessage(trimmed || undefined, mediaData);
     if (!ok) setMessage(trimmed);
     setIsSending(false);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await sendText(message);
+    await submit();
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      void sendText(message);
+      void submit();
     }
   };
 
@@ -102,7 +154,7 @@ export function ChatBubbleInput({
   const trimmedEmpty = message.trim() === '';
 
   const handleThumb = async () => {
-    if (isSending || !trimmedEmpty) return;
+    if (isSending || !trimmedEmpty || selectedFile) return;
     setIsSending(true);
     onStopTyping();
     await onSendMessage('👍');
@@ -114,6 +166,35 @@ export function ChatBubbleInput({
       onSubmit={handleSubmit}
       className="border-t border-neutral-200 bg-[#f0f2f5] px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900"
     >
+      {previewUrl && (
+        <div className="mb-2 px-1">
+          <div className="relative h-24 w-24 overflow-hidden rounded-lg">
+            <Image
+              src={previewUrl}
+              alt="Vista previa"
+              fill
+              sizes="96px"
+              className="object-cover"
+              unoptimized
+            />
+            <button
+              type="button"
+              onClick={handleRemoveFile}
+              disabled={isUploading || isSending}
+              className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80 disabled:opacity-50"
+              aria-label="Quitar imagen"
+            >
+              <XMarkIcon className="h-3.5 w-3.5" />
+            </button>
+            {isUploading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                <span className="text-xs font-medium text-white">{uploadProgress}%</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-end gap-1.5">
         <div className="flex shrink-0 items-center gap-0.5 pb-1">
           <button
@@ -132,11 +213,20 @@ export function ChatBubbleInput({
           >
             <CameraIcon className="h-6 w-6" aria-hidden />
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+            disabled={isUploading || isSending}
+          />
           <button
             type="button"
-            onClick={stubSoon}
-            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
-            title="Adjuntar"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading || isSending}
+            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-white/10"
+            title="Adjuntar imagen"
           >
             <PhotoIcon className="h-6 w-6" aria-hidden />
           </button>
@@ -150,7 +240,7 @@ export function ChatBubbleInput({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Aa"
-            disabled={isSending}
+            disabled={isSending || isUploading}
             aria-label="Escribe un mensaje"
             className="max-h-[120px] w-full resize-none rounded-[20px] border-0 bg-white px-3 py-2 text-sm leading-[1.36] wrap-break-word text-neutral-900 shadow-sm outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-blue-500/35 disabled:opacity-60 dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500"
           />
@@ -174,7 +264,7 @@ export function ChatBubbleInput({
             />
           </div>
 
-          {trimmedEmpty ? (
+          {trimmedEmpty && !selectedFile ? (
             <button
               type="button"
               onClick={() => void handleThumb()}
@@ -187,7 +277,7 @@ export function ChatBubbleInput({
           ) : (
             <button
               type="submit"
-              disabled={isSending}
+              disabled={isSending || isUploading}
               className="rounded-full bg-[#0084ff] p-2 text-white shadow-sm transition-colors hover:bg-[#1877f2] disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
               title="Enviar"
             >
