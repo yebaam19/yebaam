@@ -18,6 +18,15 @@ import type {
 import { profileService } from '../services/profile.service'
 import { profileMapKey, putProfileInProfilesMap } from './profile-map-key'
 
+// Last-write-wins dedupe by `id`. Order preserved so cursor-paginated lists
+// still render newest-first when the backend returns a duplicate row from a
+// previous page on a "load more" call.
+const dedupeById = <T extends { id: string }>(items: T[]): T[] => {
+  const seen = new Map<string, T>()
+  for (const item of items) seen.set(item.id, item)
+  return Array.from(seen.values())
+}
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -34,18 +43,21 @@ interface ProfileState {
   isLoadingPosts: boolean
   hasMorePosts: boolean
   postsCursor: string | null
+  postsUserId: string | null
 
   // Fotos del usuario
   userPhotos: any[]
   isLoadingPhotos: boolean
   hasMorePhotos: boolean
   photosCursor: string | null
+  photosUserId: string | null
 
   // Videos del usuario
   userVideos: any[]
   isLoadingVideos: boolean
   hasMoreVideos: boolean
   videosCursor: string | null
+  videosUserId: string | null
 
   // Acciones - API Calls
   fetchProfileByUsername: (username: string) => Promise<void>
@@ -95,16 +107,19 @@ export const useProfileStore = create<ProfileState>()(
       isLoadingPosts: false,
       hasMorePosts: true,
       postsCursor: null,
+      postsUserId: null,
 
       userPhotos: [],
       isLoadingPhotos: false,
       hasMorePhotos: true,
       photosCursor: null,
+      photosUserId: null,
 
       userVideos: [],
       isLoadingVideos: false,
       hasMoreVideos: true,
       videosCursor: null,
+      videosUserId: null,
 
       // ========================================================================
       // API CALLS - Profile
@@ -295,15 +310,22 @@ export const useProfileStore = create<ProfileState>()(
        * Obtener posts del usuario
        */
       fetchUserPosts: async (userId: string, reset = false) => {
+        // Auto-reset when the requested user differs from the cached one so we
+        // don't bleed posts from a previously visited profile, and so React
+        // StrictMode's double-invocation can't duplicate page-1 onto itself.
+        const effectiveReset = reset || get().postsUserId !== userId
         set({ isLoadingPosts: true, error: null })
         try {
-          const cursor = reset ? null : get().postsCursor
+          const cursor = effectiveReset ? null : get().postsCursor
           const response = await profileService.getUserPosts(userId, cursor ?? undefined)
 
-          const newPosts = reset ? response.items : [...get().userPosts, ...response.items]
+          const merged = effectiveReset
+            ? response.items
+            : dedupeById([...get().userPosts, ...response.items])
 
           set({
-            userPosts: newPosts,
+            userPosts: merged,
+            postsUserId: userId,
             hasMorePosts: !!response.nextCursor,
             postsCursor: response.nextCursor,
             isLoadingPosts: false,
@@ -325,15 +347,19 @@ export const useProfileStore = create<ProfileState>()(
       // ========================================================================
 
       fetchUserPhotos: async (userId: string, reset = false) => {
+        const effectiveReset = reset || get().photosUserId !== userId
         set({ isLoadingPhotos: true, error: null })
         try {
-          const cursor = reset ? null : get().photosCursor
+          const cursor = effectiveReset ? null : get().photosCursor
           const response = await profileService.getUserPhotos(userId, cursor ?? undefined)
 
-          const newPhotos = reset ? response.items : [...get().userPhotos, ...response.items]
+          const merged = effectiveReset
+            ? response.items
+            : dedupeById([...get().userPhotos, ...response.items])
 
           set({
-            userPhotos: newPhotos,
+            userPhotos: merged,
+            photosUserId: userId,
             hasMorePhotos: !!response.nextCursor,
             photosCursor: response.nextCursor,
             isLoadingPhotos: false,
@@ -355,15 +381,19 @@ export const useProfileStore = create<ProfileState>()(
       // ========================================================================
 
       fetchUserVideos: async (userId: string, reset = false) => {
+        const effectiveReset = reset || get().videosUserId !== userId
         set({ isLoadingVideos: true, error: null })
         try {
-          const cursor = reset ? null : get().videosCursor
+          const cursor = effectiveReset ? null : get().videosCursor
           const response = await profileService.getUserVideos(userId, cursor ?? undefined)
 
-          const newVideos = reset ? response.items : [...get().userVideos, ...response.items]
+          const merged = effectiveReset
+            ? response.items
+            : dedupeById([...get().userVideos, ...response.items])
 
           set({
-            userVideos: newVideos,
+            userVideos: merged,
+            videosUserId: userId,
             hasMoreVideos: !!response.nextCursor,
             videosCursor: response.nextCursor,
             isLoadingVideos: false,
@@ -432,6 +462,9 @@ export const useProfileStore = create<ProfileState>()(
           postsCursor: null,
           photosCursor: null,
           videosCursor: null,
+          postsUserId: null,
+          photosUserId: null,
+          videosUserId: null,
         }),
     }),
     { name: 'ProfileStore' }

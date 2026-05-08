@@ -1,21 +1,22 @@
 'use client'
 
 /**
- * InterestsDialog Component
+ * InterestsDialog
  *
- * Dialog for editing the user's interests as a tag list. Hydrates from and
- * saves to `profiles.interests` (the only persisted column for interests).
+ * Edits the user's interests + the five favorite arrays (movies, books,
+ * games, TV shows, music). All six lists are persisted to dedicated
+ * `text[]` columns on `profiles`.
  */
 
 import ButtonPrimary from '@/ui/ButtonPrimary'
 import ButtonSecondary from '@/ui/ButtonSecondary'
-import Input from '@/ui/Input'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
-import { PlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { Fragment, useEffect, useState } from 'react'
-import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { toast } from 'sonner'
+import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
+import TagInputRow from './TagInputRow'
 
 interface InterestsDialogProps {
   user: UserProfile
@@ -23,55 +24,51 @@ interface InterestsDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+type FavoritesState = {
+  interests: string[]
+  favoriteMovies: string[]
+  favoriteBooks: string[]
+  favoriteGames: string[]
+  favoriteTvShows: string[]
+  favoriteMusic: string[]
+}
+
+function hydrate(user: UserProfile): FavoritesState {
+  return {
+    interests: user.interests ?? [],
+    favoriteMovies: user.favoriteMovies ?? [],
+    favoriteBooks: user.favoriteBooks ?? [],
+    favoriteGames: user.favoriteGames ?? [],
+    favoriteTvShows: user.favoriteTvShows ?? [],
+    favoriteMusic: user.favoriteMusic ?? [],
+  }
+}
+
 export default function InterestsDialog({ user, open, onOpenChange }: InterestsDialogProps) {
   const { updateProfile } = useProfileStore()
-  const [tags, setTags] = useState<string[]>(user.interests ?? [])
-  const [draft, setDraft] = useState('')
+  const [state, setState] = useState<FavoritesState>(() => hydrate(user))
   const [isLoading, setIsLoading] = useState(false)
 
-  // Re-hydrate when the dialog opens or the user changes (avoids wiping
-  // existing tags on every open).
   useEffect(() => {
-    if (open) {
-      setTags(user.interests ?? [])
-      setDraft('')
-    }
+    if (open) setState(hydrate(user))
   }, [open, user])
 
-  const addTag = (raw: string) => {
-    const value = raw.trim()
-    if (!value) return
-    if (tags.includes(value)) {
-      setDraft('')
-      return
-    }
-    setTags((prev) => [...prev, value])
-    setDraft('')
-  }
-
-  const removeTag = (tag: string) => {
-    setTags((prev) => prev.filter((t) => t !== tag))
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      addTag(draft)
-    } else if (e.key === 'Backspace' && draft === '' && tags.length > 0) {
-      // Quick-undo: backspace on an empty input removes the last tag.
-      setTags((prev) => prev.slice(0, -1))
-    }
+  const set = <K extends keyof FavoritesState>(key: K, next: FavoritesState[K]) => {
+    setState((prev) => ({ ...prev, [key]: next }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     try {
-      // Include any in-flight draft the user typed but didn't press Enter on.
-      const finalTags = draft.trim() && !tags.includes(draft.trim())
-        ? [...tags, draft.trim()]
-        : tags
-      await updateProfile({ interests: finalTags } as any)
+      await updateProfile({
+        interests: state.interests,
+        favoriteMovies: state.favoriteMovies,
+        favoriteBooks: state.favoriteBooks,
+        favoriteGames: state.favoriteGames,
+        favoriteTvShows: state.favoriteTvShows,
+        favoriteMusic: state.favoriteMusic,
+      })
       toast.success('Intereses actualizados correctamente')
       onOpenChange(false)
     } catch (error) {
@@ -109,7 +106,7 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
           >
             <DialogPanel className="flex w-full max-w-md max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-neutral-900">
               <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
-                <h2 className="text-xl font-bold">Editar Intereses</h2>
+                <h2 className="text-xl font-bold">Editar intereses y favoritos</h2>
                 <button
                   onClick={() => onOpenChange(false)}
                   className="text-muted-foreground hover:text-foreground cursor-pointer"
@@ -120,53 +117,44 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
               </div>
 
               <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-                <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto px-6 py-5">
-                  <label className="mb-2 block text-sm font-medium">
-                    Agrega tus intereses
-                  </label>
-
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="text"
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Ej. Música, Viajes, Fotografía..."
-                    />
-                    <button
-                      type="button"
-                      onClick={() => addTag(draft)}
-                      disabled={!draft.trim()}
-                      aria-label="Agregar interés"
-                      className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <PlusIcon className="size-5" />
-                    </button>
-                  </div>
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    Presiona Enter o coma para agregar. Backspace borra el último.
-                  </p>
-
-                  {tags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
-                        >
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            aria-label={`Quitar ${tag}`}
-                            className="text-primary-700/60 hover:text-primary-900 dark:text-primary-300/60 dark:hover:text-primary-100"
-                          >
-                            <XMarkIcon className="size-3.5" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                <div className="thin-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                  <TagInputRow
+                    label="Intereses"
+                    helper="Presiona Enter o coma para agregar."
+                    placeholder="Ej. Música, Viajes, Fotografía…"
+                    value={state.interests}
+                    onChange={(next) => set('interests', next)}
+                  />
+                  <TagInputRow
+                    label="Películas favoritas"
+                    placeholder="Ej. Inception"
+                    value={state.favoriteMovies}
+                    onChange={(next) => set('favoriteMovies', next)}
+                  />
+                  <TagInputRow
+                    label="Libros favoritos"
+                    placeholder="Ej. Cien años de soledad"
+                    value={state.favoriteBooks}
+                    onChange={(next) => set('favoriteBooks', next)}
+                  />
+                  <TagInputRow
+                    label="Videojuegos favoritos"
+                    placeholder="Ej. The Witcher 3"
+                    value={state.favoriteGames}
+                    onChange={(next) => set('favoriteGames', next)}
+                  />
+                  <TagInputRow
+                    label="Series favoritas"
+                    placeholder="Ej. Breaking Bad"
+                    value={state.favoriteTvShows}
+                    onChange={(next) => set('favoriteTvShows', next)}
+                  />
+                  <TagInputRow
+                    label="Música favorita"
+                    placeholder="Ej. Coldplay"
+                    value={state.favoriteMusic}
+                    onChange={(next) => set('favoriteMusic', next)}
+                  />
                 </div>
 
                 <div className="flex shrink-0 justify-end gap-3 border-t border-neutral-200 px-6 py-4 dark:border-neutral-800">

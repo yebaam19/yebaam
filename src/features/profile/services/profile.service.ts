@@ -35,6 +35,7 @@ type DbProfile = {
   cover_zoom: number | null;
   relationship_status: string | null;
   interests: string[] | null;
+  languages: string[] | null;
   friends_count: number | null;
   followers_count: number | null;
   posts_count: number | null;
@@ -42,10 +43,26 @@ type DbProfile = {
   videos_count: number | null;
   work_experience: unknown;
   education: unknown;
+  study_place: string | null;
+  work_place: string | null;
+  residence_country: string | null;
+  residence_state: string | null;
+  residence_city: string | null;
+  birth_place: string | null;
   is_verified: boolean | null;
   verification_status: 'unstarted' | 'pending' | 'approved' | 'rejected' | null;
   pioneer_number: number | null;
   unique_id_code: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  linkedin_url: string | null;
+  github_url: string | null;
+  favorite_movies: string[] | null;
+  favorite_books: string[] | null;
+  favorite_games: string[] | null;
+  favorite_tv_shows: string[] | null;
+  favorite_music: string[] | null;
   created_at: string;
   updated_at: string;
 };
@@ -83,12 +100,14 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
     isVerified: row.is_verified === true,
     pioneerNumber: row.pioneer_number ?? null,
     uniqueIdCode: row.unique_id_code ?? null,
-    residenceCountry: row.country ?? null,
-    residenceState: row.state ?? null,
-    residenceCity: row.city ?? null,
+    // Prefer the dedicated `residence_*` columns (added in the verification
+    // migration) and fall back to the older `country/state/city` columns.
+    residenceCountry: row.residence_country ?? row.country ?? null,
+    residenceState: row.residence_state ?? row.state ?? null,
+    residenceCity: row.residence_city ?? row.city ?? null,
     birthCountry: null,
     birthState: null,
-    birthCity: row.hometown ?? null,
+    birthCity: row.birth_place ?? row.hometown ?? null,
     birthDate: row.birth_date ? new Date(row.birth_date) : null,
     gender: (row.gender as UserProfile['gender']) ?? null,
     bloodType: null,
@@ -96,19 +115,20 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
     email,
     phone: row.phone_number ?? null,
     websiteUrl: row.website ?? null,
-    facebookUrl: null,
-    instagramUrl: null,
-    twitterUrl: null,
-    linkedinUrl: null,
-    githubUrl: null,
+    facebookUrl: row.facebook_url ?? null,
+    instagramUrl: row.instagram_url ?? null,
+    twitterUrl: row.twitter_url ?? null,
+    linkedinUrl: row.linkedin_url ?? null,
+    githubUrl: row.github_url ?? null,
+    languages: row.languages ?? [],
     interests: row.interests ?? [],
-    tvShows: null,
-    musicBands: null,
-    favoriteMovies: null,
-    favoriteBooks: null,
-    favoriteGames: null,
-    studyPlace: null,
-    workPlace: null,
+    favoriteTvShows: row.favorite_tv_shows ?? [],
+    favoriteMusic: row.favorite_music ?? [],
+    favoriteMovies: row.favorite_movies ?? [],
+    favoriteBooks: row.favorite_books ?? [],
+    favoriteGames: row.favorite_games ?? [],
+    studyPlace: row.study_place ?? null,
+    workPlace: row.work_place ?? null,
     _count: {
       posts: row.posts_count ?? 0,
       followers: row.followers_count ?? 0,
@@ -142,16 +162,35 @@ function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
     payload.cover_zoom = Math.max(100, Math.min(400, Math.round(data.coverZoom)));
   }
   if (data.bio !== undefined) payload.bio = data.bio;
-  if (data.websiteUrl !== undefined) payload.website = data.websiteUrl;
+  if (data.websiteUrl !== undefined) payload.website = nullIfEmpty(data.websiteUrl);
   if (data.relationshipStatus !== undefined) payload.relationship_status = nullIfEmpty(data.relationshipStatus);
   if (data.gender !== undefined) payload.gender = nullIfEmpty(data.gender);
   if (data.birthDate !== undefined) payload.birth_date = nullIfEmpty(data.birthDate);
-  if (data.residenceCity !== undefined) payload.city = data.residenceCity;
-  if (data.birthCity !== undefined) payload.hometown = data.birthCity;
-  if (data.phone !== undefined) payload.phone_number = data.phone;
-  if ((data as { interests?: string[] }).interests !== undefined) {
-    payload.interests = (data as { interests?: string[] }).interests;
+  // Mirror residence/birth into both the legacy and the dedicated columns so
+  // existing readers keep working while we transition to the new ones.
+  if (data.residenceCity !== undefined) {
+    payload.city = data.residenceCity;
+    payload.residence_city = nullIfEmpty(data.residenceCity);
   }
+  if (data.birthCity !== undefined) {
+    payload.hometown = data.birthCity;
+    payload.birth_place = nullIfEmpty(data.birthCity);
+  }
+  if (data.phone !== undefined) payload.phone_number = data.phone;
+  if (data.studyPlace !== undefined) payload.study_place = nullIfEmpty(data.studyPlace);
+  if (data.workPlace !== undefined) payload.work_place = nullIfEmpty(data.workPlace);
+  if (data.facebookUrl !== undefined) payload.facebook_url = nullIfEmpty(data.facebookUrl);
+  if (data.instagramUrl !== undefined) payload.instagram_url = nullIfEmpty(data.instagramUrl);
+  if (data.twitterUrl !== undefined) payload.twitter_url = nullIfEmpty(data.twitterUrl);
+  if (data.linkedinUrl !== undefined) payload.linkedin_url = nullIfEmpty(data.linkedinUrl);
+  if (data.githubUrl !== undefined) payload.github_url = nullIfEmpty(data.githubUrl);
+  if (data.interests !== undefined) payload.interests = data.interests;
+  if (data.languages !== undefined) payload.languages = data.languages;
+  if (data.favoriteTvShows !== undefined) payload.favorite_tv_shows = data.favoriteTvShows;
+  if (data.favoriteMusic !== undefined) payload.favorite_music = data.favoriteMusic;
+  if (data.favoriteMovies !== undefined) payload.favorite_movies = data.favoriteMovies;
+  if (data.favoriteBooks !== undefined) payload.favorite_books = data.favoriteBooks;
+  if (data.favoriteGames !== undefined) payload.favorite_games = data.favoriteGames;
   return payload;
 }
 
@@ -216,8 +255,14 @@ class ProfileService {
   }
 
   async updateSocialLinks(data: UpdateSocialLinksDTO): Promise<UserProfile> {
-    // Only `website` has a column in the schema. Other social links are dropped silently.
-    return this.updateProfile({ websiteUrl: data.websiteUrl });
+    return this.updateProfile({
+      websiteUrl: data.websiteUrl,
+      facebookUrl: data.facebookUrl,
+      instagramUrl: data.instagramUrl,
+      twitterUrl: data.twitterUrl,
+      linkedinUrl: data.linkedinUrl,
+      githubUrl: data.githubUrl,
+    });
   }
 
   async updateInterests(data: UpdateInterestsDTO): Promise<UserProfile> {

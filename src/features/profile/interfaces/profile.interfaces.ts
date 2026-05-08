@@ -50,13 +50,19 @@ export interface UserProfile {
   linkedinUrl?: string | null
   githubUrl?: string | null
 
+  // Languages spoken (text[] in DB)
+  languages?: string[]
+
   // Interests
   interests?: string[]
-  tvShows?: string | null
-  musicBands?: string | null
-  favoriteMovies?: string | null
-  favoriteBooks?: string | null
-  favoriteGames?: string | null
+
+  // Favorites — text[] columns persisted to profiles.
+  // Renamed from legacy `tvShows`/`musicBands` for DB-column parity.
+  favoriteTvShows?: string[]
+  favoriteMusic?: string[]
+  favoriteMovies?: string[]
+  favoriteBooks?: string[]
+  favoriteGames?: string[]
 
   // Work and Study
   studyPlace?: string | null
@@ -100,12 +106,20 @@ export interface UpdateProfileDTO {
   residenceCity?: string
   birthCity?: string
   phone?: string // Teléfono del usuario
-  // Intereses culturales
-  tvShows?: string
-  musicBands?: string
-  favoriteMovies?: string
-  favoriteBooks?: string
-  favoriteGames?: string
+  // Social URLs (persisted to dedicated columns)
+  facebookUrl?: string
+  instagramUrl?: string
+  twitterUrl?: string
+  linkedinUrl?: string
+  githubUrl?: string
+  // Tag-style collections
+  interests?: string[]
+  languages?: string[]
+  favoriteTvShows?: string[]
+  favoriteMusic?: string[]
+  favoriteMovies?: string[]
+  favoriteBooks?: string[]
+  favoriteGames?: string[]
 }
 
 export interface UpdatePersonalInfoDTO {

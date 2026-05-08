@@ -9,6 +9,7 @@ import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import BaseDialog from './BaseDialog'
 import Input from '@/ui/Input'
+import Textarea from '@/ui/Textarea'
 
 
 interface EditGeneralInfoDialogProps {
@@ -30,6 +31,7 @@ export default function EditGeneralInfoDialog({
   }
 
   const [formData, setFormData] = useState({
+    bio: user.bio || '',
     residenceCity: user.residenceCity || '',
     residenceState: user.residenceState || '',
     residenceCountry: user.residenceCountry || '',
@@ -41,7 +43,7 @@ export default function EditGeneralInfoDialog({
     relationshipStatus: user.relationshipStatus || '',
   })
   
-  const { updateProfile, updatePersonalInfo, isLoading } = useProfileStore()
+  const { updateProfile, isLoading } = useProfileStore()
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -52,22 +54,18 @@ export default function EditGeneralInfoDialog({
     
     try {
       
-      // Solo actualizar campos que el backend acepta
-      const result = await updateProfile({
+      await updateProfile({
+        bio: formData.bio,
         gender: formData.gender,
         relationshipStatus: formData.relationshipStatus,
-        birthDate: formData.birthdate, // Backend espera 'birthDate'
-        residenceCity: formData.residenceCity, // Backend acepta residenceCity
-        birthCity: formData.birthCity, // Backend acepta birthCity
-        // Nota: residenceCountry, residenceState, birthCountry, birthState no están en el DTO del backend
-        // Se podrían almacenar en el perfil extendido si es necesario
+        birthDate: formData.birthdate,
+        residenceCity: formData.residenceCity,
+        birthCity: formData.birthCity,
       })
-      
-      console.log(' Respuesta del backend:', result)
-      
+
       onOpenChange(false)
     } catch (error) {
-      console.error(' Error al guardar información:', error)
+      console.error('Error al guardar información:', error)
     }
   }
 
@@ -75,12 +73,25 @@ export default function EditGeneralInfoDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Editar información general"
-      description="Actualiza tu ubicación, fecha de nacimiento y más"
+      title="Editar información"
+      description="Actualiza tu biografía, ubicación, fecha de nacimiento y más"
       onSubmit={handleSubmit}
       isLoading={isLoading}
     >
       <div className="space-y-5">
+        {/* Biografía */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Biografía</label>
+          <Textarea
+            value={formData.bio}
+            onChange={(e) => handleChange('bio', e.target.value)}
+            placeholder="Cuéntanos un poco sobre ti..."
+            rows={4}
+            maxLength={500}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">{formData.bio.length}/500 caracteres</p>
+        </div>
+
         {/* Ubicación actual */}
         <div className="space-y-4">
           <h4 className="font-semibold text-sm">Ubicación actual</h4>

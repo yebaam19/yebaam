@@ -12,7 +12,9 @@ import MessageButton from './MessageButton';
 import ProfileFollowStub from './ProfileFollowStub';
 import ProfessionalProfileButton from './ProfessionalProfileButton';
 import ProfileActionsMenu from './ProfileActionsMenu';
+import ProfileSocialLinks from './ProfileSocialLinks';
 import { coverTransformStyle } from '../../utils/coverTransform';
+import { AcademicCapIcon, BriefcaseIcon } from '@/components/icons/heroicons-shim';
 
 interface UserProfileProps {
   user: UserProfileType;
@@ -159,6 +161,29 @@ export default function UserProfile({
                 </div>
                 <div className="max-w-full text-center text-sm break-all text-gray-500 sm:text-base lg:text-left dark:text-gray-400">@{user.username}</div>
 
+                {/* Tagline — occupation + university. Hidden when both are empty. */}
+                {(user.workPlace?.trim() || user.studyPlace?.trim()) && (
+                  <div className="flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-gray-600 lg:justify-start dark:text-gray-400">
+                    {user.workPlace?.trim() && (
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                        <BriefcaseIcon className="size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                        <span className="truncate">{user.workPlace}</span>
+                      </span>
+                    )}
+                    {user.workPlace?.trim() && user.studyPlace?.trim() && (
+                      <span className="hidden text-gray-300 sm:inline dark:text-gray-600" aria-hidden>
+                        ·
+                      </span>
+                    )}
+                    {user.studyPlace?.trim() && (
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                        <AcademicCapIcon className="size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                        <span className="truncate">{user.studyPlace}</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Stats — métricas del perfil visualizado (`user`), no desde currentProfile */}
                 <div className="flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-gray-600 lg:justify-start dark:text-gray-400">
                   <span>
@@ -190,6 +215,16 @@ export default function UserProfile({
                     </>
                   )}
                 </div>
+
+                <ProfileSocialLinks
+                  websiteUrl={user.websiteUrl}
+                  facebookUrl={user.facebookUrl}
+                  instagramUrl={user.instagramUrl}
+                  twitterUrl={user.twitterUrl}
+                  linkedinUrl={user.linkedinUrl}
+                  githubUrl={user.githubUrl}
+                  className="mt-1"
+                />
               </div>
 
               {/* Action cluster — estilo cercano a PageDetailHeader: primaria amigos, mensaje secundaria, ⋯ */}

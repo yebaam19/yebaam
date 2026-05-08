@@ -1,14 +1,16 @@
 /**
- * EditWorkEducationDialog Component
- * 
- * Modal para editar información de trabajo y educación
+ * EditWorkEducationDialog
+ *
+ * Modal para editar lugar de trabajo, lugar de estudios y los idiomas que
+ * habla el usuario. Los idiomas se guardan como `text[]` en `profiles.languages`.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import BaseDialog from './BaseDialog'
 import Input from '@/ui/Input'
+import TagInputRow from './TagInputRow'
 
 interface EditWorkEducationDialogProps {
   user: UserProfile
@@ -16,31 +18,29 @@ interface EditWorkEducationDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export default function EditWorkEducationDialog({ 
-  user, 
-  open, 
-  onOpenChange 
+export default function EditWorkEducationDialog({
+  user,
+  open,
+  onOpenChange,
 }: EditWorkEducationDialogProps) {
-  const [formData, setFormData] = useState({
-    workPlace: user.workPlace || '',
-    studyPlace: user.studyPlace || '',
-  })
-  
+  const [workPlace, setWorkPlace] = useState(user.workPlace || '')
+  const [studyPlace, setStudyPlace] = useState(user.studyPlace || '')
+  const [languages, setLanguages] = useState<string[]>(user.languages ?? [])
+
   const { updateProfile, isLoading } = useProfileStore()
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  useEffect(() => {
+    if (open) {
+      setWorkPlace(user.workPlace || '')
+      setStudyPlace(user.studyPlace || '')
+      setLanguages(user.languages ?? [])
+    }
+  }, [open, user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     try {
-      await updateProfile({
-        workPlace: formData.workPlace,
-        studyPlace: formData.studyPlace,
-      })
-      
+      await updateProfile({ workPlace, studyPlace, languages })
       onOpenChange(false)
     } catch (error) {
       console.error('Error al guardar trabajo/educación:', error)
@@ -51,8 +51,8 @@ export default function EditWorkEducationDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Editar trabajo y educación"
-      description="Actualiza tu información profesional y académica"
+      title="Editar trabajo y estudios"
+      description="Actualiza tu información profesional, académica e idiomas"
       onSubmit={handleSubmit}
       isLoading={isLoading}
     >
@@ -60,8 +60,8 @@ export default function EditWorkEducationDialog({
         <div>
           <label className="block text-sm font-medium mb-2">Lugar de trabajo</label>
           <Input
-            value={formData.workPlace}
-            onChange={(e) => handleChange('workPlace', e.target.value)}
+            value={workPlace}
+            onChange={(e) => setWorkPlace(e.target.value)}
             placeholder="Ej: Google, Microsoft, Freelance"
           />
           <p className="mt-2 text-xs text-muted-foreground">
@@ -72,14 +72,23 @@ export default function EditWorkEducationDialog({
         <div>
           <label className="block text-sm font-medium mb-2">Lugar de estudio</label>
           <Input
-            value={formData.studyPlace}
-            onChange={(e) => handleChange('studyPlace', e.target.value)}
+            value={studyPlace}
+            onChange={(e) => setStudyPlace(e.target.value)}
             placeholder="Ej: Universidad Nacional, Instituto Técnico"
           />
           <p className="mt-2 text-xs text-muted-foreground">
             Universidad, instituto o centro educativo
           </p>
         </div>
+
+        <TagInputRow
+          label="Idiomas"
+          helper="Agrega los idiomas que hablas. Presiona Enter o coma para agregar."
+          placeholder="Ej. Español, Inglés, Francés"
+          value={languages}
+          onChange={setLanguages}
+          max={15}
+        />
       </div>
     </BaseDialog>
   )
