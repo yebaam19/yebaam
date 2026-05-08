@@ -1,6 +1,5 @@
-import { MinusIcon, PhoneIcon, VideoCameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
+import { MinusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
-import { toast } from 'sonner';
 
 interface ChatBubbleHeaderProps {
   contactName: string;
@@ -54,22 +53,6 @@ export function ChatBubbleHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">
-        <button
-          type="button"
-          onClick={() => toast.info('Las llamadas de voz estarán disponibles pronto')}
-          className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
-          title="Llamada de voz"
-        >
-          <PhoneIcon className="size-7" aria-hidden />
-        </button>
-        <button
-          type="button"
-          onClick={() => toast.info('Las videollamadas estarán disponibles pronto')}
-          className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
-          title="Videollamada"
-        >
-          <VideoCameraIcon className="size-7" aria-hidden />
-        </button>
         <button
           type="button"
           onClick={onToggleMinimize}
