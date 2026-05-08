@@ -21,16 +21,20 @@ export function useMessengerSidebar() {
   const [activeTab, setActiveTab] = useState<'inbox' | 'community'>('inbox');
   const [usersMap, setUsersMap] = useState<Map<string, UserBasicInfo>>(new Map());
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
-  
-  const { conversations, isLoadingConversations, loadConversations } = useChat();
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
+  const { conversations, isLoadingConversations } = useChat();
   const { user: currentUser } = useAuthStore();
   const isUserOnlineStore = usePresenceStore(state => state.isUserOnline);
   const resetUnreadCount = useChatStore(state => state.resetUnreadCount);
 
-  // Recargar conversaciones cuando se monta el componente
+  // Flip `hasLoadedOnce` once the first fetch completes so subsequent
+  // refetches use stale-while-revalidate (no full-screen loader flash).
+  // useChat() already triggers loadConversations() on mount; calling it again
+  // here would race two requests and double-toggle isLoadingConversations.
   useEffect(() => {
-    loadConversations();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!isLoadingConversations) setHasLoadedOnce(true);
+  }, [isLoadingConversations]);
 
   // Cargar información de todos los participantes cuando cambien las conversaciones
   useEffect(() => {
@@ -225,7 +229,7 @@ export function useMessengerSidebar() {
     activeTab,
     setActiveTab,
     conversations: filteredConversations,
-    isLoadingConversations: isLoadingConversations || isLoadingUsers,
+    isLoadingConversations: !hasLoadedOnce && (isLoadingConversations || isLoadingUsers),
     hasUnreadInActiveTab,
     markAllReadInActiveTab,
   };
