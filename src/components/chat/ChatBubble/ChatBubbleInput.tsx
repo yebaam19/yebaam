@@ -11,6 +11,7 @@ import {
 import type { FormEvent, KeyboardEvent } from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import ChatEmojiPopover from '../ChatEmojiPopover';
 
 interface ChatBubbleInputProps {
   onSendMessage: (message: string) => Promise<boolean>;
@@ -41,6 +42,7 @@ export function ChatBubbleInput({
 }: ChatBubbleInputProps) {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const textareaRef = useAutoResizeTextArea(message, 120, 1);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -48,6 +50,28 @@ export function ChatBubbleInput({
     const prevValue = message;
     setMessage(newValue);
     onTypingChange(newValue, prevValue);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    const el = textareaRef.current;
+    if (!el) {
+      const next = message + emoji;
+      setMessage(next);
+      onTypingChange(next, message);
+      setEmojiOpen(false);
+      return;
+    }
+    const start = el.selectionStart ?? message.length;
+    const end = el.selectionEnd ?? message.length;
+    const next = message.slice(0, start) + emoji + message.slice(end);
+    setMessage(next);
+    onTypingChange(next, message);
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
+    setEmojiOpen(false);
   };
 
   const sendText = async (text: string) => {
@@ -133,14 +157,22 @@ export function ChatBubbleInput({
         </div>
 
         <div className="flex shrink-0 items-center gap-0 pb-2">
-          <button
-            type="button"
-            onClick={stubSoon}
-            className="rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-            title="Emoji"
-          >
-            <FaceSmileIcon className="h-6 w-6 text-[#0084ff] dark:text-blue-400" />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setEmojiOpen((v) => !v)}
+              className="rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              title="Emoji"
+            >
+              <FaceSmileIcon className="h-6 w-6 text-[#0084ff] dark:text-blue-400" />
+            </button>
+            <ChatEmojiPopover
+              open={emojiOpen}
+              onClose={() => setEmojiOpen(false)}
+              onSelect={handleEmojiSelect}
+              align="right"
+            />
+          </div>
 
           {trimmedEmpty ? (
             <button

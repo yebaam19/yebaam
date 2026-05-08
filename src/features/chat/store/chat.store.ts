@@ -3,6 +3,15 @@ import { devtools } from 'zustand/middleware';
 import { Conversation } from '../types';
 import { chatService } from '../services/chat.service';
 
+export interface OpenBubble {
+  contactId: string;
+  contactName: string;
+  contactAvatar: string;
+  isOnline: boolean;
+}
+
+const MAX_OPEN_BUBBLES = 3;
+
 interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
@@ -11,10 +20,14 @@ interface ChatState {
   setActiveConversation: (conversationId: string | null) => void;
   updateConversation: (conversation: Conversation) => void;
   addConversation: (conversation: Conversation) => void;
-  
+
   getTotalUnreadCount: () => number;
   resetUnreadCount: (conversationId: string) => void;
   incrementUnreadCount: (conversationId: string) => void;
+
+  openBubbles: OpenBubble[];
+  openBubble: (contact: OpenBubble) => void;
+  closeBubble: (contactId: string) => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -91,10 +104,29 @@ export const useChatStore = create<ChatState>()(
       incrementUnreadCount: (conversationId) => {
         set((state) => ({
           conversations: state.conversations.map((conv) =>
-            conv.id === conversationId 
-              ? { ...conv, unreadCount: conv.unreadCount + 1 } 
+            conv.id === conversationId
+              ? { ...conv, unreadCount: conv.unreadCount + 1 }
               : conv
           ),
+        }));
+      },
+
+      openBubbles: [],
+      openBubble: (contact) => {
+        set((state) => {
+          if (state.openBubbles.some((b) => b.contactId === contact.contactId)) {
+            return state;
+          }
+          const next =
+            state.openBubbles.length >= MAX_OPEN_BUBBLES
+              ? [...state.openBubbles.slice(1), contact]
+              : [...state.openBubbles, contact];
+          return { openBubbles: next };
+        });
+      },
+      closeBubble: (contactId) => {
+        set((state) => ({
+          openBubbles: state.openBubbles.filter((b) => b.contactId !== contactId),
         }));
       },
     }),

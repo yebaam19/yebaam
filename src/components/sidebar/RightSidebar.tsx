@@ -1,13 +1,13 @@
 'use client'
 
-import ChatBubble from '@/components/chat/ChatBubble'
+import { useChatStore } from '@/features/chat/store/chat.store'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { usePresenceStore } from '@/features/presence/store/presence.store'
 import { FriendRequestsCard } from '@/features/friendships/components/FriendRequestsCard'
 import { SuggestedGroupsCard } from '@/features/communities/components/SuggestedGroupsCard'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import BirthdaysSection from './BirthdaysSection'
 import OnlineContacts from './OnlineContacts'
 import { PortalAd } from './PortalAd'
@@ -22,13 +22,6 @@ interface OnlineContact {
   isOnline: boolean
 }
 
-interface OpenChat {
-  contactId: string
-  contactName: string
-  contactAvatar: string
-  isOnline: boolean
-}
-
 /**
  * Default rail rendered on every route. Route-specific blocks (registered in
  * `rail-registry.tsx`) appear ABOVE this in `<RightSidebar />`.
@@ -36,28 +29,19 @@ interface OpenChat {
 function DefaultRail() {
   const { friends, fetchSuggestions } = useFriendships()
   const isUserOnline = usePresenceStore((state) => state.isUserOnline)
-  const [openChats, setOpenChats] = useState<OpenChat[]>([])
+  const openBubble = useChatStore((s) => s.openBubble)
 
   useEffect(() => {
     fetchSuggestions(6)
   }, [fetchSuggestions])
 
   const handleOpenChat = (contact: OnlineContact) => {
-    if (openChats.some((chat) => chat.contactId === contact.id)) return
-    if (openChats.length >= 3) setOpenChats((prev) => prev.slice(1))
-    setOpenChats((prev) => [
-      ...prev,
-      {
-        contactId: contact.id,
-        contactName: contact.name,
-        contactAvatar: contact.avatar,
-        isOnline: contact.isOnline,
-      },
-    ])
-  }
-
-  const handleCloseChat = (contactId: string) => {
-    setOpenChats((prev) => prev.filter((chat) => chat.contactId !== contactId))
+    openBubble({
+      contactId: contact.id,
+      contactName: contact.name,
+      contactAvatar: contact.avatar,
+      isOnline: contact.isOnline,
+    })
   }
 
   const onlineContacts: OnlineContact[] = friends.map((friend) => {
@@ -80,18 +64,6 @@ function DefaultRail() {
       <PortalAd />
       <BirthdaysSection birthdays={[]} />
       <OnlineContacts contacts={onlineContacts} onContactClick={handleOpenChat} />
-
-      {openChats.map((chat, index) => (
-        <ChatBubble
-          key={chat.contactId}
-          contactId={chat.contactId}
-          contactName={chat.contactName}
-          contactAvatar={chat.contactAvatar}
-          isOnline={chat.isOnline}
-          onClose={() => handleCloseChat(chat.contactId)}
-          position={index}
-        />
-      ))}
     </>
   )
 }

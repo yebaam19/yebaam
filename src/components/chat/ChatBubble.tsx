@@ -17,6 +17,7 @@ interface ChatBubbleProps {
   isOnline: boolean;
   onClose: () => void;
   position: number;
+  baseOffset?: number;
 }
 
 export default function ChatBubble({
@@ -26,6 +27,7 @@ export default function ChatBubble({
   isOnline: initialIsOnline,
   onClose,
   position = 0,
+  baseOffset = 320,
 }: ChatBubbleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   // Supabase channels connect lazily per subscription and stay up as long
@@ -53,7 +55,7 @@ export default function ChatBubble({
   const bubbleWidthPx = 328;
   /** ~12px gutter between stacked docked chats (same footprint as antes con w-80). */
   const stackStepPx = bubbleWidthPx + 12;
-  const rightPosition = 320 + position * stackStepPx;
+  const rightPosition = baseOffset + position * stackStepPx;
 
   return (
     <div

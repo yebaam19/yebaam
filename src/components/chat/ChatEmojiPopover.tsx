@@ -10,9 +10,10 @@ interface ChatEmojiPopoverProps {
   open: boolean;
   onClose: () => void;
   onSelect: (emoji: string) => void;
+  align?: 'left' | 'right';
 }
 
-export default function ChatEmojiPopover({ open, onClose, onSelect }: ChatEmojiPopoverProps) {
+export default function ChatEmojiPopover({ open, onClose, onSelect, align = 'left' }: ChatEmojiPopoverProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function ChatEmojiPopover({ open, onClose, onSelect }: ChatEmojiP
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-12 left-0 z-50 shadow-xl rounded-lg overflow-hidden"
+      className={`absolute bottom-12 ${align === 'right' ? 'right-0' : 'left-0'} z-50 shadow-xl rounded-lg overflow-hidden`}
     >
       <EmojiPicker
         theme={Theme.AUTO}

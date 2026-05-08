@@ -1,6 +1,7 @@
 'use client'
 
 import Aside from '@/components/aside'
+import ChatBubbleTray from '@/components/chat/ChatBubbleTray'
 import SocialHeader from '@/components/Header/SocialHeader'
 
 import { CurrentUserProvider } from '@/features/auth/context/current-user.context'
@@ -95,6 +96,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
         <ChatNotificationProvider>
           <Aside.Provider>
             {children}
+            <ChatBubbleTray />
             <UploadProgress />
           </Aside.Provider>
         </ChatNotificationProvider>
@@ -124,8 +126,8 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
             </div>
           </footer>
 
-          {/* Chat Flotante 
-          <ChatContainer />*/}
+          {/* Chat bubbles (global overlay) */}
+          <ChatBubbleTray />
 
           {/* Upload Progress Indicator (global) */}
           <UploadProgress />

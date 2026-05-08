@@ -1,14 +1,11 @@
 'use client'
 
 import { isFeatureEnabled, type FeatureFlag } from '@/config/features-flag'
-import { useAuth } from '@/features/auth'
-import { useChat } from '@/features/chat/hooks/useChat'
 import { NotificationBell } from '@/features/notification'
 import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
 import { cn } from '@/lib/utils'
 import {
   Bars3Icon,
-  ChatBubbleLeftRightIcon,
   HomeIcon,
   MagnifyingGlassIcon,
   NewspaperIcon,
@@ -24,14 +21,12 @@ import {
 } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
-import type { Conversation } from '@/features/chat/types'
-import { ConversationType } from '@/features/chat/types'
-import { useChatStore } from '@/features/chat/store/chat.store'
 import AvatarDropdown from './AvatarDropdown'
 import { HeaderSearchDropdown } from './HeaderSearchDropdown'
+import MessengerDropdown from './MessengerDropdown'
 import type { Route } from 'next';
 
 interface SocialHeaderProps {
@@ -39,41 +34,9 @@ interface SocialHeaderProps {
   isPlatformAdmin?: boolean
 }
 
-function chatHrefForConversation(conv: Conversation, userId: string): string {
-  if (conv.type === ConversationType.DIRECT && conv.participantIds.length >= 2) {
-    const other = conv.participantIds.find((id) => id !== userId)
-    if (other) return `/chat/${other}`
-  }
-  return `/chat/${conv.id}`
-}
-
 export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: SocialHeaderProps) {
   const pathname = usePathname()
-  const router = useRouter()
-  const { user } = useAuth()
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
-
-  // Usar el MISMO hook que MessengerSidebar para obtener el contador
-  const { totalUnreadCount, loadConversations } = useChat()
-
-  const handleOpenMessenger = useCallback(async () => {
-    const uid = user?.id
-    if (!uid) return
-
-    await loadConversations()
-    const list = useChatStore.getState().conversations
-    if (list.length === 0) {
-      router.push('/feed/friends')
-      return
-    }
-
-    const sorted = [...list].sort((a, b) => {
-      const ur = (b.unreadCount ?? 0) - (a.unreadCount ?? 0)
-      if (ur !== 0) return ur
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    })
-    router.push(chatHrefForConversation(sorted[0]!, uid) as Route)
-  }, [user?.id, loadConversations, router])
 
   const handleToggleMobileSearch = useCallback(() => {
     setIsMobileSearchOpen((prev) => !prev)
@@ -194,19 +157,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
             )}
 
             {/* Messages */}
-            <button
-              onClick={handleOpenMessenger}
-              className="relative rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              title="Mensajes"
-              aria-label="Mensajes"
-            >
-              <ChatBubbleLeftRightIcon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
-              {totalUnreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                  {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-                </span>
-              )}
-            </button>
+            <MessengerDropdown />
 
             {/* Notifications */}
             <NotificationBell />
