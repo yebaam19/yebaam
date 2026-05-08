@@ -44,7 +44,6 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
               ${isSelected ? 'scale-110' : ''}
             `}
             aria-label={config.label}
-            title={config.label}
             role="menuitem"
           >
             <span

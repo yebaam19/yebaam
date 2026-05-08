@@ -33,19 +33,19 @@ interface ProfileState {
   userPosts: any[]
   isLoadingPosts: boolean
   hasMorePosts: boolean
-  postsPage: number
+  postsCursor: string | null
 
   // Fotos del usuario
   userPhotos: any[]
   isLoadingPhotos: boolean
   hasMorePhotos: boolean
-  photosPage: number
+  photosCursor: string | null
 
   // Videos del usuario
   userVideos: any[]
   isLoadingVideos: boolean
   hasMoreVideos: boolean
-  videosPage: number
+  videosCursor: string | null
 
   // Acciones - API Calls
   fetchProfileByUsername: (username: string) => Promise<void>
@@ -94,17 +94,17 @@ export const useProfileStore = create<ProfileState>()(
       userPosts: [],
       isLoadingPosts: false,
       hasMorePosts: true,
-      postsPage: 1,
+      postsCursor: null,
 
       userPhotos: [],
       isLoadingPhotos: false,
       hasMorePhotos: true,
-      photosPage: 1,
+      photosCursor: null,
 
       userVideos: [],
       isLoadingVideos: false,
       hasMoreVideos: true,
-      videosPage: 1,
+      videosCursor: null,
 
       // ========================================================================
       // API CALLS - Profile
@@ -297,15 +297,15 @@ export const useProfileStore = create<ProfileState>()(
       fetchUserPosts: async (userId: string, reset = false) => {
         set({ isLoadingPosts: true, error: null })
         try {
-          const page = reset ? 1 : get().postsPage
-          const response = await profileService.getUserPosts(userId, page.toString())
+          const cursor = reset ? null : get().postsCursor
+          const response = await profileService.getUserPosts(userId, cursor ?? undefined)
 
           const newPosts = reset ? response.items : [...get().userPosts, ...response.items]
 
           set({
             userPosts: newPosts,
             hasMorePosts: !!response.nextCursor,
-            postsPage: page,
+            postsCursor: response.nextCursor,
             isLoadingPosts: false,
           })
         } catch (error) {
@@ -317,8 +317,6 @@ export const useProfileStore = create<ProfileState>()(
       loadMorePosts: async () => {
         const currentProfile = get().currentProfile
         if (!currentProfile || !get().hasMorePosts || get().isLoadingPosts) return
-
-        set({ postsPage: get().postsPage + 1 })
         await get().fetchUserPosts(currentProfile.userId)
       },
 
@@ -329,15 +327,15 @@ export const useProfileStore = create<ProfileState>()(
       fetchUserPhotos: async (userId: string, reset = false) => {
         set({ isLoadingPhotos: true, error: null })
         try {
-          const page = reset ? 1 : get().photosPage
-          const response = await profileService.getUserPhotos(userId, page.toString())
+          const cursor = reset ? null : get().photosCursor
+          const response = await profileService.getUserPhotos(userId, cursor ?? undefined)
 
           const newPhotos = reset ? response.items : [...get().userPhotos, ...response.items]
 
           set({
             userPhotos: newPhotos,
             hasMorePhotos: !!response.nextCursor,
-            photosPage: page,
+            photosCursor: response.nextCursor,
             isLoadingPhotos: false,
           })
         } catch (error) {
@@ -349,8 +347,6 @@ export const useProfileStore = create<ProfileState>()(
       loadMorePhotos: async () => {
         const currentProfile = get().currentProfile
         if (!currentProfile || !get().hasMorePhotos || get().isLoadingPhotos) return
-
-        set({ photosPage: get().photosPage + 1 })
         await get().fetchUserPhotos(currentProfile.userId)
       },
 
@@ -361,15 +357,15 @@ export const useProfileStore = create<ProfileState>()(
       fetchUserVideos: async (userId: string, reset = false) => {
         set({ isLoadingVideos: true, error: null })
         try {
-          const page = reset ? 1 : get().videosPage
-          const response = await profileService.getUserVideos(userId, page.toString())
+          const cursor = reset ? null : get().videosCursor
+          const response = await profileService.getUserVideos(userId, cursor ?? undefined)
 
           const newVideos = reset ? response.items : [...get().userVideos, ...response.items]
 
           set({
             userVideos: newVideos,
             hasMoreVideos: !!response.nextCursor,
-            videosPage: page,
+            videosCursor: response.nextCursor,
             isLoadingVideos: false,
           })
         } catch (error) {
@@ -381,8 +377,6 @@ export const useProfileStore = create<ProfileState>()(
       loadMoreVideos: async () => {
         const currentProfile = get().currentProfile
         if (!currentProfile || !get().hasMoreVideos || get().isLoadingVideos) return
-
-        set({ videosPage: get().videosPage + 1 })
         await get().fetchUserVideos(currentProfile.userId)
       },
 
@@ -435,9 +429,9 @@ export const useProfileStore = create<ProfileState>()(
           hasMorePosts: true,
           hasMorePhotos: true,
           hasMoreVideos: true,
-          postsPage: 1,
-          photosPage: 1,
-          videosPage: 1,
+          postsCursor: null,
+          photosCursor: null,
+          videosCursor: null,
         }),
     }),
     { name: 'ProfileStore' }

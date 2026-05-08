@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import type { MessageMedia } from '@/features/chat/types';
+import { imageUrl } from '@/lib/media/urls';
 
 interface MessageImageProps {
   media: MessageMedia;
@@ -7,7 +8,7 @@ interface MessageImageProps {
 }
 
 export default function MessageImage({ media, onClick }: MessageImageProps) {
-  if (media.type !== 'image') return null;
+  if (media.type !== 'image' || !media.cf_image_id) return null;
 
   return (
     <button
@@ -16,7 +17,7 @@ export default function MessageImage({ media, onClick }: MessageImageProps) {
       className="relative block aspect-[3/2] w-[300px] max-w-full cursor-pointer overflow-hidden rounded-t-2xl hover:opacity-90 transition-opacity"
     >
       <Image
-        src={media.url}
+        src={imageUrl(media.cf_image_id)}
         alt={media.filename || 'Imagen'}
         fill
         sizes="300px"

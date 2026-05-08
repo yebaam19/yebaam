@@ -61,7 +61,7 @@ export function SuggestedGroupsCard() {
                 className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800"
               >
                 {cover ? (
-                  <Image src={cover} alt={c.name} fill sizes="48px" className="object-cover" />
+                  <Image src={cover} alt={c.name} fill sizes="48px" className="object-cover" unoptimized />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-neutral-500">
                     {c.name.slice(0, 2).toUpperCase()}

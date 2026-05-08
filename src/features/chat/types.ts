@@ -15,8 +15,8 @@ export enum MediaType {
 
 export interface MessageMedia {
   type: MediaType;
-  url: string;
-  thumbnail?: string;
+  cf_image_id?: string;
+  cf_stream_uid?: string;
   size?: number;
   filename?: string;
 }

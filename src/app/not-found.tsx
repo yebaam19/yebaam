@@ -10,12 +10,13 @@ const NotFound = () => (
       {/* Logo de Yebaam */}
       <div className="flex justify-center">
         <Link href="/feed" className="inline-block">
-          <Image 
-            src={YebaamLogo} 
-            alt="Yebaam" 
+          <Image
+            src={YebaamLogo}
+            alt="Yebaam"
             width={180}
             height={60}
             className="dark:invert"
+            unoptimized
           />
         </Link>
       </div>

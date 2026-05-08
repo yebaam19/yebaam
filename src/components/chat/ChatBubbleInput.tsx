@@ -88,7 +88,7 @@ export default function ChatBubbleInput({
 
         mediaData = {
           type: uploadResult.type,
-          url: uploadResult.url,
+          cf_image_id: uploadResult.s3Key,
           size: uploadResult.size,
           filename: uploadResult.filename,
         };

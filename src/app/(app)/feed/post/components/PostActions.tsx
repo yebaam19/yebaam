@@ -188,13 +188,13 @@ export default function PostActions({
                 <button
                   key={reaction.type}
                   onClick={() => handleReaction(reaction.type)}
+                  aria-label={reaction.label}
                   className="group relative flex flex-col items-center transition-transform hover:scale-125"
-                  title={reaction.label}
                 >
                   <span className="text-3xl group-hover:scale-110 transition-transform">
                     {reaction.emoji}
                   </span>
-                  <span className="absolute -bottom-6 opacity-0 group-hover:opacity-100 text-xs whitespace-nowrap bg-neutral-900 dark:bg-neutral-700 text-white px-2 py-1 rounded transition-opacity">
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-xs whitespace-nowrap bg-neutral-900 dark:bg-neutral-700 text-white px-2 py-1 rounded transition-opacity pointer-events-none">
                     {reaction.label}
                   </span>
                 </button>

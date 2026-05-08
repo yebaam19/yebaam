@@ -143,6 +143,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
                 className="h-full w-auto"
                 style={{ width: 'auto' }}
                 priority
+                unoptimized
               />
             </Link>
 

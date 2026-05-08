@@ -110,7 +110,7 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
   return (
     <article
       className={cn(
-        'overflow-hidden rounded-xl bg-white shadow-sm dark:bg-neutral-900',
+        'rounded-xl bg-white shadow-sm dark:bg-neutral-900',
         (post as any).isOptimistic && 'pointer-events-none opacity-70', // Post optimista
         className
       )}
