@@ -1,9 +1,9 @@
 'use client';
 
-import { Fragment, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Popover, Transition } from '@headlessui/react';
+import { Popover } from '@headlessui/react';
 import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
@@ -52,7 +52,7 @@ function initialsFor(name: string | null | undefined): string {
 export default function MessengerDropdown() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const { conversations, totalUnreadCount, loadConversations } = useChat();
+  const { conversations, totalUnreadCount } = useChat();
   const openBubble = useChatStore((s) => s.openBubble);
   const onlineUserIds = usePresenceStore((s) => s.onlineUserIds);
   const isXl = useIsXl();
@@ -120,20 +120,11 @@ export default function MessengerDropdown() {
             )}
           </Popover.Button>
 
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-200"
-            enterFrom="opacity-0 translate-y-1"
-            enterTo="opacity-100 translate-y-0"
-            leave="transition ease-in duration-150"
-            leaveFrom="opacity-100 translate-y-0"
-            leaveTo="opacity-0 translate-y-1"
-            afterEnter={() => {
-              loadConversations();
-            }}
+          <Popover.Panel
+            transition
+            className="absolute right-0 z-50 mt-2 w-[360px] max-w-[95vw] transition duration-200 ease-out data-closed:translate-y-1 data-closed:opacity-0"
           >
-            <Popover.Panel className="absolute right-0 z-50 mt-2 w-[360px] max-w-[95vw]">
-              {({ close }) => (
+            {({ close }) => (
                 <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-neutral-900 dark:ring-neutral-700">
                   <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
                     <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -242,8 +233,7 @@ export default function MessengerDropdown() {
                   )}
                 </div>
               )}
-            </Popover.Panel>
-          </Transition>
+          </Popover.Panel>
         </>
       )}
     </Popover>
