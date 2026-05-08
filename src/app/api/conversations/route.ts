@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken, getServiceClient } from '@/utils/supabase/server';
 import { withRetry } from '@/utils/supabase/with-retry';
+import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
 
 type ParticipantRow = {
   conversation_id: string;
@@ -112,16 +113,55 @@ export async function GET() {
   const mine = new Map<string, ParticipantRow>();
   for (const p of (myParts ?? []) as ParticipantRow[]) mine.set(p.conversation_id, p);
 
+  // For DIRECT chats, `conversations.name`/`avatar` are NULL — populate them
+  // from the peer's profile so consumers (header dropdown, etc.) can render
+  // the row without re-fetching.
+  const peerByConv = new Map<string, string>();
+  const peerIds = new Set<string>();
+  for (const c of (convs ?? []) as ConversationRow[]) {
+    if (c.type !== 'direct') continue;
+    const peer = (partsByConv.get(c.id) ?? []).find((p) => p.user_id !== userId);
+    if (peer) {
+      peerByConv.set(c.id, peer.user_id);
+      peerIds.add(peer.user_id);
+    }
+  }
+
+  const profileById = new Map<string, PeerProfileRow>();
+  if (peerIds.size > 0) {
+    const { data: profiles } = await withRetry(() =>
+      client
+        .from('profiles')
+        .select('id,username,first_name,last_name,avatar_url')
+        .in('id', Array.from(peerIds)),
+    );
+    for (const p of (profiles ?? []) as PeerProfileRow[]) {
+      profileById.set(p.id, p);
+    }
+  }
+
   const result = ((convs ?? []) as ConversationRow[]).map((c) => {
     const participants = partsByConv.get(c.id) ?? [];
     const last = lastMsgByConv.get(c.id) ?? null;
     const myPart = mine.get(c.id);
     const meta = c.metadata ?? {};
+
+    let name = c.name;
+    let avatar = c.avatar;
+    if (c.type === 'direct') {
+      const peerId = peerByConv.get(c.id);
+      if (peerId) {
+        const display = resolvePeerDisplay(profileById.get(peerId) ?? null, peerId);
+        name = name ?? display.name;
+        avatar = avatar ?? display.avatar;
+      }
+    }
+
     return {
       id: c.id,
       type: c.type,
-      name: c.name,
-      avatar: c.avatar,
+      name,
+      avatar,
       participantIds: participants.map((p) => p.user_id),
       lastMessage: last
         ? {
@@ -164,6 +204,15 @@ export async function POST(request: NextRequest) {
 
   const db = getServiceClient();
 
+  // Peer profile for DIRECT name/avatar enrichment — fetched once and reused
+  // by both the "existing" and "newly created" branches below.
+  const { data: peerProfile } = await db
+    .from('profiles')
+    .select('id,username,first_name,last_name,avatar_url')
+    .eq('id', participantId)
+    .maybeSingle();
+  const peerDisplay = resolvePeerDisplay((peerProfile ?? null) as PeerProfileRow | null, participantId);
+
   const { data: myParts } = await db
     .from('conversation_participants')
     .select('conversation_id')
@@ -194,8 +243,8 @@ export async function POST(request: NextRequest) {
           data: {
             id: existing.id,
             type: existing.type,
-            name: existing.name,
-            avatar: existing.avatar,
+            name: existing.name ?? peerDisplay.name,
+            avatar: existing.avatar ?? peerDisplay.avatar,
             participantIds: [userId, participantId],
             lastMessage: null,
             unreadCount: 0,
@@ -241,8 +290,8 @@ export async function POST(request: NextRequest) {
     data: {
       id: conv.id,
       type: conv.type,
-      name: conv.name,
-      avatar: conv.avatar,
+      name: conv.name ?? peerDisplay.name,
+      avatar: conv.avatar ?? peerDisplay.avatar,
       participantIds: [userId, participantId],
       lastMessage: null,
       unreadCount: 0,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { withRetry } from '@/utils/supabase/with-retry';
+import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
 
 type ConversationRow = {
   id: string;
@@ -87,13 +88,27 @@ export async function GET(
 
     const row = conv as ConversationRow;
     const meta = row.metadata ?? {};
+
+    // Resolve peer name/avatar — DIRECT conversations have NULL on the row.
+    const { data: peerProfile } = await withRetry(() =>
+      client
+        .from('profiles')
+        .select('id,username,first_name,last_name,avatar_url')
+        .eq('id', otherId)
+        .maybeSingle(),
+    );
+    const peerDisplay = resolvePeerDisplay(
+      (peerProfile ?? null) as PeerProfileRow | null,
+      otherId,
+    );
+
     return NextResponse.json({
       success: true,
       data: {
         id: row.id,
         type: row.type,
-        name: row.name,
-        avatar: row.avatar,
+        name: row.name ?? peerDisplay.name,
+        avatar: row.avatar ?? peerDisplay.avatar,
         participantIds: [meId, otherId],
         lastMessage: null,
         unreadCount: 0,
