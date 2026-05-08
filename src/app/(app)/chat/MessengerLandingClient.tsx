@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
-import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim';
+import { ChatBubbleLeftRightIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import MessengerSidebar from '@/components/chat/MessengerSidebar';
 
 export default function MessengerLandingClient() {
@@ -16,6 +16,10 @@ export default function MessengerLandingClient() {
     router.push('/feed/friends' as Route);
   };
 
+  const handleCloseMessenger = () => {
+    router.push('/feed' as Route);
+  };
+
   return (
     <div className="relative flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-0 w-full bg-neutral-50 dark:bg-neutral-950">
       <div className="flex h-full min-h-0 w-full md:w-auto md:shrink-0">
@@ -27,7 +31,16 @@ export default function MessengerLandingClient() {
         />
       </div>
 
-      <div className="hidden min-h-0 min-w-0 flex-1 items-center justify-center border-l border-neutral-200 bg-white md:flex dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="relative hidden min-h-0 min-w-0 flex-1 items-center justify-center border-l border-neutral-200 bg-white md:flex dark:border-neutral-800 dark:bg-neutral-900">
+        <button
+          type="button"
+          onClick={handleCloseMessenger}
+          aria-label="Cerrar Messenger"
+          className="absolute right-4 top-4 rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        >
+          <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
+        </button>
+
         <div className="flex flex-col items-center px-6 text-center">
           <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30">
             <ChatBubbleLeftRightIcon className="h-10 w-10 text-primary-600 dark:text-primary-400" />
