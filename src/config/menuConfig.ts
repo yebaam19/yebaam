@@ -143,12 +143,6 @@ export const menuConfig: Record<string, any[]> = {
       section: 'Personal',
       items: [
         {
-          icon: UserGroupIcon,
-          label: 'Familias',
-          href: '{basePath}/familias',
-          featureFlag: 'FAMILIAS_ENABLED' as FeatureFlag,
-        },
-        {
           icon: BookmarkIcon,
           label: 'Guardados',
           href: '{basePath}/guardados',

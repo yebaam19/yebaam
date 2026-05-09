@@ -7,7 +7,7 @@
  */
 
 import CreatePostCard from '@/components/CreatePostCard/CreatePostCard';
-import { DocumentTextIcon, InformationCircleIcon, PhotoIcon, SparklesIcon, UsersIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
+import { DocumentTextIcon, HomeIcon, InformationCircleIcon, PhotoIcon, SparklesIcon, UsersIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { CreatePostModal, EditPostModal, usePostStore } from '@/features/post';
@@ -15,6 +15,7 @@ import {
   AboutMe,
   ProfilePageSkeleton,
   ProfileSidebar,
+  UserFamilies,
   UserFriends,
   UserPhotos,
   UserPosts,
@@ -31,6 +32,7 @@ type TabType =
   | 'publicaciones'
   | 'acerca-de'
   | 'amigos'
+  | 'familias'
   | 'fotos'
   | 'videos'
   | 'historias';
@@ -39,6 +41,7 @@ const TABS: ReadonlyArray<{ id: TabType; label: string; icon: typeof DocumentTex
   { id: 'publicaciones', label: 'Publicaciones', icon: DocumentTextIcon },
   { id: 'acerca-de', label: 'Acerca de', icon: InformationCircleIcon },
   { id: 'amigos', label: 'Amigos', icon: UsersIcon },
+  { id: 'familias', label: 'Familias', icon: HomeIcon },
   { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
   { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
   { id: 'historias', label: 'Historias', icon: SparklesIcon },
@@ -225,6 +228,10 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
 
               {activeTab === 'amigos' && (
                 <UserFriends userId={user.userId} isOwnProfile={isOwnProfile} />
+              )}
+
+              {activeTab === 'familias' && (
+                <UserFamilies userId={user.userId} isOwnProfile={isOwnProfile} />
               )}
 
               {activeTab === 'fotos' && (

@@ -5,6 +5,7 @@ import {
     UserGroupIcon,
     BuildingOffice2Icon,
     CakeIcon,
+    HomeIcon,
 } from '@/components/icons/heroicons-shim';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -82,6 +83,22 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
         bgColor: 'bg-primary-700',
         iconColor: 'text-primary-700',
         buttonLabel: 'Editar Perfil',
+        disabled: false,
+    },
+    {
+        id: 'families',
+        title: 'Familias',
+        description: 'Espacio privado por invitación: árbol genealógico, línea de tiempo, fotos e historias.',
+        icon: HomeIcon,
+        benefits: [
+            'Árbol genealógico colaborativo',
+            'Línea de tiempo con fotos e historias',
+            'Acceso solo por invitación',
+        ],
+        href: '/feed/familias',
+        bgColor: 'bg-emerald-600',
+        iconColor: 'text-emerald-600',
+        buttonLabel: 'Ir a Familias',
         disabled: false,
     },
     {

@@ -122,6 +122,56 @@ export const listMyFamilies = cache(async (): Promise<FamilyWithViewer[]> => {
   }));
 });
 
+export const listFamiliesForProfile = cache(
+  async (profileId: string): Promise<FamilyWithViewer[]> => {
+    const viewerId = await getViewerId();
+    if (!viewerId) return [];
+    const client = await getServerClient();
+
+    // 1. Familias del viewer (RLS ya restringe a sus membresías).
+    const { data: viewerMemberships } = await client
+      .from('family_members')
+      .select('family_id, role')
+      .eq('profile_id', viewerId);
+    const roleByFamily = new Map<string, FamilyMemberRow['role']>(
+      (viewerMemberships ?? []).map((m) => [
+        m.family_id as string,
+        m.role as FamilyMemberRow['role'],
+      ]),
+    );
+    if (roleByFamily.size === 0) return [];
+
+    // 2. Self → todas. Otros → intersección con familias del profileId.
+    let targetIds: string[];
+    if (viewerId === profileId) {
+      targetIds = Array.from(roleByFamily.keys());
+    } else {
+      // RLS en family_members deja ver filas de co-miembros. El filtro
+      // `.in('family_id', viewerFamilyIds)` además garantiza intersección
+      // incluso si la RLS se relaja accidentalmente.
+      const { data: targetMs } = await client
+        .from('family_members')
+        .select('family_id')
+        .eq('profile_id', profileId)
+        .in('family_id', Array.from(roleByFamily.keys()));
+      targetIds = (targetMs ?? []).map((m) => m.family_id as string);
+    }
+    if (targetIds.length === 0) return [];
+
+    const { data: families } = await client
+      .from('families')
+      .select('*')
+      .in('id', targetIds)
+      .order('updated_at', { ascending: false });
+
+    return ((families as FamilyRow[] | null) ?? []).map((f) => ({
+      ...f,
+      viewer_role: roleByFamily.get(f.id) ?? null,
+      has_pending_invite: false,
+    }));
+  },
+);
+
 export const listMyPendingFamilyInvitations = cache(async () => {
   const viewerId = await getViewerId();
   if (!viewerId) return [];

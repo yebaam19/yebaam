@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { listFamiliesForProfile } from '../server/families.server';
 import type {
   CreateFamilyDto,
   UpdateFamilyDto,
@@ -709,4 +710,12 @@ export async function getDocumentSignedUrl(
     return { ok: false, error: error?.message ?? 'No se pudo firmar la URL.' };
   }
   return { ok: true, data: { url: signed.signedUrl } };
+}
+
+// Returns the families a profile belongs to, intersected with the viewer's own
+// memberships. Self-view returns all viewer's families. Privacy: never reveals
+// a family the viewer isn't already a member of (mutual visibility only).
+export async function getFamiliesForProfileAction(profileId: string) {
+  const data = await listFamiliesForProfile(profileId);
+  return { ok: true as const, data };
 }
