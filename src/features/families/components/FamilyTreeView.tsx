@@ -77,12 +77,7 @@ function buildLayout(
         source: rel.person_id,
         target: rel.related_person_id,
         type: 'straight',
-        style: { stroke: '#ec4899', strokeWidth: 2 },
-        label: '♥ Cónyuges',
-        labelStyle: { fontSize: 10, fill: '#9d174d', fontWeight: 600 },
-        labelBgStyle: { fill: '#fff', fillOpacity: 0.9 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 4,
+        style: { stroke: '#ec4899', strokeWidth: 1.5 },
         data: { kind: 'spouse' },
       });
     }
@@ -92,12 +87,7 @@ function buildLayout(
         source: rel.person_id,
         target: rel.related_person_id,
         type: 'straight',
-        style: { stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' },
-        label: 'Hermanos',
-        labelStyle: { fontSize: 10, fill: '#475569' },
-        labelBgStyle: { fill: '#fff', fillOpacity: 0.85 },
-        labelBgPadding: [3, 2] as [number, number],
-        labelBgBorderRadius: 4,
+        style: { stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '3 3' },
         data: { kind: 'sibling' },
       });
     }
@@ -125,21 +115,19 @@ function buildLayout(
 
 function TreeLegend() {
   return (
-    <div className="absolute left-3 top-3 z-10 rounded-lg border border-zinc-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Leyenda</p>
-      <ul className="mt-1 space-y-1 text-[11px] text-zinc-700 dark:text-zinc-300">
+    <div className="absolute left-3 top-3 z-10 rounded-md bg-white/90 px-3 py-2 text-[11px] text-zinc-600 backdrop-blur-sm dark:bg-zinc-900/90 dark:text-zinc-400">
+      <ul className="space-y-1">
         <li className="flex items-center gap-2">
-          <span className="inline-block h-0.5 w-6 bg-emerald-500" />
-          <span aria-hidden>→</span>
-          <span>Padre / madre → hijo/a</span>
+          <span className="inline-block h-0.5 w-5 bg-emerald-500" />
+          <span>Padres → hijos</span>
         </li>
         <li className="flex items-center gap-2">
-          <span className="inline-block h-0.5 w-6 bg-pink-500" />
+          <span className="inline-block h-0.5 w-5 bg-pink-500" />
           <span>Cónyuges</span>
         </li>
         <li className="flex items-center gap-2">
           <span
-            className="inline-block h-0.5 w-6"
+            className="inline-block h-0.5 w-5"
             style={{
               backgroundImage: 'repeating-linear-gradient(to right, #94a3b8 0 4px, transparent 4px 7px)',
             }}
@@ -273,6 +261,7 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
       <PersonInfoPanel
         person={selectedNode}
         canDelete={isAdmin}
+        canEditAvatar={Boolean(viewerRole)}
         onClose={() => setSelectedNode(null)}
         onEdit={(p) => {
           setSelectedNode(null);

@@ -41,7 +41,6 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // Reset state when child changes (open/close)
   useEffect(() => {
     if (!child) return;
     setFather({ ...EMPTY_PARENT });
@@ -51,7 +50,6 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
 
   if (!child) return null;
 
-  // Eligible existing persons: same family, not the child itself
   const eligible = existingPersons.filter((p) => p.id !== child.id);
 
   function buildParentInput(form: ParentFormState, defaultGender: FamilyGender): ParentInputData | undefined {
@@ -99,26 +97,24 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-3xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="w-full max-w-2xl rounded-xl bg-white p-5 shadow-xl dark:bg-zinc-900">
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
           Agregar padres a {child.full_name}
         </h3>
         <p className="mt-1 text-xs text-zinc-500">
-          Puedes crear nuevas personas o seleccionar a alguien que ya está en el árbol. Marca al menos un lado.
+          Crea nuevas personas o selecciona alguien que ya está en el árbol. Marca al menos un lado.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <ParentSubForm
               title="Padre"
-              accent="blue"
               state={father}
               setState={setFather}
               existingPersons={eligible}
             />
             <ParentSubForm
               title="Madre"
-              accent="pink"
               state={mother}
               setState={setMother}
               existingPersons={eligible}
@@ -126,7 +122,7 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
           </div>
 
           {error && (
-            <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
+            <div className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
               {error}
             </div>
           )}
@@ -136,14 +132,14 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
               type="button"
               onClick={onClose}
               disabled={pending}
-              className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="inline-flex items-center rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
             >
               {pending ? 'Guardando…' : 'Agregar padres'}
             </button>
@@ -156,31 +152,25 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
 
 function ParentSubForm({
   title,
-  accent,
   state,
   setState,
   existingPersons,
 }: {
   title: string;
-  accent: 'blue' | 'pink';
   state: ParentFormState;
   setState: (s: ParentFormState) => void;
   existingPersons: FamilyPersonRow[];
 }) {
-  const accentClass = accent === 'blue'
-    ? 'border-blue-200 bg-blue-50/40 dark:border-blue-900 dark:bg-blue-950/20'
-    : 'border-pink-200 bg-pink-50/40 dark:border-pink-900 dark:bg-pink-950/20';
-
   return (
-    <div className={`rounded-lg border p-3 ${accentClass}`}>
+    <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</h4>
-        <label className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+        <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{title}</h4>
+        <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
           <input
             type="checkbox"
             checked={state.enabled}
             onChange={(e) => setState({ ...state, enabled: e.target.checked })}
-            className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
+            className="h-3.5 w-3.5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
           />
           Incluir
         </label>
@@ -188,12 +178,12 @@ function ParentSubForm({
 
       {state.enabled && (
         <div className="mt-3 space-y-2">
-          <label className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+          <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
             <input
               type="checkbox"
               checked={state.useExisting}
               onChange={(e) => setState({ ...state, useExisting: e.target.checked })}
-              className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-3.5 w-3.5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
             />
             Usar persona ya en el árbol
           </label>
@@ -202,7 +192,7 @@ function ParentSubForm({
             <select
               value={state.existingId}
               onChange={(e) => setState({ ...state, existingId: e.target.value })}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             >
               <option value="">Selecciona…</option>
               {existingPersons.map((p) => (
@@ -219,21 +209,21 @@ function ParentSubForm({
                 onChange={(e) => setState({ ...state, fullName: e.target.value })}
                 placeholder="Nombre completo"
                 maxLength={160}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                className="w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="date"
                   value={state.birthDate}
                   onChange={(e) => setState({ ...state, birthDate: e.target.value })}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-2 text-xs text-zinc-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-xs text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                   title="Nacimiento"
                 />
                 <input
                   type="date"
                   value={state.deathDate}
                   onChange={(e) => setState({ ...state, deathDate: e.target.value })}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-2 text-xs text-zinc-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-xs text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                   title="Defunción"
                 />
               </div>

@@ -1,8 +1,7 @@
 'use client';
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { resolveImage } from '@/lib/media/urls';
-import { imageUrl } from '@/lib/media/urls';
+import { resolveImage, imageUrl } from '@/lib/media/urls';
 import type { FamilyPersonRow } from '../types/family.types';
 
 export type FamilyTreeNodeData = {
@@ -27,42 +26,44 @@ export function FamilyTreeNodeCard({ data }: NodeProps) {
   const isDeceased = Boolean(person.death_date);
   const years = formatYears(person);
 
-  // Avatar precedence: claimed user's avatar > person's CF image > initial
   const claimedAvatar = isClaimed
     ? resolveImage({ avatar_url: person.claimed_profile?.avatar_url ?? null }, 'avatar')
     : null;
-  const personAvatar = person.avatar_cf_image_id ? imageUrl(person.avatar_cf_image_id, 'avatar') : null;
+  const personAvatar = person.avatar_cf_image_id
+    ? imageUrl(person.avatar_cf_image_id, 'avatar')
+    : null;
   const avatar = claimedAvatar ?? personAvatar;
 
-  // Border: blue if claimed, emerald if alive, zinc if deceased.
-  const borderClass = isClaimed
-    ? 'border-blue-400 dark:border-blue-700'
-    : isDeceased
-      ? 'border-zinc-300 dark:border-zinc-700'
-      : 'border-emerald-300 dark:border-emerald-800';
+  // Subtle, unified visual language — claim status comes through avatar ring,
+  // deceased through muted tones. No saturated color cards.
+  const cardClass = isClaimed
+    ? 'border-blue-200 dark:border-blue-900'
+    : 'border-zinc-200 dark:border-zinc-800';
 
   return (
     <div
-      className={`group relative min-w-[180px] max-w-[220px] rounded-xl border bg-white shadow-sm dark:bg-zinc-900 ${borderClass}`}
+      className={`group relative min-w-[180px] max-w-[220px] rounded-xl border bg-white shadow-sm transition hover:shadow-md dark:bg-zinc-900 ${cardClass}`}
     >
-      <Handle type="target" position={Position.Top} className="!bg-zinc-400" />
+      <Handle type="target" position={Position.Top} className="!bg-zinc-300 dark:!bg-zinc-600" />
 
       <div className="flex items-center gap-3 p-3">
         {avatar ? (
           <img
             src={avatar}
             alt=""
-            className={`h-12 w-12 rounded-full object-cover ${isClaimed ? 'ring-2 ring-blue-400' : ''}`}
+            className={`h-12 w-12 flex-shrink-0 rounded-full object-cover ${
+              isClaimed ? 'ring-2 ring-blue-300 dark:ring-blue-700' : ''
+            } ${isDeceased ? 'opacity-80 grayscale' : ''}`}
             aria-hidden
           />
         ) : (
           <div
-            className={`flex h-12 w-12 items-center justify-center rounded-full text-base font-semibold ${
+            className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-base font-medium ${
               isClaimed
-                ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-400 dark:bg-blue-900/40 dark:text-blue-300'
+                ? 'bg-blue-50 text-blue-700 ring-2 ring-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-700'
                 : isDeceased
-                  ? 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                  : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+                  : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
             }`}
             aria-hidden
           >
@@ -70,7 +71,7 @@ export function FamilyTreeNodeCard({ data }: NodeProps) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {person.full_name}
           </p>
           {years && (
@@ -78,21 +79,15 @@ export function FamilyTreeNodeCard({ data }: NodeProps) {
           )}
           {isClaimed && person.claimed_profile?.username && (
             <p
-              className="mt-0.5 inline-flex items-center gap-1 truncate rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+              className="mt-0.5 truncate text-[11px] text-blue-600 dark:text-blue-300"
               title="Vinculado a un usuario de Yebaam"
             >
-              <span aria-hidden>✓</span>
-              <span className="truncate">@{person.claimed_profile.username}</span>
+              ✓ @{person.claimed_profile.username}
             </p>
-          )}
-          {!isClaimed && isDeceased && (
-            <span className="mt-1 inline-block rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-              Fallecido/a
-            </span>
           )}
         </div>
       </div>
-      <Handle type="source" position={Position.Bottom} className="!bg-zinc-400" />
+      <Handle type="source" position={Position.Bottom} className="!bg-zinc-300 dark:!bg-zinc-600" />
     </div>
   );
 }
