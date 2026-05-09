@@ -83,6 +83,13 @@ export interface FamilyPersonRow {
   added_by: string;
   created_at: string;
   updated_at: string;
+  // Enriquecido server-side cuando claimed_by_profile_id no es null.
+  claimed_profile?: {
+    username: string;
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 export interface FamilyRelationshipRow {
@@ -216,6 +223,26 @@ export interface AddPersonDto {
   deathPlace?: string;
   bio?: string;
   avatarImageId?: string;
+}
+
+export interface ParentInputData {
+  fullName: string;
+  gender?: FamilyGender;
+  birthDate?: string;
+  birthPlace?: string;
+  deathDate?: string;
+  deathPlace?: string;
+  bio?: string;
+  avatarImageId?: string;
+}
+
+export interface AddParentsDto {
+  familyId: string;
+  childId: string;
+  father?: ParentInputData;
+  mother?: ParentInputData;
+  fatherExistingId?: string;
+  motherExistingId?: string;
 }
 
 export interface InviteByUsernameDto {

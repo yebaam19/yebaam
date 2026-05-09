@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { uploadService } from '@/lib/service/upload.service';
+import { imageUrl } from '@/lib/media/urls';
 import { updatePerson } from '../actions/families.actions';
 import type { FamilyGender, FamilyPersonRow } from '../types/family.types';
 
@@ -26,6 +28,9 @@ export function EditPersonDialog({ person, onClose }: Props) {
   const [deathDate, setDeathDate] = useState('');
   const [deathPlace, setDeathPlace] = useState('');
   const [bio, setBio] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -39,12 +44,14 @@ export function EditPersonDialog({ person, onClose }: Props) {
     setDeathDate(person.death_date ?? '');
     setDeathPlace(person.death_place ?? '');
     setBio(person.bio ?? '');
+    setAvatarFile(null);
+    setRemoveAvatar(false);
     setError(null);
   }, [person]);
 
   if (!person) return null;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!person) return;
     setError(null);
@@ -52,7 +59,26 @@ export function EditPersonDialog({ person, onClose }: Props) {
       setError('El nombre completo es obligatorio.');
       return;
     }
+
+    let avatarImageId: string | null | undefined = undefined;
+    if (avatarFile) {
+      try {
+        setUploading(true);
+        const r = await uploadService.uploadImage(avatarFile);
+        avatarImageId = r.id;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Falló la subida de la foto.');
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    } else if (removeAvatar && person.avatar_cf_image_id) {
+      avatarImageId = null;
+    }
+
     startTransition(async () => {
+      if (!person) return;
       const res = await updatePerson({
         id: person.id,
         fullName: fullName !== person.full_name ? fullName : undefined,
@@ -62,6 +88,7 @@ export function EditPersonDialog({ person, onClose }: Props) {
         deathDate: (deathDate || null) !== (person.death_date ?? null) ? deathDate || null : undefined,
         deathPlace: (deathPlace || null) !== (person.death_place ?? null) ? deathPlace : undefined,
         bio: (bio || null) !== (person.bio ?? null) ? bio : undefined,
+        avatarImageId,
       });
       if (!res.ok) {
         setError(res.error);
@@ -161,6 +188,41 @@ export function EditPersonDialog({ person, onClose }: Props) {
             />
           </div>
 
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              Foto (avatar)
+            </label>
+            {!removeAvatar && person?.avatar_cf_image_id && !avatarFile && (
+              <img
+                src={imageUrl(person.avatar_cf_image_id, 'avatar')}
+                alt=""
+                className="mb-2 h-16 w-16 rounded-full object-cover"
+              />
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                setAvatarFile(e.target.files?.[0] ?? null);
+                setRemoveAvatar(false);
+              }}
+              className="block w-full text-xs text-zinc-700 file:mr-2 file:rounded-md file:border-0 file:bg-emerald-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-zinc-300 dark:file:bg-emerald-900/30 dark:file:text-emerald-300"
+            />
+            {person?.avatar_cf_image_id && !avatarFile && (
+              <label className="mt-1 inline-flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+                <input
+                  type="checkbox"
+                  checked={removeAvatar}
+                  onChange={(e) => setRemoveAvatar(e.target.checked)}
+                />
+                Quitar la foto actual
+              </label>
+            )}
+            {uploading && (
+              <p className="mt-1 text-[10px] text-zinc-500">Subiendo a Cloudflare…</p>
+            )}
+          </div>
+
           {error && (
             <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
               {error}
@@ -171,17 +233,17 @@ export function EditPersonDialog({ person, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              disabled={pending}
+              disabled={pending || uploading}
               className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={pending || !fullName.trim()}
+              disabled={pending || uploading || !fullName.trim()}
               className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-              {pending ? 'Guardando…' : 'Guardar'}
+              {pending || uploading ? 'Guardando…' : 'Guardar'}
             </button>
           </div>
         </form>

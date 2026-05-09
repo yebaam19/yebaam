@@ -1,7 +1,7 @@
 'use client';
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim';
+import { resolveImage } from '@/lib/media/urls';
 import { imageUrl } from '@/lib/media/urls';
 import type { FamilyPersonRow } from '../types/family.types';
 
@@ -22,66 +22,47 @@ function formatYears(p: FamilyPersonRow): string {
 }
 
 export function FamilyTreeNodeCard({ data }: NodeProps) {
-  const { person, canDelete, onEdit, onDelete } = data as FamilyTreeNodeData;
-  const avatar = person.avatar_cf_image_id ? imageUrl(person.avatar_cf_image_id, 'avatar') : null;
+  const { person } = data as FamilyTreeNodeData;
+  const isClaimed = Boolean(person.claimed_profile);
   const isDeceased = Boolean(person.death_date);
   const years = formatYears(person);
 
+  // Avatar precedence: claimed user's avatar > person's CF image > initial
+  const claimedAvatar = isClaimed
+    ? resolveImage({ avatar_url: person.claimed_profile?.avatar_url ?? null }, 'avatar')
+    : null;
+  const personAvatar = person.avatar_cf_image_id ? imageUrl(person.avatar_cf_image_id, 'avatar') : null;
+  const avatar = claimedAvatar ?? personAvatar;
+
+  // Border: blue if claimed, emerald if alive, zinc if deceased.
+  const borderClass = isClaimed
+    ? 'border-blue-400 dark:border-blue-700'
+    : isDeceased
+      ? 'border-zinc-300 dark:border-zinc-700'
+      : 'border-emerald-300 dark:border-emerald-800';
+
   return (
     <div
-      className={`group relative min-w-[180px] max-w-[220px] rounded-xl border bg-white shadow-sm dark:bg-zinc-900 ${
-        isDeceased
-          ? 'border-zinc-300 dark:border-zinc-700'
-          : 'border-emerald-300 dark:border-emerald-800'
-      }`}
+      className={`group relative min-w-[180px] max-w-[220px] rounded-xl border bg-white shadow-sm dark:bg-zinc-900 ${borderClass}`}
     >
       <Handle type="target" position={Position.Top} className="!bg-zinc-400" />
-
-      <div className="absolute right-1 top-1 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
-        {onEdit && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(person);
-            }}
-            className="rounded p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-            aria-label="Editar persona"
-            title="Editar"
-          >
-            <PencilIcon className="h-3.5 w-3.5" />
-          </button>
-        )}
-        {canDelete && onDelete && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(person);
-            }}
-            className="rounded p-1 text-rose-500 hover:bg-rose-100 hover:text-rose-800 dark:hover:bg-rose-900/40 dark:hover:text-rose-300"
-            aria-label="Eliminar persona"
-            title="Eliminar"
-          >
-            <TrashIcon className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
 
       <div className="flex items-center gap-3 p-3">
         {avatar ? (
           <img
             src={avatar}
             alt=""
-            className="h-12 w-12 rounded-full object-cover"
+            className={`h-12 w-12 rounded-full object-cover ${isClaimed ? 'ring-2 ring-blue-400' : ''}`}
             aria-hidden
           />
         ) : (
           <div
             className={`flex h-12 w-12 items-center justify-center rounded-full text-base font-semibold ${
-              isDeceased
-                ? 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+              isClaimed
+                ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-400 dark:bg-blue-900/40 dark:text-blue-300'
+                : isDeceased
+                  ? 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                  : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
             }`}
             aria-hidden
           >
@@ -95,7 +76,16 @@ export function FamilyTreeNodeCard({ data }: NodeProps) {
           {years && (
             <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{years}</p>
           )}
-          {isDeceased && (
+          {isClaimed && person.claimed_profile?.username && (
+            <p
+              className="mt-0.5 inline-flex items-center gap-1 truncate rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+              title="Vinculado a un usuario de Yebaam"
+            >
+              <span aria-hidden>✓</span>
+              <span className="truncate">@{person.claimed_profile.username}</span>
+            </p>
+          )}
+          {!isClaimed && isDeceased && (
             <span className="mt-1 inline-block rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
               Fallecido/a
             </span>

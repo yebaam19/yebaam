@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserPlusIcon } from '@/components/icons/heroicons-shim';
+import { uploadService } from '@/lib/service/upload.service';
 import { addPerson } from '../actions/families.actions';
 import type { FamilyGender } from '../types/family.types';
 
@@ -23,6 +24,8 @@ export function AddPersonDialog({ familyId }: { familyId: string }) {
   const [deathDate, setDeathDate] = useState('');
   const [deathPlace, setDeathPlace] = useState('');
   const [bio, setBio] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -34,6 +37,7 @@ export function AddPersonDialog({ familyId }: { familyId: string }) {
     setDeathDate('');
     setDeathPlace('');
     setBio('');
+    setAvatarFile(null);
     setError(null);
   }
 
@@ -42,13 +46,29 @@ export function AddPersonDialog({ familyId }: { familyId: string }) {
     reset();
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (!fullName.trim()) {
       setError('El nombre completo es obligatorio.');
       return;
     }
+
+    let avatarImageId: string | undefined;
+    if (avatarFile) {
+      try {
+        setUploading(true);
+        const r = await uploadService.uploadImage(avatarFile);
+        avatarImageId = r.id;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Falló la subida de la foto.');
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+
     startTransition(async () => {
       const res = await addPerson({
         familyId,
@@ -59,6 +79,7 @@ export function AddPersonDialog({ familyId }: { familyId: string }) {
         deathDate: deathDate || undefined,
         deathPlace: deathPlace.trim() || undefined,
         bio: bio.trim() || undefined,
+        avatarImageId,
       });
       if (!res.ok) {
         setError(res.error);
@@ -190,6 +211,21 @@ export function AddPersonDialog({ familyId }: { familyId: string }) {
             />
           </div>
 
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              Foto (avatar)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-xs text-zinc-700 file:mr-2 file:rounded-md file:border-0 file:bg-emerald-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-emerald-700 hover:file:bg-emerald-100 dark:text-zinc-300 dark:file:bg-emerald-900/30 dark:file:text-emerald-300"
+            />
+            {uploading && (
+              <p className="mt-1 text-[10px] text-zinc-500">Subiendo a Cloudflare…</p>
+            )}
+          </div>
+
           {error && (
             <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
               {error}
@@ -200,17 +236,17 @@ export function AddPersonDialog({ familyId }: { familyId: string }) {
             <button
               type="button"
               onClick={close}
-              disabled={pending}
+              disabled={pending || uploading}
               className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={pending || !fullName.trim()}
+              disabled={pending || uploading || !fullName.trim()}
               className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-              {pending ? 'Guardando…' : 'Agregar'}
+              {pending || uploading ? 'Guardando…' : 'Agregar'}
             </button>
           </div>
         </form>

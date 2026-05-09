@@ -101,7 +101,35 @@ export const getFamilyPersons = cache(async (familyId: string): Promise<FamilyPe
     .select('*')
     .eq('family_id', familyId)
     .order('birth_date', { ascending: true, nullsFirst: false });
-  return (data as FamilyPersonRow[] | null) ?? [];
+  const persons = (data as FamilyPersonRow[] | null) ?? [];
+
+  const claimedIds = persons
+    .map((p) => p.claimed_by_profile_id)
+    .filter((id): id is string => Boolean(id));
+  if (claimedIds.length === 0) return persons;
+
+  const { data: profiles } = await client
+    .from('profiles')
+    .select('id, username, first_name, last_name, avatar_url')
+    .in('id', Array.from(new Set(claimedIds)));
+
+  const byId = new Map<string, NonNullable<FamilyPersonRow['claimed_profile']>>(
+    (profiles ?? []).map((p) => [
+      p.id as string,
+      {
+        username: (p.username as string | null) ?? '',
+        first_name: (p.first_name as string | null) ?? null,
+        last_name: (p.last_name as string | null) ?? null,
+        avatar_url: (p.avatar_url as string | null) ?? null,
+      },
+    ]),
+  );
+
+  return persons.map((p) =>
+    p.claimed_by_profile_id
+      ? { ...p, claimed_profile: byId.get(p.claimed_by_profile_id) ?? null }
+      : p,
+  );
 });
 
 export const getFamilyTree = cache(async (familyId: string): Promise<FamilyTreeNodeRow[]> => {

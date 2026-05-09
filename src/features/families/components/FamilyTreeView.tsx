@@ -9,6 +9,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  MarkerType,
   type Edge,
   type Node,
 } from '@xyflow/react';
@@ -17,6 +18,9 @@ import { FamilyTreeNodeCard, type FamilyTreeNodeData } from './FamilyTreeNodeCar
 import { AddPersonDialog } from './AddPersonDialog';
 import { LinkRelationshipDialog } from './LinkRelationshipDialog';
 import { EditPersonDialog } from './EditPersonDialog';
+import { EditEdgeDialog, type SelectedEdge } from './EditEdgeDialog';
+import { PersonInfoPanel } from './PersonInfoPanel';
+import { AddParentsDialog } from './AddParentsDialog';
 import { deletePerson } from '../actions/families.actions';
 import type {
   FamilyMemberRole,
@@ -25,7 +29,7 @@ import type {
 } from '../types/family.types';
 
 const NODE_WIDTH = 220;
-const NODE_HEIGHT = 92;
+const NODE_HEIGHT = 96;
 const NODE_TYPES = { person: FamilyTreeNodeCard };
 
 interface Props {
@@ -43,7 +47,7 @@ function buildLayout(
   onDelete: (p: FamilyPersonRow) => void,
 ): { nodes: Node<FamilyTreeNodeData>[]; edges: Edge[] } {
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', nodesep: 60, ranksep: 100, edgesep: 30 });
+  g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 140, edgesep: 40 });
   g.setDefaultEdgeLabel(() => ({}));
 
   for (const p of persons) {
@@ -55,11 +59,13 @@ function buildLayout(
     if (rel.relationship_type === 'parent') {
       g.setEdge(rel.person_id, rel.related_person_id);
       flowEdges.push({
-        id: `parent-${rel.id}`,
+        id: rel.id,
         source: rel.person_id,
         target: rel.related_person_id,
         type: 'smoothstep',
-        style: { stroke: '#10b981', strokeWidth: 1.5 },
+        style: { stroke: '#10b981', strokeWidth: 2.5 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#10b981', width: 18, height: 18 },
+        data: { kind: 'parent' },
       });
     }
   }
@@ -67,22 +73,32 @@ function buildLayout(
   for (const rel of relationships) {
     if (rel.relationship_type === 'spouse') {
       flowEdges.push({
-        id: `spouse-${rel.id}`,
+        id: rel.id,
         source: rel.person_id,
         target: rel.related_person_id,
         type: 'straight',
-        style: { stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '4 2' },
-        label: '♥',
-        labelStyle: { fontSize: 12, fill: '#f59e0b' },
+        style: { stroke: '#ec4899', strokeWidth: 2 },
+        label: '♥ Cónyuges',
+        labelStyle: { fontSize: 10, fill: '#9d174d', fontWeight: 600 },
+        labelBgStyle: { fill: '#fff', fillOpacity: 0.9 },
+        labelBgPadding: [4, 2] as [number, number],
+        labelBgBorderRadius: 4,
+        data: { kind: 'spouse' },
       });
     }
     if (rel.relationship_type === 'sibling') {
       flowEdges.push({
-        id: `sibling-${rel.id}`,
+        id: rel.id,
         source: rel.person_id,
         target: rel.related_person_id,
         type: 'straight',
-        style: { stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 2' },
+        style: { stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' },
+        label: 'Hermanos',
+        labelStyle: { fontSize: 10, fill: '#475569' },
+        labelBgStyle: { fill: '#fff', fillOpacity: 0.85 },
+        labelBgPadding: [3, 2] as [number, number],
+        labelBgBorderRadius: 4,
+        data: { kind: 'sibling' },
       });
     }
   }
@@ -107,9 +123,40 @@ function buildLayout(
   return { nodes: flowNodes, edges: flowEdges };
 }
 
+function TreeLegend() {
+  return (
+    <div className="absolute left-3 top-3 z-10 rounded-lg border border-zinc-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Leyenda</p>
+      <ul className="mt-1 space-y-1 text-[11px] text-zinc-700 dark:text-zinc-300">
+        <li className="flex items-center gap-2">
+          <span className="inline-block h-0.5 w-6 bg-emerald-500" />
+          <span aria-hidden>→</span>
+          <span>Padre / madre → hijo/a</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="inline-block h-0.5 w-6 bg-pink-500" />
+          <span>Cónyuges</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span
+            className="inline-block h-0.5 w-6"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(to right, #94a3b8 0 4px, transparent 4px 7px)',
+            }}
+          />
+          <span>Hermanos</span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
 export function FamilyTreeView({ familyId, persons, relationships, viewerRole }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState<FamilyPersonRow | null>(null);
+  const [selectedNode, setSelectedNode] = useState<FamilyPersonRow | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<SelectedEdge | null>(null);
+  const [parentsForChild, setParentsForChild] = useState<FamilyPersonRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
@@ -133,6 +180,7 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
           setDeleteError(res.error);
           return;
         }
+        setSelectedNode(null);
         router.refresh();
       });
     },
@@ -142,6 +190,33 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
   const { nodes, edges } = useMemo(
     () => buildLayout(persons, relationships, isAdmin, handleEdit, handleDelete),
     [persons, relationships, isAdmin, handleEdit, handleDelete],
+  );
+
+  const personById = useMemo(() => new Map(persons.map((p) => [p.id, p])), [persons]);
+
+  const onNodeClick = useCallback(
+    (_: unknown, node: Node) => {
+      const p = personById.get(node.id);
+      if (p) setSelectedNode(p);
+    },
+    [personById],
+  );
+
+  const onEdgeClick = useCallback(
+    (_: unknown, edge: Edge) => {
+      const rel = relationships.find((r) => r.id === edge.id);
+      if (!rel) return;
+      const source = personById.get(rel.person_id);
+      const target = personById.get(rel.related_person_id);
+      if (!source || !target) return;
+      setSelectedEdge({
+        id: rel.id,
+        kind: rel.relationship_type,
+        source,
+        target,
+      });
+    },
+    [relationships, personById],
   );
 
   return (
@@ -170,12 +245,15 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
           </p>
         </div>
       ) : (
-        <div className="h-[640px] w-full overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="relative h-[640px] w-full overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <TreeLegend />
           <ReactFlowProvider>
             <ReactFlow
               nodes={nodes}
               edges={edges}
               nodeTypes={NODE_TYPES}
+              onNodeClick={onNodeClick}
+              onEdgeClick={onEdgeClick}
               fitView
               fitViewOptions={{ padding: 0.25 }}
               minZoom={0.2}
@@ -191,6 +269,36 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
       )}
 
       <EditPersonDialog person={editing} onClose={() => setEditing(null)} />
+
+      <PersonInfoPanel
+        person={selectedNode}
+        canDelete={isAdmin}
+        onClose={() => setSelectedNode(null)}
+        onEdit={(p) => {
+          setSelectedNode(null);
+          setEditing(p);
+        }}
+        onDelete={(p) => {
+          setSelectedNode(null);
+          handleDelete(p);
+        }}
+        onAddParents={(p) => {
+          setSelectedNode(null);
+          setParentsForChild(p);
+        }}
+      />
+
+      <EditEdgeDialog
+        selected={selectedEdge}
+        onClose={() => setSelectedEdge(null)}
+      />
+
+      <AddParentsDialog
+        familyId={familyId}
+        child={parentsForChild}
+        existingPersons={persons}
+        onClose={() => setParentsForChild(null)}
+      />
     </div>
   );
 }
