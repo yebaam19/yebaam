@@ -1,0 +1,85 @@
+import type { ReactNode } from 'react';
+import { notFound, redirect } from 'next/navigation';
+import { getServerClient } from '@/utils/supabase/server';
+import { getFamilyBySlug } from '@/features/families/server/families.server';
+import { FamilyHeader } from '@/features/families/components/FamilyHeader';
+import { FamilyTopTabs } from '@/features/families/components/FamilyTopTabs';
+import {
+  FamilyInvitationCard,
+  type FamilyInvitationViewModel,
+} from '@/features/families/components/FamilyInvitationCard';
+
+interface FamilyLayoutProps {
+  params: Promise<{ slug: string }>;
+  children: ReactNode;
+}
+
+export default async function FamilyLayout({ params, children }: FamilyLayoutProps) {
+  const { slug } = await params;
+  const client = await getServerClient();
+  const { data: userRes } = await client.auth.getUser();
+  if (!userRes.user) redirect(`/login?redirect=/feed/familias/${slug}`);
+
+  const family = await getFamilyBySlug(slug);
+  if (!family) notFound();
+
+  // Member: show tabs + body
+  if (family.viewer_role) {
+    const isAdmin = family.viewer_role === 'owner' || family.viewer_role === 'admin';
+    return (
+      <div className="mx-auto max-w-5xl space-y-4 px-4 py-6 sm:px-6 lg:px-8">
+        <FamilyHeader family={family} />
+        <FamilyTopTabs slug={slug} isAdmin={isAdmin} />
+        <div>{children}</div>
+      </div>
+    );
+  }
+
+  // Pending invite: show header preview + accept/decline banner, no tabs/body
+  if (family.has_pending_invite) {
+    const { data: invite } = await client
+      .from('family_invitations')
+      .select('id, invited_by, created_at')
+      .eq('family_id', family.id)
+      .eq('invitee_id', userRes.user.id)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    let inviterName = 'Alguien';
+    if (invite) {
+      const { data: profile } = await client
+        .from('profiles')
+        .select('first_name, last_name, username')
+        .eq('id', (invite as { invited_by: string }).invited_by)
+        .maybeSingle();
+      inviterName =
+        [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ||
+        (profile?.username as string | undefined) ||
+        'Alguien';
+    }
+
+    const vm: FamilyInvitationViewModel | null = invite
+      ? {
+          id: (invite as { id: string }).id,
+          familyName: family.name,
+          familySlug: family.slug,
+          inviterName,
+          createdAt: (invite as { created_at: string }).created_at,
+        }
+      : null;
+
+    return (
+      <div className="mx-auto max-w-3xl space-y-4 px-4 py-6 sm:px-6 lg:px-8">
+        <FamilyHeader family={family} />
+        {vm && <FamilyInvitationCard invite={vm} />}
+        <p className="text-sm text-zinc-500">
+          Acepta la invitación para ver el árbol, las fotos y la línea de tiempo.
+        </p>
+      </div>
+    );
+  }
+
+  // Not a member and no pending invite — RLS already hides children, but show
+  // an explicit 404 so we don't leak that this slug exists.
+  notFound();
+}

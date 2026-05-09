@@ -34,7 +34,7 @@ export const FEATURE_FLAGS = {
   ME_GUSTA_ENABLED: false, // Me gusta - Solo UI/UX implementado
   RECUERDOS_ENABLED: false, // Recuerdos - Solo UI/UX implementado
   ESTADISTICAS_ENABLED: false, // Estadísticas - Solo UI/UX implementado
-  ARBOL_GENEALOGICO_ENABLED: false, // Árbol Genealógico - No disponible aún
+  FAMILIAS_ENABLED: true, // Familias / árboles genealógicos por invitación (Supabase)
 
   // ============================================================================
   // PERFIL Y PROFESIONAL

@@ -15,6 +15,31 @@ See [AGENTS.md](AGENTS.md) for the full project conventions (package manager, st
 - `npx tsc --noEmit` — typecheck. **There is no test runner configured**, so typecheck + `pnpm build` + manual browser verification are the gating signals for UI changes.
 - Always use `pnpm` (never `npm` / `yarn`) for installs.
 
+## Refactor discipline — DRY at the right moment, not the wrong one (TL;DR)
+
+After substantial feature work, do a **refactor pass before declaring done** — it is part of "done", not extra credit. Concretely, look for:
+
+- **Repeated logic in 3+ places → extract.** Real examples from Sprint 1 (Familias):
+  - 6× `select slug → revalidatePath(\`/feed/familias/${slug}\`)` collapsed into one `revalidatePath('/feed/familias/[slug]', 'page')`.
+  - `requireUserId()` + `getServerClient()` called separately in every action → folded into one `requireSession()` returning `{ userId, client }`.
+- **Drift-prone duplication** (same shape, slightly different args) → single source of truth.
+- **Logic in the wrong layer → move it.** Pure functions in `src/lib/`. Server-only reads in `src/features/<x>/server/`, cached with `react.cache()`. Server Actions in `src/features/<x>/actions/`. Reusable UI in `src/features/<x>/components/` (or `src/components/` if cross-feature). Hooks in `src/features/<x>/hooks/`. **Never** inline DB queries in `app/**/page.tsx` or in components.
+- **Dead code** (unused imports, half-finished branches, leftover `// removed` comments) → delete.
+
+**But don't extract prematurely.** *Three similar lines is better than a premature abstraction.* The rule of three is the bar:
+
+| Repetitions | Action |
+|---|---|
+| 1 | Inline. |
+| 2 | Inline, flag mentally. |
+| 3+ across separate files | Extract — otherwise the next person copy-pastes #4. |
+
+Two exceptions where you extract on the **first** repetition:
+- Anything touching auth / RLS / secrets — divergence becomes a security bug.
+- Anything that crosses the server/client boundary — divergence becomes a hydration mismatch.
+
+When you extract, names should carry "what" and "how"; comment only the **Why** if it's non-obvious.
+
 ## Always verify UI changes in the browser
 
 After implementing or modifying any user-facing flow (CRUD forms, menus, routes, mutations, etc.), open the dev server in the browser via Chrome DevTools MCP (`mcp__chrome-devtools__*`) and exercise the new path end-to-end before declaring it done. Drive the actual happy path (e.g. for CRUD: open the form, submit, then edit, then delete) and confirm the resulting page state, redirects, and DB side-effects (via the Supabase MCP if needed). Typecheck and `pnpm build` only prove the code compiles — they don't prove the feature works. If the browser cannot be reached for some reason, say so explicitly rather than claiming success.
@@ -43,6 +68,29 @@ Do **not** add or use any axios / legacy HTTP client. For anything that cannot b
 - Read cookies/headers via `next/headers` (`await cookies()`, `await headers()`).
 - On the server, build a Supabase client with `getServerClient()` from `@/utils/supabase/server` so the caller's session is forwarded.
 - From the client, call the route with `fetch('/api/...')` — never through a shared axios-style wrapper.
+
+## Background work in Server Actions / Route Handlers — use `after()` (TL;DR)
+
+**Never** fire-and-forget a `fetch()` (or any async work you don't `await`) from a Server Action, Route Handler, or RSC. On Vercel and most serverless runtimes, the request's execution context is torn down as soon as the response is returned — a non-awaited `fetch` can drop silently, so the email never sends, the audit row never lands, the webhook never fires, and there is no error to debug.
+
+For work that must outlive the response, use `import { after } from 'next/server'` and wrap the side-effect in `after(async () => { ... })`. Next.js keeps the runtime alive long enough for it to complete.
+
+```ts
+// ❌ Wrong — silently drops on Vercel
+void fetch(`${url}/functions/v1/notify-x`, { ... }).catch(console.error);
+
+// ✅ Right — survives the Server Action returning
+import { after } from 'next/server';
+after(async () => {
+  try {
+    await fetch(`${url}/functions/v1/notify-x`, { ... });
+  } catch (err) {
+    console.error('[action] notify failed:', err);
+  }
+});
+```
+
+Use `await fetch(...)` instead when the user can wait the extra ~200 ms and you need the response to react to it. Use `after()` when the user shouldn't be blocked by the side-effect and you don't care about the response in this request. **Never** use a non-awaited `fetch()` with no wrapper.
 
 ## Realtime (TL;DR)
 

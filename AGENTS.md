@@ -140,6 +140,31 @@ When adding a new auth-adjacent action (e.g. invite acceptance, account deletion
 
 For volumetric DDoS protection that Turnstile can't address (raw HTTP floods), enable Cloudflare **Bot Fight Mode** and add WAF rate-limit rules per route in the Cloudflare dashboard — those run at the edge before traffic reaches Vercel.
 
+## Refactor discipline — DRY at the right moment, not the wrong one
+
+After substantial feature work, do a **refactor pass before declaring done**. It is part of "done", not extra credit. Concretely, look for:
+
+- **Repeated logic in 3+ places → extract.** Real examples from the Familias rollout (Sprint 1):
+  - 6× `select slug → revalidatePath(\`/feed/familias/${slug}\`)` collapsed into a single `revalidatePath('/feed/familias/[slug]', 'page')`.
+  - `requireUserId()` + `getServerClient()` called separately in every action → folded into one `requireSession()` returning `{ userId, client }`.
+- **Drift-prone duplication** (same shape, slightly different args) → single source of truth. If two copies diverge silently, bugs follow.
+- **Logic in the wrong layer → move it.** Pure functions in `src/lib/`. Server-only reads in `src/features/<x>/server/`, cached with `react.cache()`. Server Actions in `src/features/<x>/actions/`. Reusable UI in `src/features/<x>/components/` (or `src/components/` if cross-feature). Hooks in `src/features/<x>/hooks/`. **Never** inline DB queries in `app/**/page.tsx` or in components.
+- **Dead code**: unused imports, half-finished branches, leftover `// removed` comments → delete.
+
+**But don't extract prematurely.** *Three similar lines is better than a premature abstraction.* The rule of three is the bar:
+
+| Repetitions | Action |
+|---|---|
+| 1 | Inline. |
+| 2 | Inline, flag mentally. |
+| 3+ across separate files | Extract — otherwise the next contributor will copy-paste #4. |
+
+Two exceptions where you extract on the **first** repetition:
+- Anything touching **auth / RLS / secrets** — divergence becomes a security bug.
+- Anything that crosses the **server/client boundary** — divergence becomes a hydration mismatch.
+
+When you extract, names should carry "what" and "how"; comment only the **Why** if it's non-obvious. Mirror this rule in [CLAUDE.md](CLAUDE.md) when editing.
+
 ## Stack and conventions
 
 - **Package manager**: `pnpm` (use it for every install, never npm/yarn).

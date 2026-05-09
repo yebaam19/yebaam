@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "supabase-js": "jsr:@supabase/supabase-js@2.45.4",
+    "edge-runtime": "jsr:@supabase/functions-js/edge-runtime.d.ts"
+  },
+  "lock": true,
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
