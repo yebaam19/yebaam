@@ -102,6 +102,13 @@ export interface FamilyRelationshipRow {
   created_at: string;
 }
 
+export interface TaggedPerson {
+  id: string;
+  full_name: string;
+  avatar_cf_image_id: string | null;
+  claimed_avatar_url: string | null;
+}
+
 export interface FamilyEventRow {
   id: string;
   family_id: string;
@@ -113,6 +120,7 @@ export interface FamilyEventRow {
   created_by: string;
   created_at: string;
   updated_at: string;
+  tagged_persons?: TaggedPerson[];
 }
 
 export interface FamilyPhotoRow {
@@ -123,6 +131,7 @@ export interface FamilyPhotoRow {
   taken_at: string | null;
   uploaded_by: string;
   created_at: string;
+  tagged_persons?: TaggedPerson[];
 }
 
 export interface FamilyStoryRow {

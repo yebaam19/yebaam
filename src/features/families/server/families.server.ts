@@ -14,7 +14,77 @@ import type {
   FamilyRelationshipRow,
   FamilyTreeNodeRow,
   FamilyWithViewer,
+  TaggedPerson,
 } from '../types/family.types';
+
+type SupabaseClient = Awaited<ReturnType<typeof getServerClient>>;
+
+async function loadTaggedPersonsByParent(
+  client: SupabaseClient,
+  pivotTable: 'family_event_persons' | 'family_photo_persons',
+  parentColumn: 'event_id' | 'photo_id',
+  parentIds: string[],
+): Promise<Map<string, TaggedPerson[]>> {
+  const out = new Map<string, TaggedPerson[]>();
+  if (parentIds.length === 0) return out;
+
+  const { data: pivots } = await client
+    .from(pivotTable)
+    .select(`${parentColumn}, person_id`)
+    .in(parentColumn, parentIds);
+  const pivotRows = (pivots ?? []) as Array<Record<string, string>>;
+  if (pivotRows.length === 0) return out;
+
+  const personIds = Array.from(new Set(pivotRows.map((r) => r.person_id)));
+  const { data: persons } = await client
+    .from('family_persons')
+    .select('id, full_name, avatar_cf_image_id, claimed_by_profile_id')
+    .in('id', personIds);
+  const personRows = (persons ?? []) as Array<{
+    id: string;
+    full_name: string;
+    avatar_cf_image_id: string | null;
+    claimed_by_profile_id: string | null;
+  }>;
+
+  const claimedIds = personRows
+    .map((p) => p.claimed_by_profile_id)
+    .filter((id): id is string => Boolean(id));
+  const claimedAvatars = new Map<string, string | null>();
+  if (claimedIds.length > 0) {
+    const { data: profiles } = await client
+      .from('profiles')
+      .select('id, avatar_url')
+      .in('id', Array.from(new Set(claimedIds)));
+    for (const p of (profiles ?? []) as Array<{ id: string; avatar_url: string | null }>) {
+      claimedAvatars.set(p.id, p.avatar_url);
+    }
+  }
+
+  const personById = new Map<string, TaggedPerson>(
+    personRows.map((p) => [
+      p.id,
+      {
+        id: p.id,
+        full_name: p.full_name,
+        avatar_cf_image_id: p.avatar_cf_image_id,
+        claimed_avatar_url: p.claimed_by_profile_id
+          ? claimedAvatars.get(p.claimed_by_profile_id) ?? null
+          : null,
+      },
+    ]),
+  );
+
+  for (const row of pivotRows) {
+    const parent = row[parentColumn];
+    const person = personById.get(row.person_id);
+    if (!person) continue;
+    const arr = out.get(parent) ?? [];
+    arr.push(person);
+    out.set(parent, arr);
+  }
+  return out;
+}
 
 async function getViewerId(): Promise<string | null> {
   const client = await getServerClient();
@@ -196,7 +266,16 @@ export const getFamilyEvents = cache(async (familyId: string): Promise<FamilyEve
     .select('*')
     .eq('family_id', familyId)
     .order('event_date', { ascending: false, nullsFirst: false });
-  return (data as FamilyEventRow[] | null) ?? [];
+  const rows = (data as FamilyEventRow[] | null) ?? [];
+  if (rows.length === 0) return rows;
+
+  const taggedByEvent = await loadTaggedPersonsByParent(
+    client,
+    'family_event_persons',
+    'event_id',
+    rows.map((r) => r.id),
+  );
+  return rows.map((r) => ({ ...r, tagged_persons: taggedByEvent.get(r.id) ?? [] }));
 });
 
 export const getFamilyPhotos = cache(async (familyId: string): Promise<FamilyPhotoRow[]> => {
@@ -207,7 +286,16 @@ export const getFamilyPhotos = cache(async (familyId: string): Promise<FamilyPho
     .eq('family_id', familyId)
     .order('taken_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
-  return (data as FamilyPhotoRow[] | null) ?? [];
+  const rows = (data as FamilyPhotoRow[] | null) ?? [];
+  if (rows.length === 0) return rows;
+
+  const taggedByPhoto = await loadTaggedPersonsByParent(
+    client,
+    'family_photo_persons',
+    'photo_id',
+    rows.map((r) => r.id),
+  );
+  return rows.map((r) => ({ ...r, tagged_persons: taggedByPhoto.get(r.id) ?? [] }));
 });
 
 export const getFamilyStories = cache(async (familyId: string): Promise<FamilyStoryRow[]> => {
