@@ -14,6 +14,7 @@ import type {
   AddPhotoDto,
   AddStoryDto,
   AddDocumentDto,
+  SetMemberPermissionsDto,
   FamilyEventType,
   FamilyMemberRole,
   FamilyRelationshipKind,
@@ -132,6 +133,12 @@ export async function updateFamily(
   if (dto.coverImageId !== undefined) {
     patch.cover_cf_image_id = dto.coverImageId;
   }
+  if (dto.memberCanInvite !== undefined) patch.member_can_invite = dto.memberCanInvite;
+  if (dto.memberCanAddPersons !== undefined) patch.member_can_add_persons = dto.memberCanAddPersons;
+  if (dto.memberCanAddEvents !== undefined) patch.member_can_add_events = dto.memberCanAddEvents;
+  if (dto.memberCanAddPhotos !== undefined) patch.member_can_add_photos = dto.memberCanAddPhotos;
+  if (dto.memberCanAddStories !== undefined) patch.member_can_add_stories = dto.memberCanAddStories;
+  if (dto.memberCanAddDocuments !== undefined) patch.member_can_add_documents = dto.memberCanAddDocuments;
   if (Object.keys(patch).length === 0) {
     return { ok: false, error: 'No hay cambios.' };
   }
@@ -140,6 +147,57 @@ export async function updateFamily(
   if (error) return { ok: false, error: error.message };
   revalidateFamilyPaths();
   return { ok: true, data: { id: dto.id } };
+}
+
+export async function setMemberPermissions(
+  dto: SetMemberPermissionsDto,
+): Promise<ActionResult<{ profileId: string }>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: 'Debes iniciar sesión.' };
+
+  const patch: Record<string, unknown> = {};
+  if (dto.perms.canViewPersons !== undefined) patch.can_view_persons = dto.perms.canViewPersons;
+  if (dto.perms.canViewEvents !== undefined) patch.can_view_events = dto.perms.canViewEvents;
+  if (dto.perms.canViewPhotos !== undefined) patch.can_view_photos = dto.perms.canViewPhotos;
+  if (dto.perms.canViewStories !== undefined) patch.can_view_stories = dto.perms.canViewStories;
+  if (dto.perms.canViewDocuments !== undefined) patch.can_view_documents = dto.perms.canViewDocuments;
+  if (Object.keys(patch).length === 0) {
+    return { ok: false, error: 'No hay cambios.' };
+  }
+
+  // Upsert: si no existe la fila, crear; si existe, actualizar.
+  const { error } = await session.client
+    .from('family_member_permissions')
+    .upsert(
+      {
+        family_id: dto.familyId,
+        profile_id: dto.profileId,
+        ...patch,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'family_id,profile_id' },
+    );
+  if (error) return { ok: false, error: error.message };
+  revalidateFamilyPaths();
+  return { ok: true, data: { profileId: dto.profileId } };
+}
+
+export async function resetMemberPermissions(input: {
+  familyId: string;
+  profileId: string;
+}): Promise<ActionResult<{ profileId: string }>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: 'Debes iniciar sesión.' };
+
+  // Borrar la fila → defaults (todos true) aplican vía can_member_view.
+  const { error } = await session.client
+    .from('family_member_permissions')
+    .delete()
+    .eq('family_id', input.familyId)
+    .eq('profile_id', input.profileId);
+  if (error) return { ok: false, error: error.message };
+  revalidateFamilyPaths();
+  return { ok: true, data: { profileId: input.profileId } };
 }
 
 export async function deleteFamily(id: string): Promise<ActionResult<{ id: string }>> {

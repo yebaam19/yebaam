@@ -4,6 +4,7 @@ import { getServerClient } from '@/utils/supabase/server';
 import type {
   FamilyRow,
   FamilyMemberRow,
+  FamilyMemberPermissionsRow,
   FamilyPersonRow,
   FamilyEventRow,
   FamilyPhotoRow,
@@ -191,6 +192,17 @@ export const getFamilyStories = cache(async (familyId: string): Promise<FamilySt
     .order('created_at', { ascending: false });
   return (data as FamilyStoryRow[] | null) ?? [];
 });
+
+export const getMemberPermissions = cache(
+  async (familyId: string): Promise<FamilyMemberPermissionsRow[]> => {
+    const client = await getServerClient();
+    const { data } = await client
+      .from('family_member_permissions')
+      .select('*')
+      .eq('family_id', familyId);
+    return (data as FamilyMemberPermissionsRow[] | null) ?? [];
+  },
+);
 
 export const getFamilyDocuments = cache(async (familyId: string): Promise<FamilyDocumentRow[]> => {
   const client = await getServerClient();

@@ -23,7 +23,39 @@ export interface FamilyRow {
   privacy: 'invite_only';
   member_count: number;
   person_count: number;
+  member_can_invite: boolean;
+  member_can_add_persons: boolean;
+  member_can_add_events: boolean;
+  member_can_add_photos: boolean;
+  member_can_add_stories: boolean;
+  member_can_add_documents: boolean;
   created_at: string;
+  updated_at: string;
+}
+
+export type MemberToggleKey =
+  | 'member_can_invite'
+  | 'member_can_add_persons'
+  | 'member_can_add_events'
+  | 'member_can_add_photos'
+  | 'member_can_add_stories'
+  | 'member_can_add_documents';
+
+export type MemberViewKey =
+  | 'can_view_persons'
+  | 'can_view_events'
+  | 'can_view_photos'
+  | 'can_view_stories'
+  | 'can_view_documents';
+
+export interface FamilyMemberPermissionsRow {
+  family_id: string;
+  profile_id: string;
+  can_view_persons: boolean;
+  can_view_events: boolean;
+  can_view_photos: boolean;
+  can_view_stories: boolean;
+  can_view_documents: boolean;
   updated_at: string;
 }
 
@@ -142,6 +174,24 @@ export interface UpdateFamilyDto {
   name?: string;
   description?: string | null;
   coverImageId?: string | null;
+  memberCanInvite?: boolean;
+  memberCanAddPersons?: boolean;
+  memberCanAddEvents?: boolean;
+  memberCanAddPhotos?: boolean;
+  memberCanAddStories?: boolean;
+  memberCanAddDocuments?: boolean;
+}
+
+export interface SetMemberPermissionsDto {
+  familyId: string;
+  profileId: string;
+  perms: Partial<{
+    canViewPersons: boolean;
+    canViewEvents: boolean;
+    canViewPhotos: boolean;
+    canViewStories: boolean;
+    canViewDocuments: boolean;
+  }>;
 }
 
 export interface UpdatePersonDto {
