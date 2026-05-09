@@ -7,7 +7,7 @@
  */
 
 import CreatePostCard from '@/components/CreatePostCard/CreatePostCard';
-import { DocumentTextIcon, HomeIcon, InformationCircleIcon, PhotoIcon, SparklesIcon, UsersIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
+import { DocumentTextIcon, HomeIcon, InformationCircleIcon, PhotoIcon, UsersIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { CreatePostModal, EditPostModal, usePostStore } from '@/features/post';
@@ -34,8 +34,7 @@ type TabType =
   | 'amigos'
   | 'familias'
   | 'fotos'
-  | 'videos'
-  | 'historias';
+  | 'videos';
 
 const TABS: ReadonlyArray<{ id: TabType; label: string; icon: typeof DocumentTextIcon }> = [
   { id: 'publicaciones', label: 'Publicaciones', icon: DocumentTextIcon },
@@ -44,7 +43,6 @@ const TABS: ReadonlyArray<{ id: TabType; label: string; icon: typeof DocumentTex
   { id: 'familias', label: 'Familias', icon: HomeIcon },
   { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
   { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
-  { id: 'historias', label: 'Historias', icon: SparklesIcon },
 ];
 
 const TAB_IDS = new Set<TabType>(TABS.map((t) => t.id));
@@ -250,19 +248,6 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                 </Suspense>
               )}
 
-              {activeTab === 'historias' && (
-                <div className="rounded-lg bg-white p-12 text-center shadow-sm dark:bg-gray-800">
-                  <div className="mx-auto max-w-md">
-                    <div className="mb-4 flex justify-center">
-                      <div className="rounded-full bg-gray-100 p-4 dark:bg-gray-700">
-                        <SparklesIcon className="h-12 w-12 text-gray-400" />
-                      </div>
-                    </div>
-                    <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Próximamente</h2>
-                    <p className="text-gray-600 dark:text-gray-400">Las historias estarán disponibles muy pronto.</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

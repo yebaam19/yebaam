@@ -2,7 +2,6 @@
 
 import {
   DocumentTextIcon,
-  SparklesIcon,
   VideoCameraIcon,
 } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
@@ -15,7 +14,6 @@ interface ProfileMoreLinksCardProps {
 const items = [
   { tab: 'videos', label: 'Videos', icon: VideoCameraIcon },
   { tab: 'publicaciones', label: 'Publicaciones', icon: DocumentTextIcon },
-  { tab: 'historias', label: 'Historias', icon: SparklesIcon },
 ] as const;
 
 export default function ProfileMoreLinksCard({ user }: ProfileMoreLinksCardProps) {
