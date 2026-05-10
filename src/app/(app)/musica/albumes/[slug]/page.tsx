@@ -6,6 +6,7 @@ import { imageUrl } from '@/lib/media/urls';
 import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
 import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
 import { AlbumTracklist } from '@/features/music-archive/components/AlbumTracklist';
+import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 
 const FORMAT_LABEL: Record<string, string> = {
   lp: 'LP',
@@ -47,7 +48,8 @@ export default async function AlbumPage({
       try {
         const url = await getPublicAudioUrl(t.r2_key, 3600);
         return [t.id, url] as const;
-      } catch {
+      } catch (err) {
+        console.error('[album page] R2 presign failed', { trackId: t.id, r2Key: t.r2_key, err: err instanceof Error ? err.message : err });
         return [t.id, ''] as const;
       }
     }),
@@ -59,7 +61,7 @@ export default async function AlbumPage({
   const cover = album.cover_cf_image_id ? imageUrl(album.cover_cf_image_id, 'public') : null;
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <nav className="text-xs">
         <Link
           href={'/musica' as Route}
@@ -69,8 +71,10 @@ export default async function AlbumPage({
         </Link>
       </nav>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
+      {/* Hero — cover + title + scalar metadata. Notes deliberately live in
+          their own full-width block below so they don't squeeze this row. */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(200px,280px)_1fr] sm:gap-8">
+        <div className="mx-auto w-full max-w-xs overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800 sm:mx-0 sm:max-w-none">
           {cover ? (
             <img
               src={cover}
@@ -84,8 +88,8 @@ export default async function AlbumPage({
           )}
         </div>
 
-        <div className="space-y-3">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">
+        <div className="min-w-0 space-y-3">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
             {album.title}
           </h1>
           <Link
@@ -95,13 +99,9 @@ export default async function AlbumPage({
             {album.artist.name}
           </Link>
 
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-2 pt-2 text-sm">
-            {album.year && (
-              <Field label="Año" value={String(album.year)} />
-            )}
-            {album.country && (
-              <Field label="País" value={album.country} />
-            )}
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm sm:grid-cols-3">
+            {album.year && <Field label="Año" value={String(album.year)} />}
+            {album.country && <Field label="País" value={album.country} />}
             <Field label="Formato" value={FORMAT_LABEL[album.format] ?? album.format} />
             {album.label && (
               <Field
@@ -111,18 +111,23 @@ export default async function AlbumPage({
               />
             )}
             {album.catalog_number && (
-              <Field label="Cat. #" value={album.catalog_number} />
+              <Field label="Cat. #" value={album.catalog_number} mono />
             )}
             <Field label="Canciones" value={String(album.tracks.length)} />
           </dl>
-
-          {album.notes && (
-            <p className="pt-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-              {album.notes}
-            </p>
-          )}
         </div>
       </div>
+
+      {/* Notes — full width, collapsible if long. Wikipedia-style descriptions
+          would otherwise turn the metadata column into a thin tower. */}
+      {album.notes && (
+        <section className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-900/40 sm:p-5">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Sobre el disco
+          </h2>
+          <AlbumNotes notes={album.notes} />
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -174,11 +179,26 @@ export default async function AlbumPage({
   );
 }
 
-function Field({ label, value, href }: { label: string; value: string; href?: string }) {
+function Field({
+  label,
+  value,
+  href,
+  mono,
+}: {
+  label: string;
+  value: string;
+  href?: string;
+  /** Monospaced + word-break for catalog numbers / long IDs that have no
+   *  natural break points. */
+  mono?: boolean;
+}) {
+  const valueClass = `text-sm text-zinc-900 dark:text-zinc-100 ${
+    mono ? 'break-all font-mono text-[13px]' : 'break-words'
+  }`;
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-xs uppercase tracking-wide text-zinc-500">{label}</dt>
-      <dd className="text-sm text-zinc-900 dark:text-zinc-100">
+      <dd className={valueClass}>
         {href ? (
           <Link href={href as Route} className="hover:underline">
             {value}
