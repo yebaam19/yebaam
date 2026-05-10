@@ -58,7 +58,7 @@ function TurntableIllustration() {
   return (
     <svg
       viewBox="0 0 320 280"
-      className="mx-auto h-auto w-full max-w-[320px] drop-shadow-xl"
+      className="mx-auto h-auto w-full max-w-[300px] drop-shadow-xl"
       aria-hidden="true"
     >
       {/* Wooden plinth */}
@@ -195,20 +195,20 @@ export default async function MusicArchiveLandingPage({
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       {/* Hero — search-first, with turntable illustration */}
-      <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50 p-6 sm:p-10 dark:from-amber-900/10 dark:via-zinc-900 dark:to-rose-900/10">
-        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-4">
+      <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50 p-6 sm:p-8 lg:p-10 dark:from-amber-900/10 dark:via-zinc-900 dark:to-rose-900/10">
+        <div className="grid items-center gap-6 xl:grid-cols-[minmax(0,1fr)_240px] xl:gap-10 2xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="min-w-0 space-y-4">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
               <MusicalNoteIcon className="h-4 w-4" />
               <span>Archivo Musical</span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-5xl dark:text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-balance text-zinc-900 sm:text-4xl 2xl:text-5xl dark:text-white">
               Música latinoamericana 1900–1970
             </h1>
-            <p className="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
               Encuentra canciones, artistas o álbumes históricos. Reproduce gratis, sin cuenta.
             </p>
-            <div className="max-w-2xl pt-2">
+            <div className="max-w-xl pt-2">
               <MusicSearchBar size="hero" />
             </div>
             {isAuthed && (
@@ -223,7 +223,7 @@ export default async function MusicArchiveLandingPage({
               </p>
             )}
           </div>
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <TurntableIllustration />
           </div>
         </div>
