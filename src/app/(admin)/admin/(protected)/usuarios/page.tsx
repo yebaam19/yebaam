@@ -129,7 +129,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
                     <td className="px-4 py-3 text-neutral-500 whitespace-nowrap">{formatDate(createdAt)}</td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <Link
-                        href={`/${user.username}` as Route}
+                        href={`/admin/usuarios/${user.username}` as Route}
                         className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
                       >
                         Ver perfil

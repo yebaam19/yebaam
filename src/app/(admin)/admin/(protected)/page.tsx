@@ -6,6 +6,14 @@ import {
   Squares2X2Icon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
+import {
+  getOccupationDistribution,
+  getOccupationByDepartment,
+  getOccupationByGender,
+} from '@/features/admin/server/occupation-stats.server'
+import { OccupationDistributionChart } from '@/features/admin/components/charts/OccupationDistributionChart'
+import { OccupationByDepartmentChart } from '@/features/admin/components/charts/OccupationByDepartmentChart'
+import { OccupationByGenderChart } from '@/features/admin/components/charts/OccupationByGenderChart'
 
 export const metadata = { title: 'Admin · Dashboard' }
 
@@ -76,12 +84,24 @@ export default async function AdminOverviewPage() {
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [spacesEnabled, spacesDisabled, topicsWeek, postsWeek, adminsCount] = await Promise.all([
+  const [
+    spacesEnabled,
+    spacesDisabled,
+    topicsWeek,
+    postsWeek,
+    adminsCount,
+    distribution,
+    byDepartment,
+    byGender,
+  ] = await Promise.all([
     client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', true),
     client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', false),
     client.from('forum_topics').select('id', { count: 'exact', head: true }).gte('created_at', since),
     client.from('forum_posts').select('id', { count: 'exact', head: true }).gte('created_at', since),
     client.from('platform_admins').select('user_id', { count: 'exact', head: true }),
+    getOccupationDistribution(),
+    getOccupationByDepartment(),
+    getOccupationByGender(),
   ])
 
   return (
@@ -124,6 +144,40 @@ export default async function AdminOverviewPage() {
           value={adminsCount.count ?? 0}
         />
       </div>
+
+      <section className="mt-8 space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+            Estadísticas de ocupación
+          </h2>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Distribución de usuarios por ocupación, ubicación y género.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
+              Usuarios por ocupación
+            </h3>
+            <OccupationDistributionChart data={distribution} />
+          </article>
+
+          <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
+              Ocupación por género
+            </h3>
+            <OccupationByGenderChart data={byGender} />
+          </article>
+        </div>
+
+        <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+          <h3 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
+            Ocupación por departamento (top 10)
+          </h3>
+          <OccupationByDepartmentChart data={byDepartment} />
+        </article>
+      </section>
     </div>
   )
 }
