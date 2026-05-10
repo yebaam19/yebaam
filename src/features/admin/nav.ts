@@ -11,6 +11,7 @@ export interface AdminNavItem {
     | 'cog'
     | 'shield-check'
     | 'academic-cap'
+    | 'musical-note'
   disabled?: boolean
   matchPrefix?: string
 }
@@ -46,6 +47,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/professional-credentials' as Route,
     iconName: 'academic-cap',
     matchPrefix: '/admin/professional-credentials',
+  },
+  {
+    label: 'Música',
+    href: '/admin/music' as Route,
+    iconName: 'musical-note',
+    matchPrefix: '/admin/music',
   },
   {
     label: 'Ajustes',

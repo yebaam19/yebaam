@@ -6,6 +6,7 @@ import {
     BuildingOffice2Icon,
     CakeIcon,
     HomeIcon,
+    MusicalNoteIcon,
 } from '@/components/icons/heroicons-shim';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -83,6 +84,22 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
         bgColor: 'bg-primary-700',
         iconColor: 'text-primary-700',
         buttonLabel: 'Editar Perfil',
+        disabled: false,
+    },
+    {
+        id: 'music-archive',
+        title: 'Archivo Musical',
+        description: 'Música latinoamericana 1900–1970: sube, escucha y conecta con otros coleccionistas.',
+        icon: MusicalNoteIcon,
+        benefits: [
+            'Sube canciones con carátula',
+            'Reproduce canción por canción',
+            'Catálogo histórico abierto al público',
+        ],
+        href: '/musica',
+        bgColor: 'bg-amber-600',
+        iconColor: 'text-amber-600',
+        buttonLabel: 'Ir al Archivo',
         disabled: false,
     },
     {

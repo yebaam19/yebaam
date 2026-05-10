@@ -1,6 +1,12 @@
 import Header from '@/components/Header/Header'
+import { PlayerBar } from '@/features/music-archive/components/PlayerBar'
 import { ApplicationLayout } from './application-layout'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <ApplicationLayout header={<Header hasBorderBottom={false} />}>{children}</ApplicationLayout>
+  return (
+    <ApplicationLayout header={<Header hasBorderBottom={false} />}>
+      {children}
+      <PlayerBar />
+    </ApplicationLayout>
+  )
 }

@@ -19,11 +19,18 @@ const PUBLIC_ROUTES = [
   // Verification certificate: the artifact a QR code points to. Has to be
   // viewable by anyone (potential employer, friend) without an account.
   '/verification/certificate',
+  // Music archive: público abierto by design. /musica/subir adds its own
+  // server-side auth check inside the page component.
+  '/musica',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
 // also be able to use without being bounced to /feed or /admin/foros.
-const AUTH_ALLOWED_PUBLIC_ROUTES = ['/feed/chat-publico', '/verification/certificate'];
+const AUTH_ALLOWED_PUBLIC_ROUTES = [
+  '/feed/chat-publico',
+  '/verification/certificate',
+  '/musica',
+];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

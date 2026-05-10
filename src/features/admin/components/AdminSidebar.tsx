@@ -9,6 +9,7 @@ import {
   ChatBubbleLeftIcon,
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
+  MusicalNoteIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
   UsersIcon,
@@ -26,6 +27,7 @@ const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: 
   cog: Cog6ToothIcon,
   'shield-check': ShieldCheckIcon,
   'academic-cap': AcademicCapIcon,
+  'musical-note': MusicalNoteIcon,
 }
 
 interface Props {

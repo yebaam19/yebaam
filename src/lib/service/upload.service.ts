@@ -39,6 +39,13 @@ export interface CloudflareStreamUploadResult {
   thumbnail: string;
 }
 
+export interface R2AudioUploadResult {
+  key: string;
+  durationSeconds: number;
+  sizeBytes: number;
+  contentType: string;
+}
+
 async function uploadToCloudflare(
   uploadURL: string,
   file: File,
@@ -68,6 +75,49 @@ async function uploadToCloudflare(
     xhr.addEventListener('error', () => reject(new Error('Network error during Cloudflare upload')));
     xhr.open('POST', uploadURL);
     xhr.send(form);
+  });
+}
+
+/** R2 expects a raw PUT, not multipart. Different shape from CF Images. */
+async function putToR2(
+  presignedUrl: string,
+  file: File,
+  onProgress?: (progress: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    if (onProgress) {
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      });
+    }
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`R2 upload failed (${xhr.status})`));
+    });
+    xhr.addEventListener('error', () => reject(new Error('Network error during R2 upload')));
+    xhr.open('PUT', presignedUrl);
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.send(file);
+  });
+}
+
+async function detectAudioDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const audio = new Audio();
+    audio.preload = 'metadata';
+    audio.src = url;
+    const cleanup = () => URL.revokeObjectURL(url);
+    audio.addEventListener('loadedmetadata', () => {
+      const d = Number.isFinite(audio.duration) ? Math.round(audio.duration) : 0;
+      cleanup();
+      resolve(d);
+    });
+    audio.addEventListener('error', () => {
+      cleanup();
+      resolve(0);
+    });
   });
 }
 
@@ -179,6 +229,44 @@ export class UploadService {
       }
     }
     throw new Error('Cloudflare Stream transcoding timed out');
+  }
+
+  /**
+   * Upload an audio file (MP3 / FLAC / WAV / OGG) to Cloudflare R2 via a
+   * presigned PUT URL. Detects duration client-side. Returns the R2 key plus
+   * detected metadata; the caller is responsible for storing the key in DB.
+   */
+  async uploadAudio(
+    file: File,
+    onProgress?: (progress: number) => void,
+  ): Promise<R2AudioUploadResult> {
+    if (!file.type.startsWith('audio/')) {
+      throw new Error('uploadAudio called with a non-audio file');
+    }
+
+    const signRes = await fetch('/api/upload/audio-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contentType: file.type }),
+    });
+    const signPayload = await signRes.json().catch(() => null);
+    if (!signRes.ok || !signPayload?.data?.url) {
+      throw new Error(signPayload?.error || 'No se pudo generar la URL de subida de audio');
+    }
+    const { url, key } = signPayload.data as { url: string; key: string };
+
+    // Detect duration in parallel with the upload start (cheap).
+    const [, durationSeconds] = await Promise.all([
+      putToR2(url, file, onProgress),
+      detectAudioDuration(file),
+    ]);
+
+    return {
+      key,
+      durationSeconds,
+      sizeBytes: file.size,
+      contentType: file.type,
+    };
   }
 
   async getUploadUrl(_data: UploadUrlRequestDTO): Promise<UploadUrlResponse> {
