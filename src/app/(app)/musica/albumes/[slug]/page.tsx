@@ -6,9 +6,12 @@ import { imageUrl } from '@/lib/media/urls';
 import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
 import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
 import { listClubsForAlbum } from '@/features/music-archive/server/clubs.server';
+import { getAlbumReactionCounts } from '@/features/music-archive/server/music-reactions.server';
+import { getServerClient } from '@/utils/supabase/server';
 import { AlbumTracklist } from '@/features/music-archive/components/AlbumTracklist';
 import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
+import { AlbumReactionsBar } from '@/features/music-archive/components/club/AlbumReactionsBar';
 
 const FORMAT_LABEL: Record<string, string> = {
   lp: 'LP',
@@ -43,7 +46,13 @@ export default async function AlbumPage({
   const album = await getAlbumBySlug(slug);
   if (!album) notFound();
 
-  const clubs = await listClubsForAlbum(album.id);
+  const [clubs, reactions, sessionClient] = await Promise.all([
+    listClubsForAlbum(album.id),
+    getAlbumReactionCounts(album.id),
+    getServerClient(),
+  ]);
+  const { data: userData } = await sessionClient.auth.getUser();
+  const signedIn = Boolean(userData.user);
 
   // Pre-sign R2 URLs for every track in parallel. The TTL is 1h which is
   // plenty for a single page session.
@@ -145,6 +154,8 @@ export default async function AlbumPage({
         </h2>
         <AlbumTracklist album={album} audioUrlByTrackId={audioUrlByTrackId} />
       </section>
+
+      <AlbumReactionsBar albumId={album.id} initial={reactions} signedIn={signedIn} />
 
       {(album.back_cover_cf_image_id || album.label_cf_image_id) && (
         <section>

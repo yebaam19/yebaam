@@ -4,7 +4,12 @@ import type { Metadata, Route } from 'next';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { getArtistBySlug } from '@/features/music-archive/server/music.server';
+import {
+  listArticlesForArtist,
+  listClubsForArtist,
+} from '@/features/music-archive/server/music-articles.server';
 import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCard';
+import { MusicArticleCard } from '@/features/music-archive/components/club/MusicArticleCard';
 
 export async function generateMetadata({
   params,
@@ -28,6 +33,10 @@ export default async function ArtistPage({
   const { slug } = await params;
   const artist = await getArtistBySlug(slug);
   if (!artist) notFound();
+  const [articles, clubs] = await Promise.all([
+    listArticlesForArtist(artist.id),
+    listClubsForArtist(artist.id),
+  ]);
 
   const photo = artist.photo_cf_image_id ? imageUrl(artist.photo_cf_image_id, 'public') : null;
   const lifeSpan =
@@ -92,6 +101,41 @@ export default async function ArtistPage({
           </div>
         )}
       </section>
+
+      {clubs.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Clubes donde aparece
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {clubs.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/musica/clubes/${c.slug}` as Route}
+                  className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                >
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {articles.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Artículos sobre {artist.name}
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {articles.map((a) =>
+              a.club ? (
+                <MusicArticleCard key={a.id} article={a} clubSlug={a.club.slug} />
+              ) : null,
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

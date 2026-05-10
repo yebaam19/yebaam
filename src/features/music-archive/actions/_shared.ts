@@ -27,6 +27,38 @@ export async function adminGate(): Promise<
   return { ok: true, userId: admin.userId };
 }
 
+/** Pass if the viewer is a platform admin OR has one of the given roles in the
+ *  given club. Used by club_links + role + article admin actions. Roles in
+ *  `club_members.role` are uppercase ('OWNER','ADMIN','MODERATOR','MEMBER'). */
+export async function clubAdminGate(
+  clubId: string,
+  allowedRoles: readonly string[] = ['OWNER', 'ADMIN'],
+): Promise<
+  | { ok: true; userId: string; client: SupabaseClient; isPlatformAdmin: boolean }
+  | { ok: false; error: string }
+> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: 'Inicia sesión para continuar.' };
+  // Platform admin always passes.
+  const { data: pa } = await session.client
+    .from('platform_admins')
+    .select('user_id')
+    .eq('user_id', session.userId)
+    .maybeSingle();
+  if (pa) return { ok: true, userId: session.userId, client: session.client, isPlatformAdmin: true };
+  const { data: cm } = await session.client
+    .from('club_members')
+    .select('role')
+    .eq('club_id', clubId)
+    .eq('user_id', session.userId)
+    .maybeSingle();
+  const role = (cm as { role: string } | null)?.role;
+  if (!role || !allowedRoles.includes(role)) {
+    return { ok: false, error: 'No tienes permisos en este club.' };
+  }
+  return { ok: true, userId: session.userId, client: session.client, isPlatformAdmin: false };
+}
+
 export function musicSlug(name: string): string {
   return (
     name
