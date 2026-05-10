@@ -479,6 +479,7 @@ export async function listForumGlobalStaff(): Promise<ForoGlobalStaff[]> {
 export interface AdminActiveUser {
   user: ForoAuthor
   createdAt: string
+  occupation: string | null
 }
 
 export interface ListActiveUsersResult {
@@ -517,7 +518,7 @@ export async function listActiveUsers(params?: {
   const search = params?.search?.trim() ?? ''
   let query = client
     .from('profiles')
-    .select('id, username, first_name, last_name, display_name, avatar_url, created_at', {
+    .select('id, username, first_name, last_name, display_name, avatar_url, created_at, occupation', {
       count: 'exact',
     })
     .order('created_at', { ascending: false })
@@ -540,9 +541,13 @@ export async function listActiveUsers(params?: {
   const to = from + pageSize - 1
   const { data, count } = await query.range(from, to)
 
-  const rows = (data ?? []) as Array<ProfileRow & { created_at: string }>
+  const rows = (data ?? []) as Array<ProfileRow & { created_at: string; occupation: string | null }>
   return {
-    items: rows.map((r) => ({ user: toAuthor(r), createdAt: r.created_at })),
+    items: rows.map((r) => ({
+      user: toAuthor(r),
+      createdAt: r.created_at,
+      occupation: r.occupation ?? null,
+    })),
     total: count ?? 0,
     page,
     pageSize,

@@ -1,5 +1,7 @@
 // DTOs - Data Transfer Objects para el módulo de autenticación
 
+import type { OccupationSlug } from '../constants/occupations';
+
 export interface LoginDTO {
   email?: string;
   username?: string;
@@ -32,6 +34,7 @@ export interface RegisterDTO {
   country: string;
   state: string;
   city: string;
+  occupation: OccupationSlug;
   acceptedTerms: boolean;
   captchaToken?: string;
 }

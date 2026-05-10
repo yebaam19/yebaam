@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { listActiveUsers } from '@/app/(app)/foro/server/admin.server'
 import UserAvatar from '@/features/foro/components/UserAvatar'
+import { occupationLabel } from '@/features/auth/constants/occupations'
 
 export const metadata = { title: 'Admin · Usuarios' }
 
@@ -95,6 +96,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
               <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-400">
                 <th className="px-4 py-2">Usuario</th>
                 <th className="px-4 py-2">@username</th>
+                <th className="px-4 py-2">Ocupación</th>
                 <th className="px-4 py-2">Alta</th>
                 <th className="px-4 py-2 text-right">Acciones</th>
               </tr>
@@ -102,12 +104,12 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-neutral-500">
+                  <td colSpan={5} className="px-4 py-10 text-center text-neutral-500">
                     {search ? 'Sin resultados para esta búsqueda.' : 'Sin usuarios todavía.'}
                   </td>
                 </tr>
               ) : (
-                items.map(({ user, createdAt }) => (
+                items.map(({ user, createdAt, occupation }) => (
                   <tr
                     key={user.id}
                     className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/30"
@@ -123,6 +125,7 @@ export default async function AdminUsuariosPage({ searchParams }: PageProps) {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-neutral-500">@{user.username}</td>
+                    <td className="px-4 py-3 text-neutral-500 whitespace-nowrap">{occupationLabel(occupation)}</td>
                     <td className="px-4 py-3 text-neutral-500 whitespace-nowrap">{formatDate(createdAt)}</td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <Link

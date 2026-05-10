@@ -5,6 +5,7 @@ import { getServiceClient } from '@/utils/supabase/server';
 import { sendOtpEmail } from '@/services/email/resend.service';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { generateCode, hashCode, otpExpiresAt, MAX_ATTEMPTS } from './_otp-shared';
+import { isOccupationSlug } from '../constants/occupations';
 import type { RegisterDTO, VerifyEmailRequest, ResendOtpRequest } from '../interfaces/auth.interfaces';
 
 async function getRemoteIp(): Promise<string | null> {
@@ -47,6 +48,10 @@ export async function signupWithOtpAction(userData: RegisterDTO): Promise<{ mess
     throw new Error('Email y contraseña son requeridos');
   }
 
+  if (!isOccupationSlug(userData.occupation)) {
+    throw new Error('Ocupación inválida o requerida');
+  }
+
   const captcha = await verifyTurnstileToken(userData.captchaToken, {
     remoteIp: await getRemoteIp(),
     expectedAction: 'signup',
@@ -85,6 +90,7 @@ export async function signupWithOtpAction(userData: RegisterDTO): Promise<{ mess
       country: userData.country,
       state: userData.state,
       city: userData.city,
+      occupation: userData.occupation,
     })
     .eq('id', userId);
 

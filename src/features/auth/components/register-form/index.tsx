@@ -9,6 +9,8 @@ import { NameFields } from './NameFields';
 import { BirthDateFields } from './BirthDateFields';
 import { GenderField } from './GenderField';
 import { LocationFields } from './LocationFields';
+import { OccupationField } from './OccupationField';
+import { isOccupationSlug, type OccupationSlug } from '../../constants/occupations';
 
 export function RegisterForm() {
   const router = useRouter();
@@ -29,6 +31,7 @@ export function RegisterForm() {
     country: '',
     state: '',
     city: '',
+    occupation: '',
     acceptedTerms: false,
   });
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -47,6 +50,11 @@ export function RegisterForm() {
 
     if (!formData.acceptedTerms) {
       toast.error('Debes aceptar los Términos y Condiciones para continuar');
+      return;
+    }
+
+    if (!isOccupationSlug(formData.occupation)) {
+      toast.error('Selecciona tu ocupación');
       return;
     }
 
@@ -77,6 +85,7 @@ export function RegisterForm() {
         country: formData.country,
         state: formData.state,
         city: formData.city,
+        occupation: formData.occupation as OccupationSlug,
         acceptedTerms: formData.acceptedTerms,
         secondName: formData.secondName || undefined,
         secondLastName: formData.secondLastName || undefined,
@@ -115,6 +124,12 @@ export function RegisterForm() {
       {/* Género */}
       <GenderField
         gender={formData.gender}
+        onChange={handleChange}
+      />
+
+      {/* Ocupación */}
+      <OccupationField
+        occupation={formData.occupation}
         onChange={handleChange}
       />
 
