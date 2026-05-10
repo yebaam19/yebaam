@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
-import { deleteLabel, listAdminLabels } from '../../actions/music.actions';
+import { deleteLabel, listAdminLabels } from '../../actions/labels.actions';
 import type { MusicLabelRow } from '../../types/music.types';
 import { inputCls } from '../upload/constants';
 import { useAdminEntitySearch } from './useAdminEntitySearch';

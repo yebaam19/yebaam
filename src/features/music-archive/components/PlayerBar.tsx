@@ -12,7 +12,7 @@ import {
   MusicalNoteIcon,
 } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
-import { incrementPlayCount } from '../actions/music.actions';
+import { incrementPlayCount } from '../actions/playback.actions';
 import { usePlayerStore } from './PlayerStore';
 
 function formatTime(seconds: number): string {

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { extractFromUrl, confirmImport } from '../actions/music.actions';
+import { extractFromUrl, confirmImport } from '../actions/import.actions';
 import type {
   DetectedAlbumPreview as DetectedAlbum,
   ExtractedImportPreview,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createLabel, updateLabel } from '../../../actions/music.actions';
+import { createLabel, updateLabel } from '../../../actions/labels.actions';
 import type { MusicLabelRow } from '../../../types/music.types';
 import { COUNTRIES, inputCls } from '../../upload/constants';
 

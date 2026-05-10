@@ -40,26 +40,26 @@ export const listLatestAlbums = cache(async (limit = 24): Promise<MusicAlbumRow[
   return (data as MusicAlbumRow[] | null) ?? [];
 });
 
-export const listAlbumsByDecade = cache(async (decade: number): Promise<MusicAlbumRow[]> => {
-  const client = await getServerClient();
-  const { data } = await client
-    .from('music_albums')
-    .select('*')
-    .gte('year', decade)
-    .lt('year', decade + 10)
-    .order('year', { ascending: true });
-  return (data as MusicAlbumRow[] | null) ?? [];
-});
-
-export const listAlbumsByCountry = cache(async (country: string): Promise<MusicAlbumRow[]> => {
-  const client = await getServerClient();
-  const { data } = await client
-    .from('music_albums')
-    .select('*')
-    .eq('country', country)
-    .order('year', { ascending: true });
-  return (data as MusicAlbumRow[] | null) ?? [];
-});
+export const listAlbumsFiltered = cache(
+  async (opts: {
+    decade?: number;
+    country?: string;
+    limit?: number;
+  }): Promise<MusicAlbumRow[]> => {
+    const client = await getServerClient();
+    let q = client.from('music_albums').select('*');
+    if (opts.decade !== undefined) {
+      q = q.gte('year', opts.decade).lt('year', opts.decade + 10);
+    }
+    if (opts.country) {
+      q = q.eq('country', opts.country);
+    }
+    const { data } = await q
+      .order('year', { ascending: true, nullsFirst: false })
+      .limit(opts.limit ?? 60);
+    return (data as MusicAlbumRow[] | null) ?? [];
+  },
+);
 
 export const getAlbumBySlug = cache(async (slug: string): Promise<AlbumWithDetails | null> => {
   const client = await getServerClient();

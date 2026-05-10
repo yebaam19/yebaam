@@ -2,12 +2,10 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { requirePlatformAdmin } from '@/features/music-archive/server/music.server';
-import {
-  listRecentImports,
-  listAdminAlbums,
-  listAdminArtists,
-  listAdminLabels,
-} from '@/features/music-archive/actions/music.actions';
+import { listRecentImports } from '@/features/music-archive/actions/import.actions';
+import { listAdminAlbums } from '@/features/music-archive/actions/albums.actions';
+import { listAdminArtists } from '@/features/music-archive/actions/artists.actions';
+import { listAdminLabels } from '@/features/music-archive/actions/labels.actions';
 import { AdminMusicTabs } from '@/features/music-archive/components/AdminMusicTabs';
 
 export const metadata: Metadata = { title: 'Admin · Música' };

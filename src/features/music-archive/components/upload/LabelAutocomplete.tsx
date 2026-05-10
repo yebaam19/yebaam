@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { searchLabelsAction } from '../../actions/music.actions';
+import { searchLabelsAction } from '../../actions/search.actions';
 import type { MusicLabelRow } from '../../types/music.types';
 import { inputCls } from './constants';
 

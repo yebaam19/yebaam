@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
 import { imageUrl } from '@/lib/media/urls';
-import { deleteAlbum, listAdminAlbums } from '../../actions/music.actions';
+import { deleteAlbum, listAdminAlbums } from '../../actions/albums.actions';
 import { inputCls } from '../upload/constants';
 import { useAdminEntitySearch } from './useAdminEntitySearch';
 import { AdminAlbumEditor } from './AdminAlbumEditor';

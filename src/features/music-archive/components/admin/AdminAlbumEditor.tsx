@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
 import { uploadService } from '@/lib/service/upload.service';
+import { getAlbumForAdminEdit, updateAlbum } from '../../actions/albums.actions';
 import {
   createTrack,
   deleteTrack,
-  getAlbumForAdminEdit,
   replaceTrackAudio,
-  updateAlbum,
   updateTrack,
-} from '../../actions/music.actions';
+} from '../../actions/tracks.actions';
 import type {
   MusicAlbumFormat,
   MusicAlbumRow,

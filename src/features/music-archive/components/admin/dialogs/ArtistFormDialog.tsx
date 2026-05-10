@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { uploadService } from '@/lib/service/upload.service';
-import { createArtist, updateArtist } from '../../../actions/music.actions';
+import { createArtist, updateArtist } from '../../../actions/artists.actions';
 import type { MusicArtistRow } from '../../../types/music.types';
 import { COUNTRIES, inputCls } from '../../upload/constants';
 import { CoverDropZone } from '../../upload/CoverDropZone';

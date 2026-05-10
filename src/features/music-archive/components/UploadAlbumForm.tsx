@@ -4,12 +4,10 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { uploadService } from '@/lib/service/upload.service';
-import {
-  createAlbum,
-  createTrack,
-  findOrCreateArtistAction,
-  findOrCreateLabelAction,
-} from '../actions/music.actions';
+import { createAlbum } from '../actions/albums.actions';
+import { createTrack } from '../actions/tracks.actions';
+import { findOrCreateArtistAction } from '../actions/artists.actions';
+import { findOrCreateLabelAction } from '../actions/labels.actions';
 import type {
   MusicAlbumFormat,
   MusicCopyrightStatus,
