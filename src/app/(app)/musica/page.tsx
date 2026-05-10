@@ -1,6 +1,11 @@
 import Link from 'next/link';
 import type { Metadata, Route } from 'next';
-import { MusicalNoteIcon, PlusIcon } from '@/components/icons/heroicons-shim';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MusicalNoteIcon,
+  PlusIcon,
+} from '@/components/icons/heroicons-shim';
 import {
   listAlbumsFiltered,
   listLatestAlbums,
@@ -47,6 +52,92 @@ const PILL_ACTIVE =
 
 function pillClass(active: boolean): string {
   return `${PILL_BASE} ${active ? PILL_ACTIVE : PILL_IDLE}`;
+}
+
+function TurntableIllustration() {
+  return (
+    <svg
+      viewBox="0 0 320 280"
+      className="mx-auto h-auto w-full max-w-[320px] drop-shadow-xl"
+      aria-hidden="true"
+    >
+      {/* Wooden plinth */}
+      <defs>
+        <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#7a4a23" />
+          <stop offset="55%" stopColor="#5b341a" />
+          <stop offset="100%" stopColor="#3a200f" />
+        </linearGradient>
+        <radialGradient id="vinyl" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#1a1a1a" />
+          <stop offset="100%" stopColor="#000" />
+        </radialGradient>
+        <radialGradient id="label" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#f0c97a" />
+          <stop offset="100%" stopColor="#c98a2c" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="30" width="300" height="220" rx="14" fill="url(#wood)" />
+      <rect x="10" y="30" width="300" height="14" rx="14" fill="#2a160a" opacity="0.55" />
+      {/* Platter */}
+      <circle cx="160" cy="150" r="98" fill="#2a1a10" />
+      <circle cx="160" cy="150" r="92" fill="url(#vinyl)" />
+      {/* Vinyl grooves */}
+      {[88, 80, 72, 64, 56, 48, 40].map((r) => (
+        <circle
+          key={r}
+          cx="160"
+          cy="150"
+          r={r}
+          fill="none"
+          stroke="#222"
+          strokeWidth="0.6"
+          opacity="0.7"
+        />
+      ))}
+      {/* Center label */}
+      <circle cx="160" cy="150" r="34" fill="url(#label)" />
+      <circle cx="160" cy="150" r="34" fill="none" stroke="#7a4a1a" strokeWidth="1" />
+      <circle cx="160" cy="150" r="2.5" fill="#1a0e05" />
+      <text
+        x="160"
+        y="142"
+        textAnchor="middle"
+        fontSize="6"
+        fontFamily="serif"
+        fill="#3a200f"
+        fontWeight="700"
+      >
+        ARCHIVO
+      </text>
+      <text
+        x="160"
+        y="166"
+        textAnchor="middle"
+        fontSize="5"
+        fontFamily="serif"
+        fill="#3a200f"
+      >
+        MUSICAL
+      </text>
+      {/* Tonearm */}
+      <circle cx="276" cy="78" r="10" fill="#caa667" stroke="#7a5a26" strokeWidth="1" />
+      <circle cx="276" cy="78" r="3" fill="#3a2810" />
+      <line
+        x1="276"
+        y1="78"
+        x2="208"
+        y2="158"
+        stroke="#caa667"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <rect x="200" y="152" width="14" height="10" rx="2" fill="#1a1a1a" transform="rotate(-40 207 157)" />
+      {/* Speed/control knobs */}
+      <circle cx="48" cy="220" r="9" fill="#1a1a1a" stroke="#caa667" strokeWidth="1.2" />
+      <circle cx="74" cy="220" r="6" fill="#caa667" />
+    </svg>
+  );
 }
 
 function buildHref(opts: { decade?: number; country?: string }): Route {
@@ -103,49 +194,68 @@ export default async function MusicArchiveLandingPage({
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      {/* Hero — search-first */}
-      <header className="space-y-4 rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50 p-6 sm:p-10 dark:from-amber-900/10 dark:via-zinc-900 dark:to-rose-900/10">
-        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
-          <MusicalNoteIcon className="h-4 w-4" />
-          <span>Archivo Musical</span>
+      {/* Hero — search-first, with turntable illustration */}
+      <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50 p-6 sm:p-10 dark:from-amber-900/10 dark:via-zinc-900 dark:to-rose-900/10">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+              <MusicalNoteIcon className="h-4 w-4" />
+              <span>Archivo Musical</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-5xl dark:text-white">
+              Música latinoamericana 1900–1970
+            </h1>
+            <p className="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+              Encuentra canciones, artistas o álbumes históricos. Reproduce gratis, sin cuenta.
+            </p>
+            <div className="max-w-2xl pt-2">
+              <MusicSearchBar size="hero" />
+            </div>
+            {isAuthed && (
+              <p className="pt-1 text-xs text-zinc-500">
+                ¿Tienes una digitalización?{' '}
+                <Link
+                  href={'/musica/subir' as Route}
+                  className="font-medium text-amber-700 hover:underline dark:text-amber-400"
+                >
+                  Súbela al archivo
+                </Link>
+              </p>
+            )}
+          </div>
+          <div className="hidden lg:block">
+            <TurntableIllustration />
+          </div>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
-          Música latinoamericana 1900–1970
-        </h1>
-        <p className="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-          Encuentra canciones, artistas o álbumes históricos. Reproduce gratis, sin cuenta.
-        </p>
-        <div className="max-w-2xl pt-2">
-          <MusicSearchBar size="hero" />
-        </div>
-        {isAuthed && (
-          <p className="pt-1 text-xs text-zinc-500">
-            ¿Tienes una digitalización?{' '}
-            <Link
-              href={'/musica/subir' as Route}
-              className="font-medium text-amber-700 hover:underline dark:text-amber-400"
-            >
-              Súbela al archivo
-            </Link>
-          </p>
-        )}
       </header>
 
       <section className="space-y-3">
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{heading}</h2>
-          <div className="flex items-baseline gap-3 text-xs text-zinc-500">
+          <div className="flex items-center gap-3 text-xs text-zinc-500">
             <span>
               {albums.length} {albums.length === 1 ? 'álbum' : 'álbumes'}
             </span>
-            {isFiltered && (
-              <Link
-                href={'/musica' as Route}
-                className="font-medium text-amber-700 hover:underline dark:text-amber-400"
+            <Link
+              href={'/musica' as Route}
+              className="font-medium text-zinc-600 hover:text-amber-700 hover:underline dark:text-zinc-300"
+            >
+              Ver todos
+            </Link>
+            <div className="flex items-center gap-1">
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
               >
-                Ver todos
-              </Link>
-            )}
+                <ChevronLeftIcon className="h-4 w-4" />
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <ChevronRightIcon className="h-4 w-4" />
+              </span>
+            </div>
           </div>
         </div>
         {albums.length === 0 ? (
@@ -189,7 +299,7 @@ export default async function MusicArchiveLandingPage({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Por década</h2>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Explorar por década</h2>
         <div className="flex flex-wrap gap-2">
           {DECADES.map((d) => {
             const active = decade === d.start;
@@ -208,7 +318,7 @@ export default async function MusicArchiveLandingPage({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Por país</h2>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Explorar por país</h2>
         <div className="flex flex-wrap gap-2">
           {COUNTRIES.map((c) => {
             const active = country === c.code;
