@@ -462,7 +462,9 @@ async function ingestOne(item: SeedItem): Promise<'ok' | 'skipped' | 'failed'> {
         format: detected.format,
         cover_cf_image_id: coverCfId,
         catalog_number: detected.catalogNumber,
-        notes: `Importado desde ${sourceUrl} el ${new Date().toISOString().slice(0, 10)}.${detected.notes ? '\n\n' + detected.notes : ''}`,
+        // Notes are user-facing — keep just the clean description from the source.
+        // Provenance lives in music_imports.source_url + tracks.restored_by_note.
+        notes: detected.notes ?? null,
         contributed_by: null,
       })
       .select('id, slug')

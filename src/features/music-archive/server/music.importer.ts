@@ -53,6 +53,14 @@ function inferFormat(filename: string): MusicTrackFormat {
   return 'mp3';
 }
 
+/** archive.org descriptions sometimes contain inline HTML (Wikipedia-style
+ *  spans with style attributes). Strip tags so the field renders as plain text. */
+function stripHtml(input: string | undefined | null): string | null {
+  if (!input) return null;
+  const cleaned = input.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  return cleaned.length > 0 ? cleaned : null;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // archive.org adapter — uses the public JSON metadata API.
 // Example: https://archive.org/metadata/<itemId>
@@ -181,7 +189,7 @@ async function extractFromArchiveOrg(url: string): Promise<ExtractionResult> {
       label: publisher ?? null,
       catalog_number: id,
       cover_image_url,
-      notes: meta.description ?? null,
+      notes: stripHtml(meta.description),
       tracks,
     },
   };
