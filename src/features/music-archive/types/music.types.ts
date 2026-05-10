@@ -156,6 +156,49 @@ export interface CreateTrackBatchItem {
   restoredByNote?: string | null;
 }
 
+/** Editable fields on an existing artist (admin CRUD). */
+export interface UpdateArtistDto {
+  name?: string;
+  country?: string | null;
+  bornYear?: number | null;
+  diedYear?: number | null;
+  bioShort?: string | null;
+  photoCfImageId?: string | null;
+}
+
+/** Editable fields on an existing album (admin CRUD). */
+export interface UpdateAlbumDto {
+  title?: string;
+  year?: number | null;
+  country?: string | null;
+  format?: MusicAlbumFormat;
+  artistId?: string;
+  labelId?: string | null;
+  coverCfImageId?: string | null;
+  backCoverCfImageId?: string | null;
+  labelCfImageId?: string | null;
+  catalogNumber?: string | null;
+  notes?: string | null;
+}
+
+/** Editable fields on an existing track (admin CRUD). */
+export interface UpdateTrackDto {
+  title?: string;
+  position?: number;
+  side?: MusicTrackSide | null;
+  durationSeconds?: number | null;
+  sourceMedia?: MusicSourceMedia | null;
+  copyrightStatus?: MusicCopyrightStatus;
+  restoredByNote?: string | null;
+}
+
+/** Editable fields on an existing label (admin CRUD). */
+export interface UpdateLabelDto {
+  name?: string;
+  country?: string | null;
+  founded?: number | null;
+}
+
 /** Detected import preview returned by the Firecrawl-backed extractor.
  *  Shape mirrors `DetectedAlbum` from server/music.importer but is duplicated
  *  here so client components (the admin importer UI) can type-import it

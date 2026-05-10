@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
-import { headAudio, getPublicAudioUrl, uploadAudioFromUrl } from '@/lib/cloudflare/r2';
-import { uploadImageFromUrl } from '@/lib/cloudflare/images';
+import { headAudio, getPublicAudioUrl, uploadAudioFromUrl, deleteAudio } from '@/lib/cloudflare/r2';
+import { uploadImageFromUrl, deleteImage } from '@/lib/cloudflare/images';
 import {
   extractMusicFromUrl,
   detectSource,
@@ -25,6 +25,10 @@ import type {
   MusicArtistRow,
   MusicLabelRow,
   MusicTrackRow,
+  UpdateAlbumDto,
+  UpdateArtistDto,
+  UpdateLabelDto,
+  UpdateTrackDto,
 } from '../types/music.types';
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -791,4 +795,550 @@ export async function listRecentImports(limit = 50): Promise<
     .limit(limit);
   if (error) return { ok: false, error: error.message };
   return { ok: true, data: (data ?? []) as never };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin CRUD — every update/delete below requires platform admin. Deletes
+// also clean up Cloudflare R2 audio + Cloudflare Images covers so we don't
+// orphan media on the CDN. The DB has on-delete-cascade for albums→tracks
+// and artists→albums, so a single DELETE can fan out — we collect the
+// affected R2 keys + image IDs first, then delete in DB, then clean media.
+
+async function adminGate(): Promise<
+  | { ok: true; userId: string }
+  | { ok: false; error: string }
+> {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return { ok: false, error: 'Solo administradores.' };
+  return { ok: true, userId: admin.userId };
+}
+
+// ─── Artists ────────────────────────────────────────────────────────────────
+
+export async function updateArtist(
+  id: string,
+  dto: UpdateArtistDto,
+): Promise<ActionResult<MusicArtistRow>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (dto.name !== undefined) patch.name = dto.name.trim();
+  if (dto.country !== undefined) patch.country = dto.country?.trim() || null;
+  if (dto.bornYear !== undefined) patch.born_year = dto.bornYear;
+  if (dto.diedYear !== undefined) patch.died_year = dto.diedYear;
+  if (dto.bioShort !== undefined) patch.bio_short = dto.bioShort?.trim() || null;
+  if (dto.photoCfImageId !== undefined) patch.photo_cf_image_id = dto.photoCfImageId;
+  const { data, error } = await service
+    .from('music_artists')
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) return { ok: false, error: error.message };
+  const row = data as MusicArtistRow;
+  revalidateMusic({ artistSlug: row.slug });
+  return { ok: true, data: row };
+}
+
+export async function deleteArtist(id: string): Promise<ActionResult<{ deleted: true }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+
+  // Collect every R2 key + image id that will be orphaned by the cascade.
+  const { data: artist } = await service
+    .from('music_artists')
+    .select('photo_cf_image_id')
+    .eq('id', id)
+    .maybeSingle();
+  const { data: albums } = await service
+    .from('music_albums')
+    .select('cover_cf_image_id, back_cover_cf_image_id, label_cf_image_id, id')
+    .eq('artist_id', id);
+  const albumIds = (albums ?? []).map((a) => (a as { id: string }).id);
+  const imageIds: string[] = [];
+  const a = artist as { photo_cf_image_id: string | null } | null;
+  if (a?.photo_cf_image_id) imageIds.push(a.photo_cf_image_id);
+  for (const alb of albums ?? []) {
+    const r = alb as { cover_cf_image_id: string | null; back_cover_cf_image_id: string | null; label_cf_image_id: string | null };
+    if (r.cover_cf_image_id) imageIds.push(r.cover_cf_image_id);
+    if (r.back_cover_cf_image_id) imageIds.push(r.back_cover_cf_image_id);
+    if (r.label_cf_image_id) imageIds.push(r.label_cf_image_id);
+  }
+  let r2Keys: string[] = [];
+  if (albumIds.length > 0) {
+    const { data: tracks } = await service
+      .from('music_tracks')
+      .select('r2_key')
+      .in('album_id', albumIds);
+    r2Keys = (tracks ?? []).map((t) => (t as { r2_key: string }).r2_key);
+  }
+
+  const { error } = await service.from('music_artists').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+
+  // Best-effort media cleanup. CDN orphans are recoverable later; DB integrity
+  // is what matters in the response, so we don't fail the action on these.
+  after(async () => {
+    await Promise.allSettled([
+      ...imageIds.map((iid) => deleteImage(iid)),
+      ...r2Keys.map((key) => deleteAudio(key)),
+    ]);
+  });
+
+  revalidatePath('/musica');
+  return { ok: true, data: { deleted: true } };
+}
+
+// ─── Albums ─────────────────────────────────────────────────────────────────
+
+export async function updateAlbum(
+  id: string,
+  dto: UpdateAlbumDto,
+): Promise<ActionResult<MusicAlbumRow>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  const patch: Record<string, unknown> = {};
+  if (dto.title !== undefined) patch.title = dto.title.trim();
+  if (dto.year !== undefined) patch.year = dto.year;
+  if (dto.country !== undefined) patch.country = dto.country?.trim().toUpperCase().slice(0, 2) || null;
+  if (dto.format !== undefined) patch.format = dto.format;
+  if (dto.artistId !== undefined) patch.artist_id = dto.artistId;
+  if (dto.labelId !== undefined) patch.label_id = dto.labelId;
+  if (dto.coverCfImageId !== undefined) patch.cover_cf_image_id = dto.coverCfImageId;
+  if (dto.backCoverCfImageId !== undefined) patch.back_cover_cf_image_id = dto.backCoverCfImageId;
+  if (dto.labelCfImageId !== undefined) patch.label_cf_image_id = dto.labelCfImageId;
+  if (dto.catalogNumber !== undefined) patch.catalog_number = dto.catalogNumber?.trim() || null;
+  if (dto.notes !== undefined) patch.notes = dto.notes?.trim() || null;
+  const { data, error } = await service
+    .from('music_albums')
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) return { ok: false, error: error.message };
+  const row = data as MusicAlbumRow;
+  revalidateMusic({ albumSlug: row.slug });
+  return { ok: true, data: row };
+}
+
+export async function deleteAlbum(id: string): Promise<ActionResult<{ deleted: true }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+
+  const { data: album } = await service
+    .from('music_albums')
+    .select('cover_cf_image_id, back_cover_cf_image_id, label_cf_image_id, slug')
+    .eq('id', id)
+    .maybeSingle();
+  const { data: tracks } = await service
+    .from('music_tracks')
+    .select('r2_key')
+    .eq('album_id', id);
+
+  const imageIds: string[] = [];
+  const a = album as { cover_cf_image_id: string | null; back_cover_cf_image_id: string | null; label_cf_image_id: string | null; slug: string } | null;
+  if (a?.cover_cf_image_id) imageIds.push(a.cover_cf_image_id);
+  if (a?.back_cover_cf_image_id) imageIds.push(a.back_cover_cf_image_id);
+  if (a?.label_cf_image_id) imageIds.push(a.label_cf_image_id);
+  const r2Keys = (tracks ?? []).map((t) => (t as { r2_key: string }).r2_key);
+
+  const { error } = await service.from('music_albums').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+
+  after(async () => {
+    await Promise.allSettled([
+      ...imageIds.map((iid) => deleteImage(iid)),
+      ...r2Keys.map((key) => deleteAudio(key)),
+    ]);
+  });
+
+  if (a?.slug) revalidateMusic({ albumSlug: a.slug });
+  return { ok: true, data: { deleted: true } };
+}
+
+// ─── Tracks ─────────────────────────────────────────────────────────────────
+
+export async function updateTrack(
+  id: string,
+  dto: UpdateTrackDto,
+): Promise<ActionResult<MusicTrackRow>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  const patch: Record<string, unknown> = {};
+  if (dto.title !== undefined) patch.title = dto.title.trim();
+  if (dto.position !== undefined) patch.position = dto.position;
+  if (dto.side !== undefined) patch.side = dto.side;
+  if (dto.durationSeconds !== undefined) patch.duration_seconds = dto.durationSeconds;
+  if (dto.sourceMedia !== undefined) patch.source_media = dto.sourceMedia;
+  if (dto.copyrightStatus !== undefined) patch.copyright_status = dto.copyrightStatus;
+  if (dto.restoredByNote !== undefined) patch.restored_by_note = dto.restoredByNote?.trim() || null;
+  const { data, error } = await service
+    .from('music_tracks')
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) return { ok: false, error: error.message };
+  const row = data as MusicTrackRow;
+
+  const { data: alb } = await service
+    .from('music_albums')
+    .select('slug')
+    .eq('id', row.album_id)
+    .maybeSingle();
+  if (alb) revalidateMusic({ albumSlug: (alb as { slug: string }).slug });
+  return { ok: true, data: row };
+}
+
+export async function deleteTrack(id: string): Promise<ActionResult<{ deleted: true }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+
+  const { data: track } = await service
+    .from('music_tracks')
+    .select('r2_key, album_id')
+    .eq('id', id)
+    .maybeSingle();
+  const t = track as { r2_key: string; album_id: string } | null;
+
+  const { error } = await service.from('music_tracks').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+
+  if (t?.r2_key) {
+    after(async () => {
+      try { await deleteAudio(t.r2_key); } catch (e) { console.warn('[deleteTrack] r2:', e); }
+    });
+  }
+
+  if (t?.album_id) {
+    const { data: alb } = await service
+      .from('music_albums')
+      .select('slug')
+      .eq('id', t.album_id)
+      .maybeSingle();
+    if (alb) revalidateMusic({ albumSlug: (alb as { slug: string }).slug });
+  }
+  return { ok: true, data: { deleted: true } };
+}
+
+/** Swap an existing track's audio file. The new R2 key has already been
+ *  uploaded by the caller (uploadService.uploadAudio) — we HEAD-validate it,
+ *  point the row at it, and best-effort delete the old R2 object. */
+export async function replaceTrackAudio(
+  trackId: string,
+  dto: { r2Key: string; format: 'mp3' | 'flac' | 'wav' | 'ogg'; durationSeconds: number | null },
+): Promise<ActionResult<MusicTrackRow>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+
+  const head = await headAudio(dto.r2Key);
+  if (!head.exists) {
+    return { ok: false, error: 'El audio no se encontró en el almacenamiento.' };
+  }
+  const MAX_AUDIO_BYTES = 200 * 1024 * 1024;
+  if (head.sizeBytes > MAX_AUDIO_BYTES) {
+    return { ok: false, error: 'El archivo supera 200 MB.' };
+  }
+
+  const { data: existing } = await service
+    .from('music_tracks')
+    .select('r2_key, album_id')
+    .eq('id', trackId)
+    .maybeSingle();
+  const oldKey = (existing as { r2_key: string; album_id: string } | null)?.r2_key;
+
+  const { data, error } = await service
+    .from('music_tracks')
+    .update({
+      r2_key: dto.r2Key,
+      format: dto.format,
+      duration_seconds: dto.durationSeconds,
+    })
+    .eq('id', trackId)
+    .select('*')
+    .single();
+  if (error) return { ok: false, error: error.message };
+  const row = data as MusicTrackRow;
+
+  if (oldKey && oldKey !== dto.r2Key) {
+    after(async () => {
+      try { await deleteAudio(oldKey); } catch (e) { console.warn('[replaceTrackAudio] r2 cleanup:', e); }
+    });
+  }
+
+  // Audit the new audio object the same way createTrack does.
+  fireTrackAuditAfter([{ trackId: row.id, r2Key: row.r2_key, contributorId: gate.userId }]);
+
+  // Revalidate the album page so the new presigned URL is picked up.
+  const { data: alb } = await service
+    .from('music_albums')
+    .select('slug')
+    .eq('id', row.album_id)
+    .maybeSingle();
+  if (alb) revalidateMusic({ albumSlug: (alb as { slug: string }).slug });
+
+  return { ok: true, data: row };
+}
+
+// ─── Labels ─────────────────────────────────────────────────────────────────
+
+export async function updateLabel(
+  id: string,
+  dto: UpdateLabelDto,
+): Promise<ActionResult<MusicLabelRow>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  const patch: Record<string, unknown> = {};
+  if (dto.name !== undefined) patch.name = dto.name.trim();
+  if (dto.country !== undefined) patch.country = dto.country?.trim().toUpperCase().slice(0, 2) || null;
+  if (dto.founded !== undefined) patch.founded = dto.founded;
+  const { data, error } = await service
+    .from('music_labels')
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data: data as MusicLabelRow };
+}
+
+export async function deleteLabel(id: string): Promise<ActionResult<{ deleted: true }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  // Albums.label_id is on-delete-set-null, so no media cleanup needed —
+  // albums survive, just disconnected from the deleted label.
+  const { error } = await service.from('music_labels').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/musica');
+  return { ok: true, data: { deleted: true } };
+}
+
+// ─── Admin list reads (search-friendly) ─────────────────────────────────────
+
+export async function listAdminAlbums(q?: string): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      title: string;
+      slug: string;
+      year: number | null;
+      country: string | null;
+      format: string;
+      cover_cf_image_id: string | null;
+      catalog_number: string | null;
+      artist_id: string;
+      artist_name: string;
+      track_count: number;
+    }>
+  >
+> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  let query = service
+    .from('music_albums')
+    .select('id, title, slug, year, country, format, cover_cf_image_id, catalog_number, artist_id, music_artists!inner(name)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  const trimmed = q?.trim();
+  if (trimmed) query = query.ilike('title', `%${trimmed}%`);
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+
+  type Row = {
+    id: string;
+    title: string;
+    slug: string;
+    year: number | null;
+    country: string | null;
+    format: string;
+    cover_cf_image_id: string | null;
+    catalog_number: string | null;
+    artist_id: string;
+    music_artists: { name: string } | { name: string }[];
+  };
+  const rows = (data ?? []) as unknown as Row[];
+
+  // Track counts in one round-trip rather than N+1.
+  const albumIds = rows.map((r) => r.id);
+  let countsByAlbum = new Map<string, number>();
+  if (albumIds.length > 0) {
+    const { data: trackRows } = await service
+      .from('music_tracks')
+      .select('album_id')
+      .in('album_id', albumIds);
+    for (const t of (trackRows ?? []) as Array<{ album_id: string }>) {
+      countsByAlbum.set(t.album_id, (countsByAlbum.get(t.album_id) ?? 0) + 1);
+    }
+  }
+
+  return {
+    ok: true,
+    data: rows.map((r) => {
+      const artist = Array.isArray(r.music_artists) ? r.music_artists[0] : r.music_artists;
+      return {
+        id: r.id,
+        title: r.title,
+        slug: r.slug,
+        year: r.year,
+        country: r.country,
+        format: r.format,
+        cover_cf_image_id: r.cover_cf_image_id,
+        catalog_number: r.catalog_number,
+        artist_id: r.artist_id,
+        artist_name: artist?.name ?? 'Desconocido',
+        track_count: countsByAlbum.get(r.id) ?? 0,
+      };
+    }),
+  };
+}
+
+export async function listAdminArtists(q?: string): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      name: string;
+      slug: string;
+      country: string | null;
+      born_year: number | null;
+      died_year: number | null;
+      photo_cf_image_id: string | null;
+      album_count: number;
+    }>
+  >
+> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  let query = service
+    .from('music_artists')
+    .select('id, name, slug, country, born_year, died_year, photo_cf_image_id')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  const trimmed = q?.trim();
+  if (trimmed) query = query.ilike('name', `%${trimmed}%`);
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  const rows = (data ?? []) as Array<{
+    id: string;
+    name: string;
+    slug: string;
+    country: string | null;
+    born_year: number | null;
+    died_year: number | null;
+    photo_cf_image_id: string | null;
+  }>;
+
+  const artistIds = rows.map((r) => r.id);
+  const counts = new Map<string, number>();
+  if (artistIds.length > 0) {
+    const { data: albs } = await service
+      .from('music_albums')
+      .select('artist_id')
+      .in('artist_id', artistIds);
+    for (const a of (albs ?? []) as Array<{ artist_id: string }>) {
+      counts.set(a.artist_id, (counts.get(a.artist_id) ?? 0) + 1);
+    }
+  }
+
+  return { ok: true, data: rows.map((r) => ({ ...r, album_count: counts.get(r.id) ?? 0 })) };
+}
+
+export async function listAdminLabels(q?: string): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      name: string;
+      slug: string;
+      country: string | null;
+      founded: number | null;
+      album_count: number;
+    }>
+  >
+> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  let query = service
+    .from('music_labels')
+    .select('id, name, slug, country, founded')
+    .order('name', { ascending: true })
+    .limit(200);
+  const trimmed = q?.trim();
+  if (trimmed) query = query.ilike('name', `%${trimmed}%`);
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+  const rows = (data ?? []) as Array<{
+    id: string;
+    name: string;
+    slug: string;
+    country: string | null;
+    founded: number | null;
+  }>;
+
+  const labelIds = rows.map((r) => r.id);
+  const counts = new Map<string, number>();
+  if (labelIds.length > 0) {
+    const { data: albs } = await service
+      .from('music_albums')
+      .select('label_id')
+      .in('label_id', labelIds);
+    for (const a of (albs ?? []) as Array<{ label_id: string }>) {
+      counts.set(a.label_id, (counts.get(a.label_id) ?? 0) + 1);
+    }
+  }
+
+  return { ok: true, data: rows.map((r) => ({ ...r, album_count: counts.get(r.id) ?? 0 })) };
+}
+
+/** Full album detail for the admin editor — includes tracks + artist + label
+ *  so the modal renders without an extra round-trip. */
+export async function getAlbumForAdminEdit(id: string): Promise<
+  ActionResult<{
+    album: MusicAlbumRow;
+    artist: MusicArtistRow;
+    label: MusicLabelRow | null;
+    tracks: MusicTrackRow[];
+  }>
+> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const service = getServiceClient();
+  const { data: album, error } = await service
+    .from('music_albums')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error || !album) return { ok: false, error: error?.message ?? 'Álbum no encontrado.' };
+  const a = album as MusicAlbumRow;
+  const [{ data: artist }, { data: label }, { data: tracks }] = await Promise.all([
+    service.from('music_artists').select('*').eq('id', a.artist_id).maybeSingle(),
+    a.label_id
+      ? service.from('music_labels').select('*').eq('id', a.label_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    service
+      .from('music_tracks')
+      .select('*')
+      .eq('album_id', a.id)
+      .order('side', { ascending: true, nullsFirst: true })
+      .order('position', { ascending: true }),
+  ]);
+  return {
+    ok: true,
+    data: {
+      album: a,
+      artist: artist as MusicArtistRow,
+      label: (label as MusicLabelRow | null) ?? null,
+      tracks: (tracks as MusicTrackRow[] | null) ?? [],
+    },
+  };
 }

@@ -40,6 +40,26 @@ Two exceptions where you extract on the **first** repetition:
 
 When you extract, names should carry "what" and "how"; comment only the **Why** if it's non-obvious.
 
+## **!IMPORTANT: split components when they grow long**
+
+Component files that drift past **~250 lines** must be broken into smaller, single-purpose files **before declaring the feature done**. This is non-negotiable — a long component is a future bug magnet, hides duplication, makes diffs unreviewable, and makes targeted edits brittle. Apply the same discipline to every new component: write it small, and split it the moment it grows.
+
+When splitting:
+- Co-locate the children in a `<feature>/<parent>/` subfolder (e.g. `admin/editor/TrackRow.tsx`, `admin/editor/AddTrackForm.tsx`) so the parent stays as the orchestration shell.
+- Each child component owns one concern: one form section, one row, one dialog.
+- Pass typed props down explicitly — don't smuggle state via context unless the same data is needed 3+ levels away.
+- The parent is the place for state + server-action calls; children render and emit events.
+- Imports should mirror the folder structure (no deep relative `../../../`); use `@/` aliases or short relative paths.
+
+Concrete example from this repo: `AdminAlbumEditor` was 517 lines with five inline subcomponents, each handling its own concern but tangled together. Split into:
+- [AdminAlbumEditor.tsx](src/features/music-archive/components/admin/AdminAlbumEditor.tsx) (264 lines) — modal shell + state + server actions
+- [editor/AlbumFieldsForm.tsx](src/features/music-archive/components/admin/editor/AlbumFieldsForm.tsx) — album-level fields
+- [editor/TrackRow.tsx](src/features/music-archive/components/admin/editor/TrackRow.tsx) — single track inline editor
+- [editor/AddTrackForm.tsx](src/features/music-archive/components/admin/editor/AddTrackForm.tsx) — new-track form
+- [editor/CoverField.tsx](src/features/music-archive/components/admin/editor/CoverField.tsx) — single cover slot
+
+Result: the editor is reviewable, each piece testable in isolation, and adding a new field touches one small file instead of scrolling through hundreds of lines. **Make this a habit on every new component, not a cleanup chore at the end.**
+
 ## Always verify UI changes in the browser
 
 After implementing or modifying any user-facing flow (CRUD forms, menus, routes, mutations, etc.), open the dev server in the browser via Chrome DevTools MCP (`mcp__chrome-devtools__*`) and exercise the new path end-to-end before declaring it done. Drive the actual happy path (e.g. for CRUD: open the form, submit, then edit, then delete) and confirm the resulting page state, redirects, and DB side-effects (via the Supabase MCP if needed). Typecheck and `pnpm build` only prove the code compiles — they don't prove the feature works. If the browser cannot be reached for some reason, say so explicitly rather than claiming success.
