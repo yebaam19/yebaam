@@ -24,6 +24,7 @@ import { trackFormatFromMime } from '../upload/constants';
 import { AlbumFieldsForm } from './editor/AlbumFieldsForm';
 import { TrackRow } from './editor/TrackRow';
 import { AddTrackForm } from './editor/AddTrackForm';
+import { AlbumGenresSection } from './editor/AlbumGenresSection';
 
 interface Props {
   albumId: string;
@@ -221,6 +222,10 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
               saving={saving}
               onSave={handleSaveAlbum}
             />
+
+            <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+              <AlbumGenresSection albumId={albumId} />
+            </div>
 
             <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
               <h4 className="mb-3 text-sm font-semibold">Canciones ({tracks.length})</h4>

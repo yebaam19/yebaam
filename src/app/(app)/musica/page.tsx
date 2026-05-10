@@ -10,8 +10,10 @@ import {
   listAlbumsFiltered,
   listLatestAlbums,
 } from '@/features/music-archive/server/music.server';
+import { listMusicClubs } from '@/features/music-archive/server/clubs.server';
 import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCard';
 import { MusicSearchBar } from '@/features/music-archive/components/MusicSearchBar';
+import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
 import { getServerClient } from '@/utils/supabase/server';
 
 export const metadata: Metadata = {
@@ -172,11 +174,12 @@ export default async function MusicArchiveLandingPage({
   const country = COUNTRIES.some((c) => c.code === countryCode) ? countryCode : undefined;
   const isFiltered = decade !== undefined || country !== undefined;
 
-  const [albums, client] = await Promise.all([
+  const [albums, client, clubs] = await Promise.all([
     isFiltered
       ? listAlbumsFiltered({ decade, country, limit: 60 })
       : listLatestAlbums(24),
     getServerClient(),
+    listMusicClubs(),
   ]);
   const { data: userData } = await client.auth.getUser();
   const isAuthed = Boolean(userData.user);
@@ -297,6 +300,27 @@ export default async function MusicArchiveLandingPage({
           </div>
         )}
       </section>
+
+      {clubs.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Clubes de coleccionistas
+            </h2>
+            <Link
+              href={'/musica/clubes' as Route}
+              className="text-xs font-medium text-zinc-600 hover:text-amber-700 hover:underline dark:text-zinc-300"
+            >
+              Ver todos los clubes →
+            </Link>
+          </div>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Cada género es un club independiente. Únete y explora discos de salsa, tango, bolero,
+            mambo y más.
+          </p>
+          <MusicClubsGrid clubs={clubs} limit={8} />
+        </section>
+      )}
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Explorar por década</h2>

@@ -5,8 +5,10 @@ import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
 import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
+import { listClubsForAlbum } from '@/features/music-archive/server/clubs.server';
 import { AlbumTracklist } from '@/features/music-archive/components/AlbumTracklist';
 import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
+import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
 
 const FORMAT_LABEL: Record<string, string> = {
   lp: 'LP',
@@ -40,6 +42,8 @@ export default async function AlbumPage({
   const { slug } = await params;
   const album = await getAlbumBySlug(slug);
   if (!album) notFound();
+
+  const clubs = await listClubsForAlbum(album.id);
 
   // Pre-sign R2 URLs for every track in parallel. The TTL is 1h which is
   // plenty for a single page session.
@@ -115,6 +119,12 @@ export default async function AlbumPage({
             )}
             <Field label="Canciones" value={String(album.tracks.length)} />
           </dl>
+
+          {clubs.length > 0 && (
+            <div className="pt-2">
+              <AlbumGenreTags clubs={clubs} />
+            </div>
+          )}
         </div>
       </div>
 
