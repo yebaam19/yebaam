@@ -40,8 +40,7 @@ export async function updateClubProfile(
   if (error) return { ok: false, error: error.message };
   const slug = (data as { slug: string } | null)?.slug;
   if (slug) {
-    revalidatePath(`/musica/clubes/${slug}`);
-    revalidatePath(`/musica/clubes/${slug}/reglas`);
+    revalidatePath(`/musica/clubes/${slug}`, 'layout');
   }
   revalidatePath('/admin/music');
   return { ok: true, data: { updated: true } };

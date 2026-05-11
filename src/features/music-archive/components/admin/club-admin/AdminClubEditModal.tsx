@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { uploadService } from '@/lib/service/upload.service';
+import { imageUrl } from '@/lib/media/urls';
 import { updateClubProfile } from '../../../actions/club-admin.actions';
 
 interface ClubRow {
@@ -26,6 +27,18 @@ export function AdminClubEditModal({ club, onClose, onSaved }: Props) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const newCoverPreview = useMemo(
+    () => (coverFile ? URL.createObjectURL(coverFile) : null),
+    [coverFile],
+  );
+  useEffect(() => {
+    if (!newCoverPreview) return;
+    return () => URL.revokeObjectURL(newCoverPreview);
+  }, [newCoverPreview]);
+  const currentCoverUrl = club.cover_image_url
+    ? imageUrl(club.cover_image_url, 'cover')
+    : null;
 
   function setRule(i: number, value: string) {
     setRules((prev) => prev.map((r, idx) => (idx === i ? value : r)));
@@ -142,12 +155,29 @@ export function AdminClubEditModal({ club, onClose, onSaved }: Props) {
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
               Imagen de portada
             </label>
+            {(newCoverPreview || currentCoverUrl) && (
+              <div className="mb-2 flex items-center gap-3">
+                <div className="h-20 w-32 overflow-hidden rounded-md border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
+                  <img
+                    src={newCoverPreview ?? currentCoverUrl ?? ''}
+                    alt={newCoverPreview ? 'Nueva portada' : 'Portada actual'}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <p className="text-xs text-zinc-500">
+                  {newCoverPreview ? 'Nueva portada (sin guardar)' : 'Portada actual'}
+                </p>
+              </div>
+            )}
             <input
               type="file"
               accept="image/*"
               onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
               className="text-sm"
             />
+            <p className="mt-1 text-xs text-zinc-500">
+              Se sube a Cloudflare Images y se muestra como banner en /musica/clubes/{club.slug}.
+            </p>
           </div>
         </div>
         {error && (
