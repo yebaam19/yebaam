@@ -5,6 +5,7 @@ import { ChevronDownIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { parseVideoEmbed } from '@/lib/utils/video-embed';
 import type { MusicMediaItem } from '../../types/music-media.types';
+import { JoinClubInline } from './JoinClubInline';
 import { MediaTagChips } from './MediaTagChips';
 import { useMediaPlayerStore } from './mediaPlayerStore';
 
@@ -46,31 +47,38 @@ export function MusicMediaLightbox() {
       onClick={close}
     >
       <div
-        className="relative flex h-full w-full max-w-full flex-col overflow-hidden rounded-none bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-2xl sm:rounded-xl lg:max-w-4xl xl:max-w-5xl dark:bg-zinc-900"
+        className="relative flex h-full w-full max-w-full flex-col overflow-hidden rounded-none bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-2xl sm:rounded-xl lg:max-w-3xl xl:max-w-4xl dark:bg-zinc-900"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5 sm:top-3 sm:right-3">
-          {canMinimize && (
+        <header className="flex flex-none items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="min-w-0 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            {item.caption ?? (
+              <span className="italic text-zinc-400">Sin descripción</span>
+            )}
+          </p>
+          <div className="flex flex-none items-center gap-1">
+            {canMinimize && (
+              <button
+                type="button"
+                onClick={minimize}
+                aria-label="Minimizar a mini reproductor"
+                title="Minimizar (seguir viendo mientras navegas)"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus:ring-2 focus:ring-amber-400 focus:outline-none dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              >
+                <ChevronDownIcon className="h-5 w-5" />
+              </button>
+            )}
             <button
+              ref={closeRef}
               type="button"
-              onClick={minimize}
-              aria-label="Minimizar a mini reproductor"
-              title="Minimizar (seguir viendo mientras navegas)"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 focus:ring-2 focus:ring-white/70 focus:outline-none"
+              onClick={close}
+              aria-label="Cerrar"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus:ring-2 focus:ring-amber-400 focus:outline-none dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
-              <ChevronDownIcon className="h-5 w-5" />
+              <XMarkIcon className="h-5 w-5" />
             </button>
-          )}
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={close}
-            aria-label="Cerrar"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 focus:ring-2 focus:ring-white/70 focus:outline-none"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
+          </div>
+        </header>
 
         <div className="flex flex-none items-center justify-center bg-black">
           <MediaPreview item={item} />
@@ -89,6 +97,18 @@ export function MusicMediaLightbox() {
                 albums={item.albums}
                 clubs={item.clubs}
               />
+            )}
+            {item.clubs.length > 0 && (
+              <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                {item.clubs.map((c) => (
+                  <JoinClubInline
+                    key={c.id}
+                    clubId={c.id}
+                    clubName={c.name}
+                    clubSlug={c.slug}
+                  />
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -109,7 +129,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
   }
   if (item.kind === 'video' && item.source === 'cf_stream' && item.cf_stream_uid) {
     return (
-      <div className="aspect-video w-full min-h-[50dvh] bg-black sm:min-h-[60dvh]">
+      <div className="aspect-video w-full bg-black">
         <iframe
           src={`https://iframe.videodelivery.net/${item.cf_stream_uid}`}
           allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
@@ -124,7 +144,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
     const parsed = parseVideoEmbed(item.embed_url);
     if (parsed) {
       return (
-        <div className="aspect-video w-full min-h-[50dvh] bg-black sm:min-h-[60dvh]">
+        <div className="aspect-video w-full bg-black">
           <iframe
             src={parsed.embedSrc}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
