@@ -4,6 +4,7 @@ export const OCCUPATION_COLOR: Record<OccupationSlug | 'unknown', string> = {
   estudiante: '#3b82f6',
   comerciante: '#f97316',
   empleado: '#10b981',
+  desempleado: '#f43f5e',
   empresario: '#ef4444',
   profesional_independiente: '#8b5cf6',
   trabajador_independiente: '#06b6d4',

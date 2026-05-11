@@ -7,6 +7,7 @@ export const OCCUPATIONS = [
   { slug: 'estudiante', label: 'Estudiante' },
   { slug: 'comerciante', label: 'Comerciante' },
   { slug: 'empleado', label: 'Empleado' },
+  { slug: 'desempleado', label: 'Desempleado' },
   { slug: 'empresario', label: 'Empresario' },
   { slug: 'profesional_independiente', label: 'Profesional Independiente' },
   { slug: 'trabajador_independiente', label: 'Trabajador Independiente' },
