@@ -9,27 +9,42 @@ import {
   deleteMusicClubPost,
 } from '../../actions/music-posts.actions';
 import type { ClubPostRow } from '../../types/music.types';
+import type { ClubJoinStatus } from '../../server/clubs.server';
+import { ClubJoinCTA } from './ClubJoinCTA';
 
 interface Props {
   clubId: string;
+  clubSlug: string;
   posts: ClubPostRow[];
   canPost: boolean;
+  joinStatus: ClubJoinStatus;
   viewerId: string | null;
   canModerate: boolean;
 }
 
 /** Posts feed with inline composer at top. Members write notes, share albums,
- *  link articles, post media. Composer is hidden for non-members. */
-export function MusicPostsFeed({ clubId, posts, canPost, viewerId, canModerate }: Props) {
+ *  link articles, post media. Non-members see an inline join CTA. */
+export function MusicPostsFeed({
+  clubId,
+  clubSlug,
+  posts,
+  canPost,
+  joinStatus,
+  viewerId,
+  canModerate,
+}: Props) {
   const router = useRouter();
   return (
     <div className="space-y-4">
       {canPost ? (
         <Composer clubId={clubId} onCreated={() => router.refresh()} />
       ) : (
-        <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-4 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          Únete al club para publicar.
-        </p>
+        <ClubJoinCTA
+          clubId={clubId}
+          clubSlug={clubSlug}
+          status={joinStatus}
+          label="Únete al club para publicar y participar en las discusiones."
+        />
       )}
 
       {posts.length === 0 ? (

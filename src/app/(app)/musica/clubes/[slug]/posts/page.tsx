@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getServerClient } from '@/utils/supabase/server';
 import {
   getMusicClubBySlug,
+  getViewerJoinStatus,
   getViewerRoleInClub,
   listClubPosts,
 } from '@/features/music-archive/server/clubs.server';
@@ -15,9 +16,10 @@ export default async function ClubPostsPage({
   const { slug } = await params;
   const club = await getMusicClubBySlug(slug);
   if (!club) notFound();
-  const [posts, viewerRole] = await Promise.all([
+  const [posts, viewerRole, joinStatus] = await Promise.all([
     listClubPosts(club.id, 50),
     getViewerRoleInClub(club.id),
+    getViewerJoinStatus(club.id),
   ]);
   const client = await getServerClient();
   const { data: u } = await client.auth.getUser();
@@ -31,8 +33,10 @@ export default async function ClubPostsPage({
       </h2>
       <MusicPostsFeed
         clubId={club.id}
+        clubSlug={slug}
         posts={posts}
         canPost={canPost}
+        joinStatus={joinStatus}
         viewerId={u.user?.id ?? null}
         canModerate={canModerate}
       />
