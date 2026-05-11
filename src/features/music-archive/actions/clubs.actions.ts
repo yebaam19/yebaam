@@ -1,0 +1,88 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { slugify } from '@/lib/api/clubs';
+import { requireSession, type ActionResult } from './_shared';
+import { MUSIC_GENRES, type MusicGenre } from '../types/music.types';
+
+interface CreateMusicClubDto {
+  name: string;
+  musicGenre: MusicGenre;
+  description?: string;
+  coverCfImageId?: string | null;
+}
+
+/** Authenticated user creates a new music club. RLS lets any authed user
+ *  insert with owner_id = auth.uid(). Slug is auto-derived from name with a
+ *  5-attempt collision retry. Creator is enrolled as approved OWNER. */
+export async function createMusicClub(
+  dto: CreateMusicClubDto,
+): Promise<ActionResult<{ id: string; slug: string }>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: 'Inicia sesión para crear un club.' };
+  const { client, userId } = session;
+
+  const name = dto.name.trim();
+  if (name.length < 3 || name.length > 80) {
+    return { ok: false, error: 'El nombre debe tener entre 3 y 80 caracteres.' };
+  }
+  if (!(MUSIC_GENRES as readonly string[]).includes(dto.musicGenre)) {
+    return { ok: false, error: 'Género musical inválido.' };
+  }
+  const description = (dto.description ?? '').trim();
+  if (description.length > 1000) {
+    return { ok: false, error: 'La descripción no puede exceder 1000 caracteres.' };
+  }
+
+  // Slug with 5-attempt collision retry — same pattern as /api/clubs/route.ts.
+  const baseSlug = slugify(name);
+  let slug = baseSlug;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { data: conflict } = await client
+      .from('clubs')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (!conflict) break;
+    slug = `${baseSlug}-${Math.floor(Math.random() * 10000)}`;
+  }
+
+  const { data: inserted, error } = await client
+    .from('clubs')
+    .insert({
+      owner_id: userId,
+      name,
+      slug,
+      description,
+      category: 'MUSICA',
+      privacy: 'PUBLIC',
+      music_genre: dto.musicGenre,
+      cover_image_url: dto.coverCfImageId || null,
+      membership_tiers: ['FREE'],
+      rules: [],
+      tags: [],
+    })
+    .select('id, slug')
+    .single();
+  if (error || !inserted) {
+    return { ok: false, error: error?.message ?? 'No se pudo crear el club.' };
+  }
+  const row = inserted as { id: string; slug: string };
+
+  // Enroll creator as approved OWNER. status defaults to 'approved' per
+  // Phase A.5 migration, so no need to set it explicitly.
+  const { error: memErr } = await client
+    .from('club_members')
+    .upsert(
+      { club_id: row.id, user_id: userId, role: 'OWNER', membership_tier: 'FREE' },
+      { onConflict: 'club_id,user_id' },
+    );
+  if (memErr) {
+    return { ok: false, error: memErr.message };
+  }
+
+  revalidatePath('/musica/clubes');
+  revalidatePath('/musica');
+  revalidatePath('/admin/music');
+  return { ok: true, data: row };
+}

@@ -258,6 +258,45 @@ export interface PlayItem {
 
 // ---------- Phase A: music club deep features ----------
 
+/** The fixed list of music_genre enum values (matches the DB enum). Single
+ *  source of truth so the create-club dropdown, RLS check, and any future
+ *  filter UI all reference the same set. */
+export const MUSIC_GENRES = [
+  'salsa',
+  'tango',
+  'bolero',
+  'mambo',
+  'son_cubano',
+  'cumbia',
+  'vallenato',
+  'bossa_nova',
+  'balada',
+  'rock_antiguo',
+  'folclorica',
+  'nueva_cancion',
+  'tejano',
+  'hip_hop_latino',
+] as const;
+export type MusicGenre = (typeof MUSIC_GENRES)[number];
+
+/** Human-readable Spanish labels for the dropdown. */
+export const MUSIC_GENRE_LABELS: Record<MusicGenre, string> = {
+  salsa: 'Salsa',
+  tango: 'Tango',
+  bolero: 'Bolero',
+  mambo: 'Mambo',
+  son_cubano: 'Son cubano',
+  cumbia: 'Cumbia',
+  vallenato: 'Vallenato',
+  bossa_nova: 'Bossa nova',
+  balada: 'Balada',
+  rock_antiguo: 'Rock antiguo',
+  folclorica: 'Folclórica',
+  nueva_cancion: 'Nueva canción',
+  tejano: 'Tejano',
+  hip_hop_latino: 'Hip hop latino',
+};
+
 export type AlbumReactionKind = 'like' | 'love' | 'fire' | 'star';
 
 export type ClubLinkKind = 'venue' | 'museum' | 'shop' | 'archive' | 'related';
