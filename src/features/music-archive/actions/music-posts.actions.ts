@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { requireSession, type ActionResult } from './_shared';
-import type { ClubPostRow } from '../types/music.types';
 
 interface CreatePostDto {
   clubId: string;
@@ -82,5 +81,3 @@ export async function deleteMusicClubPost(
   }
   return { ok: true, data: { removed: true } };
 }
-
-export type { ClubPostRow };
