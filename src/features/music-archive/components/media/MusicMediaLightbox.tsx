@@ -47,7 +47,7 @@ export function MusicMediaLightbox() {
       onClick={close}
     >
       <div
-        className="relative flex h-full w-full max-w-full flex-col overflow-hidden rounded-none bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-2xl sm:rounded-xl lg:max-w-3xl xl:max-w-4xl dark:bg-zinc-900"
+        className="relative flex h-full w-full max-w-full flex-col overflow-hidden rounded-none bg-white shadow-2xl sm:h-auto sm:max-h-[95dvh] sm:max-w-3xl sm:rounded-xl lg:max-w-5xl xl:max-w-6xl dark:bg-zinc-900"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex flex-none items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
