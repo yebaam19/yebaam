@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Route } from 'next'
-import { listActiveUsers } from '@/app/(app)/foro/server/admin.server'
+import { listActiveUsers } from '@/features/admin/server/users.server'
 import UserAvatar from '@/features/foro/components/UserAvatar'
 import { occupationLabel } from '@/features/auth/constants/occupations'
 
