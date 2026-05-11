@@ -3,9 +3,9 @@ import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import {
   ensureClubForumSpace,
   ensureClubPublicChat,
+  generateUniqueClubSlug,
   loadClubContext,
   mapClub,
-  slugify,
   type ClubRow,
 } from '@/lib/api/clubs';
 
@@ -42,17 +42,7 @@ export async function POST(request: NextRequest) {
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const baseSlug = slugify(name);
-  let slug = baseSlug;
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data: conflict } = await client
-      .from('clubs')
-      .select('id')
-      .eq('slug', slug)
-      .maybeSingle();
-    if (!conflict) break;
-    slug = `${baseSlug}-${Math.floor(Math.random() * 10000)}`;
-  }
+  const slug = await generateUniqueClubSlug(client, name);
 
   const insertRow = {
     owner_id: userId,

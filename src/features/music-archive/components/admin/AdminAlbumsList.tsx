@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
 import { imageUrl } from '@/lib/media/urls';
-import { deleteAlbum, listAdminAlbums } from '../../actions/albums.actions';
+import {
+  bulkToggleForTrade,
+  deleteAlbum,
+  listAdminAlbums,
+} from '../../actions/albums.actions';
 import { inputCls } from '../upload/constants';
 import { useAdminEntitySearch } from './useAdminEntitySearch';
 import { AdminAlbumEditor } from './AdminAlbumEditor';
@@ -17,6 +21,8 @@ interface AlbumRow {
   format: string;
   cover_cf_image_id: string | null;
   catalog_number: string | null;
+  condition: string | null;
+  for_trade: boolean;
   artist_id: string;
   artist_name: string;
   track_count: number;
@@ -34,6 +40,47 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
     });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<AlbumRow | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkPending, startBulkTransition] = useTransition();
+  const [bulkError, setBulkError] = useState<string | null>(null);
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAllOnPage(visible: AlbumRow[]) {
+    setSelected((prev) => {
+      const allSelected = visible.every((r) => prev.has(r.id));
+      if (allSelected) return new Set();
+      const next = new Set(prev);
+      for (const r of visible) next.add(r.id);
+      return next;
+    });
+  }
+
+  function applyBulkForTrade(forTrade: boolean) {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setBulkError(null);
+    startBulkTransition(async () => {
+      const res = await bulkToggleForTrade(ids, forTrade);
+      if (!res.ok) {
+        setBulkError(res.error);
+        return;
+      }
+      setRows((prev) =>
+        prev.map((r) => (selected.has(r.id) ? { ...r, for_trade: forTrade } : r)),
+      );
+      setSelected(new Set());
+    });
+  }
+
+  const allOnPageSelected = rows.length > 0 && rows.every((r) => selected.has(r.id));
 
   return (
     <div className="space-y-4">
@@ -52,6 +99,41 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
           Para agregar un disco nuevo, usa la pestaña <strong>Subir disco</strong>.
         </span>
       </div>
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-700 dark:bg-amber-900/20">
+          <span className="font-medium text-amber-900 dark:text-amber-100">
+            {selected.size} seleccionado{selected.size === 1 ? '' : 's'}
+          </span>
+          <button
+            type="button"
+            onClick={() => applyBulkForTrade(true)}
+            disabled={bulkPending}
+            className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
+          >
+            Marcar para intercambio
+          </button>
+          <button
+            type="button"
+            onClick={() => applyBulkForTrade(false)}
+            disabled={bulkPending}
+            className="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+          >
+            Quitar de intercambio
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className="ml-auto text-xs text-amber-800 hover:underline dark:text-amber-200"
+          >
+            Limpiar selección
+          </button>
+        </div>
+      )}
+      {bulkError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          {bulkError}
+        </div>
+      )}
       {error && (
         <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           {error}
@@ -61,6 +143,14 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 text-left text-[11px] uppercase tracking-wide text-zinc-500 dark:bg-zinc-900/50">
             <tr>
+              <th className="px-3 py-2">
+                <input
+                  type="checkbox"
+                  aria-label="Seleccionar todos"
+                  checked={allOnPageSelected}
+                  onChange={() => selectAllOnPage(rows)}
+                />
+              </th>
               <th className="px-3 py-2">Carátula</th>
               <th className="px-3 py-2">Título</th>
               <th className="px-3 py-2">Artista</th>
@@ -68,13 +158,14 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
               <th className="px-3 py-2">País</th>
               <th className="px-3 py-2">Formato</th>
               <th className="px-3 py-2">Tracks</th>
+              <th className="px-3 py-2">Intercambio</th>
               <th className="px-3 py-2 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-xs text-zinc-500">
+                <td colSpan={10} className="px-3 py-8 text-center text-xs text-zinc-500">
                   {pending ? '…' : 'No hay álbumes.'}
                 </td>
               </tr>
@@ -84,6 +175,14 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
                   key={a.id}
                   className="border-t border-zinc-100 bg-white dark:border-zinc-800 dark:bg-zinc-900"
                 >
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(a.id)}
+                      onChange={() => toggleSelect(a.id)}
+                      aria-label={`Seleccionar ${a.title}`}
+                    />
+                  </td>
                   <td className="px-3 py-2">
                     {a.cover_cf_image_id ? (
                       <img
@@ -103,6 +202,15 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
                   <td className="px-3 py-2 text-zinc-500">{a.country ?? '—'}</td>
                   <td className="px-3 py-2 text-zinc-500">{a.format.toUpperCase()}</td>
                   <td className="px-3 py-2 tabular-nums text-zinc-500">{a.track_count}</td>
+                  <td className="px-3 py-2">
+                    {a.for_trade ? (
+                      <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+                        Sí
+                      </span>
+                    ) : (
+                      <span className="text-xs text-zinc-400">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-right">
                     <button
                       type="button"
@@ -145,6 +253,8 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
                       format: updated.format,
                       cover_cf_image_id: updated.cover_cf_image_id,
                       catalog_number: updated.catalog_number,
+                      condition: updated.condition,
+                      for_trade: Boolean(updated.for_trade),
                     }
                   : r,
               ),

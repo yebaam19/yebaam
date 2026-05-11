@@ -24,6 +24,15 @@ export function AdminMusicStats({ stats, error }: Props) {
   }
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => downloadJson(stats)}
+          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        >
+          Descargar JSON
+        </button>
+      </div>
       <section>
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
           Totales
@@ -106,6 +115,24 @@ export function AdminMusicStats({ stats, error }: Props) {
       </section>
     </div>
   );
+}
+
+function downloadJson(stats: MusicArchiveStats) {
+  const payload = JSON.stringify(
+    { generated_at: new Date().toISOString(), ...stats },
+    null,
+    2,
+  );
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `music-archive-stats-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function StatCard({

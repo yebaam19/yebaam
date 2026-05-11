@@ -35,6 +35,8 @@ interface AlbumRow {
   format: string;
   cover_cf_image_id: string | null;
   catalog_number: string | null;
+  condition: string | null;
+  for_trade: boolean;
   artist_id: string;
   artist_name: string;
   track_count: number;

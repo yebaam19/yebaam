@@ -12,10 +12,12 @@ import {
 } from '@/features/music-archive/server/music.server';
 import { listMusicClubs } from '@/features/music-archive/server/clubs.server';
 import { listLatestMusicMedia } from '@/features/music-archive/server/music-media.server';
+import { listMusicGenres } from '@/features/music-archive/server/genres.server';
 import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCard';
 import { MusicSearchBar } from '@/features/music-archive/components/MusicSearchBar';
 import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
 import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
+import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
 import { getServerClient } from '@/utils/supabase/server';
 
 export const metadata: Metadata = {
@@ -144,11 +146,19 @@ function TurntableIllustration() {
   );
 }
 
-function buildHref(opts: { decade?: number; country?: string; forTrade?: boolean }): Route {
+function buildHref(opts: {
+  decade?: number;
+  country?: string;
+  forTrade?: boolean;
+  genre?: string;
+  condition?: string;
+}): Route {
   const params = new URLSearchParams();
   if (opts.decade !== undefined) params.set('decade', String(opts.decade));
   if (opts.country) params.set('country', opts.country);
   if (opts.forTrade) params.set('trade', '1');
+  if (opts.genre) params.set('genre', opts.genre);
+  if (opts.condition) params.set('condition', opts.condition);
   const qs = params.toString();
   return (qs ? `/musica?${qs}` : '/musica') as Route;
 }
@@ -157,15 +167,19 @@ function filteredHeading(
   decade: number | undefined,
   country: string | undefined,
   forTrade: boolean,
+  genreName: string | null,
+  conditionLabel: string | null,
 ): string {
   const decadeLabel = decade !== undefined ? `los ${decade}s` : null;
   const countryLabel = country
     ? COUNTRIES.find((c) => c.code === country)?.label ?? country
     : null;
   const parts: string[] = [];
+  if (genreName) parts.push(`de ${genreName.toLowerCase()}`);
   if (decadeLabel) parts.push(`de ${decadeLabel}`);
   if (countryLabel) parts.push(`en ${countryLabel}`);
   if (forTrade) parts.push('para intercambio');
+  if (conditionLabel) parts.push(`en estado ${conditionLabel}`);
   if (parts.length === 0) return 'Subidos recientemente';
   return `Álbumes ${parts.join(' ')}`;
 }
@@ -173,7 +187,13 @@ function filteredHeading(
 export default async function MusicArchiveLandingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ decade?: string; country?: string; trade?: string }>;
+  searchParams: Promise<{
+    decade?: string;
+    country?: string;
+    trade?: string;
+    genre?: string;
+    condition?: string;
+  }>;
 }) {
   const sp = await searchParams;
 
@@ -182,16 +202,31 @@ export default async function MusicArchiveLandingPage({
   const countryCode = (sp.country ?? '').toUpperCase();
   const country = COUNTRIES.some((c) => c.code === countryCode) ? countryCode : undefined;
   const forTrade = sp.trade === '1';
-  const isFiltered = decade !== undefined || country !== undefined || forTrade;
+  const genreSlug = sp.genre?.trim() || undefined;
+  const conditionValue =
+    sp.condition && sp.condition in ALBUM_CONDITION_LABELS ? (sp.condition as AlbumCondition) : undefined;
 
-  const [albums, client, clubs, media] = await Promise.all([
+  const isFiltered =
+    decade !== undefined || country !== undefined || forTrade || !!genreSlug || !!conditionValue;
+
+  const [albums, client, clubs, media, genres] = await Promise.all([
     isFiltered
-      ? listAlbumsFiltered({ decade, country, forTrade, limit: 60 })
+      ? listAlbumsFiltered({
+          decade,
+          country,
+          forTrade,
+          genreSlug,
+          condition: conditionValue,
+          limit: 60,
+        })
       : listLatestAlbums(24),
     getServerClient(),
     listMusicClubs(),
     listLatestMusicMedia(12),
+    listMusicGenres(),
   ]);
+  const genreName = genreSlug ? genres.find((g) => g.slug === genreSlug)?.name ?? null : null;
+  const conditionLabel = conditionValue ? ALBUM_CONDITION_LABELS[conditionValue] : null;
   const { data: userData } = await client.auth.getUser();
   const isAuthed = Boolean(userData.user);
 
@@ -204,7 +239,7 @@ export default async function MusicArchiveLandingPage({
     }
   }
 
-  const heading = filteredHeading(decade, country, forTrade);
+  const heading = filteredHeading(decade, country, forTrade, genreName, conditionLabel);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -359,7 +394,13 @@ export default async function MusicArchiveLandingPage({
             return (
               <Link
                 key={d.start}
-                href={buildHref({ decade: active ? undefined : d.start, country, forTrade })}
+                href={buildHref({
+                  decade: active ? undefined : d.start,
+                  country,
+                  forTrade,
+                  genre: genreSlug,
+                  condition: conditionValue,
+                })}
                 className={pillClass(active)}
                 aria-pressed={active}
               >
@@ -374,12 +415,72 @@ export default async function MusicArchiveLandingPage({
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Intercambio</h2>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={buildHref({ decade, country, forTrade: !forTrade })}
+            href={buildHref({
+              decade,
+              country,
+              forTrade: !forTrade,
+              genre: genreSlug,
+              condition: conditionValue,
+            })}
             className={pillClass(forTrade)}
             aria-pressed={forTrade}
           >
             Solo disponibles para intercambio
           </Link>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          Explorar por género
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {genres.map((g) => {
+            const active = genreSlug === g.slug;
+            return (
+              <Link
+                key={g.id}
+                href={buildHref({
+                  decade,
+                  country,
+                  forTrade,
+                  genre: active ? undefined : g.slug,
+                  condition: conditionValue,
+                })}
+                className={pillClass(active)}
+                aria-pressed={active}
+              >
+                {g.name}
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          Estado de conservación
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(ALBUM_CONDITION_LABELS) as AlbumCondition[]).map((c) => {
+            const active = conditionValue === c;
+            return (
+              <Link
+                key={c}
+                href={buildHref({
+                  decade,
+                  country,
+                  forTrade,
+                  genre: genreSlug,
+                  condition: active ? undefined : c,
+                })}
+                className={pillClass(active)}
+                aria-pressed={active}
+              >
+                {ALBUM_CONDITION_LABELS[c]}
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -391,7 +492,13 @@ export default async function MusicArchiveLandingPage({
             return (
               <Link
                 key={c.code}
-                href={buildHref({ decade, country: active ? undefined : c.code, forTrade })}
+                href={buildHref({
+                  decade,
+                  country: active ? undefined : c.code,
+                  forTrade,
+                  genre: genreSlug,
+                  condition: conditionValue,
+                })}
                 className={pillClass(active)}
                 aria-pressed={active}
               >

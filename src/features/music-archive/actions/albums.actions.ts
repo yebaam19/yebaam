@@ -142,6 +142,8 @@ export async function listAdminAlbums(q?: string): Promise<
       format: string;
       cover_cf_image_id: string | null;
       catalog_number: string | null;
+      condition: string | null;
+      for_trade: boolean;
       artist_id: string;
       artist_name: string;
       track_count: number;
@@ -154,7 +156,7 @@ export async function listAdminAlbums(q?: string): Promise<
   let query = service
     .from('music_albums')
     .select(
-      'id, title, slug, year, country, format, cover_cf_image_id, catalog_number, artist_id, music_artists!inner(name)',
+      'id, title, slug, year, country, format, cover_cf_image_id, catalog_number, condition, for_trade, artist_id, music_artists!inner(name)',
     )
     .order('created_at', { ascending: false })
     .limit(200);
@@ -172,6 +174,8 @@ export async function listAdminAlbums(q?: string): Promise<
     format: string;
     cover_cf_image_id: string | null;
     catalog_number: string | null;
+    condition: string | null;
+    for_trade: boolean;
     artist_id: string;
     music_artists: { name: string } | { name: string }[];
   };
@@ -203,12 +207,38 @@ export async function listAdminAlbums(q?: string): Promise<
         format: r.format,
         cover_cf_image_id: r.cover_cf_image_id,
         catalog_number: r.catalog_number,
+        condition: r.condition,
+        for_trade: Boolean(r.for_trade),
         artist_id: r.artist_id,
         artist_name: artist?.name ?? 'Desconocido',
         track_count: countsByAlbum.get(r.id) ?? 0,
       };
     }),
   };
+}
+
+/** Flip `for_trade` on many albums at once. Platform-admin only. Useful for
+ *  curating the "available for trade" pool during a swap meet event. */
+export async function bulkToggleForTrade(
+  albumIds: string[],
+  forTrade: boolean,
+): Promise<ActionResult<{ count: number }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  if (albumIds.length === 0) return { ok: true, data: { count: 0 } };
+  const service = getServiceClient();
+  const { data, error } = await service
+    .from('music_albums')
+    .update({ for_trade: forTrade })
+    .in('id', albumIds)
+    .select('slug');
+  if (error) return { ok: false, error: error.message };
+  // Revalidate every affected detail page + the music landing.
+  revalidateMusic();
+  for (const r of (data ?? []) as Array<{ slug: string }>) {
+    revalidateMusic({ albumSlug: r.slug });
+  }
+  return { ok: true, data: { count: (data ?? []).length } };
 }
 
 /** Full album detail for the admin editor — includes tracks + artist + label

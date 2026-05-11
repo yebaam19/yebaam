@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { slugify } from '@/lib/api/clubs';
+import { generateUniqueClubSlug } from '@/lib/api/clubs';
 import { requireSession, type ActionResult } from './_shared';
 
 interface CreateMusicClubDto {
@@ -41,18 +41,7 @@ export async function createMusicClub(
     return { ok: false, error: 'La descripción no puede exceder 1000 caracteres.' };
   }
 
-  // Slug with 5-attempt collision retry — same pattern as /api/clubs/route.ts.
-  const baseSlug = slugify(name);
-  let slug = baseSlug;
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data: conflict } = await client
-      .from('clubs')
-      .select('id')
-      .eq('slug', slug)
-      .maybeSingle();
-    if (!conflict) break;
-    slug = `${baseSlug}-${Math.floor(Math.random() * 10000)}`;
-  }
+  const slug = await generateUniqueClubSlug(client, name);
 
   const { data: inserted, error } = await client
     .from('clubs')

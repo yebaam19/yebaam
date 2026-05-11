@@ -1,4 +1,5 @@
 import 'server-only';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServiceClient } from '@/utils/supabase/server';
 
 export type ClubRow = {
@@ -48,6 +49,33 @@ export function slugify(name: string): string {
       .replace(/^-+|-+$/g, '')
       .slice(0, 80) || `club-${Date.now()}`
   );
+}
+
+/**
+ * Derive a slug from `name` and return one that is not already taken by
+ * another row in `clubs.slug`. Tries up to 5 random-suffix variants before
+ * giving up and returning the last candidate (the insert will then fail with
+ * a unique-violation, which is preferable to silently returning a duplicate).
+ *
+ * Used wherever a new club gets inserted \u2014 user-facing `createMusicClub`,
+ * generic `/api/clubs` POST, and the admin-only create action.
+ */
+export async function generateUniqueClubSlug(
+  client: SupabaseClient,
+  name: string,
+): Promise<string> {
+  const baseSlug = slugify(name);
+  let slug = baseSlug;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { data: conflict } = await client
+      .from('clubs')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (!conflict) return slug;
+    slug = `${baseSlug}-${Math.floor(Math.random() * 10000)}`;
+  }
+  return slug;
 }
 
 export function mapClub(

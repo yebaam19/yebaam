@@ -1,7 +1,9 @@
 'use server';
 
+import { after } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { ensureClubForumSpace } from '@/lib/api/clubs';
+import { deleteImage } from '@/lib/cloudflare/images';
+import { ensureClubForumSpace, generateUniqueClubSlug } from '@/lib/api/clubs';
 import { getServiceClient } from '@/utils/supabase/server';
 import { adminGate, type ActionResult } from './_shared';
 
@@ -437,4 +439,130 @@ export async function listAllMusicClubMembers(): Promise<
       };
     }),
   };
+}
+
+interface AdminCreateMusicClubDto {
+  name: string;
+  musicGenreId: string;
+  description?: string;
+  coverCfImageId?: string | null;
+}
+
+/** Platform-admin create of a music club. Uses the service client to bypass
+ *  RLS so the admin can seed clubs regardless of the user-facing owner-id
+ *  constraint. Mirrors `createMusicClub` defaults so the result is
+ *  indistinguishable from a user-created club. */
+export async function adminCreateMusicClub(
+  dto: AdminCreateMusicClubDto,
+): Promise<ActionResult<{ id: string; slug: string }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+
+  const name = dto.name.trim();
+  if (name.length < 3 || name.length > 80) {
+    return { ok: false, error: 'El nombre debe tener entre 3 y 80 caracteres.' };
+  }
+  if (!dto.musicGenreId) {
+    return { ok: false, error: 'Selecciona un género musical.' };
+  }
+  const description = (dto.description ?? '').trim();
+  if (description.length > 1000) {
+    return { ok: false, error: 'La descripción no puede exceder 1000 caracteres.' };
+  }
+
+  const svc = getServiceClient();
+  const { data: genre } = await svc
+    .from('music_genres')
+    .select('id')
+    .eq('id', dto.musicGenreId)
+    .maybeSingle();
+  if (!genre) return { ok: false, error: 'Género musical inválido.' };
+
+  const slug = await generateUniqueClubSlug(svc, name);
+
+  const { data: inserted, error } = await svc
+    .from('clubs')
+    .insert({
+      owner_id: gate.userId,
+      name,
+      slug,
+      description,
+      category: 'MUSICA',
+      privacy: 'PUBLIC',
+      music_genre_id: dto.musicGenreId,
+      cover_image_url: dto.coverCfImageId || null,
+      membership_tiers: ['FREE'],
+      rules: [],
+      tags: [],
+    })
+    .select('id, slug')
+    .single();
+  if (error || !inserted) {
+    return { ok: false, error: error?.message ?? 'No se pudo crear el club.' };
+  }
+  const row = inserted as { id: string; slug: string };
+
+  const { error: memErr } = await svc
+    .from('club_members')
+    .upsert(
+      { club_id: row.id, user_id: gate.userId, role: 'OWNER', membership_tier: 'FREE' },
+      { onConflict: 'club_id,user_id' },
+    );
+  if (memErr) return { ok: false, error: memErr.message };
+
+  revalidatePath('/admin/music');
+  revalidatePath('/musica/clubes');
+  revalidatePath('/musica');
+  return { ok: true, data: row };
+}
+
+/** Platform-admin hard delete of a music club. DB cascades clean up
+ *  club_members, club_posts, club_links, club_albums, club_badges,
+ *  club_events, club_invites, club_promotions, club_reports,
+ *  music_album_clubs, music_media_clubs, and conversations. Polymorphic
+ *  refs (forum_spaces / public_chat_topics keyed on owner_type='club') are
+ *  cleared explicitly because they have no FK. music_articles.club_id is
+ *  ON DELETE SET NULL so articles persist as authored-but-unclubbed (by
+ *  design — preserves user-authored content). */
+export async function adminDeleteMusicClub(
+  clubId: string,
+): Promise<ActionResult<{ deleted: true }>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const svc = getServiceClient();
+
+  const { data: club } = await svc
+    .from('clubs')
+    .select('id, slug, cover_image_url')
+    .eq('id', clubId)
+    .maybeSingle();
+  if (!club) return { ok: false, error: 'Club no encontrado.' };
+  const c = club as { id: string; slug: string; cover_image_url: string | null };
+
+  // Clear polymorphic owners (no FK so cascade can't do it).
+  await Promise.all([
+    svc.from('forum_spaces').delete().eq('owner_type', 'club').eq('owner_id', c.id),
+    svc
+      .from('public_chat_topics')
+      .delete()
+      .eq('owner_type', 'club')
+      .eq('owner_id', c.id),
+  ]);
+
+  const { error } = await svc.from('clubs').delete().eq('id', c.id);
+  if (error) return { ok: false, error: error.message };
+
+  // Best-effort cover image cleanup. CDN orphan is recoverable later; DB
+  // integrity already succeeded, so don't fail the response on this.
+  if (c.cover_image_url) {
+    after(async () => {
+      await deleteImage(c.cover_image_url!).catch(() => {});
+    });
+  }
+
+  revalidatePath('/admin/music');
+  revalidatePath('/musica/clubes');
+  revalidatePath('/musica');
+  revalidatePath(`/musica/clubes/${c.slug}`, 'layout');
+  return { ok: true, data: { deleted: true } };
 }

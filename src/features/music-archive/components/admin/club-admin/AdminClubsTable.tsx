@@ -2,9 +2,17 @@
 
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useState, useTransition } from 'react';
-import { toggleClubForum } from '../../../actions/club-admin.actions';
+import { useMemo, useState, useTransition } from 'react';
+import {
+  adminDeleteMusicClub,
+  toggleClubForum,
+} from '../../../actions/club-admin.actions';
 import { AdminClubEditModal, type AdminClubEditRow } from './AdminClubEditModal';
+import {
+  AdminClubCreateModal,
+  type AdminClubCreatedRow,
+} from './AdminClubCreateModal';
+import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs/DeleteConfirmDialog';
 
 interface ClubRow extends AdminClubEditRow {
   music_genre_id: string;
@@ -24,17 +32,27 @@ interface GenreOption {
 
 interface Props {
   initial: ClubRow[];
-  /** Optional genre catalogue. When provided, the edit modal exposes a genre
-   *  selector so admins can reclassify the club. */
+  /** Optional genre catalogue. When provided, the edit + create modals expose
+   *  a genre selector. */
   genres?: GenreOption[];
 }
 
 export function AdminClubsTable({ initial, genres }: Props) {
   const [rows, setRows] = useState(initial);
   const [editing, setEditing] = useState<ClubRow | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<ClubRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+
+  const genreSlugById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of rows) {
+      if (r.music_genre_id && r.genre_slug) map.set(r.music_genre_id, r.genre_slug);
+    }
+    return map;
+  }, [rows]);
 
   function toggleForum(row: ClubRow) {
     setError(null);
@@ -52,8 +70,36 @@ export function AdminClubsTable({ initial, genres }: Props) {
     });
   }
 
+  function appendCreated(row: AdminClubCreatedRow) {
+    setRows((prev) => [...prev, row].sort((a, b) => a.name.localeCompare(b.name)));
+  }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    setError(null);
+    const id = deleting.id;
+    const res = await adminDeleteMusicClub(id);
+    if (!res.ok) {
+      setError(res.error);
+      throw new Error(res.error);
+    }
+    setRows((prev) => prev.filter((r) => r.id !== id));
+  }
+
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          {rows.length} {rows.length === 1 ? 'club' : 'clubes'} registrados.
+        </p>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+        >
+          + Crear club
+        </button>
+      </div>
       {error && (
         <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
           {error}
@@ -105,6 +151,13 @@ export function AdminClubsTable({ initial, genres }: Props) {
               >
                 Editar
               </button>
+              <button
+                type="button"
+                onClick={() => setDeleting(r)}
+                className="rounded-md border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
+              >
+                Eliminar
+              </button>
             </div>
           </li>
         ))}
@@ -119,6 +172,25 @@ export function AdminClubsTable({ initial, genres }: Props) {
           }}
         />
       )}
+      {creating && (
+        <AdminClubCreateModal
+          genres={genres ?? []}
+          genreSlugById={genreSlugById}
+          onClose={() => setCreating(false)}
+          onCreated={appendCreated}
+        />
+      )}
+      <DeleteConfirmDialog
+        isOpen={Boolean(deleting)}
+        title={deleting ? `Eliminar club "${deleting.name}"` : 'Eliminar club'}
+        description={
+          deleting
+            ? `Se borrarán permanentemente ${deleting.member_count} miembros, ${deleting.post_count} publicaciones y ${deleting.article_count} artículos relacionados (los artículos quedan sin club asignado). Esta acción no se puede deshacer.`
+            : ''
+        }
+        onClose={() => setDeleting(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

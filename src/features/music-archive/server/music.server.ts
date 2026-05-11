@@ -45,9 +45,42 @@ export const listAlbumsFiltered = cache(
     decade?: number;
     country?: string;
     forTrade?: boolean;
+    /** music_genres.slug — filter by albums tagged to a club whose genre
+     *  matches. Uses `music_album_clubs` pivot. */
+    genreSlug?: string;
+    condition?: string;
     limit?: number;
   }): Promise<MusicAlbumRow[]> => {
     const client = await getServerClient();
+
+    // Pre-resolve the genre filter into an album id allow-list. Cheap because
+    // music_album_clubs is small relative to music_albums and avoids a join
+    // that pulls duplicate rows.
+    let allowedIds: string[] | null = null;
+    if (opts.genreSlug) {
+      const { data: g } = await client
+        .from('music_genres')
+        .select('id')
+        .eq('slug', opts.genreSlug)
+        .maybeSingle();
+      const genreId = (g as { id: string } | null)?.id;
+      if (!genreId) return [];
+      const { data: clubs } = await client
+        .from('clubs')
+        .select('id')
+        .eq('music_genre_id', genreId);
+      const clubIds = ((clubs ?? []) as Array<{ id: string }>).map((c) => c.id);
+      if (clubIds.length === 0) return [];
+      const { data: pivots } = await client
+        .from('music_album_clubs')
+        .select('album_id')
+        .in('club_id', clubIds);
+      allowedIds = Array.from(
+        new Set(((pivots ?? []) as Array<{ album_id: string }>).map((p) => p.album_id)),
+      );
+      if (allowedIds.length === 0) return [];
+    }
+
     let q = client.from('music_albums').select('*');
     if (opts.decade !== undefined) {
       q = q.gte('year', opts.decade).lt('year', opts.decade + 10);
@@ -57,6 +90,12 @@ export const listAlbumsFiltered = cache(
     }
     if (opts.forTrade) {
       q = q.eq('for_trade', true);
+    }
+    if (opts.condition) {
+      q = q.eq('condition', opts.condition);
+    }
+    if (allowedIds) {
+      q = q.in('id', allowedIds);
     }
     const { data } = await q
       .order('year', { ascending: true, nullsFirst: false })
