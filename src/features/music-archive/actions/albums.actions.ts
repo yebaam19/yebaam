@@ -45,6 +45,8 @@ export async function createAlbum(
       label_cf_image_id: dto.labelCfImageId ?? null,
       catalog_number: dto.catalogNumber?.trim() || null,
       notes: dto.notes?.trim() || null,
+      condition: dto.condition ?? null,
+      for_trade: dto.forTrade ?? false,
       contributed_by: session.userId,
     })
     .select('*')
@@ -74,6 +76,8 @@ export async function updateAlbum(
   if (dto.labelCfImageId !== undefined) patch.label_cf_image_id = dto.labelCfImageId;
   if (dto.catalogNumber !== undefined) patch.catalog_number = dto.catalogNumber?.trim() || null;
   if (dto.notes !== undefined) patch.notes = dto.notes?.trim() || null;
+  if (dto.condition !== undefined) patch.condition = dto.condition;
+  if (dto.forTrade !== undefined) patch.for_trade = dto.forTrade;
   const { data, error } = await service
     .from('music_albums')
     .update(patch)

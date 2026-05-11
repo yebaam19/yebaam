@@ -11,6 +11,7 @@ import {
   updateTrack,
 } from '../../actions/tracks.actions';
 import type {
+  AlbumCondition,
   MusicAlbumFormat,
   MusicAlbumRow,
   MusicArtistRow,
@@ -52,6 +53,8 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
   const [format, setFormat] = useState<MusicAlbumFormat>('78rpm');
   const [catalogNumber, setCatalogNumber] = useState('');
   const [notes, setNotes] = useState('');
+  const [condition, setCondition] = useState<AlbumCondition | ''>('');
+  const [forTrade, setForTrade] = useState(false);
   const [coverFront, setCoverFront] = useState<File | null>(null);
   const [coverBack, setCoverBack] = useState<File | null>(null);
   const [labelImage, setLabelImage] = useState<File | null>(null);
@@ -78,6 +81,8 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
       setFormat(res.data.album.format);
       setCatalogNumber(res.data.album.catalog_number ?? '');
       setNotes(res.data.album.notes ?? '');
+      setCondition(res.data.album.condition ?? '');
+      setForTrade(Boolean(res.data.album.for_trade));
     });
     return () => {
       cancelled = true;
@@ -95,6 +100,8 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
         format,
         catalogNumber: catalogNumber || null,
         notes: notes || null,
+        condition: condition === '' ? null : condition,
+        forTrade,
       };
       if (coverFront) {
         const r = await uploadService.uploadImage(coverFront);
@@ -213,6 +220,10 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
               setCatalogNumber={setCatalogNumber}
               notes={notes}
               setNotes={setNotes}
+              condition={condition}
+              setCondition={setCondition}
+              forTrade={forTrade}
+              setForTrade={setForTrade}
               coverFront={coverFront}
               setCoverFront={setCoverFront}
               coverBack={coverBack}

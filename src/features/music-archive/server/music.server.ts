@@ -44,6 +44,7 @@ export const listAlbumsFiltered = cache(
   async (opts: {
     decade?: number;
     country?: string;
+    forTrade?: boolean;
     limit?: number;
   }): Promise<MusicAlbumRow[]> => {
     const client = await getServerClient();
@@ -53,6 +54,9 @@ export const listAlbumsFiltered = cache(
     }
     if (opts.country) {
       q = q.eq('country', opts.country);
+    }
+    if (opts.forTrade) {
+      q = q.eq('for_trade', true);
     }
     const { data } = await q
       .order('year', { ascending: true, nullsFirst: false })

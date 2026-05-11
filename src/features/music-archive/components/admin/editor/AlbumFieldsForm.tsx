@@ -1,10 +1,12 @@
 'use client';
 
-import type {
-  MusicAlbumFormat,
-  MusicAlbumRow,
-  MusicArtistRow,
-  MusicLabelRow,
+import {
+  ALBUM_CONDITION_LABELS,
+  type AlbumCondition,
+  type MusicAlbumFormat,
+  type MusicAlbumRow,
+  type MusicArtistRow,
+  type MusicLabelRow,
 } from '../../../types/music.types';
 import { COUNTRIES, FORMATS, inputCls } from '../../upload/constants';
 import { CoverField } from './CoverField';
@@ -25,6 +27,10 @@ interface Props {
   setCatalogNumber: (v: string) => void;
   notes: string;
   setNotes: (v: string) => void;
+  condition: AlbumCondition | '';
+  setCondition: (v: AlbumCondition | '') => void;
+  forTrade: boolean;
+  setForTrade: (v: boolean) => void;
   coverFront: File | null;
   setCoverFront: (f: File | null) => void;
   coverBack: File | null;
@@ -54,6 +60,10 @@ export function AlbumFieldsForm({
   setCatalogNumber,
   notes,
   setNotes,
+  condition,
+  setCondition,
+  forTrade,
+  setForTrade,
   coverFront,
   setCoverFront,
   coverBack,
@@ -146,6 +156,38 @@ export function AlbumFieldsForm({
           rows={3}
           className={inputCls}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="sm:col-span-2">
+          <label className="mb-1 block text-xs font-medium">Estado de conservación</label>
+          <select
+            value={condition}
+            onChange={(e) => setCondition(e.target.value as AlbumCondition | '')}
+            className={inputCls}
+          >
+            <option value="">— Sin graduar</option>
+            {(Object.keys(ALBUM_CONDITION_LABELS) as AlbumCondition[]).map((c) => (
+              <option key={c} value={c}>
+                {ALBUM_CONDITION_LABELS[c]}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-[11px] text-zinc-500">
+            Escala Goldmine. Indica el estado físico de tu copia.
+          </p>
+        </div>
+        <div className="flex items-end">
+          <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={forTrade}
+              onChange={(e) => setForTrade(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <span>Disponible para intercambio</span>
+          </label>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -14,6 +14,7 @@ import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
 import { AlbumReactionsBar } from '@/features/music-archive/components/club/AlbumReactionsBar';
 import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
+import { ALBUM_CONDITION_LABELS } from '@/features/music-archive/types/music.types';
 
 const FORMAT_LABEL: Record<string, string> = {
   lp: 'LP',
@@ -130,6 +131,10 @@ export default async function AlbumPage({
               <Field label="Cat. #" value={album.catalog_number} mono />
             )}
             <Field label="Canciones" value={String(album.tracks.length)} />
+            {album.condition && (
+              <Field label="Estado" value={ALBUM_CONDITION_LABELS[album.condition]} />
+            )}
+            {album.for_trade && <Field label="Intercambio" value="Disponible" />}
           </dl>
 
           {clubs.length > 0 && (

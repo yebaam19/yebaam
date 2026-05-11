@@ -1,4 +1,16 @@
 export type MusicAlbumFormat = 'lp' | '78rpm' | 'single' | 'ep' | 'compilation' | 'cd' | 'cassette';
+/** Physical grading of the contributor's copy. Goldmine scale, mapped to the
+ *  `album_condition` Postgres enum. Null when the contributor didn't grade it. */
+export type AlbumCondition = 'mint' | 'near_mint' | 'very_good' | 'good' | 'fair' | 'poor';
+
+export const ALBUM_CONDITION_LABELS: Record<AlbumCondition, string> = {
+  mint: 'Mint (M)',
+  near_mint: 'Near Mint (NM)',
+  very_good: 'Very Good (VG)',
+  good: 'Good (G)',
+  fair: 'Fair (F)',
+  poor: 'Poor (P)',
+};
 export type MusicTrackFormat = 'mp3' | 'flac' | 'wav' | 'ogg';
 export type MusicTrackSide = 'a' | 'b';
 export type MusicSourceMedia = '78rpm' | 'lp' | 'single' | 'cassette' | 'reel' | 'cd' | 'digital';
@@ -50,6 +62,8 @@ export interface MusicAlbumRow {
   label_cf_image_id: string | null;
   catalog_number: string | null;
   notes: string | null;
+  condition: AlbumCondition | null;
+  for_trade: boolean;
   contributed_by: string | null;
   created_at: string;
 }
@@ -118,6 +132,8 @@ export interface CreateAlbumDto {
   labelCfImageId?: string;
   catalogNumber?: string;
   notes?: string;
+  condition?: AlbumCondition;
+  forTrade?: boolean;
 }
 
 export interface CreateTrackDto {
@@ -179,6 +195,8 @@ export interface UpdateAlbumDto {
   labelCfImageId?: string | null;
   catalogNumber?: string | null;
   notes?: string | null;
+  condition?: AlbumCondition | null;
+  forTrade?: boolean;
 }
 
 /** Editable fields on an existing track (admin CRUD). */

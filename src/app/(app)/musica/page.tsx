@@ -144,29 +144,36 @@ function TurntableIllustration() {
   );
 }
 
-function buildHref(opts: { decade?: number; country?: string }): Route {
+function buildHref(opts: { decade?: number; country?: string; forTrade?: boolean }): Route {
   const params = new URLSearchParams();
   if (opts.decade !== undefined) params.set('decade', String(opts.decade));
   if (opts.country) params.set('country', opts.country);
+  if (opts.forTrade) params.set('trade', '1');
   const qs = params.toString();
   return (qs ? `/musica?${qs}` : '/musica') as Route;
 }
 
-function filteredHeading(decade: number | undefined, country: string | undefined): string {
+function filteredHeading(
+  decade: number | undefined,
+  country: string | undefined,
+  forTrade: boolean,
+): string {
   const decadeLabel = decade !== undefined ? `los ${decade}s` : null;
   const countryLabel = country
     ? COUNTRIES.find((c) => c.code === country)?.label ?? country
     : null;
-  if (decadeLabel && countryLabel) return `Álbumes de ${decadeLabel} en ${countryLabel}`;
-  if (decadeLabel) return `Álbumes de ${decadeLabel}`;
-  if (countryLabel) return `Álbumes de ${countryLabel}`;
-  return 'Subidos recientemente';
+  const parts: string[] = [];
+  if (decadeLabel) parts.push(`de ${decadeLabel}`);
+  if (countryLabel) parts.push(`en ${countryLabel}`);
+  if (forTrade) parts.push('para intercambio');
+  if (parts.length === 0) return 'Subidos recientemente';
+  return `Álbumes ${parts.join(' ')}`;
 }
 
 export default async function MusicArchiveLandingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ decade?: string; country?: string }>;
+  searchParams: Promise<{ decade?: string; country?: string; trade?: string }>;
 }) {
   const sp = await searchParams;
 
@@ -174,11 +181,12 @@ export default async function MusicArchiveLandingPage({
   const decade = DECADES.some((d) => d.start === decadeNum) ? decadeNum : undefined;
   const countryCode = (sp.country ?? '').toUpperCase();
   const country = COUNTRIES.some((c) => c.code === countryCode) ? countryCode : undefined;
-  const isFiltered = decade !== undefined || country !== undefined;
+  const forTrade = sp.trade === '1';
+  const isFiltered = decade !== undefined || country !== undefined || forTrade;
 
   const [albums, client, clubs, media] = await Promise.all([
     isFiltered
-      ? listAlbumsFiltered({ decade, country, limit: 60 })
+      ? listAlbumsFiltered({ decade, country, forTrade, limit: 60 })
       : listLatestAlbums(24),
     getServerClient(),
     listMusicClubs(),
@@ -196,7 +204,7 @@ export default async function MusicArchiveLandingPage({
     }
   }
 
-  const heading = filteredHeading(decade, country);
+  const heading = filteredHeading(decade, country, forTrade);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -351,7 +359,7 @@ export default async function MusicArchiveLandingPage({
             return (
               <Link
                 key={d.start}
-                href={buildHref({ decade: active ? undefined : d.start, country })}
+                href={buildHref({ decade: active ? undefined : d.start, country, forTrade })}
                 className={pillClass(active)}
                 aria-pressed={active}
               >
@@ -363,6 +371,19 @@ export default async function MusicArchiveLandingPage({
       </section>
 
       <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Intercambio</h2>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={buildHref({ decade, country, forTrade: !forTrade })}
+            className={pillClass(forTrade)}
+            aria-pressed={forTrade}
+          >
+            Solo disponibles para intercambio
+          </Link>
+        </div>
+      </section>
+
+      <section className="space-y-3">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Explorar por país</h2>
         <div className="flex flex-wrap gap-2">
           {COUNTRIES.map((c) => {
@@ -370,7 +391,7 @@ export default async function MusicArchiveLandingPage({
             return (
               <Link
                 key={c.code}
-                href={buildHref({ decade, country: active ? undefined : c.code })}
+                href={buildHref({ decade, country: active ? undefined : c.code, forTrade })}
                 className={pillClass(active)}
                 aria-pressed={active}
               >

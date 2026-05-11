@@ -55,6 +55,11 @@ export function AlbumCoverCard({ album, artistName }: Props) {
               </div>
             </>
           )}
+          {album.for_trade && (
+            <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow">
+              Intercambio
+            </span>
+          )}
         </div>
         <div className="flex items-start justify-between gap-2 p-3 pr-9">
           <div className="min-w-0 flex-1">
