@@ -162,15 +162,22 @@ export function AdminMusicTabs({
 }: Props) {
   const clubOptions = clubs.map((c) => ({ id: c.id, name: c.name }));
   const genreOptions = genres.map((g) => ({ id: g.id, name: g.name }));
+  const tabListClass =
+    'flex h-auto w-full justify-start overflow-x-auto whitespace-nowrap py-1 ' +
+    '[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 ' +
+    '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 ' +
+    'dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700 ' +
+    '[mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)]';
+  const triggerClass = 'flex-none';
   return (
     <Tabs>
-      <TabsList>
-        <TabsTrigger>Subir disco</TabsTrigger>
-        <TabsTrigger>Pegar enlace</TabsTrigger>
-        <TabsTrigger>Discos</TabsTrigger>
-        <TabsTrigger>Artistas</TabsTrigger>
-        <TabsTrigger>Sellos</TabsTrigger>
-        <TabsTrigger>
+      <TabsList className={tabListClass}>
+        <TabsTrigger className={triggerClass}>Subir disco</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Pegar enlace</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Discos</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Artistas</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Sellos</TabsTrigger>
+        <TabsTrigger className={triggerClass}>
           Solicitudes
           {pendingRequests.length > 0 && (
             <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1.5 text-[10px] font-bold text-white">
@@ -178,12 +185,12 @@ export function AdminMusicTabs({
             </span>
           )}
         </TabsTrigger>
-        <TabsTrigger>Miembros</TabsTrigger>
-        <TabsTrigger>Clubes</TabsTrigger>
-        <TabsTrigger>Moderar</TabsTrigger>
-        <TabsTrigger>Fotos y videos</TabsTrigger>
-        <TabsTrigger>Géneros</TabsTrigger>
-        <TabsTrigger>Estadísticas</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Miembros</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Clubes</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Moderar</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Fotos y videos</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Géneros</TabsTrigger>
+        <TabsTrigger className={triggerClass}>Estadísticas</TabsTrigger>
       </TabsList>
       <TabsContent>
         <AdminAlbumUploadForm />
