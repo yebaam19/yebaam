@@ -7,11 +7,13 @@ import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
 import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
 import { listClubsForAlbum } from '@/features/music-archive/server/clubs.server';
 import { getAlbumReactionCounts } from '@/features/music-archive/server/music-reactions.server';
+import { listMusicMediaForAlbum } from '@/features/music-archive/server/music-media.server';
 import { getServerClient } from '@/utils/supabase/server';
 import { AlbumTracklist } from '@/features/music-archive/components/AlbumTracklist';
 import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
 import { AlbumReactionsBar } from '@/features/music-archive/components/club/AlbumReactionsBar';
+import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
 
 const FORMAT_LABEL: Record<string, string> = {
   lp: 'LP',
@@ -46,10 +48,11 @@ export default async function AlbumPage({
   const album = await getAlbumBySlug(slug);
   if (!album) notFound();
 
-  const [clubs, reactions, sessionClient] = await Promise.all([
+  const [clubs, reactions, sessionClient, media] = await Promise.all([
     listClubsForAlbum(album.id),
     getAlbumReactionCounts(album.id),
     getServerClient(),
+    listMusicMediaForAlbum(album.id),
   ]);
   const { data: userData } = await sessionClient.auth.getUser();
   const signedIn = Boolean(userData.user);
@@ -156,6 +159,15 @@ export default async function AlbumPage({
       </section>
 
       <AlbumReactionsBar albumId={album.id} initial={reactions} signedIn={signedIn} />
+
+      {media.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+            Galería
+          </h2>
+          <MusicMediaGrid items={media} />
+        </section>
+      )}
 
       {(album.back_cover_cf_image_id || album.label_cf_image_id) && (
         <section>

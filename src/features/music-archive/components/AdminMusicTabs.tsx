@@ -10,6 +10,8 @@ import { AdminPendingRequestsTable } from './admin/club-admin/AdminPendingReques
 import { AdminAllMembersTable } from './admin/club-admin/AdminAllMembersTable';
 import { AdminClubsTable } from './admin/club-admin/AdminClubsTable';
 import { AdminClubModerationDrawer } from './admin/club-admin/AdminClubModerationDrawer';
+import { AdminMusicMediaList } from './admin/AdminMusicMediaList';
+import type { MusicMediaItem } from '../types/music-media.types';
 
 interface RecentImport {
   id: string;
@@ -129,6 +131,7 @@ interface Props {
   clubs: ClubRow[];
   recentPosts: PostRow[];
   recentArticles: ArticleRow[];
+  recentMedia: MusicMediaItem[];
 }
 
 export function AdminMusicTabs({
@@ -142,6 +145,7 @@ export function AdminMusicTabs({
   clubs,
   recentPosts,
   recentArticles,
+  recentMedia,
 }: Props) {
   return (
     <Tabs>
@@ -162,6 +166,7 @@ export function AdminMusicTabs({
         <TabsTrigger>Miembros</TabsTrigger>
         <TabsTrigger>Clubes</TabsTrigger>
         <TabsTrigger>Moderar</TabsTrigger>
+        <TabsTrigger>Fotos y videos</TabsTrigger>
       </TabsList>
       <TabsContent>
         <AdminAlbumUploadForm />
@@ -189,6 +194,9 @@ export function AdminMusicTabs({
       </TabsContent>
       <TabsContent>
         <AdminClubModerationDrawer posts={recentPosts} articles={recentArticles} />
+      </TabsContent>
+      <TabsContent>
+        <AdminMusicMediaList initial={recentMedia} />
       </TabsContent>
     </Tabs>
   );

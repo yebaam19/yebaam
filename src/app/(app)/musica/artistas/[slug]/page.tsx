@@ -8,8 +8,10 @@ import {
   listArticlesForArtist,
   listClubsForArtist,
 } from '@/features/music-archive/server/music-articles.server';
+import { listMusicMediaForArtist } from '@/features/music-archive/server/music-media.server';
 import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCard';
 import { MusicArticleCard } from '@/features/music-archive/components/club/MusicArticleCard';
+import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
 
 export async function generateMetadata({
   params,
@@ -33,9 +35,10 @@ export default async function ArtistPage({
   const { slug } = await params;
   const artist = await getArtistBySlug(slug);
   if (!artist) notFound();
-  const [articles, clubs] = await Promise.all([
+  const [articles, clubs, media] = await Promise.all([
     listArticlesForArtist(artist.id),
     listClubsForArtist(artist.id),
+    listMusicMediaForArtist(artist.id, 60),
   ]);
 
   const photo = artist.photo_cf_image_id ? imageUrl(artist.photo_cf_image_id, 'public') : null;
@@ -101,6 +104,15 @@ export default async function ArtistPage({
           </div>
         )}
       </section>
+
+      {media.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Fotos y videos
+          </h2>
+          <MusicMediaGrid items={media} />
+        </section>
+      )}
 
       {clubs.length > 0 && (
         <section>

@@ -11,9 +11,11 @@ import {
   listLatestAlbums,
 } from '@/features/music-archive/server/music.server';
 import { listMusicClubs } from '@/features/music-archive/server/clubs.server';
+import { listLatestMusicMedia } from '@/features/music-archive/server/music-media.server';
 import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCard';
 import { MusicSearchBar } from '@/features/music-archive/components/MusicSearchBar';
 import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
+import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
 import { getServerClient } from '@/utils/supabase/server';
 
 export const metadata: Metadata = {
@@ -174,12 +176,13 @@ export default async function MusicArchiveLandingPage({
   const country = COUNTRIES.some((c) => c.code === countryCode) ? countryCode : undefined;
   const isFiltered = decade !== undefined || country !== undefined;
 
-  const [albums, client, clubs] = await Promise.all([
+  const [albums, client, clubs, media] = await Promise.all([
     isFiltered
       ? listAlbumsFiltered({ decade, country, limit: 60 })
       : listLatestAlbums(24),
     getServerClient(),
     listMusicClubs(),
+    listLatestMusicMedia(12),
   ]);
   const { data: userData } = await client.auth.getUser();
   const isAuthed = Boolean(userData.user);
@@ -300,6 +303,24 @@ export default async function MusicArchiveLandingPage({
           </div>
         )}
       </section>
+
+      {media.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Fotos y videos
+            </h2>
+            <span className="text-xs text-zinc-500">
+              {media.length} {media.length === 1 ? 'item' : 'items'}
+            </span>
+          </div>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Sesiones de fotos, prensa de época y performances. Cada item está etiquetado con los
+            artistas que aparecen.
+          </p>
+          <MusicMediaGrid items={media} />
+        </section>
+      )}
 
       {clubs.length > 0 && (
         <section className="space-y-3">

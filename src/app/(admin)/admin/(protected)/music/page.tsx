@@ -13,6 +13,7 @@ import {
   listRecentMusicClubPosts,
 } from '@/features/music-archive/actions/club-admin.actions';
 import { listPendingJoinRequests } from '@/features/music-archive/actions/club-roles.actions';
+import { listAdminMusicMedia } from '@/features/music-archive/actions/music-media.actions';
 import { AdminMusicTabs } from '@/features/music-archive/components/AdminMusicTabs';
 
 export const metadata: Metadata = { title: 'Admin · Música' };
@@ -21,7 +22,7 @@ export default async function AdminMusicPage() {
   const admin = await requirePlatformAdmin();
   if (!admin) redirect('/admin/foros' as Route);
 
-  const [recent, albums, artists, labels, pending, members, clubs, posts, articles] =
+  const [recent, albums, artists, labels, pending, members, clubs, posts, articles, media] =
     await Promise.all([
       listRecentImports(50),
       listAdminAlbums(),
@@ -32,6 +33,7 @@ export default async function AdminMusicPage() {
       listMusicClubsForAdmin(),
       listRecentMusicClubPosts(30),
       listRecentMusicClubArticles(30),
+      listAdminMusicMedia(200),
     ]);
 
   return (
@@ -54,6 +56,7 @@ export default async function AdminMusicPage() {
         clubs={clubs.ok ? clubs.data : []}
         recentPosts={posts.ok ? posts.data : []}
         recentArticles={articles.ok ? articles.data : []}
+        recentMedia={media.ok ? media.data : []}
       />
     </div>
   );

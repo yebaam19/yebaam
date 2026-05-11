@@ -13,6 +13,7 @@ const TABS: Array<{ key: string; label: string; suffix: string }> = [
   { key: 'posts', label: 'Posts', suffix: '/posts' },
   { key: 'foro', label: 'Foro', suffix: '/foro' },
   { key: 'articulos', label: 'Artículos', suffix: '/articulos' },
+  { key: 'galeria', label: 'Galería', suffix: '/galeria' },
   { key: 'artistas', label: 'Artistas', suffix: '/artistas' },
   { key: 'miembros', label: 'Miembros', suffix: '/miembros' },
   { key: 'links', label: 'Enlaces', suffix: '/links' },
