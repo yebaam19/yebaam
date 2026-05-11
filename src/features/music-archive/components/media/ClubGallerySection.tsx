@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   QueueListIcon,
@@ -14,6 +14,30 @@ import { MusicMediaUploader } from './MusicMediaUploader';
 type ViewMode = 'feed' | 'grid';
 const STORAGE_KEY = 'yebaam:gallery-view';
 
+// useSyncExternalStore subscribers — read once on mount, react to other tabs.
+function subscribe(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY) callback();
+  };
+  window.addEventListener('storage', onStorage);
+  return () => window.removeEventListener('storage', onStorage);
+}
+
+function getSnapshot(): ViewMode {
+  try {
+    const v = window.localStorage.getItem(STORAGE_KEY);
+    return v === 'grid' ? 'grid' : 'feed';
+  } catch {
+    return 'feed';
+  }
+}
+
+// Server snapshot must be stable across renders — always 'feed' (the default).
+function getServerSnapshot(): ViewMode {
+  return 'feed';
+}
+
 interface Props {
   clubId: string;
   clubName: string;
@@ -24,23 +48,16 @@ interface Props {
 export function ClubGallerySection({ clubId, clubName, canUpload, items }: Props) {
   const router = useRouter();
   const [showUploader, setShowUploader] = useState(false);
-  const [view, setView] = useState<ViewMode>('feed');
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored === 'feed' || stored === 'grid') setView(stored);
-    } catch {
-      // ignore — private mode / disabled storage
-    }
-  }, []);
+  const stored = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [override, setOverride] = useState<ViewMode | null>(null);
+  const view: ViewMode = override ?? stored;
 
   function changeView(next: ViewMode) {
-    setView(next);
+    setOverride(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      // ignore
+      // ignore — private mode / disabled storage
     }
   }
 
