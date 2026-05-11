@@ -16,7 +16,7 @@ import { listMusicGenres } from '@/features/music-archive/server/genres.server';
 import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCard';
 import { MusicSearchBar } from '@/features/music-archive/components/MusicSearchBar';
 import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
-import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
+import { MusicMediaSmartFeed } from '@/features/music-archive/components/media/MusicMediaSmartFeed';
 import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
 import { getServerClient } from '@/utils/supabase/server';
 
@@ -347,23 +347,7 @@ export default async function MusicArchiveLandingPage({
         )}
       </section>
 
-      {media.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Fotos y videos
-            </h2>
-            <span className="text-xs text-zinc-500">
-              {media.length} {media.length === 1 ? 'item' : 'items'}
-            </span>
-          </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Sesiones de fotos, prensa de época y performances. Cada item está etiquetado con los
-            artistas que aparecen.
-          </p>
-          <MusicMediaGrid items={media} />
-        </section>
-      )}
+      {media.length > 0 && <MusicMediaSmartFeed items={media} />}
 
       {clubs.length > 0 && (
         <section className="space-y-3">
