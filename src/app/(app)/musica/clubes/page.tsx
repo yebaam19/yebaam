@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { Route } from 'next';
+import { PlusIcon } from '@/components/icons/heroicons-shim';
 import { listMusicClubs } from '@/features/music-archive/server/clubs.server';
 import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
 
@@ -24,15 +25,23 @@ export default async function MusicClubsLandingPage() {
         </Link>
       </nav>
 
-      <header className="space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
-          Clubes de coleccionistas
-        </h1>
-        <p className="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-          Cada género es un club independiente con su propia discoteca, sus miembros y sus
-          conversaciones. Únete a los que más te interesan; cada disco puede pertenecer a más de
-          un club.
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
+            Clubes de coleccionistas
+          </h1>
+          <p className="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+            Cada género es un club independiente con su propia discoteca, sus miembros y sus
+            conversaciones. Únete a los que más te interesan; cada disco puede pertenecer a más
+            de un club.
+          </p>
+        </div>
+        <Link
+          href={'/musica/clubes/nuevo' as Route}
+          className="inline-flex flex-none items-center gap-1.5 self-start rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+        >
+          <PlusIcon className="h-4 w-4" /> Crear club
+        </Link>
       </header>
 
       {clubs.length === 0 ? (
