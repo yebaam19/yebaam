@@ -8,6 +8,7 @@ import {
   setMemberRole,
 } from '../../../actions/club-roles.actions';
 import type { ClubMemberRole } from '../../../types/music.types';
+import { MoveMemberDialog } from './MoveMemberDialog';
 
 interface Row {
   user_id: string;
@@ -21,19 +22,28 @@ interface Row {
   avatar_cf_image_id: string | null;
 }
 
+interface ClubOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   initial: Row[];
+  /** Catalogue of music clubs for the "Move" dropdown. Passed by the admin
+   *  page so the table doesn't need its own fetch. */
+  clubs: ClubOption[];
 }
 
 const ROLE_OPTIONS: ClubMemberRole[] = ['OWNER', 'ADMIN', 'MODERATOR', 'MEMBER'];
 
-export function AdminAllMembersTable({ initial }: Props) {
+export function AdminAllMembersTable({ initial, clubs }: Props) {
   const [rows, setRows] = useState(initial);
   const [clubFilter, setClubFilter] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [moving, setMoving] = useState<Row | null>(null);
 
-  const clubs = useMemo(() => {
+  const filterClubs = useMemo(() => {
     const m = new Map<string, string>();
     for (const r of rows) m.set(r.club_id, r.club_name);
     return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1]));
@@ -80,7 +90,7 @@ export function AdminAllMembersTable({ initial }: Props) {
           className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800"
         >
           <option value="all">Todos ({rows.length})</option>
-          {clubs.map(([id, name]) => (
+          {filterClubs.map(([id, name]) => (
             <option key={id} value={id}>
               {name}
             </option>
@@ -131,6 +141,14 @@ export function AdminAllMembersTable({ initial }: Props) {
                 </select>
                 <button
                   type="button"
+                  onClick={() => setMoving(r)}
+                  disabled={pending}
+                  className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                >
+                  Mover
+                </button>
+                <button
+                  type="button"
                   onClick={() => remove(r)}
                   disabled={pending}
                   className="rounded-md border border-rose-300 px-2 py-1 text-xs text-rose-700 hover:bg-rose-50 disabled:opacity-40 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
@@ -141,6 +159,41 @@ export function AdminAllMembersTable({ initial }: Props) {
             );
           })}
         </ul>
+      )}
+
+      {moving && (
+        <MoveMemberDialog
+          member={{
+            user_id: moving.user_id,
+            club_id: moving.club_id,
+            club_name: moving.club_name,
+            display_name: moving.full_name || moving.username || 'Miembro',
+          }}
+          clubs={clubs}
+          onClose={() => setMoving(null)}
+          onMoved={(toClubId) => {
+            // Drop the row from the source club and insert one in the target
+            // club locally so the UI reflects the move without a refresh.
+            const target = clubs.find((c) => c.id === toClubId);
+            setRows((prev) => {
+              const without = prev.filter(
+                (r) => !(r.club_id === moving.club_id && r.user_id === moving.user_id),
+              );
+              if (!target) return without;
+              return [
+                ...without,
+                {
+                  ...moving,
+                  club_id: target.id,
+                  club_name: target.name,
+                  club_slug: '',
+                  role: 'MEMBER',
+                  joined_at: new Date().toISOString(),
+                },
+              ];
+            });
+          }}
+        />
       )}
     </div>
   );

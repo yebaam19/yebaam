@@ -10,11 +10,12 @@ interface UpdateClubProfileDto {
   rules?: string[];
   coverCfImageId?: string | null;
   name?: string;
+  musicGenreId?: string;
 }
 
 /** Platform-admin edit of a music club's profile fields. We use the service
  *  client because clubs.UPDATE is RLS-gated to club owners by default and
- *  platform admin should be able to edit any of the 14 seeded clubs. */
+ *  platform admin should be able to edit any of the seeded clubs. */
 export async function updateClubProfile(
   clubId: string,
   dto: UpdateClubProfileDto,
@@ -31,6 +32,12 @@ export async function updateClubProfile(
   if (dto.description !== undefined) updates.description = dto.description;
   if (dto.rules !== undefined) updates.rules = dto.rules;
   if (dto.coverCfImageId !== undefined) updates.cover_image_url = dto.coverCfImageId;
+  if (dto.musicGenreId !== undefined) {
+    // Verify the genre exists. RLS allows public select on music_genres.
+    const { data: g } = await svc.from('music_genres').select('id').eq('id', dto.musicGenreId).maybeSingle();
+    if (!g) return { ok: false, error: 'Género inválido.' };
+    updates.music_genre_id = dto.musicGenreId;
+  }
   const { data, error } = await svc
     .from('clubs')
     .update(updates)

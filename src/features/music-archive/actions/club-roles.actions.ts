@@ -299,3 +299,74 @@ async function revalidateMembers(clubId: string) {
     revalidatePath(`/musica/clubes/${slug}/miembros`);
   }
 }
+
+/** Platform-admin moves a user from one music club to another in one call.
+ *  Useful when curating membership across the 18 genre clubs. Behaviour:
+ *  - errors if user is the only OWNER of `fromClubId`,
+ *  - errors if user is already a member of `toClubId`,
+ *  - otherwise removes the row from `fromClubId` and inserts an approved
+ *    MEMBER row in `toClubId` (preserves the user's original role only when
+ *    moving by request — admin moves always land as MEMBER to avoid
+ *    accidental privilege escalation).
+ *  No transaction here — the failure mode is "user temporarily in neither
+ *  club" which a retry recovers from, vs. a half-applied OWNER demotion. */
+export async function moveClubMember(
+  fromClubId: string,
+  toClubId: string,
+  targetUserId: string,
+): Promise<ActionResult<{ moved: true }>> {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return { ok: false, error: 'Solo administradores.' };
+  if (fromClubId === toClubId) {
+    return { ok: false, error: 'El club origen y destino son el mismo.' };
+  }
+  const svc = admin.client;
+
+  const { data: source } = await svc
+    .from('club_members')
+    .select('role, status')
+    .eq('club_id', fromClubId)
+    .eq('user_id', targetUserId)
+    .maybeSingle();
+  if (!source) return { ok: false, error: 'El usuario no es miembro del club origen.' };
+  const sourceRole = (source as { role: string; status: string }).role;
+
+  if (sourceRole === 'OWNER') {
+    const { count } = await svc
+      .from('club_members')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('club_id', fromClubId)
+      .eq('role', 'OWNER');
+    if ((count ?? 0) <= 1) {
+      return { ok: false, error: 'No puedes mover al único dueño del club origen.' };
+    }
+  }
+
+  const { data: target } = await svc
+    .from('club_members')
+    .select('user_id')
+    .eq('club_id', toClubId)
+    .eq('user_id', targetUserId)
+    .maybeSingle();
+  if (target) return { ok: false, error: 'El usuario ya es miembro del club destino.' };
+
+  const { error: insErr } = await svc.from('club_members').insert({
+    club_id: toClubId,
+    user_id: targetUserId,
+    role: 'MEMBER',
+    status: 'approved',
+    membership_tier: 'FREE',
+  });
+  if (insErr) return { ok: false, error: insErr.message };
+
+  const { error: delErr } = await svc
+    .from('club_members')
+    .delete()
+    .eq('club_id', fromClubId)
+    .eq('user_id', targetUserId);
+  if (delErr) return { ok: false, error: delErr.message };
+
+  await Promise.all([revalidateMembers(fromClubId), revalidateMembers(toClubId)]);
+  revalidatePath('/admin/music');
+  return { ok: true, data: { moved: true } };
+}

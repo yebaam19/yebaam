@@ -12,19 +12,30 @@ interface ClubRow {
   description: string;
   rules: string[];
   cover_image_url: string | null;
+  music_genre_id?: string;
+  genre_name?: string;
+}
+
+interface GenreOption {
+  id: string;
+  name: string;
 }
 
 interface Props {
   club: ClubRow;
+  /** Optional genre catalogue. When passed, an extra selector appears so the
+   *  admin can change the club's genre. */
+  genres?: GenreOption[];
   onClose: () => void;
   onSaved: (next: ClubRow) => void;
 }
 
-export function AdminClubEditModal({ club, onClose, onSaved }: Props) {
+export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
   const [name, setName] = useState(club.name);
   const [description, setDescription] = useState(club.description);
   const [rules, setRules] = useState<string[]>(club.rules.length ? club.rules : ['']);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [genreId, setGenreId] = useState<string>(club.music_genre_id ?? '');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -60,22 +71,29 @@ export function AdminClubEditModal({ club, onClose, onSaved }: Props) {
           coverCfImageId = up.id;
         }
         const cleanRules = rules.map((r) => r.trim()).filter(Boolean);
+        const genreChanged = genreId && genreId !== club.music_genre_id;
         const res = await updateClubProfile(club.id, {
           name,
           description,
           rules: cleanRules,
           ...(coverCfImageId !== undefined ? { coverCfImageId } : {}),
+          ...(genreChanged ? { musicGenreId: genreId } : {}),
         });
         if (!res.ok) {
           setError(res.error);
           return;
         }
+        const nextGenreName = genreChanged
+          ? genres?.find((g) => g.id === genreId)?.name ?? club.genre_name
+          : club.genre_name;
         onSaved({
           ...club,
           name,
           description,
           rules: cleanRules,
           cover_image_url: coverCfImageId ?? club.cover_image_url,
+          music_genre_id: genreId || club.music_genre_id,
+          genre_name: nextGenreName,
         });
         onClose();
       } catch (err) {
@@ -120,6 +138,28 @@ export function AdminClubEditModal({ club, onClose, onSaved }: Props) {
               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
             />
           </div>
+          {genres && genres.length > 0 && (
+            <div>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Género
+              </label>
+              <select
+                value={genreId}
+                onChange={(e) => setGenreId(e.target.value)}
+                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              >
+                {!club.music_genre_id && <option value="">— Sin género —</option>}
+                {genres.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[11px] text-zinc-500">
+                Cambiar el género reclasifica este club bajo otro genre slug.
+              </p>
+            </div>
+          )}
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
               Reglas

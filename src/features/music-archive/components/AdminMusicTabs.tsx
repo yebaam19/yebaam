@@ -11,7 +11,10 @@ import { AdminAllMembersTable } from './admin/club-admin/AdminAllMembersTable';
 import { AdminClubsTable } from './admin/club-admin/AdminClubsTable';
 import { AdminClubModerationDrawer } from './admin/club-admin/AdminClubModerationDrawer';
 import { AdminMusicMediaList } from './admin/AdminMusicMediaList';
+import { AdminGenresList, type AdminGenreRow } from './admin/AdminGenresList';
+import { AdminMusicStats } from './admin/AdminMusicStats';
 import type { MusicMediaItem } from '../types/music-media.types';
+import type { MusicArchiveStats } from '../actions/admin-stats.actions';
 
 interface RecentImport {
   id: string;
@@ -134,6 +137,9 @@ interface Props {
   recentPosts: PostRow[];
   recentArticles: ArticleRow[];
   recentMedia: MusicMediaItem[];
+  genres: AdminGenreRow[];
+  stats: MusicArchiveStats | null;
+  statsError: string | null;
 }
 
 export function AdminMusicTabs({
@@ -148,7 +154,12 @@ export function AdminMusicTabs({
   recentPosts,
   recentArticles,
   recentMedia,
+  genres,
+  stats,
+  statsError,
 }: Props) {
+  const clubOptions = clubs.map((c) => ({ id: c.id, name: c.name }));
+  const genreOptions = genres.map((g) => ({ id: g.id, name: g.name }));
   return (
     <Tabs>
       <TabsList>
@@ -169,6 +180,8 @@ export function AdminMusicTabs({
         <TabsTrigger>Clubes</TabsTrigger>
         <TabsTrigger>Moderar</TabsTrigger>
         <TabsTrigger>Fotos y videos</TabsTrigger>
+        <TabsTrigger>Géneros</TabsTrigger>
+        <TabsTrigger>Estadísticas</TabsTrigger>
       </TabsList>
       <TabsContent>
         <AdminAlbumUploadForm />
@@ -189,16 +202,22 @@ export function AdminMusicTabs({
         <AdminPendingRequestsTable initial={pendingRequests} />
       </TabsContent>
       <TabsContent>
-        <AdminAllMembersTable initial={allMembers} />
+        <AdminAllMembersTable initial={allMembers} clubs={clubOptions} />
       </TabsContent>
       <TabsContent>
-        <AdminClubsTable initial={clubs} />
+        <AdminClubsTable initial={clubs} genres={genreOptions} />
       </TabsContent>
       <TabsContent>
         <AdminClubModerationDrawer posts={recentPosts} articles={recentArticles} />
       </TabsContent>
       <TabsContent>
         <AdminMusicMediaList initial={recentMedia} />
+      </TabsContent>
+      <TabsContent>
+        <AdminGenresList initial={genres} />
+      </TabsContent>
+      <TabsContent>
+        <AdminMusicStats stats={stats} error={statsError} />
       </TabsContent>
     </Tabs>
   );

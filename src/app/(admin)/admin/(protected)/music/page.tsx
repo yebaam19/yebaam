@@ -14,6 +14,8 @@ import {
 } from '@/features/music-archive/actions/club-admin.actions';
 import { listPendingJoinRequests } from '@/features/music-archive/actions/club-roles.actions';
 import { listAdminMusicMedia } from '@/features/music-archive/actions/music-media.actions';
+import { listGenresWithUsage } from '@/features/music-archive/actions/genres.actions';
+import { getMusicArchiveStats } from '@/features/music-archive/actions/admin-stats.actions';
 import { AdminMusicTabs } from '@/features/music-archive/components/AdminMusicTabs';
 
 export const metadata: Metadata = { title: 'Admin · Música' };
@@ -22,7 +24,7 @@ export default async function AdminMusicPage() {
   const admin = await requirePlatformAdmin();
   if (!admin) redirect('/admin/foros' as Route);
 
-  const [recent, albums, artists, labels, pending, members, clubs, posts, articles, media] =
+  const [recent, albums, artists, labels, pending, members, clubs, posts, articles, media, genres, stats] =
     await Promise.all([
       listRecentImports(50),
       listAdminAlbums(),
@@ -34,6 +36,8 @@ export default async function AdminMusicPage() {
       listRecentMusicClubPosts(30),
       listRecentMusicClubArticles(30),
       listAdminMusicMedia(200),
+      listGenresWithUsage(),
+      getMusicArchiveStats(),
     ]);
 
   return (
@@ -57,6 +61,9 @@ export default async function AdminMusicPage() {
         recentPosts={posts.ok ? posts.data : []}
         recentArticles={articles.ok ? articles.data : []}
         recentMedia={media.ok ? media.data : []}
+        genres={genres.ok ? genres.data : []}
+        stats={stats.ok ? stats.data : null}
+        statsError={stats.ok ? null : stats.error}
       />
     </div>
   );

@@ -17,11 +17,19 @@ interface ClubRow extends AdminClubEditRow {
   forum_enabled: boolean;
 }
 
-interface Props {
-  initial: ClubRow[];
+interface GenreOption {
+  id: string;
+  name: string;
 }
 
-export function AdminClubsTable({ initial }: Props) {
+interface Props {
+  initial: ClubRow[];
+  /** Optional genre catalogue. When provided, the edit modal exposes a genre
+   *  selector so admins can reclassify the club. */
+  genres?: GenreOption[];
+}
+
+export function AdminClubsTable({ initial, genres }: Props) {
   const [rows, setRows] = useState(initial);
   const [editing, setEditing] = useState<ClubRow | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +112,7 @@ export function AdminClubsTable({ initial }: Props) {
       {editing && (
         <AdminClubEditModal
           club={editing}
+          genres={genres}
           onClose={() => setEditing(null)}
           onSaved={(next) => {
             setRows((prev) => prev.map((r) => (r.id === next.id ? { ...r, ...next } : r)));
