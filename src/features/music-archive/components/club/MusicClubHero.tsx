@@ -53,7 +53,7 @@ export function MusicClubHero({ club }: Props) {
             }`}
           >
             <MusicalNoteIcon className="h-4 w-4" />
-            <span>Club · {club.music_genre.replace(/_/g, ' ')}</span>
+            <span>Club · {club.genre_name}</span>
           </div>
           <h1
             className={`mt-2 text-3xl font-bold tracking-tight sm:text-4xl ${

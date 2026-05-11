@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata, Route } from 'next';
 import { redirect } from 'next/navigation';
 import { getServerClient } from '@/utils/supabase/server';
+import { listMusicGenres } from '@/features/music-archive/server/genres.server';
 import { CreateMusicClubForm } from '@/features/music-archive/components/club/CreateMusicClubForm';
 
 export const metadata: Metadata = { title: 'Crear club · Archivo Musical' };
@@ -12,6 +13,7 @@ export default async function NewMusicClubPage() {
   if (!u.user) {
     redirect('/login?next=/musica/clubes/nuevo' as Route);
   }
+  const genres = await listMusicGenres();
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <nav className="text-xs">
@@ -31,7 +33,7 @@ export default async function NewMusicClubPage() {
           administradores y moderadores más tarde.
         </p>
       </header>
-      <CreateMusicClubForm />
+      <CreateMusicClubForm genres={genres.map((g) => ({ id: g.id, name: g.name }))} />
     </div>
   );
 }

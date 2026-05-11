@@ -87,7 +87,7 @@ export async function toggleClubForum(
   return { ok: true, data: { spaceSlug: null } };
 }
 
-/** List the 14 music clubs with member + post + article counts + forum status
+/** List music clubs with member + post + article counts + forum status
  *  for the admin Clubes tab. Platform-admin only. */
 export async function listMusicClubsForAdmin(): Promise<
   ActionResult<
@@ -97,7 +97,9 @@ export async function listMusicClubsForAdmin(): Promise<
       slug: string;
       description: string;
       rules: string[];
-      music_genre: string;
+      music_genre_id: string;
+      genre_slug: string;
+      genre_name: string;
       cover_image_url: string | null;
       member_count: number;
       pending_count: number;
@@ -112,23 +114,37 @@ export async function listMusicClubsForAdmin(): Promise<
   const svc = getServiceClient();
   const { data: clubs } = await svc
     .from('clubs')
-    .select('id, name, slug, description, rules, music_genre, cover_image_url')
+    .select(
+      'id, name, slug, description, rules, music_genre_id, cover_image_url, music_genres!inner(slug, name)',
+    )
     .eq('category', 'MUSICA')
-    .not('music_genre', 'is', null)
+    .not('music_genre_id', 'is', null)
     .order('name', { ascending: true });
+  type GenreJoin = { slug: string; name: string } | Array<{ slug: string; name: string }> | null;
   type Row = {
     id: string;
     name: string;
     slug: string;
     description: string;
     rules: string[] | null;
-    music_genre: string;
+    music_genre_id: string;
     cover_image_url: string | null;
+    music_genres: GenreJoin;
   };
-  const rows = ((clubs as Row[] | null) ?? []).map((r) => ({
-    ...r,
-    rules: r.rules ?? [],
-  }));
+  const rows = ((clubs as unknown as Row[] | null) ?? []).map((r) => {
+    const g = Array.isArray(r.music_genres) ? r.music_genres[0] : r.music_genres;
+    return {
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description,
+      rules: r.rules ?? [],
+      music_genre_id: r.music_genre_id,
+      cover_image_url: r.cover_image_url,
+      genre_slug: g?.slug ?? '',
+      genre_name: g?.name ?? '',
+    };
+  });
   if (rows.length === 0) return { ok: true, data: [] };
   const ids = rows.map((r) => r.id);
   const [members, posts, articles, foros] = await Promise.all([

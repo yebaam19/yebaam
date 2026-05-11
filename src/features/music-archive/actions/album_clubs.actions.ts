@@ -116,21 +116,32 @@ export async function removeAlbumFromClub(
  *  in the album editor. Server action so the client component can fetch on
  *  open without bundling a server-only helper. */
 export async function listMusicClubsForPicker(): Promise<
-  ActionResult<Array<{ id: string; name: string; slug: string; music_genre: string }>>
+  ActionResult<Array<{ id: string; name: string; slug: string; genre_slug: string; genre_name: string }>>
 > {
   const gate = await adminGate();
   if (!gate.ok) return gate;
   const service = getServiceClient();
   const { data, error } = await service
     .from('clubs')
-    .select('id, name, slug, music_genre')
+    .select('id, name, slug, music_genres!inner(slug, name)')
     .eq('category', 'MUSICA')
-    .not('music_genre', 'is', null)
+    .not('music_genre_id', 'is', null)
     .order('name', { ascending: true });
   if (error) return { ok: false, error: error.message };
+  type GenreJoin = { slug: string; name: string } | Array<{ slug: string; name: string }> | null;
+  type Row = { id: string; name: string; slug: string; music_genres: GenreJoin };
   return {
     ok: true,
-    data: (data ?? []) as Array<{ id: string; name: string; slug: string; music_genre: string }>,
+    data: ((data ?? []) as unknown as Row[]).map((r) => {
+      const g = Array.isArray(r.music_genres) ? r.music_genres[0] : r.music_genres;
+      return {
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        genre_slug: g?.slug ?? '',
+        genre_name: g?.name ?? '',
+      };
+    }),
   };
 }
 

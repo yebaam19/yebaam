@@ -7,7 +7,9 @@ import { toggleClubForum } from '../../../actions/club-admin.actions';
 import { AdminClubEditModal, type AdminClubEditRow } from './AdminClubEditModal';
 
 interface ClubRow extends AdminClubEditRow {
-  music_genre: string;
+  music_genre_id: string;
+  genre_slug: string;
+  genre_name: string;
   member_count: number;
   pending_count: number;
   post_count: number;
@@ -60,7 +62,7 @@ export function AdminClubsTable({ initial }: Props) {
                 {r.name}
               </Link>
               <p className="text-xs text-zinc-500">
-                {r.music_genre.replace(/_/g, ' ')} · {r.member_count} miembros ·{' '}
+                {r.genre_name} · {r.member_count} miembros ·{' '}
                 {r.pending_count > 0 && (
                   <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
                     {r.pending_count} pendientes

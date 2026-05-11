@@ -1,12 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import type { Route } from 'next';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { parseVideoEmbed } from '@/lib/utils/video-embed';
 import type { MusicMediaItem } from '../../types/music-media.types';
+import { MediaTagChips } from './MediaTagChips';
 
 interface Props {
   item: MusicMediaItem;
@@ -14,6 +13,8 @@ interface Props {
 }
 
 export function MusicMediaLightbox({ item, onClose }: Props) {
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -21,6 +22,8 @@ export function MusicMediaLightbox({ item, onClose }: Props) {
     document.addEventListener('keydown', onKey);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    // focus close button so Escape / Enter / keyboard nav works immediately
+    closeRef.current?.focus();
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
@@ -31,80 +34,42 @@ export function MusicMediaLightbox({ item, onClose }: Props) {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/85 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="relative max-h-full w-full max-w-4xl overflow-y-auto rounded-xl bg-white shadow-2xl dark:bg-zinc-900"
+        className="relative flex w-full max-w-full flex-col overflow-hidden rounded-none bg-white shadow-2xl dark:bg-zinc-900 sm:max-h-[92dvh] sm:max-w-2xl sm:rounded-xl lg:max-w-4xl xl:max-w-5xl"
+        style={{ maxHeight: '100dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="Cerrar"
-          className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-1.5 text-white transition hover:bg-black/80"
+          className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white/70 sm:right-3 sm:top-3"
         >
           <XMarkIcon className="h-5 w-5" />
         </button>
-        <MediaPreview item={item} />
-        <div className="space-y-3 p-4 sm:p-5">
-          {item.caption && (
-            <p className="text-sm text-zinc-700 dark:text-zinc-200">{item.caption}</p>
-          )}
-          {item.artists.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Artistas etiquetados
-              </p>
-              <ul className="mt-1 flex flex-wrap gap-1.5">
-                {item.artists.map((a) => (
-                  <li key={a.id}>
-                    <Link
-                      href={`/musica/artistas/${a.slug}` as Route}
-                      className="inline-flex rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs text-amber-900 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
-                    >
-                      {a.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {item.albums.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Álbum</p>
-              <ul className="mt-1 flex flex-wrap gap-1.5">
-                {item.albums.map((a) => (
-                  <li key={a.id}>
-                    <Link
-                      href={`/musica/albumes/${a.slug}` as Route}
-                      className="inline-flex rounded-full border border-zinc-300 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                    >
-                      {a.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {item.clubs.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Club</p>
-              <ul className="mt-1 flex flex-wrap gap-1.5">
-                {item.clubs.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      href={`/musica/clubes/${c.slug}` as Route}
-                      className="inline-flex rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs text-rose-900 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-200"
-                    >
-                      {c.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+        <div className="flex-none">
+          <MediaPreview item={item} />
         </div>
+        {(item.caption || hasTags(item)) && (
+          <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
+            {item.caption && (
+              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
+                {item.caption}
+              </p>
+            )}
+            {hasTags(item) && (
+              <MediaTagChips
+                artists={item.artists}
+                albums={item.albums}
+                clubs={item.clubs}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -116,7 +81,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
       <img
         src={imageUrl(item.cf_image_id, 'public')}
         alt={item.caption ?? ''}
-        className="max-h-[70vh] w-full bg-zinc-950 object-contain"
+        className="mx-auto max-h-[60dvh] w-full bg-zinc-950 object-contain sm:max-h-[70dvh]"
       />
     );
   }
@@ -142,6 +107,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
             src={parsed.embedSrc}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
             className="h-full w-full"
             title={item.caption ?? 'Video'}
           />
@@ -154,4 +120,8 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
       Contenido no disponible
     </div>
   );
+}
+
+function hasTags(item: MusicMediaItem): boolean {
+  return item.artists.length > 0 || item.albums.length > 0 || item.clubs.length > 0;
 }

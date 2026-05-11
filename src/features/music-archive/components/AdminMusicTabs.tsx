@@ -86,7 +86,9 @@ interface ClubRow {
   slug: string;
   description: string;
   rules: string[];
-  music_genre: string;
+  music_genre_id: string;
+  genre_slug: string;
+  genre_name: string;
   cover_image_url: string | null;
   member_count: number;
   pending_count: number;

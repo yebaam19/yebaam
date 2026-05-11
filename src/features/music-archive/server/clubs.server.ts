@@ -52,11 +52,25 @@ export interface MusicClubRow {
   name: string;
   slug: string;
   description: string;
-  music_genre: string;
+  music_genre_id: string;
+  /** Slug from the joined `music_genres` row. Kept flat for the legacy
+   *  `music_genre` field — UI code that used to do `genre.replace(/_/g, ' ')`
+   *  can just read `genre_name` now. */
+  genre_slug: string;
+  genre_name: string;
   cover_image_url: string | null;
   profile_image_url: string | null;
   album_count: number;
   member_count: number;
+}
+
+type ClubGenreJoin = { slug: string; name: string } | Array<{ slug: string; name: string }> | null;
+const CLUB_SELECT =
+  'id, name, slug, description, music_genre_id, cover_image_url, profile_image_url, music_genres!inner(slug, name)';
+
+function pickGenre(j: ClubGenreJoin): { slug: string; name: string } {
+  if (!j) return { slug: '', name: '' };
+  return Array.isArray(j) ? (j[0] ?? { slug: '', name: '' }) : j;
 }
 
 /** Lookup of every genre-club + its album count + its member count.
@@ -66,9 +80,9 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
   const client = await getServerClient();
   const { data: clubs, error } = await client
     .from('clubs')
-    .select('id, name, slug, description, music_genre, cover_image_url, profile_image_url')
+    .select(CLUB_SELECT)
     .eq('category', 'MUSICA')
-    .not('music_genre', 'is', null)
+    .not('music_genre_id', 'is', null)
     .order('name', { ascending: true });
   if (error || !clubs) return [];
   type Row = {
@@ -76,11 +90,12 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
     name: string;
     slug: string;
     description: string;
-    music_genre: string;
+    music_genre_id: string;
     cover_image_url: string | null;
     profile_image_url: string | null;
+    music_genres: ClubGenreJoin;
   };
-  const rows = clubs as Row[];
+  const rows = clubs as unknown as Row[];
 
   const clubIds = rows.map((r) => r.id);
   if (clubIds.length === 0) return [];
@@ -101,11 +116,22 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
   }
 
   return rows
-    .map((r) => ({
-      ...r,
-      album_count: albumCount.get(r.id) ?? 0,
-      member_count: memberCount.get(r.id) ?? 0,
-    }))
+    .map((r) => {
+      const g = pickGenre(r.music_genres);
+      return {
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        description: r.description,
+        music_genre_id: r.music_genre_id,
+        genre_slug: g.slug,
+        genre_name: g.name,
+        cover_image_url: r.cover_image_url,
+        profile_image_url: r.profile_image_url,
+        album_count: albumCount.get(r.id) ?? 0,
+        member_count: memberCount.get(r.id) ?? 0,
+      };
+    })
     .sort((a, b) => b.album_count - a.album_count || a.name.localeCompare(b.name));
 });
 
@@ -113,12 +139,23 @@ export const getMusicClubBySlug = cache(async (slug: string): Promise<MusicClubR
   const client = await getServerClient();
   const { data: club } = await client
     .from('clubs')
-    .select('id, name, slug, description, music_genre, cover_image_url, profile_image_url')
+    .select(CLUB_SELECT)
     .eq('category', 'MUSICA')
     .eq('slug', slug)
     .maybeSingle();
   if (!club) return null;
-  const c = club as Omit<MusicClubRow, 'album_count' | 'member_count'>;
+  type Row = {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    music_genre_id: string;
+    cover_image_url: string | null;
+    profile_image_url: string | null;
+    music_genres: ClubGenreJoin;
+  };
+  const c = club as unknown as Row;
+  const g = pickGenre(c.music_genres);
 
   const [{ count: albumCount }, { count: memberCount }] = await Promise.all([
     client
@@ -132,7 +169,15 @@ export const getMusicClubBySlug = cache(async (slug: string): Promise<MusicClubR
   ]);
 
   return {
-    ...c,
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description,
+    music_genre_id: c.music_genre_id,
+    genre_slug: g.slug,
+    genre_name: g.name,
+    cover_image_url: c.cover_image_url,
+    profile_image_url: c.profile_image_url,
     album_count: albumCount ?? 0,
     member_count: memberCount ?? 0,
   };

@@ -3,11 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { slugify } from '@/lib/api/clubs';
 import { requireSession, type ActionResult } from './_shared';
-import { MUSIC_GENRES, type MusicGenre } from '../types/music.types';
 
 interface CreateMusicClubDto {
   name: string;
-  musicGenre: MusicGenre;
+  musicGenreId: string;
   description?: string;
   coverCfImageId?: string | null;
 }
@@ -26,9 +25,17 @@ export async function createMusicClub(
   if (name.length < 3 || name.length > 80) {
     return { ok: false, error: 'El nombre debe tener entre 3 y 80 caracteres.' };
   }
-  if (!(MUSIC_GENRES as readonly string[]).includes(dto.musicGenre)) {
-    return { ok: false, error: 'Género musical inválido.' };
+  if (!dto.musicGenreId) {
+    return { ok: false, error: 'Selecciona un género musical.' };
   }
+  // Verify the genre exists. RLS on `music_genres` allows public select.
+  const { data: genre } = await client
+    .from('music_genres')
+    .select('id')
+    .eq('id', dto.musicGenreId)
+    .maybeSingle();
+  if (!genre) return { ok: false, error: 'Género musical inválido.' };
+
   const description = (dto.description ?? '').trim();
   if (description.length > 1000) {
     return { ok: false, error: 'La descripción no puede exceder 1000 caracteres.' };
@@ -56,7 +63,7 @@ export async function createMusicClub(
       description,
       category: 'MUSICA',
       privacy: 'PUBLIC',
-      music_genre: dto.musicGenre,
+      music_genre_id: dto.musicGenreId,
       cover_image_url: dto.coverCfImageId || null,
       membership_tiers: ['FREE'],
       rules: [],

@@ -5,18 +5,22 @@ import type { Route } from 'next';
 import { useState, useTransition } from 'react';
 import { uploadService } from '@/lib/service/upload.service';
 import { createMusicClub } from '../../actions/clubs.actions';
-import {
-  MUSIC_GENRES,
-  MUSIC_GENRE_LABELS,
-  type MusicGenre,
-} from '../../types/music.types';
+
+interface GenreOption {
+  id: string;
+  name: string;
+}
+
+interface Props {
+  genres: GenreOption[];
+}
 
 /** Single-screen form to create a new music club. On success → redirects to
  *  /musica/clubes/<new-slug>. */
-export function CreateMusicClubForm() {
+export function CreateMusicClubForm({ genres }: Props) {
   const router = useRouter();
   const [name, setName] = useState('');
-  const [genre, setGenre] = useState<MusicGenre>('salsa');
+  const [genreId, setGenreId] = useState<string>(genres[0]?.id ?? '');
   const [description, setDescription] = useState('');
   const [cover, setCover] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +37,7 @@ export function CreateMusicClubForm() {
         }
         const res = await createMusicClub({
           name,
-          musicGenre: genre,
+          musicGenreId: genreId,
           description,
           coverCfImageId,
         });
@@ -71,13 +75,13 @@ export function CreateMusicClubForm() {
           Género musical
         </label>
         <select
-          value={genre}
-          onChange={(e) => setGenre(e.target.value as MusicGenre)}
+          value={genreId}
+          onChange={(e) => setGenreId(e.target.value)}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
         >
-          {MUSIC_GENRES.map((g) => (
-            <option key={g} value={g}>
-              {MUSIC_GENRE_LABELS[g]}
+          {genres.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
             </option>
           ))}
         </select>

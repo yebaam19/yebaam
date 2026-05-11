@@ -11,7 +11,8 @@ interface ClubOption {
   id: string;
   name: string;
   slug: string;
-  music_genre: string;
+  genre_slug: string;
+  genre_name: string;
 }
 
 interface Props {

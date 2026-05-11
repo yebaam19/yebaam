@@ -339,7 +339,7 @@ export async function listClubsForCurrentUser(): Promise<
       .from('clubs')
       .select('id, name, slug')
       .eq('category', 'MUSICA')
-      .not('music_genre', 'is', null)
+      .not('music_genre_id', 'is', null)
       .order('name', { ascending: true });
     return { ok: true, data: (data ?? []) as Array<{ id: string; name: string; slug: string }> };
   }
@@ -354,7 +354,7 @@ export async function listClubsForCurrentUser(): Promise<
     .select('id, name, slug')
     .in('id', clubIds)
     .eq('category', 'MUSICA')
-    .not('music_genre', 'is', null)
+    .not('music_genre_id', 'is', null)
     .order('name', { ascending: true });
   return { ok: true, data: (data ?? []) as Array<{ id: string; name: string; slug: string }> };
 }
