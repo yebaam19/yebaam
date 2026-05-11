@@ -129,7 +129,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
   }
   if (item.kind === 'video' && item.source === 'cf_stream' && item.cf_stream_uid) {
     return (
-      <div className="aspect-video w-full bg-black">
+      <div className="h-[50dvh] w-full bg-black sm:h-[60dvh] lg:h-[70dvh]">
         <iframe
           src={`https://iframe.videodelivery.net/${item.cf_stream_uid}`}
           allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
@@ -144,7 +144,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
     const parsed = parseVideoEmbed(item.embed_url);
     if (parsed) {
       return (
-        <div className="aspect-video w-full bg-black">
+        <div className="h-[50dvh] w-full bg-black sm:h-[60dvh] lg:h-[70dvh]">
           <iframe
             src={parsed.embedSrc}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
