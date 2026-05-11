@@ -11,27 +11,22 @@ import { imageUrl, streamThumb } from '@/lib/media/urls';
 import { parseVideoEmbed } from '@/lib/utils/video-embed';
 import type { MusicMediaItem } from '../../types/music-media.types';
 import { MediaTagChips } from './MediaTagChips';
-import { MusicMediaLightbox } from './MusicMediaLightbox';
+import { useMediaPlayerStore } from './mediaPlayerStore';
 
 interface Props {
   items: MusicMediaItem[];
 }
 
 export function ClubMediaFeed({ items }: Props) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const open = items.find((i) => i.id === openId) ?? null;
-
+  const openLightbox = useMediaPlayerStore((s) => s.openLightbox);
   return (
-    <>
-      <ul className="mx-auto max-w-2xl space-y-4">
-        {items.map((item) => (
-          <li key={item.id}>
-            <FeedCard item={item} onExpand={() => setOpenId(item.id)} />
-          </li>
-        ))}
-      </ul>
-      {open && <MusicMediaLightbox item={open} onClose={() => setOpenId(null)} />}
-    </>
+    <ul className="mx-auto max-w-2xl space-y-4">
+      {items.map((item) => (
+        <li key={item.id}>
+          <FeedCard item={item} onExpand={() => openLightbox(item)} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
