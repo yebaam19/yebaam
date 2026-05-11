@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import type { Route } from 'next';
 import { PlayIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl, streamThumb } from '@/lib/media/urls';
 import type { MusicMediaItem } from '../../types/music-media.types';
@@ -90,6 +92,22 @@ export function MusicMediaGrid({ items, emptyText }: Props) {
               <p className="mt-1 truncate text-xs text-zinc-500">
                 {item.artists.map((a) => a.name).join(', ')}
               </p>
+            )}
+            {item.clubs.length > 0 && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {item.clubs.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/musica/clubes/${c.slug}` as Route}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-800 transition hover:border-rose-400 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/50"
+                    title={`Ir al club ${c.name}`}
+                  >
+                    <span aria-hidden>♪</span>
+                    <span className="truncate">{c.name}</span>
+                  </Link>
+                ))}
+              </div>
             )}
           </li>
         );
