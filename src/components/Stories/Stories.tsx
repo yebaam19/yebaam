@@ -67,6 +67,19 @@ export default function Stories({ className }: StoriesProps) {
     );
   }
 
+  // When the rail is functionally empty (no own stories AND no friend stories)
+  // the standard "create tile + scroll row" loses to dead air. Render a hero
+  // canvas instead: one inviting surface that fills the rail at the same
+  // height as the tiles, so the card doesn't change vertical rhythm.
+  const isEmpty = !isLoading && !hasMyStories && friendsStories.length === 0
+  if (isEmpty) {
+    return (
+      <div className={`rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900 ${className || ''}`}>
+        <StoryRailEmptyHero onCreate={handleCreateStory} user={user} />
+      </div>
+    )
+  }
+
   return (
     <div className={`bg-white dark:bg-neutral-900 rounded-xl shadow-sm p-4 ${className || ''}`}>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -209,6 +222,59 @@ export default function Stories({ className }: StoriesProps) {
         )}
       </div>
     </div>
+  );
+}
+
+interface HeroProps {
+  onCreate: () => void;
+  user: { username: string; avatar?: string } | null | undefined;
+}
+
+/** Single-canvas empty state for the story rail. Replaces the "tiny tile + dead
+ *  text" combo when there are zero stories anywhere. Same height as the regular
+ *  tiles (200px) so the card's vertical rhythm stays put. */
+function StoryRailEmptyHero({ onCreate, user }: HeroProps) {
+  const initials = user?.username.substring(0, 2).toUpperCase() || 'TU';
+  return (
+    <button
+      type="button"
+      onClick={onCreate}
+      className="group relative flex h-50 w-full items-center gap-5 overflow-hidden rounded-2xl bg-linear-to-br from-emerald-50 via-amber-50 to-orange-50 px-5 text-left transition-colors hover:from-emerald-100 hover:via-amber-100 hover:to-orange-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:px-7 dark:from-emerald-950/30 dark:via-neutral-800 dark:to-orange-950/20 dark:hover:from-emerald-900/30 dark:hover:to-orange-900/20"
+      aria-label="Crear tu primera historia"
+    >
+      {/* Soft decorative dots, anchored top-right so they don't fight the avatar */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-6 -right-6 h-32 w-32 rounded-full bg-amber-200/40 blur-2xl dark:bg-amber-500/10"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -bottom-10 -left-4 h-28 w-28 rounded-full bg-emerald-200/40 blur-2xl dark:bg-emerald-500/10"
+      />
+
+      {/* Avatar + plus badge */}
+      <div className="relative shrink-0">
+        <div className="h-16 w-16 overflow-hidden rounded-full bg-neutral-200 shadow-md ring-2 ring-white sm:h-20 sm:w-20 dark:bg-neutral-700 dark:ring-neutral-800">
+          <Avatar initials={initials} src={user?.avatar} className="h-full w-full" />
+        </div>
+        <span className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary-600 shadow-sm ring-2 ring-white transition-transform duration-200 ease-out group-hover:scale-110 dark:ring-neutral-900">
+          <PlusIcon className="h-4 w-4 text-white" />
+        </span>
+      </div>
+
+      {/* Copy + CTA */}
+      <div className="relative min-w-0 flex-1">
+        <p className="text-base font-semibold text-neutral-900 sm:text-lg dark:text-white">
+          Crea tu primera historia
+        </p>
+        <p className="mt-1 text-xs text-neutral-600 sm:text-sm dark:text-neutral-300">
+          Comparte un momento. Desaparece en 24 horas.
+        </p>
+        <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors group-hover:bg-primary-700">
+          Empezar
+        </span>
+      </div>
+    </button>
   );
 }
 
