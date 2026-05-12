@@ -168,7 +168,7 @@ export function AdminClubsTable({ initial, genres }: Props) {
           {error}
         </p>
       )}
-      {filteredRows.length === 0 ? (
+      {isFiltering && filteredRows.length === 0 && (
         <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
           Ningún club coincide con &ldquo;{debouncedQuery.trim()}&rdquo;.{' '}
           <button
@@ -179,10 +179,11 @@ export function AdminClubsTable({ initial, genres }: Props) {
             ¿Crear uno nuevo?
           </button>
         </div>
-      ) : (
-      <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
-        {filteredRows.map((r) => (
-          <li key={r.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
+      )}
+      {filteredRows.length > 0 && (
+        <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+          {filteredRows.map((r) => (
+            <li key={r.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
               <Link
                 href={`/musica/clubes/${r.slug}` as Route}
