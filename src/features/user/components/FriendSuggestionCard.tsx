@@ -177,9 +177,9 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+      <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h3>
         <Link
           href={'/friends/suggestions' as Route}
@@ -203,7 +203,7 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
         {/* Container con scroll */}
         <div
           ref={scrollContainerRef}
-          className="scrollbar-hide flex gap-3 overflow-x-auto scroll-smooth p-3"
+          className="scrollbar-hide flex gap-3 overflow-x-auto scroll-smooth py-1"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {visibleSuggestions

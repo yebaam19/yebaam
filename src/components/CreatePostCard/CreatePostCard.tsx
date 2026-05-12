@@ -43,23 +43,21 @@ export default function CreatePostCard({
         </button>
       </div>
 
-      <div className="mt-3 border-t border-neutral-200 pt-2 dark:border-neutral-800">
-        <div className="flex items-center justify-around gap-1">
-          <button
-            onClick={onCreateClick}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            <PhotoIcon className="h-6 w-6 text-green-500" />
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Foto/Video</span>
-          </button>
-          <button
-            onClick={handleFeelingClick}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            <FaceSmileIcon className="h-6 w-6 text-yellow-500" />
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Sentimiento/Actividad</span>
-          </button>
-        </div>
+      <div className="mt-3 flex items-center gap-1.5 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+        <button
+          onClick={onCreateClick}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        >
+          <PhotoIcon className="h-5 w-5 text-green-500" />
+          <span>Foto/Video</span>
+        </button>
+        <button
+          onClick={handleFeelingClick}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        >
+          <FaceSmileIcon className="h-5 w-5 text-yellow-500" />
+          <span>Sentimiento/Actividad</span>
+        </button>
       </div>
     </div>
   )

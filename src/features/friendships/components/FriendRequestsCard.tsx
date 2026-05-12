@@ -34,8 +34,8 @@ export function FriendRequestsCard() {
   }
 
   return (
-    <div className="rounded-xl bg-white shadow-sm dark:bg-neutral-900">
-      <div className="flex items-center justify-between px-4 pt-4">
+    <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900">
+      <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
           Solicitudes de amistad
         </h3>
@@ -47,7 +47,7 @@ export function FriendRequestsCard() {
         </Link>
       </div>
 
-      <ul className="mt-3 space-y-3 px-4 pb-4">
+      <ul className="mt-3 space-y-3">
         {visible.map((req) => {
           const profile = req.profile ?? req.senderProfile
           const name =

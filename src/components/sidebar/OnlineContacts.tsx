@@ -33,7 +33,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
   });
 
   return (
-    <section>
+    <section className="rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
           Contactos ({onlineCount}/{contacts.length})

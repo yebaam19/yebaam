@@ -198,15 +198,36 @@ export default function Stories({ className }: StoriesProps) {
           </div>
         ))}
 
-        {/* Mensaje cuando no hay historias */}
+        {/* Placeholder tiles cuando no hay historias — mantiene el ritmo
+            horizontal del carrusel en vez de un mensaje a ancho completo. */}
         {!isLoading && !hasMyStories && friendsStories.length === 0 && (
-          <div className="shrink-0 w-full flex items-center justify-center py-8">
-            <p className="text-neutral-500 text-sm">
-              No hay historias disponibles. ¡Sé el primero en crear una!
-            </p>
-          </div>
+          <>
+            <StoryPlaceholder label="Aún no hay historias" />
+            <StoryPlaceholder dim />
+            <StoryPlaceholder dim />
+          </>
         )}
       </div>
+    </div>
+  );
+}
+
+function StoryPlaceholder({ label, dim }: { label?: string; dim?: boolean }) {
+  return (
+    <div
+      aria-hidden
+      className={
+        'shrink-0 w-[120px] h-[200px] rounded-2xl flex items-center justify-center text-center px-3 ' +
+        (dim
+          ? 'bg-neutral-100 dark:bg-neutral-800/60'
+          : 'border-2 border-dashed border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900')
+      }
+    >
+      {label && (
+        <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+          {label}
+        </p>
+      )}
     </div>
   );
 }
