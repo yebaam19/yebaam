@@ -1,8 +1,52 @@
 'use server';
 
+import { after } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import { getServiceClient } from '@/utils/supabase/server';
 import { musicSlug, requireSession, type ActionResult } from './_shared';
 import type { MusicArticleRow } from '../types/music.types';
+
+/** Fan-out an "article published" notification to every member of the club
+ *  except the author. Runs inside `after()` because the user shouldn't wait
+ *  on the fan-out, and Vercel tears down the request context the moment the
+ *  Server Action returns — a non-awaited `fetch`/insert would silently drop.
+ *
+ *  Uses the service client to bypass RLS (the recipients aren't the caller).
+ *  Best-effort: errors are logged but never block the caller. */
+async function notifyClubMembersOfArticle(args: {
+  clubId: string;
+  articleId: string;
+  articleSlug: string;
+  articleTitle: string;
+  clubSlug: string;
+  authorId: string;
+}): Promise<void> {
+  const service = getServiceClient();
+  const { data: members, error } = await service
+    .from('club_members')
+    .select('user_id')
+    .eq('club_id', args.clubId);
+  if (error) {
+    console.error('[music-articles] notify: list members failed', error.message);
+    return;
+  }
+  const rows = ((members ?? []) as Array<{ user_id: string }>)
+    .filter((m) => m.user_id !== args.authorId)
+    .map((m) => ({
+      type: 'music_article',
+      recipient_id: m.user_id,
+      actor_id: args.authorId,
+      related_type: 'music_article',
+      related_id: args.articleId,
+      message: args.articleTitle,
+      link: `/musica/clubes/${args.clubSlug}/articulos/${args.articleSlug}`,
+    }));
+  if (rows.length === 0) return;
+  const { error: insertError } = await service.from('notifications').insert(rows);
+  if (insertError) {
+    console.error('[music-articles] notify: insert failed', insertError.message);
+  }
+}
 
 interface CreateArticleDto {
   clubId: string;
@@ -118,6 +162,18 @@ export async function createMusicArticle(
     revalidatePath(`/musica/clubes/${clubSlug}/articulos`);
     revalidatePath(`/musica/clubes/${clubSlug}/articulos/${row.slug}`);
   }
+  if (dto.publish && clubSlug) {
+    after(() =>
+      notifyClubMembersOfArticle({
+        clubId: dto.clubId,
+        articleId: row.id,
+        articleSlug: row.slug,
+        articleTitle: row.title,
+        clubSlug,
+        authorId: userId,
+      }),
+    );
+  }
   return { ok: true, data: row };
 }
 
@@ -133,11 +189,19 @@ export async function updateMusicArticle(
   // unauthorized updates downstream anyway.
   const { data: existing } = await client
     .from('music_articles')
-    .select('id, club_id, slug, title')
+    .select('id, club_id, slug, title, published_at, author_id')
     .eq('id', articleId)
     .maybeSingle();
   if (!existing) return { ok: false, error: 'Artículo no encontrado.' };
-  const e = existing as { id: string; club_id: string | null; slug: string; title: string };
+  const e = existing as {
+    id: string;
+    club_id: string | null;
+    slug: string;
+    title: string;
+    published_at: string | null;
+    author_id: string;
+  };
+  const wasPublished = e.published_at !== null;
 
   const updates: Record<string, unknown> = {};
   if (patch.title !== undefined) {
@@ -164,6 +228,7 @@ export async function updateMusicArticle(
     .single();
   if (error) return { ok: false, error: error.message };
 
+  const updatedRow = data as MusicArticleRow;
   if (e.club_id) {
     const { data: c } = await client
       .from('clubs')
@@ -175,9 +240,21 @@ export async function updateMusicArticle(
       revalidatePath(`/musica/clubes/${clubSlug}/articulos`);
       revalidatePath(`/musica/clubes/${clubSlug}/articulos/${e.slug}`);
       if (updates.slug) revalidatePath(`/musica/clubes/${clubSlug}/articulos/${updates.slug as string}`);
+      if (patch.publish === true && !wasPublished) {
+        after(() =>
+          notifyClubMembersOfArticle({
+            clubId: e.club_id!,
+            articleId: updatedRow.id,
+            articleSlug: updatedRow.slug,
+            articleTitle: updatedRow.title,
+            clubSlug,
+            authorId: e.author_id,
+          }),
+        );
+      }
     }
   }
-  return { ok: true, data: data as MusicArticleRow };
+  return { ok: true, data: updatedRow };
 }
 
 export async function deleteMusicArticle(articleId: string): Promise<ActionResult<{ removed: true }>> {

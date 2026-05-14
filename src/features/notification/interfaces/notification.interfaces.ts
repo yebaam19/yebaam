@@ -40,6 +40,9 @@ export enum NotificationType {
   // Mensajes
   NEW_MESSAGE = 'NEW_MESSAGE',             // Nuevo mensaje directo
   
+  // Club de coleccionistas
+  MUSIC_ARTICLE_PUBLISHED = 'MUSIC_ARTICLE_PUBLISHED', // Nuevo artículo en un club al que perteneces
+
   // Sistema
   SYSTEM = 'SYSTEM',                       // Notificación del sistema
   ANNOUNCEMENT = 'ANNOUNCEMENT',           // Anuncio importante

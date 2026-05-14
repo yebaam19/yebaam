@@ -6,6 +6,7 @@ import RightSidebar from '@/components/sidebar/RightSidebar'
 import Sidebar from '@/components/sidebar/Sidebar'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
+import { MusicaSubNav } from '@/features/music-archive/components/MusicaSubNav'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
@@ -39,6 +40,9 @@ export default function MusicaLayout({ children }: { children: React.ReactNode }
               user && 'xl:mr-80',
             )}
           >
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+              <MusicaSubNav />
+            </div>
             {children}
           </main>
 

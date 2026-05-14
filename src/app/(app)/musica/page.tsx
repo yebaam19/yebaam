@@ -247,18 +247,9 @@ export default async function MusicArchiveLandingPage({
       <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50 p-6 sm:p-8 lg:p-10 dark:from-amber-900/10 dark:via-zinc-900 dark:to-rose-900/10">
         <div className="grid items-center gap-6 xl:grid-cols-[minmax(0,1fr)_240px] xl:gap-10 2xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="min-w-0 space-y-4">
-            <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
-              <span className="flex items-center gap-2">
-                <MusicalNoteIcon className="h-4 w-4" />
-                Club de Coleccionistas
-              </span>
-              <span aria-hidden className="text-zinc-300 dark:text-zinc-700">·</span>
-              <Link
-                href={'/musica/acerca' as Route}
-                className="font-medium normal-case tracking-normal text-zinc-600 hover:text-amber-700 hover:underline dark:text-zinc-300"
-              >
-                Acerca del Club
-              </Link>
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+              <MusicalNoteIcon className="h-4 w-4" />
+              <span>Club de Coleccionistas</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-balance text-zinc-900 sm:text-4xl 2xl:text-5xl dark:text-white">
               Música latinoamericana 1900–1970

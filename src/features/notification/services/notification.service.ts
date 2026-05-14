@@ -18,12 +18,21 @@ import {
 
 type DbNotification = {
   id: string;
-  type: 'like' | 'comment' | 'follow' | 'message' | 'mention' | 'friend_request' | 'friend_accept';
+  type:
+    | 'like'
+    | 'comment'
+    | 'follow'
+    | 'message'
+    | 'mention'
+    | 'friend_request'
+    | 'friend_accept'
+    | 'music_article';
   recipient_id: string;
   actor_id: string | null;
-  related_type: 'post' | 'comment' | 'story' | null;
+  related_type: 'post' | 'comment' | 'story' | 'music_article' | null;
   related_id: string | null;
   message: string | null;
+  link: string | null;
   is_read: boolean;
   read_at: string | null;
   created_at: string;
@@ -60,6 +69,8 @@ function mapDbTypeToClient(
       return NotificationType.NEW_MESSAGE;
     case 'follow':
       return NotificationType.FRIEND_SUGGESTION;
+    case 'music_article':
+      return NotificationType.MUSIC_ARTICLE_PUBLISHED;
   }
 }
 
@@ -81,6 +92,8 @@ function mapClientTypeToDb(type?: NotificationType): DbNotification['type'] | nu
       return 'friend_accept';
     case NotificationType.NEW_MESSAGE:
       return 'message';
+    case NotificationType.MUSIC_ARTICLE_PUBLISHED:
+      return 'music_article';
     default:
       return null;
   }
@@ -115,6 +128,9 @@ function buildMetadata(row: DbNotification): NotificationMetadata {
 }
 
 function buildTargetUrl(row: DbNotification): string | undefined {
+  // Generic escape hatch: features outside the post/comment hierarchy persist
+  // the path explicitly so this function does not need to know their slugs.
+  if (row.link) return row.link;
   if (row.related_type === 'post' && row.related_id) return `/feed/post/${row.related_id}`;
   if (row.related_type === 'comment' && row.related_id) return `/feed/post/${row.related_id}`;
   if (row.type === 'friend_request' || row.type === 'friend_accept') return '/feed/friends';
