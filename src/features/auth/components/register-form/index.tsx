@@ -20,6 +20,7 @@ export function RegisterForm() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     secondName: '',
     lastName: '',
@@ -55,6 +56,11 @@ export function RegisterForm() {
 
     if (!isOccupationSlug(formData.occupation)) {
       toast.error('Selecciona tu ocupación');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
       return;
     }
 
@@ -162,6 +168,18 @@ export function RegisterForm() {
         value={formData.password}
         onChange={handleChange}
         placeholder="Contraseña"
+        required
+        minLength={8}
+        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+      />
+
+      {/* Confirmar contraseña */}
+      <input
+        type="password"
+        name="confirmPassword"
+        value={formData.confirmPassword}
+        onChange={handleChange}
+        placeholder="Confirmar contraseña"
         required
         minLength={8}
         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"

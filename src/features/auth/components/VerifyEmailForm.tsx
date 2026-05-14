@@ -2,9 +2,10 @@
 
 import { authService } from '@/features/auth/services/auth.service'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { VerifyEmailFormData, verifyEmailSchema } from '../validators/auth.schemas'
@@ -18,7 +19,10 @@ export default function VerifyEmailForm() {
   const emailFromUrl = searchParams.get('email') || ''
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null)
   const { resendOtp, isLoading: isResending } = useAuthStore()
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   const {
     register,
@@ -49,12 +53,19 @@ export default function VerifyEmailForm() {
   }
 
   const handleResendCode = async () => {
+    if (turnstileEnabled && !captchaToken) {
+      toast.error('Completa la verificación de seguridad antes de reenviar.')
+      return
+    }
     try {
-      await resendOtp({ email: emailFromUrl })
+      await resendOtp({ email: emailFromUrl, captchaToken: captchaToken ?? undefined })
       toast.success('Código reenviado exitosamente')
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Error al reenviar el código'
       toast.error(errorMessage)
+    } finally {
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
     }
   }
 
@@ -132,12 +143,21 @@ export default function VerifyEmailForm() {
             </p>
           </div>
 
+          {/* Cloudflare Turnstile — protege el reenvío del OTP */}
+          <TurnstileWidget
+            ref={turnstileRef}
+            action="resend-otp"
+            onSuccess={setCaptchaToken}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => setCaptchaToken(null)}
+          />
+
           {/* Botón de reenvío */}
           <div className="text-center">
             <button
               type="button"
               onClick={handleResendCode}
-              disabled={isResending}
+              disabled={isResending || (turnstileEnabled && !captchaToken)}
               className="text-sm font-medium text-green-600 transition-colors hover:text-green-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isResending ? (
