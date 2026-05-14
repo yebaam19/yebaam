@@ -134,11 +134,11 @@ export default async function ArtistPage({
         </section>
       )}
 
-      {articles.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Artículos sobre {artist.name}
-          </h2>
+      <section>
+        <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          Artículos sobre {artist.name}
+        </h2>
+        {articles.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((a) =>
               a.club ? (
@@ -146,8 +146,14 @@ export default async function ArtistPage({
               ) : null,
             )}
           </div>
-        </section>
-      )}
+        ) : (
+          <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-6 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
+            Aún no hay artículos sobre {artist.name}. Los artículos se escriben desde la
+            sección «Artículos» de un club de música — únete o crea un club, y los artículos
+            que etiqueten a este artista aparecerán aquí automáticamente.
+          </p>
+        )}
+      </section>
     </div>
   );
 }

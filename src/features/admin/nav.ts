@@ -1,4 +1,5 @@
 import type { Route } from 'next'
+import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config'
 
 export interface AdminNavItem {
   label: string
@@ -16,7 +17,7 @@ export interface AdminNavItem {
   matchPrefix?: string
 }
 
-export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+const RAW_ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: 'Dashboard', href: '/admin' as Route, iconName: 'squares-2x2', matchPrefix: '/admin' },
   {
     label: 'Foros',
@@ -49,7 +50,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     matchPrefix: '/admin/professional-credentials',
   },
   {
-    label: 'Música',
+    label: 'Club de coleccionistas',
     href: '/admin/music' as Route,
     iconName: 'musical-note',
     matchPrefix: '/admin/music',
@@ -61,3 +62,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     matchPrefix: '/admin/ajustes',
   },
 ]
+
+export const ADMIN_NAV_ITEMS: AdminNavItem[] = RAW_ADMIN_NAV_ITEMS.filter(
+  (item) => MUSIC_CLUB_ENABLED || item.matchPrefix !== '/admin/music',
+)

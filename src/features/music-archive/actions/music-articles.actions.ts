@@ -13,6 +13,7 @@ interface CreateArticleDto {
   cfImageId?: string | null;
   tags?: string[];
   artistIds?: string[];
+  labelIds?: string[];
   publish?: boolean;
 }
 
@@ -98,6 +99,12 @@ export async function createMusicArticle(
   if (dto.artistIds && dto.artistIds.length > 0) {
     const junctionRows = dto.artistIds.map((artist_id) => ({ article_id: row.id, artist_id }));
     const { error: jErr } = await client.from('music_article_artists').insert(junctionRows);
+    if (jErr) return { ok: false, error: jErr.message };
+  }
+
+  if (dto.labelIds && dto.labelIds.length > 0) {
+    const junctionRows = dto.labelIds.map((label_id) => ({ article_id: row.id, label_id }));
+    const { error: jErr } = await client.from('music_article_labels').insert(junctionRows);
     if (jErr) return { ok: false, error: jErr.message };
   }
 
@@ -216,6 +223,45 @@ export async function setArticleArtists(
     if (error) return { ok: false, error: error.message };
   }
   return { ok: true, data: { count: artistIds.length } };
+}
+
+/** Atomically replace the label tag list. Mirrors setArticleArtists. */
+export async function setArticleLabels(
+  articleId: string,
+  labelIds: string[],
+): Promise<ActionResult<{ count: number }>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: 'Inicia sesión.' };
+  const { client } = session;
+  const { error: delErr } = await client
+    .from('music_article_labels')
+    .delete()
+    .eq('article_id', articleId);
+  if (delErr) return { ok: false, error: delErr.message };
+  if (labelIds.length > 0) {
+    const rows = labelIds.map((label_id) => ({ article_id: articleId, label_id }));
+    const { error } = await client.from('music_article_labels').insert(rows);
+    if (error) return { ok: false, error: error.message };
+  }
+  return { ok: true, data: { count: labelIds.length } };
+}
+
+/** Convenience for the editor's autocomplete: search labels by name. */
+export async function searchLabelsForTag(
+  query: string,
+): Promise<ActionResult<Array<{ id: string; name: string; slug: string }>>> {
+  const q = query.trim();
+  if (q.length < 2) return { ok: true, data: [] };
+  const session = await requireSession();
+  if (!session) return { ok: false, error: 'Inicia sesión.' };
+  const { data, error } = await session.client
+    .from('music_labels')
+    .select('id, name, slug')
+    .ilike('name', `%${q}%`)
+    .order('name', { ascending: true })
+    .limit(20);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data: (data ?? []) as Array<{ id: string; name: string; slug: string }> };
 }
 
 /** Convenience for the editor's autocomplete: search artists by name. Public

@@ -1,5 +1,5 @@
 
-export const FEATURE_FLAGS = {
+const FEATURE_FLAGS_BASE = {
   // ============================================================================
   // NAVEGACIÓN PRINCIPAL
   // ============================================================================
@@ -84,9 +84,17 @@ export const FEATURE_FLAGS = {
   // SISTEMA
   // ============================================================================
   
-  NOTIFICATIONS_ENABLED: true, // Notificaciones - Funcional 
-  SEARCH_ENABLED: true, // Búsqueda - Funcional 
+  NOTIFICATIONS_ENABLED: true, // Notificaciones - Funcional
+  SEARCH_ENABLED: true, // Búsqueda - Funcional
 } as const
+
+/** Env-driven kill switch for the music archive / Club de Coleccionistas
+ *  module. Set NEXT_PUBLIC_MUSIC_CLUB_ENABLED=false at build time to disable
+ *  the sidebar entries and 404 the /musica and /admin/music routes. */
+export const FEATURE_FLAGS = {
+  ...FEATURE_FLAGS_BASE,
+  MUSIC_CLUB_ENABLED: process.env.NEXT_PUBLIC_MUSIC_CLUB_ENABLED !== 'false',
+}
 
 /**
  * Verifica si una feature está habilitada

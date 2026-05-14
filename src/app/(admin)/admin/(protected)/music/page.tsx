@@ -43,7 +43,7 @@ export default async function AdminMusicPage() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <header>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Música</h1>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Club de coleccionistas</h1>
         <p className="mt-1 text-sm text-zinc-500">
           Sube discos, importa por enlace, administra el archivo, aprueba solicitudes, edita
           clubes y modera publicaciones.

@@ -103,6 +103,30 @@ export const listArticlesForArtist = cache(
   },
 );
 
+/** Articles tagging this label — drives the label page "Artículos" section. */
+export const listArticlesForLabel = cache(
+  async (labelId: string): Promise<MusicArticleWithRefs[]> => {
+    const client = await getServerClient();
+    const { data: junctions } = await client
+      .from('music_article_labels')
+      .select('article_id')
+      .eq('label_id', labelId);
+    const ids = ((junctions as Array<{ article_id: string }> | null) ?? []).map((r) => r.article_id);
+    if (ids.length === 0) return [];
+    const { data } = await client
+      .from('music_articles')
+      .select(
+        '*, music_article_artists(artist_id, music_artists!inner(id, name, slug)), clubs(id, slug, name)',
+      )
+      .in('id', ids)
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false, nullsFirst: false });
+    const rows = (data as ArticleRowWithClub[] | null) ?? [];
+    const profiles = await fetchProfilesByUserIds(client, rows.map((r) => r.author_id));
+    return rows.map((r) => mapArticle(r, r.clubs ?? null, profiles));
+  },
+);
+
 /** Clubs an artist appears in (via the album-club junction). */
 export const listClubsForArtist = cache(
   async (artistId: string): Promise<Array<{ id: string; slug: string; name: string }>> => {

@@ -140,6 +140,18 @@ When adding a new auth-adjacent action (e.g. invite acceptance, account deletion
 
 For volumetric DDoS protection that Turnstile can't address (raw HTTP floods), enable Cloudflare **Bot Fight Mode** and add WAF rate-limit rules per route in the Cloudflare dashboard — those run at the edge before traffic reaches Vercel.
 
+## Feature flag — Club de Coleccionistas (`/musica`)
+
+The entire music-archive module ("Club de Coleccionistas") is behind a build-time kill switch: `NEXT_PUBLIC_MUSIC_CLUB_ENABLED`. Default is enabled (any value other than the literal `'false'` keeps it on).
+
+Set `NEXT_PUBLIC_MUSIC_CLUB_ENABLED=false` and redeploy to:
+- Hide the sidebar entries (user + admin nav).
+- 404 every route under `/musica/**` and `/admin/music/**` (gated in `src/proxy.ts`).
+
+Use this when legal counsel has not yet cleared catalog distribution, or in any situation where the module needs to disappear from public view. The flag is `NEXT_PUBLIC_*` because it's read both on the server (proxy) and the client (sidebar) — there is no security boundary here; the gate is in the proxy and exists to avoid showing the section in the UI. If we ever need an instant on/off without redeploy, move the flag to a `feature_flags` table and read it per request.
+
+Single source of truth: [`src/config/features-flag.ts`](src/config/features-flag.ts) (`MUSIC_CLUB_ENABLED`). Convenience re-export at [`src/features/music-archive/config.ts`](src/features/music-archive/config.ts) for places where importing the sidebar config would be heavyweight.
+
 ## Refactor discipline — DRY at the right moment, not the wrong one
 
 After substantial feature work, do a **refactor pass before declaring done**. It is part of "done", not extra credit. Concretely, look for:

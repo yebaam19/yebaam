@@ -49,7 +49,9 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
   // Album-level editable fields.
   const [title, setTitle] = useState('');
   const [year, setYear] = useState('');
+  const [decade, setDecade] = useState('');
   const [country, setCountry] = useState('');
+  const [accompaniment, setAccompaniment] = useState('');
   const [format, setFormat] = useState<MusicAlbumFormat>('78rpm');
   const [catalogNumber, setCatalogNumber] = useState('');
   const [notes, setNotes] = useState('');
@@ -77,7 +79,9 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
       setTracks(res.data.tracks);
       setTitle(res.data.album.title);
       setYear(res.data.album.year?.toString() ?? '');
+      setDecade(res.data.album.decade?.toString() ?? '');
       setCountry(res.data.album.country ?? '');
+      setAccompaniment(res.data.album.accompaniment ?? '');
       setFormat(res.data.album.format);
       setCatalogNumber(res.data.album.catalog_number ?? '');
       setNotes(res.data.album.notes ?? '');
@@ -96,7 +100,9 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
       const updates: Parameters<typeof updateAlbum>[1] = {
         title: title.trim(),
         year: year ? Number(year) : null,
+        decade: decade ? Number(decade) : null,
         country: country || null,
+        accompaniment: accompaniment.trim() || null,
         format,
         catalogNumber: catalogNumber || null,
         notes: notes || null,
@@ -212,8 +218,12 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
               setTitle={setTitle}
               year={year}
               setYear={setYear}
+              decade={decade}
+              setDecade={setDecade}
               country={country}
               setCountry={setCountry}
+              accompaniment={accompaniment}
+              setAccompaniment={setAccompaniment}
               format={format}
               setFormat={setFormat}
               catalogNumber={catalogNumber}
@@ -252,7 +262,11 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
                 ))}
               </ul>
 
-              <AddTrackForm nextPosition={tracks.length + 1} onAdd={addTrack} />
+              <AddTrackForm
+                nextPosition={tracks.length + 1}
+                albumFormat={format}
+                onAdd={addTrack}
+              />
             </div>
           </div>
         )}

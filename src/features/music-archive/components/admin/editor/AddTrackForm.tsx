@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { MusicTrackSide } from '../../../types/music.types';
+import type { MusicAlbumFormat, MusicTrackSide } from '../../../types/music.types';
 import { fileInputCls, inputCls, titleFromFilename } from '../../upload/constants';
 
 interface NewTrackInput {
@@ -13,17 +13,24 @@ interface NewTrackInput {
 
 interface Props {
   nextPosition: number;
+  albumFormat?: MusicAlbumFormat;
   onAdd: (input: NewTrackInput) => Promise<void>;
 }
 
 /** Inline form to append a new track to an existing album. Lives at the
  *  bottom of the AdminAlbumEditor. Handles the title autocomplete from the
  *  filename and resets after a successful add. */
-export function AddTrackForm({ nextPosition, onAdd }: Props) {
+export function AddTrackForm({ nextPosition, albumFormat, onAdd }: Props) {
+  const isSingleOr78 = albumFormat === 'single' || albumFormat === '78rpm';
+  const defaultSide: MusicTrackSide | '' = isSingleOr78
+    ? nextPosition === 1
+      ? 'a'
+      : 'b'
+    : '';
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [position, setPosition] = useState<string>(nextPosition.toString());
-  const [side, setSide] = useState<MusicTrackSide | ''>('');
+  const [side, setSide] = useState<MusicTrackSide | ''>(defaultSide);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,11 +57,13 @@ export function AddTrackForm({ nextPosition, onAdd }: Props) {
         side: side || null,
         file,
       });
-      // Reset for the next track.
+      // Reset for the next track. When single/78rpm, prefill side B for the
+      // typical "Lado A / Lado B" cadence.
+      const nextPos = Number(position) + 1;
       setFile(null);
       setTitle('');
-      setPosition((Number(position) + 1).toString());
-      setSide('');
+      setPosition(nextPos.toString());
+      setSide(isSingleOr78 ? (nextPos === 1 ? 'a' : 'b') : '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo agregar.');
     } finally {
@@ -64,6 +73,11 @@ export function AddTrackForm({ nextPosition, onAdd }: Props) {
 
   return (
     <div className="mt-3 rounded-md border border-dashed border-zinc-300 bg-zinc-50/60 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+      {isSingleOr78 && (
+        <p className="mb-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-200">
+          Disco de 1–2 canciones (Lado A / Lado B). Marca el lado al subir cada track.
+        </p>
+      )}
       <p className="mb-2 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         Agregar canción
       </p>

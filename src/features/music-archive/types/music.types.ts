@@ -55,7 +55,9 @@ export interface MusicAlbumRow {
   title: string;
   slug: string;
   year: number | null;
+  decade: number | null;
   country: string | null;
+  accompaniment: string | null;
   format: MusicAlbumFormat;
   cover_cf_image_id: string | null;
   back_cover_cf_image_id: string | null;
@@ -105,6 +107,10 @@ export interface ArtistWithDiscography extends MusicArtistRow {
   albums: MusicAlbumRow[];
 }
 
+export interface LabelWithDiscography extends MusicLabelRow {
+  albums: MusicAlbumRow[];
+}
+
 export interface CreateArtistDto {
   name: string;
   country?: string;
@@ -125,7 +131,9 @@ export interface CreateAlbumDto {
   labelId?: string;
   title: string;
   year?: number;
+  decade?: number;
   country?: string;
+  accompaniment?: string;
   format: MusicAlbumFormat;
   coverCfImageId?: string;
   backCoverCfImageId?: string;
@@ -186,7 +194,9 @@ export interface UpdateArtistDto {
 export interface UpdateAlbumDto {
   title?: string;
   year?: number | null;
+  decade?: number | null;
   country?: string | null;
+  accompaniment?: string | null;
   format?: MusicAlbumFormat;
   artistId?: string;
   labelId?: string | null;

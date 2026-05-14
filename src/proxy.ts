@@ -4,6 +4,7 @@ import {
   isAnonymousSessionError,
   isInvalidRefreshTokenError,
 } from '@/utils/supabase/middleware';
+import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config';
 
 const PUBLIC_ROUTES = [
   '/',
@@ -34,6 +35,19 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Music archive kill switch — when disabled, the whole module is hidden.
+  // We rewrite to a synthetic 404 path so Next's not-found UI renders.
+  if (
+    !MUSIC_CLUB_ENABLED &&
+    (pathname === '/musica' ||
+      pathname.startsWith('/musica/') ||
+      pathname === '/admin/music' ||
+      pathname.startsWith('/admin/music/'))
+  ) {
+    return NextResponse.rewrite(new URL('/_not-found', request.url));
+  }
+
   const client = createClient(request);
   const { supabase, clearAuthCookies } = client;
 

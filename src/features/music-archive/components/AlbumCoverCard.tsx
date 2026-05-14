@@ -68,7 +68,7 @@ export function AlbumCoverCard({ album, artistName }: Props) {
             </p>
             <p className="mt-0.5 truncate text-xs text-zinc-500">
               {artistName ? `${artistName} · ` : ''}
-              {album.year ?? '—'}
+              {album.year ?? (album.decade ? `${album.decade}s` : '—')}
               {album.country ? ` · ${album.country}` : ''}
             </p>
           </div>

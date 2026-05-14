@@ -6,6 +6,7 @@ import { useState, useTransition } from 'react';
 import { uploadService } from '@/lib/service/upload.service';
 import { createMusicArticle } from '../../actions/music-articles.actions';
 import { ArtistTagPicker } from './ArtistTagPicker';
+import { LabelTagPicker } from './LabelTagPicker';
 
 interface Props {
   clubId: string;
@@ -13,6 +14,12 @@ interface Props {
 }
 
 interface ArtistRef {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface LabelRef {
   id: string;
   name: string;
   slug: string;
@@ -28,6 +35,7 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
   const [content, setContent] = useState('');
   const [hero, setHero] = useState<File | null>(null);
   const [artists, setArtists] = useState<ArtistRef[]>([]);
+  const [labels, setLabels] = useState<LabelRef[]>([]);
   const [publish, setPublish] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -49,6 +57,7 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
           content,
           cfImageId,
           artistIds: artists.map((a) => a.id),
+          labelIds: labels.map((l) => l.id),
           publish,
         });
         if (!res.ok) {
@@ -116,6 +125,8 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
       </div>
 
       <ArtistTagPicker value={artists} onChange={setArtists} />
+
+      <LabelTagPicker value={labels} onChange={setLabels} />
 
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">

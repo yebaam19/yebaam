@@ -38,7 +38,9 @@ export async function createAlbum(
       title,
       slug,
       year: dto.year ?? null,
+      decade: dto.decade ?? null,
       country: dto.country?.trim() || null,
+      accompaniment: dto.accompaniment?.trim() || null,
       format: dto.format,
       cover_cf_image_id: dto.coverCfImageId ?? null,
       back_cover_cf_image_id: dto.backCoverCfImageId ?? null,
@@ -66,8 +68,11 @@ export async function updateAlbum(
   const patch: Record<string, unknown> = {};
   if (dto.title !== undefined) patch.title = dto.title.trim();
   if (dto.year !== undefined) patch.year = dto.year;
+  if (dto.decade !== undefined) patch.decade = dto.decade;
   if (dto.country !== undefined)
     patch.country = dto.country?.trim().toUpperCase().slice(0, 2) || null;
+  if (dto.accompaniment !== undefined)
+    patch.accompaniment = dto.accompaniment?.trim() || null;
   if (dto.format !== undefined) patch.format = dto.format;
   if (dto.artistId !== undefined) patch.artist_id = dto.artistId;
   if (dto.labelId !== undefined) patch.label_id = dto.labelId;

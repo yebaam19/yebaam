@@ -67,10 +67,11 @@ export const menuConfig: Record<string, any[]> = {
         },
         {
           icon: MusicalNoteIcon,
-          label: 'Música',
+          label: 'Club de coleccionistas',
           href: '/musica',
           badge: 'Nuevo',
           badgeHideOnMobile: true,
+          featureFlag: 'MUSIC_CLUB_ENABLED' as FeatureFlag,
         },
       ],
     },

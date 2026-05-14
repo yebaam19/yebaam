@@ -115,9 +115,18 @@ export default async function AlbumPage({
           >
             {album.artist.name}
           </Link>
+          {album.accompaniment && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="text-zinc-400">Acompañamiento:</span> {album.accompaniment}
+            </p>
+          )}
 
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm sm:grid-cols-3">
-            {album.year && <Field label="Año" value={String(album.year)} />}
+            {album.year ? (
+              <Field label="Año" value={String(album.year)} />
+            ) : album.decade ? (
+              <Field label="Década" value={`Década de los ${album.decade}`} />
+            ) : null}
             {album.country && <Field label="País" value={album.country} />}
             <Field label="Formato" value={FORMAT_LABEL[album.format] ?? album.format} />
             {album.label && (

@@ -5,6 +5,7 @@ import { getServerClient } from '@/utils/supabase/server';
 import type {
   AlbumWithDetails,
   ArtistWithDiscography,
+  LabelWithDiscography,
   MusicAlbumRow,
   MusicArtistRow,
   MusicLabelRow,
@@ -180,6 +181,25 @@ export const getArtistBySlug = cache(async (slug: string): Promise<ArtistWithDis
     .order('year', { ascending: true, nullsFirst: false });
 
   return { ...a, albums: (albums as MusicAlbumRow[] | null) ?? [] };
+});
+
+export const getLabelBySlug = cache(async (slug: string): Promise<LabelWithDiscography | null> => {
+  const client = await getServerClient();
+  const { data: label } = await client
+    .from('music_labels')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle();
+  if (!label) return null;
+  const l = label as MusicLabelRow;
+
+  const { data: albums } = await client
+    .from('music_albums')
+    .select('*')
+    .eq('label_id', l.id)
+    .order('year', { ascending: true, nullsFirst: false });
+
+  return { ...l, albums: (albums as MusicAlbumRow[] | null) ?? [] };
 });
 
 export const searchArtists = cache(
