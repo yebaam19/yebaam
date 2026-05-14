@@ -8,7 +8,7 @@ import type { Club } from '../types/club.types';
 
 export type ClubForoBoard = { space: ForoSpace; categories: ForoCategory[] } | null;
 
-export type ClubPostKind = 'PHOTO' | 'VIDEO' | 'ARTICLE' | 'FILE';
+export type ClubPostKind = 'NOTE' | 'PHOTO' | 'VIDEO' | 'ARTICLE' | 'FILE';
 
 export interface ClubPost {
   id: string;

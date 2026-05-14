@@ -15,7 +15,8 @@ import {
   ChevronRightIcon,
 } from '@/components/icons/heroicons-shim';
 
-const KIND_ICON = {
+const KIND_ICON: Record<ClubPostKind, typeof PhotoIcon> = {
+  NOTE: ChatBubbleOvalLeftIcon,
   PHOTO: PhotoIcon,
   VIDEO: VideoCameraIcon,
   ARTICLE: DocumentTextIcon,

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import type { ClubPost } from '@/features/clubs/server/clubs.server';
+import type { ClubPost, ClubPostKind } from '@/features/clubs/server/clubs.server';
 import {
   ClockIcon,
   EyeIcon,
@@ -10,6 +10,7 @@ import {
   PhotoIcon,
   VideoCameraIcon,
   FolderIcon,
+  ChatBubbleOvalLeftIcon,
 } from '@/components/icons/heroicons-shim';
 
 interface ClubHighlightedPostsProps {
@@ -21,7 +22,8 @@ interface ClubHighlightedPostsProps {
   onOpen?: (postId: string) => void;
 }
 
-const KIND_ICON = {
+const KIND_ICON: Record<ClubPostKind, typeof PhotoIcon> = {
+  NOTE: ChatBubbleOvalLeftIcon,
   PHOTO: PhotoIcon,
   VIDEO: VideoCameraIcon,
   ARTICLE: DocumentTextIcon,

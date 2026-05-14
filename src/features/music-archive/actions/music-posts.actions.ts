@@ -36,7 +36,7 @@ export async function createMusicClubPost(
     .insert({
       club_id: dto.clubId,
       author_id: userId,
-      kind: dto.kind ?? 'note',
+      kind: dto.kind ?? 'NOTE',
       title: dto.title?.trim() || null,
       body: dto.body?.trim() || null,
       media_url: dto.mediaUrl || null,
