@@ -10,6 +10,7 @@ import { BirthDateFields } from './BirthDateFields';
 import { GenderField } from './GenderField';
 import { LocationFields } from './LocationFields';
 import { OccupationField } from './OccupationField';
+import { COLOMBIA_NAME } from './data/countries';
 import { isOccupationSlug, type OccupationSlug } from '../../constants/occupations';
 
 export function RegisterForm() {
@@ -29,7 +30,7 @@ export function RegisterForm() {
     birthMonth: '',
     birthYear: '',
     gender: '',
-    country: '',
+    country: COLOMBIA_NAME,
     state: '',
     city: '',
     occupation: '',

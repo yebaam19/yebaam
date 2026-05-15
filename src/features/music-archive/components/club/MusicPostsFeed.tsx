@@ -81,7 +81,7 @@ function Composer({
   function submit() {
     setError(null);
     startTransition(async () => {
-      const res = await createMusicClubPost({ clubId, body });
+      const res = await createMusicClubPost({ clubId, kind: 'NOTE', body });
       if (!res.ok) {
         setError(res.error);
         return;
