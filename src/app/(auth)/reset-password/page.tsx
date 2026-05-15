@@ -21,8 +21,8 @@ const Page = () => {
             <Image
               src={LogoWhite}
               alt="Yebaam Logo"
-              width={300}
-              height={60}
+              width={583}
+              height={170}
               style={{ height: 56, width: 'auto' }}
               priority
             />

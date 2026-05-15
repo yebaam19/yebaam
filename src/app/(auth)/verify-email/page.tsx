@@ -24,10 +24,9 @@ export default function VerifyEmailPage() {
           <Image
             src={LogoWhite}
             alt="Yebaam Logo"
-            width={240}
-            height={60}
+            width={583}
+            height={170}
             className="h-auto w-full brightness-0 invert"
-            style={{ height: 'auto' }}
             priority
           />
         </div>
