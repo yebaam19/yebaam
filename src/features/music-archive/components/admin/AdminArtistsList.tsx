@@ -16,6 +16,7 @@ interface ArtistRow {
   country: string | null;
   born_year: number | null;
   died_year: number | null;
+  bio_short: string | null;
   photo_cf_image_id: string | null;
   album_count: number;
 }
@@ -43,6 +44,7 @@ export function AdminArtistsList({ initialArtists }: Props) {
       country: a.country,
       born_year: a.born_year,
       died_year: a.died_year,
+      bio_short: a.bio_short,
       photo_cf_image_id: a.photo_cf_image_id,
       album_count: 0,
     };
@@ -160,7 +162,7 @@ export function AdminArtistsList({ initialArtists }: Props) {
             setRows((prev) =>
               prev.map((r) =>
                 r.id === row.id
-                  ? { ...r, name: row.name, country: row.country, born_year: row.born_year, died_year: row.died_year, photo_cf_image_id: row.photo_cf_image_id }
+                  ? { ...r, name: row.name, country: row.country, born_year: row.born_year, died_year: row.died_year, bio_short: row.bio_short, photo_cf_image_id: row.photo_cf_image_id }
                   : r,
               ),
             );

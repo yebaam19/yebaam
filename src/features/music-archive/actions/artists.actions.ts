@@ -158,6 +158,7 @@ export async function listAdminArtists(q?: string): Promise<
       country: string | null;
       born_year: number | null;
       died_year: number | null;
+      bio_short: string | null;
       photo_cf_image_id: string | null;
       album_count: number;
     }>
@@ -168,7 +169,7 @@ export async function listAdminArtists(q?: string): Promise<
   const service = getServiceClient();
   let query = service
     .from('music_artists')
-    .select('id, name, slug, country, born_year, died_year, photo_cf_image_id')
+    .select('id, name, slug, country, born_year, died_year, bio_short, photo_cf_image_id')
     .order('created_at', { ascending: false })
     .limit(200);
   const trimmed = q?.trim();
@@ -182,6 +183,7 @@ export async function listAdminArtists(q?: string): Promise<
     country: string | null;
     born_year: number | null;
     died_year: number | null;
+    bio_short: string | null;
     photo_cf_image_id: string | null;
   }>;
 

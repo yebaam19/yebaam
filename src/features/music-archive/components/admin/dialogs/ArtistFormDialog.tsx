@@ -13,6 +13,7 @@ interface InitialValues {
   country?: string | null;
   born_year?: number | null;
   died_year?: number | null;
+  bio_short?: string | null;
   photo_cf_image_id?: string | null;
 }
 
@@ -32,6 +33,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
   const [country, setCountry] = useState(initial?.country ?? '');
   const [bornYear, setBornYear] = useState(initial?.born_year?.toString() ?? '');
   const [diedYear, setDiedYear] = useState(initial?.died_year?.toString() ?? '');
+  const [bioShort, setBioShort] = useState(initial?.bio_short ?? '');
   const [photo, setPhoto] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
       country: country || undefined,
       bornYear: bornYear ? Number(bornYear) : undefined,
       diedYear: diedYear ? Number(diedYear) : undefined,
+      bioShort: bioShort.trim() || undefined,
       ...(photoCfImageId ? { photoCfImageId } : {}),
     };
 
@@ -65,6 +68,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
           country: country || null,
           bornYear: bornYear ? Number(bornYear) : null,
           diedYear: diedYear ? Number(diedYear) : null,
+          bioShort: bioShort.trim() || null,
         })
       : await createArtist(dto);
 
@@ -146,6 +150,24 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
               {isEdit ? 'Reemplazar foto (opcional)' : 'Foto (opcional)'}
             </label>
             <CoverDropZone file={photo} onChange={setPhoto} />
+          </div>
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                Biografía (opcional)
+              </label>
+              <span className="text-[10px] tabular-nums text-zinc-500">
+                {bioShort.length} / 1000
+              </span>
+            </div>
+            <textarea
+              value={bioShort}
+              onChange={(e) => setBioShort(e.target.value)}
+              className={`${inputCls} resize-y`}
+              maxLength={1000}
+              rows={4}
+              placeholder="Breve biografía del artista…"
+            />
           </div>
         </div>
         {error && (
