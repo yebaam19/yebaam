@@ -10,6 +10,7 @@ import { BirthDateFields } from './BirthDateFields';
 import { GenderField } from './GenderField';
 import { LocationFields } from './LocationFields';
 import { OccupationField } from './OccupationField';
+import { CredentialsFields } from './CredentialsFields';
 import { isOccupationSlug, type OccupationSlug } from '../../constants/occupations';
 
 export function RegisterForm() {
@@ -139,38 +140,11 @@ export function RegisterForm() {
         onChange={handleChange}
       />
 
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
+      <CredentialsFields
+        email={formData.email}
+        password={formData.password}
+        confirmPassword={formData.confirmPassword}
         onChange={handleChange}
-        placeholder="Correo electrónico"
-        required
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-      />
-
-      {/* Contraseña */}
-      <input
-        type="password"
-        name="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="Contraseña"
-        required
-        minLength={8}
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-      />
-
-      {/* Confirmar contraseña */}
-      <input
-        type="password"
-        name="confirmPassword"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        placeholder="Confirmar contraseña"
-        required
-        minLength={8}
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
       />
 
       {/* Ubicación */}

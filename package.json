@@ -19,6 +19,7 @@
     "@hugeicons/react": "^1.0.5",
     "@iconify/react": "^6.0.2",
     "@marsidev/react-turnstile": "^1.5.1",
+    "@sentry/nextjs": "^10.53.1",
     "@sparticuz/chromium": "^147.0.2",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",

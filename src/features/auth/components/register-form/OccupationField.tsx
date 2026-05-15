@@ -17,7 +17,7 @@ export function OccupationField({ occupation, onChange }: OccupationFieldProps) 
         value={occupation}
         onChange={onChange}
         required
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all"
       >
         <option value="" disabled>
           Selecciona tu ocupación

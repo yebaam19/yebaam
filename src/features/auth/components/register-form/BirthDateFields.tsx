@@ -17,7 +17,7 @@ export function BirthDateFields({ birthDay, birthMonth, birthYear, onChange }: B
           value={birthDay}
           onChange={onChange}
           required
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none sm:px-3"
         >
           <option value="">Día</option>
           {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
@@ -32,7 +32,7 @@ export function BirthDateFields({ birthDay, birthMonth, birthYear, onChange }: B
           value={birthMonth}
           onChange={onChange}
           required
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none sm:px-3"
         >
           <option value="">Mes</option>
           <option value="1">enero</option>
@@ -54,7 +54,7 @@ export function BirthDateFields({ birthDay, birthMonth, birthYear, onChange }: B
           value={birthYear}
           onChange={onChange}
           required
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none sm:px-3"
         >
           <option value="">Año</option>
           {Array.from({ length: 100 }, (_, i) => currentYear - i).map((year) => (

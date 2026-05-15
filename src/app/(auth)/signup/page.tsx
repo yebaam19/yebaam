@@ -14,48 +14,57 @@ export const metadata: Metadata = {
 
 const Page = () => {
   return (
-    <main className="relative flex min-h-screen items-center justify-center p-6">
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+    <main className="relative flex min-h-screen w-full flex-col md:flex-row">
+      <div className="absolute inset-0 z-0">
         <Image src={BackgroundImage} alt="Background" fill sizes="100vw" className="object-cover" priority />
-        <div className="pointer-events-none absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-black/10" />
       </div>
 
-      <div className="relative z-10 w-full max-w-lg">
-        <div className="mx-auto mb-5 w-full max-w-60 text-center">
-          <Image
-            src={LogoWhite}
-            alt="Yebaam Logo"
-            width={583}
-            height={170}
-            className="h-auto w-full brightness-0 invert"
-            priority
-          />
-        </div>
-        <div className="w-full rounded-2xl bg-white shadow-xl dark:bg-neutral-900">
-          <div className="mb-2 pt-4 pb-2">
-            <h1 className="text-center text-2xl font-bold">Crea una cuenta</h1>
-            <p className="text-center text-neutral-500">Es rápido y fácil.</p>
-          </div>
-          <div className="border-t border-neutral-200 dark:border-neutral-700" />
-          <div className="mt-4 px-6 pb-6">
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-12">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
-                </div>
-              }
-            >
-              <RegisterForm />
-            </Suspense>
-          </div>
-          <div className="border-t border-neutral-200 dark:border-neutral-700" />
-          <div className="mt-4 pb-4">
-            <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
-              ¿Ya tienes una cuenta?{' '}
-              <Link href="/login" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
-                Inicia sesión
-              </Link>
+      <div className="relative z-10 flex min-h-screen w-full flex-col md:flex-row">
+        <div className="flex w-full flex-1 flex-col justify-center px-6 py-8 md:px-12 md:py-10 lg:px-20 xl:px-28">
+          <div className="mx-auto w-full max-w-xl md:mx-0">
+            <div className="mx-auto mb-5 w-full max-w-60 text-center md:mx-0 md:mb-8 md:max-w-112.5 md:text-left">
+              <Image
+                src={LogoWhite}
+                alt="Yebaam Logo"
+                width={583}
+                height={170}
+                className="h-auto w-full brightness-0 invert"
+                priority
+              />
+            </div>
+            <p className="hidden text-center text-xl font-semibold text-white md:block md:text-left md:text-2xl lg:text-3xl">
+              Únete a la comunidad. Comparte lo que importa con quienes importan.
             </p>
+          </div>
+        </div>
+        <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-12 md:py-10 lg:px-20 xl:px-28">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-neutral-900">
+            <div className="px-4 pt-5 pb-3 sm:px-6">
+              <h1 className="text-center text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">Crea una cuenta</h1>
+              <p className="mt-1 text-center text-sm text-neutral-500">Es rápido y fácil.</p>
+            </div>
+            <div className="border-t border-neutral-200 dark:border-neutral-700" />
+            <div className="px-4 pt-4 pb-5 sm:px-6 sm:pb-6">
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
+                  </div>
+                }
+              >
+                <RegisterForm />
+              </Suspense>
+            </div>
+            <div className="border-t border-neutral-200 dark:border-neutral-700" />
+            <div className="px-4 py-4 sm:px-6">
+              <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+                ¿Ya tienes una cuenta?{' '}
+                <Link href="/login" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
+                  Inicia sesión
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

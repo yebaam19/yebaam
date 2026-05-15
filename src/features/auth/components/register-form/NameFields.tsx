@@ -6,7 +6,7 @@ interface NameFieldsProps {
 
 export function NameFields({ firstName, lastName, onChange }: NameFieldsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <input
         type="text"
         name="firstName"
