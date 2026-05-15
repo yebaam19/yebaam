@@ -11,6 +11,7 @@ import {
 } from '@/components/icons/heroicons-shim';
 import { uploadService } from '@/lib/service/upload.service';
 import { resolveImage, imageUrl } from '@/lib/media/urls';
+import { parseISODate } from '@/lib/utils/date';
 import { updatePerson } from '../actions/families.actions';
 import type { FamilyPersonRow } from '../types/family.types';
 
@@ -199,11 +200,11 @@ export function PersonInfoPanel({
             <Field
               label="Nacimiento"
               value={
-                new Date(person.birth_date).toLocaleDateString('es', {
+                (parseISODate(person.birth_date)?.toLocaleDateString('es', {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
-                }) + (person.birth_place ? ` · ${person.birth_place}` : '')
+                }) ?? '') + (person.birth_place ? ` · ${person.birth_place}` : '')
               }
             />
           )}
@@ -211,11 +212,11 @@ export function PersonInfoPanel({
             <Field
               label="Defunción"
               value={
-                new Date(person.death_date).toLocaleDateString('es', {
+                (parseISODate(person.death_date)?.toLocaleDateString('es', {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
-                }) + (person.death_place ? ` · ${person.death_place}` : '')
+                }) ?? '') + (person.death_place ? ` · ${person.death_place}` : '')
               }
             />
           )}

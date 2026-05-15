@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
 import { uploadService } from '@/lib/service/upload.service';
+import { parseISODate } from '@/lib/utils/date';
 import type {
   ProfileStatsResponse,
   UpdateInterestsDTO,
@@ -108,7 +109,7 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
     birthCountry: null,
     birthState: null,
     birthCity: row.birth_place ?? row.hometown ?? null,
-    birthDate: row.birth_date ? new Date(row.birth_date) : null,
+    birthDate: parseISODate(row.birth_date),
     gender: (row.gender as UserProfile['gender']) ?? null,
     bloodType: null,
     relationshipStatus: (row.relationship_status as UserProfile['relationshipStatus']) ?? null,

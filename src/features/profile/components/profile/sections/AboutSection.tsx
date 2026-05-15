@@ -13,6 +13,7 @@ import {
   MapPinIcon,
 } from '@/components/icons/heroicons-shim'
 import type { ComponentType, SVGProps } from 'react'
+import { formatBirthDate } from '@/lib/utils/date'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
 
@@ -28,12 +29,6 @@ const relationshipLabels: Record<string, string> = {
   MARRIED: 'Casado/a',
   DIVORCED: 'Divorciado/a',
   WIDOWED: 'Viudo/a',
-}
-
-function formatBirthDate(date: Date | string) {
-  const d = typeof date === 'string' ? new Date(date) : date
-  if (Number.isNaN(d.getTime())) return null
-  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 type Fact = {

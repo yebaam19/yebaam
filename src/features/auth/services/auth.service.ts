@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import { parseISODate } from '@/lib/utils/date';
 import {
   signupWithOtpAction,
   verifyOtpAction,
@@ -36,7 +37,7 @@ function mapProfileToAuthUser(
   authUser: { id: string; email?: string | null; email_confirmed_at?: string | null },
   profile: Partial<ProfileRow> | null,
 ): AuthUser {
-  const birth = profile?.birth_date ? new Date(profile.birth_date) : null;
+  const birth = parseISODate(profile?.birth_date);
   const email = authUser.email ?? '';
   const usernameFallback = email.split('@')[0] || 'user';
   return {
@@ -55,9 +56,9 @@ function mapProfileToAuthUser(
     secondName: profile?.middle_name ?? undefined,
     lastName: profile?.last_name ?? undefined,
     secondLastName: profile?.second_last_name ?? undefined,
-    birthDay: birth ? String(birth.getUTCDate()) : undefined,
-    birthMonth: birth ? String(birth.getUTCMonth() + 1) : undefined,
-    birthYear: birth ? String(birth.getUTCFullYear()) : undefined,
+    birthDay: birth ? String(birth.getDate()) : undefined,
+    birthMonth: birth ? String(birth.getMonth() + 1) : undefined,
+    birthYear: birth ? String(birth.getFullYear()) : undefined,
     gender: profile?.gender ?? undefined,
     residenceCountry: profile?.country ?? undefined,
     residenceState: profile?.state ?? undefined,
