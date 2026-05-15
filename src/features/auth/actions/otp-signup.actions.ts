@@ -5,8 +5,28 @@ import { getServiceClient } from '@/utils/supabase/server';
 import { sendOtpEmail } from '@/services/email/resend.service';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { generateCode, hashCode, otpExpiresAt, MAX_ATTEMPTS } from './_otp-shared';
+import State from 'country-state-city/lib/cjs/state';
+import Country from 'country-state-city/lib/cjs/country';
 import { isOccupationSlug } from '../constants/occupations';
 import type { RegisterDTO, VerifyEmailRequest, ResendOtpRequest } from '../interfaces/auth.interfaces';
+
+function resolveCountryName(countryInput: string | undefined | null): string {
+  if (!countryInput) return '';
+  // Accept either an ISO-2 code (new clients) or a country name (legacy).
+  if (countryInput.length === 2) {
+    return Country.getCountryByCode(countryInput.toUpperCase())?.name ?? countryInput;
+  }
+  return countryInput;
+}
+
+function resolveStateName(countryInput: string | undefined | null, stateInput: string | undefined | null): string {
+  if (!stateInput) return '';
+  if (!countryInput) return stateInput;
+  const countryIso = countryInput.length === 2 ? countryInput.toUpperCase() : Country.getAllCountries().find(c => c.name === countryInput)?.isoCode;
+  if (!countryIso) return stateInput;
+  const match = State.getStateByCodeAndCountry(stateInput, countryIso);
+  return match?.name ?? stateInput;
+}
 
 async function getRemoteIp(): Promise<string | null> {
   const h = await headers();
@@ -87,8 +107,8 @@ export async function signupWithOtpAction(userData: RegisterDTO): Promise<{ mess
       second_last_name: userData.secondLastName ?? null,
       birth_date: userData.birthDate,
       gender: userData.gender,
-      country: userData.country,
-      state: userData.state,
+      country: resolveCountryName(userData.country),
+      state: resolveStateName(userData.country, userData.state),
       city: userData.city,
       occupation: userData.occupation,
     })

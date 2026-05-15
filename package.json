@@ -37,6 +37,7 @@
     "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.10.2",
     "clsx": "^2.1.1",
+    "country-state-city": "^3.2.1",
     "dagre": "^0.8.5",
     "date-fns": "^4.1.0",
     "embla-carousel": "^8.6.0",
