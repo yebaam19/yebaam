@@ -1,11 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import type { ClubPostKind } from '@/features/clubs/server/clubs.server';
 import { requireSession, type ActionResult } from './_shared';
 
 interface CreatePostDto {
   clubId: string;
-  kind?: string;
+  kind?: ClubPostKind;
   title?: string | null;
   body?: string | null;
   mediaUrl?: string | null;

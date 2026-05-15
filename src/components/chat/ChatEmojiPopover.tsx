@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Theme, type EmojiClickData } from 'emoji-picker-react';
+import type { EmojiClickData, Theme } from 'emoji-picker-react';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -44,7 +44,7 @@ export default function ChatEmojiPopover({ open, onClose, onSelect, align = 'lef
       className={`absolute bottom-12 ${align === 'right' ? 'right-0' : 'left-0'} z-50 shadow-xl rounded-lg overflow-hidden`}
     >
       <EmojiPicker
-        theme={Theme.AUTO}
+        theme={'auto' as Theme}
         onEmojiClick={(data: EmojiClickData) => onSelect(data.emoji)}
         lazyLoadEmojis
         width={320}

@@ -49,6 +49,7 @@ interface ArtistRow {
   country: string | null;
   born_year: number | null;
   died_year: number | null;
+  bio_short: string | null;
   photo_cf_image_id: string | null;
   album_count: number;
 }

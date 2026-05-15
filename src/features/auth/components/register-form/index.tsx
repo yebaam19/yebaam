@@ -139,18 +139,6 @@ export function RegisterForm() {
         onChange={handleChange}
       />
 
-      {/* Email - campo especial */}
-      <input
-        type="text"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        placeholder="abermeo"
-        required
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-      />
-
-      {/* Correo electrónico */}
       <input
         type="email"
         name="email"

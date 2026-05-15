@@ -134,9 +134,6 @@ importers:
       react:
         specifier: 19.2.5
         version: 19.2.5
-      react-country-state-city:
-        specifier: ^1.1.12
-        version: 1.1.12(react@19.2.5)
       react-dom:
         specifier: 19.2.5
         version: 19.2.5(react@19.2.5)
@@ -3337,11 +3334,6 @@ packages:
     peerDependencies:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
-
-  react-country-state-city@1.1.12:
-    resolution: {integrity: sha512-9xOfUvm5uw5zZEjjNT3eooWvrJB08Hv1MITPYfgeQUttCHEpxbD/iqMzXNBF2g3Owc9MEnhrKCSpKn5DpTDHqg==}
-    peerDependencies:
-      react: '>=16'
 
   react-dom@19.2.5:
     resolution: {integrity: sha512-J5bAZz+DXMMwW/wV3xzKke59Af6CHY7G4uYLN1OvBcKEsWOs4pQExj86BBKamxl/Ik5bx9whOrvBlSDfWzgSag==}
@@ -7597,10 +7589,6 @@ snapshots:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       react-is: 18.3.1
-
-  react-country-state-city@1.1.12(react@19.2.5):
-    dependencies:
-      react: 19.2.5
 
   react-dom@19.2.5(react@19.2.5):
     dependencies:

@@ -1,31 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { GetCity, GetState } from 'react-country-state-city'
+import { useEffect, useMemo } from 'react'
+import coLocations from './data/co-locations.json'
 
-// Interfaces para la librería
-interface Country {
-  id: number
-  name: string
-  phonecode?: string
-  sortname?: string
-  iso2?: string
-}
-
-interface State {
-  id: number
-  name: string
-  state_code?: string
-}
-
-interface City {
-  id: number
-  name: string
-}
-
-// ID de Colombia en la librería react-country-state-city
-const COLOMBIA_ID = 48
 const COLOMBIA_NAME = 'Colombia'
+const DEPARTMENTS = Object.keys(coLocations) as Array<keyof typeof coLocations>
+const CITIES_BY_DEPARTMENT = coLocations as Record<string, readonly string[]>
 
 interface LocationFieldsProps {
   country: string
@@ -35,76 +15,20 @@ interface LocationFieldsProps {
 }
 
 export function LocationFields({ country, state, city, onChange }: LocationFieldsProps) {
-  const [statesList, setStatesList] = useState<State[]>([])
-  const [citiesList, setCitiesList] = useState<City[]>([])
-  const [selectedStateId, setSelectedStateId] = useState<number | null>(null)
-  const [isLoadingStates, setIsLoadingStates] = useState(false)
-  const [isLoadingCities, setIsLoadingCities] = useState(false)
+  const citiesList = useMemo(() => (state ? (CITIES_BY_DEPARTMENT[state] ?? []) : []), [state])
 
-  // Cargar departamentos de Colombia al montar
   useEffect(() => {
-    const fetchStates = async () => {
-      setIsLoadingStates(true)
-      try {
-        const states = await GetState(COLOMBIA_ID)
-        // Ordenar alfabéticamente
-        const sortedStates = (states as State[]).sort((a, b) => a.name.localeCompare(b.name, 'es'))
-        setStatesList(sortedStates)
-      } catch (error) {
-        console.error('Error fetching states:', error)
-      } finally {
-        setIsLoadingStates(false)
-      }
-    }
-
-    fetchStates()
-
-    // Establecer país como Colombia automáticamente
     if (!country) {
-      const syntheticEvent = {
+      onChange({
         target: { name: 'country', value: COLOMBIA_NAME },
-      } as React.ChangeEvent<HTMLSelectElement>
-      onChange(syntheticEvent)
+      } as React.ChangeEvent<HTMLSelectElement>)
     }
-  }, [])
-
-  // Cargar ciudades cuando cambia el departamento
-  useEffect(() => {
-    const fetchCities = async () => {
-      if (state && selectedStateId) {
-        setIsLoadingCities(true)
-        try {
-          const cities = await GetCity(COLOMBIA_ID, selectedStateId)
-          // Ordenar alfabéticamente
-          const sortedCities = (cities as City[]).sort((a, b) => a.name.localeCompare(b.name, 'es'))
-          setCitiesList(sortedCities)
-        } catch (error) {
-          console.error('Error fetching cities:', error)
-          setCitiesList([])
-        } finally {
-          setIsLoadingCities(false)
-        }
-      } else {
-        setCitiesList([])
-      }
-    }
-
-    fetchCities()
-  }, [state, selectedStateId])
+  }, [country, onChange])
 
   const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const stateName = e.target.value
-    const selectedState = statesList.find((s) => s.name === stateName)
-
-    setSelectedStateId(selectedState?.id || null)
-
-    // Reset city cuando cambia el estado
-    const resetCityEvent = {
+    onChange({
       target: { name: 'city', value: '' },
-    } as React.ChangeEvent<HTMLSelectElement>
-    onChange(resetCityEvent)
-
-    // Actualizar estado
+    } as React.ChangeEvent<HTMLSelectElement>)
     onChange(e)
   }
 
@@ -112,7 +36,6 @@ export function LocationFields({ country, state, city, onChange }: LocationField
     <div>
       <label className="mb-2 block text-xs font-medium text-gray-600">País de residencia</label>
       <div className="space-y-3">
-        {/* País - Solo Colombia por ahora */}
         <select
           name="country"
           value={country || COLOMBIA_NAME}
@@ -129,13 +52,12 @@ export function LocationFields({ country, state, city, onChange }: LocationField
           value={state}
           onChange={handleStateChange}
           required
-          disabled={isLoadingStates}
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
         >
-          <option value="">{isLoadingStates ? 'Cargando departamentos...' : 'Selecciona un departamento'}</option>
-          {statesList.map((s) => (
-            <option key={s.id} value={s.name}>
-              {s.name}
+          <option value="">Selecciona un departamento</option>
+          {DEPARTMENTS.map((d) => (
+            <option key={d} value={d}>
+              {d}
             </option>
           ))}
         </select>
@@ -146,19 +68,15 @@ export function LocationFields({ country, state, city, onChange }: LocationField
           value={city}
           onChange={onChange}
           required
-          disabled={!state || isLoadingCities}
+          disabled={!state}
           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
         >
           <option value="">
-            {isLoadingCities
-              ? 'Cargando ciudades...'
-              : state
-                ? 'Selecciona una ciudad'
-                : 'Primero selecciona un departamento'}
+            {state ? 'Selecciona una ciudad' : 'Primero selecciona un departamento'}
           </option>
           {citiesList.map((c) => (
-            <option key={c.id} value={c.name}>
-              {c.name}
+            <option key={c} value={c}>
+              {c}
             </option>
           ))}
         </select>
