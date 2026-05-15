@@ -21,7 +21,7 @@ const Page = () => {
       </div>
 
       <div className="relative z-10 flex min-h-screen w-full flex-col md:flex-row">
-        <div className="flex w-full flex-1 flex-col justify-center px-6 py-8 md:px-12 md:py-10 lg:px-20 xl:px-28">
+        <div className="flex w-full flex-1 flex-col justify-center px-6 py-8 md:sticky md:top-0 md:h-screen md:justify-center md:px-12 md:py-10 lg:px-20 xl:px-28">
           <div className="mx-auto w-full max-w-xl md:mx-0">
             <div className="mx-auto mb-5 w-full max-w-60 text-center md:mx-0 md:mb-8 md:max-w-112.5 md:text-left">
               <Image
