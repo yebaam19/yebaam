@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { imageUrl } from '@/lib/media/urls';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 
@@ -18,10 +21,11 @@ interface Props {
 /** Grid of every artist with ≥1 album tagged into the club. Click → artist
  *  detail page where bio + discography + articles live. */
 export function ClubArtistsList({ artists }: Props) {
+  const t = useTranslations('musica');
   if (artists.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-        Aún no hay artistas en este club. Cuando un disco se etiqueta al club, su artista aparece aquí.
+        {t('club.artists.empty')}
       </p>
     );
   }
@@ -49,7 +53,7 @@ export function ClubArtistsList({ artists }: Props) {
                   {a.name}
                 </p>
                 <p className="text-xs text-zinc-500">
-                  {a.album_count} disco{a.album_count === 1 ? '' : 's'}
+                  {t('club.albumsCount', { count: a.album_count })}
                 </p>
               </div>
             </Link>

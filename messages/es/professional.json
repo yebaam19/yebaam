@@ -1,0 +1,73 @@
+{
+  "servicesMetadata": {
+    "title": "Servicios Profesionales | Encuentra Expertos Cerca de Ti",
+    "description": "Explora nuestro directorio de servicios profesionales. Encuentra abogados, contadores, médicos, desarrolladores y más profesionales verificados en tu ciudad.",
+    "ogTitle": "Servicios Profesionales",
+    "ogDescription": "Encuentra profesionales verificados para todas tus necesidades"
+  },
+  "servicesComingSoon": {
+    "eyebrow": "Próximamente",
+    "title": "Servicios Profesionales",
+    "description": "Estamos afinando esta sección para que puedas encontrar profesionales verificados de forma simple y confiable.",
+    "backToFeed": "Volver al feed"
+  },
+  "welcome": {
+    "title": "Perfil Profesional",
+    "subtitle": "Destaca tu experiencia, habilidades y logros profesionales. Conecta con oportunidades y profesionales de tu sector.",
+    "howValidationWorks": "¿Cómo funciona la validación?",
+    "cta": {
+      "title": "¿Listo para comenzar?",
+      "description": "Crea tu perfil profesional y empieza a destacar tus habilidades y experiencia ante la comunidad.",
+      "button": "Crear mi perfil profesional"
+    }
+  },
+  "benefits": {
+    "heading": "Beneficios del Perfil Profesional",
+    "subheading": "Destaca entre la comunidad con un perfil profesional verificado",
+    "items": {
+      "verification": {
+        "title": "Verificación Profesional",
+        "description": "Obtén una insignia que certifica tu identidad y credenciales profesionales"
+      },
+      "credibility": {
+        "title": "Credibilidad",
+        "description": "Demuestra tus logros y certificaciones con documentación verificada"
+      },
+      "networking": {
+        "title": "Networking",
+        "description": "Conecta con otros profesionales verificados de tu industria"
+      },
+      "opportunities": {
+        "title": "Oportunidades",
+        "description": "Accede a ofertas laborales exclusivas para perfiles verificados"
+      },
+      "portfolio": {
+        "title": "Portafolio",
+        "description": "Exhibe tu experiencia, proyectos y logros profesionales"
+      },
+      "visibility": {
+        "title": "Visibilidad",
+        "description": "Aumenta tu alcance y presencia en la comunidad profesional"
+      }
+    }
+  },
+  "validation": {
+    "heading": "Proceso de Verificación",
+    "subheading": "Sigue estos simples pasos para verificar tu perfil profesional",
+    "stepLabel": "Paso {step}",
+    "steps": {
+      "upload": {
+        "title": "Sube tus Documentos",
+        "description": "Proporciona los documentos que respalden tu formación y experiencia profesional"
+      },
+      "review": {
+        "title": "Validación",
+        "description": "Nuestro equipo verificará la autenticidad de tus documentos y credenciales"
+      },
+      "verified": {
+        "title": "Obtén tu Verificación",
+        "description": "Recibe tu insignia de profesional verificado y accede a todos los beneficios"
+      }
+    }
+  }
+}

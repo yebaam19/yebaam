@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { Route } from 'next';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim';
 
 interface PaginationProps {
@@ -11,6 +12,7 @@ interface PaginationProps {
 }
 
 export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
+  const t = useTranslations('clubes');
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentPage = Math.max(1, Number(searchParams.get('page')) || 1);
@@ -32,13 +34,14 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
 
   return (
     <nav
-      aria-label="Paginación"
+      aria-label={t('pagination.ariaLabel')}
       className="flex items-center justify-center gap-1 pt-2"
     >
       <PageArrow
         direction="prev"
         href={createPageURL(currentPage - 1) as Route}
         disabled={currentPage <= 1}
+        label={t('pagination.prev')}
       />
       <ul className="flex items-center gap-1">
         {pages.map((page, idx) => {
@@ -59,7 +62,7 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
               <Link
                 href={createPageURL(page) as Route}
                 aria-current={isActive ? 'page' : undefined}
-                aria-label={`Ir a la página ${page}`}
+                aria-label={t('pagination.goToPage', { page })}
                 className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400'
@@ -76,6 +79,7 @@ export const Pagination: FC<PaginationProps> = ({ totalPages }) => {
         direction="next"
         href={createPageURL(currentPage + 1) as Route}
         disabled={currentPage >= totalPages}
+        label={t('pagination.next')}
       />
     </nav>
   );
@@ -85,11 +89,11 @@ interface PageArrowProps {
   direction: 'prev' | 'next';
   href: Route;
   disabled: boolean;
+  label: string;
 }
 
-function PageArrow({ direction, href, disabled }: PageArrowProps) {
+function PageArrow({ direction, href, disabled, label }: PageArrowProps) {
   const Icon = direction === 'prev' ? ChevronLeftIcon : ChevronRightIcon;
-  const label = direction === 'prev' ? 'Página anterior' : 'Página siguiente';
   const classes =
     'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-emerald-700 dark:hover:text-emerald-300';
 

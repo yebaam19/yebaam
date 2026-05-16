@@ -2,6 +2,7 @@
 
 import { CheckBadgeIcon, ShieldCheckIcon } from '@/components/icons/heroicons-shim';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { supabase } from '@/utils/supabase/client';
 import VerifyProfileDialog from './VerifyProfileDialog';
 import type { VerificationStatus } from '../types';
@@ -20,6 +21,7 @@ interface State {
 }
 
 export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
+  const t = useTranslations('verification.banner');
   const [state, setState] = useState<State | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -98,8 +100,8 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
         <div className="relative flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 pr-10 text-emerald-900 sm:flex-row sm:items-center sm:justify-between dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">
           <button
             type="button"
-            aria-label="Ocultar este aviso"
-            title="Ocultar este aviso"
+            aria-label={t('dismissAria')}
+            title={t('dismissAria')}
             onClick={() => {
               if (typeof window !== 'undefined') window.localStorage.setItem(dismissKey, '1');
               setState(null);
@@ -119,12 +121,12 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
           <div className="flex items-center gap-3">
             <CheckBadgeIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <div className="font-semibold">Cuenta autenticada</div>
+              <div className="font-semibold">{t('verifiedTitle')}</div>
               <div className="text-sm">
                 {state.pioneerNumber
-                  ? `Eres el pionero #${state.pioneerNumber}. `
+                  ? t('verifiedWithPioneer', { n: state.pioneerNumber })
                   : ''}
-                Tu identificación única: <span className="font-mono">{state.uniqueIdCode ?? '—'}</span>
+                {t('verifiedUniqueId')} <span className="font-mono">{state.uniqueIdCode ?? '—'}</span>
               </div>
             </div>
           </div>
@@ -135,12 +137,12 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
               rel="noopener"
               className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
             >
-              Descargar identificación
+              {t('downloadId')}
             </a>
           )}
         </div>
         <p className="mt-1 text-right text-[11px] text-emerald-700/70 dark:text-emerald-400/70">
-          Puedes volver a abrirlo en cualquier momento desde tu menú de perfil.
+          {t('reopenHint')}
         </p>
       </div>
     );
@@ -148,10 +150,10 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
 
   const c = state.checklist;
   const items: { key: string; label: string; done: boolean }[] = [
-    { key: 'info', label: 'Información requerida', done: c.requiredInfo },
-    { key: 'photos', label: `5 fotos (${Math.min(c.photos, 5)}/5)`, done: c.photos >= 5 },
-    { key: 'terms', label: 'Términos y condiciones', done: c.terms },
-    { key: 'doc', label: 'Documento de identidad', done: c.pending },
+    { key: 'info', label: t('checklistInfo'), done: c.requiredInfo },
+    { key: 'photos', label: t('checklistPhotos', { current: Math.min(c.photos, 5) }), done: c.photos >= 5 },
+    { key: 'terms', label: t('checklistTerms'), done: c.terms },
+    { key: 'doc', label: t('checklistDocument'), done: c.pending },
   ];
 
   return (
@@ -164,10 +166,10 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold text-yellow-900 dark:text-yellow-200">
                   {state.status === 'pending'
-                    ? 'Tu solicitud está en revisión'
+                    ? t('statusPending')
                     : state.status === 'rejected'
-                    ? 'Tu solicitud fue rechazada'
-                    : 'Autentica tu perfil'}
+                    ? t('statusRejected')
+                    : t('statusUnstarted')}
                 </h3>
                 <button
                   type="button"
@@ -175,19 +177,18 @@ export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
                   className="rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-yellow-700"
                 >
                   {state.status === 'pending'
-                    ? 'Ver requisitos'
+                    ? t('actionPending')
                     : state.status === 'rejected'
-                    ? 'Corregir y reenviar'
-                    : 'Continuar'}
+                    ? t('actionRejected')
+                    : t('actionUnstarted')}
                 </button>
               </div>
               <p className="mt-1 text-sm text-yellow-800 dark:text-yellow-300">
-                Verificamos tu identidad para evitar perfiles falsos y bots. Al cumplir todos los requisitos
-                recibirás tu identificación única y se encenderá tu logo de autenticación.
+                {t('intro')}
               </p>
               {state.status === 'rejected' && state.rejectionReason && (
                 <p className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-                  Motivo: {state.rejectionReason}
+                  {t('rejectionReason', { reason: state.rejectionReason })}
                 </p>
               )}
               <ul className="mt-3 grid grid-cols-1 gap-1 sm:grid-cols-2">

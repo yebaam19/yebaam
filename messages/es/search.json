@@ -1,0 +1,50 @@
+{
+  "input": {
+    "placeholder": "Buscar en Yebaam...",
+    "clearAria": "Limpiar búsqueda"
+  },
+  "filters": {
+    "all": "Todo",
+    "users": "Usuarios",
+    "posts": "Publicaciones",
+    "hashtags": "Hashtags",
+    "groups": "Grupos"
+  },
+  "empty": {
+    "noQueryTitle": "Busca en Yebaam",
+    "noQueryDescription": "Encuentra personas, publicaciones, hashtags y grupos",
+    "noResultsTitle": "No se encontraron resultados",
+    "noResultsWithQuery": "No hay resultados para \"{query}\". Intenta con otras palabras clave.",
+    "noResultsGeneric": "Intenta buscar algo diferente",
+    "errorTitle": "Algo salió mal",
+    "errorDescription": "No pudimos completar tu búsqueda. Por favor, intenta de nuevo."
+  },
+  "user": {
+    "mutualFriends": "{count, plural, =1 {# amigo} other {# amigos}} en común",
+    "followers": "{count, plural, =1 {# seguidor} other {# seguidores}}",
+    "following": "Siguiendo",
+    "follow": "Seguir"
+  },
+  "post": {
+    "minutesAgo": "hace {n}m",
+    "hoursAgo": "hace {n}h",
+    "daysAgo": "hace {n}d",
+    "mediaAlt": "Multimedia de la publicación"
+  },
+  "hashtag": {
+    "posts": "{count, plural, =1 {# publicación} other {# publicaciones}}",
+    "growth": "↗ +{rate}% en las últimas 24h"
+  },
+  "history": {
+    "title": "Búsquedas recientes",
+    "clearAll": "Limpiar todo",
+    "inScope": "en {scope}",
+    "searchAria": "Buscar: {query}",
+    "removeAria": "Eliminar de historial"
+  },
+  "suggestions": {
+    "title": "Tendencias",
+    "searchesCount": "{count} búsquedas",
+    "hot": "HOT"
+  }
+}

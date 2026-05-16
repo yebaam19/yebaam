@@ -14,6 +14,7 @@ import { ArrowTopRightOnSquareIcon, CheckIcon, ClipboardDocumentIcon, XMarkIcon 
 import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import type { Route } from 'next';
 
 interface ArticleCreatedDialogProps {
@@ -26,6 +27,7 @@ interface ArticleCreatedDialogProps {
 }
 
 export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreatedDialogProps) {
+  const t = useTranslations('article.created')
   const [copiedId, setCopiedId] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [fullUrl, setFullUrl] = useState('')
@@ -84,7 +86,7 @@ export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreate
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                ¡Artículo publicado!
+                {t('title')}
               </DialogTitle>
               <Description className="text-sm text-neutral-500 dark:text-neutral-400">
                 &quot;{article.title.length > 40 ? `${article.title.slice(0, 40)}...` : article.title}&quot;
@@ -97,7 +99,7 @@ export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreate
             {/* Article ID */}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                ID del artículo
+                {t('idLabel')}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -119,7 +121,7 @@ export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreate
             {/* Article URL */}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                URL del artículo
+                {t('urlLabel')}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -142,12 +144,12 @@ export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreate
           {/* Actions */}
           <div className="mt-6 flex justify-between gap-3">
             <Button outline onClick={onClose}>
-              Cerrar
+              {t('close')}
             </Button>
             <Link href={articleUrl as Route}>
               <Button color="primary" className="gap-2">
                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                Ver artículo
+                {t('viewArticle')}
               </Button>
             </Link>
           </div>

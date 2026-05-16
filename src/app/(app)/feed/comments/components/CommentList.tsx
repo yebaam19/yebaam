@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { useCommentSocket } from '../hooks/useCommentSocket'
 import { useCommentStore } from '../store/comment.store'
 import { CommentInput } from './CommentInput'
@@ -27,6 +28,7 @@ interface CommentListProps {
  * />
  */
 export function CommentList({ postId, showInput = true, maxHeight, className = '' }: CommentListProps) {
+  const t = useTranslations('feed')
   const { commentsByPost, loadingStates, fetchCommentsByPost } = useCommentStore()
 
   useCommentSocket(postId)
@@ -74,7 +76,7 @@ export function CommentList({ postId, showInput = true, maxHeight, className = '
       {!isLoading && comments.length > 0 && (
         <div className="bg-neutral-100 px-4 py-2 text-center dark:bg-neutral-800/50">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-            {comments.length} {comments.length === 1 ? 'comentario' : 'comentarios'}
+            {t('comments.count', { count: comments.length })}
           </span>
         </div>
       )}

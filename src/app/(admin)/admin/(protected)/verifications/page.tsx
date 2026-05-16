@@ -3,6 +3,7 @@ import type { Route } from 'next';
 import { getServerClient } from '@/utils/supabase/server';
 import { isPlatformAdmin } from '@/app/(app)/foro/server/foro.server';
 import { signImageDeliveryUrl } from '@/lib/cloudflare/images';
+import { getTranslations } from 'next-intl/server';
 import VerificationRow from './components/VerificationRow';
 
 export const metadata = { title: 'Admin · Verificaciones' };
@@ -47,6 +48,7 @@ export default async function AdminVerificationsPage({
 
   const sp = await searchParams;
   const status = sp.status === 'approved' || sp.status === 'rejected' ? sp.status : 'pending';
+  const t = await getTranslations('admin.verifications');
 
   const sb = await getServerClient();
   // Two-step fetch: PostgREST embedded resources require an FK in the same
@@ -129,10 +131,10 @@ export default async function AdminVerificationsPage({
       <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-            Verificaciones de perfil
+            {t('title')}
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Revisa los documentos de identidad y aprueba o rechaza las solicitudes.
+            {t('subtitle')}
           </p>
         </div>
         <nav className="flex gap-1 text-sm">
@@ -146,7 +148,7 @@ export default async function AdminVerificationsPage({
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300'
               }`}
             >
-              {s === 'pending' ? 'Pendientes' : s === 'approved' ? 'Aprobadas' : 'Rechazadas'}
+              {s === 'pending' ? t('tabPending') : s === 'approved' ? t('tabApproved') : t('tabRejected')}
             </a>
           ))}
         </nav>
@@ -160,7 +162,7 @@ export default async function AdminVerificationsPage({
 
       {rows.length === 0 ? (
         <div className="rounded-lg border border-dashed border-neutral-300 p-8 text-center text-neutral-500 dark:border-neutral-700">
-          No hay solicitudes en estado “{status}”.
+          {t('emptyNoRequests', { status })}
         </div>
       ) : (
         <ul className="space-y-3">

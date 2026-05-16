@@ -8,6 +8,7 @@
 
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { MapIcon, PhotoIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { PortalSection } from '../interfaces'
 import { PortalSectionsGrid } from './PortalSectionsGrid'
 
@@ -16,10 +17,11 @@ interface PortalTabsProps {
 }
 
 export function PortalTabs({ sections }: PortalTabsProps) {
+  const t = useTranslations('portals')
   const tabs = [
-    { id: 'explore', label: 'Explora', icon: 'MapIcon' as const },
-    { id: 'photos', label: 'Galería', icon: 'PhotoIcon' as const },
-    { id: 'videos', label: 'Videos', icon: 'VideoCameraIcon' as const },
+    { id: 'explore', label: t('tabs.explore'), icon: 'MapIcon' as const },
+    { id: 'photos', label: t('tabs.photos'), icon: 'PhotoIcon' as const },
+    { id: 'videos', label: t('tabs.videos'), icon: 'VideoCameraIcon' as const },
   ]
 
   const iconMap = {
@@ -65,10 +67,8 @@ export function PortalTabs({ sections }: PortalTabsProps) {
             <div className="flex min-h-[400px] items-center justify-center rounded-xl border-2 border-dashed border-amber-500/50 bg-linear-to-br from-red-500/5 to-amber-500/5">
               <div className="flex flex-col items-center text-center">
                 <PhotoIcon className="mb-4 size-16 text-amber-500" />
-                <h3 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-white">Galería de Fotos</h3>
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  Próximamente: Imágenes icónicas de la salsa caleña
-                </p>
+                <h3 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-white">{t('tabs.photosEmpty.title')}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400">{t('tabs.photosEmpty.description')}</p>
               </div>
             </div>
           </TabPanel>
@@ -78,8 +78,8 @@ export function PortalTabs({ sections }: PortalTabsProps) {
             <div className="flex min-h-[400px] items-center justify-center rounded-xl border-2 border-dashed border-green-500/50 bg-linear-to-br from-green-500/5 to-emerald-500/5">
               <div className="flex flex-col items-center text-center">
                 <VideoCameraIcon className="mb-4 size-16 text-green-500" />
-                <h3 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-white">Videos de Salsa</h3>
-                <p className="text-neutral-600 dark:text-neutral-400">Próximamente: Presentaciones y documentales</p>
+                <h3 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-white">{t('tabs.videosEmpty.title')}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400">{t('tabs.videosEmpty.description')}</p>
               </div>
             </div>
           </TabPanel>

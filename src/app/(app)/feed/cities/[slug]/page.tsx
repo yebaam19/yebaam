@@ -3,6 +3,7 @@ import { unslugify } from '@/lib/utils'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { getTranslations } from 'next-intl/server'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -14,13 +15,14 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const cityName = unslugify(slug)
+  const t = await getTranslations('cities')
 
   return {
-    title: `${cityName} | Portal de Ciudades`,
-    description: `Explora ${cityName}: su historia, cultura, lugares de interés, eventos y conecta con la comunidad local.`,
+    title: t('metadata.detailTitle', { city: cityName }),
+    description: t('metadata.detailDescription', { city: cityName }),
     openGraph: {
-      title: `${cityName} - Portal de Ciudades`,
-      description: `Descubre todo sobre ${cityName}: fotos, videos, eventos y más.`,
+      title: t('metadata.detailOgTitle', { city: cityName }),
+      description: t('metadata.detailOgDescription', { city: cityName }),
       type: 'website',
     },
   }

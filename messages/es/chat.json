@@ -1,0 +1,12 @@
+{
+  "landing": {
+    "closeAriaLabel": "Cerrar Messenger",
+    "selectChat": "Selecciona un chat",
+    "selectChatDescription": "Elige una conversación de la lista para empezar a chatear."
+  },
+  "conversation": {
+    "fallbackName": "Chat",
+    "conversationsButton": "Conversaciones",
+    "drawerCloseAriaLabel": "Cerrar lista de chats"
+  }
+}

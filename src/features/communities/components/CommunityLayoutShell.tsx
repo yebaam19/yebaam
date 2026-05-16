@@ -3,6 +3,7 @@
 import { useState, useTransition, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   cancelJoinRequest,
   joinCommunity,
@@ -37,6 +38,7 @@ export function CommunityLayoutShell({
   viewerState,
   children,
 }: CommunityLayoutShellProps) {
+  const t = useTranslations('communities');
   const router = useRouter();
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joinTransition, startJoinTransition] = useTransition();
@@ -49,7 +51,7 @@ export function CommunityLayoutShell({
         try {
           await leaveMutation.mutateAsync(c.id);
         } catch (err) {
-          setJoinError(err instanceof Error ? err.message : 'No se pudo salir');
+          setJoinError(err instanceof Error ? err.message : t('detail.joinErrorDefault'));
           return;
         }
         router.refresh();
@@ -73,15 +75,15 @@ export function CommunityLayoutShell({
   };
 
   const joinButtonLabel = (() => {
-    if (joinTransition || leaveMutation.isPending) return 'Procesando...';
-    if (viewerState.kind === 'guest') return 'Inicia sesión para unirte';
-    if (viewerState.kind === 'member' || c.isMember) return 'Miembro';
-    if (viewerState.kind === 'request_pending') return 'Solicitud enviada';
-    if (viewerState.kind === 'request_declined') return 'Solicitud rechazada';
-    if (viewerState.kind === 'invited') return 'Aceptar invitación';
-    if (c.privacy === 'PRIVATE') return 'Solicitar acceso';
-    if (c.privacy === 'SECRET') return 'Solo por invitación';
-    return 'Hacerse Miembro';
+    if (joinTransition || leaveMutation.isPending) return t('detail.joinButton.processing');
+    if (viewerState.kind === 'guest') return t('detail.joinButton.guest');
+    if (viewerState.kind === 'member' || c.isMember) return t('detail.joinButton.member');
+    if (viewerState.kind === 'request_pending') return t('detail.joinButton.requestPending');
+    if (viewerState.kind === 'request_declined') return t('detail.joinButton.requestDeclined');
+    if (viewerState.kind === 'invited') return t('detail.joinButton.invited');
+    if (c.privacy === 'PRIVATE') return t('detail.joinButton.requestAccess');
+    if (c.privacy === 'SECRET') return t('detail.joinButton.secretOnlyInvite');
+    return t('detail.joinButton.join');
   })();
 
   const joinButtonDisabled =
@@ -202,14 +204,14 @@ export function CommunityLayoutShell({
                     <span className="font-semibold text-gray-900 dark:text-white">
                       {formatMembersCount(c.stats.membersCount)}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">miembros</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('detail.members')}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <DocumentTextIcon className="w-4 h-4 text-gray-400" />
                     <span className="font-semibold text-gray-900 dark:text-white">
                       {c.stats.postsCount}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">publicaciones</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('detail.posts')}</span>
                   </div>
                   {c.stats.growthRate > 0 && (
                     <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">

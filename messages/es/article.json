@@ -1,0 +1,58 @@
+{
+  "list": {
+    "empty": "No hay artículos disponibles"
+  },
+  "card": {
+    "readMinutes": "{minutes} min"
+  },
+  "header": {
+    "readTime": "{minutes} min de lectura",
+    "editArticle": "Editar artículo",
+    "deleteArticle": "Eliminar artículo",
+    "deleting": "Eliminando...",
+    "views": "{count} vistas",
+    "likes": "{count} me gusta",
+    "comments": "{count} comentarios",
+    "confirmDeleteTitle": "¿Estás seguro?",
+    "confirmDeleteDescription": "Esta acción no se puede deshacer. El artículo será eliminado permanentemente junto con todos sus comentarios y reacciones.",
+    "cancel": "Cancelar"
+  },
+  "view": {
+    "commentsTitle": "Comentarios"
+  },
+  "editor": {
+    "titlePlaceholder": "Título",
+    "publish": "Publicar",
+    "publishing": "Publicando...",
+    "individualArticle": "Artículo individual",
+    "editing": "Editando: {title}",
+    "editingShort": "Editando artículo",
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "saveShort": "Guardar",
+    "saving": "Guardando...",
+    "titleRequired": "Por favor, añade un título al artículo",
+    "contentRequired": "Por favor, añade contenido al artículo",
+    "createError": "Error al crear el artículo: {message}",
+    "publishError": "Error al publicar el artículo: {message}",
+    "updateError": "Error al actualizar el artículo: {message}",
+    "unknownError": "Error desconocido",
+    "successUpdatedTitle": "¡Artículo actualizado!",
+    "successUpdatedDescription": "Los cambios se han guardado correctamente.",
+    "viewArticle": "Ver artículo"
+  },
+  "created": {
+    "title": "¡Artículo publicado!",
+    "idLabel": "ID del artículo",
+    "urlLabel": "URL del artículo",
+    "close": "Cerrar",
+    "viewArticle": "Ver artículo"
+  },
+  "pages": {
+    "newTitle": "Nuevo Artículo",
+    "newDescription": "Crea un nuevo artículo para compartir con la comunidad",
+    "editTitle": "Editar Artículo",
+    "editDescription": "Edita tu artículo",
+    "notFound": "Artículo no encontrado"
+  }
+}

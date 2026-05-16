@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getServerClient } from '@/utils/supabase/server';
 import {
   getMusicClubBySlug,
@@ -18,10 +19,11 @@ export default async function ClubMembersPage({
   const { slug } = await params;
   const club = await getMusicClubBySlug(slug);
   if (!club) notFound();
-  const [members, viewerRole, joinStatus] = await Promise.all([
+  const [members, viewerRole, joinStatus, t] = await Promise.all([
     listClubMembers(club.id),
     getViewerRoleInClub(club.id),
     getViewerJoinStatus(club.id),
+    getTranslations('musica'),
   ]);
   const client = await getServerClient();
   const { data: u } = await client.auth.getUser();
@@ -30,14 +32,14 @@ export default async function ClubMembersPage({
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Miembros del club ({members.length})
+        {t('clubs.membersHeading', { count: members.length })}
       </h2>
       {!isMember && (
         <ClubJoinCTA
           clubId={club.id}
           clubSlug={slug}
           status={joinStatus}
-          label="Únete al club para aparecer en la lista de miembros."
+          label={t('clubs.joinForMembersList')}
         />
       )}
       <ClubMembersList

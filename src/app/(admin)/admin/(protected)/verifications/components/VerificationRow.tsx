@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment } from 'react';
 import { reviewVerificationRequestAction } from '@/features/verification/actions/admin-review.actions';
+import { useTranslations } from 'next-intl';
 
 interface Row {
   id: string;
@@ -30,35 +31,31 @@ interface Row {
   } | null;
 }
 
-const SLOT_LABELS = ['Perfil', 'Portada', 'Adicional 1', 'Adicional 2', 'Adicional 3'];
-
 interface Props {
   row: Row;
   idDocumentUrl: string | null;
   photoUrls: { slot: number; url: string }[];
 }
 
-const REJECTION_PRESETS = [
-  'El documento de identidad no es legible',
-  'Las fotos no muestran claramente al titular del documento',
-  'La información personal no coincide con el documento',
-  'El documento ha expirado',
-];
-
 export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props) {
+  const t = useTranslations('admin.verifications');
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [busy, startTransition] = useTransition();
   const p = row.profiles;
   const fullName = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || p?.username || row.user_id;
 
+  const SLOT_LABELS = [t('slotProfile'), t('slotCover'), t('slotAdditional1'), t('slotAdditional2'), t('slotAdditional3')];
+
+  const REJECTION_PRESETS = [t('preset1'), t('preset2'), t('preset3'), t('preset4')];
+
   const handleApprove = () => {
     startTransition(async () => {
       try {
         await reviewVerificationRequestAction({ requestId: row.id, decision: 'approved' });
-        toast.success('Solicitud aprobada');
+        toast.success(t('successApproved'));
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Error');
+        toast.error(e instanceof Error ? e.message : t('genericError'));
       }
     });
   };
@@ -71,10 +68,10 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
           decision: 'rejected',
           rejectionReason: reason,
         });
-        toast.success('Solicitud rechazada');
+        toast.success(t('successRejected'));
         setRejectOpen(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Error');
+        toast.error(e instanceof Error ? e.message : t('genericError'));
       }
     });
   };
@@ -101,38 +98,38 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
             {p?.username && <span className="ml-2 text-sm text-neutral-500">@{p.username}</span>}
             <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-neutral-600 sm:grid-cols-2 dark:text-neutral-400">
               <div>
-                <dt className="inline font-medium">Nacimiento:</dt>{' '}
+                <dt className="inline font-medium">{t('rowBirth')}</dt>{' '}
                 <dd className="inline">
                   {p?.birth_date ?? '—'} {p?.birth_place ? `· ${p.birth_place}` : ''}
                 </dd>
               </div>
               <div>
-                <dt className="inline font-medium">Residencia:</dt>{' '}
+                <dt className="inline font-medium">{t('rowResidence')}</dt>{' '}
                 <dd className="inline">
                   {[p?.residence_city, p?.residence_state, p?.residence_country].filter(Boolean).join(', ') || '—'}
                 </dd>
               </div>
               <div>
-                <dt className="inline font-medium">Estudio:</dt>{' '}
+                <dt className="inline font-medium">{t('rowStudy')}</dt>{' '}
                 <dd className="inline">{p?.study_place ?? '—'}</dd>
               </div>
               <div>
-                <dt className="inline font-medium">Trabajo:</dt>{' '}
+                <dt className="inline font-medium">{t('rowWork')}</dt>{' '}
                 <dd className="inline">{p?.work_place ?? '—'}</dd>
               </div>
               <div>
-                <dt className="inline font-medium">Enviada:</dt>{' '}
+                <dt className="inline font-medium">{t('rowSubmitted')}</dt>{' '}
                 <dd className="inline">{new Date(row.submitted_at).toLocaleString('es-ES')}</dd>
               </div>
               {row.reviewed_at && (
                 <div>
-                  <dt className="inline font-medium">Revisada:</dt>{' '}
+                  <dt className="inline font-medium">{t('rowReviewed')}</dt>{' '}
                   <dd className="inline">{new Date(row.reviewed_at).toLocaleString('es-ES')}</dd>
                 </div>
               )}
               {row.rejection_reason && (
                 <div className="sm:col-span-2">
-                  <dt className="inline font-medium text-red-600">Motivo rechazo:</dt>{' '}
+                  <dt className="inline font-medium text-red-600">{t('rowRejectionReason')}</dt>{' '}
                   <dd className="inline">{row.rejection_reason}</dd>
                 </div>
               )}
@@ -148,7 +145,7 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
                 disabled={busy}
                 className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-neutral-400"
               >
-                {busy ? '...' : 'Aprobar'}
+                {busy ? t('approving') : t('approve')}
               </button>
               <button
                 type="button"
@@ -156,7 +153,7 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
                 disabled={busy}
                 className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:bg-neutral-400"
               >
-                Rechazar
+                {t('reject')}
               </button>
             </>
           )}
@@ -166,7 +163,7 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
       {/* Evidence: ID document + 5 verification photos as inline thumbnails. */}
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Thumb
-          label="Documento de identidad"
+          label={t('documentId')}
           url={idDocumentUrl}
           highlight
           onOpen={() => idDocumentUrl && setLightbox(idDocumentUrl)}
@@ -192,7 +189,7 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={lightbox}
-            alt="Vista ampliada"
+            alt={t('lightboxAlt')}
             className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
             onClick={(e) => e.stopPropagation()}
           />
@@ -201,7 +198,7 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
             onClick={() => setLightbox(null)}
             className="absolute top-4 right-4 rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/20"
           >
-            Cerrar
+            {t('close')}
           </button>
         </div>
       )}
@@ -210,6 +207,7 @@ export default function VerificationRow({ row, idDocumentUrl, photoUrls }: Props
         open={rejectOpen}
         busy={busy}
         userName={fullName}
+        rejectionPresets={REJECTION_PRESETS}
         onClose={() => setRejectOpen(false)}
         onConfirm={handleConfirmReject}
       />
@@ -221,15 +219,18 @@ function RejectionDialog({
   open,
   busy,
   userName,
+  rejectionPresets,
   onClose,
   onConfirm,
 }: {
   open: boolean;
   busy: boolean;
   userName: string;
+  rejectionPresets: string[];
   onClose: () => void;
   onConfirm: (reason: string) => void;
 }) {
+  const t = useTranslations('admin.verifications');
   const [reason, setReason] = useState('');
   const trimmed = reason.trim();
 
@@ -261,20 +262,20 @@ function RejectionDialog({
             <DialogPanel className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-neutral-800">
               <div className="border-b border-neutral-100 px-6 py-4 dark:border-neutral-700">
                 <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                  Rechazar solicitud de {userName}
+                  {t('rejectDialogTitle', { name: userName })}
                 </h3>
                 <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                  El motivo será visible para el usuario y podrá corregir y reenviar su solicitud.
+                  {t('rejectDialogDescription')}
                 </p>
               </div>
 
               <div className="space-y-4 px-6 py-4">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-400">
-                    Motivos comunes
+                    {t('commonReasons')}
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {REJECTION_PRESETS.map((preset) => (
+                    {rejectionPresets.map((preset) => (
                       <button
                         key={preset}
                         type="button"
@@ -292,7 +293,7 @@ function RejectionDialog({
                     htmlFor="rejection-reason"
                     className="mb-2 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-400"
                   >
-                    Motivo del rechazo
+                    {t('rejectionReasonLabel')}
                   </label>
                   <textarea
                     id="rejection-reason"
@@ -300,11 +301,11 @@ function RejectionDialog({
                     onChange={(e) => setReason(e.target.value)}
                     rows={4}
                     maxLength={500}
-                    placeholder="Explica al usuario qué debe corregir para que su verificación pueda ser aprobada."
+                    placeholder={t('rejectionPlaceholder')}
                     className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100"
                   />
                   <div className="mt-1 flex justify-between text-[11px] text-neutral-500">
-                    <span>El usuario podrá corregir y reenviar.</span>
+                    <span>{t('rejectionHint')}</span>
                     <span>{reason.length}/500</span>
                   </div>
                 </div>
@@ -317,7 +318,7 @@ function RejectionDialog({
                   disabled={busy}
                   className="rounded-md bg-white px-4 py-2 text-sm font-medium text-neutral-700 ring-1 ring-neutral-300 hover:bg-neutral-100 disabled:opacity-50 dark:bg-neutral-700 dark:text-neutral-200 dark:ring-neutral-600"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
@@ -325,7 +326,7 @@ function RejectionDialog({
                   disabled={busy || trimmed.length < 4}
                   className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:bg-neutral-400"
                 >
-                  {busy ? 'Rechazando…' : 'Confirmar rechazo'}
+                  {busy ? t('rejecting') : t('confirmReject')}
                 </button>
               </div>
             </DialogPanel>
@@ -347,6 +348,7 @@ function Thumb({
   highlight?: boolean;
   onOpen: () => void;
 }) {
+  const t = useTranslations('admin.verifications');
   const ringCls = highlight
     ? 'ring-2 ring-amber-400 dark:ring-amber-500'
     : 'ring-1 ring-neutral-200 dark:ring-neutral-700';
@@ -362,7 +364,7 @@ function Thumb({
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={url} alt={label} className="h-full w-full object-cover" />
         ) : (
-          <span className="text-[10px] text-neutral-500">Sin archivo</span>
+          <span className="text-[10px] text-neutral-500">{t('noFile')}</span>
         )}
       </button>
       <span className="text-center text-[10px] font-medium text-neutral-600 dark:text-neutral-400">

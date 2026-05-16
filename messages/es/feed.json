@@ -1,0 +1,175 @@
+{
+  "composer": {
+    "placeholder": "¿Qué estás pensando, {name}?",
+    "addToPost": "Agregar a tu publicación",
+    "createTitle": "Crear publicación",
+    "editTitle": "Editar publicación",
+    "submit": "Publicar",
+    "submitting": "Publicando...",
+    "uploading": "Subiendo archivos...",
+    "save": "Guardar cambios",
+    "saving": "Guardando...",
+    "discardConfirm": "¿Descartar este post?",
+    "discardEditConfirm": "¿Descartar los cambios?",
+    "needContent": "Agrega contenido, una imagen/video o un GIF a tu publicación",
+    "createSuccess": "Post creado exitosamente",
+    "updateSuccess": "Publicación actualizada exitosamente",
+    "updateError": "Error al actualizar la publicación",
+    "uploadedCount": "{count} archivo(s) subido(s) exitosamente",
+    "uploadOnlyMedia": "Solo se permiten archivos de imagen o video",
+    "uploadLimit": "Solo puedes subir hasta 10 archivos"
+  },
+  "visibility": {
+    "public": "Público",
+    "publicDescription": "Cualquiera puede ver",
+    "friends": "Amigos",
+    "friendsDescription": "Solo tus amigos",
+    "private": "Solo yo",
+    "privateDescription": "Solo tú"
+  },
+  "privacyLabel": {
+    "public": "público",
+    "friends": "amigos",
+    "private": "Solo yo"
+  },
+  "post": {
+    "publishing": "Publicando...",
+    "feelingPrefix": "se siente",
+    "with": "con",
+    "shareTitle": "Publicación de {author}",
+    "shareLinkCopied": "Enlace copiado",
+    "shareLinkError": "No se pudo copiar el enlace",
+    "menu": {
+      "edit": "Editar publicación",
+      "delete": "Eliminar publicación",
+      "report": "Reportar publicación"
+    },
+    "actions": {
+      "like": "Me gusta",
+      "comment": "Comentar",
+      "share": "Compartir"
+    },
+    "addBar": {
+      "photo": "Foto/Video",
+      "photoUnavailable": "No disponible con color de fondo",
+      "tag": "Etiquetar personas (Próximamente)",
+      "location": "Ubicación (Próximamente)",
+      "gif": "GIF (Próximamente)"
+    },
+    "delete": {
+      "title": "¿Eliminar publicación?",
+      "description": "Esta acción no se puede deshacer. La publicación se eliminará permanentemente y no podrá ser recuperada.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar",
+      "deleting": "Eliminando..."
+    },
+    "empty": {
+      "title": "Tu feed está vacío",
+      "description": "Conecta con amigos o únete a clubes para ver sus publicaciones aquí."
+    },
+    "suggestions": {
+      "title": "Sugerencias",
+      "subtitle": "· posts de personas que quizás conozcas"
+    },
+    "errors": {
+      "loadTitle": "Error al cargar posts",
+      "loadFallback": "Ocurrió un error al cargar el feed. Por favor, intenta de nuevo."
+    }
+  },
+  "comments": {
+    "inputPlaceholder": "Escribe un comentario...",
+    "replyPlaceholder": "Responder a {name}...",
+    "replyingTo": "Respondiendo a",
+    "cancelReply": "Cancelar respuesta",
+    "reply": "Responder",
+    "loading": "Cargando...",
+    "loadingReplies": "Cargando respuestas...",
+    "showReplies": "Ver {count, plural, one {# respuesta} other {# respuestas}}",
+    "hideReplies": "Ocultar {count, plural, one {# respuesta} other {# respuestas}}",
+    "edited": "editado",
+    "editedAt": "Editado {time}",
+    "editedDefault": "Editado",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "cancel": "Cancelar",
+    "options": "Opciones del comentario",
+    "deleteConfirm": "¿Estás seguro de eliminar este comentario?",
+    "empty": "Sé el primero en comentar",
+    "emptyHint": "Comparte tu opinión sobre esta publicación",
+    "count": "{count, plural, one {# comentario} other {# comentarios}}",
+    "errors": {
+      "empty": "El comentario no puede estar vacío",
+      "tooLong": "El comentario es demasiado largo (máximo 500 caracteres)",
+      "createDefault": "Error al crear comentario",
+      "replyEmpty": "La respuesta no puede estar vacía",
+      "replyTooLong": "La respuesta es demasiado larga (máximo 500 caracteres)",
+      "replyDefault": "Error al crear respuesta"
+    }
+  },
+  "friends": {
+    "title": "Amigos",
+    "subtitle": "Conecta con personas que conoces y descubre nuevas amistades",
+    "discoverNewConnections": "Descubre nuevas conexiones",
+    "maybeYouKnow": "Personas que quizás conozcas",
+    "maybeYouKnowSubtitle": "Basado en amigos mutuos, ubicación e intereses en común",
+    "advancedManager": {
+      "title": "Gestión avanzada",
+      "subtitle": "Administra amigos, solicitudes y sugerencias en detalle"
+    },
+    "hero": {
+      "greeting": "¡Hola, {name}!",
+      "title": "Conecta, comparte y crece tu red",
+      "subtitle": "Hay miles de personas esperándote.",
+      "cta": "Encontrar amigos"
+    },
+    "tabs": {
+      "friends": "Amigos",
+      "requests": "Recibidas",
+      "sent": "Enviadas",
+      "suggestions": "Sugerencias"
+    },
+    "stats": {
+      "totalFriends": "Total de amigos",
+      "closeFriends": "Amigos cercanos",
+      "pendingRequests": "Solicitudes recibidas",
+      "sentRequests": "Solicitudes enviadas",
+      "suggestions": "Sugerencias"
+    },
+    "search": {
+      "default": "Buscar...",
+      "friends": "Buscar amigos...",
+      "requests": "Buscar solicitudes...",
+      "sent": "Buscar enviadas...",
+      "suggestions": "Buscar sugerencias..."
+    },
+    "empty": {
+      "friends": "No tienes amigos aún. Explora las sugerencias para conectar con otros usuarios.",
+      "requests": "No tienes solicitudes pendientes",
+      "sent": "No has enviado solicitudes",
+      "suggestions": "No hay sugerencias disponibles"
+    },
+    "quickSuggestions": "Sugerencias rápidas",
+    "sentCard": {
+      "sentOn": "Enviada {date}",
+      "cancel": "Cancelar solicitud",
+      "fallbackPerson": "esta persona"
+    },
+    "remove": {
+      "title": "Eliminar amigo",
+      "message": "¿Estás seguro de que quieres eliminar a {name} de tu lista de amigos?",
+      "confirm": "Eliminar"
+    },
+    "cancelRequest": {
+      "title": "Cancelar solicitud",
+      "message": "¿Estás seguro de que quieres cancelar esta solicitud de amistad?",
+      "confirm": "Cancelar solicitud"
+    },
+    "confirm": {
+      "cancel": "Cancelar"
+    }
+  },
+  "feeling": {
+    "prefix": "se siente"
+  }
+}

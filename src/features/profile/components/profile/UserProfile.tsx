@@ -4,6 +4,7 @@ import { formatNumber } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { FriendshipStatus, UserProfile as UserProfileType } from '../../interfaces/profile.interfaces';
 import EditProfileButton from './EditProfileButton';
 import { FriendButton } from '@/features/friendships/components/FriendButton';
@@ -54,6 +55,7 @@ export default function UserProfile({
   customActions,
   professionalProfileExists = false,
 }: UserProfileProps) {
+  const t = useTranslations('profile.header');
   const isOwnProfile = user.userId === loggedInUserId;
   const fullName = [user.firstName, user.secondName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
   const coverSrc = user.coverPhotoUrl || user.coverUrl || null;
@@ -119,8 +121,8 @@ export default function UserProfile({
                       <span className="min-w-0 max-w-full wrap-anywhere">{fullName || user.username}</span>
                       {user.documentStatus === 'ACCEPTED' && (
                         <span
-                          title="Cuenta autenticada"
-                          aria-label="Cuenta autenticada"
+                          title={t('verifiedBadge')}
+                          aria-label={t('verifiedBadge')}
                           className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm ring-2 ring-white lg:h-7 lg:w-7 dark:ring-gray-800"
                         >
                           <svg
@@ -140,8 +142,8 @@ export default function UserProfile({
                       )}
                       {user.pioneerNumber != null && (
                         <span
-                          title={`Pionero #${user.pioneerNumber} · entre los primeros 5,000 usuarios autenticados`}
-                          aria-label={`Pionero número ${user.pioneerNumber}`}
+                          title={t('pioneerTooltip', { n: user.pioneerNumber })}
+                          aria-label={t('pioneerAria', { n: user.pioneerNumber })}
                           className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide text-amber-950 shadow-sm ring-1 ring-amber-300/60"
                         >
                           <svg
@@ -153,7 +155,7 @@ export default function UserProfile({
                           >
                             <path d="M12 2.75 14.39 8 20 8.81l-4 3.92.94 5.49L12 15.77l-4.94 2.45L8 12.73l-4-3.92L9.61 8 12 2.75Z" />
                           </svg>
-                          Pionero #{user.pioneerNumber}
+                          {t('pioneerBadge', { n: user.pioneerNumber })}
                         </span>
                       )}
                     </h1>
@@ -190,7 +192,7 @@ export default function UserProfile({
                     <span className="font-semibold text-gray-900 dark:text-white">
                       {formatNumber(user._count?.posts ?? 0)}
                     </span>{' '}
-                    publicaciones
+                    {t('publicaciones')}
                   </span>
                   <span className="hidden text-gray-300 sm:inline dark:text-gray-600" aria-hidden>
                     ·
@@ -199,7 +201,7 @@ export default function UserProfile({
                     <span className="font-semibold text-gray-900 dark:text-white">
                       {formatNumber(user._count?.followers ?? 0)}
                     </span>{' '}
-                    seguidores
+                    {t('seguidores')}
                   </span>
                   {friendshipInfo && (
                     <>
@@ -210,7 +212,7 @@ export default function UserProfile({
                         <span className="font-semibold text-gray-900 dark:text-white">
                           {formatNumber(friendshipInfo.friendCount)}
                         </span>{' '}
-                        amigos
+                        {t('amigos')}
                       </Link>
                     </>
                   )}

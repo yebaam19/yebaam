@@ -7,11 +7,14 @@
  * place to manage their reach-out info.
  */
 
+'use client'
+
 import {
   EnvelopeIcon,
   GlobeAltIcon,
   PhoneIcon,
 } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
 
@@ -50,6 +53,7 @@ function Row({ icon: Icon, label, value, isLink = false }: {
 }
 
 export default function ContactInfoSection({ user, isOwner = false, onEdit }: ContactInfoSectionProps) {
+  const t = useTranslations('profile.sections')
   if (!isOwner) return null
 
   const has = (s?: string | null) => !!s?.trim()
@@ -58,24 +62,24 @@ export default function ContactInfoSection({ user, isOwner = false, onEdit }: Co
     || has(user.githubUrl) || has(user.facebookUrl)
 
   return (
-    <ProfileSection title="Contacto y redes sociales" isOwner onEdit={onEdit}>
+    <ProfileSection title={t('contact')} isOwner onEdit={onEdit}>
       {hasAny ? (
         <div className="space-y-2.5">
-          {has(user.email) && <Row icon={EnvelopeIcon} label="Email" value={user.email!} />}
-          {has(user.phone) && <Row icon={PhoneIcon} label="Teléfono" value={user.phone!} />}
-          {has(user.websiteUrl) && <Row icon={GlobeAltIcon} label="Sitio web" value={user.websiteUrl!} isLink />}
-          {has(user.instagramUrl) && <Row icon={GlobeAltIcon} label="Instagram" value={user.instagramUrl!} isLink />}
-          {has(user.twitterUrl) && <Row icon={GlobeAltIcon} label="X / Twitter" value={user.twitterUrl!} isLink />}
-          {has(user.linkedinUrl) && <Row icon={GlobeAltIcon} label="LinkedIn" value={user.linkedinUrl!} isLink />}
-          {has(user.githubUrl) && <Row icon={GlobeAltIcon} label="GitHub" value={user.githubUrl!} isLink />}
-          {has(user.facebookUrl) && <Row icon={GlobeAltIcon} label="Facebook" value={user.facebookUrl!} isLink />}
+          {has(user.email) && <Row icon={EnvelopeIcon} label={t('email')} value={user.email!} />}
+          {has(user.phone) && <Row icon={PhoneIcon} label={t('phone')} value={user.phone!} />}
+          {has(user.websiteUrl) && <Row icon={GlobeAltIcon} label={t('websiteLabel')} value={user.websiteUrl!} isLink />}
+          {has(user.instagramUrl) && <Row icon={GlobeAltIcon} label={t('instagram')} value={user.instagramUrl!} isLink />}
+          {has(user.twitterUrl) && <Row icon={GlobeAltIcon} label={t('twitter')} value={user.twitterUrl!} isLink />}
+          {has(user.linkedinUrl) && <Row icon={GlobeAltIcon} label={t('linkedin')} value={user.linkedinUrl!} isLink />}
+          {has(user.githubUrl) && <Row icon={GlobeAltIcon} label={t('github')} value={user.githubUrl!} isLink />}
+          {has(user.facebookUrl) && <Row icon={GlobeAltIcon} label={t('facebook')} value={user.facebookUrl!} isLink />}
           <p className="pt-1 text-xs text-gray-500 dark:text-gray-400">
-            Solo tú ves tu email y teléfono. Tus redes sociales se muestran como iconos en tu cabecera.
+            {t('contactPrivacyNote')}
           </p>
         </div>
       ) : (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Agrega tus redes sociales y datos de contacto para conectar con otros.
+          {t('contactEmpty')}
         </p>
       )}
     </ProfileSection>

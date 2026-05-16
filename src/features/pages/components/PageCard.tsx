@@ -1,7 +1,10 @@
+'use client';
+
 import { FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CheckBadgeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
+import { useTranslations } from 'next-intl';
 import type { Page } from '../types/page.types';
 import { formatFollowersCount, getCategoryLabel, truncateText } from '../utils/pageHelpers';
 
@@ -18,6 +21,7 @@ export const PageCard: FC<PageCardProps> = ({
   onFollowToggle,
   isFollowLoading = false,
 }) => {
+  const t = useTranslations('pages.card');
   const handleFollowClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,7 +43,7 @@ export const PageCard: FC<PageCardProps> = ({
           <div className="relative h-24 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
             <Image
               src={page.coverImageUrl}
-              alt={`${page.name} cover`}
+              alt={t('coverAlt', { name: page.name })}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               unoptimized
@@ -92,9 +96,9 @@ export const PageCard: FC<PageCardProps> = ({
                 {isFollowLoading ? (
                   <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : page.isFollowing ? (
-                  'Siguiendo'
+                  t('following')
                 ) : (
-                  'Seguir'
+                  t('follow')
                 )}
               </button>
             )}
@@ -121,15 +125,15 @@ export const PageCard: FC<PageCardProps> = ({
           <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <UserGroupIcon className="w-4 h-4" />
-              <span>{formatFollowersCount(page.followerCount)} seguidores</span>
+              <span>{t('followers', { count: formatFollowersCount(page.followerCount) })}</span>
             </div>
 
             {page.userRole && (
               <span className="px-2 py-0.5 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                {page.userRole === 'owner' && 'Propietario'}
-                {page.userRole === 'admin' && 'Admin'}
-                {page.userRole === 'editor' && 'Editor'}
-                {page.userRole === 'moderator' && 'Moderador'}
+                {page.userRole === 'owner' && t('roles.owner')}
+                {page.userRole === 'admin' && t('roles.admin')}
+                {page.userRole === 'editor' && t('roles.editor')}
+                {page.userRole === 'moderator' && t('roles.moderator')}
               </span>
             )}
           </div>

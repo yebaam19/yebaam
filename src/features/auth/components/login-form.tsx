@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
@@ -14,6 +15,7 @@ interface LoginFormProps {
 
 export function LoginForm({ showForgotPassword = true, showDevHelper = true }: LoginFormProps) {
   const router = useRouter()
+  const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const { login, isLoading, error } = useAuthStore()
 
@@ -30,15 +32,15 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
 
   useEffect(() => {
     if (verified && emailFromUrl) {
-      toast.success('Email verificado correctamente! Ya puedes iniciar sesión')
+      toast.success(t('login.emailVerifiedToast'))
     }
-  }, [verified, emailFromUrl])
+  }, [verified, emailFromUrl, t])
 
   useEffect(() => {
     if (reset) {
-      toast.success('Contraseña actualizada. Inicia sesión con tu nueva contraseña.')
+      toast.success(t('login.resetSuccessToast'))
     }
-  }, [reset])
+  }, [reset, t])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -54,7 +56,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
 
     const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
     if (turnstileEnabled && !captchaToken) {
-      toast.error('Completa la verificación de seguridad para continuar.')
+      toast.error(t('errors.turnstileRequired'))
       return
     }
 
@@ -65,10 +67,10 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
         captchaToken: captchaToken ?? undefined,
       })
 
-      toast.success('¡Bienvenido de nuevo!')
+      toast.success(t('login.welcomeBack'))
       router.push(redirectTo as unknown as Parameters<typeof router.push>[0])
     } catch (err: any) {
-      toast.error(err.message || 'Error al iniciar sesión')
+      toast.error(err.message || t('login.genericError'))
       // Turnstile tokens are single-use — refresh the widget so the user can retry.
       setCaptchaToken(null)
       turnstileRef.current?.reset()
@@ -85,7 +87,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
       {/* Email */}
       <div>
         <label htmlFor="identifier" className="mb-2 block text-sm font-medium text-gray-700">
-          Email
+          {t('login.emailLabel')}
         </label>
         <input
           type="email"
@@ -93,7 +95,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
           name="identifier"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
-          placeholder="correo@ejemplo.com"
+          placeholder={t('login.emailPlaceholder')}
           required
           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
         />
@@ -102,7 +104,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
       {/* Password */}
       <div>
         <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
-          Contraseña
+          {t('login.passwordLabel')}
         </label>
         <input
           type="password"
@@ -110,7 +112,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
           name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Contraseña"
+          placeholder={t('login.passwordPlaceholder')}
           required
           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
         />
@@ -135,7 +137,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
             href="/forgot-password"
             className="text-sm font-semibold text-green-600 transition-colors hover:text-amber-500"
           >
-            ¿Olvidaste tu contraseña?
+            {t('login.forgotPassword')}
           </Link>
         </div>
       )}
@@ -156,10 +158,10 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Iniciando sesión...
+            {t('login.submitting')}
           </span>
         ) : (
-          'Ingresar'
+          t('login.submit')
         )}
       </button>
 

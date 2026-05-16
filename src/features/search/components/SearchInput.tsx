@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface SearchInputProps {
   value: string;
@@ -34,13 +35,15 @@ export function SearchInput({
   onClear,
   onSubmit,
   onSearch,
-  placeholder = 'Buscar en Yebaam...',
+  placeholder,
   loading = false,
   autoFocus = false,
   className = '',
 }: SearchInputProps) {
+  const t = useTranslations('search.input');
   const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const effectivePlaceholder = placeholder ?? t('placeholder');
 
   // Auto-focus al montar
   useEffect(() => {
@@ -104,7 +107,7 @@ export function SearchInput({
         onKeyDown={handleKeyPress}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        placeholder={placeholder}
+        placeholder={effectivePlaceholder}
         className={cn(
           'w-full pl-12 pr-12 py-2',
           'bg-gray-100 dark:bg-neutral-800',
@@ -137,7 +140,7 @@ export function SearchInput({
             'hover:bg-gray-200 dark:hover:bg-neutral-700',
             'transition-colors'
           )}
-          aria-label="Limpiar búsqueda"
+          aria-label={t('clearAria')}
         >
           <XMarkIcon className="h-4 w-4" />
         </button>

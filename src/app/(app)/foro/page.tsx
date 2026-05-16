@@ -1,28 +1,33 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim'
 import { listPublicSpaces } from './server/foro.server'
 import { Badge } from '@/ui/Badge'
 import ForoHeader from '@/features/foro/components/ForoHeader'
 import { getOwnerMeta, initialsFrom } from '@/features/foro/utils/owner'
 
-export const metadata = {
-  title: 'Foros · Yebaam',
+export async function generateMetadata() {
+  const t = await getTranslations('foro')
+  return {
+    title: t('metadata.discoveryTitle'),
+  }
 }
 
 export default async function ForoDiscoveryPage() {
+  const t = await getTranslations('foro')
   const spaces = await listPublicSpaces()
 
   return (
     <div className="container mx-auto max-w-6xl space-y-6 px-4 py-4 sm:py-6">
       <ForoHeader
-        title="Foros de Yebaam"
-        subtitle="Comunidad, debate y soporte. Explora los espacios de clubes, grupos, páginas, blogs y la comunidad."
+        title={t('discovery.title')}
+        subtitle={t('discovery.subtitle')}
       />
 
       {spaces.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-10 text-center text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900">
-          Todavía no hay foros disponibles.
+          {t('discovery.emptyDiscovery')}
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -63,12 +68,12 @@ export default async function ForoDiscoveryPage() {
                       </p>
                     ) : (
                       <p className="line-clamp-3 text-sm text-neutral-400 italic">
-                        Entra para ver las categorías y los temas.
+                        {t('discovery.spaceDescriptionFallback')}
                       </p>
                     )}
                     <div className="mt-auto flex items-center gap-2 pt-1 text-xs font-medium text-primary-700 dark:text-primary-400">
                       <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                      Entrar al foro →
+                      {t('discovery.enterSpace')}
                     </div>
                   </div>
                 </Link>

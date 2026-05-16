@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { createAlbum } from '../actions/albums.actions';
 import { createTrack } from '../actions/tracks.actions';
@@ -21,6 +22,7 @@ import {
   SOURCE_MEDIA,
   fileInputCls,
   inputCls,
+  sortCountryCodesByLabel,
   trackFormatFromMime,
 } from './upload/constants';
 import { Field, Section } from './upload/primitives';
@@ -29,11 +31,17 @@ import { LabelAutocomplete, type LabelSelection } from './upload/LabelAutocomple
 import { CoverDropZone } from './upload/CoverDropZone';
 
 export function UploadAlbumForm() {
+  const t = useTranslations('musica');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [step, setStep] = useState<'idle' | 'images' | 'rows' | 'audio' | 'track'>('idle');
+
+  const sortedCountries = useMemo(
+    () => sortCountryCodesByLabel(COUNTRIES, (code) => t(`countries.${code}` as const)),
+    [t],
+  );
 
   // Artist — autocomplete; if existingId is null we create on submit via findOrCreateArtistAction.
   const [artist, setArtist] = useState<ArtistSelection>({ existingId: null, name: '' });
@@ -76,23 +84,23 @@ export function UploadAlbumForm() {
     reset();
 
     if (!artist.name.trim()) {
-      setError('El nombre del artista es obligatorio.');
+      setError(t('upload.errArtistName'));
       return;
     }
     if (!albumTitle.trim()) {
-      setError('El título del álbum es obligatorio.');
+      setError(t('upload.errAlbumTitle'));
       return;
     }
     if (!trackTitle.trim()) {
-      setError('El título de la canción es obligatorio.');
+      setError(t('upload.errTrackTitle'));
       return;
     }
     if (!audioFile) {
-      setError('Sube un archivo de audio (MP3, FLAC, WAV u OGG).');
+      setError(t('upload.errAudioFile'));
       return;
     }
     if (!attestation) {
-      setError('Debes confirmar que tienes derechos sobre la grabación o que es de dominio público.');
+      setError(t('upload.errAttestation'));
       return;
     }
 
@@ -168,7 +176,7 @@ export function UploadAlbumForm() {
 
         router.push(`/musica/albumes/${albumResult.data.slug}` as Route);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error al subir.');
+        setError(err instanceof Error ? err.message : t('upload.errGeneric'));
         setStep('idle');
         setProgress(null);
       }
@@ -177,35 +185,35 @@ export function UploadAlbumForm() {
 
   const stepLabel: Record<typeof step, string> = {
     idle: '',
-    images: 'Subiendo imágenes a Cloudflare…',
-    rows: 'Guardando información del artista y álbum…',
-    audio: progress !== null ? `Subiendo audio a R2 (${progress}%)…` : 'Subiendo audio…',
-    track: 'Registrando la canción…',
+    images: t('upload.stepImages'),
+    rows: t('upload.stepRows'),
+    audio: progress !== null ? t('upload.stepAudio', { progress }) : t('upload.stepAudioNoProgress'),
+    track: t('upload.stepTrack'),
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Artist */}
-      <Section title="1. Artista" hint="Por ahora cada subida crea un artista nuevo. Si ya existe, busca en el archivo y avísanos.">
-        <Field label="Nombre del artista" required>
+      <Section title={t('upload.sectionArtist')} hint={t('upload.sectionArtistHint')}>
+        <Field label={t('upload.artistName')} required>
           <ArtistAutocomplete value={artist} onChange={setArtist} />
         </Field>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Field label="País">
+          <Field label={t('upload.country')}>
             <select
               value={artistCountry}
               onChange={(e) => setArtistCountry(e.target.value)}
               className={inputCls}
             >
-              <option value="">—</option>
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
+              <option value="">{t('upload.fieldEmpty')}</option>
+              {sortedCountries.map((code) => (
+                <option key={code} value={code}>
+                  {t(`countries.${code}` as const)}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Nacimiento">
+          <Field label={t('upload.birth')}>
             <input
               type="number"
               value={artistBornYear}
@@ -216,7 +224,7 @@ export function UploadAlbumForm() {
               placeholder="1892"
             />
           </Field>
-          <Field label="Defunción">
+          <Field label={t('upload.death')}>
             <input
               type="number"
               value={artistDiedYear}
@@ -228,35 +236,35 @@ export function UploadAlbumForm() {
             />
           </Field>
         </div>
-        <Field label="Bio corta">
+        <Field label={t('upload.shortBio')}>
           <textarea
             value={artistBio}
             onChange={(e) => setArtistBio(e.target.value)}
             maxLength={500}
             rows={2}
             className={inputCls}
-            placeholder="Tiple soprano mexicana del Teatro Principal…"
+            placeholder={t('upload.shortBioPlaceholder')}
           />
         </Field>
-        <Field label="Foto del artista (opcional)">
+        <Field label={t('upload.artistPhoto')}>
           <CoverDropZone file={artistPhoto} onChange={setArtistPhoto} showPreview={false} />
         </Field>
       </Section>
 
       {/* Album */}
-      <Section title="2. Álbum / Disco" hint="Datos del release específico (no del artista).">
-        <Field label="Título" required>
+      <Section title={t('upload.sectionAlbum')} hint={t('upload.sectionAlbumHint')}>
+        <Field label={t('upload.albumTitle')} required>
           <input
             type="text"
             value={albumTitle}
             onChange={(e) => setAlbumTitle(e.target.value)}
             maxLength={160}
             className={inputCls}
-            placeholder="La Gatita Blanca"
+            placeholder={t('upload.albumTitlePlaceholder')}
           />
         </Field>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Field label="Año">
+          <Field label={t('upload.year')}>
             <input
               type="number"
               value={albumYear}
@@ -267,50 +275,50 @@ export function UploadAlbumForm() {
               placeholder="1907"
             />
           </Field>
-          <Field label="País">
+          <Field label={t('upload.country')}>
             <select
               value={albumCountry}
               onChange={(e) => setAlbumCountry(e.target.value)}
               className={inputCls}
             >
-              <option value="">—</option>
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
+              <option value="">{t('upload.fieldEmpty')}</option>
+              {sortedCountries.map((code) => (
+                <option key={code} value={code}>
+                  {t(`countries.${code}` as const)}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Formato">
+          <Field label={t('upload.format')}>
             <select
               value={albumFormat}
               onChange={(e) => setAlbumFormat(e.target.value as MusicAlbumFormat)}
               className={inputCls}
             >
               {FORMATS.map((f) => (
-                <option key={f.value} value={f.value}>
-                  {f.label}
+                <option key={f} value={f}>
+                  {t(`formats.${f}` as const)}
                 </option>
               ))}
             </select>
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Sello discográfico">
+          <Field label={t('upload.labelField')}>
             <LabelAutocomplete value={label} onChange={setLabel} />
           </Field>
-          <Field label="Número de catálogo">
+          <Field label={t('upload.catalogNumber')}>
             <input
               type="text"
               value={catalogNumber}
               onChange={(e) => setCatalogNumber(e.target.value)}
               maxLength={40}
               className={inputCls}
-              placeholder="AMEF-03"
+              placeholder={t('upload.catalogPlaceholder')}
             />
           </Field>
         </div>
-        <Field label="Notas / liner notes">
+        <Field label={t('upload.notes')}>
           <textarea
             value={albumNotes}
             onChange={(e) => setAlbumNotes(e.target.value)}
@@ -320,32 +328,32 @@ export function UploadAlbumForm() {
           />
         </Field>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Field label="Carátula frontal" required>
+          <Field label={t('upload.frontCover')} required>
             <CoverDropZone file={coverFront} onChange={setCoverFront} />
           </Field>
-          <Field label="Contraportada (opcional)">
+          <Field label={t('upload.backCover')}>
             <CoverDropZone file={coverBack} onChange={setCoverBack} showPreview={false} />
           </Field>
-          <Field label="Etiqueta del disco (opcional)">
+          <Field label={t('upload.labelImage')}>
             <CoverDropZone file={labelImage} onChange={setLabelImage} showPreview={false} />
           </Field>
         </div>
       </Section>
 
       {/* Track */}
-      <Section title="3. Canción" hint="La primera canción del álbum. Más adelante podrás agregar más.">
-        <Field label="Título de la canción" required>
+      <Section title={t('upload.sectionTrack')} hint={t('upload.sectionTrackHint')}>
+        <Field label={t('upload.trackTitle')} required>
           <input
             type="text"
             value={trackTitle}
             onChange={(e) => setTrackTitle(e.target.value)}
             maxLength={160}
             className={inputCls}
-            placeholder="La Gatita Blanca: Cuplé"
+            placeholder={t('upload.trackTitlePlaceholder')}
           />
         </Field>
         <div className="grid grid-cols-3 gap-3">
-          <Field label="Posición">
+          <Field label={t('upload.position')}>
             <input
               type="number"
               value={trackPosition}
@@ -355,32 +363,32 @@ export function UploadAlbumForm() {
               className={inputCls}
             />
           </Field>
-          <Field label="Lado">
+          <Field label={t('upload.side')}>
             <select
               value={trackSide}
               onChange={(e) => setTrackSide(e.target.value as MusicTrackSide | '')}
               className={inputCls}
             >
-              <option value="">—</option>
-              <option value="a">A</option>
-              <option value="b">B</option>
+              <option value="">{t('upload.fieldEmpty')}</option>
+              <option value="a">{t('upload.sideA')}</option>
+              <option value="b">{t('upload.sideB')}</option>
             </select>
           </Field>
-          <Field label="Fuente">
+          <Field label={t('upload.source')}>
             <select
               value={sourceMedia}
               onChange={(e) => setSourceMedia(e.target.value as MusicSourceMedia)}
               className={inputCls}
             >
               {SOURCE_MEDIA.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
+                <option key={s} value={s}>
+                  {t(`sourceMedia.${s}` as const)}
                 </option>
               ))}
             </select>
           </Field>
         </div>
-        <Field label="Archivo de audio (MP3, FLAC, WAV, OGG)" required>
+        <Field label={t('upload.audioFile')} required>
           <input
             type="file"
             accept="audio/*"
@@ -388,29 +396,29 @@ export function UploadAlbumForm() {
             className={fileInputCls}
           />
         </Field>
-        <Field label="Notas de restauración">
+        <Field label={t('upload.restoredByNote')}>
           <textarea
             value={restoredByNote}
             onChange={(e) => setRestoredByNote(e.target.value)}
             maxLength={300}
             rows={2}
             className={inputCls}
-            placeholder="Transferido del 78 original con aguja elíptica, declick suave."
+            placeholder={t('upload.restoredByNotePlaceholder')}
           />
         </Field>
       </Section>
 
       {/* Legal */}
-      <Section title="4. Atestación legal" hint="Sin esto no podemos guardar la canción.">
-        <Field label="Estado de copyright">
+      <Section title={t('upload.sectionLegal')} hint={t('upload.sectionLegalHint')}>
+        <Field label={t('upload.copyrightStatus')}>
           <select
             value={copyrightStatus}
             onChange={(e) => setCopyrightStatus(e.target.value as MusicCopyrightStatus)}
             className={inputCls}
           >
             {COPYRIGHT_OPTIONS.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
+              <option key={c} value={c}>
+                {t(`copyright.${c}` as const)}
               </option>
             ))}
           </select>
@@ -422,12 +430,7 @@ export function UploadAlbumForm() {
             onChange={(e) => setAttestation(e.target.checked)}
             className="mt-0.5 h-4 w-4"
           />
-          <span>
-            Declaro bajo mi propio riesgo que tengo derecho a compartir esta grabación, o que es
-            obra de dominio público / huérfana, y libero a Yebaam de toda responsabilidad
-            legal asociada. Acepto que el titular legítimo pueda solicitar la eliminación
-            (proceso DMCA / equivalente).
-          </span>
+          <span>{t('upload.attestation')}</span>
         </label>
       </Section>
 
@@ -449,10 +452,9 @@ export function UploadAlbumForm() {
           disabled={pending}
           className="inline-flex items-center rounded-lg bg-amber-600 px-5 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-60"
         >
-          {pending ? 'Guardando…' : 'Subir al archivo'}
+          {pending ? t('upload.submitting') : t('upload.submit')}
         </button>
       </div>
     </form>
   );
 }
-

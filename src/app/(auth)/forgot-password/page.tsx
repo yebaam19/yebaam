@@ -1,16 +1,21 @@
 import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg';
 import Image from 'next/image';
-import T from '@/utils/getT';
+import { getTranslations } from 'next-intl/server';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { ForgotPasswordForm } from './forgot-password-form';
 
-export const metadata: Metadata = {
-  title: 'Recuperar Contraseña - Yebaam',
-  description: 'Restablece tu contraseña',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return {
+    title: t('passwordReset.forgotMetaTitle'),
+    description: t('passwordReset.forgotMetaDescription'),
+  };
+}
 
-const Page = () => {
+const Page = async () => {
+  const t = await getTranslations('auth');
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#087632' }}>
       <div className="w-full max-w-md">
@@ -27,10 +32,10 @@ const Page = () => {
             />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">
-            Recuperar Contraseña
+            {t('passwordReset.forgotTitle')}
           </h1>
           <p className="text-white/80">
-            Ingresa tu email para restablecer tu contraseña
+            {t('passwordReset.forgotSubtitle')}
           </p>
         </div>
 
@@ -41,13 +46,13 @@ const Page = () => {
 
         {/* Links */}
         <div className="mt-6 text-center text-sm text-white">
-          {T['login']['New user?']} {` `}
+          {t('passwordReset.newUser')} {` `}
           <Link href="/signup" className="font-semibold underline hover:text-white/80 transition-colors">
-            {T['login']['Create an account']}
+            {t('passwordReset.createAccount')}
           </Link>
-          {`  o  `}
+          {`  ${t('passwordReset.or')}  `}
           <Link href="/login" className="font-semibold underline hover:text-white/80 transition-colors">
-            {T['login']['Sign in']}
+            {t('passwordReset.signIn')}
           </Link>
         </div>
       </div>

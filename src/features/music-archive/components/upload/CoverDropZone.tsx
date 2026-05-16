@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { fileInputCls } from './constants';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
  *  cover, label scan, and artist photo. The browser-side preview avoids a
  *  network round-trip — it just shows what the user just dropped. */
 export function CoverDropZone({ file, onChange, showPreview = true }: Props) {
+  const t = useTranslations('musica');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function CoverDropZone({ file, onChange, showPreview = true }: Props) {
       {showPreview && previewUrl && (
         <img
           src={previewUrl}
-          alt="Vista previa"
+          alt={t('upload.previewAlt')}
           className="mt-2 h-24 w-24 rounded-md border border-zinc-200 object-cover dark:border-zinc-800"
         />
       )}

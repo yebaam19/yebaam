@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import type { MusicClubRow } from '../server/clubs.server';
 
 interface Props {
@@ -12,6 +15,7 @@ interface Props {
  *  link) and `/musica/clubes` (full grid). Each card is a link to the genre
  *  detail page. */
 export function MusicClubsGrid({ clubs, limit }: Props) {
+  const t = useTranslations('musica');
   const visible = limit ? clubs.slice(0, limit) : clubs;
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -25,7 +29,7 @@ export function MusicClubsGrid({ clubs, limit }: Props) {
             {c.cover_image_url ? (
               <img
                 src={c.cover_image_url}
-                alt={`Club ${c.name}`}
+                alt={t('clubs.cardAlt', { name: c.name })}
                 className="h-full w-full object-cover transition group-hover:scale-105"
                 loading="lazy"
               />
@@ -42,8 +46,8 @@ export function MusicClubsGrid({ clubs, limit }: Props) {
               {c.name}
             </p>
             <p className="mt-0.5 text-[11px] text-zinc-500">
-              {c.album_count} álbum{c.album_count === 1 ? '' : 'es'}
-              {c.member_count > 0 && ` · ${c.member_count} miembro${c.member_count === 1 ? '' : 's'}`}
+              {t('clubs.albumsCount', { count: c.album_count })}
+              {c.member_count > 0 && ` · ${t('clubs.membersCount', { count: c.member_count })}`}
             </p>
           </div>
         </Link>

@@ -1,0 +1,51 @@
+{
+  "comingSoon": {
+    "eyebrow": "Proximamente",
+    "title": "Paginas",
+    "description": "Estamos terminando esta seccion para que puedas crear y descubrir paginas con una experiencia mas solida.",
+    "backToFeed": "Volver al feed"
+  },
+  "list": {
+    "title": "Páginas",
+    "subtitle": "Descubre y sigue páginas de tu interés",
+    "createButton": "Crear página"
+  },
+  "tabs": {
+    "myPages": "Mis páginas",
+    "followed": "Páginas seguidas",
+    "discover": "Descubrir"
+  },
+  "empty": {
+    "search": {
+      "title": "No se encontraron páginas",
+      "description": "Intenta ajustar tu búsqueda o filtros",
+      "action": "Limpiar búsqueda"
+    },
+    "myPages": {
+      "title": "No tienes páginas aún",
+      "description": "Crea tu primera página para comenzar",
+      "action": "Crear página"
+    },
+    "followed": {
+      "title": "No sigues ninguna página",
+      "description": "Explora páginas en la sección Descubrir",
+      "action": "Ver páginas sugeridas"
+    },
+    "discover": {
+      "title": "No hay páginas sugeridas",
+      "description": "Vuelve más tarde para ver nuevas recomendaciones"
+    }
+  },
+  "card": {
+    "coverAlt": "{name} cover",
+    "followers": "{count} seguidores",
+    "following": "Siguiendo",
+    "follow": "Seguir",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Admin",
+      "editor": "Editor",
+      "moderator": "Moderador"
+    }
+  }
+}

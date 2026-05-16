@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "listTitle": "Portal de Ciudades | Conecta con tu comunidad",
+    "listDescription": "Explora y conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad local.",
+    "ogTitle": "Portal de Ciudades",
+    "ogDescription": "Explora y conoce ciudades destacadas por su cultura, historia y conexión.",
+    "detailTitle": "{city} | Portal de Ciudades",
+    "detailDescription": "Explora {city}: su historia, cultura, lugares de interés, eventos y conecta con la comunidad local.",
+    "detailOgTitle": "{city} - Portal de Ciudades",
+    "detailOgDescription": "Descubre todo sobre {city}: fotos, videos, eventos y más."
+  },
+  "hero": {
+    "badge": "Descubre tu comunidad",
+    "title": "Portal de Ciudades",
+    "subtitle": "Explora y conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad local.",
+    "stats": {
+      "cities": "Ciudades activas",
+      "users": "Usuarios conectados",
+      "media": "Fotos compartidas"
+    }
+  },
+  "header": {
+    "coverAlt": "Vista de {city}",
+    "stats": {
+      "photos": "Fotos",
+      "videos": "Videos",
+      "members": "Miembros"
+    }
+  },
+  "card": {
+    "locationFallback": "Ubicación no disponible"
+  },
+  "grid": {
+    "previous": "Página anterior",
+    "next": "Página siguiente"
+  }
+}

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { createArtist, updateArtist } from '../../../actions/artists.actions';
 import type { MusicArtistRow } from '../../../types/music.types';
-import { COUNTRIES, inputCls } from '../../upload/constants';
+import { COUNTRIES, inputCls, sortCountryCodesByLabel } from '../../upload/constants';
 import { CoverDropZone } from '../../upload/CoverDropZone';
 
 interface InitialValues {
@@ -28,7 +29,12 @@ interface Props {
  *  are identical; only the action call at the end differs (createArtist vs
  *  updateArtist). Keeping them unified avoids drift between the two paths. */
 export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
+  const t = useTranslations('musica');
   const isEdit = Boolean(initial?.id);
+  const sortedCountries = useMemo(
+    () => sortCountryCodesByLabel(COUNTRIES, (code) => t(`countries.${code}` as const)),
+    [t],
+  );
   const [name, setName] = useState(initial?.name ?? '');
   const [country, setCountry] = useState(initial?.country ?? '');
   const [bornYear, setBornYear] = useState(initial?.born_year?.toString() ?? '');
@@ -47,7 +53,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
         const r = await uploadService.uploadImage(photo);
         photoCfImageId = r.id;
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'No se pudo subir la foto.');
+        setError(e instanceof Error ? e.message : t('admin.artistEditor.errGeneric'));
         setSaving(false);
         return;
       }
@@ -84,12 +90,12 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
         <h3 className="mb-4 text-lg font-semibold">
-          {isEdit ? 'Editar artista' : 'Agregar artista'}
+          {isEdit ? t('admin.artistEditor.editTitle') : t('admin.artistEditor.newTitle')}
         </h3>
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Nombre
+              {t('admin.artistEditor.name')}
             </label>
             <input
               type="text"
@@ -97,30 +103,30 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
               onChange={(e) => setName(e.target.value)}
               className={inputCls}
               maxLength={120}
-              placeholder="María Conesa"
+              placeholder={t('upload.artistPlaceholder')}
             />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                País
+                {t('admin.artistEditor.country')}
               </label>
               <select
                 value={country ?? ''}
                 onChange={(e) => setCountry(e.target.value)}
                 className={inputCls}
               >
-                <option value="">—</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.label}
+                <option value="">{t('upload.fieldEmpty')}</option>
+                {sortedCountries.map((code) => (
+                  <option key={code} value={code}>
+                    {t(`countries.${code}` as const)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                Nacimiento
+                {t('admin.artistEditor.bornYear')}
               </label>
               <input
                 type="number"
@@ -133,7 +139,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                Defunción
+                {t('admin.artistEditor.diedYear')}
               </label>
               <input
                 type="number"
@@ -147,14 +153,14 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              {isEdit ? 'Reemplazar foto (opcional)' : 'Foto (opcional)'}
+              {t('admin.artistEditor.photo')}
             </label>
             <CoverDropZone file={photo} onChange={setPhoto} />
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between">
               <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                Biografía (opcional)
+                {t('admin.artistEditor.bioShort')}
               </label>
               <span className="text-[10px] tabular-nums text-zinc-500">
                 {bioShort.length} / 1000
@@ -166,7 +172,6 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
               className={`${inputCls} resize-y`}
               maxLength={1000}
               rows={4}
-              placeholder="Breve biografía del artista…"
             />
           </div>
         </div>
@@ -181,7 +186,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
             onClick={onClose}
             className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50"
           >
-            Cancelar
+            {t('admin.cancel')}
           </button>
           <button
             type="button"
@@ -189,7 +194,7 @@ export function ArtistFormDialog({ initial, onClose, onSaved }: Props) {
             disabled={saving || !name.trim()}
             className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-60"
           >
-            {saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Agregar artista'}
+            {saving ? t('admin.artistEditor.submitting') : t('admin.artistEditor.submit')}
           </button>
         </div>
       </div>

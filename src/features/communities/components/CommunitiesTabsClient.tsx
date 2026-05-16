@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   useMyCommunities,
   useSuggestedCommunities,
@@ -36,6 +37,7 @@ export function CommunitiesTabsClient({
   initialSuggested,
   canCreate,
 }: CommunitiesTabsClientProps) {
+  const t = useTranslations('communities');
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('descubrir');
   const [loadingCommunityId, setLoadingCommunityId] = useState<string | null>(null);
@@ -67,9 +69,9 @@ export function CommunitiesTabsClient({
   };
 
   const tabs = [
-    { id: 'descubrir' as TabType, label: 'Descubrir', icon: FireIcon, count: popularCommunities.length },
-    { id: 'mis-comunidades' as TabType, label: 'Mis Comunidades', icon: UserGroupIcon, count: myCommunities.length },
-    { id: 'sugeridas' as TabType, label: 'Sugeridas', icon: SparklesIcon, count: suggestedCommunities.length },
+    { id: 'descubrir' as TabType, label: t('list.tabs.discover'), icon: FireIcon, count: popularCommunities.length },
+    { id: 'mis-comunidades' as TabType, label: t('list.tabs.myCommunities'), icon: UserGroupIcon, count: myCommunities.length },
+    { id: 'sugeridas' as TabType, label: t('list.tabs.suggested'), icon: SparklesIcon, count: suggestedCommunities.length },
   ];
 
   const getActiveData = (): Community[] => {
@@ -88,13 +90,13 @@ export function CommunitiesTabsClient({
   const getEmptyMessage = (): string => {
     switch (activeTab) {
       case 'descubrir':
-        return 'No hay comunidades populares en este momento';
+        return t('list.empty.discover');
       case 'mis-comunidades':
-        return 'Aún no te has unido a ninguna comunidad. ¡Explora y únete a una!';
+        return t('list.empty.myCommunities');
       case 'sugeridas':
-        return 'No hay comunidades sugeridas en este momento';
+        return t('list.empty.suggested');
       default:
-        return 'No se encontraron comunidades';
+        return t('list.empty.default');
     }
   };
 
@@ -102,9 +104,9 @@ export function CommunitiesTabsClient({
     <>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Comunidades</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t('list.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Únete a comunidades de personas con intereses similares
+            {t('list.subtitle')}
           </p>
         </div>
         {canCreate && (
@@ -114,7 +116,7 @@ export function CommunitiesTabsClient({
             className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
           >
             <PlusIcon className="h-4 w-4" />
-            Crear comunidad
+            {t('create.trigger')}
           </button>
         )}
       </div>

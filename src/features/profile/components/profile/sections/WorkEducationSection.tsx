@@ -7,7 +7,10 @@
  * affordance stays reachable on fresh profiles.
  */
 
+'use client'
+
 import { AcademicCapIcon, BriefcaseIcon, LanguageIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
 
@@ -18,6 +21,7 @@ interface WorkEducationSectionProps {
 }
 
 export default function WorkEducationSection({ user, isOwner = false, onEdit }: WorkEducationSectionProps) {
+  const t = useTranslations('profile.sections')
   const workPlace = user.workPlace?.trim() || null
   const studyPlace = user.studyPlace?.trim() || null
   const languages = (user.languages ?? []).filter(Boolean)
@@ -27,14 +31,14 @@ export default function WorkEducationSection({ user, isOwner = false, onEdit }: 
   if (!hasAny && !isOwner) return null
 
   return (
-    <ProfileSection title="Trabajo y estudios" isOwner={isOwner} onEdit={onEdit}>
+    <ProfileSection title={t('workEducation')} isOwner={isOwner} onEdit={onEdit}>
       {hasAny ? (
         <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
           {workPlace && (
             <div className="flex items-start gap-2.5">
               <BriefcaseIcon className="mt-0.5 size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
               <p className="min-w-0 wrap-break-word">
-                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Trabaja en</span>
+                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('worksAt')}</span>
                 <span className="block font-medium text-gray-900 dark:text-white">{workPlace}</span>
               </p>
             </div>
@@ -43,7 +47,7 @@ export default function WorkEducationSection({ user, isOwner = false, onEdit }: 
             <div className="flex items-start gap-2.5">
               <AcademicCapIcon className="mt-0.5 size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
               <p className="min-w-0 wrap-break-word">
-                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Estudió en</span>
+                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('studiedAt')}</span>
                 <span className="block font-medium text-gray-900 dark:text-white">{studyPlace}</span>
               </p>
             </div>
@@ -52,7 +56,7 @@ export default function WorkEducationSection({ user, isOwner = false, onEdit }: 
             <div className="flex items-start gap-2.5">
               <LanguageIcon className="mt-0.5 size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
               <div className="min-w-0">
-                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Idiomas</span>
+                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('languages')}</span>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {languages.map((lang) => (
                     <span
@@ -69,7 +73,7 @@ export default function WorkEducationSection({ user, isOwner = false, onEdit }: 
         </div>
       ) : (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Agrega tu lugar de trabajo, dónde estudiaste y los idiomas que hablas.
+          {t('workEducationEmpty')}
         </p>
       )}
     </ProfileSection>

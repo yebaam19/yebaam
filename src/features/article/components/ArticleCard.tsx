@@ -10,6 +10,7 @@ import Avatar from '@/ui/Avatar'
 import { ChatBubbleLeftIcon, ClockIcon, EyeIcon, HeartIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { ArticleBasic } from '../interfaces'
 import { formatRelativeDate } from '../utils/date-utils'
 
@@ -18,6 +19,7 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {
+  const t = useTranslations('article.card')
   return (
     <Link
       href={`/feed/article/${article.id}`}
@@ -55,7 +57,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
                   <span>•</span>
                   <span className="flex items-center gap-1">
                     <ClockIcon className="h-3 w-3" />
-                    {article.readTime} min
+                    {t('readMinutes', { minutes: article.readTime })}
                   </span>
                 </>
               )}

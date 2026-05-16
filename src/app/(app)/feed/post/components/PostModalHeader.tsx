@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface PostModalHeaderProps {
@@ -6,10 +9,11 @@ interface PostModalHeaderProps {
 }
 
 export default function PostModalHeader({ onClose, isDisabled }: PostModalHeaderProps) {
+  const t = useTranslations('feed');
   return (
     <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 px-6 py-4">
       <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-        Crear publicación
+        {t('composer.createTitle')}
       </h2>
       <button
         onClick={onClose}

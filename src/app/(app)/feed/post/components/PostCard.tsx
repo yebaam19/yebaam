@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
 import { CommentList } from '@/app/(app)/feed/comments'
@@ -29,6 +30,7 @@ interface PostCardProps {
 }
 
 function PostCard({ post, className, onShowReactions }: PostCardProps) {
+  const t = useTranslations('feed')
   const { user } = useAuth()
   const { deletePost, openEditModal } = usePostStore()
   const [showComments, setShowComments] = useState(false)
@@ -56,7 +58,7 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
     if (typeof window === 'undefined') return
     const url = `${window.location.origin}/${post.author.username}/posts/${post.id}`
     const shareData = {
-      title: `Publicación de ${post.author.firstName ?? post.author.username}`,
+      title: t('post.shareTitle', { author: post.author.firstName ?? post.author.username }),
       text: post.content?.slice(0, 140) ?? '',
       url,
     }
@@ -72,9 +74,9 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
 
     try {
       await navigator.clipboard.writeText(url)
-      toast.success('Enlace copiado')
+      toast.success(t('post.shareLinkCopied'))
     } catch {
-      toast.error('No se pudo copiar el enlace')
+      toast.error(t('post.shareLinkError'))
     }
   }
 

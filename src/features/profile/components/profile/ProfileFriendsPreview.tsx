@@ -4,6 +4,7 @@ import Avatar from '@/ui/Avatar';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { friendshipsService, type Friend } from '@/features/friendships/services/friendships.service';
@@ -14,6 +15,7 @@ interface ProfileFriendsPreviewProps {
 }
 
 export default function ProfileFriendsPreview({ userId, username }: ProfileFriendsPreviewProps) {
+  const t = useTranslations('profile.sidebar');
   const { user: currentUser } = useAuth();
   const isOwnProfile = currentUser?.id === userId;
 
@@ -48,33 +50,31 @@ export default function ProfileFriendsPreview({ userId, username }: ProfileFrien
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-gray-800">
       <div className="mb-1 flex items-center justify-between">
-        <h2 className="text-lg font-bold">Amigos</h2>
+        <h2 className="text-lg font-bold">{t('friends')}</h2>
         <Link
           href={`/${username}?tab=amigos`}
           className="text-primary text-sm font-medium hover:underline"
         >
-          Ver todos los amigos
+          {t('viewAllFriends')}
         </Link>
       </div>
       {total > 0 && (
         <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-          {total} {total === 1 ? 'amigo' : 'amigos'}
+          {t('friendsCount', { count: total })}
         </p>
       )}
 
       {preview.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {isOwnProfile
-              ? 'Aún no tienes amigos en Yebaam.'
-              : 'Sin amigos para mostrar.'}
+            {isOwnProfile ? t('friendsEmptyOwn') : t('friendsEmptyOther')}
           </p>
           {isOwnProfile && (
             <Link
               href={'/feed/friends?tab=suggestions' as Route}
               className="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
-              Explorar personas
+              {t('explorePeople')}
             </Link>
           )}
         </div>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata, Route } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { imageUrl } from '@/lib/media/urls';
 import { getMusicArticleBySlug } from '@/features/music-archive/server/music-articles.server';
 
@@ -10,8 +11,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string; articleSlug: string }>;
 }): Promise<Metadata> {
   const { slug, articleSlug } = await params;
+  const t = await getTranslations('musica');
   const article = await getMusicArticleBySlug(slug, articleSlug);
-  if (!article) return { title: 'Artículo no encontrado' };
+  if (!article) return { title: t('clubs.articleNotFound') };
   return {
     title: article.title,
     description: article.summary ?? article.subtitle ?? undefined,
@@ -26,6 +28,7 @@ export default async function ClubArticleDetailPage({
   const { slug, articleSlug } = await params;
   const article = await getMusicArticleBySlug(slug, articleSlug);
   if (!article) notFound();
+  const t = await getTranslations('musica');
   const hero = article.cf_image_id ? imageUrl(article.cf_image_id, 'public') : null;
   const date = article.published_at ?? article.created_at;
 
@@ -36,7 +39,7 @@ export default async function ClubArticleDetailPage({
           href={`/musica/clubes/${slug}/articulos` as Route}
           className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
         >
-          ← Todos los artículos
+          {t('clubs.articleBack')}
         </Link>
       </nav>
 
@@ -52,7 +55,7 @@ export default async function ClubArticleDetailPage({
           {article.author && (
             <>
               {' · '}
-              {article.author.full_name || article.author.username || 'Autor'}
+              {article.author.full_name || article.author.username || t('clubs.articleAuthorFallback')}
             </>
           )}
         </p>
@@ -68,14 +71,14 @@ export default async function ClubArticleDetailPage({
 
       <div className="prose prose-zinc max-w-none whitespace-pre-wrap text-sm leading-relaxed dark:prose-invert">
         {article.content || (
-          <p className="text-zinc-500">Este artículo aún no tiene contenido.</p>
+          <p className="text-zinc-500">{t('clubs.articleEmpty')}</p>
         )}
       </div>
 
       {article.artists.length > 0 && (
         <footer className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Artistas mencionados
+            {t('clubs.articleMentionedArtists')}
           </h2>
           <ul className="flex flex-wrap gap-2">
             {article.artists.map((a) => (

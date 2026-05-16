@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { useGroup, useUpdateGroup, useDeleteGroup } from '@/features/groups/hooks/useGroups';
 import { toast } from 'sonner';
@@ -36,6 +37,7 @@ const CATEGORIES = [
 export default function GroupSettingsPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations('grupos');
   const groupId = params.id as string;
   
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -60,7 +62,7 @@ export default function GroupSettingsPage() {
   }
 
   if (!group.isAdmin) {
-    toast.error('No tienes permisos para acceder a esta página');
+    toast.error(t('settings.noPermission'));
     router.push(`/grupos/${groupId}`);
     return null;
   }
@@ -83,7 +85,7 @@ export default function GroupSettingsPage() {
     try {
       await updateGroupMutation.mutateAsync(data);
       setActiveModal(null);
-      toast.success('Grupo actualizado exitosamente');
+      toast.success(t('settings.updateSuccess'));
     } catch (error) {
       console.error('[GroupSettings] Error updating group:', error);
     }
@@ -108,7 +110,7 @@ export default function GroupSettingsPage() {
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent mx-auto mb-4" />
-          <p className="text-neutral-600 dark:text-neutral-400">Eliminando grupo...</p>
+          <p className="text-neutral-600 dark:text-neutral-400">{t('settings.loadingDelete')}</p>
         </div>
       </div>
     );
@@ -128,7 +130,7 @@ export default function GroupSettingsPage() {
             </Link>
             <div>
               <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                Configuración del grupo
+                {t('settings.title')}
               </h1>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 {group.name}

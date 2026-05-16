@@ -26,6 +26,7 @@ import { useProfile } from '@/features/profile/hooks/useProfile';
 import CompleteAuthenticationBanner from '@/features/verification/components/CompleteAuthenticationBanner';
 import { useFetch } from '@/lib/hooks/useFetch';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Suspense, useEffect, useState } from 'react';
 
 type TabType =
@@ -36,13 +37,13 @@ type TabType =
   | 'fotos'
   | 'videos';
 
-const TABS: ReadonlyArray<{ id: TabType; label: string; icon: typeof DocumentTextIcon }> = [
-  { id: 'publicaciones', label: 'Publicaciones', icon: DocumentTextIcon },
-  { id: 'acerca-de', label: 'Acerca de', icon: InformationCircleIcon },
-  { id: 'amigos', label: 'Amigos', icon: UsersIcon },
-  { id: 'familias', label: 'Familias', icon: HomeIcon },
-  { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
-  { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
+const TABS: ReadonlyArray<{ id: TabType; labelKey: string; icon: typeof DocumentTextIcon }> = [
+  { id: 'publicaciones', labelKey: 'publicaciones', icon: DocumentTextIcon },
+  { id: 'acerca-de', labelKey: 'acercaDe', icon: InformationCircleIcon },
+  { id: 'amigos', labelKey: 'amigos', icon: UsersIcon },
+  { id: 'familias', labelKey: 'familias', icon: HomeIcon },
+  { id: 'fotos', labelKey: 'fotos', icon: PhotoIcon },
+  { id: 'videos', labelKey: 'videos', icon: VideoCameraIcon },
 ];
 
 const TAB_IDS = new Set<TabType>(TABS.map((t) => t.id));
@@ -56,6 +57,7 @@ interface UserProfilePageClientProps {
 }
 
 export default function UserProfilePageClient({ username }: UserProfilePageClientProps) {
+  const t = useTranslations('profile');
   const searchParams = useSearchParams();
   const { user: currentUser, isInitialized } = useAuth();
   const { openCreateModal } = usePostStore();
@@ -138,8 +140,8 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Usuario no encontrado</h2>
-          <p className="text-gray-600 dark:text-gray-400">El perfil que buscas no existe o no está disponible.</p>
+          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">{t('page.notFoundTitle')}</h2>
+          <p className="text-gray-600 dark:text-gray-400">{t('page.notFoundDescription')}</p>
         </div>
       </div>
     );
@@ -187,7 +189,7 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                   <Icon
                     className={`h-5 w-5 shrink-0 ${isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500'}`}
                   />
-                  <span>{tab.label}</span>
+                  <span>{t(`tabs.${tab.labelKey}`)}</span>
                 </button>
               );
             })}

@@ -1,0 +1,98 @@
+{
+  "list": {
+    "title": "Grupos",
+    "subtitle": "Conecta con personas que comparten tus intereses",
+    "createCta": "Crear grupo",
+    "tabs": {
+      "myGroups": "Mis grupos",
+      "discover": "Descubrir"
+    },
+    "discoverHeading": "Grupos sugeridos para ti",
+    "searchResultsHeading": "Resultados de búsqueda",
+    "noSearchResults": "No se encontraron grupos con ese criterio de búsqueda",
+    "noSuggested": "No hay grupos sugeridos disponibles",
+    "empty": {
+      "title": "No eres miembro de ningún grupo",
+      "description": "Únete a grupos para conectar con personas que comparten tus intereses",
+      "actionLabel": "Descubrir grupos"
+    }
+  },
+  "card": {
+    "publicLabel": "Público",
+    "privateLabel": "Privado",
+    "createdBy": "Creado por",
+    "members": "{count} miembros",
+    "posts": "{count} publicaciones",
+    "viewGroup": "Ver grupo",
+    "join": "Unirse",
+    "joining": "Uniéndose..."
+  },
+  "search": {
+    "placeholder": "Buscar grupos por nombre o categoría..."
+  },
+  "detail": {
+    "notFoundTitle": "Grupo no encontrado",
+    "notFoundDescription": "El grupo que buscas no existe o fue eliminado",
+    "backToGroups": "Volver a grupos",
+    "creatorRole": "Creador del grupo",
+    "publicGroup": "Grupo público",
+    "privateGroup": "Grupo privado",
+    "members": "{count} miembros",
+    "join": "Unirse al grupo",
+    "tabs": {
+      "posts": "Publicaciones",
+      "members": "Miembros",
+      "about": "Acerca de"
+    },
+    "posts": {
+      "emptyTitle": "No hay publicaciones aún",
+      "emptyDescription": "Sé el primero en compartir algo en este grupo"
+    },
+    "membersTab": {
+      "title": "{count} miembros",
+      "description": "La lista de miembros se mostrará aquí"
+    },
+    "about": {
+      "descriptionTitle": "Descripción",
+      "detailsTitle": "Detalles",
+      "category": "Categoría",
+      "privacy": "Privacidad",
+      "createdOn": "Creado",
+      "publicLabel": "Público",
+      "privateLabel": "Privado"
+    }
+  },
+  "create": {
+    "title": "Crear nuevo grupo",
+    "fields": {
+      "coverLabel": "Imagen de portada (opcional)",
+      "uploadPrompt": "Click para subir imagen",
+      "uploadHint": "PNG, JPG o WEBP (max. 5MB)",
+      "nameLabel": "Nombre del grupo *",
+      "namePlaceholder": "Ej: Desarrolladores Web",
+      "nameCounter": "{count}/100 caracteres",
+      "descriptionLabel": "Descripción *",
+      "descriptionPlaceholder": "Describe el propósito del grupo...",
+      "descriptionCounter": "{count}/500 caracteres",
+      "categoryLabel": "Categoría *",
+      "privacyLabel": "Privacidad *",
+      "publicOption": "Público",
+      "publicHint": "Cualquiera puede ver y unirse al grupo",
+      "privateOption": "Privado",
+      "privateHint": "Solo los miembros pueden ver el contenido"
+    },
+    "cancel": "Cancelar",
+    "submit": "Crear grupo",
+    "submitting": "Creando...",
+    "errors": {
+      "missingFields": "Por favor completa todos los campos requeridos"
+    },
+    "success": "¡Grupo creado exitosamente!"
+  },
+  "settings": {
+    "loadingDelete": "Eliminando grupo...",
+    "title": "Configuración del grupo",
+    "noPermission": "No tienes permisos para acceder a esta página",
+    "updateSuccess": "Grupo actualizado exitosamente"
+  }
+}

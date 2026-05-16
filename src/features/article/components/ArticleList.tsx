@@ -6,6 +6,7 @@
  * Displays a grid or list of article cards
  */
 
+import { useTranslations } from 'next-intl'
 import { ArticleBasic } from '../interfaces'
 import { ArticleCard } from './ArticleCard'
 
@@ -19,9 +20,11 @@ interface ArticleListProps {
 export function ArticleList({
   articles,
   isLoading = false,
-  emptyMessage = 'No hay artículos disponibles',
+  emptyMessage,
   layout = 'grid',
 }: ArticleListProps) {
+  const t = useTranslations('article.list')
+  const resolvedEmpty = emptyMessage ?? t('empty')
   if (isLoading) {
     return (
       <div className={layout === 'grid' ? 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}>
@@ -35,7 +38,7 @@ export function ArticleList({
   if (articles.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-neutral-500 dark:text-neutral-400">{emptyMessage}</p>
+        <p className="text-neutral-500 dark:text-neutral-400">{resolvedEmpty}</p>
       </div>
     )
   }

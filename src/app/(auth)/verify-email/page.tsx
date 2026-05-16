@@ -2,13 +2,17 @@ import VerifyEmailForm from '@/features/auth/components/VerifyEmailForm';
 import BackgroundImage from '@/images/brand/Background-1.png';
 import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { Suspense } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Verificar Email - Yebaam',
-  description: 'Verifica tu correo electrónico para activar tu cuenta',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return {
+    title: t('verifyEmail.metaTitle'),
+    description: t('verifyEmail.metaDescription'),
+  };
+}
 
 export default function VerifyEmailPage() {
   return (

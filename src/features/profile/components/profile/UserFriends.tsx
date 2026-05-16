@@ -4,6 +4,7 @@ import Avatar from '@/ui/Avatar';
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowPathIcon, UsersIcon } from '@/components/icons/heroicons-shim';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import {
@@ -17,6 +18,7 @@ interface UserFriendsProps {
 }
 
 export default function UserFriends({ userId, isOwnProfile }: UserFriendsProps) {
+  const t = useTranslations('profile.friends');
   const ownFriends = useFriendshipsStore((state) => state.friends);
   const ownLoading = useFriendshipsStore((state) => state.isLoading);
   const ownInitialized = useFriendshipsStore((state) => state.isInitialized);
@@ -61,10 +63,10 @@ export default function UserFriends({ userId, isOwnProfile }: UserFriendsProps) 
           <UsersIcon className="h-8 w-8 text-gray-400" />
         </div>
         <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
-          {isOwnProfile ? 'Aún no tienes amigos' : 'Este usuario aún no tiene amigos'}
+          {isOwnProfile ? t('emptyOwnTitle') : t('emptyOtherTitle')}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {isOwnProfile ? 'Comienza a conectar con personas que conozcas.' : ''}
+          {isOwnProfile ? t('emptyOwnSubtitle') : ''}
         </p>
       </div>
     );
@@ -73,9 +75,9 @@ export default function UserFriends({ userId, isOwnProfile }: UserFriendsProps) 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-gray-800">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">Amigos</h2>
+        <h2 className="text-xl font-bold">{t('title')}</h2>
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {friends.length} {friends.length === 1 ? 'amigo' : 'amigos'}
+          {t('count', { count: friends.length })}
         </span>
       </div>
 

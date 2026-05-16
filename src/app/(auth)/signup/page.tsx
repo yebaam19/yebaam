@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -7,12 +8,17 @@ import { RegisterForm } from '@/features/auth/components/register-form';
 import BackgroundImage from '@/images/brand/Background-1.png';
 import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg';
 
-export const metadata: Metadata = {
-  title: 'Registrarse - Yebaam',
-  description: 'Únete a Yebaam y conecta con amigos',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return {
+    title: t('signup.metaTitle'),
+    description: t('signup.metaDescription'),
+  };
+}
 
-const Page = () => {
+const Page = async () => {
+  const t = await getTranslations('auth');
+
   return (
     <main className="relative flex min-h-screen w-full flex-col md:flex-row">
       <div className="absolute inset-0 z-0">
@@ -34,15 +40,15 @@ const Page = () => {
               />
             </div>
             <p className="hidden text-center text-xl font-semibold text-white md:block md:text-left md:text-2xl lg:text-3xl">
-              Únete a la comunidad. Comparte lo que importa con quienes importan.
+              {t('signup.tagline')}
             </p>
           </div>
         </div>
         <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6 md:px-12 md:py-10 lg:px-20 xl:px-28">
           <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-neutral-900">
             <div className="px-4 pt-5 pb-3 sm:px-6">
-              <h1 className="text-center text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">Crea una cuenta</h1>
-              <p className="mt-1 text-center text-sm text-neutral-500">Es rápido y fácil.</p>
+              <h1 className="text-center text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">{t('signup.title')}</h1>
+              <p className="mt-1 text-center text-sm text-neutral-500">{t('signup.subtitle')}</p>
             </div>
             <div className="border-t border-neutral-200 dark:border-neutral-700" />
             <div className="px-4 pt-4 pb-5 sm:px-6 sm:pb-6">
@@ -59,9 +65,9 @@ const Page = () => {
             <div className="border-t border-neutral-200 dark:border-neutral-700" />
             <div className="px-4 py-4 sm:px-6">
               <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
-                ¿Ya tienes una cuenta?{' '}
+                {t('signup.haveAccount')}{' '}
                 <Link href="/login" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
-                  Inicia sesión
+                  {t('signup.loginLink')}
                 </Link>
               </p>
             </div>

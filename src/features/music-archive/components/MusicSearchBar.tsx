@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import {
   MusicalNoteIcon,
   UserGroupIcon,
@@ -16,10 +17,10 @@ const ICON_BY_TYPE = {
   track: MusicalNoteIcon,
 } as const;
 
-const TYPE_LABEL = {
-  artist: 'Artista',
-  album: 'Álbum',
-  track: 'Canción',
+const TYPE_KEY = {
+  artist: 'typeArtist',
+  album: 'typeAlbum',
+  track: 'typeTrack',
 } as const;
 
 interface Props {
@@ -33,6 +34,7 @@ interface Props {
  *  `useSearchTopHits`. This component only owns UI state (open/closed,
  *  outside-click) and submission. */
 export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = false }: Props) {
+  const t = useTranslations('musica');
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [open, setOpen] = useState(false);
@@ -90,10 +92,10 @@ export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = f
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => hits.length > 0 && setOpen(true)}
-          placeholder="Buscar canciones, artistas o álbumes…"
+          placeholder={t('search.barPlaceholder')}
           autoFocus={autoFocus}
           className={`w-full border bg-white pl-12 pr-4 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 ${heroStyles}`}
-          aria-label="Buscar en el archivo musical"
+          aria-label={t('search.barAriaLabel')}
           autoComplete="off"
         />
         {pending && (
@@ -109,7 +111,7 @@ export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = f
           {error ? (
             <p className="px-3 py-3 text-xs text-rose-600">{error}</p>
           ) : hits.length === 0 ? (
-            <p className="px-3 py-3 text-xs text-zinc-500">Sin resultados.</p>
+            <p className="px-3 py-3 text-xs text-zinc-500">{t('search.barNoResults')}</p>
           ) : (
             <>
               <ul className="max-h-96 overflow-auto py-1">
@@ -133,7 +135,7 @@ export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = f
                           )}
                         </div>
                         <span className="flex-shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:bg-zinc-800">
-                          {TYPE_LABEL[h.type]}
+                          {t(`search.${TYPE_KEY[h.type]}`)}
                         </span>
                       </button>
                     </li>
@@ -146,7 +148,7 @@ export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = f
                   onClick={submit}
                   className="text-xs font-medium text-amber-700 hover:underline dark:text-amber-400"
                 >
-                  Ver todos los resultados →
+                  {t('search.barViewAll')}
                 </button>
               </div>
             </>

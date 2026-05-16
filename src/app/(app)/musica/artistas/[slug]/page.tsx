@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata, Route } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { getArtistBySlug } from '@/features/music-archive/server/music.server';
@@ -19,11 +20,17 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const t = await getTranslations('musica');
   const artist = await getArtistBySlug(slug);
-  if (!artist) return { title: 'Artista no encontrado' };
+  if (!artist) return { title: t('artist.notFound') };
+  const lifespan = artist.born_year ? ` (${artist.born_year}–${artist.died_year ?? ''})` : '';
   return {
     title: artist.name,
-    description: `${artist.name}${artist.born_year ? ` (${artist.born_year}–${artist.died_year ?? ''})` : ''}. ${artist.albums.length} álbumes en el archivo.`,
+    description: t('artist.metaDescription', {
+      name: artist.name,
+      lifespan,
+      count: artist.albums.length,
+    }),
   };
 }
 
@@ -35,6 +42,7 @@ export default async function ArtistPage({
   const { slug } = await params;
   const artist = await getArtistBySlug(slug);
   if (!artist) notFound();
+  const t = await getTranslations('musica');
   const [articles, clubs, media] = await Promise.all([
     listArticlesForArtist(artist.id),
     listClubsForArtist(artist.id),
@@ -54,7 +62,7 @@ export default async function ArtistPage({
           href={'/musica' as Route}
           className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
         >
-          ← Archivo Musical
+          {t('search.backToArchive')}
         </Link>
       </nav>
 
@@ -87,19 +95,19 @@ export default async function ArtistPage({
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Discografía</h2>
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t('artist.discographyHeading')}</h2>
           <span className="text-xs text-zinc-500">
-            {artist.albums.length} {artist.albums.length === 1 ? 'álbum' : 'álbumes'}
+            {t('artist.albumsCount', { count: artist.albums.length })}
           </span>
         </div>
         {artist.albums.length === 0 ? (
           <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-            Este artista aún no tiene álbumes en el archivo.
+            {t('artist.emptyAlbums')}
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {artist.albums.map((a) => (
-              <AlbumCoverCard key={a.id} album={a} artistName={artist.name} />
+            {artist.albums.map((album) => (
+              <AlbumCoverCard key={album.id} album={album} artistName={artist.name} />
             ))}
           </div>
         )}
@@ -108,7 +116,7 @@ export default async function ArtistPage({
       {media.length > 0 && (
         <section>
           <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Fotos y videos
+            {t('artist.photosVideosHeading')}
           </h2>
           <MusicMediaGrid items={media} />
         </section>
@@ -117,7 +125,7 @@ export default async function ArtistPage({
       {clubs.length > 0 && (
         <section>
           <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Clubes donde aparece
+            {t('artist.clubsHeading')}
           </h2>
           <ul className="flex flex-wrap gap-2">
             {clubs.map((c) => (
@@ -136,7 +144,7 @@ export default async function ArtistPage({
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Artículos sobre {artist.name}
+          {t('artist.articlesHeading', { name: artist.name })}
         </h2>
         {articles.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -148,9 +156,7 @@ export default async function ArtistPage({
           </div>
         ) : (
           <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-6 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-            Aún no hay artículos sobre {artist.name}. Los artículos se escriben desde la
-            sección «Artículos» de un club de música — únete o crea un club, y los artículos
-            que etiqueten a este artista aparecerán aquí automáticamente.
+            {t('artist.emptyArticles', { name: artist.name })}
           </p>
         )}
       </section>

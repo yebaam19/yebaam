@@ -1,0 +1,21 @@
+{
+  "header": {
+    "joinCta": "Join the Portal"
+  },
+  "tabs": {
+    "explore": "Explore",
+    "photos": "Gallery",
+    "videos": "Videos",
+    "photosEmpty": {
+      "title": "Photo Gallery",
+      "description": "Coming soon: iconic images from the Cali salsa scene"
+    },
+    "videosEmpty": {
+      "title": "Salsa Videos",
+      "description": "Coming soon: performances and documentaries"
+    }
+  },
+  "section": {
+    "comingSoon": "Coming soon"
+  }
+}

@@ -2,16 +2,17 @@
 
 import { Field, Input, Label } from '@headlessui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 
 import ButtonPrimary from '@/ui/ButtonPrimary';
-import T from '@/utils/getT';
 import { resetPasswordAction } from '@/features/auth/actions/password-recovery.actions';
 import { resetPasswordSchema } from '@/features/auth/validators/auth.schemas';
 
 export function ResetPasswordForm() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get('email') ?? '';
 
@@ -28,7 +29,8 @@ export function ResetPasswordForm() {
 
     const parsed = resetPasswordSchema.safeParse({ email, otp, newPassword, confirmPassword });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Datos inválidos');
+      // TODO: i18n — validator messages defined at module load time
+      setError(parsed.error.issues[0]?.message ?? t('passwordReset.resetInvalidData'));
       return;
     }
 
@@ -39,11 +41,12 @@ export function ResetPasswordForm() {
         otp: parsed.data.otp,
         newPassword: parsed.data.newPassword,
       });
-      toast.success('Contraseña actualizada. Inicia sesión con tu nueva contraseña.');
+      toast.success(t('passwordReset.resetSuccessToast'));
       router.push('/login?reset=true');
     } catch (err: any) {
-      setError(err?.message ?? 'No se pudo actualizar la contraseña');
-      toast.error(err?.message ?? 'No se pudo actualizar la contraseña');
+      const msg = err?.message ?? t('passwordReset.resetUpdateError');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -52,12 +55,12 @@ export function ResetPasswordForm() {
   return (
     <form className="space-y-5" onSubmit={handleSubmit} noValidate>
       <Field className="block">
-        <Label className="block text-sm font-medium text-gray-700 mb-2">{T['login']['Email address']}</Label>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">{t('passwordReset.emailLabel')}</Label>
         <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="ejemplo@ejemplo.com"
+          placeholder={t('passwordReset.emailPlaceholder')}
           required
           autoComplete="email"
           className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -65,7 +68,7 @@ export function ResetPasswordForm() {
       </Field>
 
       <Field className="block">
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Código de 6 dígitos</Label>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">{t('passwordReset.otpLabel')}</Label>
         <Input
           type="text"
           inputMode="numeric"
@@ -73,7 +76,7 @@ export function ResetPasswordForm() {
           maxLength={6}
           value={otp}
           onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          placeholder="123456"
+          placeholder={t('passwordReset.otpPlaceholder')}
           required
           autoComplete="one-time-code"
           className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg tracking-[0.5em] text-center text-lg font-semibold focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -81,12 +84,12 @@ export function ResetPasswordForm() {
       </Field>
 
       <Field className="block">
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Nueva contraseña</Label>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">{t('passwordReset.newPasswordLabel')}</Label>
         <Input
           type="password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="Mínimo 6 caracteres, con mayúscula, minúscula y número"
+          placeholder={t('passwordReset.newPasswordPlaceholder')}
           required
           autoComplete="new-password"
           className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -94,12 +97,12 @@ export function ResetPasswordForm() {
       </Field>
 
       <Field className="block">
-        <Label className="block text-sm font-medium text-gray-700 mb-2">Confirmar contraseña</Label>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">{t('passwordReset.confirmPasswordLabel')}</Label>
         <Input
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Repite la contraseña"
+          placeholder={t('passwordReset.confirmPasswordPlaceholder')}
           required
           autoComplete="new-password"
           className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -113,7 +116,7 @@ export function ResetPasswordForm() {
       )}
 
       <ButtonPrimary type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Guardando...' : 'Guardar nueva contraseña'}
+        {isSubmitting ? t('passwordReset.resetSubmitting') : t('passwordReset.resetSubmit')}
       </ButtonPrimary>
     </form>
   );

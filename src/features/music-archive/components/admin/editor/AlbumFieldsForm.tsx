@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   ALBUM_CONDITION_LABELS,
   type AlbumCondition,
@@ -10,7 +12,7 @@ import {
   type MusicArtistRow,
   type MusicLabelRow,
 } from '../../../types/music.types';
-import { COUNTRIES, FORMATS, inputCls } from '../../upload/constants';
+import { COUNTRIES, FORMATS, inputCls, sortCountryCodesByLabel } from '../../upload/constants';
 import { CoverField } from './CoverField';
 
 interface Props {
@@ -89,6 +91,12 @@ export function AlbumFieldsForm({
   saving,
   onSave,
 }: Props) {
+  const t = useTranslations('musica');
+  const sortedCountries = useMemo(
+    () => sortCountryCodesByLabel(COUNTRIES, (code) => t(`countries.${code}` as const)),
+    [t],
+  );
+
   function syncDecadeFromYear() {
     const n = Number(year);
     if (!year || Number.isNaN(n) || n < 1850 || n > 2030) return;
@@ -100,7 +108,7 @@ export function AlbumFieldsForm({
     <>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="sm:col-span-3">
-          <label className="mb-1 block text-xs font-medium">Título</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.titleField')}</label>
           <input
             type="text"
             value={title}
@@ -110,26 +118,25 @@ export function AlbumFieldsForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium">Artista</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.artistField')}</label>
           <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-            {artist?.name ?? '—'}
+            {artist?.name ?? t('upload.fieldEmpty')}
           </p>
         </div>
         <div className="sm:col-span-2">
           <label className="mb-1 block text-xs font-medium">
-            Acompañamiento <span className="text-zinc-400">(opcional)</span>
+            {t('admin.albumEditor.accompanimentField')}
           </label>
           <input
             type="text"
             value={accompaniment}
             onChange={(e) => setAccompaniment(e.target.value)}
-            placeholder="Ej. Mariachi Vargas de Tecalitlán"
             className={inputCls}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium">Año</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.yearField')}</label>
           <input
             type="number"
             value={year}
@@ -142,53 +149,53 @@ export function AlbumFieldsForm({
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium">
-            Década <span className="text-zinc-400">(si no sabes el año)</span>
+            {t('admin.albumEditor.decadeField')}
           </label>
           <select
             value={decade}
             onChange={(e) => setDecade(e.target.value)}
             className={inputCls}
           >
-            <option value="">—</option>
+            <option value="">{t('upload.fieldEmpty')}</option>
             {DECADES.map((d) => (
               <option key={d} value={d}>
-                Década de los {d}
+                {t('album.decadeValue', { decade: d })}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">País</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.countryField')}</label>
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
             className={inputCls}
           >
-            <option value="">—</option>
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.label}
+            <option value="">{t('upload.fieldEmpty')}</option>
+            {sortedCountries.map((code) => (
+              <option key={code} value={code}>
+                {t(`countries.${code}` as const)}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium">Formato</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.formatField')}</label>
           <select
             value={format}
             onChange={(e) => setFormat(e.target.value as MusicAlbumFormat)}
             className={inputCls}
           >
             {FORMATS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
+              <option key={f} value={f}>
+                {t(`formats.${f}` as const)}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">Sello</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.labelField')}</label>
           {label ? (
             <Link
               href={`/musica/sellos/${label.slug}` as Route}
@@ -198,12 +205,12 @@ export function AlbumFieldsForm({
             </Link>
           ) : (
             <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-              —
+              {t('upload.fieldEmpty')}
             </p>
           )}
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">Catálogo</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.catalogNumberField')}</label>
           <input
             type="text"
             value={catalogNumber}
@@ -214,7 +221,7 @@ export function AlbumFieldsForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium">Notas</label>
+        <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.notesField')}</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -225,22 +232,19 @@ export function AlbumFieldsForm({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-medium">Estado de conservación</label>
+          <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.conditionField')}</label>
           <select
             value={condition}
             onChange={(e) => setCondition(e.target.value as AlbumCondition | '')}
             className={inputCls}
           >
-            <option value="">— Sin graduar</option>
+            <option value="">{t('upload.fieldEmpty')}</option>
             {(Object.keys(ALBUM_CONDITION_LABELS) as AlbumCondition[]).map((c) => (
               <option key={c} value={c}>
-                {ALBUM_CONDITION_LABELS[c]}
+                {t(`conditions.${c}`)}
               </option>
             ))}
           </select>
-          <p className="mt-1 text-[11px] text-zinc-500">
-            Escala Goldmine. Indica el estado físico de tu copia.
-          </p>
         </div>
         <div className="flex items-end">
           <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
@@ -250,26 +254,26 @@ export function AlbumFieldsForm({
               onChange={(e) => setForTrade(e.target.checked)}
               className="h-4 w-4"
             />
-            <span>Disponible para intercambio</span>
+            <span>{t('admin.albumEditor.tradeField')}</span>
           </label>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <CoverField
-          label="Frontal"
+          label={t('admin.albumEditor.coverFrontField')}
           currentId={album.cover_cf_image_id}
           file={coverFront}
           onChange={setCoverFront}
         />
         <CoverField
-          label="Trasera"
+          label={t('admin.albumEditor.coverBackField')}
           currentId={album.back_cover_cf_image_id}
           file={coverBack}
           onChange={setCoverBack}
         />
         <CoverField
-          label="Etiqueta del disco"
+          label={t('admin.albumEditor.labelImageField')}
           currentId={album.label_cf_image_id}
           file={labelImage}
           onChange={setLabelImage}
@@ -283,7 +287,7 @@ export function AlbumFieldsForm({
           disabled={saving}
           className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-60"
         >
-          {saving ? 'Guardando…' : 'Guardar álbum'}
+          {saving ? t('admin.albumEditor.savingAlbum') : t('admin.albumEditor.saveAlbum')}
         </button>
       </div>
     </>

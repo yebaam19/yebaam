@@ -3,17 +3,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 
 interface Tab {
-  label: string;
+  /** Translation key suffix under `musica.nav.*` */
+  key: 'explore' | 'clubs' | 'upload' | 'about';
   href: Route;
-  /** Match the start of pathname, but skip if `exact` is true. */
   match: (pathname: string) => boolean;
 }
 
 const TABS: Tab[] = [
   {
-    label: 'Explorar',
+    key: 'explore',
     href: '/musica' as Route,
     match: (p) =>
       p === '/musica' ||
@@ -22,17 +23,17 @@ const TABS: Tab[] = [
       p.startsWith('/musica/sellos'),
   },
   {
-    label: 'Clubes',
+    key: 'clubs',
     href: '/musica/clubes' as Route,
     match: (p) => p.startsWith('/musica/clubes'),
   },
   {
-    label: 'Subir',
+    key: 'upload',
     href: '/musica/subir' as Route,
     match: (p) => p.startsWith('/musica/subir'),
   },
   {
-    label: 'Acerca',
+    key: 'about',
     href: '/musica/acerca' as Route,
     match: (p) => p.startsWith('/musica/acerca'),
   },
@@ -42,19 +43,20 @@ const TABS: Tab[] = [
  *  below the main app header so the "Acerca del Club" link is one click away
  *  from any subpage. */
 export function MusicaSubNav() {
+  const t = useTranslations('musica');
   const pathname = usePathname() ?? '';
   return (
     <nav
-      aria-label="Club de Coleccionistas"
+      aria-label={t('nav.ariaLabel')}
       className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-20 -mx-4 mb-6 border-b border-zinc-200/90 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 dark:border-zinc-800/90"
     >
       <ul className="flex items-center gap-6 overflow-x-auto text-sm">
-        {TABS.map((t) => {
-          const active = t.match(pathname);
+        {TABS.map((tab) => {
+          const active = tab.match(pathname);
           return (
-            <li key={t.href} className="shrink-0">
+            <li key={tab.href} className="shrink-0">
               <Link
-                href={t.href}
+                href={tab.href}
                 aria-current={active ? 'page' : undefined}
                 className={
                   active
@@ -62,7 +64,7 @@ export function MusicaSubNav() {
                     : 'inline-flex border-b-2 border-transparent py-2.5 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }
               >
-                {t.label}
+                {t(`nav.${tab.key}`)}
               </Link>
             </li>
           );

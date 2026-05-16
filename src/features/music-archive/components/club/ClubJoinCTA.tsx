@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { joinClub } from '../../actions/club-roles.actions';
 import type { ClubJoinStatus } from '../../server/clubs.server';
 
@@ -19,6 +20,7 @@ interface Props {
 
 /** Inline join button for empty-state cards in Posts/Articulos/Miembros. */
 export function ClubJoinCTA({ clubId, clubSlug, status, label }: Props) {
+  const t = useTranslations('musica');
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -40,7 +42,7 @@ export function ClubJoinCTA({ clubId, clubSlug, status, label }: Props) {
   return (
     <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900/40">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        {label ?? 'Únete al club para participar.'}
+        {label ?? t('club.ctaJoinDefault')}
       </p>
       <div className="mt-3">
         {status.kind === 'signed_out' && (
@@ -48,7 +50,7 @@ export function ClubJoinCTA({ clubId, clubSlug, status, label }: Props) {
             href={`/login?next=/musica/clubes/${clubSlug}` as Route}
             className="inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
           >
-            Inicia sesión
+            {t('club.signIn')}
           </Link>
         )}
         {status.kind === 'none' && (
@@ -58,12 +60,12 @@ export function ClubJoinCTA({ clubId, clubSlug, status, label }: Props) {
             disabled={pending}
             className="inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
           >
-            {pending ? 'Enviando…' : 'Solicitar unirse'}
+            {pending ? t('club.joining') : t('club.joinRequest')}
           </button>
         )}
         {status.kind === 'pending' && (
           <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-            Solicitud pendiente
+            {t('club.joinPending')}
           </span>
         )}
       </div>

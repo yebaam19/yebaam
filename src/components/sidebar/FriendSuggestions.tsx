@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { UserPlusIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface FriendSuggestion {
   id: string;
@@ -20,16 +21,17 @@ interface FriendSuggestionsProps {
 }
 
 export default function FriendSuggestions({ suggestions, onSendRequest }: FriendSuggestionsProps) {
+  const t = useTranslations('nav');
   const [sendingRequestTo, setSendingRequestTo] = useState<Set<string>>(new Set());
 
   const handleSendFriendRequest = async (userId: string) => {
     try {
       setSendingRequestTo(prev => new Set(prev).add(userId));
       await onSendRequest(userId);
-      toast.success('Solicitud de amistad enviada');
+      toast.success(t('friendRequestSent'));
     } catch (error) {
       console.error('Error sending friend request:', error);
-      toast.error('Error al enviar solicitud');
+      toast.error(t('friendRequestError'));
     } finally {
       setSendingRequestTo(prev => {
         const newSet = new Set(prev);
@@ -43,19 +45,19 @@ export default function FriendSuggestions({ suggestions, onSendRequest }: Friend
     <section>
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Sugerencias de amigos
+          {t('friendSuggestions')}
         </h3>
         <Link
           href="/feed/friends?tab=suggestions"
           className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
-          Ver todas
+          {t('viewAllSuggestions')}
         </Link>
       </div>
       <div className="space-y-3">
         {suggestions.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
-            No hay sugerencias disponibles
+            {t('noSuggestionsAvailable')}
           </p>
         ) : (
           suggestions.map((friend) => (
@@ -68,7 +70,7 @@ export default function FriendSuggestions({ suggestions, onSendRequest }: Friend
                 />
               </Link>
               <div className="flex-1 min-w-0">
-                <Link 
+                <Link
                   href={`/${friend.username}`}
                   className="block"
                 >
@@ -77,14 +79,14 @@ export default function FriendSuggestions({ suggestions, onSendRequest }: Friend
                   </p>
                 </Link>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {friend.mutualFriends} amigos en común
+                  {t('mutualFriends', { n: friend.mutualFriends })}
                 </p>
               </div>
               <button
                 onClick={() => handleSendFriendRequest(friend.id)}
                 disabled={sendingRequestTo.has(friend.id)}
                 className="shrink-0 rounded-lg bg-primary-600 p-1.5 hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Agregar amigo"
+                title={t('addFriend')}
               >
                 <UserPlusIcon className="h-4 w-4 text-white" />
               </button>

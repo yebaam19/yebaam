@@ -6,10 +6,12 @@ import type { CreateClubDto } from '@/features/clubs/types/club.types'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Fragment, useState } from 'react'
 import { CreateClubStep1, CreateClubStep2, CreateClubStep3, CreateClubStep4 } from './create-club'
 
 export function CreateClubModal() {
+  const t = useTranslations('clubes')
   const router = useRouter()
   const { isCreateModalOpen, setIsCreateModalOpen } = useClubsUIStore()
   const createMutation = useCreateClub()
@@ -65,15 +67,15 @@ export function CreateClubModal() {
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return 'Información básica'
+        return t('create.steps.basic')
       case 2:
-        return 'Configuración'
+        return t('create.steps.settings')
       case 3:
-        return 'Imágenes'
+        return t('create.steps.images')
       case 4:
-        return 'Información adicional'
+        return t('create.steps.additional')
       default:
-        return 'Crear club'
+        return t('create.steps.fallback')
     }
   }
 
@@ -108,10 +110,10 @@ export function CreateClubModal() {
                 <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                   <div>
                     <Dialog.Title as="h3" className="text-xl font-semibold text-gray-900 dark:text-white">
-                      Crear club
+                      {t('create.title')}
                     </Dialog.Title>
                     <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                      {getStepTitle()} - Paso {currentStep} de {totalSteps}
+                      {t('create.stepLabel', { title: getStepTitle(), current: currentStep, total: totalSteps })}
                     </p>
                   </div>
                   <button
@@ -174,7 +176,7 @@ export function CreateClubModal() {
                     <p className="text-sm text-red-800 dark:text-red-200">
                       {createMutation.error instanceof Error
                         ? createMutation.error.message
-                        : 'Error al crear el club. Intenta nuevamente.'}
+                        : t('create.errorFallback')}
                     </p>
                   </div>
                 )}

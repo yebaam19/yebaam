@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRightIcon, FireIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 
 // TODO: wire to trending hashtags endpoint when available — placeholder data mirrors mockup
 const TRENDING = [
@@ -11,17 +12,18 @@ const TRENDING = [
 ]
 
 export function TrendingTopics() {
+  const t = useTranslations('nav')
   return (
     <section className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       <h3 className="mb-3 text-sm font-semibold text-neutral-900 dark:text-white">
-        Tendencias en Yebaam
+        {t('trending')}
       </h3>
 
       <ul className="space-y-3">
-        {TRENDING.map((t) => (
-          <li key={t.tag}>
+        {TRENDING.map((trend) => (
+          <li key={trend.tag}>
             <Link
-              href={`/search?q=%23${t.tag}`}
+              href={`/search?q=%23${trend.tag}`}
               className="flex items-center gap-3 rounded-lg p-1.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
             >
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-500 dark:bg-orange-500/10">
@@ -29,10 +31,10 @@ export function TrendingTopics() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
-                  #{t.tag}
+                  #{trend.tag}
                 </p>
                 <p className="truncate text-[11px] text-neutral-500 dark:text-neutral-400">
-                  {t.posts}
+                  {trend.posts}
                 </p>
               </div>
             </Link>
@@ -44,7 +46,7 @@ export function TrendingTopics() {
         href="/search?tab=hashtags"
         className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
       >
-        Ver más tendencias
+        {t('viewMoreTrends')}
         <ArrowRightIcon className="size-3.5" />
       </Link>
     </section>

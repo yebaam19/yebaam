@@ -5,6 +5,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -15,6 +16,7 @@ import { VerifyEmailFormData, verifyEmailSchema } from '../validators/auth.schem
  */
 export default function VerifyEmailForm() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const emailFromUrl = searchParams.get('email') || ''
 
@@ -40,12 +42,12 @@ export default function VerifyEmailForm() {
 
     try {
       const response = await authService.verifyEmail(data)
-      toast.success('¡Email verificado exitosamente! Ya puedes iniciar sesión')
+      toast.success(t('verifyEmail.successToast'))
 
       // Redirigir a login para que el usuario inicie sesión
       router.push(`/login?email=${encodeURIComponent(data.email)}&verified=true`)
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Código inválido o expirado'
+      const errorMessage = error.response?.data?.message || error.message || t('verifyEmail.invalidCodeError')
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -54,14 +56,14 @@ export default function VerifyEmailForm() {
 
   const handleResendCode = async () => {
     if (turnstileEnabled && !captchaToken) {
-      toast.error('Completa la verificación de seguridad antes de reenviar.')
+      toast.error(t('verifyEmail.turnstileResendError'))
       return
     }
     try {
       await resendOtp({ email: emailFromUrl, captchaToken: captchaToken ?? undefined })
-      toast.success('Código reenviado exitosamente')
+      toast.success(t('verifyEmail.resendSuccessToast'))
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Error al reenviar el código'
+      const errorMessage = error.response?.data?.message || error.message || t('verifyEmail.resendError')
       toast.error(errorMessage)
     } finally {
       setCaptchaToken(null)
@@ -85,8 +87,8 @@ export default function VerifyEmailForm() {
             </svg>
           </div>
         </div>
-        <h2 className="mb-3 text-3xl font-bold text-gray-900">Verifica tu email</h2>
-        <p className="mb-1 text-base text-gray-600">Hemos enviado un código de 6 dígitos a</p>
+        <h2 className="mb-3 text-3xl font-bold text-gray-900">{t('verifyEmail.title')}</h2>
+        <p className="mb-1 text-base text-gray-600">{t('verifyEmail.codeSentTo')}</p>
         <p className="text-base font-semibold text-gray-900">{emailFromUrl}</p>
       </div>
 
@@ -97,7 +99,7 @@ export default function VerifyEmailForm() {
         {/* OTP Code */}
         <div>
           <label htmlFor="otp" className="mb-3 block text-center text-sm font-medium text-gray-700">
-            Ingresa el código de verificación
+            {t('verifyEmail.codeLabel')}
           </label>
           <input
             type="text"
@@ -127,10 +129,10 @@ export default function VerifyEmailForm() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Verificando...
+              {t('verifyEmail.submitting')}
             </span>
           ) : (
-            'Verificar código'
+            t('verifyEmail.submit')
           )}
         </button>
 
@@ -139,7 +141,8 @@ export default function VerifyEmailForm() {
           {/* Información sobre expiración */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              El código expira en <span className="font-semibold text-gray-900">10 minutos</span>
+              {t('verifyEmail.expiresInPrefix')}{' '}
+              <span className="font-semibold text-gray-900">{t('verifyEmail.expiresInValue')}</span>
             </p>
           </div>
 
@@ -170,10 +173,10 @@ export default function VerifyEmailForm() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Reenviando código...
+                  {t('verifyEmail.resending')}
                 </span>
               ) : (
-                '¿No recibiste el código o expiró? Volver a enviar'
+                t('verifyEmail.resendCta')
               )}
             </button>
           </div>
@@ -182,7 +185,7 @@ export default function VerifyEmailForm() {
         {/* Progress indicator */}
         <div className="border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
-            Paso 2 de 3: Verifica tu email para continuar
+            {t('verifyEmail.stepIndicator')}
           </p>
         </div>
       </form>

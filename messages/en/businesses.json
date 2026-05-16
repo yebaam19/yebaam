@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "listTitle": "Businesses | Discover local businesses",
+    "listDescription": "Explore and discover local businesses in your community. Find restaurants, shops, services and more near you.",
+    "ogTitle": "Businesses | Discover local businesses",
+    "ogDescription": "Explore and discover local businesses in your community."
+  },
+  "comingSoon": {
+    "eyebrow": "Coming soon",
+    "title": "Businesses",
+    "description": "We're getting this section ready to publish the directory with a more solid and consistent experience.",
+    "backToFeed": "Back to feed"
+  },
+  "hero": {
+    "title": "Business Directory",
+    "subtitle": "Discover restaurants, shops, services and more. Connect with the best local businesses and support your community.",
+    "createCta": "Register my business",
+    "features": {
+      "catalog": {
+        "title": "Business Catalog",
+        "description": "Explore a wide variety of businesses organized by category and location."
+      },
+      "local": {
+        "title": "Local Businesses",
+        "description": "Find businesses near you and support your local community."
+      },
+      "reviews": {
+        "title": "Verified Reviews",
+        "description": "Check reviews and ratings before visiting a business."
+      }
+    }
+  },
+  "card": {
+    "owner": "Owner",
+    "reviews": "reviews",
+    "photos": "photos",
+    "userFallback": "User"
+  },
+  "profile": {
+    "loading": "Loading business…",
+    "notFound": {
+      "title": "Business not found",
+      "description": "The business you're looking for doesn't exist or has been removed."
+    },
+    "tabs": {
+      "home": "Home",
+      "about": "About"
+    },
+    "about": {
+      "title": "About",
+      "noDescription": "No description"
+    },
+    "sectionsLabel": "Sections",
+    "sections": {
+      "photos": "Photos",
+      "reviews": "Reviews",
+      "hours": "Hours",
+      "contact": "Contact"
+    },
+    "reviews": {
+      "title": "Reviews",
+      "comingSoon": "Reviews will be available soon."
+    },
+    "hours": {
+      "title": "Hours",
+      "empty": "No hours available.",
+      "closed": "Closed"
+    },
+    "contact": {
+      "title": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "address": "Address"
+    }
+  },
+  "createModal": {
+    "title": "Register business",
+    "stepLabel": "{step} - Step {current} of {total}",
+    "steps": {
+      "basic": "Basic information",
+      "categoryLocation": "Category and location",
+      "contact": "Contact information",
+      "social": "Social media",
+      "default": "Create business"
+    },
+    "errorFallback": "Error creating business. Please try again."
+  }
+}

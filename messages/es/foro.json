@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "discoveryTitle": "Foros · Yebaam"
+  },
+  "discovery": {
+    "title": "Foros de Yebaam",
+    "subtitle": "Comunidad, debate y soporte. Explora los espacios de clubes, grupos, páginas, blogs y la comunidad.",
+    "emptyDiscovery": "Todavía no hay foros disponibles.",
+    "spaceDescriptionFallback": "Entra para ver las categorías y los temas.",
+    "enterSpace": "Entrar al foro →"
+  },
+  "crumbs": {
+    "foros": "Foros"
+  },
+  "space": {
+    "manage": "Administrar",
+    "visibilityPrivate": "Privado",
+    "visibilitySecret": "Secreto",
+    "emptyCategories": "Este foro todavía no tiene categorías.",
+    "emptyForums": "Sin foros todavía.",
+    "subforumsLabel": "Subforos:",
+    "topicOne": "tema",
+    "topicOther": "temas",
+    "messageOne": "mensaje",
+    "messageOther": "mensajes",
+    "byAuthor": "por",
+    "noMessages": "Sin mensajes"
+  },
+  "forum": {
+    "newTopic": "Nuevo tema",
+    "topicOne": "tema",
+    "topicOther": "temas",
+    "totalSuffix": "en total",
+    "emptyTopics": "Aún no hay temas en este foro. ¡Sé el primero en publicar!",
+    "noMoreTopics": "No hay más temas en este foro.",
+    "permissionsTitle": "Permisos del foro",
+    "permissions": {
+      "post": "Puedes publicar nuevos temas",
+      "reply": "Puedes responder a los temas",
+      "editOwn": "Puedes editar tus propios mensajes",
+      "deleteOwn": "Puedes eliminar tus propios mensajes"
+    },
+    "list": {
+      "headerTopic": "Tema",
+      "headerReplies": "Respuestas",
+      "headerViews": "Vistas",
+      "headerLastPost": "Último mensaje",
+      "pinned": "Fijado",
+      "lockedAriaLabel": "Cerrado",
+      "lockedTitle": "Tema cerrado",
+      "byAuthor": "por",
+      "shortReplies": "Resp.",
+      "shortViews": "Vistas",
+      "goToLastPost": "Ir al último mensaje",
+      "noReplies": "Sin respuestas",
+      "announcements": "Anuncios / Fijados"
+    }
+  },
+  "newTopic": {
+    "title": "Nuevo tema",
+    "subtitle": "Publicando en {forumName}",
+    "fields": {
+      "titleLabel": "Título del tema",
+      "titlePlaceholder": "Escribe un título claro y descriptivo",
+      "titleHint": "Máximo 200 caracteres.",
+      "messageLabel": "Mensaje",
+      "messagePlaceholder": "Escribe el primer mensaje del tema…",
+      "messageAriaLabel": "Mensaje"
+    },
+    "cancel": "Cancelar",
+    "submit": "Publicar tema",
+    "submitting": "Publicando…",
+    "errors": {
+      "createFailed": "No se pudo crear el tema."
+    }
+  },
+  "thread": {
+    "subtitle": "Iniciado por {author} · {date} · {views} {viewsLabel}",
+    "viewOne": "vista",
+    "viewOther": "vistas",
+    "messageOne": "mensaje",
+    "messageOther": "mensajes",
+    "rank": {
+      "legend": "Leyenda",
+      "veteran": "Veterano",
+      "senior": "Sénior",
+      "registered": "Registrado",
+      "newbie": "Nuevo",
+      "op": "Autor"
+    },
+    "userCard": {
+      "messages": "Mensajes:",
+      "member": "Miembro:",
+      "location": "Ubicación:"
+    },
+    "actions": {
+      "reply": "Responder",
+      "topicLocked": "Tema cerrado",
+      "unpin": "Quitar fijado",
+      "pin": "Fijar",
+      "reopen": "Reabrir",
+      "close": "Cerrar",
+      "move": "Mover",
+      "delete": "Eliminar",
+      "quote": "Citar",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "moveDialog": {
+      "title": "Mover tema",
+      "description": "Selecciona el foro destino en este espacio.",
+      "placeholder": "— Elegir foro —"
+    },
+    "deleteConfirm": "¿Eliminar este tema y todos sus mensajes?",
+    "edited": "(editado)",
+    "backToForum": "← Volver a «{forumName}»",
+    "goToIndex": "Ir al índice de foros",
+    "errors": {
+      "emptyContent": "El mensaje no puede estar vacío.",
+      "editFailed": "No se pudo editar el mensaje."
+    },
+    "realtime": {
+      "loading": "Cargando…",
+      "userFallback": "Usuario",
+      "usernameFallback": "usuario"
+    }
+  },
+  "reply": {
+    "label": "Publicar respuesta",
+    "placeholder": "Escribe tu respuesta…",
+    "ariaLabel": "Publicar respuesta",
+    "hint": "Selecciona texto y usa la barra de formato.",
+    "submit": "Enviar respuesta",
+    "submitting": "Enviando…",
+    "lockedNotice": "Este tema está cerrado. No se pueden añadir más mensajes.",
+    "errors": {
+      "sendFailed": "No se pudo enviar el mensaje."
+    }
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { XMarkIcon, PhotoIcon } from '@/components/icons/heroicons-shim';
 import { useCreateGroup } from '../hooks/useGroups';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ const CATEGORIES = [
 ];
 
 export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
+  const t = useTranslations('grupos');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Tecnología');
@@ -49,7 +51,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
     e.preventDefault();
 
     if (!name.trim() || !description.trim()) {
-      toast.error('Por favor completa todos los campos requeridos');
+      toast.error(t('create.errors.missingFields'));
       return;
     }
 
@@ -62,7 +64,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
         coverImage: coverImage || undefined,
       });
 
-      toast.success('¡Grupo creado exitosamente!');
+      toast.success(t('create.success'));
       handleClose();
     } catch (error) {
       console.error('[CreateGroupModal] Error:', error);
@@ -87,7 +89,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            Crear nuevo grupo
+            {t('create.title')}
           </h2>
           <button
             onClick={handleClose}
@@ -102,7 +104,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
           {/* Cover Image */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Imagen de portada (opcional)
+              {t('create.fields.coverLabel')}
             </label>
             <div className="relative">
               {previewUrl ? (
@@ -127,10 +129,10 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
                 <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                   <PhotoIcon className="h-12 w-12 text-neutral-400 mb-2" />
                   <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Click para subir imagen
+                    {t('create.fields.uploadPrompt')}
                   </span>
                   <span className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
-                    PNG, JPG o WEBP (max. 5MB)
+                    {t('create.fields.uploadHint')}
                   </span>
                   <input
                     type="file"
@@ -146,47 +148,47 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
           {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Nombre del grupo *
+              {t('create.fields.nameLabel')}
             </label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Desarrolladores Web"
+              placeholder={t('create.fields.namePlaceholder')}
               maxLength={100}
               required
               className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              {name.length}/100 caracteres
+              {t('create.fields.nameCounter', { count: name.length })}
             </p>
           </div>
 
           {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Descripción *
+              {t('create.fields.descriptionLabel')}
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe el propósito del grupo..."
+              placeholder={t('create.fields.descriptionPlaceholder')}
               rows={4}
               maxLength={500}
               required
               className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
             />
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              {description.length}/500 caracteres
+              {t('create.fields.descriptionCounter', { count: description.length })}
             </p>
           </div>
 
           {/* Category */}
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Categoría *
+              {t('create.fields.categoryLabel')}
             </label>
             <select
               id="category"
@@ -205,7 +207,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
           {/* Privacy */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
-              Privacidad *
+              {t('create.fields.privacyLabel')}
             </label>
             <div className="space-y-3">
               <label className="flex items-start gap-3 p-4 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
@@ -218,9 +220,9 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
                   className="mt-1"
                 />
                 <div>
-                  <p className="font-medium text-neutral-900 dark:text-white">Público</p>
+                  <p className="font-medium text-neutral-900 dark:text-white">{t('create.fields.publicOption')}</p>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Cualquiera puede ver y unirse al grupo
+                    {t('create.fields.publicHint')}
                   </p>
                 </div>
               </label>
@@ -234,9 +236,9 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
                   className="mt-1"
                 />
                 <div>
-                  <p className="font-medium text-neutral-900 dark:text-white">Privado</p>
+                  <p className="font-medium text-neutral-900 dark:text-white">{t('create.fields.privateOption')}</p>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Solo los miembros pueden ver el contenido
+                    {t('create.fields.privateHint')}
                   </p>
                 </div>
               </label>
@@ -250,14 +252,14 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
               onClick={handleClose}
               className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
             >
-              Cancelar
+              {t('create.cancel')}
             </button>
             <button
               type="submit"
               disabled={createGroupMutation.isPending}
               className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white rounded-lg font-medium transition-colors"
             >
-              {createGroupMutation.isPending ? 'Creando...' : 'Crear grupo'}
+              {createGroupMutation.isPending ? t('create.submitting') : t('create.submit')}
             </button>
           </div>
         </form>

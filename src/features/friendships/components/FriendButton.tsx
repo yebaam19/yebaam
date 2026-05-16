@@ -38,6 +38,7 @@ import {
 import { CheckCircleIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
 import { useCallback, useState, useMemo } from 'react';
 import { useFriendshipsStore } from '../store/friendships.store';
+import { useTranslations } from 'next-intl';
 
 // ============================================================================
 // TYPES
@@ -309,6 +310,7 @@ interface ButtonBaseProps {
  * Botón para agregar amigo (estado: none)
  */
 function AddFriendButton({ variant, size, isLoading, onClick, className }: ButtonBaseProps & { onClick: () => void; }) {
+  const t = useTranslations('friendships.friendButton');
   const buttonStyles = cn(baseButtonStyles, 'focus:ring-primary-500', sizeStyles[size]);
 
   if (variant === 'icon') {
@@ -325,7 +327,7 @@ function AddFriendButton({ variant, size, isLoading, onClick, className }: Butto
           iconOnlySizeStyles[size],
           className
         )}
-        title="Enviar solicitud de amistad"
+        title={t('addFriendTitle')}
       >
         {isLoading ? (
           <LoadingSpinner className={iconSizeStyles[size]} />
@@ -348,14 +350,14 @@ function AddFriendButton({ variant, size, isLoading, onClick, className }: Butto
           'cursor-pointer transition-all duration-200 ease-in-out',
           className
         )}
-        title="Enviar solicitud de amistad"
+        title={t('addFriendTitle')}
       >
         {isLoading ? (
           <LoadingSpinner className={cn(iconSizeStyles[size], 'shrink-0')} />
         ) : (
           <UserPlusIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
         )}
-        <span>Agregar amigo</span>
+        <span>{t('addFriend')}</span>
       </button>
     );
   }
@@ -371,14 +373,14 @@ function AddFriendButton({ variant, size, isLoading, onClick, className }: Butto
         'cursor-pointer transition-all duration-200 ease-in-out shadow-sm hover:shadow-md',
         className
       )}
-      title="Enviar solicitud de amistad"
+      title={t('addFriendTitle')}
     >
       {isLoading ? (
         <LoadingSpinner className={cn(iconSizeStyles[size], 'shrink-0')} />
       ) : (
         <UserPlusIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
       )}
-      {variant !== 'compact' && <span>Agregar amigo</span>}
+      {variant !== 'compact' && <span>{t('addFriend')}</span>}
     </button>
   );
 }
@@ -399,6 +401,7 @@ function PendingSentButton({
   isHovering: boolean;
   onHoverChange: (hovering: boolean) => void;
 }) {
+  const t = useTranslations('friendships.friendButton');
   const buttonStyles = cn(baseButtonStyles, 'focus:ring-yellow-500', sizeStyles[size]);
 
   if (variant === 'icon') {
@@ -418,7 +421,7 @@ function PendingSentButton({
           iconOnlySizeStyles[size],
           className
         )}
-        title={isHovering ? 'Cancelar solicitud' : 'Solicitud pendiente'}
+        title={isHovering ? t('cancelRequest') : t('pendingTitle')}
       >
         {isLoading ? (
           <LoadingSpinner className={iconSizeStyles[size]} />
@@ -445,7 +448,7 @@ function PendingSentButton({
           : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50',
         className
       )}
-      title={isHovering ? 'Clic para cancelar' : 'Solicitud pendiente de aceptación'}
+      title={isHovering ? t('cancelOnHover') : t('pendingDescription')}
     >
       {isLoading ? (
         <LoadingSpinner className={cn(iconSizeStyles[size], 'shrink-0')} />
@@ -454,7 +457,7 @@ function PendingSentButton({
       ) : (
         <ClockIcon className={cn(iconSizeStyles[size], 'shrink-0', 'animate-pulse')} />
       )}
-      {variant !== 'compact' && <span>{isHovering ? 'Cancelar solicitud' : 'Solicitud enviada'}</span>}
+      {variant !== 'compact' && <span>{isHovering ? t('cancelRequest') : t('requestSent')}</span>}
     </button>
   );
 }
@@ -470,6 +473,7 @@ function PendingReceivedButtons({
   onReject,
   className,
 }: ButtonBaseProps & { onAccept: () => void; onReject: () => void; }) {
+  const t = useTranslations('friendships.friendButton');
   const acceptButtonStyles = cn(baseButtonStyles, 'focus:ring-green-500', sizeStyles[size]);
   const rejectButtonStyles = cn(baseButtonStyles, 'focus:ring-red-500', sizeStyles[size]);
 
@@ -486,7 +490,7 @@ function PendingReceivedButtons({
             'transition-all duration-200 ease-in-out shadow-sm hover:shadow-md',
             iconOnlySizeStyles[size]
           )}
-          title="Aceptar solicitud de amistad"
+          title={t('acceptRequestTitle')}
         >
           {isLoading ? (
             <LoadingSpinner className={iconSizeStyles[size]} />
@@ -505,7 +509,7 @@ function PendingReceivedButtons({
             'transition-all duration-200 ease-in-out',
             iconOnlySizeStyles[size]
           )}
-          title="Rechazar solicitud"
+          title={t('rejectTitle')}
         >
           <XMarkIcon className={cn(iconSizeStyles[size], 'shrink-0 stroke-[2.5]')} />
         </button>
@@ -524,14 +528,14 @@ function PendingReceivedButtons({
             'bg-green-600 text-white hover:bg-green-700 active:scale-95',
             'cursor-pointer transition-all duration-200 ease-in-out shadow-sm hover:shadow-md'
           )}
-          title="Aceptar solicitud"
+          title={t('acceptTitle')}
         >
           {isLoading ? (
             <LoadingSpinner className={cn(iconSizeStyles[size], 'shrink-0')} />
           ) : (
             <CheckIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
           )}
-          <span>Aceptar</span>
+          <span>{t('accept')}</span>
         </button>
         <button
           onClick={onReject}
@@ -542,7 +546,7 @@ function PendingReceivedButtons({
             'dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50',
             'cursor-pointer transition-all duration-200 ease-in-out'
           )}
-          title="Rechazar solicitud"
+          title={t('rejectTitle')}
         >
           <XMarkIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
         </button>
@@ -560,14 +564,14 @@ function PendingReceivedButtons({
           'bg-green-600 text-white hover:bg-green-700 active:scale-95',
           'cursor-pointer transition-all duration-200 ease-in-out shadow-sm hover:shadow-md'
         )}
-        title="Aceptar solicitud de amistad"
+        title={t('acceptRequestTitle')}
       >
         {isLoading ? (
           <LoadingSpinner className={cn(iconSizeStyles[size], 'shrink-0')} />
         ) : (
           <CheckIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
         )}
-        <span>Aceptar</span>
+        <span>{t('accept')}</span>
       </button>
       <button
         onClick={onReject}
@@ -578,10 +582,10 @@ function PendingReceivedButtons({
           'dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50',
           'cursor-pointer transition-all duration-200 ease-in-out'
         )}
-        title="Rechazar solicitud"
+        title={t('rejectTitle')}
       >
         <XMarkIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
-        <span>Rechazar</span>
+        <span>{t('reject')}</span>
       </button>
     </div>
   );
@@ -611,6 +615,7 @@ function FriendsButton({
   onShowUnfriendConfirm: () => void;
   onCancelUnfriend: () => void;
 }) {
+  const t = useTranslations('friendships.friendButton');
   const buttonStyles = cn(baseButtonStyles, 'focus:ring-green-500', sizeStyles[size]);
 
   if (variant === 'icon') {
@@ -628,7 +633,7 @@ function FriendsButton({
             iconOnlySizeStyles[size],
             className
           )}
-          title="Son amigos"
+          title={t('friendsTitle')}
         >
           {isLoading ? (
             <LoadingSpinner className={iconSizeStyles[size]} />
@@ -664,14 +669,14 @@ function FriendsButton({
           'cursor-pointer transition-all duration-200 ease-in-out',
           className
         )}
-        title="Son amigos"
+        title={t('friendsTitle')}
       >
         {isLoading ? (
           <LoadingSpinner className={cn(iconSizeStyles[size], 'shrink-0')} />
         ) : (
           <UserGroupIcon className={cn(iconSizeStyles[size], 'shrink-0')} />
         )}
-        {variant !== 'compact' && <span>Amigos</span>}
+        {variant !== 'compact' && <span>{t('friends')}</span>}
         {showDropdown && <EllipsisHorizontalIcon className="h-4 w-4 shrink-0" />}
       </button>
       {showDropdown && showOptions && (
@@ -694,6 +699,7 @@ function FriendsButton({
  * Dropdown de opciones para amigos
  */
 function FriendsDropdown({ onUnfriend, onClose }: { onUnfriend: () => void; onClose: () => void; }) {
+  const t = useTranslations('friendships.friendButton');
   return (
     <>
       {/* Overlay para cerrar */}
@@ -706,7 +712,7 @@ function FriendsDropdown({ onUnfriend, onClose }: { onUnfriend: () => void; onCl
           className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors duration-150 cursor-pointer"
         >
           <UserMinusIcon className="h-4 w-4 shrink-0" />
-          <span>Eliminar de amigos</span>
+          <span>{t('unfriend')}</span>
         </button>
       </div>
     </>
@@ -717,6 +723,7 @@ function FriendsDropdown({ onUnfriend, onClose }: { onUnfriend: () => void; onCl
  * Diálogo de confirmaci��n para eliminar amigo
  */
 function UnfriendConfirmDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void; }) {
+  const t = useTranslations('friendships.friendButton');
   return (
     <>
       {/* Overlay */}
@@ -731,10 +738,10 @@ function UnfriendConfirmDialog({ onConfirm, onCancel }: { onConfirm: () => void;
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                ¿Eliminar de amigos?
+                {t('unfriendConfirmTitle')}
               </h3>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Esta persona dejará de aparecer en tu lista de amigos. Podrás enviarle otra solicitud más tarde.
+                {t('unfriendConfirmDescription')}
               </p>
             </div>
           </div>
@@ -744,13 +751,13 @@ function UnfriendConfirmDialog({ onConfirm, onCancel }: { onConfirm: () => void;
               onClick={onCancel}
               className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 active:scale-95 transition-all duration-150 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 cursor-pointer"
             >
-              Cancelar
+              {t('unfriendCancel')}
             </button>
             <button
               onClick={onConfirm}
               className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 active:scale-95 transition-all duration-150 shadow-sm hover:shadow-md cursor-pointer"
             >
-              Eliminar
+              {t('unfriendConfirm')}
             </button>
           </div>
         </div>

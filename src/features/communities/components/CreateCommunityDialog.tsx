@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { createCommunity } from '@/features/communities/actions/communities.actions';
 import {
@@ -20,29 +21,19 @@ interface CreateCommunityDialogProps {
 }
 
 const CATEGORY_OPTIONS = Object.values(CommunityCategory);
-const PRIVACY_OPTIONS: Array<{
-  value: CommunityPrivacy;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: CommunityPrivacy.PUBLIC,
-    label: 'Pública',
-    description: 'Cualquiera puede ver y unirse.',
-  },
-  {
-    value: CommunityPrivacy.PRIVATE,
-    label: 'Privada',
-    description: 'Visible para miembros; el ingreso lo controla un administrador.',
-  },
-  {
-    value: CommunityPrivacy.SECRET,
-    label: 'Secreta',
-    description: 'Solo accesible por invitación.',
-  },
+const PRIVACY_VALUES: CommunityPrivacy[] = [
+  CommunityPrivacy.PUBLIC,
+  CommunityPrivacy.PRIVATE,
+  CommunityPrivacy.SECRET,
 ];
+const PRIVACY_KEY: Record<CommunityPrivacy, 'public' | 'private' | 'secret'> = {
+  [CommunityPrivacy.PUBLIC]: 'public',
+  [CommunityPrivacy.PRIVATE]: 'private',
+  [CommunityPrivacy.SECRET]: 'secret',
+};
 
 export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogProps) {
+  const t = useTranslations('communities');
   const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -81,7 +72,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
         setProfilePreview(url);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error subiendo la imagen');
+      setError(err instanceof Error ? err.message : t('create.errors.imageUpload'));
     } finally {
       if (target === 'cover') setIsUploadingCover(false);
       else setIsUploadingProfile(false);
@@ -106,7 +97,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('El nombre es obligatorio.');
+      setError(t('create.errors.nameRequired'));
       return;
     }
     setSubmitting(true);
@@ -144,7 +135,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           type="button"
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-          aria-label="Cerrar"
+          aria-label={t('create.closeAria')}
         >
           <XMarkIcon className="h-5 w-5" />
         </button>
@@ -152,23 +143,23 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Crear comunidad
+              {t('create.title')}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Reúne personas alrededor de un interés, lugar o identidad común.
+              {t('create.subtitle')}
             </p>
           </div>
 
           {/* Cover */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Imagen de portada
+              {t('create.fields.coverImage')}
             </label>
             <div className="relative h-32 w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-800">
               {coverPreview ? (
                 <Image
                   src={coverPreview}
-                  alt="Portada"
+                  alt={t('create.imageAltCover')}
                   fill
                   sizes="(max-width: 768px) 100vw, 600px"
                   className="object-cover"
@@ -178,7 +169,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
                 <div className="flex h-full w-full flex-col items-center justify-center text-gray-400">
                   <PhotoIcon className="h-8 w-8" />
                   <span className="text-xs mt-1">
-                    {isUploadingCover ? 'Subiendo...' : 'PNG, JPG o WebP'}
+                    {isUploadingCover ? t('create.uploading') : t('create.uploadHint')}
                   </span>
                 </div>
               )}
@@ -198,13 +189,13 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           {/* Profile */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Imagen de perfil
+              {t('create.fields.profileImage')}
             </label>
             <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-800">
               {profilePreview ? (
                 <Image
                   src={profilePreview}
-                  alt="Perfil"
+                  alt={t('create.imageAltProfile')}
                   fill
                   sizes="80px"
                   className="object-cover"
@@ -231,7 +222,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           {/* Name */}
           <div>
             <label htmlFor="comm-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Nombre*
+              {t('create.fields.name')}
             </label>
             <input
               id="comm-name"
@@ -247,7 +238,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           {/* Description */}
           <div>
             <label htmlFor="comm-desc" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Descripción
+              {t('create.fields.description')}
             </label>
             <textarea
               id="comm-desc"
@@ -261,7 +252,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           {/* Category */}
           <div>
             <label htmlFor="comm-cat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Categoría
+              {t('create.fields.category')}
             </label>
             <select
               id="comm-cat"
@@ -280,32 +271,39 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           {/* Privacy */}
           <div>
             <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Privacidad
+              {t('create.fields.privacy')}
             </span>
             <div className="space-y-2">
-              {PRIVACY_OPTIONS.map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 ${
-                    privacy === opt.value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="privacy"
-                    value={opt.value}
-                    checked={privacy === opt.value}
-                    onChange={() => setPrivacy(opt.value)}
-                    className="mt-1"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{opt.label}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{opt.description}</p>
-                  </div>
-                </label>
-              ))}
+              {PRIVACY_VALUES.map((value) => {
+                const key = PRIVACY_KEY[value];
+                return (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 ${
+                      privacy === value
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="privacy"
+                      value={value}
+                      checked={privacy === value}
+                      onChange={() => setPrivacy(value)}
+                      className="mt-1"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {t(`create.privacyOptions.${key}.label`)}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t(`create.privacyOptions.${key}.description`)}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -313,7 +311,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor="comm-loc" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Ubicación
+                {t('create.fields.location')}
               </label>
               <input
                 id="comm-loc"
@@ -325,14 +323,14 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
             </div>
             <div>
               <label htmlFor="comm-web" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Sitio web
+                {t('create.fields.website')}
               </label>
               <input
                 id="comm-web"
                 type="url"
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://..."
+                placeholder={t('create.placeholders.website')}
                 className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
               />
             </div>
@@ -340,14 +338,14 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
 
           <div>
             <label htmlFor="comm-tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Etiquetas (separadas por coma)
+              {t('create.fields.tags')}
             </label>
             <input
               id="comm-tags"
               type="text"
               value={tagsRaw}
               onChange={(e) => setTagsRaw(e.target.value)}
-              placeholder="tecnología, comunidad, mexico"
+              placeholder={t('create.placeholders.tags')}
               className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
             />
           </div>
@@ -365,14 +363,14 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
               disabled={submitting}
               className="rounded-md border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
-              Cancelar
+              {t('create.actions.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || isUploadingCover || isUploadingProfile}
               className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Creando...' : 'Crear comunidad'}
+              {submitting ? t('create.actions.submitting') : t('create.actions.submit')}
             </button>
           </div>
         </form>

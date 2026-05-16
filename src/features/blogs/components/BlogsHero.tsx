@@ -5,10 +5,13 @@
  * Banner compacto con gradiente + cuadrícula de beneficios.
  */
 
+'use client'
+
 import { DocumentTextIcon, PlusIcon, SparklesIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 
 import { BackgroundPattern } from '@/components/BackgroundPattern'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface BlogsHeroProps {
   className?: string
@@ -17,6 +20,7 @@ interface BlogsHeroProps {
 }
 
 export function BlogsHero({ className, onCreateClick }: BlogsHeroProps) {
+  const t = useTranslations('blogs.list')
   return (
     <div className={cn('space-y-5 sm:space-y-6', className)}>
       {/* Compact gradient banner */}
@@ -28,11 +32,11 @@ export function BlogsHero({ className, onCreateClick }: BlogsHeroProps) {
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-xl space-y-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary-100">
-              Tu espacio personal
+              {t('hero.eyebrow')}
             </p>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Blogs</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('hero.title')}</h1>
             <p className="text-sm text-white/85 sm:text-base">
-              Comparte tu conocimiento, construye una audiencia y conecta con personas que comparten tus intereses.
+              {t('hero.description')}
             </p>
           </div>
 
@@ -42,7 +46,7 @@ export function BlogsHero({ className, onCreateClick }: BlogsHeroProps) {
               className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-secondary-700 shadow-sm transition-colors hover:bg-secondary-50 sm:self-auto"
             >
               <PlusIcon className="h-4 w-4" />
-              Crear mi blog
+              {t('hero.createButton')}
             </button>
           )}
         </div>
@@ -52,20 +56,20 @@ export function BlogsHero({ className, onCreateClick }: BlogsHeroProps) {
       <div className="grid gap-4 sm:grid-cols-3">
         <FeatureCard
           icon={<DocumentTextIcon className="h-5 w-5" />}
-          title="Publica contenido"
-          description="Comparte artículos, historias y multimedia con tu audiencia."
+          title={t('features.publish.title')}
+          description={t('features.publish.description')}
           accent="from-secondary-500 to-secondary-700"
         />
         <FeatureCard
           icon={<UserGroupIcon className="h-5 w-5" />}
-          title="Construye audiencia"
-          description="Atrae seguidores interesados en tus temas y crea una comunidad activa."
+          title={t('features.audience.title')}
+          description={t('features.audience.description')}
           accent="from-primary-500 to-primary-700"
         />
         <FeatureCard
           icon={<SparklesIcon className="h-5 w-5" />}
-          title="Comparte experiencia"
-          description="Posiciónate como experto y aporta valor con tu conocimiento."
+          title={t('features.expertise.title')}
+          description={t('features.expertise.description')}
           accent="from-amber-500 to-rose-500"
         />
       </div>

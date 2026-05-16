@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { resolveImage } from '@/lib/media/urls';
 import type { FamilyMemberRole } from '../types/family.types';
 import { MemberActionsMenu } from './MemberActionsMenu';
@@ -17,12 +18,6 @@ export interface FamilyMemberListItem {
   };
 }
 
-const ROLE_LABEL: Record<FamilyMemberRole, string> = {
-  owner: 'Dueño',
-  admin: 'Admin',
-  member: 'Miembro',
-};
-
 const ROLE_STYLE: Record<FamilyMemberRole, string> = {
   owner: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
   admin: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
@@ -35,15 +30,16 @@ interface FamilyMembersListProps {
   showOwnerActions?: boolean;
 }
 
-export function FamilyMembersList({
+export async function FamilyMembersList({
   members,
   familyId,
   showOwnerActions = false,
 }: FamilyMembersListProps) {
+  const t = await getTranslations('familias');
   if (members.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-        Aún no hay miembros.
+        {t('members.empty')}
       </p>
     );
   }
@@ -73,12 +69,12 @@ export function FamilyMembersList({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  {fullName || m.profile.username || '(Sin nombre)'}
+                  {fullName || m.profile.username || t('members.noName')}
                 </p>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${ROLE_STYLE[m.role]}`}
                 >
-                  {ROLE_LABEL[m.role]}
+                  {t(`members.roles.${m.role}`)}
                 </span>
               </div>
               {m.profile.username && (
@@ -101,7 +97,7 @@ export function FamilyMembersList({
               <MemberActionsMenu
                 familyId={familyId}
                 member={{ profile_id: m.profile_id, role: m.role }}
-                memberLabel={fullName || m.profile.username || 'el miembro'}
+                memberLabel={fullName || m.profile.username || t('members.fallbackMemberLabel')}
               />
             )}
           </li>

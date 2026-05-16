@@ -1,6 +1,9 @@
+'use client';
+
 import { FC } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   UsersIcon,
   CheckBadgeIcon,
@@ -41,6 +44,7 @@ function pickAvatarGradient(seed: string): string {
 }
 
 export const ClubCard: FC<ClubCardProps> = ({ club }) => {
+  const t = useTranslations('clubes');
   const isPrivate = club.privacy === 'PRIVATE';
   const avatarGradient = pickAvatarGradient(club.id || club.slug || club.name);
 
@@ -66,12 +70,12 @@ export const ClubCard: FC<ClubCardProps> = ({ club }) => {
             {isPrivate ? (
               <>
                 <LockClosedIcon className="h-3 w-3" />
-                Privado
+                {t('card.private')}
               </>
             ) : (
               <>
                 <GlobeAltIcon className="h-3 w-3" />
-                Público
+                {t('card.public')}
               </>
             )}
           </span>
@@ -133,16 +137,16 @@ export const ClubCard: FC<ClubCardProps> = ({ club }) => {
           <div className="mb-4 flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
             <div className="inline-flex items-center gap-1.5">
               <UsersIcon className="h-4 w-4" />
-              <span>{formatMembersCount(club.stats.membersCount)} miembros</span>
+              <span>{t('card.members', { count: formatMembersCount(club.stats.membersCount) })}</span>
             </div>
             <span className="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-              Gratis
+              {t('card.free')}
             </span>
           </div>
 
           {/* Action */}
           <span className="mt-auto inline-flex w-full items-center justify-center rounded-lg border border-emerald-500/70 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-all group-hover:border-emerald-600 group-hover:bg-emerald-50 dark:border-emerald-600/70 dark:bg-transparent dark:text-emerald-400 dark:group-hover:bg-emerald-900/20">
-            Ver detalles
+            {t('card.viewDetails')}
           </span>
         </div>
       </article>

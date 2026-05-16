@@ -1,3 +1,6 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { BACKGROUND_COLORS } from '../constants/post.constants'
@@ -20,6 +23,7 @@ export default function PostContentTextarea({
   hasFiles,
   isDisabled,
 }: PostContentTextareaProps) {
+  const t = useTranslations('feed')
   // Encontrar el color seleccionado para obtener el textColor correcto
   const selectedColor = BACKGROUND_COLORS.find((c) => c.value === backgroundColor)
   const textColor = backgroundColor ? selectedColor?.textColor || '#ffffff' : undefined
@@ -28,7 +32,7 @@ export default function PostContentTextarea({
     <div className="relative">
       <textarea
         {...register('content')}
-        placeholder={`¿Qué estás pensando, ${userName}?`}
+        placeholder={t('composer.placeholder', { name: userName })}
         disabled={isDisabled}
         style={
           backgroundColor

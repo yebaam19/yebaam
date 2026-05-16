@@ -8,6 +8,7 @@ import { useNotificationStore } from '@/features/notification/store/notification
 import { useNotificationWebSocket } from '@/features/notification/hooks/useNotificationWebSocket';
 import NotificationItem from '@/features/notification/components/NotificationItem';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 type FilterTab = 'all' | 'unread' | 'read' | 'mentions' | 'reactions' | 'comments';
 
@@ -19,6 +20,7 @@ interface FilterOption {
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const t = useTranslations('notification.page');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -40,12 +42,12 @@ export default function NotificationsPage() {
 
   // Tabs de filtros
   const filterTabs: FilterOption[] = [
-    { id: 'all', label: 'Todas', count: notifications.length },
-    { id: 'unread', label: 'Sin leer', count: unreadCount },
-    { id: 'read', label: 'Leídas' },
-    { id: 'mentions', label: 'Menciones' },
-    { id: 'reactions', label: 'Reacciones' },
-    { id: 'comments', label: 'Comentarios' },
+    { id: 'all', label: t('tabAll'), count: notifications.length },
+    { id: 'unread', label: t('tabUnread'), count: unreadCount },
+    { id: 'read', label: t('tabRead') },
+    { id: 'mentions', label: t('tabMentions') },
+    { id: 'reactions', label: t('tabReactions') },
+    { id: 'comments', label: t('tabComments') },
   ];
 
   // Cargar notificaciones según el filtro activo
@@ -119,17 +121,17 @@ export default function NotificationsPage() {
               <button
                 onClick={() => router.back()}
                 className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                aria-label="Volver"
+                aria-label={t('back')}
               >
                 <ArrowLeftIcon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
               </button>
               <div className="min-w-0">
                 <h1 className="text-lg font-bold text-neutral-900 sm:text-2xl dark:text-white">
-                  Notificaciones
+                  {t('title')}
                 </h1>
                 {unreadCount > 0 && (
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    {unreadCount} {unreadCount === 1 ? 'nueva' : 'nuevas'}
+                    {t('newCount', { count: unreadCount })}
                   </p>
                 )}
               </div>
@@ -142,7 +144,7 @@ export default function NotificationsPage() {
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
               >
                 <CheckIcon className="h-5 w-5" />
-                <span className="hidden sm:inline">Marcar todas como leídas</span>
+                <span className="hidden sm:inline">{t('markAllAsRead')}</span>
               </button>
             )}
           </div>
@@ -231,7 +233,7 @@ export default function NotificationsPage() {
             {!hasMore && filteredNotifications.length > 5 && (
               <div className="py-8 text-center">
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  No hay más notificaciones
+                  {t('noMore')}
                 </p>
               </div>
             )}
@@ -244,15 +246,15 @@ export default function NotificationsPage() {
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
               {activeFilter === 'unread'
-                ? '¡Todo al día!'
+                ? t('emptyUnreadTitle')
                 : activeFilter === 'read'
-                  ? 'No hay notificaciones leídas'
-                  : 'No tienes notificaciones'}
+                  ? t('emptyReadTitle')
+                  : t('emptyAllTitle')}
             </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center max-w-sm">
               {activeFilter === 'unread'
-                ? 'No tienes notificaciones sin leer'
-                : 'Las notificaciones sobre tu actividad aparecerán aquí'}
+                ? t('emptyUnreadDescription')
+                : t('emptyDescription')}
             </p>
           </div>
         )}

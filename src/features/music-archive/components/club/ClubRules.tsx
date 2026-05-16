@@ -1,13 +1,18 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 interface Props {
   rules: string[];
 }
 
 /** Numbered rule list. Falls back to a friendly empty state. */
 export function ClubRules({ rules }: Props) {
+  const t = useTranslations('musica');
   if (!rules.length) {
     return (
       <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-        Este club aún no ha publicado reglas.
+        {t('club.rulesEmpty')}
       </p>
     );
   }

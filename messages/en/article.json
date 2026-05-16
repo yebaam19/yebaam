@@ -1,0 +1,58 @@
+{
+  "list": {
+    "empty": "No articles available"
+  },
+  "card": {
+    "readMinutes": "{minutes} min"
+  },
+  "header": {
+    "readTime": "{minutes} min read",
+    "editArticle": "Edit article",
+    "deleteArticle": "Delete article",
+    "deleting": "Deleting...",
+    "views": "{count} views",
+    "likes": "{count} likes",
+    "comments": "{count} comments",
+    "confirmDeleteTitle": "Are you sure?",
+    "confirmDeleteDescription": "This action cannot be undone. The article will be permanently deleted along with all its comments and reactions.",
+    "cancel": "Cancel"
+  },
+  "view": {
+    "commentsTitle": "Comments"
+  },
+  "editor": {
+    "titlePlaceholder": "Title",
+    "publish": "Publish",
+    "publishing": "Publishing...",
+    "individualArticle": "Individual article",
+    "editing": "Editing: {title}",
+    "editingShort": "Editing article",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "saveShort": "Save",
+    "saving": "Saving...",
+    "titleRequired": "Please add a title to the article",
+    "contentRequired": "Please add content to the article",
+    "createError": "Error creating the article: {message}",
+    "publishError": "Error publishing the article: {message}",
+    "updateError": "Error updating the article: {message}",
+    "unknownError": "Unknown error",
+    "successUpdatedTitle": "Article updated!",
+    "successUpdatedDescription": "Your changes have been saved successfully.",
+    "viewArticle": "View article"
+  },
+  "created": {
+    "title": "Article published!",
+    "idLabel": "Article ID",
+    "urlLabel": "Article URL",
+    "close": "Close",
+    "viewArticle": "View article"
+  },
+  "pages": {
+    "newTitle": "New Article",
+    "newDescription": "Create a new article to share with the community",
+    "editTitle": "Edit Article",
+    "editDescription": "Edit your article",
+    "notFound": "Article not found"
+  }
+}

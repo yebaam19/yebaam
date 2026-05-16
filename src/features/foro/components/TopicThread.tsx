@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/features/auth'
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime'
 import { createClient } from '@/utils/supabase/client'
@@ -55,24 +56,45 @@ type PostInsertRow = {
   post_number?: number | null
 }
 
-function userRank(postCount: number): { label: string; color: React.ComponentProps<typeof Badge>['color'] } {
-  if (postCount >= 1000) return { label: 'Leyenda', color: 'purple' }
-  if (postCount >= 500) return { label: 'Veterano', color: 'indigo' }
-  if (postCount >= 100) return { label: 'Sénior', color: 'sky' }
-  if (postCount >= 20) return { label: 'Registrado', color: 'green' }
-  return { label: 'Nuevo', color: 'zinc' }
+type RankLabels = {
+  legend: string
+  veteran: string
+  senior: string
+  registered: string
+  newbie: string
+}
+
+function userRank(
+  postCount: number,
+  labels: RankLabels,
+): { label: string; color: React.ComponentProps<typeof Badge>['color'] } {
+  if (postCount >= 1000) return { label: labels.legend, color: 'purple' }
+  if (postCount >= 500) return { label: labels.veteran, color: 'indigo' }
+  if (postCount >= 100) return { label: labels.senior, color: 'sky' }
+  if (postCount >= 20) return { label: labels.registered, color: 'green' }
+  return { label: labels.newbie, color: 'zinc' }
+}
+
+type UserCardStrings = {
+  rank: RankLabels
+  opLabel: string
+  messagesLabel: string
+  memberLabel: string
+  locationLabel: string
 }
 
 function UserCard({
   author,
   meta,
   isOp,
+  strings,
 }: {
   author: ForoPost['author']
   meta?: ForoPostAuthorMeta
   isOp: boolean
+  strings: UserCardStrings
 }) {
-  const rank = userRank(meta?.postCount ?? 0)
+  const rank = userRank(meta?.postCount ?? 0, strings.rank)
   return (
     <aside className="flex w-full items-center gap-3 border-b border-neutral-100 bg-primary-50/40 p-4 sm:w-44 sm:shrink-0 sm:flex-col sm:items-center sm:border-r sm:border-b-0 sm:text-center dark:border-neutral-800 dark:bg-primary-900/10">
       <Link href={`/@${author.username}` as Route} className="shrink-0">
@@ -87,20 +109,20 @@ function UserCard({
         </Link>
         <div className="mt-0.5 flex flex-wrap gap-1 sm:justify-center">
           <Badge color={rank.color}>{rank.label}</Badge>
-          {isOp && <Badge color="green">Autor</Badge>}
+          {isOp && <Badge color="green">{strings.opLabel}</Badge>}
         </div>
       </div>
       <dl className="hidden w-full space-y-0.5 pt-2 text-[11px] text-neutral-500 sm:block dark:text-neutral-400">
         <div>
           <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
-            Mensajes:
+            {strings.messagesLabel}
           </dt>{' '}
           <dd className="inline">{meta?.postCount ?? 0}</dd>
         </div>
         {meta?.joinedAt && (
           <div>
             <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
-              Miembro:
+              {strings.memberLabel}
             </dt>{' '}
             <dd className="inline">{formatRelativeDate(meta.joinedAt)}</dd>
           </div>
@@ -108,7 +130,7 @@ function UserCard({
         {meta?.location && (
           <div>
             <dt className="inline font-semibold text-neutral-600 dark:text-neutral-300">
-              Ubicación:
+              {strings.locationLabel}
             </dt>{' '}
             <dd className="inline truncate">{meta.location}</dd>
           </div>
@@ -131,7 +153,21 @@ export default function TopicThread({
   ownerBack,
 }: Props) {
   const router = useRouter()
+  const t = useTranslations('foro')
   const { user } = useAuth()
+  const userCardStrings: UserCardStrings = {
+    rank: {
+      legend: t('thread.rank.legend'),
+      veteran: t('thread.rank.veteran'),
+      senior: t('thread.rank.senior'),
+      registered: t('thread.rank.registered'),
+      newbie: t('thread.rank.newbie'),
+    },
+    opLabel: t('thread.rank.op'),
+    messagesLabel: t('thread.userCard.messages'),
+    memberLabel: t('thread.userCard.member'),
+    locationLabel: t('thread.userCard.location'),
+  }
   const [posts, setPosts] = useState<ForoPost[]>(initialPosts)
   const [isLocked, setIsLocked] = useState(topic.isLocked)
   const [isPinned, setIsPinned] = useState(topic.isPinned)
@@ -185,8 +221,8 @@ export default function TopicThread({
               postNumber: row.post_number ?? prev.length + 1 + (page - 1) * pageSize,
               author: {
                 id: row.author_id,
-                username: 'usuario',
-                displayName: 'Cargando…',
+                username: t('thread.realtime.usernameFallback'),
+                displayName: t('thread.realtime.loading'),
                 avatarUrl: null,
               },
             },
@@ -203,7 +239,7 @@ export default function TopicThread({
             (data.display_name as string | null) ||
             [data.first_name, data.last_name].filter(Boolean).join(' ').trim() ||
             (data.username as string | null) ||
-            'Usuario'
+            t('thread.realtime.userFallback')
           setPosts((prev) =>
             prev.map((p) =>
               p.id === row.id
@@ -211,7 +247,8 @@ export default function TopicThread({
                     ...p,
                     author: {
                       id: data.id as string,
-                      username: (data.username as string | null) ?? 'usuario',
+                      username:
+                        (data.username as string | null) ?? t('thread.realtime.usernameFallback'),
                       displayName,
                       avatarUrl: (data.avatar_url as string | null) ?? null,
                     },
@@ -238,13 +275,13 @@ export default function TopicThread({
   const handleSaveEdit = (postId: string) => {
     const content = editingDraft.trim()
     if (!content) {
-      setEditError('El mensaje no puede estar vacío.')
+      setEditError(t('thread.errors.emptyContent'))
       return
     }
     startTransition(async () => {
       const result = await editPost({ postId, content })
       if (!result.ok) {
-        setEditError(result.error ?? 'No se pudo editar el mensaje.')
+        setEditError(result.error ?? t('thread.errors.editFailed'))
         return
       }
       setPosts((prev) =>
@@ -264,7 +301,7 @@ export default function TopicThread({
     })
   }
   const handleDeleteTopic = () => {
-    if (!confirm('¿Eliminar este tema y todos sus mensajes?')) return
+    if (!confirm(t('thread.deleteConfirm'))) return
     startTransition(async () => {
       const result = await deleteTopic(topic.id)
       if (result.ok) router.push(forumHref)
@@ -318,12 +355,12 @@ export default function TopicThread({
         disabled={isLocked}
         color="primary"
       >
-        {isLocked ? 'Tema cerrado' : 'Responder'}
+        {isLocked ? t('thread.actions.topicLocked') : t('thread.actions.reply')}
       </Button>
       <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
         <span>
           <strong className="text-neutral-900 dark:text-neutral-100">{totalPosts}</strong>{' '}
-          {totalPosts === 1 ? 'mensaje' : 'mensajes'}
+          {totalPosts === 1 ? t('thread.messageOne') : t('thread.messageOther')}
         </span>
         <ForoPagination
           page={page}
@@ -339,10 +376,15 @@ export default function TopicThread({
     <div className="space-y-4">
       <ForoHeader
         title={topic.title}
-        subtitle={`Iniciado por ${topic.author.displayName} · ${formatRelativeDate(topic.createdAt)} · ${topic.viewCount} ${topic.viewCount === 1 ? 'vista' : 'vistas'}`}
+        subtitle={t('thread.subtitle', {
+          author: topic.author.displayName,
+          date: formatRelativeDate(topic.createdAt),
+          views: topic.viewCount,
+          viewsLabel: topic.viewCount === 1 ? t('thread.viewOne') : t('thread.viewOther'),
+        })}
         crumbs={[
           ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
-          { href: '/foro', label: 'Foros' },
+          { href: '/foro', label: t('crumbs.foros') },
           { href: `/foro/${space.slug}`, label: space.name },
           { href: forumHref, label: forum.name },
         ]}
@@ -350,18 +392,18 @@ export default function TopicThread({
           isModerator ? (
             <div className="flex flex-wrap gap-2">
               <Button type="button" onClick={handleTogglePinned} outline>
-                {isPinned ? 'Quitar fijado' : 'Fijar'}
+                {isPinned ? t('thread.actions.unpin') : t('thread.actions.pin')}
               </Button>
               <Button type="button" onClick={handleToggleLocked} outline>
-                {isLocked ? 'Reabrir' : 'Cerrar'}
+                {isLocked ? t('thread.actions.reopen') : t('thread.actions.close')}
               </Button>
               {moveCandidates.length > 0 && (
                 <Button type="button" onClick={() => setShowMoveDialog(true)} outline>
-                  Mover
+                  {t('thread.actions.move')}
                 </Button>
               )}
               <Button type="button" onClick={handleDeleteTopic} color="red">
-                Eliminar
+                {t('thread.actions.delete')}
               </Button>
             </div>
           ) : null
@@ -372,17 +414,17 @@ export default function TopicThread({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl dark:bg-neutral-900">
             <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-              Mover tema
+              {t('thread.moveDialog.title')}
             </h2>
             <p className="mt-1 text-xs text-neutral-500">
-              Selecciona el foro destino en este espacio.
+              {t('thread.moveDialog.description')}
             </p>
             <select
               value={moveTargetId}
               onChange={(e) => setMoveTargetId(e.target.value)}
               className="mt-3 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
             >
-              <option value="">— Elegir foro —</option>
+              <option value="">{t('thread.moveDialog.placeholder')}</option>
               {moveCandidates.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.name}
@@ -391,10 +433,10 @@ export default function TopicThread({
             </select>
             <div className="mt-4 flex justify-end gap-2">
               <Button type="button" onClick={() => setShowMoveDialog(false)} plain>
-                Cancelar
+                {t('thread.actions.cancel')}
               </Button>
               <Button type="button" onClick={handleMove} disabled={!moveTargetId} color="primary">
-                Mover
+                {t('thread.actions.move')}
               </Button>
             </div>
           </div>
@@ -416,7 +458,12 @@ export default function TopicThread({
               id={`p${post.id}`}
               className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-colors target:border-primary-500 sm:flex dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <UserCard author={post.author} meta={post.authorMeta} isOp={isOp} />
+              <UserCard
+                author={post.author}
+                meta={post.authorMeta}
+                isOp={isOp}
+                strings={userCardStrings}
+              />
               <div className="min-w-0 flex-1 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-neutral-100 pb-2 dark:border-neutral-800">
                   <div className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -429,7 +476,7 @@ export default function TopicThread({
                     {' · '}
                     {formatRelativeDate(post.createdAt)}
                     {post.editedAt && (
-                      <span className="ml-1 text-neutral-400 italic">(editado)</span>
+                      <span className="ml-1 text-neutral-400 italic">{t('thread.edited')}</span>
                     )}
                   </div>
                   {!isEditing && (
@@ -440,7 +487,7 @@ export default function TopicThread({
                           onClick={() => handleQuote(post)}
                           className="text-primary-700 hover:underline dark:text-primary-400"
                         >
-                          Citar
+                          {t('thread.actions.quote')}
                         </button>
                       )}
                       {canEdit && (
@@ -449,7 +496,7 @@ export default function TopicThread({
                           onClick={() => startEditing(post)}
                           className="text-primary-700 hover:underline dark:text-primary-400"
                         >
-                          Editar
+                          {t('thread.actions.edit')}
                         </button>
                       )}
                       {canDelete && (
@@ -458,7 +505,7 @@ export default function TopicThread({
                           onClick={() => handleDeletePost(post.id)}
                           className="text-red-600 hover:underline"
                         >
-                          Eliminar
+                          {t('thread.actions.delete')}
                         </button>
                       )}
                     </div>
@@ -475,14 +522,14 @@ export default function TopicThread({
                     {editError && <p className="text-xs text-red-600">{editError}</p>}
                     <div className="flex justify-end gap-2">
                       <Button type="button" onClick={cancelEditing} plain>
-                        Cancelar
+                        {t('thread.actions.cancel')}
                       </Button>
                       <Button
                         type="button"
                         onClick={() => handleSaveEdit(post.id)}
                         color="primary"
                       >
-                        Guardar
+                        {t('thread.actions.save')}
                       </Button>
                     </div>
                   </div>
@@ -511,10 +558,10 @@ export default function TopicThread({
           href={forumHref}
           className="text-primary-700 hover:underline dark:text-primary-400"
         >
-          ← Volver a «{forum.name}»
+          {t('thread.backToForum', { forumName: forum.name })}
         </Link>
         <Link href="/foro" className="text-primary-700 hover:underline dark:text-primary-400">
-          Ir al índice de foros
+          {t('thread.goToIndex')}
         </Link>
       </div>
     </div>

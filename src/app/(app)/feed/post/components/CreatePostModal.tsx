@@ -1,6 +1,7 @@
 'use client'
 
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { invalidate } from '@/lib/hooks/cacheStore'
 
@@ -14,6 +15,7 @@ import PostActionsBar from './PostActionsBar'
 import PostModalFooter from './PostModalFooter'
 
 export default function CreatePostModal() {
+  const t = useTranslations('feed')
   const { user } = useAuth()
 
   const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId } = usePostStore()
@@ -51,7 +53,7 @@ export default function CreatePostModal() {
     if (isCreating || isUploading) return
 
     if (hasContent()) {
-      const confirm = window.confirm('¿Descartar este post?')
+      const confirm = window.confirm(t('composer.discardConfirm'))
       if (!confirm) return
     }
 
@@ -62,7 +64,7 @@ export default function CreatePostModal() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       if (!hasContent()) {
-        toast.error('Agrega contenido, una imagen/video o un GIF a tu publicación')
+        toast.error(t('composer.needContent'))
         return
       }
 
@@ -82,7 +84,7 @@ export default function CreatePostModal() {
         if (!uploadResults) return
 
         mediaFiles = uploadResults
-        toast.success(`${selectedFiles.length} archivo(s) subido(s) exitosamente`)
+        toast.success(t('composer.uploadedCount', { count: selectedFiles.length }))
       }
 
       const isValidHexColor =
@@ -181,7 +183,7 @@ export default function CreatePostModal() {
 
       resetForm()
       closeCreateModal()
-      toast.success('Post creado exitosamente')
+      toast.success(t('composer.createSuccess'))
     } catch (error) {
       console.error('Error creating post:', error)
     }

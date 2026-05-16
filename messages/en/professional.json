@@ -1,0 +1,73 @@
+{
+  "servicesMetadata": {
+    "title": "Professional Services | Find Experts Near You",
+    "description": "Explore our directory of professional services. Find lawyers, accountants, doctors, developers, and more verified professionals in your city.",
+    "ogTitle": "Professional Services",
+    "ogDescription": "Find verified professionals for all your needs"
+  },
+  "servicesComingSoon": {
+    "eyebrow": "Coming soon",
+    "title": "Professional Services",
+    "description": "We're polishing this section so you can find verified professionals simply and reliably.",
+    "backToFeed": "Back to feed"
+  },
+  "welcome": {
+    "title": "Professional Profile",
+    "subtitle": "Highlight your experience, skills, and professional achievements. Connect with opportunities and professionals in your industry.",
+    "howValidationWorks": "How does validation work?",
+    "cta": {
+      "title": "Ready to get started?",
+      "description": "Create your professional profile and start highlighting your skills and experience to the community.",
+      "button": "Create my professional profile"
+    }
+  },
+  "benefits": {
+    "heading": "Professional Profile Benefits",
+    "subheading": "Stand out in the community with a verified professional profile",
+    "items": {
+      "verification": {
+        "title": "Professional Verification",
+        "description": "Get a badge that certifies your identity and professional credentials"
+      },
+      "credibility": {
+        "title": "Credibility",
+        "description": "Showcase your accomplishments and certifications with verified documentation"
+      },
+      "networking": {
+        "title": "Networking",
+        "description": "Connect with other verified professionals in your industry"
+      },
+      "opportunities": {
+        "title": "Opportunities",
+        "description": "Access job offers exclusive to verified profiles"
+      },
+      "portfolio": {
+        "title": "Portfolio",
+        "description": "Showcase your experience, projects, and professional achievements"
+      },
+      "visibility": {
+        "title": "Visibility",
+        "description": "Increase your reach and presence in the professional community"
+      }
+    }
+  },
+  "validation": {
+    "heading": "Verification Process",
+    "subheading": "Follow these simple steps to verify your professional profile",
+    "stepLabel": "Step {step}",
+    "steps": {
+      "upload": {
+        "title": "Upload Your Documents",
+        "description": "Provide the documents that support your professional training and experience"
+      },
+      "review": {
+        "title": "Validation",
+        "description": "Our team will verify the authenticity of your documents and credentials"
+      },
+      "verified": {
+        "title": "Get Your Verification",
+        "description": "Receive your verified professional badge and access all the benefits"
+      }
+    }
+  }
+}

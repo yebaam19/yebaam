@@ -1,4 +1,7 @@
+'use client'
+
 import { FC } from 'react'
+import { useTranslations } from 'next-intl'
 import type { Blog } from '../types/blog.types'
 import { BlogCard } from './BlogCard'
 
@@ -15,8 +18,10 @@ export const BlogsGrid: FC<BlogsGridProps> = ({
   onFollow,
   onUnfollow,
   loadingBlogId,
-  emptyMessage = 'No se encontraron blogs',
+  emptyMessage,
 }) => {
+  const t = useTranslations('blogs.grid')
+  const resolvedEmpty = emptyMessage ?? t('emptyDefault')
   if (blogs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-white/50 px-6 py-16 text-center dark:border-neutral-700 dark:bg-neutral-900/40">
@@ -31,10 +36,10 @@ export const BlogsGrid: FC<BlogsGridProps> = ({
           </svg>
         </div>
         <h3 className="mb-1.5 text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
-          {emptyMessage}
+          {resolvedEmpty}
         </h3>
         <p className="max-w-md text-sm text-neutral-600 dark:text-neutral-400">
-          Explora diferentes categorías o busca blogs específicos para encontrar voces que te inspiren.
+          {t('emptyHint')}
         </p>
       </div>
     )

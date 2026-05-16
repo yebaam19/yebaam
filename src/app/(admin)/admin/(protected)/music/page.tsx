@@ -17,12 +17,15 @@ import { listAdminMusicMedia } from '@/features/music-archive/actions/music-medi
 import { listGenresWithUsage } from '@/features/music-archive/actions/genres.actions';
 import { getMusicArchiveStats } from '@/features/music-archive/actions/admin-stats.actions';
 import { AdminMusicTabs } from '@/features/music-archive/components/AdminMusicTabs';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = { title: 'Admin · Música' };
 
 export default async function AdminMusicPage() {
   const admin = await requirePlatformAdmin();
   if (!admin) redirect('/admin/foros' as Route);
+
+  const t = await getTranslations('admin.music');
 
   const [recent, albums, artists, labels, pending, members, clubs, posts, articles, media, genres, stats] =
     await Promise.all([
@@ -43,10 +46,9 @@ export default async function AdminMusicPage() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <header>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Club de coleccionistas</h1>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('title')}</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Sube discos, importa por enlace, administra el archivo, aprueba solicitudes, edita
-          clubes y modera publicaciones.
+          {t('subtitle')}
         </p>
       </header>
       <AdminMusicTabs

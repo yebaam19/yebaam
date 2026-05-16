@@ -6,8 +6,10 @@ import Avatar from '@/ui/Avatar'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { cn } from '@/lib/utils'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
+import { useTranslations } from 'next-intl'
 
 export function HighlightedSuggestions() {
+  const t = useTranslations('nav')
   const { suggestions, fetchSuggestions, sendFriendRequest, isLoading } = useFriendships()
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [followed, setFollowed] = useState<Set<string>>(new Set())
@@ -45,13 +47,13 @@ export function HighlightedSuggestions() {
     <section className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       <header className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Sugerencias destacadas
+          {t('highlightedSuggestions')}
         </h3>
         <Link
           href="/feed/friends?tab=suggestions"
           className="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
-          Ver todas
+          {t('viewAllSuggestions')}
         </Link>
       </header>
 
@@ -70,7 +72,7 @@ export function HighlightedSuggestions() {
         </ul>
       ) : list.length === 0 ? (
         <p className="py-4 text-center text-xs text-neutral-500 dark:text-neutral-400">
-          No hay sugerencias por ahora. Vuelve más tarde.
+          {t('noSuggestionsForNow')}
         </p>
       ) : (
         <ul className="space-y-3">
@@ -89,10 +91,10 @@ export function HighlightedSuggestions() {
                     {fullName}
                   </p>
                   <p className="truncate text-[11px] text-neutral-500 dark:text-neutral-400">
-                    {s.location || 'Yebaam'}
+                    {s.location || t('yebaamLocation')}
                   </p>
                   <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                    {s.mutualFriends} amigos en común
+                    {t('mutualFriends', { n: s.mutualFriends })}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
@@ -107,12 +109,12 @@ export function HighlightedSuggestions() {
                         : 'border-primary-300 text-primary-700 hover:bg-primary-50 dark:border-primary-800 dark:text-primary-400 dark:hover:bg-primary-900/20',
                     )}
                   >
-                    {isFollowed ? 'Enviado' : 'Seguir'}
+                    {isFollowed ? t('sent') : t('follow')}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDismiss(s.id)}
-                    aria-label="Descartar sugerencia"
+                    aria-label={t('dismissSuggestion')}
                     className="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                   >
                     <XMarkIcon className="size-4" />

@@ -1,11 +1,14 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Avatar from '@/ui/Avatar';
 import { GlobeAltIcon, UserGroupIcon, LockClosedIcon } from '@/components/icons/heroicons-shim';
 import { getUserInitials } from '@/lib/user-helpers';
 
 const VISIBILITY_OPTIONS = [
-  { value: 'public', label: 'Público', icon: GlobeAltIcon, description: 'Cualquiera puede ver' },
-  { value: 'friends', label: 'Amigos', icon: UserGroupIcon, description: 'Solo tus amigos' },
-  { value: 'private', label: 'Solo yo', icon: LockClosedIcon, description: 'Solo tú' },
+  { value: 'public', icon: GlobeAltIcon },
+  { value: 'friends', icon: UserGroupIcon },
+  { value: 'private', icon: LockClosedIcon },
 ] as const;
 
 interface PostUserInfoProps {
@@ -21,6 +24,7 @@ export default function PostUserInfo({
   selectedVisibility,
   onVisibilityChange,
 }: PostUserInfoProps) {
+  const t = useTranslations('feed');
   const initials = getUserInitials(userName);
   const selectedOption = VISIBILITY_OPTIONS.find(opt => opt.value === selectedVisibility) || VISIBILITY_OPTIONS[0];
   const SelectedIcon = selectedOption.icon;
@@ -40,7 +44,7 @@ export default function PostUserInfo({
           >
             {VISIBILITY_OPTIONS.map(option => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {t(`visibility.${option.value}`)}
               </option>
             ))}
           </select>

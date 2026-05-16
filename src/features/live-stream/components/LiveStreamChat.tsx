@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
 import { useLiveStreamSocket } from '../hooks/useLiveStreamSocket';
-import { 
-  liveStreamCommentService, 
-  LiveStreamComment 
+import {
+  liveStreamCommentService,
+  LiveStreamComment
 } from '../services/live-stream-comment.service';
 import { PaperAirplaneIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 
@@ -15,6 +16,7 @@ interface LiveStreamChatProps {
 }
 
 export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps) {
+  const t = useTranslations('liveStream');
   const { user } = useAuth();
   const [comments, setComments] = useState<LiveStreamComment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -70,21 +72,21 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
       setNewComment('');
     } catch (error) {
       console.error('Error sending comment:', error);
-      alert('Error al enviar comentario');
+      alert(t('chat.errors.send'));
     } finally {
       setIsSending(false);
     }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('¿Eliminar este comentario?')) return;
+    if (!confirm(t('chat.deleteConfirm'))) return;
 
     try {
       await liveStreamCommentService.deleteComment(streamId, commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
     } catch (error) {
       console.error('Error deleting comment:', error);
-      alert('Error al eliminar comentario');
+      alert(t('chat.errors.delete'));
     }
   };
 
@@ -97,7 +99,7 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
     return (
       <div className={`flex flex-col h-full ${className}`}>
         <div className="flex-1 flex items-center justify-center text-neutral-500 dark:text-neutral-400">
-          Inicia sesión para ver el chat
+          {t('chat.loginPrompt')}
         </div>
       </div>
     );
@@ -109,11 +111,11 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
       <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-neutral-900 dark:text-white">
-            Chat en vivo
+            {t('chat.title')}
           </h3>
           <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span>{viewerCount} espectadores</span>
+            <span>{viewerCount === 1 ? t('chat.viewersOne', { count: viewerCount }) : t('chat.viewersOther', { count: viewerCount })}</span>
           </div>
         </div>
       </div>
@@ -126,7 +128,7 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
           </div>
         ) : comments.length === 0 ? (
           <div className="flex items-center justify-center h-full text-neutral-500 dark:text-neutral-400">
-            Sé el primero en comentar
+            {t('chat.empty')}
           </div>
         ) : (
           comments.map((comment) => (
@@ -169,7 +171,7 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
                 <button
                   onClick={() => handleDeleteComment(comment.id)}
                   className="opacity-0 group-hover:opacity-100 shrink-0 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-opacity"
-                  title="Eliminar comentario"
+                  title={t('chat.deleteTitle')}
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>
@@ -190,7 +192,7 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Escribe un comentario..."
+            placeholder={t('chat.inputPlaceholder')}
             maxLength={500}
             className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:text-white"
             disabled={isSending}

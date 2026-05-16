@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowPathIcon, HomeIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { getFamiliesForProfileAction } from '@/features/families/actions/families.actions';
@@ -12,13 +13,8 @@ interface UserFamiliesProps {
   isOwnProfile: boolean;
 }
 
-const ROLE_LABEL: Record<string, string> = {
-  owner: 'Dueño',
-  admin: 'Admin',
-  member: 'Miembro',
-};
-
 export default function UserFamilies({ userId, isOwnProfile }: UserFamiliesProps) {
+  const t = useTranslations('profile.families');
   const [families, setFamilies] = useState<FamilyWithViewer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -57,25 +53,25 @@ export default function UserFamilies({ userId, isOwnProfile }: UserFamiliesProps
         {isOwnProfile ? (
           <>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              Aún no perteneces a ninguna familia
+              {t('emptyOwnTitle')}
             </h3>
             <p className="mb-5 text-sm text-zinc-500 dark:text-zinc-400">
-              Crea una familia o acepta una invitación para empezar.
+              {t('emptyOwnSubtitle')}
             </p>
             <Link
               href="/feed/familias"
               className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
-              Ir a Familias
+              {t('goToFamilies')}
             </Link>
           </>
         ) : (
           <>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              No tienen familias en común
+              {t('emptyOtherTitle')}
             </h3>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Las familias son privadas; solo aparecen aquí las que ambos comparten.
+              {t('emptyOtherSubtitle')}
             </p>
           </>
         )}
@@ -93,10 +89,13 @@ export default function UserFamilies({ userId, isOwnProfile }: UserFamiliesProps
 }
 
 function FamilyMiniCard({ family }: { family: FamilyWithViewer }) {
+  const t = useTranslations('profile.families');
   const cover = family.cover_cf_image_id
     ? imageUrl(family.cover_cf_image_id, 'public')
     : null;
-  const roleLabel = family.viewer_role ? ROLE_LABEL[family.viewer_role] : null;
+  const roleLabel = family.viewer_role
+    ? t(`roles.${family.viewer_role as 'owner' | 'admin' | 'member'}`)
+    : null;
 
   return (
     <Link
@@ -127,8 +126,10 @@ function FamilyMiniCard({ family }: { family: FamilyWithViewer }) {
           )}
         </div>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {family.member_count} {family.member_count === 1 ? 'miembro' : 'miembros'} ·{' '}
-          {family.person_count} {family.person_count === 1 ? 'persona' : 'personas'}
+          {t('stats', {
+            members: t('memberCount', { count: family.member_count }),
+            persons: t('personCount', { count: family.person_count }),
+          })}
         </p>
       </div>
     </Link>

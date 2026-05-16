@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import {
   getMusicClubBySlug,
   listClubArtists,
@@ -13,14 +14,17 @@ export default async function ClubArtistsPage({
   const { slug } = await params;
   const club = await getMusicClubBySlug(slug);
   if (!club) notFound();
-  const artists = await listClubArtists(club.id);
+  const [artists, t] = await Promise.all([
+    listClubArtists(club.id),
+    getTranslations('musica'),
+  ]);
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Artistas del club
+        {t('clubs.artistsHeading')}
       </h2>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Cada artista con al menos un disco en este club aparece aquí.
+        {t('clubs.artistsSubtitle')}
       </p>
       <ClubArtistsList artists={artists} />
     </section>

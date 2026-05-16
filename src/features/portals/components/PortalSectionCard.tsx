@@ -4,6 +4,8 @@
  * Card que muestra una sección del portal con icono y descripción
  */
 
+'use client'
+
 import {
   AcademicCapIcon,
   BuildingStorefrontIcon,
@@ -15,6 +17,7 @@ import {
   UserGroupIcon,
   VideoCameraIcon,
 } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { PortalSection } from '../interfaces'
 
 const iconMap = {
@@ -34,6 +37,7 @@ interface PortalSectionCardProps {
 }
 
 export function PortalSectionCard({ section }: PortalSectionCardProps) {
+  const t = useTranslations('portals')
   const IconComponent = iconMap[section.icon]
 
   return (
@@ -56,7 +60,7 @@ export function PortalSectionCard({ section }: PortalSectionCardProps) {
         </p>
         <div className="mt-auto flex justify-center pt-3 sm:justify-start sm:pt-4">
           <span className="inline-flex items-center rounded-full bg-amber-500/12 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-amber-700 uppercase dark:bg-amber-400/15 dark:text-amber-400">
-            Próximamente
+            {t('section.comingSoon')}
           </span>
         </div>
       </div>

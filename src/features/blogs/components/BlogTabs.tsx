@@ -1,4 +1,7 @@
+'use client'
+
 import { ChatBubbleLeftRightIcon, DocumentTextIcon, InformationCircleIcon, PhotoIcon, QuestionMarkCircleIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 
 export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de' | 'foro' | 'askme'
 
@@ -16,16 +19,16 @@ interface BlogTabsProps {
   pendingAskmeCount?: number
 }
 
-const tabs: Tab[] = [
-  { id: 'acerca-de', label: 'Acerca de Mí', icon: InformationCircleIcon },
-  { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
-  { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
-  { id: 'posts', label: 'Artículos', icon: DocumentTextIcon },
-  { id: 'foro', label: 'Foro', icon: ChatBubbleLeftRightIcon },
-  { id: 'askme', label: 'Askme', icon: QuestionMarkCircleIcon },
-]
-
 export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount = 0, pendingAskmeCount = 0 }: BlogTabsProps) => {
+  const t = useTranslations('blogs.tabs')
+  const tabs: Tab[] = [
+    { id: 'acerca-de', label: t('about'), icon: InformationCircleIcon },
+    { id: 'fotos', label: t('photos'), icon: PhotoIcon },
+    { id: 'videos', label: t('videos'), icon: VideoCameraIcon },
+    { id: 'posts', label: t('posts'), icon: DocumentTextIcon },
+    { id: 'foro', label: t('forum'), icon: ChatBubbleLeftRightIcon },
+    { id: 'askme', label: t('askme'), icon: QuestionMarkCircleIcon },
+  ]
   const getTabLabel = (tab: Tab) => {
     if (tab.id === 'fotos' && photosCount > 0) {
       return `${tab.label} (${photosCount})`

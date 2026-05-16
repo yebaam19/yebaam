@@ -7,6 +7,7 @@ import type { Route } from 'next'
 import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import AdminSidebar from './AdminSidebar'
 import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   children: React.ReactNode
@@ -14,6 +15,7 @@ interface Props {
 
 export default function AdminShell({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const t = useTranslations('admin.shell')
 
   return (
     <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
@@ -43,7 +45,7 @@ export default function AdminShell({ children }: Props) {
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 className="rounded p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                aria-label="Cerrar menú"
+                aria-label={t('closeMenu')}
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
@@ -61,7 +63,7 @@ export default function AdminShell({ children }: Props) {
             type="button"
             onClick={() => setMobileOpen(true)}
             className="rounded p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            aria-label="Abrir menú"
+            aria-label={t('openMenu')}
           >
             <Bars3Icon className="h-5 w-5" />
           </button>
@@ -74,7 +76,7 @@ export default function AdminShell({ children }: Props) {
             />
           </Link>
           <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-700 uppercase dark:bg-primary-900/30 dark:text-primary-300">
-            Admin
+            {t('adminBadge')}
           </span>
         </header>
         <main className="flex-1 overflow-x-auto">{children}</main>

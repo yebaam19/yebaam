@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "discoveryTitle": "Forums · Yebaam"
+  },
+  "discovery": {
+    "title": "Yebaam Forums",
+    "subtitle": "Community, debate and support. Explore the spaces for clubs, groups, pages, blogs and the community.",
+    "emptyDiscovery": "There are no forums available yet.",
+    "spaceDescriptionFallback": "Enter to see categories and topics.",
+    "enterSpace": "Enter forum →"
+  },
+  "crumbs": {
+    "foros": "Forums"
+  },
+  "space": {
+    "manage": "Manage",
+    "visibilityPrivate": "Private",
+    "visibilitySecret": "Secret",
+    "emptyCategories": "This forum has no categories yet.",
+    "emptyForums": "No forums yet.",
+    "subforumsLabel": "Subforums:",
+    "topicOne": "topic",
+    "topicOther": "topics",
+    "messageOne": "message",
+    "messageOther": "messages",
+    "byAuthor": "by",
+    "noMessages": "No messages"
+  },
+  "forum": {
+    "newTopic": "New topic",
+    "topicOne": "topic",
+    "topicOther": "topics",
+    "totalSuffix": "in total",
+    "emptyTopics": "There are no topics in this forum yet. Be the first to post!",
+    "noMoreTopics": "There are no more topics in this forum.",
+    "permissionsTitle": "Forum permissions",
+    "permissions": {
+      "post": "You can post new topics",
+      "reply": "You can reply to topics",
+      "editOwn": "You can edit your own messages",
+      "deleteOwn": "You can delete your own messages"
+    },
+    "list": {
+      "headerTopic": "Topic",
+      "headerReplies": "Replies",
+      "headerViews": "Views",
+      "headerLastPost": "Last post",
+      "pinned": "Pinned",
+      "lockedAriaLabel": "Locked",
+      "lockedTitle": "Topic locked",
+      "byAuthor": "by",
+      "shortReplies": "Repl.",
+      "shortViews": "Views",
+      "goToLastPost": "Go to last post",
+      "noReplies": "No replies",
+      "announcements": "Announcements / Pinned"
+    }
+  },
+  "newTopic": {
+    "title": "New topic",
+    "subtitle": "Posting in {forumName}",
+    "fields": {
+      "titleLabel": "Topic title",
+      "titlePlaceholder": "Write a clear and descriptive title",
+      "titleHint": "Maximum 200 characters.",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Write the first message of the topic…",
+      "messageAriaLabel": "Message"
+    },
+    "cancel": "Cancel",
+    "submit": "Publish topic",
+    "submitting": "Publishing…",
+    "errors": {
+      "createFailed": "The topic could not be created."
+    }
+  },
+  "thread": {
+    "subtitle": "Started by {author} · {date} · {views} {viewsLabel}",
+    "viewOne": "view",
+    "viewOther": "views",
+    "messageOne": "message",
+    "messageOther": "messages",
+    "rank": {
+      "legend": "Legend",
+      "veteran": "Veteran",
+      "senior": "Senior",
+      "registered": "Registered",
+      "newbie": "New",
+      "op": "Author"
+    },
+    "userCard": {
+      "messages": "Messages:",
+      "member": "Member:",
+      "location": "Location:"
+    },
+    "actions": {
+      "reply": "Reply",
+      "topicLocked": "Topic locked",
+      "unpin": "Unpin",
+      "pin": "Pin",
+      "reopen": "Reopen",
+      "close": "Close",
+      "move": "Move",
+      "delete": "Delete",
+      "quote": "Quote",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "moveDialog": {
+      "title": "Move topic",
+      "description": "Select the destination forum in this space.",
+      "placeholder": "— Choose forum —"
+    },
+    "deleteConfirm": "Delete this topic and all its messages?",
+    "edited": "(edited)",
+    "backToForum": "← Back to «{forumName}»",
+    "goToIndex": "Go to forum index",
+    "errors": {
+      "emptyContent": "The message cannot be empty.",
+      "editFailed": "The message could not be edited."
+    },
+    "realtime": {
+      "loading": "Loading…",
+      "userFallback": "User",
+      "usernameFallback": "user"
+    }
+  },
+  "reply": {
+    "label": "Post reply",
+    "placeholder": "Write your reply…",
+    "ariaLabel": "Post reply",
+    "hint": "Select text and use the format bar.",
+    "submit": "Send reply",
+    "submitting": "Sending…",
+    "lockedNotice": "This topic is locked. No more messages can be added.",
+    "errors": {
+      "sendFailed": "The message could not be sent."
+    }
+  }
+}

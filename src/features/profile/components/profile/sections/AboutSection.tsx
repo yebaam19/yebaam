@@ -7,12 +7,15 @@
  * icon tiles. Hidden for visitors when there is nothing to show.
  */
 
+'use client'
+
 import {
   CalendarIcon,
   HeartIcon,
   MapPinIcon,
 } from '@/components/icons/heroicons-shim'
 import type { ComponentType, SVGProps } from 'react'
+import { useTranslations } from 'next-intl'
 import { formatBirthDate } from '@/lib/utils/date'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
@@ -21,14 +24,6 @@ interface AboutSectionProps {
   user: UserProfile
   isOwner: boolean
   onEdit?: () => void
-}
-
-const relationshipLabels: Record<string, string> = {
-  SINGLE: 'Soltero/a',
-  IN_RELATIONSHIP: 'En una relación',
-  MARRIED: 'Casado/a',
-  DIVORCED: 'Divorciado/a',
-  WIDOWED: 'Viudo/a',
 }
 
 type Fact = {
@@ -46,17 +41,23 @@ function Row({ Icon, label }: Fact) {
 }
 
 export default function AboutSection({ user, isOwner, onEdit }: AboutSectionProps) {
+  const t = useTranslations('profile.sections')
+  const tDetails = useTranslations('profile.details')
   const bio = user.bio?.trim() || null
   const residence = [user.residenceCity, user.residenceCountry].filter(Boolean).join(', ') || null
   const birthDateLabel = user.birthDate ? formatBirthDate(user.birthDate) : null
-  const relationshipLabel = user.relationshipStatus ? relationshipLabels[user.relationshipStatus] : null
+  const relationshipLabel = user.relationshipStatus
+    ? (() => {
+        try { return tDetails(`relationship_values.${user.relationshipStatus as 'SINGLE' | 'IN_RELATIONSHIP' | 'MARRIED' | 'DIVORCED' | 'WIDOWED'}`) } catch { return user.relationshipStatus }
+      })()
+    : null
 
   const hasAny = !!(bio || residence || birthDateLabel || relationshipLabel)
 
   if (!hasAny && !isOwner) return null
 
   return (
-    <ProfileSection title="Acerca de" isOwner={isOwner} onEdit={onEdit}>
+    <ProfileSection title={t('about')} isOwner={isOwner} onEdit={onEdit}>
       {hasAny ? (
         <div className="space-y-3">
           {bio && (
@@ -64,7 +65,7 @@ export default function AboutSection({ user, isOwner, onEdit }: AboutSectionProp
           )}
           {(residence || birthDateLabel || relationshipLabel) && (
             <div className="space-y-2 pt-1">
-              {residence && <Row Icon={MapPinIcon} label={`Vive en ${residence}`} />}
+              {residence && <Row Icon={MapPinIcon} label={t('livesIn', { location: residence })} />}
               {birthDateLabel && <Row Icon={CalendarIcon} label={birthDateLabel} />}
               {relationshipLabel && <Row Icon={HeartIcon} label={relationshipLabel} />}
             </div>
@@ -72,7 +73,7 @@ export default function AboutSection({ user, isOwner, onEdit }: AboutSectionProp
         </div>
       ) : (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Agrega una breve descripción y datos personales para que otros te conozcan.
+          {t('aboutEmpty')}
         </p>
       )}
     </ProfileSection>

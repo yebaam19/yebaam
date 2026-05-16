@@ -1,0 +1,63 @@
+{
+  "friendButton": {
+    "addFriend": "Agregar amigo",
+    "addFriendTitle": "Enviar solicitud de amistad",
+    "pendingTitle": "Solicitud pendiente",
+    "pendingDescription": "Solicitud pendiente de aceptación",
+    "cancelOnHover": "Clic para cancelar",
+    "cancelRequest": "Cancelar solicitud",
+    "requestSent": "Solicitud enviada",
+    "accept": "Aceptar",
+    "acceptTitle": "Aceptar solicitud",
+    "acceptRequestTitle": "Aceptar solicitud de amistad",
+    "reject": "Rechazar",
+    "rejectTitle": "Rechazar solicitud",
+    "friends": "Amigos",
+    "friendsTitle": "Son amigos",
+    "unfriend": "Eliminar de amigos",
+    "unfriendConfirmTitle": "¿Eliminar de amigos?",
+    "unfriendConfirmDescription": "Esta persona dejará de aparecer en tu lista de amigos. Podrás enviarle otra solicitud más tarde.",
+    "unfriendCancel": "Cancelar",
+    "unfriendConfirm": "Eliminar"
+  },
+  "actionsButtons": {
+    "accept": "Aceptar",
+    "accepting": "Aceptando...",
+    "reject": "Rechazar",
+    "rejecting": "Rechazando...",
+    "cancelRequest": "Cancelar solicitud",
+    "cancelling": "Cancelando..."
+  },
+  "requestsCard": {
+    "title": "Solicitudes de amistad",
+    "viewAll": "Ver todos",
+    "fallbackUser": "Usuario",
+    "wantsToBeFriend": "Quiere ser tu amigo",
+    "confirm": "Confirmar",
+    "remove": "Eliminar"
+  },
+  "detailModal": {
+    "title": "Solicitud de amistad",
+    "loading": "Cargando...",
+    "errorLoad": "Error al cargar el perfil",
+    "errorAccept": "Error al aceptar la solicitud",
+    "errorReject": "Error al rechazar la solicitud",
+    "errorCancel": "Error al cancelar la solicitud",
+    "successAccepted": "¡Solicitud aceptada! Ahora son amigos",
+    "successRejected": "Solicitud rechazada",
+    "successCancelled": "Solicitud cancelada",
+    "messageLabel": "Mensaje",
+    "status": "Estado:",
+    "statusPending": "Pendiente",
+    "type": "Tipo:",
+    "typeReceived": "Solicitud recibida",
+    "typeSent": "Solicitud enviada",
+    "acceptRequest": "Aceptar solicitud",
+    "accepting": "Aceptando...",
+    "reject": "Rechazar",
+    "rejecting": "Rechazando...",
+    "cancelRequest": "Cancelar solicitud",
+    "cancelling": "Cancelando...",
+    "unavailable": "No se pudo cargar la información"
+  }
+}

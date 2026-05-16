@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   PlayIcon,
   PauseIcon,
@@ -23,6 +24,7 @@ function formatTime(seconds: number): string {
 }
 
 export function PlayerBar() {
+  const t = useTranslations('musica');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playCountFiredRef = useRef<Set<string>>(new Set());
 
@@ -128,7 +130,7 @@ export function PlayerBar() {
             type="button"
             onClick={prev}
             className="rounded p-1.5 text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            aria-label="Anterior"
+            aria-label={t('player.previousAria')}
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>

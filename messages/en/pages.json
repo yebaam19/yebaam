@@ -1,0 +1,51 @@
+{
+  "comingSoon": {
+    "eyebrow": "Coming soon",
+    "title": "Pages",
+    "description": "We're finishing this section so you can create and discover pages with a more solid experience.",
+    "backToFeed": "Back to feed"
+  },
+  "list": {
+    "title": "Pages",
+    "subtitle": "Discover and follow pages of your interest",
+    "createButton": "Create page"
+  },
+  "tabs": {
+    "myPages": "My pages",
+    "followed": "Followed pages",
+    "discover": "Discover"
+  },
+  "empty": {
+    "search": {
+      "title": "No pages were found",
+      "description": "Try adjusting your search or filters",
+      "action": "Clear search"
+    },
+    "myPages": {
+      "title": "You don't have any pages yet",
+      "description": "Create your first page to get started",
+      "action": "Create page"
+    },
+    "followed": {
+      "title": "You're not following any pages",
+      "description": "Explore pages in the Discover section",
+      "action": "See suggested pages"
+    },
+    "discover": {
+      "title": "No suggested pages",
+      "description": "Check back later for new recommendations"
+    }
+  },
+  "card": {
+    "coverAlt": "{name} cover",
+    "followers": "{count} followers",
+    "following": "Following",
+    "follow": "Follow",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "editor": "Editor",
+      "moderator": "Moderator"
+    }
+  }
+}

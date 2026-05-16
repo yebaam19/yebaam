@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import {
   UserGroupIcon,
   ShieldCheckIcon,
@@ -17,9 +18,19 @@ import { cn } from '@/lib/utils';
 import type { ComponentType, SVGProps } from 'react';
 import { CommunityOwnerMenu } from './CommunityOwnerMenu';
 
+type SidebarItemKey =
+  | 'members'
+  | 'rules'
+  | 'chat'
+  | 'forums'
+  | 'classifieds'
+  | 'promotions'
+  | 'links'
+  | 'events';
+
 interface SidebarItem {
   href: string;
-  label: string;
+  labelKey: SidebarItemKey;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   /** When true, render a small "Próximamente" pill next to the label. */
   comingSoon?: boolean;
@@ -28,14 +39,14 @@ interface SidebarItem {
 function buildItems(slug: string): SidebarItem[] {
   const base = `/feed/comunidades/${slug}`;
   return [
-    { href: `${base}/miembros`, label: 'Miembros y Seguidores', icon: UserGroupIcon },
-    { href: `${base}/reglas`, label: 'Reglas y Denuncias', icon: ShieldCheckIcon },
-    { href: `${base}/chat`, label: 'Chat Publico', icon: ChatBubbleLeftRightIcon },
-    { href: `${base}/foros`, label: 'Foros', icon: ChatBubbleBottomCenterTextIcon },
-    { href: `${base}/clasificados`, label: 'Clasificados', icon: TagIcon, comingSoon: true },
-    { href: `${base}/promociones`, label: 'Promociones', icon: MegaphoneIcon, comingSoon: true },
-    { href: `${base}/enlaces`, label: 'Enlaces a Páginas', icon: LinkIcon },
-    { href: `${base}/eventos`, label: 'Eventos', icon: CalendarDaysIcon, comingSoon: true },
+    { href: `${base}/miembros`, labelKey: 'members', icon: UserGroupIcon },
+    { href: `${base}/reglas`, labelKey: 'rules', icon: ShieldCheckIcon },
+    { href: `${base}/chat`, labelKey: 'chat', icon: ChatBubbleLeftRightIcon },
+    { href: `${base}/foros`, labelKey: 'forums', icon: ChatBubbleBottomCenterTextIcon },
+    { href: `${base}/clasificados`, labelKey: 'classifieds', icon: TagIcon, comingSoon: true },
+    { href: `${base}/promociones`, labelKey: 'promotions', icon: MegaphoneIcon, comingSoon: true },
+    { href: `${base}/enlaces`, labelKey: 'links', icon: LinkIcon },
+    { href: `${base}/eventos`, labelKey: 'events', icon: CalendarDaysIcon, comingSoon: true },
   ];
 }
 
@@ -59,11 +70,12 @@ export function CommunitySidebar({
   communityName,
 }: CommunitySidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations('communities');
   const items = buildItems(slug);
 
   return (
     <div className="flex flex-col gap-3">
-      <nav aria-label="Secciones de la comunidad" className="flex flex-col gap-1.5">
+      <nav aria-label={t('sidebar.ariaLabel')} className="flex flex-col gap-1.5">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -79,10 +91,10 @@ export function CommunitySidebar({
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex-1 truncate">{item.label}</span>
+              <span className="flex-1 truncate">{t(`sidebar.items.${item.labelKey}`)}</span>
               {item.comingSoon && (
                 <span className="shrink-0 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-[10px] font-medium px-2 py-0.5">
-                  Pronto
+                  {t('sidebar.comingSoon')}
                 </span>
               )}
             </Link>
@@ -93,7 +105,7 @@ export function CommunitySidebar({
       {isOwner && communityId && communityName && (
         <div className="mt-1 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
-            Solo el propietario
+            {t('sidebar.ownerOnly')}
           </p>
           <CommunityOwnerMenu communityId={communityId} communityName={communityName} />
         </div>

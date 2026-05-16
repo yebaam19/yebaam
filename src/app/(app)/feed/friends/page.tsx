@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FriendCard } from '@/features/user/components/FriendCard';
 import { FriendRequestCard } from '@/features/user/components/FriendRequestCard';
@@ -33,6 +34,7 @@ interface ConfirmModalState {
 const VALID_TABS: TabType[] = ['friends', 'requests', 'sent', 'suggestions'];
 
 export default function FriendsPage() {
+  const t = useTranslations('feed');
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get('tab');
@@ -104,13 +106,13 @@ export default function FriendsPage() {
 
   const handleRemoveFriend = async (friendshipId: string) => {
     const friend = friends?.find((f) => f.friendshipId === friendshipId);
-    const friendName = friend ? `${friend.firstName} ${friend.lastName}` : 'esta persona';
+    const friendName = friend ? `${friend.firstName} ${friend.lastName}` : t('friends.sentCard.fallbackPerson');
 
     setConfirmModal({
       isOpen: true,
-      title: 'Eliminar amigo',
-      message: `¿Estás seguro de que quieres eliminar a ${friendName} de tu lista de amigos?`,
-      confirmText: 'Eliminar',
+      title: t('friends.remove.title'),
+      message: t('friends.remove.message', { name: friendName }),
+      confirmText: t('friends.remove.confirm'),
       type: 'danger',
       confirmAction: async () => {
         await removeFriend(friendshipId);
@@ -151,9 +153,9 @@ export default function FriendsPage() {
   const handleCancelRequest = async (requestId: string) => {
     setConfirmModal({
       isOpen: true,
-      title: 'Cancelar solicitud',
-      message: '¿Estás seguro de que quieres cancelar esta solicitud de amistad?',
-      confirmText: 'Cancelar solicitud',
+      title: t('friends.cancelRequest.title'),
+      message: t('friends.cancelRequest.message'),
+      confirmText: t('friends.cancelRequest.confirm'),
       type: 'warning',
       confirmAction: async () => {
         await cancelFriendRequest(requestId);
@@ -165,15 +167,15 @@ export default function FriendsPage() {
   const getSearchPlaceholder = () => {
     switch (activeTab) {
       case 'friends':
-        return 'Buscar amigos...';
+        return t('friends.search.friends');
       case 'requests':
-        return 'Buscar solicitudes...';
+        return t('friends.search.requests');
       case 'sent':
-        return 'Buscar enviadas...';
+        return t('friends.search.sent');
       case 'suggestions':
-        return 'Buscar sugerencias...';
+        return t('friends.search.suggestions');
       default:
-        return 'Buscar...';
+        return t('friends.search.default');
     }
   };
 
@@ -198,10 +200,10 @@ export default function FriendsPage() {
             >
               <div>
                 <h2 className="text-base font-semibold text-neutral-900 sm:text-lg dark:text-white">
-                  Gestión avanzada
+                  {t('friends.advancedManager.title')}
                 </h2>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Administra amigos, solicitudes y sugerencias en detalle
+                  {t('friends.advancedManager.subtitle')}
                 </p>
               </div>
               <ChevronDownIcon
@@ -249,7 +251,7 @@ export default function FriendsPage() {
                       ) : !friends || friends.length === 0 ? (
                         <div className="py-16 text-center">
                           <p className="text-neutral-500 dark:text-neutral-400">
-                            No tienes amigos aún. Explora las sugerencias para conectar con otros usuarios.
+                            {t('friends.empty.friends')}
                           </p>
                         </div>
                       ) : (
@@ -279,7 +281,7 @@ export default function FriendsPage() {
                       ) : !pendingRequests || pendingRequests.length === 0 ? (
                         <div className="py-16 text-center">
                           <p className="text-neutral-500 dark:text-neutral-400">
-                            No tienes solicitudes pendientes
+                            {t('friends.empty.requests')}
                           </p>
                         </div>
                       ) : (
@@ -321,7 +323,7 @@ export default function FriendsPage() {
                         </div>
                       ) : !sentRequests || sentRequests.length === 0 ? (
                         <div className="py-16 text-center">
-                          <p className="text-neutral-500 dark:text-neutral-400">No has enviado solicitudes</p>
+                          <p className="text-neutral-500 dark:text-neutral-400">{t('friends.empty.sent')}</p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
@@ -358,13 +360,13 @@ export default function FriendsPage() {
                                       </p>
                                     )}
                                     <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                                      Enviada {new Date(request.sentAt).toLocaleDateString()}
+                                      {t('friends.sentCard.sentOn', { date: new Date(request.sentAt).toLocaleDateString() })}
                                     </p>
                                     <button
                                       onClick={() => handleCancelRequest(request.id)}
                                       className="mt-4 w-full rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                                     >
-                                      Cancelar solicitud
+                                      {t('friends.sentCard.cancel')}
                                     </button>
                                   </div>
                                 </div>
@@ -387,7 +389,7 @@ export default function FriendsPage() {
                       ) : visibleSuggestions.length === 0 ? (
                         <div className="py-16 text-center">
                           <p className="text-neutral-500 dark:text-neutral-400">
-                            No hay sugerencias disponibles
+                            {t('friends.empty.suggestions')}
                           </p>
                         </div>
                       ) : (
@@ -404,7 +406,7 @@ export default function FriendsPage() {
                           </div>
                           <div className="mt-8 border-t border-neutral-200 pt-8 dark:border-neutral-700">
                             <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
-                              Sugerencias rápidas
+                              {t('friends.quickSuggestions')}
                             </h3>
                             <FriendSuggestionsCompact limit={6} />
                           </div>

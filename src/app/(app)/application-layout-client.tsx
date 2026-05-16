@@ -12,6 +12,7 @@ import UploadProgress from '@/features/profile/components/media/UploadProgress'
 
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface User {
   id: string
@@ -29,6 +30,7 @@ interface Props {
 
 export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Props) {
   const pathname = usePathname()
+  const t = useTranslations('header')
 
   // Activar sincronización de notificaciones en tiempo real
   useNotificationSync()
@@ -121,7 +123,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
           <footer className="border-t border-neutral-200 bg-white py-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="container mx-auto px-4">
               <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
-                © 2025 Yebaam. Todos los derechos reservados.
+                {t('copyrightFooter', { year: new Date().getFullYear() })}
               </p>
             </div>
           </footer>

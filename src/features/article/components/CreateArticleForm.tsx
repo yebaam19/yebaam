@@ -12,6 +12,7 @@ import { Button } from '@/ui/Button'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { ArticleContextType, ArticleVisibility, CreateArticleData } from '../interfaces'
 import { articleService } from '../services'
 import { ArticleContextSelector } from './ArticleContextSelector'
@@ -42,6 +43,7 @@ interface CreateArticleFormProps {
 
 export function CreateArticleForm({ user }: CreateArticleFormProps) {
   const router = useRouter()
+  const t = useTranslations('article.editor')
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -58,7 +60,7 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
   }>({
     type: ArticleContextType.USER_PROFILE,
     id: null,
-    name: 'Artículo individual',
+    name: t('individualArticle'),
   })
 
   // Load contexts on mount
@@ -100,12 +102,12 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
 
   const handlePublish = async () => {
     if (!title.trim()) {
-      alert('Por favor, añade un título al artículo')
+      alert(t('titleRequired'))
       return
     }
 
     if (!content.trim() || content === '<p></p>') {
-      alert('Por favor, añade contenido al artículo')
+      alert(t('contentRequired'))
       return
     }
 
@@ -132,11 +134,11 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
         setCreatedArticle({ id: result.article.id, title: result.article.title })
         setShowSuccessDialog(true)
       } else {
-        alert(`Error al crear el artículo: ${result.error || 'Error desconocido'}`)
+        alert(t('createError', { message: result.error || t('unknownError') }))
       }
     } catch (error) {
       console.error('Error publishing article:', error)
-      alert(`Error al publicar el artículo: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      alert(t('publishError', { message: error instanceof Error ? error.message : t('unknownError') }))
     } finally {
       setIsPublishing(false)
     }
@@ -181,7 +183,7 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
             </div>
 
             <Button color="primary" onClick={handlePublish} className="shrink-0" disabled={isPublishing}>
-              {isPublishing ? 'Publicando...' : 'Publicar'}
+              {isPublishing ? t('publishing') : t('publish')}
             </Button>
           </div>
 
@@ -227,7 +229,7 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
           onCoverRemove={handleCoverRemove}
         />
 
-        <EditableTitle title={title} onTitleChange={setTitle} placeholder="Título" />
+        <EditableTitle title={title} onTitleChange={setTitle} placeholder={t('titlePlaceholder')} />
 
         <div>
           <RichTextEditor content={content} onChange={setContent} isHeaderMode={false} />

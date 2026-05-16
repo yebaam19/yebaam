@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   UserGroupIcon,
   UsersIcon,
@@ -19,6 +19,7 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group }: GroupCardProps) {
+  const t = useTranslations('grupos');
   const { mutate: joinGroup, isPending: isJoining } = useJoinGroup();
   const addRecentlyViewed = useGroupsUIStore((state) => state.addRecentlyViewed);
 
@@ -55,7 +56,7 @@ export function GroupCard({ group }: GroupCardProps) {
               <LockClosedIcon className="h-3.5 w-3.5 text-white" />
             )}
             <span className="text-xs text-white capitalize">
-              {group.privacy === 'public' ? 'Público' : 'Privado'}
+              {group.privacy === 'public' ? t('card.publicLabel') : t('card.privateLabel')}
             </span>
           </div>
         </div>
@@ -91,7 +92,10 @@ export function GroupCard({ group }: GroupCardProps) {
               )}
             </div>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              Creado por <span className="font-medium text-neutral-700 dark:text-neutral-300">{group.creatorName}</span>
+              {t('card.createdBy')}{' '}
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                {group.creatorName}
+              </span>
             </span>
           </div>
         )}
@@ -100,11 +104,11 @@ export function GroupCard({ group }: GroupCardProps) {
         <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mb-4">
           <div className="flex items-center gap-1">
             <UsersIcon className="h-4 w-4" />
-            <span>{group.memberCount.toLocaleString()} miembros</span>
+            <span>{t('card.members', { count: group.memberCount.toLocaleString() })}</span>
           </div>
           <div className="flex items-center gap-1">
             <span>•</span>
-            <span>{group.postCount} publicaciones</span>
+            <span>{t('card.posts', { count: group.postCount })}</span>
           </div>
         </div>
 
@@ -122,7 +126,7 @@ export function GroupCard({ group }: GroupCardProps) {
             onClick={handleViewGroup}
             className="w-full px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
-            Ver grupo
+            {t('card.viewGroup')}
           </Link>
         ) : (
           <button
@@ -133,12 +137,12 @@ export function GroupCard({ group }: GroupCardProps) {
             {isJoining ? (
               <>
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Uniéndose...
+                {t('card.joining')}
               </>
             ) : (
               <>
                 <PlusIcon className="h-4 w-4" />
-                Unirse
+                {t('card.join')}
               </>
             )}
           </button>

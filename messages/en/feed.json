@@ -1,0 +1,175 @@
+{
+  "composer": {
+    "placeholder": "What are you thinking, {name}?",
+    "addToPost": "Add to your post",
+    "createTitle": "Create post",
+    "editTitle": "Edit post",
+    "submit": "Post",
+    "submitting": "Posting...",
+    "uploading": "Uploading files...",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "discardConfirm": "Discard this post?",
+    "discardEditConfirm": "Discard changes?",
+    "needContent": "Add some text, an image/video, or a GIF to your post",
+    "createSuccess": "Post created successfully",
+    "updateSuccess": "Post updated successfully",
+    "updateError": "Error updating the post",
+    "uploadedCount": "{count} file(s) uploaded successfully",
+    "uploadOnlyMedia": "Only image and video files are allowed",
+    "uploadLimit": "You can only upload up to 10 files"
+  },
+  "visibility": {
+    "public": "Public",
+    "publicDescription": "Anyone can see",
+    "friends": "Friends",
+    "friendsDescription": "Only your friends",
+    "private": "Only me",
+    "privateDescription": "Only you"
+  },
+  "privacyLabel": {
+    "public": "public",
+    "friends": "friends",
+    "private": "Only me"
+  },
+  "post": {
+    "publishing": "Posting...",
+    "feelingPrefix": "is feeling",
+    "with": "with",
+    "shareTitle": "Post by {author}",
+    "shareLinkCopied": "Link copied",
+    "shareLinkError": "Could not copy the link",
+    "menu": {
+      "edit": "Edit post",
+      "delete": "Delete post",
+      "report": "Report post"
+    },
+    "actions": {
+      "like": "Like",
+      "comment": "Comment",
+      "share": "Share"
+    },
+    "addBar": {
+      "photo": "Photo/Video",
+      "photoUnavailable": "Not available with background color",
+      "tag": "Tag people (Coming soon)",
+      "location": "Location (Coming soon)",
+      "gif": "GIF (Coming soon)"
+    },
+    "delete": {
+      "title": "Delete post?",
+      "description": "This action cannot be undone. The post will be permanently removed and cannot be recovered.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleting": "Deleting..."
+    },
+    "empty": {
+      "title": "Your feed is empty",
+      "description": "Connect with friends or join clubs to see their posts here."
+    },
+    "suggestions": {
+      "title": "Suggestions",
+      "subtitle": "· posts from people you may know"
+    },
+    "errors": {
+      "loadTitle": "Error loading posts",
+      "loadFallback": "An error occurred loading the feed. Please try again."
+    }
+  },
+  "comments": {
+    "inputPlaceholder": "Write a comment...",
+    "replyPlaceholder": "Reply to {name}...",
+    "replyingTo": "Replying to",
+    "cancelReply": "Cancel reply",
+    "reply": "Reply",
+    "loading": "Loading...",
+    "loadingReplies": "Loading replies...",
+    "showReplies": "Show {count, plural, one {# reply} other {# replies}}",
+    "hideReplies": "Hide {count, plural, one {# reply} other {# replies}}",
+    "edited": "edited",
+    "editedAt": "Edited {time}",
+    "editedDefault": "Edited",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "options": "Comment options",
+    "deleteConfirm": "Are you sure you want to delete this comment?",
+    "empty": "Be the first to comment",
+    "emptyHint": "Share your thoughts on this post",
+    "count": "{count, plural, one {# comment} other {# comments}}",
+    "errors": {
+      "empty": "Comment cannot be empty",
+      "tooLong": "Comment is too long (max 500 characters)",
+      "createDefault": "Error creating comment",
+      "replyEmpty": "Reply cannot be empty",
+      "replyTooLong": "Reply is too long (max 500 characters)",
+      "replyDefault": "Error creating reply"
+    }
+  },
+  "friends": {
+    "title": "Friends",
+    "subtitle": "Connect with people you know and discover new friendships",
+    "discoverNewConnections": "Discover new connections",
+    "maybeYouKnow": "People you may know",
+    "maybeYouKnowSubtitle": "Based on mutual friends, location, and shared interests",
+    "advancedManager": {
+      "title": "Advanced management",
+      "subtitle": "Manage friends, requests, and suggestions in detail"
+    },
+    "hero": {
+      "greeting": "Hi, {name}!",
+      "title": "Connect, share, and grow your network",
+      "subtitle": "There are thousands of people waiting for you.",
+      "cta": "Find friends"
+    },
+    "tabs": {
+      "friends": "Friends",
+      "requests": "Received",
+      "sent": "Sent",
+      "suggestions": "Suggestions"
+    },
+    "stats": {
+      "totalFriends": "Total friends",
+      "closeFriends": "Close friends",
+      "pendingRequests": "Received requests",
+      "sentRequests": "Sent requests",
+      "suggestions": "Suggestions"
+    },
+    "search": {
+      "default": "Search...",
+      "friends": "Search friends...",
+      "requests": "Search requests...",
+      "sent": "Search sent...",
+      "suggestions": "Search suggestions..."
+    },
+    "empty": {
+      "friends": "You don't have any friends yet. Explore the suggestions to connect with other users.",
+      "requests": "You have no pending requests",
+      "sent": "You haven't sent any requests",
+      "suggestions": "No suggestions available"
+    },
+    "quickSuggestions": "Quick suggestions",
+    "sentCard": {
+      "sentOn": "Sent on {date}",
+      "cancel": "Cancel request",
+      "fallbackPerson": "this person"
+    },
+    "remove": {
+      "title": "Remove friend",
+      "message": "Are you sure you want to remove {name} from your friends list?",
+      "confirm": "Remove"
+    },
+    "cancelRequest": {
+      "title": "Cancel request",
+      "message": "Are you sure you want to cancel this friend request?",
+      "confirm": "Cancel request"
+    },
+    "confirm": {
+      "cancel": "Cancel"
+    }
+  },
+  "feeling": {
+    "prefix": "is feeling"
+  }
+}

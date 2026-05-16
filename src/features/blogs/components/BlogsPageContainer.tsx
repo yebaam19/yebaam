@@ -12,10 +12,12 @@ import {
 } from '@/features/blogs/hooks/useBlogs'
 import { BookOpenIcon, FireIcon, SparklesIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 type TabType = 'siguiendo' | 'mis-blogs' | 'descubrir'
 
 export function BlogsPageContainer() {
+  const t = useTranslations('blogs.list')
   const [activeTab, setActiveTab] = useState<TabType>('siguiendo')
   const [loadingBlogId, setLoadingBlogId] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -61,19 +63,19 @@ export function BlogsPageContainer() {
   const tabs = [
     {
       id: 'siguiendo' as TabType,
-      label: 'Siguiendo',
+      label: t('tabs.following'),
       icon: BookOpenIcon,
       count: myBlogs?.length,
     },
     {
       id: 'mis-blogs' as TabType,
-      label: 'Sugeridos',
+      label: t('tabs.suggested'),
       icon: SparklesIcon,
       count: suggestedBlogs?.length,
     },
     {
       id: 'descubrir' as TabType,
-      label: 'Descubrir',
+      label: t('tabs.discover'),
       icon: FireIcon,
       count: popularBlogs?.length,
     },
@@ -106,12 +108,12 @@ export function BlogsPageContainer() {
   const getEmptyMessage = () => {
     switch (activeTab) {
       case 'siguiendo':
-        return 'No sigues ningún blog todavía'
+        return t('empty.following')
       case 'mis-blogs':
-        return 'No hay blogs sugeridos en este momento'
+        return t('empty.suggested')
       case 'descubrir':
       default:
-        return 'No se encontraron blogs populares'
+        return t('empty.discover')
     }
   }
 
@@ -127,19 +129,19 @@ export function BlogsPageContainer() {
         <section className="space-y-5">
           <header className="space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-700 dark:text-secondary-400">
-              Explora blogs
+              {t('section.eyebrow')}
             </p>
             <h2 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl dark:text-white">
-              Encuentra voces que te inspiren
+              {t('section.title')}
             </h2>
             <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
-              Sigue a creadores, descubre nuevos temas y haz crecer tu propia audiencia.
+              {t('section.subtitle')}
             </p>
           </header>
 
           {/* Tabs */}
           <div className="rounded-2xl border border-neutral-200/80 bg-white p-1.5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <nav className="flex flex-wrap gap-1" aria-label="Tabs">
+            <nav className="flex flex-wrap gap-1" aria-label={t('section.tabsAria')}>
               {tabs.map((tab) => {
                 const Icon = tab.icon
                 const isActive = activeTab === tab.id

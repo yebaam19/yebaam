@@ -1,13 +1,13 @@
 'use client'
 
-import { useContext } from 'react'
 import clsx from 'clsx'
-import { ThemeContext, type ThemeMode } from '@/app/theme-provider'
+import { usePreferencesStore, type ThemeMode } from '@/stores/preferences.store'
 import {
   ComputerDesktopIcon,
   MoonIcon,
   SunIcon,
 } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 
 interface Option {
   value: ThemeMode
@@ -17,36 +17,38 @@ interface Option {
   badge?: string
 }
 
-const OPTIONS: Option[] = [
-  { value: 'light', label: 'Claro', description: 'Siempre claro.', Icon: SunIcon },
-  { value: 'dark', label: 'Oscuro', description: 'Siempre oscuro.', Icon: MoonIcon },
-  {
-    value: 'system',
-    label: 'Sistema',
-    description: 'Sigue la preferencia del dispositivo.',
-    Icon: ComputerDesktopIcon,
-    badge: 'Recomendado',
-  },
-]
-
 export default function ThemeSettings() {
-  const theme = useContext(ThemeContext)
+  const themeMode = usePreferencesStore((s) => s.theme)
+  const setTheme = usePreferencesStore((s) => s.setTheme)
+  const t = useTranslations('admin.theme')
+
+  const OPTIONS: Option[] = [
+    { value: 'light', label: t('light'), description: t('lightDescription'), Icon: SunIcon },
+    { value: 'dark', label: t('dark'), description: t('darkDescription'), Icon: MoonIcon },
+    {
+      value: 'system',
+      label: t('system'),
+      description: t('systemDescription'),
+      Icon: ComputerDesktopIcon,
+      badge: t('recommended'),
+    },
+  ]
 
   return (
     <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <header className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
         <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-          Apariencia
+          {t('heading')}
         </h2>
         <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-          Elige cómo se ve el panel en este dispositivo.
+          {t('description')}
         </p>
       </header>
 
       <fieldset className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-3">
-        <legend className="sr-only">Tema</legend>
+        <legend className="sr-only">{t('legend')}</legend>
         {OPTIONS.map(({ value, label, description, Icon, badge }) => {
-          const active = theme?.themeMode === value
+          const active = themeMode === value
           return (
             <label
               key={value}
@@ -62,7 +64,7 @@ export default function ThemeSettings() {
                 name="theme-mode"
                 value={value}
                 checked={active}
-                onChange={() => theme?.setThemeMode(value)}
+                onChange={() => setTheme(value)}
                 className="sr-only"
               />
               <div className="flex items-center justify-between gap-2">

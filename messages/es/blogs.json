@@ -1,0 +1,117 @@
+{
+  "list": {
+    "hero": {
+      "eyebrow": "Tu espacio personal",
+      "title": "Blogs",
+      "description": "Comparte tu conocimiento, construye una audiencia y conecta con personas que comparten tus intereses.",
+      "createButton": "Crear mi blog"
+    },
+    "features": {
+      "publish": {
+        "title": "Publica contenido",
+        "description": "Comparte artículos, historias y multimedia con tu audiencia."
+      },
+      "audience": {
+        "title": "Construye audiencia",
+        "description": "Atrae seguidores interesados en tus temas y crea una comunidad activa."
+      },
+      "expertise": {
+        "title": "Comparte experiencia",
+        "description": "Posiciónate como experto y aporta valor con tu conocimiento."
+      }
+    },
+    "section": {
+      "eyebrow": "Explora blogs",
+      "title": "Encuentra voces que te inspiren",
+      "subtitle": "Sigue a creadores, descubre nuevos temas y haz crecer tu propia audiencia.",
+      "tabsAria": "Pestañas"
+    },
+    "tabs": {
+      "following": "Siguiendo",
+      "suggested": "Sugeridos",
+      "discover": "Descubrir"
+    },
+    "empty": {
+      "following": "No sigues ningún blog todavía",
+      "suggested": "No hay blogs sugeridos en este momento",
+      "discover": "No se encontraron blogs populares"
+    }
+  },
+  "grid": {
+    "emptyDefault": "No se encontraron blogs",
+    "emptyHint": "Explora diferentes categorías o busca blogs específicos para encontrar voces que te inspiren."
+  },
+  "card": {
+    "unknownUser": "Usuario desconocido",
+    "fallbackUserAlt": "Usuario",
+    "fallbackUsername": "unknown",
+    "processing": "Procesando...",
+    "following": "Siguiendo",
+    "follow": "Seguir"
+  },
+  "tabs": {
+    "about": "Acerca de Mí",
+    "photos": "Fotos",
+    "videos": "Videos",
+    "posts": "Artículos",
+    "forum": "Foro",
+    "askme": "Askme"
+  },
+  "detail": {
+    "notFoundTitle": "Blog no encontrado",
+    "notFoundDescription": "El blog que buscas no existe o ha sido eliminado",
+    "editBlog": "Editar blog",
+    "menu": {
+      "chat": "Chat Público",
+      "members": "Miembros y Seguidores",
+      "askme": "Askme",
+      "foro": "Foro",
+      "events": "Eventos",
+      "promotions": "Promociones",
+      "related": "Páginas Relacionadas"
+    },
+    "membersPanel": {
+      "adminLabel": "Administrador:",
+      "unassigned": "Sin asignar",
+      "comingSoon": "La lista completa de miembros y seguidores se mostrará aquí próximamente (paginada en lotes de 30 y con buscador)."
+    },
+    "events": "El bloguero podrá crear o compartir eventos (en vivo o encuentros). Próximamente.",
+    "related": "Aún no se han añadido páginas relacionadas. El bloguero podrá enlazar páginas internas y externas."
+  },
+  "posts": {
+    "empty": "No hay publicaciones disponibles",
+    "createFirst": "Crear primera publicación",
+    "createNew": "Nueva publicación"
+  },
+  "create": {
+    "title": "Crear Blog",
+    "subtitle": "Comparte tu conocimiento y pasión con el mundo",
+    "uploadingHint": "Subiendo imágenes a CloudFront...",
+    "submit": "Crear blog",
+    "submitting": "Creando...",
+    "uploading": "Subiendo imágenes...",
+    "success": "Blog creado exitosamente",
+    "errorCreating": "Error al crear el blog",
+    "errorRequired": "El nombre y descripción son requeridos",
+    "coverLabel": "Imagen de portada (opcional)"
+  },
+  "form": {
+    "name": "Nombre del blog *",
+    "namePlaceholder": "Mi Blog Increíble",
+    "nameCounter": "{count}/100 caracteres",
+    "description": "Descripción *",
+    "descriptionPlaceholder": "Describe de qué trata tu blog...",
+    "descriptionCounter": "{count}/500 caracteres",
+    "category": "Categoría *",
+    "subcategory": "Subcategoría (opcional)",
+    "subcategoryPlaceholder": "ej. Desarrollo Web, Recetas Veganas, etc.",
+    "website": "Sitio web (opcional)",
+    "websitePlaceholder": "https://miblog.com",
+    "tags": "Etiquetas (opcional)",
+    "tagsPlaceholder": "javascript, react, web development",
+    "tagsHint": "Separa las etiquetas con comas"
+  },
+  "actions": {
+    "cancel": "Cancelar"
+  }
+}

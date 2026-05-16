@@ -23,6 +23,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { friendshipsService } from '../services/friendships.service';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface FriendRequestDetailModalProps {
   friendshipId: string;
@@ -57,6 +58,7 @@ export default function FriendRequestDetailModal({
   const [data, setData] = useState<RequesterProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | 'cancel' | null>(null);
+  const t = useTranslations('friendships.detailModal');
 
   // Cargar datos del perfil
   useEffect(() => {
@@ -72,7 +74,7 @@ export default function FriendRequestDetailModal({
       setData(response);
     } catch (error: any) {
       console.error('Error loading friend request profile:', error);
-      toast.error(error.message || 'Error al cargar el perfil');
+      toast.error(error.message || t('errorLoad'));
       onClose();
     } finally {
       setIsLoading(false);
@@ -85,12 +87,12 @@ export default function FriendRequestDetailModal({
     setActionLoading('accept');
     try {
       await friendshipsService.acceptFriendRequest(friendshipId);
-      toast.success('¡Solicitud aceptada! Ahora son amigos 🎉');
+      toast.success(t('successAccepted'));
       onActionComplete?.();
       onClose();
     } catch (error: any) {
       console.error('Error accepting friend request:', error);
-      toast.error(error.message || 'Error al aceptar la solicitud');
+      toast.error(error.message || t('errorAccept'));
     } finally {
       setActionLoading(null);
     }
@@ -102,12 +104,12 @@ export default function FriendRequestDetailModal({
     setActionLoading('reject');
     try {
       await friendshipsService.rejectFriendRequest(friendshipId);
-      toast.success('Solicitud rechazada');
+      toast.success(t('successRejected'));
       onActionComplete?.();
       onClose();
     } catch (error: any) {
       console.error('Error rejecting friend request:', error);
-      toast.error(error.message || 'Error al rechazar la solicitud');
+      toast.error(error.message || t('errorReject'));
     } finally {
       setActionLoading(null);
     }
@@ -119,12 +121,12 @@ export default function FriendRequestDetailModal({
     setActionLoading('cancel');
     try {
       await friendshipsService.cancelFriendRequest(friendshipId);
-      toast.success('Solicitud cancelada');
+      toast.success(t('successCancelled'));
       onActionComplete?.();
       onClose();
     } catch (error: any) {
       console.error('Error canceling friend request:', error);
-      toast.error(error.message || 'Error al cancelar la solicitud');
+      toast.error(error.message || t('errorCancel'));
     } finally {
       setActionLoading(null);
     }
@@ -149,7 +151,7 @@ export default function FriendRequestDetailModal({
         {/* Header con botón cerrar */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-            Solicitud de amistad
+            {t('title')}
           </h2>
           <button
             onClick={onClose}
@@ -164,7 +166,7 @@ export default function FriendRequestDetailModal({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-8">
               <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
-              <p className="mt-4 text-sm text-neutral-500">Cargando...</p>
+              <p className="mt-4 text-sm text-neutral-500">{t('loading')}</p>
             </div>
           ) : data ? (
             <>
@@ -205,7 +207,7 @@ export default function FriendRequestDetailModal({
                   <div className="flex items-start gap-2 mb-2">
                     <ChatBubbleLeftRightIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 mt-0.5 shrink-0" />
                     <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
-                      Mensaje
+                      {t('messageLabel')}
                     </p>
                   </div>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
@@ -217,15 +219,15 @@ export default function FriendRequestDetailModal({
               {/* Información adicional */}
               <div className="mb-6 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-600 dark:text-neutral-400">Estado:</span>
+                  <span className="text-neutral-600 dark:text-neutral-400">{t('status')}</span>
                   <span className="font-medium text-neutral-900 dark:text-neutral-100 capitalize">
-                    {data.status === 'pending' ? 'Pendiente' : data.status}
+                    {data.status === 'pending' ? t('statusPending') : data.status}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-600 dark:text-neutral-400">Tipo:</span>
+                  <span className="text-neutral-600 dark:text-neutral-400">{t('type')}</span>
                   <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {isAddressee ? 'Solicitud recibida' : 'Solicitud enviada'}
+                    {isAddressee ? t('typeReceived') : t('typeSent')}
                   </span>
                 </div>
               </div>
@@ -243,16 +245,16 @@ export default function FriendRequestDetailModal({
                       {actionLoading === 'accept' ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Aceptando...</span>
+                          <span>{t('accepting')}</span>
                         </>
                       ) : (
                         <>
                           <CheckIcon className="w-5 h-5" />
-                          <span>Aceptar solicitud</span>
+                          <span>{t('acceptRequest')}</span>
                         </>
                       )}
                     </button>
-                    
+
                     <button
                       onClick={handleReject}
                       disabled={actionLoading !== null}
@@ -261,12 +263,12 @@ export default function FriendRequestDetailModal({
                       {actionLoading === 'reject' ? (
                         <>
                           <div className="w-4 h-4 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
-                          <span>Rechazando...</span>
+                          <span>{t('rejecting')}</span>
                         </>
                       ) : (
                         <>
                           <XCircleIcon className="w-5 h-5" />
-                          <span>Rechazar</span>
+                          <span>{t('reject')}</span>
                         </>
                       )}
                     </button>
@@ -281,12 +283,12 @@ export default function FriendRequestDetailModal({
                     {actionLoading === 'cancel' ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Cancelando...</span>
+                        <span>{t('cancelling')}</span>
                       </>
                     ) : (
                       <>
                         <XCircleIcon className="w-5 h-5" />
-                        <span>Cancelar solicitud</span>
+                        <span>{t('cancelRequest')}</span>
                       </>
                     )}
                   </button>
@@ -295,7 +297,7 @@ export default function FriendRequestDetailModal({
             </>
           ) : (
             <div className="text-center py-8">
-              <p className="text-neutral-500">No se pudo cargar la información</p>
+              <p className="text-neutral-500">{t('unavailable')}</p>
             </div>
           )}
         </div>

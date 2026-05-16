@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim'
 import type { ForoCategory, ForoForum, ForoSpace } from '@/features/foro/types'
 import { formatRelativeDate } from '@/features/foro/utils/format'
@@ -11,7 +12,25 @@ interface Props {
   categories: ForoCategory[]
 }
 
-function ForumRow({ space, forum }: { space: ForoSpace; forum: ForoForum }) {
+type ForumRowStrings = {
+  subforumsLabel: string
+  topicOne: string
+  topicOther: string
+  messageOne: string
+  messageOther: string
+  byAuthor: string
+  noMessages: string
+}
+
+function ForumRow({
+  space,
+  forum,
+  strings,
+}: {
+  space: ForoSpace
+  forum: ForoForum
+  strings: ForumRowStrings
+}) {
   return (
     <li className="grid grid-cols-12 items-start gap-3 px-4 py-4 transition-colors hover:bg-primary-50/40 sm:items-center sm:gap-4 dark:hover:bg-primary-900/10">
       <div className="col-span-12 flex items-start gap-3 sm:col-span-6">
@@ -36,7 +55,7 @@ function ForumRow({ space, forum }: { space: ForoSpace; forum: ForoForum }) {
           {forum.subforums.length > 0 && (
             <p className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 text-xs text-neutral-500">
               <span className="font-medium text-neutral-600 dark:text-neutral-300">
-                Subforos:
+                {strings.subforumsLabel}
               </span>
               {forum.subforums.map((sf) => (
                 <Link
@@ -56,14 +75,14 @@ function ForumRow({ space, forum }: { space: ForoSpace; forum: ForoForum }) {
           {forum.topicCount}
         </span>
         <span className="text-neutral-500 dark:text-neutral-400">
-          {forum.topicCount === 1 ? 'tema' : 'temas'}
+          {forum.topicCount === 1 ? strings.topicOne : strings.topicOther}
         </span>
         <span className="mx-1 hidden sm:hidden">·</span>
         <span className="font-semibold text-neutral-900 sm:mt-1 dark:text-neutral-100">
           {forum.postCount}
         </span>
         <span className="text-neutral-500 dark:text-neutral-400">
-          {forum.postCount === 1 ? 'mensaje' : 'mensajes'}
+          {forum.postCount === 1 ? strings.messageOne : strings.messageOther}
         </span>
       </div>
       <div className="col-span-12 sm:col-span-4 sm:text-right">
@@ -85,7 +104,7 @@ function ForumRow({ space, forum }: { space: ForoSpace; forum: ForoForum }) {
               <div className="mt-0.5 truncate">
                 {forum.lastPostAuthor ? (
                   <>
-                    por{' '}
+                    {strings.byAuthor}{' '}
                     <span className="font-medium text-neutral-700 dark:text-neutral-300">
                       {forum.lastPostAuthor.displayName}
                     </span>{' '}
@@ -97,18 +116,29 @@ function ForumRow({ space, forum }: { space: ForoSpace; forum: ForoForum }) {
             </div>
           </div>
         ) : (
-          <Badge color="zinc">Sin mensajes</Badge>
+          <Badge color="zinc">{strings.noMessages}</Badge>
         )}
       </div>
     </li>
   )
 }
 
-export default function SpaceBoard({ space, categories }: Props) {
+export default async function SpaceBoard({ space, categories }: Props) {
+  const t = await getTranslations('foro')
+  const strings: ForumRowStrings = {
+    subforumsLabel: t('space.subforumsLabel'),
+    topicOne: t('space.topicOne'),
+    topicOther: t('space.topicOther'),
+    messageOne: t('space.messageOne'),
+    messageOther: t('space.messageOther'),
+    byAuthor: t('space.byAuthor'),
+    noMessages: t('space.noMessages'),
+  }
+
   if (categories.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-10 text-center text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900">
-        Este foro todavía no tiene categorías.
+        {t('space.emptyCategories')}
       </div>
     )
   }
@@ -126,11 +156,11 @@ export default function SpaceBoard({ space, categories }: Props) {
             </h2>
           </header>
           {cat.forums.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-neutral-500">Sin foros todavía.</p>
+            <p className="px-4 py-6 text-sm text-neutral-500">{t('space.emptyForums')}</p>
           ) : (
             <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {cat.forums.map((forum) => (
-                <ForumRow key={forum.id} space={space} forum={forum} />
+                <ForumRow key={forum.id} space={space} forum={forum} strings={strings} />
               ))}
             </ul>
           )}

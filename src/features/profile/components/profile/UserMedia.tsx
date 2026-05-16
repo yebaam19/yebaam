@@ -8,6 +8,7 @@
 
 import { ArrowPathIcon, PlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { useUserPhotos, useUserVideos } from '../../hooks/useProfile'
 import { useAuth } from '@/features/auth/context/auth-context'
@@ -21,6 +22,7 @@ interface UserMediaProps {
 }
 
 export function UserPhotos({ userId }: UserMediaProps) {
+  const t = useTranslations('profile.media')
   const { photos: profilePhotos, isLoading: isLoadingProfile, fetchUserPhotos } = useUserPhotos()
   const { user } = useAuth()
   const [uploadPhotoOpen, setUploadPhotoOpen] = useState(false)
@@ -74,7 +76,7 @@ export function UserPhotos({ userId }: UserMediaProps) {
     return (
       <div className="py-12 text-center">
         <p className="text-muted-foreground mb-4">
-          {isOwnProfile ? '¡Sube tu primera foto!' : 'Este usuario no ha compartido fotos aún.'}
+          {isOwnProfile ? t('photosEmptyOwn') : t('photosEmptyOther')}
         </p>
         {isOwnProfile && (
           <div className="flex justify-center gap-3">
@@ -82,14 +84,14 @@ export function UserPhotos({ userId }: UserMediaProps) {
               onClick={() => setCreateAlbumOpen(true)}
               className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
             >
-              Crear álbum
+              {t('createAlbum')}
             </button>
             <button
               onClick={() => setUploadPhotoOpen(true)}
               className="inline-flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
             >
               <PlusIcon className="w-5 h-5" />
-              Subir fotos
+              {t('uploadPhotos')}
             </button>
           </div>
         )}
@@ -114,13 +116,13 @@ export function UserPhotos({ userId }: UserMediaProps) {
             onClick={() => setSelectedAlbumId(null)}
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
           >
-            ← Volver a todos los álbumes
+            {t('backToAlbums')}
           </button>
           <span className="text-neutral-400">/</span>
           <span className="text-neutral-900 dark:text-white font-medium">{selectedAlbum.name}</span>
         </div>
       )}
-      
+
       {/* Header con botones de acción */}
       {isOwnProfile && !selectedAlbumId && (
         <div className="flex justify-end gap-3 pb-2">
@@ -128,23 +130,23 @@ export function UserPhotos({ userId }: UserMediaProps) {
             onClick={() => setCreateAlbumOpen(true)}
             className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-sm"
           >
-            Crear álbum
+            {t('createAlbum')}
           </button>
           <button
             onClick={() => setUploadPhotoOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors text-sm"
           >
             <PlusIcon className="w-4 h-4" />
-            Subir fotos
+            {t('uploadPhotos')}
           </button>
         </div>
       )}
-      
+
       {/* Álbumes Section - Solo mostrar si no hay álbum seleccionado */}
       {isOwnProfile && albums.length > 0 && !selectedAlbumId && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-            Álbumes ({albums.length})
+            {t('albumsHeading', { count: albums.length })}
           </h3>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {albums.map((album) => (
@@ -167,7 +169,7 @@ export function UserPhotos({ userId }: UserMediaProps) {
                       <svg className="w-12 h-12 text-neutral-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <p className="text-xs text-neutral-500">Sin fotos</p>
+                      <p className="text-xs text-neutral-500">{t('noPhotos')}</p>
                     </div>
                   </div>
                 )}
@@ -175,22 +177,22 @@ export function UserPhotos({ userId }: UserMediaProps) {
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <h4 className="font-semibold text-sm truncate">{album.name}</h4>
                   <p className="text-xs opacity-90">
-                    {album.photosCount} fotos · {album.videosCount} videos
+                    {t('albumStats', { photos: album.photosCount, videos: album.videosCount })}
                   </p>
                 </div>
               </button>
             ))}
           </div>
-          
+
           {/* Divider */}
           <div className="border-t border-neutral-200 dark:border-neutral-800 my-6" />
         </div>
       )}
-      
+
       {/* Fotos Section */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-          {selectedAlbum ? `Fotos en "${selectedAlbum.name}"` : 'Todas las fotos'} ({photos.length})
+          {t('sectionWithCount', { label: selectedAlbum ? t('photosInAlbum', { name: selectedAlbum.name }) : t('allPhotos'), count: photos.length })}
         </h3>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
           {photos.map((photo: any, index: number) => (
@@ -216,6 +218,7 @@ export function UserPhotos({ userId }: UserMediaProps) {
 }
 
 export function UserVideos({ userId }: UserMediaProps) {
+  const t = useTranslations('profile.media')
   const { videos: profileVideos, isLoading: isLoadingProfile, fetchUserVideos } = useUserVideos()
   const { user } = useAuth()
   const [uploadVideoOpen, setUploadVideoOpen] = useState(false)
@@ -268,7 +271,7 @@ export function UserVideos({ userId }: UserMediaProps) {
     return (
       <div className="py-12 text-center">
         <p className="text-muted-foreground mb-4">
-          {isOwnProfile ? '¡Sube tu primer video!' : 'Este usuario no ha compartido videos aún.'}
+          {isOwnProfile ? t('videosEmptyOwn') : t('videosEmptyOther')}
         </p>
         {isOwnProfile && (
           <button
@@ -276,7 +279,7 @@ export function UserVideos({ userId }: UserMediaProps) {
             className="inline-flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
           >
             <PlusIcon className="w-5 h-5" />
-            Subir video
+            {t('uploadVideo')}
           </button>
         )}
         
@@ -297,13 +300,13 @@ export function UserVideos({ userId }: UserMediaProps) {
             onClick={() => setSelectedAlbumId(null)}
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
           >
-            ← Volver a todos los álbumes
+            {t('backToAlbums')}
           </button>
           <span className="text-neutral-400">/</span>
           <span className="text-neutral-900 dark:text-white font-medium">{selectedAlbum.name}</span>
         </div>
       )}
-      
+
       {/* Header con botón de acción */}
       {isOwnProfile && !selectedAlbumId && (
         <div className="flex justify-end pb-2">
@@ -312,16 +315,16 @@ export function UserVideos({ userId }: UserMediaProps) {
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors text-sm"
           >
             <PlusIcon className="w-4 h-4" />
-            Subir video
+            {t('uploadVideo')}
           </button>
         </div>
       )}
-      
+
       {/* Álbumes Section - Solo mostrar si no hay álbum seleccionado */}
       {isOwnProfile && albums.length > 0 && !selectedAlbumId && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-            Álbumes ({albums.length})
+            {t('albumsHeading', { count: albums.length })}
           </h3>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {albums.map((album) => (
@@ -344,7 +347,7 @@ export function UserVideos({ userId }: UserMediaProps) {
                       <svg className="w-12 h-12 text-neutral-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      <p className="text-xs text-neutral-500">Sin videos</p>
+                      <p className="text-xs text-neutral-500">{t('noVideos')}</p>
                     </div>
                   </div>
                 )}
@@ -352,22 +355,22 @@ export function UserVideos({ userId }: UserMediaProps) {
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <h4 className="font-semibold text-sm truncate">{album.name}</h4>
                   <p className="text-xs opacity-90">
-                    {album.photosCount} fotos · {album.videosCount} videos
+                    {t('albumStats', { photos: album.photosCount, videos: album.videosCount })}
                   </p>
                 </div>
               </button>
             ))}
           </div>
-          
+
           {/* Divider */}
           <div className="border-t border-neutral-200 dark:border-neutral-800 my-6" />
         </div>
       )}
-      
+
       {/* Videos Section */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-          {selectedAlbum ? `Videos en "${selectedAlbum.name}"` : 'Todos los videos'} ({videos.length})
+          {t('sectionWithCount', { label: selectedAlbum ? t('videosInAlbum', { name: selectedAlbum.name }) : t('allVideos'), count: videos.length })}
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {videos.map((video: any, index: number) => {
@@ -401,7 +404,7 @@ export function UserVideos({ userId }: UserMediaProps) {
                   )
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <span className="text-muted-foreground">Video</span>
+                    <span className="text-muted-foreground">{t('videoFallback')}</span>
                   </div>
                 )}
               </div>

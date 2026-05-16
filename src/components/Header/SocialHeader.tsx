@@ -23,6 +23,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 import AvatarDropdown from './AvatarDropdown'
 import { HeaderSearchDropdown } from './HeaderSearchDropdown'
@@ -36,6 +37,8 @@ interface SocialHeaderProps {
 
 export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: SocialHeaderProps) {
   const pathname = usePathname()
+  const tHeader = useTranslations('header')
+  const tNav = useTranslations('nav')
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
   const handleToggleMobileSearch = useCallback(() => {
@@ -54,14 +57,14 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
       href: '/feed',
       icon: HomeIcon,
       iconSolid: HomeIconSolid,
-      label: 'Inicio',
+      label: tNav('home'),
       isActive: pathname === '/feed',
     },
     {
       href: '/watch',
       icon: PlayIcon,
       iconSolid: PlayIconSolid,
-      label: 'Videos',
+      label: tNav('videos'),
       isActive: pathname?.startsWith('/watch'),
       featureFlag: 'VIDEOS_ENABLED' as FeatureFlag,
     },
@@ -69,7 +72,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
       href: '/grupos',
       icon: UserGroupIcon,
       iconSolid: UserGroupIconSolid,
-      label: 'Grupos',
+      label: tNav('groups'),
       isActive: pathname?.startsWith('/grupos') || pathname?.startsWith('/groups'),
       featureFlag: 'GRUPOS_ENABLED' as FeatureFlag,
     },
@@ -77,7 +80,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
       href: '/foro',
       icon: NewspaperIcon,
       iconSolid: NewspaperIconSolid,
-      label: 'Foro',
+      label: tNav('forum'),
       isActive: pathname?.startsWith('/foro'),
       featureFlag: 'FOROS_ENABLED' as FeatureFlag,
     },
@@ -93,7 +96,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
             <button
               onClick={onMobileMenuClick}
               className="rounded-lg p-2 transition-colors hover:bg-neutral-100 lg:hidden dark:hover:bg-neutral-800"
-              aria-label="Abrir menú"
+              aria-label={tHeader('openMenu')}
             >
               <Bars3Icon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
             </button>
@@ -150,7 +153,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
               <button
                 onClick={handleToggleMobileSearch}
                 className="rounded-full p-2 transition-colors hover:bg-neutral-100 md:hidden dark:hover:bg-neutral-800"
-                aria-label="Buscar"
+                aria-label={tHeader('search')}
               >
                 <MagnifyingGlassIcon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
               </button>
@@ -182,7 +185,7 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
               <button
                 onClick={handleCloseMobileSearch}
                 className="shrink-0 rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                aria-label="Cerrar búsqueda"
+                aria-label={tHeader('closeSearch')}
               >
                 <XMarkIcon className="h-6 w-6 text-neutral-700 dark:text-neutral-300" />
               </button>

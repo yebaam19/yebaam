@@ -1,3 +1,5 @@
+// TODO: i18n — error messages defined at module load time;
+// requires factory pattern (zod schema accepting a `t` instance) to translate.
 import { z } from 'zod';
 
 /**

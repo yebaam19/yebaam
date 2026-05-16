@@ -1,0 +1,98 @@
+{
+  "list": {
+    "title": "Groups",
+    "subtitle": "Connect with people who share your interests",
+    "createCta": "Create group",
+    "tabs": {
+      "myGroups": "My groups",
+      "discover": "Discover"
+    },
+    "discoverHeading": "Suggested groups for you",
+    "searchResultsHeading": "Search results",
+    "noSearchResults": "No groups matched that search.",
+    "noSuggested": "No suggested groups available",
+    "empty": {
+      "title": "You are not a member of any group",
+      "description": "Join groups to connect with people who share your interests",
+      "actionLabel": "Discover groups"
+    }
+  },
+  "card": {
+    "publicLabel": "Public",
+    "privateLabel": "Private",
+    "createdBy": "Created by",
+    "members": "{count} members",
+    "posts": "{count} posts",
+    "viewGroup": "View group",
+    "join": "Join",
+    "joining": "Joining..."
+  },
+  "search": {
+    "placeholder": "Search groups by name or category..."
+  },
+  "detail": {
+    "notFoundTitle": "Group not found",
+    "notFoundDescription": "The group you are looking for does not exist or was deleted",
+    "backToGroups": "Back to groups",
+    "creatorRole": "Group creator",
+    "publicGroup": "Public group",
+    "privateGroup": "Private group",
+    "members": "{count} members",
+    "join": "Join group",
+    "tabs": {
+      "posts": "Posts",
+      "members": "Members",
+      "about": "About"
+    },
+    "posts": {
+      "emptyTitle": "No posts yet",
+      "emptyDescription": "Be the first to share something in this group"
+    },
+    "membersTab": {
+      "title": "{count} members",
+      "description": "The member list will appear here"
+    },
+    "about": {
+      "descriptionTitle": "Description",
+      "detailsTitle": "Details",
+      "category": "Category",
+      "privacy": "Privacy",
+      "createdOn": "Created",
+      "publicLabel": "Public",
+      "privateLabel": "Private"
+    }
+  },
+  "create": {
+    "title": "Create new group",
+    "fields": {
+      "coverLabel": "Cover image (optional)",
+      "uploadPrompt": "Click to upload an image",
+      "uploadHint": "PNG, JPG or WEBP (max. 5MB)",
+      "nameLabel": "Group name *",
+      "namePlaceholder": "E.g. Web Developers",
+      "nameCounter": "{count}/100 characters",
+      "descriptionLabel": "Description *",
+      "descriptionPlaceholder": "Describe the purpose of the group...",
+      "descriptionCounter": "{count}/500 characters",
+      "categoryLabel": "Category *",
+      "privacyLabel": "Privacy *",
+      "publicOption": "Public",
+      "publicHint": "Anyone can see and join the group",
+      "privateOption": "Private",
+      "privateHint": "Only members can see the content"
+    },
+    "cancel": "Cancel",
+    "submit": "Create group",
+    "submitting": "Creating...",
+    "errors": {
+      "missingFields": "Please complete all required fields"
+    },
+    "success": "Group created successfully!"
+  },
+  "settings": {
+    "loadingDelete": "Deleting group...",
+    "title": "Group settings",
+    "noPermission": "You do not have permission to access this page",
+    "updateSuccess": "Group updated successfully"
+  }
+}

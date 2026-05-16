@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import PostUploadProgress from './PostUploadProgress'
 
 interface PostModalFooterProps {
@@ -17,6 +18,7 @@ export default function PostModalFooter({
   hasContent,
   onSubmit,
 }: PostModalFooterProps) {
+  const t = useTranslations('feed')
   return (
     <div className="border-t border-neutral-200 px-6 py-4 dark:border-neutral-800">
       {isUploading && <PostUploadProgress progress={uploadProgress} />}
@@ -27,7 +29,7 @@ export default function PostModalFooter({
         disabled={isCreating || isUploading || !hasContent}
         className="w-full rounded-lg bg-primary-600 py-2.5 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isUploading ? 'Subiendo archivos...' : isCreating ? 'Publicando...' : 'Publicar'}
+        {isUploading ? t('composer.uploading') : isCreating ? t('composer.submitting') : t('composer.submit')}
       </button>
     </div>
   )

@@ -1,0 +1,49 @@
+{
+  "header": {
+    "title": "Notificaciones",
+    "markAll": "Marcar todas"
+  },
+  "tabs": {
+    "all": "Todas",
+    "unread": "No leídas",
+    "unreadWithCount": "No leídas ({count})"
+  },
+  "list": {
+    "emptyAllTitle": "No tienes notificaciones",
+    "emptyAllDescription": "Cuando tengas notificaciones aparecerán aquí",
+    "emptyUnreadTitle": "¡Todo al día!",
+    "emptyUnreadDescription": "No tienes notificaciones sin leer",
+    "noMore": "No hay más notificaciones"
+  },
+  "item": {
+    "requestSentWaiting": "Solicitud enviada - Esperando respuesta",
+    "deleteLabel": "Eliminar notificación"
+  },
+  "friendRequest": {
+    "nowFriends": "¡Ahora son amigos!",
+    "rejected": "Solicitud rechazada",
+    "accept": "Aceptar",
+    "reject": "Rechazar"
+  },
+  "bell": {
+    "viewAll": "Ver todas las notificaciones"
+  },
+  "page": {
+    "back": "Volver",
+    "title": "Notificaciones",
+    "newCount": "{count, plural, one {# nueva} other {# nuevas}}",
+    "markAllAsRead": "Marcar todas como leídas",
+    "tabAll": "Todas",
+    "tabUnread": "Sin leer",
+    "tabRead": "Leídas",
+    "tabMentions": "Menciones",
+    "tabReactions": "Reacciones",
+    "tabComments": "Comentarios",
+    "emptyUnreadTitle": "¡Todo al día!",
+    "emptyUnreadDescription": "No tienes notificaciones sin leer",
+    "emptyReadTitle": "No hay notificaciones leídas",
+    "emptyAllTitle": "No tienes notificaciones",
+    "emptyDescription": "Las notificaciones sobre tu actividad aparecerán aquí",
+    "noMore": "No hay más notificaciones"
+  }
+}

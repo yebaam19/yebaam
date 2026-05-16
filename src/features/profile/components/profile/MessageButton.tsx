@@ -4,6 +4,7 @@ import { ChatBubbleLeftIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 
 interface MessageButtonProps {
   userId: string;
@@ -12,6 +13,7 @@ interface MessageButtonProps {
 
 /** Secondary Mensaje control (filled gray), aligned con PageDetailHeader. */
 export default function MessageButton({ userId, className }: MessageButtonProps) {
+  const t = useTranslations('profile.actions');
   return (
     <Link
       href={`/chat/${userId}` as Route}
@@ -21,7 +23,7 @@ export default function MessageButton({ userId, className }: MessageButtonProps)
       )}
     >
       <ChatBubbleLeftIcon className="h-4 w-4 shrink-0" />
-      Mensaje
+      {t('message')}
     </Link>
   );
 }

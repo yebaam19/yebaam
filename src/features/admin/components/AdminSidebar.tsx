@@ -18,6 +18,19 @@ import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import Image from 'next/image'
 import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
+import { useTranslations } from 'next-intl'
+
+// Maps the Spanish nav labels (defined in nav.ts) to translation keys under admin.nav.
+const NAV_LABEL_TO_KEY: Record<string, string> = {
+  'Dashboard': 'dashboard',
+  'Foros': 'foros',
+  'Chat Público': 'chatPublico',
+  'Usuarios': 'usuarios',
+  'Verificaciones': 'verifications',
+  'Credenciales Profesionales': 'professionalCredentials',
+  'Club de coleccionistas': 'musicClub',
+  'Ajustes': 'ajustes',
+}
 
 const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
   'squares-2x2': Squares2X2Icon,
@@ -39,6 +52,14 @@ export default function AdminSidebar({ onNavigate }: Props) {
   const router = useRouter()
   const logout = useAuthStore((s) => s.logout)
   const [isLoggingOut, startLogout] = useTransition()
+  const tShell = useTranslations('admin.shell')
+  const tSidebar = useTranslations('admin.sidebar')
+  const tNav = useTranslations('admin.nav')
+
+  const navLabel = (label: string) => {
+    const key = NAV_LABEL_TO_KEY[label]
+    return key ? tNav(key) : label
+  }
 
   const handleLogout = () => {
     startLogout(async () => {
@@ -60,12 +81,12 @@ export default function AdminSidebar({ onNavigate }: Props) {
           />
         </Link>
         <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-700 uppercase dark:bg-primary-900/30 dark:text-primary-300">
-          Admin
+          {tShell('adminBadge')}
         </span>
       </div>
       <div className="px-4 pt-5 pb-3">
         <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
-          Administración
+          {tSidebar('section')}
         </p>
       </div>
       <ul className="flex-1 space-y-1 px-2">
@@ -83,12 +104,12 @@ export default function AdminSidebar({ onNavigate }: Props) {
               <li key={item.label}>
                 <span
                   className={`${base} cursor-not-allowed text-neutral-400 dark:text-neutral-600`}
-                  title="Próximamente"
+                  title={tSidebar('soonTitle')}
                 >
                   <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
+                  <span>{navLabel(item.label)}</span>
                   <span className="ml-auto rounded bg-neutral-100 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-800">
-                    Pronto
+                    {tSidebar('soon')}
                   </span>
                 </span>
               </li>
@@ -110,7 +131,7 @@ export default function AdminSidebar({ onNavigate }: Props) {
                     isActive ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500 dark:text-neutral-400'
                   }`}
                 />
-                <span>{item.label}</span>
+                <span>{navLabel(item.label)}</span>
                 {isActive && (
                   <span
                     aria-hidden="true"
@@ -143,7 +164,7 @@ export default function AdminSidebar({ onNavigate }: Props) {
               d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
             />
           </svg>
-          <span>{isLoggingOut ? 'Cerrando…' : 'Cerrar sesión'}</span>
+          <span>{isLoggingOut ? tSidebar('loggingOut') : tSidebar('logout')}</span>
         </button>
       </div>
     </nav>

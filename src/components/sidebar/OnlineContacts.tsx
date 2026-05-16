@@ -7,6 +7,7 @@ import { Search01Icon, UserAdd01Icon, UserMultiple02Icon } from '@hugeicons/core
 import { HugeiconsIcon } from '@hugeicons/react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface OnlineContact {
   id: string;
@@ -22,6 +23,7 @@ interface OnlineContactsProps {
 }
 
 export default function OnlineContacts({ contacts, onContactClick }: OnlineContactsProps) {
+  const t = useTranslations('nav');
   const onlineCount = contacts.filter(c => c.isOnline).length;
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [query, setQuery] = useState('');
@@ -36,11 +38,11 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
     <section className="rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Contactos ({onlineCount}/{contacts.length})
+          {t('contactsWithCount', { online: onlineCount, total: contacts.length })}
         </h3>
         <Popover className="relative">
           <PopoverButton
-            aria-label="Opciones de contactos"
+            aria-label={t('contactOptions')}
             className="rounded-lg p-1 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50 dark:hover:bg-neutral-800"
           >
             <EllipsisHorizontalIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
@@ -67,7 +69,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                       }`}
                     />
                   </span>
-                  {showOnlineOnly ? 'Mostrar todos' : 'Solo en línea'}
+                  {showOnlineOnly ? t('showAll') : t('onlineOnly')}
                 </button>
                 <Link
                   href="/feed/friends"
@@ -80,7 +82,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                     strokeWidth={1.5}
                     className="text-neutral-500 dark:text-neutral-300"
                   />
-                  Ver todos los amigos
+                  {t('viewAllFriends')}
                 </Link>
                 <Link
                   href="/feed/friends?tab=suggestions"
@@ -93,7 +95,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                     strokeWidth={1.5}
                     className="text-neutral-500 dark:text-neutral-300"
                   />
-                  Añadir amigos
+                  {t('addFriends')}
                 </Link>
                 <Link
                   href="/feed/friends?tab=search"
@@ -106,7 +108,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                     strokeWidth={1.5}
                     className="text-neutral-500 dark:text-neutral-300"
                   />
-                  Buscar contactos
+                  {t('searchContacts')}
                 </Link>
               </div>
             )}
@@ -118,18 +120,18 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar contacto..."
+          placeholder={t('searchContactPlaceholder')}
           className="mb-2 w-full rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
         />
       )}
       <div className="space-y-1">
         {contacts.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
-            No tienes amigos aún
+            {t('noFriendsYet')}
           </p>
         ) : filteredContacts.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
-            Sin resultados
+            {t('noResults')}
           </p>
         ) : (
           filteredContacts.map((contact) => (
@@ -156,7 +158,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
               {/* Nombre - Abre el chat */}
               <button
                 type="button"
-                aria-label={`Abrir chat con ${contact.name}`}
+                aria-label={t('openChatWith', { name: contact.name })}
                 onClick={() => onContactClick(contact)}
                 className="flex min-h-11 min-w-0 flex-1 items-center rounded-lg text-left hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 dark:hover:bg-neutral-800"
               >

@@ -1,0 +1,50 @@
+{
+  "input": {
+    "placeholder": "Search Yebaam...",
+    "clearAria": "Clear search"
+  },
+  "filters": {
+    "all": "All",
+    "users": "Users",
+    "posts": "Posts",
+    "hashtags": "Hashtags",
+    "groups": "Groups"
+  },
+  "empty": {
+    "noQueryTitle": "Search Yebaam",
+    "noQueryDescription": "Find people, posts, hashtags, and groups",
+    "noResultsTitle": "No results found",
+    "noResultsWithQuery": "No results for \"{query}\". Try different keywords.",
+    "noResultsGeneric": "Try searching for something else",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "We couldn't complete your search. Please try again."
+  },
+  "user": {
+    "mutualFriends": "{count, plural, =1 {# mutual friend} other {# mutual friends}}",
+    "followers": "{count, plural, =1 {# follower} other {# followers}}",
+    "following": "Following",
+    "follow": "Follow"
+  },
+  "post": {
+    "minutesAgo": "{n}m ago",
+    "hoursAgo": "{n}h ago",
+    "daysAgo": "{n}d ago",
+    "mediaAlt": "Post media"
+  },
+  "hashtag": {
+    "posts": "{count, plural, =1 {# post} other {# posts}}",
+    "growth": "↗ +{rate}% in the last 24h"
+  },
+  "history": {
+    "title": "Recent searches",
+    "clearAll": "Clear all",
+    "inScope": "in {scope}",
+    "searchAria": "Search: {query}",
+    "removeAria": "Remove from history"
+  },
+  "suggestions": {
+    "title": "Trending",
+    "searchesCount": "{count} searches",
+    "hot": "HOT"
+  }
+}

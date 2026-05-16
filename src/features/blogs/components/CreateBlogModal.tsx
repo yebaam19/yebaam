@@ -5,6 +5,7 @@ import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
 import { Fragment, useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { useCreateBlog } from '../hooks/useBlogs'
 import { blogsService } from '../services/blogs.service'
 import { BlogFormFields, type BlogFormData } from './BlogFormFields'
@@ -17,6 +18,7 @@ interface CreateBlogModalProps {
 
 export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
   const router = useRouter()
+  const t = useTranslations('blogs')
   const createBlogMutation = useCreateBlog()
   const [uploadingImages, setUploadingImages] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -102,7 +104,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
     e.preventDefault()
 
     if (!formData.name || !formData.description) {
-      toast.error('El nombre y descripción son requeridos')
+      toast.error(t('create.errorRequired'))
       return
     }
 
@@ -125,12 +127,12 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
         ...imageUrls, // profileImageUrl y coverImageUrl
       })
 
-      toast.success('Blog creado exitosamente')
+      toast.success(t('create.success'))
       handleClose()
       router.push(`/feed/blogs/${blog.slug}`)
     } catch (error: any) {
       console.error('Error creating blog:', error)
-      toast.error(error?.response?.data?.message || 'Error al crear el blog')
+      toast.error(error?.response?.data?.message || t('create.errorCreating'))
     }
   }
 
@@ -186,10 +188,10 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                 <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
                   <div>
                     <Dialog.Title as="h3" className="text-xl font-semibold text-neutral-900 dark:text-white">
-                      Crear Blog
+                      {t('create.title')}
                     </Dialog.Title>
                     <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-                      Comparte tu conocimiento y pasión con el mundo
+                      {t('create.subtitle')}
                     </p>
                   </div>
                   <button
@@ -213,7 +215,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                   {/* Imágenes */}
                   <div className="grid grid-cols-2 gap-4">
                     <BlogImageUploader
-                      label="Imagen de portada (opcional)"
+                      label={t('create.coverLabel')}
                       preview={coverPreview}
                       file={coverFile}
                       onFileChange={handleCoverChange}
@@ -225,7 +227,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
 
                   {uploadingImages && (
                     <div className="text-center text-sm text-primary-600 dark:text-primary-400">
-                      ⏳ Subiendo imágenes a CloudFront...
+                      ⏳ {t('create.uploadingHint')}
                     </div>
                   )}
 
@@ -237,7 +239,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                       disabled={createBlogMutation.isPending}
                       className="flex-1 rounded-lg border border-neutral-300 px-4 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
                     >
-                      Cancelar
+                      {t('actions.cancel')}
                     </button>
                     <button
                       type="submit"
@@ -247,10 +249,10 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                       className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {uploadingImages
-                        ? 'Subiendo imágenes...'
+                        ? t('create.uploading')
                         : createBlogMutation.isPending
-                          ? 'Creando...'
-                          : 'Crear blog'}
+                          ? t('create.submitting')
+                          : t('create.submit')}
                     </button>
                   </div>
                 </form>

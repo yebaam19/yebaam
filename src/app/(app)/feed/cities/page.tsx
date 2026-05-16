@@ -1,16 +1,19 @@
 import { CitiesGrid, CitiesHero, cityService } from '@/features/cities'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Portal de Ciudades | Conecta con tu comunidad',
-  description:
-    'Explora y conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad local.',
-  openGraph: {
-    title: 'Portal de Ciudades',
-    description: 'Explora y conoce ciudades destacadas por su cultura, historia y conexión.',
-    type: 'website',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('cities')
+  return {
+    title: t('metadata.listTitle'),
+    description: t('metadata.listDescription'),
+    openGraph: {
+      title: t('metadata.ogTitle'),
+      description: t('metadata.ogDescription'),
+      type: 'website',
+    },
+  }
 }
 
 /**

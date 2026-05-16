@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
 import { useCommentStore } from '../store/comment.store';
 import { CommentAuthorAvatar } from './CommentAuthorAvatar';
@@ -17,37 +18,31 @@ interface CommentInputProps {
 /**
  * Input principal para crear comentarios
  * Incluye: Avatar + Textarea auto-resize + Botón enviar
- * 
- * @example
- * <CommentInput 
- *   postId="123" 
- *   placeholder="Escribe un comentario..."
- *   onCommentCreated={() => console.log('Comentario creado')}
- * />
  */
-export function CommentInput({ 
-  postId, 
-  placeholder = 'Escribe un comentario...',
+export function CommentInput({
+  postId,
+  placeholder,
   onCommentCreated,
   className = ''
 }: CommentInputProps) {
+  const t = useTranslations('feed');
   const { user } = useAuth();
   const { createComment } = useCommentStore();
-  
+
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim()) {
-      setError('El comentario no puede estar vacío');
+      setError(t('comments.errors.empty'));
       return;
     }
 
     if (content.length > 500) {
-      setError('El comentario es demasiado largo (máximo 500 caracteres)');
+      setError(t('comments.errors.tooLong'));
       return;
     }
 
@@ -62,14 +57,12 @@ export function CommentInput({
 
       // Limpiar input
       setContent('');
-      
+
       // Callback opcional
       onCommentCreated?.();
-      
-      console.log(' [CommentInput] Comentario creado exitosamente');
     } catch (err) {
       console.error(' [CommentInput] Error al crear comentario:', err);
-      setError(err instanceof Error ? err.message : 'Error al crear comentario');
+      setError(err instanceof Error ? err.message : t('comments.errors.createDefault'));
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +86,7 @@ export function CommentInput({
       <CommentTextarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('comments.inputPlaceholder')}
         error={error || undefined}
         disabled={isSubmitting}
         maxLength={500}

@@ -8,6 +8,7 @@
 'use client';
 
 import { ArrowPathIcon, CheckIcon, XCircleIcon } from '@/components/icons/heroicons-shim';
+import { useTranslations } from 'next-intl';
 
 interface FriendRequestActionsProps {
   isAddressee: boolean; // true si eres el destinatario (puedes aceptar/rechazar)
@@ -24,6 +25,7 @@ export default function FriendRequestActionsButtons({
   onReject,
   onCancel,
 }: FriendRequestActionsProps) {
+  const t = useTranslations('friendships.actionsButtons');
   if (isAddressee) {
     // Si eres el destinatario: Botones para Aceptar y Rechazar
     return (
@@ -36,16 +38,16 @@ export default function FriendRequestActionsButtons({
           {actionLoading === 'accept' ? (
             <>
               <ArrowPathIcon className="w-4 h-4 animate-spin" />
-              <span>Aceptando...</span>
+              <span>{t('accepting')}</span>
             </>
           ) : (
             <>
               <CheckIcon className="w-5 h-5" />
-              <span>Aceptar</span>
+              <span>{t('accept')}</span>
             </>
           )}
         </button>
-        
+
         <button
           onClick={onReject}
           disabled={actionLoading !== null}
@@ -54,12 +56,12 @@ export default function FriendRequestActionsButtons({
           {actionLoading === 'reject' ? (
             <>
               <ArrowPathIcon className="w-4 h-4 animate-spin" />
-              <span>Rechazando...</span>
+              <span>{t('rejecting')}</span>
             </>
           ) : (
             <>
               <XCircleIcon className="w-5 h-5" />
-              <span>Rechazar</span>
+              <span>{t('reject')}</span>
             </>
           )}
         </button>
@@ -77,12 +79,12 @@ export default function FriendRequestActionsButtons({
       {actionLoading === 'cancel' ? (
         <>
           <ArrowPathIcon className="w-4 h-4 animate-spin" />
-          <span>Cancelando...</span>
+          <span>{t('cancelling')}</span>
         </>
       ) : (
         <>
           <XCircleIcon className="w-5 h-5" />
-          <span>Cancelar solicitud</span>
+          <span>{t('cancelRequest')}</span>
         </>
       )}
     </button>

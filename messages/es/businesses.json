@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "listTitle": "Negocios | Descubre negocios locales",
+    "listDescription": "Explora y descubre negocios locales en tu comunidad. Encuentra restaurantes, tiendas, servicios y más cerca de ti.",
+    "ogTitle": "Negocios | Descubre negocios locales",
+    "ogDescription": "Explora y descubre negocios locales en tu comunidad."
+  },
+  "comingSoon": {
+    "eyebrow": "Próximamente",
+    "title": "Negocios",
+    "description": "Estamos preparando esta sección para publicar el directorio con una experiencia más sólida y consistente.",
+    "backToFeed": "Volver al feed"
+  },
+  "hero": {
+    "title": "Directorio de Negocios",
+    "subtitle": "Descubre restaurantes, tiendas, servicios y más. Conecta con los mejores negocios locales y apoya a tu comunidad.",
+    "createCta": "Registrar mi negocio",
+    "features": {
+      "catalog": {
+        "title": "Catálogo de Negocios",
+        "description": "Explora una amplia variedad de negocios organizados por categoría y ubicación."
+      },
+      "local": {
+        "title": "Negocios Locales",
+        "description": "Encuentra negocios cerca de ti y apoya a tu comunidad local."
+      },
+      "reviews": {
+        "title": "Reseñas Verificadas",
+        "description": "Consulta las reseñas y calificaciones antes de visitar un negocio."
+      }
+    }
+  },
+  "card": {
+    "owner": "Propietario",
+    "reviews": "reseñas",
+    "photos": "fotos",
+    "userFallback": "Usuario"
+  },
+  "profile": {
+    "loading": "Cargando negocio…",
+    "notFound": {
+      "title": "Negocio no encontrado",
+      "description": "El negocio que buscas no existe o ha sido eliminado."
+    },
+    "tabs": {
+      "home": "Inicio",
+      "about": "Acerca de"
+    },
+    "about": {
+      "title": "Acerca de",
+      "noDescription": "Sin descripción"
+    },
+    "sectionsLabel": "Secciones",
+    "sections": {
+      "photos": "Fotos",
+      "reviews": "Valoraciones",
+      "hours": "Horarios",
+      "contact": "Contacto"
+    },
+    "reviews": {
+      "title": "Valoraciones",
+      "comingSoon": "Las valoraciones estarán disponibles próximamente."
+    },
+    "hours": {
+      "title": "Horarios",
+      "empty": "No hay horarios disponibles.",
+      "closed": "Cerrado"
+    },
+    "contact": {
+      "title": "Contacto",
+      "phone": "Teléfono",
+      "email": "Email",
+      "website": "Sitio web",
+      "address": "Dirección"
+    }
+  },
+  "createModal": {
+    "title": "Registrar negocio",
+    "stepLabel": "{step} - Paso {current} de {total}",
+    "steps": {
+      "basic": "Información básica",
+      "categoryLocation": "Categoría y ubicación",
+      "contact": "Información de contacto",
+      "social": "Redes sociales",
+      "default": "Crear negocio"
+    },
+    "errorFallback": "Error al crear el negocio. Intenta nuevamente."
+  }
+}

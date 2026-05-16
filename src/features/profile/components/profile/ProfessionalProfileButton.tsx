@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { BriefcaseIcon } from '@/components/icons/heroicons-shim';
+import { useTranslations } from 'next-intl';
 
 interface ProfessionalProfileButtonProps {
   username: string;
@@ -15,6 +16,7 @@ export default function ProfessionalProfileButton({
   isOwnProfile,
   hasProfessionalProfile,
 }: ProfessionalProfileButtonProps) {
+  const t = useTranslations('profile.actions');
   // Non-owner viewing a user without a professional profile (or without
   // visibility for it): button is absent.
   if (!isOwnProfile && !hasProfessionalProfile) return null;
@@ -26,8 +28,8 @@ export default function ProfessionalProfileButton({
   ) as Route;
 
   const label = hasProfessionalProfile
-    ? 'Perfil profesional'
-    : 'Crear perfil profesional';
+    ? t('professionalProfile')
+    : t('createProfessionalProfile');
 
   return (
     <Link

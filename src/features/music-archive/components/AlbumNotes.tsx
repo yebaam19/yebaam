@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   notes: string;
@@ -13,6 +14,7 @@ interface Props {
  *  prose block — preserves single-line line breaks but doesn't try to be an
  *  HTML renderer (notes are plain text after `stripHtml` at import time). */
 export function AlbumNotes({ notes, collapseAfter = 420 }: Props) {
+  const t = useTranslations('musica');
   const [expanded, setExpanded] = useState(false);
   const isLong = notes.length > collapseAfter;
   const display = isLong && !expanded ? notes.slice(0, collapseAfter).trimEnd() + '…' : notes;
@@ -28,7 +30,7 @@ export function AlbumNotes({ notes, collapseAfter = 420 }: Props) {
           onClick={() => setExpanded((v) => !v)}
           className="text-xs font-medium text-amber-700 hover:underline dark:text-amber-400"
         >
-          {expanded ? 'Ver menos' : 'Mostrar más'}
+          {expanded ? t('albumNotes.showLess') : t('albumNotes.showMore')}
         </button>
       )}
     </div>

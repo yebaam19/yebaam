@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import {
   getForumByslugInSpace,
   getSpaceBySlug,
@@ -13,6 +14,7 @@ interface PageProps {
 
 export default async function NewTopicPage({ params }: PageProps) {
   const { spaceSlug, forumSlug } = await params
+  const t = await getTranslations('foro')
   const space = await getSpaceBySlug(spaceSlug)
   if (!space) notFound()
   const forum = await getForumByslugInSpace(space.id, forumSlug)
@@ -22,11 +24,11 @@ export default async function NewTopicPage({ params }: PageProps) {
   return (
     <div className="container mx-auto max-w-3xl space-y-4 px-4 py-4 sm:py-6">
       <ForoHeader
-        title="Nuevo tema"
-        subtitle={`Publicando en ${forum.name}`}
+        title={t('newTopic.title')}
+        subtitle={t('newTopic.subtitle', { forumName: forum.name })}
         crumbs={[
           ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
-          { href: '/foro', label: 'Foros' },
+          { href: '/foro', label: t('crumbs.foros') },
           { href: `/foro/${space.slug}`, label: space.name },
           { href: `/foro/${space.slug}/${forum.slug}`, label: forum.name },
         ]}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { getServerClient } from '@/utils/supabase/server'
 import {
   ChatBubbleLeftRightIcon,
@@ -81,6 +82,7 @@ function StatCard({ href, label, value, hint, tone = 'primary', icon: Icon }: St
 
 export default async function AdminOverviewPage() {
   const client = await getServerClient()
+  const t = await getTranslations('admin.dashboard')
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -107,9 +109,9 @@ export default async function AdminOverviewPage() {
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{t('title')}</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Resumen de la plataforma.
+          {t('subtitle')}
         </p>
       </header>
 
@@ -118,29 +120,29 @@ export default async function AdminOverviewPage() {
           href={'/admin/foros' as Route}
           tone="primary"
           icon={Squares2X2Icon}
-          label="Espacios activos"
+          label={t('activeSpaces')}
           value={spacesEnabled.count ?? 0}
-          hint={`${spacesDisabled.count ?? 0} inactivos`}
+          hint={t('inactiveHint', { count: spacesDisabled.count ?? 0 })}
         />
         <StatCard
           href={'/admin/foros/temas' as Route}
           tone="sky"
           icon={ChatBubbleLeftRightIcon}
-          label="Temas (7 días)"
+          label={t('topicsWeek')}
           value={topicsWeek.count ?? 0}
         />
         <StatCard
           href={'/admin/foros/temas' as Route}
           tone="amber"
           icon={ChatBubbleLeftRightIcon}
-          label="Mensajes (7 días)"
+          label={t('postsWeek')}
           value={postsWeek.count ?? 0}
         />
         <StatCard
           href={'/admin/ajustes' as Route}
           tone="violet"
           icon={UsersIcon}
-          label="Administradores"
+          label={t('administrators')}
           value={adminsCount.count ?? 0}
         />
       </div>
@@ -148,24 +150,24 @@ export default async function AdminOverviewPage() {
       <section className="mt-8 space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-            Estadísticas de ocupación
+            {t('occupationStatsTitle')}
           </h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Distribución de usuarios por ocupación, ubicación y género.
+            {t('occupationStatsSubtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
             <h3 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
-              Usuarios por ocupación
+              {t('usersByOccupation')}
             </h3>
             <OccupationDistributionChart data={distribution} />
           </article>
 
           <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
             <h3 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
-              Ocupación por género
+              {t('occupationByGender')}
             </h3>
             <OccupationByGenderChart data={byGender} />
           </article>
@@ -173,7 +175,7 @@ export default async function AdminOverviewPage() {
 
         <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
-            Ocupación por departamento (top 10)
+            {t('occupationByDepartment')}
           </h3>
           <OccupationByDepartmentChart data={byDepartment} />
         </article>

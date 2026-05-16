@@ -4,6 +4,7 @@ import { Tab } from '@headlessui/react';
 import { cn } from '@/lib/utils';
 import NotificationList from './NotificationList';
 import type { Notification } from '../interfaces/notification.interfaces';
+import { useTranslations } from 'next-intl';
 
 interface NotificationTabsProps {
   allNotifications: Notification[];
@@ -32,8 +33,9 @@ export default function NotificationTabs({
   onRead,
   onDelete,
 }: NotificationTabsProps) {
+  const t = useTranslations('notification');
   return (
-    <Tab.Group 
+    <Tab.Group
       selectedIndex={selectedTab === 'all' ? 0 : 1} 
       onChange={(index) => onTabChange(index === 0 ? 'all' : 'unread')}
     >
@@ -45,7 +47,7 @@ export default function NotificationTabs({
             ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
             : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
         )}>
-          Todas
+          {t('tabs.all')}
         </Tab>
         <Tab className={({ selected }) => cn(
           'flex-1 py-3 text-sm font-medium transition-colors',
@@ -54,7 +56,7 @@ export default function NotificationTabs({
             ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
             : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
         )}>
-          No leídas {unreadCount > 0 && `(${unreadCount})`}
+          {unreadCount > 0 ? t('tabs.unreadWithCount', { count: unreadCount }) : t('tabs.unread')}
         </Tab>
       </Tab.List>
 
@@ -68,8 +70,8 @@ export default function NotificationTabs({
             hasMore={hasMore}
             emptyMessage={{
               icon: 'bell',
-              title: 'No tienes notificaciones',
-              description: 'Cuando tengas notificaciones aparecerán aquí',
+              title: t('list.emptyAllTitle'),
+              description: t('list.emptyAllDescription'),
             }}
             onScroll={onScroll}
             onRead={onRead}
@@ -86,8 +88,8 @@ export default function NotificationTabs({
             hasMore={hasMore}
             emptyMessage={{
               icon: 'check',
-              title: '¡Todo al día!',
-              description: 'No tienes notificaciones sin leer',
+              title: t('list.emptyUnreadTitle'),
+              description: t('list.emptyUnreadDescription'),
             }}
             onScroll={onScroll}
             onRead={onRead}

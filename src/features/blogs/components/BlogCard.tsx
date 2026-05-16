@@ -1,7 +1,10 @@
+'use client'
+
 import { CheckBadgeIcon, DocumentTextIcon, EyeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FC } from 'react'
+import { useTranslations } from 'next-intl'
 import type { Blog } from '../types/blog.types'
 import { formatFollowersCount, formatViewsCount, getCategoryColor, getCategoryLabel } from '../utils/blogHelpers'
 
@@ -13,6 +16,7 @@ interface BlogCardProps {
 }
 
 export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoading = false }) => {
+  const t = useTranslations('blogs.card')
   const handleFollowClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -52,7 +56,7 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
               {blog.owner?.avatar ? (
                 <Image
                   src={blog.owner.avatar}
-                  alt={blog.owner.name || 'Usuario'}
+                  alt={blog.owner.name || t('fallbackUserAlt')}
                   fill
                   sizes="36px"
                   className="object-cover"
@@ -66,11 +70,11 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
             </div>
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1 truncate text-sm font-medium text-neutral-900 dark:text-white">
-                <span className="truncate">{blog.owner?.name || 'Usuario desconocido'}</span>
+                <span className="truncate">{blog.owner?.name || t('unknownUser')}</span>
                 {blog.owner?.isVerified && <CheckBadgeIcon className="h-4 w-4 shrink-0 text-primary-500" />}
               </p>
               <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                @{blog.owner?.username || 'unknown'}
+                @{blog.owner?.username || t('fallbackUsername')}
               </p>
             </div>
           </div>
@@ -137,12 +141,12 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Procesando...
+                  {t('processing')}
                 </span>
               ) : blog.isFollowing ? (
-                'Siguiendo'
+                t('following')
               ) : (
-                'Seguir'
+                t('follow')
               )}
             </button>
           )}

@@ -8,6 +8,7 @@ import {
 } from '@/components/icons/heroicons-shim';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 
 interface ProfileActionsMenuProps {
@@ -16,6 +17,7 @@ interface ProfileActionsMenuProps {
 }
 
 export default function ProfileActionsMenu({ userId, isFriends = false }: ProfileActionsMenuProps) {
+  const t = useTranslations('profile.actions');
   const [open, setOpen] = useState(false);
   const [showUnfriendConfirm, setShowUnfriendConfirm] = useState(false);
   const [isUnfriending, setIsUnfriending] = useState(false);
@@ -31,13 +33,13 @@ export default function ProfileActionsMenu({ userId, isFriends = false }: Profil
   const handleBlock = () => {
     setOpen(false);
     // TODO: wire to moderation API
-    toast.info('La función de bloqueo estará disponible pronto');
+    toast.info(t('blockComingSoon'));
   };
 
   const handleReport = () => {
     setOpen(false);
     // TODO: wire to moderation API
-    toast.info('La función de reporte estará disponible pronto');
+    toast.info(t('reportComingSoon'));
   };
 
   const handleAskUnfriend = () => {
@@ -60,7 +62,7 @@ export default function ProfileActionsMenu({ userId, isFriends = false }: Profil
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        aria-label="Más acciones"
+        aria-label={t('moreActions')}
         className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-900 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
       >
         <EllipsisHorizontalIcon className="h-5 w-5" />
@@ -76,7 +78,7 @@ export default function ProfileActionsMenu({ userId, isFriends = false }: Profil
                 className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
               >
                 <UserMinusIcon className="h-4 w-4" />
-                Eliminar amigo
+                {t('removeFriend')}
               </button>
             )}
             <button
@@ -84,14 +86,14 @@ export default function ProfileActionsMenu({ userId, isFriends = false }: Profil
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               <LockClosedIcon className="h-4 w-4" />
-              Bloquear usuario
+              {t('blockUser')}
             </button>
             <button
               onClick={handleReport}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
             >
               <FlagIcon className="h-4 w-4" />
-              Reportar usuario
+              {t('reportUser')}
             </button>
           </div>
         </>
@@ -111,10 +113,10 @@ export default function ProfileActionsMenu({ userId, isFriends = false }: Profil
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    ¿Eliminar de amigos?
+                    {t('unfriendTitle')}
                   </h3>
                   <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    Esta persona dejará de aparecer en tu lista de amigos. Podrás enviarle otra solicitud más tarde.
+                    {t('unfriendDescription')}
                   </p>
                 </div>
               </div>
@@ -125,14 +127,14 @@ export default function ProfileActionsMenu({ userId, isFriends = false }: Profil
                   disabled={isUnfriending}
                   className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={handleConfirmUnfriend}
                   disabled={isUnfriending || !friendshipId}
                   className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 >
-                  {isUnfriending ? 'Eliminando...' : 'Eliminar'}
+                  {isUnfriending ? t('removing') : t('remove')}
                 </button>
               </div>
             </div>

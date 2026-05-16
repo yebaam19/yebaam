@@ -1,0 +1,38 @@
+{
+  "chat": {
+    "title": "Live chat",
+    "viewersOne": "{count} viewer",
+    "viewersOther": "{count} viewers",
+    "loginPrompt": "Sign in to view the chat",
+    "empty": "Be the first to comment",
+    "inputPlaceholder": "Write a comment…",
+    "deleteTitle": "Delete comment",
+    "deleteConfirm": "Delete this comment?",
+    "errors": {
+      "send": "Failed to send comment",
+      "delete": "Failed to delete comment"
+    }
+  },
+  "recorded": {
+    "heading": "Recorded streams",
+    "countOne": "{count} recording",
+    "countOther": "{count} recordings",
+    "empty": "No recorded streams yet",
+    "processing": "Processing",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "timeAgo": {
+      "lessThanHour": "Less than 1 hour ago",
+      "hoursOne": "{count} hour ago",
+      "hoursOther": "{count} hours ago",
+      "daysOne": "{count} day ago",
+      "daysOther": "{count} days ago"
+    }
+  },
+  "active": {
+    "liveBadge": "LIVE",
+    "liveBadgeLong": "ON AIR",
+    "countOne": "{count} active stream",
+    "countOther": "{count} active streams"
+  }
+}

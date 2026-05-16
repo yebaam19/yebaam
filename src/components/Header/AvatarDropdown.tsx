@@ -3,12 +3,18 @@
 import { useAuth } from '@/features/auth/context/auth-context'
 import Avatar from '@/ui/Avatar'
 import { Divider } from '@/ui/divider'
-import SwitchDarkMode2 from '@/ui/SwitchDarkMode2'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { Idea01Icon, Logout01Icon, ShieldUserIcon, UserIcon, UserMultiple02Icon } from '@hugeicons/core-free-icons'
+import {
+  Logout01Icon,
+  Settings02Icon,
+  ShieldUserIcon,
+  UserIcon,
+  UserMultiple02Icon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { supabase } from '@/utils/supabase/client'
@@ -20,6 +26,7 @@ interface Props {
 }
 
 export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
+  const t = useTranslations('avatar')
   const { user, logout } = useAuth()
   const router = useRouter()
   const [verifyOpen, setVerifyOpen] = useState(false)
@@ -148,7 +155,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
                     >
                       <path d="M12 2.75 14.39 8 20 8.81l-4 3.92.94 5.49L12 15.77l-4.94 2.45L8 12.73l-4-3.92L9.61 8 12 2.75Z" />
                     </svg>
-                    Pionero #{pioneerNumber}
+                    {t('pioneerNumber', { n: pioneerNumber })}
                   </span>
                 )}
               </div>
@@ -164,7 +171,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                 <HugeiconsIcon icon={UserIcon} size={24} strokeWidth={1.5} />
               </div>
-              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">Ver perfil</p>
+              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">{t('viewProfile')}</p>
             </Link>
 
             {/* Mis Amigos */}
@@ -175,7 +182,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                 <HugeiconsIcon icon={UserMultiple02Icon} size={24} strokeWidth={1.5} />
               </div>
-              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">Amigos</p>
+              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">{t('friends')}</p>
             </Link>
 
             {/* Mis Fotos */}
@@ -215,7 +222,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
                 <div className="flex shrink-0 items-center justify-center text-yellow-600 dark:text-yellow-400">
                   <HugeiconsIcon icon={ShieldUserIcon} size={24} strokeWidth={1.5} />
                 </div>
-                <p className="ms-4 text-sm font-medium text-yellow-800 dark:text-yellow-300">Autenticar perfil</p>
+                <p className="ms-4 text-sm font-medium text-yellow-800 dark:text-yellow-300">{t('verifyAccount')}</p>
               </button>
             )}
 
@@ -233,7 +240,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
                   <HugeiconsIcon icon={ShieldUserIcon} size={24} strokeWidth={1.5} />
                 </div>
                 <div className="ms-4">
-                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">Mi identificación</p>
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">{t('myIdentification')}</p>
                   <p className="font-mono text-[10px] text-emerald-700/70 dark:text-emerald-400/70">{uniqueIdCode}</p>
                 </div>
               </Link>
@@ -241,38 +248,15 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
 
             <Divider />
 
-            {/* Configuración */}
-            {/* <Link
-              href="/configuracion"
+            <Link
+              href="/ajustes"
               className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-primary-500/50 dark:hover:bg-neutral-700"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                 <HugeiconsIcon icon={Settings02Icon} size={24} strokeWidth={1.5} />
               </div>
-              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">Configuración</p>
-            </Link> */}
-
-            {/* Dark Mode Toggle */}
-            <div className="focus-visible:ring-opacity-50 -m-3 flex items-center justify-between rounded-lg p-2 hover:bg-neutral-100 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 dark:hover:bg-neutral-700">
-              <div className="flex items-center">
-                <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-                  <HugeiconsIcon icon={Idea01Icon} size={24} strokeWidth={1.5} />
-                </div>
-                <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">Modo oscuro</p>
-              </div>
-              <SwitchDarkMode2 />
-            </div>
-
-            {/* Ayuda */}
-            {/* <Link
-              href="/ayuda"
-              className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-primary-500/50 dark:hover:bg-neutral-700"
-            >
-              <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-                <HugeiconsIcon icon={CustomerSupportIcon} size={24} strokeWidth={1.5} />
-              </div>
-              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">Centro de ayuda</p>
-            </Link> */}
+              <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">{t('settings')}</p>
+            </Link>
 
             {isPlatformAdmin && (
               <Link
@@ -283,7 +267,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
                   <HugeiconsIcon icon={UserIcon} size={24} strokeWidth={1.5} />
                 </div>
                 <p className="ms-4 text-sm font-medium text-neutral-900 dark:text-white">
-                  Administración
+                  {t('administration')}
                 </p>
               </Link>
             )}
@@ -296,7 +280,7 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
               <div className="flex shrink-0 items-center justify-center text-red-600 dark:text-red-400">
                 <HugeiconsIcon icon={Logout01Icon} size={24} strokeWidth={1.5} />
               </div>
-              <p className="ms-4 text-sm font-medium text-red-600 dark:text-red-400">Cerrar sesión</p>
+              <p className="ms-4 text-sm font-medium text-red-600 dark:text-red-400">{t('logout')}</p>
             </button>
           </div>
         </PopoverPanel>

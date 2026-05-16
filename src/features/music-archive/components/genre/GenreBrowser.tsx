@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { pillClass } from '@/features/music-archive/lib/pill-class';
 import {
   GENRE_FAMILIES,
@@ -45,6 +46,7 @@ function buildGenreHref(
 }
 
 export function GenreBrowser({ genres, activeSlug, currentParams }: GenreBrowserProps) {
+  const t = useTranslations('musica');
   const [query, setQuery] = useState('');
 
   const grouped = useMemo(() => {
@@ -81,14 +83,14 @@ export function GenreBrowser({ genres, activeSlug, currentParams }: GenreBrowser
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Género</h2>
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('genreBrowser.heading')}</h2>
         <label className="relative block w-full max-w-xs">
-          <span className="sr-only">Buscar género</span>
+          <span className="sr-only">{t('genreBrowser.searchAriaLabel')}</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar género…"
+            placeholder={t('genreBrowser.searchPlaceholder')}
             className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-700"
           />
         </label>
@@ -109,7 +111,7 @@ export function GenreBrowser({ genres, activeSlug, currentParams }: GenreBrowser
             return (
               <FamilyAccordion
                 key={family.id}
-                label={family.label}
+                label={t(`genreFamilies.${family.id}`)}
                 count={list.length}
                 defaultOpen={family.defaultOpen || forceOpen}
                 items={list}
@@ -179,14 +181,14 @@ interface SearchResultsProps {
 }
 
 function SearchResults({ results, activeSlug, currentParams }: SearchResultsProps) {
+  const t = useTranslations('musica');
   if (results.length === 0) {
     return (
       <p className="rounded-md border border-dashed border-zinc-300 px-3 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-        Sin géneros que coincidan.
+        {t('genreBrowser.noMatches')}
       </p>
     );
   }
-  const labelOf = new Map(GENRE_FAMILIES.map((f) => [f.id, f.label]));
   const visible = results.slice(0, MAX_SEARCH_RESULTS);
   const overflow = results.length - visible.length;
   return (
@@ -203,7 +205,7 @@ function SearchResults({ results, activeSlug, currentParams }: SearchResultsProp
             >
               <span>{g.name}</span>
               <span className="text-[10px] font-normal uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
-                {labelOf.get(g.family)}
+                {t(`genreFamilies.${g.family}`)}
               </span>
             </Link>
           );
@@ -211,7 +213,7 @@ function SearchResults({ results, activeSlug, currentParams }: SearchResultsProp
       </div>
       {overflow > 0 && (
         <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-          …y {overflow} más, refina tu búsqueda.
+          {t('genreBrowser.overflow', { count: overflow })}
         </p>
       )}
     </>

@@ -1,6 +1,7 @@
 'use client'
 
 import { EllipsisHorizontalIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 
 interface CommentActionsProps {
@@ -10,6 +11,7 @@ interface CommentActionsProps {
 }
 
 export function CommentActions({ onEdit, onDelete, isDeleting = false }: CommentActionsProps) {
+  const t = useTranslations('feed')
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -46,7 +48,7 @@ export function CommentActions({ onEdit, onDelete, isDeleting = false }: Comment
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="rounded-full p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
-        aria-label="Opciones del comentario"
+        aria-label={t('comments.options')}
       >
         <EllipsisHorizontalIcon className="h-4 w-4" />
       </button>
@@ -68,7 +70,7 @@ export function CommentActions({ onEdit, onDelete, isDeleting = false }: Comment
             className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
           >
             <PencilIcon className="h-4 w-4" />
-            <span>Editar</span>
+            <span>{t('comments.edit')}</span>
           </button>
 
           <button
@@ -80,7 +82,7 @@ export function CommentActions({ onEdit, onDelete, isDeleting = false }: Comment
             className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             <TrashIcon className="h-4 w-4" />
-            <span>{isDeleting ? 'Eliminando...' : 'Eliminar'}</span>
+            <span>{isDeleting ? t('comments.deleting') : t('comments.delete')}</span>
           </button>
         </div>
       )}

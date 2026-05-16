@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { liveStreamService } from '../services/live-stream.service';
 import { PlayIcon, ClockIcon, EyeIcon } from '@/components/icons/heroicons-shim';
 
@@ -32,6 +33,7 @@ interface RecordedStreamsGalleryProps {
 }
 
 export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreamsGalleryProps) {
+  const t = useTranslations('liveStream');
   const [streams, setStreams] = useState<RecordedStream[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
@@ -78,12 +80,16 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) {
-      return 'Hace menos de 1 hora';
+      return t('recorded.timeAgo.lessThanHour');
     } else if (diffInHours < 24) {
-      return `Hace ${diffInHours} horas`;
+      return diffInHours === 1
+        ? t('recorded.timeAgo.hoursOne', { count: diffInHours })
+        : t('recorded.timeAgo.hoursOther', { count: diffInHours });
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `Hace ${diffInDays} ${diffInDays === 1 ? 'día' : 'días'}`;
+      return diffInDays === 1
+        ? t('recorded.timeAgo.daysOne', { count: diffInDays })
+        : t('recorded.timeAgo.daysOther', { count: diffInDays });
     }
   };
 
@@ -97,7 +103,7 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-             Transmisiones Grabadas
+            {t('recorded.heading')}
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -118,13 +124,13 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-             Transmisiones Grabadas
+            {t('recorded.heading')}
           </h2>
         </div>
         <div className="text-center py-12">
           <div className="text-6xl mb-4"></div>
           <p className="text-neutral-500 dark:text-neutral-400">
-            No hay transmisiones grabadas todavía
+            {t('recorded.empty')}
           </p>
         </div>
       </div>
@@ -138,7 +144,9 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
            Transmisiones Grabadas
         </h2>
         <span className="text-sm text-neutral-500 dark:text-neutral-400">
-          {streams.length} {streams.length === 1 ? 'grabación' : 'grabaciones'}
+          {streams.length === 1
+            ? t('recorded.countOne', { count: streams.length })
+            : t('recorded.countOther', { count: streams.length })}
         </span>
       </div>
 
@@ -158,7 +166,7 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
               {!stream.recordingUrl && (
                 <div className="absolute top-2 left-2 bg-yellow-600 px-2 py-1 rounded text-xs font-semibold text-white flex items-center gap-1">
                   <ClockIcon className="h-3 w-3 animate-spin" />
-                  Procesando
+                  {t('recorded.processing')}
                 </div>
               )}
               
@@ -226,7 +234,7 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
             disabled={isLoading}
             className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
           >
-            {isLoading ? 'Cargando...' : 'Cargar más'}
+            {isLoading ? t('recorded.loading') : t('recorded.loadMore')}
           </button>
         </div>
       )}

@@ -10,6 +10,7 @@ import NotificationIcon from './NotificationIcon';
 import NotificationContent from './NotificationContent';
 import FriendRequestActions from './FriendRequestActions';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -26,6 +27,7 @@ export default function NotificationItem({
 }: NotificationItemProps) {
   const router = useRouter();
   const { user } = useAuthStore();
+  const t = useTranslations('notification.item');
 
   const isFriendRequest = notification.type === NotificationType.FRIEND_REQUEST || 
                           (notification.type as string).toUpperCase() === 'FRIEND_REQUEST';
@@ -130,7 +132,7 @@ export default function NotificationItem({
         {/* Si es una solicitud que YO ENVIÉ, mostrar estado */}
         {isFriendRequest && !isRecipient && (
           <div className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
-            Solicitud enviada - Esperando respuesta
+            {t('requestSentWaiting')}
           </div>
         )}
       </div>
@@ -144,7 +146,7 @@ export default function NotificationItem({
             'opacity-0 group-hover:opacity-100 transition-opacity',
             'hover:bg-neutral-200 dark:hover:bg-neutral-700'
           )}
-          aria-label="Eliminar notificación"
+          aria-label={t('deleteLabel')}
         >
           <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
         </button>

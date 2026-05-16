@@ -20,29 +20,30 @@ export type FamilyId =
 
 export interface GenreFamily {
   id: FamilyId;
-  label: string;
+  /** Display label is provided by the `musica.genreFamilies.<id>` translation
+   *  key — keep this struct data-only so callers go through `useTranslations`. */
   defaultOpen: boolean;
 }
 
 export const GENRE_FAMILIES: readonly GenreFamily[] = [
-  { id: 'caribe', label: 'Caribe', defaultOpen: true },
-  { id: 'mexico', label: 'México', defaultOpen: true },
-  { id: 'andes', label: 'Andes', defaultOpen: false },
-  { id: 'cono_sur', label: 'Cono Sur', defaultOpen: false },
-  { id: 'brasil', label: 'Brasil', defaultOpen: true },
-  { id: 'latam', label: 'Latinoamericana', defaultOpen: false },
-  { id: 'iberica', label: 'Ibérica', defaultOpen: false },
-  { id: 'rock_metal', label: 'Rock & Metal', defaultOpen: false },
-  { id: 'pop', label: 'Pop & alternativo', defaultOpen: false },
-  { id: 'hip_hop_rnb', label: 'Hip hop & R&B', defaultOpen: false },
-  { id: 'soul_funk', label: 'Soul, Funk & Disco', defaultOpen: false },
-  { id: 'jazz', label: 'Jazz', defaultOpen: false },
-  { id: 'electronica', label: 'Electrónica', defaultOpen: false },
-  { id: 'clasica', label: 'Clásica', defaultOpen: false },
-  { id: 'folk_country', label: 'Folk & Country', defaultOpen: false },
-  { id: 'mundial', label: 'Mundial', defaultOpen: false },
-  { id: 'cristiana', label: 'Cristiana', defaultOpen: false },
-  { id: 'otros', label: 'Bandas sonoras y otros', defaultOpen: false },
+  { id: 'caribe', defaultOpen: true },
+  { id: 'mexico', defaultOpen: true },
+  { id: 'andes', defaultOpen: false },
+  { id: 'cono_sur', defaultOpen: false },
+  { id: 'brasil', defaultOpen: true },
+  { id: 'latam', defaultOpen: false },
+  { id: 'iberica', defaultOpen: false },
+  { id: 'rock_metal', defaultOpen: false },
+  { id: 'pop', defaultOpen: false },
+  { id: 'hip_hop_rnb', defaultOpen: false },
+  { id: 'soul_funk', defaultOpen: false },
+  { id: 'jazz', defaultOpen: false },
+  { id: 'electronica', defaultOpen: false },
+  { id: 'clasica', defaultOpen: false },
+  { id: 'folk_country', defaultOpen: false },
+  { id: 'mundial', defaultOpen: false },
+  { id: 'cristiana', defaultOpen: false },
+  { id: 'otros', defaultOpen: false },
 ] as const;
 
 const FAMILY_BY_SLUG: Record<string, FamilyId> = {

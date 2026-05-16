@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "listTitle": "Cities Portal | Connect with your community",
+    "listDescription": "Explore and discover featured cities known for their culture, history, and connection. Connect with your local community.",
+    "ogTitle": "Cities Portal",
+    "ogDescription": "Explore and discover featured cities known for their culture, history, and connection.",
+    "detailTitle": "{city} | Cities Portal",
+    "detailDescription": "Explore {city}: its history, culture, places of interest, events and connect with the local community.",
+    "detailOgTitle": "{city} - Cities Portal",
+    "detailOgDescription": "Discover everything about {city}: photos, videos, events, and more."
+  },
+  "hero": {
+    "badge": "Discover your community",
+    "title": "Cities Portal",
+    "subtitle": "Explore and discover featured cities known for their culture, history, and connection. Connect with your local community.",
+    "stats": {
+      "cities": "Active cities",
+      "users": "Connected users",
+      "media": "Shared photos"
+    }
+  },
+  "header": {
+    "coverAlt": "View of {city}",
+    "stats": {
+      "photos": "Photos",
+      "videos": "Videos",
+      "members": "Members"
+    }
+  },
+  "card": {
+    "locationFallback": "Location unavailable"
+  },
+  "grid": {
+    "previous": "Previous page",
+    "next": "Next page"
+  }
+}

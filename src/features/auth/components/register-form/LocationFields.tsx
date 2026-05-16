@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import Country from 'country-state-city/lib/country'
 
 const COUNTRIES = Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name, 'es'))
@@ -39,6 +40,7 @@ function emit(
 }
 
 export function LocationFields({ country, state, city, onChange }: LocationFieldsProps) {
+  const t = useTranslations('auth')
   const [states, setStates] = useState<StateRow[]>([])
   const [cities, setCities] = useState<CityRow[]>([])
   const [isLoadingStates, setIsLoadingStates] = useState(false)
@@ -107,7 +109,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
 
   return (
     <div>
-      <label className="mb-2 block text-xs font-medium text-gray-600">País de residencia</label>
+      <label className="mb-2 block text-xs font-medium text-gray-600">{t('signup.countryLabel')}</label>
       <div className="space-y-3">
         <select
           name="country"
@@ -124,7 +126,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
         </select>
 
         <label className="mb-2 block text-xs font-medium text-gray-600">
-          {noStatesAvailable ? 'Región / Estado / Provincia' : 'Departamento / Estado / Provincia'}
+          {noStatesAvailable ? t('signup.stateLabelRegion') : t('signup.stateLabelDepartment')}
         </label>
         {noStatesAvailable ? (
           <input
@@ -133,7 +135,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
             value={state}
             onChange={onChange}
             required
-            placeholder="Región / Estado / Provincia"
+            placeholder={t('signup.statePlaceholderInput')}
             className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
           />
         ) : (
@@ -146,7 +148,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
             className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
           >
             <option value="">
-              {isLoadingStates ? 'Cargando…' : 'Selecciona un departamento'}
+              {isLoadingStates ? t('signup.statePlaceholderLoading') : t('signup.statePlaceholderSelect')}
             </option>
             {states.map((s) => (
               <option key={s.isoCode} value={s.isoCode}>
@@ -156,7 +158,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
           </select>
         )}
 
-        <label className="mb-2 block text-xs font-medium text-gray-600">Ciudad de residencia</label>
+        <label className="mb-2 block text-xs font-medium text-gray-600">{t('signup.cityLabel')}</label>
         {noStatesAvailable ? (
           <input
             type="text"
@@ -164,7 +166,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
             value={city}
             onChange={onChange}
             required
-            placeholder="Ciudad"
+            placeholder={t('signup.cityPlaceholderInput')}
             className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-green-600 focus:outline-none"
           />
         ) : (
@@ -178,12 +180,12 @@ export function LocationFields({ country, state, city, onChange }: LocationField
           >
             <option value="">
               {isLoadingCities
-                ? 'Cargando…'
+                ? t('signup.cityPlaceholderLoading')
                 : !state
-                  ? 'Primero selecciona un departamento'
+                  ? t('signup.cityPlaceholderSelectState')
                   : cities.length === 0
-                    ? 'Sin ciudades — deja en blanco o cambia el estado'
-                    : 'Selecciona una ciudad'}
+                    ? t('signup.cityPlaceholderNoCities')
+                    : t('signup.cityPlaceholderSelect')}
             </option>
             {cities.map((c) => (
               <option key={c.name} value={c.name}>

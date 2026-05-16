@@ -2,6 +2,7 @@ import {
   listAdminMessages,
   listAdminTopics,
 } from '@/features/chat-publico/server/admin.server'
+import { getTranslations } from 'next-intl/server'
 import ChatPublicoMessagesTable from '@/features/chat-publico/components/admin/ChatPublicoMessagesTable'
 
 export const metadata = { title: 'Admin · Chat Público' }
@@ -19,7 +20,7 @@ export default async function AdminChatPublicoPage({ searchParams }: PageProps) 
   const sp = await searchParams
   const page = Math.max(1, Number(sp.page) || 1)
 
-  const [topics, listed] = await Promise.all([
+  const [topics, listed, t] = await Promise.all([
     listAdminTopics(),
     listAdminMessages({
       search: sp.q,
@@ -28,17 +29,17 @@ export default async function AdminChatPublicoPage({ searchParams }: PageProps) 
       page,
       pageSize: 25,
     }),
+    getTranslations('admin.chatPublico'),
   ])
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6 border-b border-neutral-200 pb-5 dark:border-neutral-800">
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Chat Público
+          {t('title')}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
-          Modera los mensajes de los canales públicos: busca por contenido, filtra por canal o
-          estado, y elimina o restaura mensajes.
+          {t('subtitle')}
         </p>
       </header>
 

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import {
   getMusicClubBySlug,
   getViewerRoleInClub,
@@ -14,18 +15,19 @@ export default async function ClubLinksPage({
   const { slug } = await params;
   const club = await getMusicClubBySlug(slug);
   if (!club) notFound();
-  const [links, viewerRole] = await Promise.all([
+  const [links, viewerRole, t] = await Promise.all([
     listClubLinks(club.id),
     getViewerRoleInClub(club.id),
+    getTranslations('musica'),
   ]);
   const canEdit = viewerRole === 'OWNER' || viewerRole === 'ADMIN';
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Enlaces asociados
+        {t('clubs.linksHeading')}
       </h2>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Tabernas, museos, tiendas, archivos: lugares relacionados con este género.
+        {t('clubs.linksSubtitle')}
       </p>
       <ClubLinksList clubId={club.id} links={links} canEdit={canEdit} />
     </section>

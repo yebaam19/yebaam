@@ -3,39 +3,43 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   slug: string;
 }
 
-const TABS: Array<{ key: string; label: string; suffix: string }> = [
-  { key: 'discos', label: 'Discos', suffix: '' },
-  { key: 'posts', label: 'Posts', suffix: '/posts' },
-  { key: 'foro', label: 'Foro', suffix: '/foro' },
-  { key: 'articulos', label: 'Artículos', suffix: '/articulos' },
-  { key: 'galeria', label: 'Galería', suffix: '/galeria' },
-  { key: 'artistas', label: 'Artistas', suffix: '/artistas' },
-  { key: 'miembros', label: 'Miembros', suffix: '/miembros' },
-  { key: 'links', label: 'Enlaces', suffix: '/links' },
-  { key: 'reglas', label: 'Reglas', suffix: '/reglas' },
+type TabKey = 'tabAlbumes' | 'tabPosts' | 'tabForum' | 'tabArticles' | 'tabGallery' | 'tabArtists' | 'tabMembers' | 'tabLinks' | 'tabRules';
+
+const TABS: Array<{ key: TabKey; suffix: string }> = [
+  { key: 'tabAlbumes', suffix: '' },
+  { key: 'tabPosts', suffix: '/posts' },
+  { key: 'tabForum', suffix: '/foro' },
+  { key: 'tabArticles', suffix: '/articulos' },
+  { key: 'tabGallery', suffix: '/galeria' },
+  { key: 'tabArtists', suffix: '/artistas' },
+  { key: 'tabMembers', suffix: '/miembros' },
+  { key: 'tabLinks', suffix: '/links' },
+  { key: 'tabRules', suffix: '/reglas' },
 ];
 
 /** Horizontal tab strip rendered above each club sub-route. The "Discos" tab
  *  is active when the path is the bare club detail (no suffix). */
 export function MusicClubTabs({ slug }: Props) {
+  const t = useTranslations('musica');
   const pathname = usePathname();
   const base = `/musica/clubes/${slug}`;
   return (
     <nav className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
-        {TABS.map((t) => {
-          const href = `${base}${t.suffix}`;
+        {TABS.map((tab) => {
+          const href = `${base}${tab.suffix}`;
           const active =
-            t.suffix === ''
+            tab.suffix === ''
               ? pathname === base || pathname === `${base}/`
               : pathname === href || pathname.startsWith(`${href}/`);
           return (
-            <li key={t.key}>
+            <li key={tab.key}>
               <Link
                 href={href as Route}
                 className={
@@ -45,7 +49,7 @@ export function MusicClubTabs({ slug }: Props) {
                     : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200')
                 }
               >
-                {t.label}
+                {t(`club.${tab.key}`)}
               </Link>
             </li>
           );

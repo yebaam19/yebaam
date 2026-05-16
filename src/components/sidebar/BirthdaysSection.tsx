@@ -2,6 +2,7 @@
 
 import { CakeIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
+import { useTranslations } from 'next-intl';
 
 interface Birthday {
   id: string;
@@ -15,6 +16,7 @@ interface BirthdaysSectionProps {
 }
 
 export default function BirthdaysSection({ birthdays }: BirthdaysSectionProps) {
+  const t = useTranslations('nav');
   if (birthdays.length === 0) return null;
 
   return (
@@ -22,7 +24,7 @@ export default function BirthdaysSection({ birthdays }: BirthdaysSectionProps) {
       <div className="mb-3 flex items-center gap-2">
         <CakeIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Cumpleaños
+          {t('birthdays')}
         </h3>
       </div>
       <div className="space-y-3">
@@ -35,7 +37,10 @@ export default function BirthdaysSection({ birthdays }: BirthdaysSectionProps) {
             />
             <div className="flex-1">
               <p className="text-sm text-neutral-900 dark:text-white">
-                <span className="font-medium">{birthday.name}</span> cumple años {birthday.date.toLowerCase()}
+                {t.rich('birthdayLine', {
+                  name: () => <span className="font-medium">{birthday.name}</span>,
+                  date: birthday.date.toLowerCase(),
+                })}
               </p>
             </div>
           </div>

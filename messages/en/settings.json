@@ -1,0 +1,8 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage how Yebaam looks and the language you see it in.",
+  "appearance": "Appearance",
+  "appearanceDescription": "Choose how Yebaam looks on this device.",
+  "language": "Language",
+  "languageDescription": "Pick the language for menus, labels and notifications."
+}

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { ProfessionalBenefits } from '@/features/professional-profile/components/welcome/ProfessionalBenefits';
 import { ValidationSteps } from '@/features/professional-profile/components/welcome/ValidationSteps';
@@ -12,16 +13,17 @@ export default async function ProfessionalProfileWelcomePage() {
     redirect(`/feed/professional-profile/${identifier}`);
   }
 
+  const t = await getTranslations('professional');
+
   return (
     <div className="min-h-screen min-w-0 bg-neutral-50 dark:bg-neutral-900">
       <div className="mx-auto max-w-6xl min-w-0 px-4 py-5 sm:px-5">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-3xl font-bold text-neutral-900 md:text-4xl lg:text-5xl dark:text-white">
-            Perfil Profesional
+            {t('welcome.title')}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-neutral-600 dark:text-neutral-400">
-            Destaca tu experiencia, habilidades y logros profesionales. Conecta con oportunidades y profesionales de tu
-            sector.
+            {t('welcome.subtitle')}
           </p>
         </div>
 
@@ -31,7 +33,7 @@ export default async function ProfessionalProfileWelcomePage() {
 
         <section className="mb-12">
           <h2 className="mb-6 text-center text-2xl font-semibold text-neutral-900 dark:text-white">
-            ¿Cómo funciona la validación?
+            {t('welcome.howValidationWorks')}
           </h2>
           <ValidationSteps />
         </section>

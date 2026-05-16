@@ -12,6 +12,7 @@ import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Article, UpdateArticleData } from '../interfaces'
 import { articleService } from '../services'
 import { CoverImageArea } from './CoverImageArea'
@@ -41,6 +42,7 @@ interface EditArticleFormProps {
 
 export function EditArticleForm({ article, user }: EditArticleFormProps) {
   const router = useRouter()
+  const t = useTranslations('article.editor')
 
   const [title, setTitle] = useState(article.title)
   const [content, setContent] = useState(article.content)
@@ -74,12 +76,12 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
 
   const handleUpdate = async () => {
     if (!title.trim()) {
-      alert('Por favor, añade un título al artículo')
+      alert(t('titleRequired'))
       return
     }
 
     if (!content.trim() || content === '<p></p>') {
-      alert('Por favor, añade contenido al artículo')
+      alert(t('contentRequired'))
       return
     }
 
@@ -101,11 +103,11 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
       if (result.success) {
         setShowSuccessDialog(true)
       } else {
-        alert(`Error al actualizar el artículo: ${result.error || 'Error desconocido'}`)
+        alert(t('updateError', { message: result.error || t('unknownError') }))
       }
     } catch (error) {
       console.error('Error updating article:', error)
-      alert(`Error al actualizar el artículo: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      alert(t('updateError', { message: error instanceof Error ? error.message : t('unknownError') }))
     } finally {
       setIsUpdating(false)
     }
@@ -140,7 +142,7 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
           onCoverRemove={handleCoverRemove}
         />
 
-        <EditableTitle title={title} onTitleChange={setTitle} placeholder="Título" />
+        <EditableTitle title={title} onTitleChange={setTitle} placeholder={t('titlePlaceholder')} />
 
         <div>
           <RichTextEditor content={content} onChange={setContent} isHeaderMode={false} />
@@ -153,14 +155,14 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-800">
             <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-              ¡Artículo actualizado!
+              {t('successUpdatedTitle')}
             </DialogTitle>
             <Description className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-              Los cambios se han guardado correctamente.
+              {t('successUpdatedDescription')}
             </Description>
             <div className="mt-4 flex justify-end">
               <Button color="primary" onClick={handleSuccessClose}>
-                Ver artículo
+                {t('viewArticle')}
               </Button>
             </div>
           </DialogPanel>

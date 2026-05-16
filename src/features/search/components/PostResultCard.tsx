@@ -6,6 +6,7 @@ import { HeartIcon, ChatBubbleLeftIcon, ShareIcon } from '@/components/icons/her
 import { HeartIcon as HeartIconSolid } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
+import { useLocale, useTranslations } from 'next-intl';
 import type { PostSearchResult } from '../interfaces/search.interfaces';
 import type { Route } from 'next';
 
@@ -30,6 +31,8 @@ export function PostResultCard({
   onLike,
   className = '',
 }: PostResultCardProps) {
+  const t = useTranslations('search.post');
+  const locale = useLocale();
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     onLike?.(post.id);
@@ -44,11 +47,12 @@ export function PostResultCard({
 
     if (diffHours < 1) {
       const diffMins = Math.floor(diffMs / (1000 * 60));
-      return `hace ${diffMins}m`;
+      return t('minutesAgo', { n: diffMins });
     }
-    if (diffHours < 24) return `hace ${diffHours}h`;
-    if (diffDays < 7) return `hace ${diffDays}d`;
-    return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+    if (diffHours < 24) return t('hoursAgo', { n: diffHours });
+    if (diffDays < 7) return t('daysAgo', { n: diffDays });
+    const intlLocale = locale === 'en' ? 'en-US' : 'es-ES';
+    return date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' });
   };
 
   return (
@@ -90,7 +94,7 @@ export function PostResultCard({
         <div className="mb-3 relative rounded-lg overflow-hidden bg-gray-100 dark:bg-neutral-800">
           <Image
             src={post.mediaFiles[0].url}
-            alt="Post media"
+            alt={t('mediaAlt')}
             width={400}
             height={300}
             className="w-full h-48 object-cover"

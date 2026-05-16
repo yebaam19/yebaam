@@ -2,6 +2,7 @@
 
 import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '../../store/auth.store';
 import { toast } from 'sonner';
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget';
@@ -15,8 +16,9 @@ import { isOccupationSlug, type OccupationSlug } from '../../constants/occupatio
 
 export function RegisterForm() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const { register, isLoading, error } = useAuthStore();
-  
+
   // Estado del formulario
   const [formData, setFormData] = useState({
     email: '',
@@ -51,23 +53,23 @@ export function RegisterForm() {
     e.preventDefault();
 
     if (!formData.acceptedTerms) {
-      toast.error('Debes aceptar los Términos y Condiciones para continuar');
+      toast.error(t('signup.errorMustAcceptTerms'));
       return;
     }
 
     if (!isOccupationSlug(formData.occupation)) {
-      toast.error('Selecciona tu ocupación');
+      toast.error(t('signup.errorSelectOccupation'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Las contraseñas no coinciden');
+      toast.error(t('signup.errorPasswordsDoNotMatch'));
       return;
     }
 
     const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
     if (turnstileEnabled && !captchaToken) {
-      toast.error('Completa la verificación de seguridad para continuar.');
+      toast.error(t('errors.turnstileRequired'));
       return;
     }
 
@@ -101,11 +103,11 @@ export function RegisterForm() {
 
       await register(payload);
 
-      toast.success('Registro exitoso! Verifica tu email');
+      toast.success(t('signup.successToast'));
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
       console.error('[RegisterForm] Error en registro:', err);
-      toast.error(err.message || 'Error al registrar usuario');
+      toast.error(err.message || t('signup.genericError'));
       setCaptchaToken(null);
       turnstileRef.current?.reset();
     }
@@ -167,12 +169,14 @@ export function RegisterForm() {
             className="mt-0.5 w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
           />
           <span>
-            Acepto los <a href="/terms" className="text-green-600 hover:underline">Términos y Condiciones</a> y la <a href="/privacy" className="text-green-600 hover:underline">Política de Datos</a>
+            {t('signup.acceptTermsBefore')}{' '}
+            <a href="/terms" className="text-green-600 hover:underline">{t('signup.acceptTermsLink')}</a>
+            {' '}{t('signup.acceptTermsMiddle')}{' '}
+            <a href="/privacy" className="text-green-600 hover:underline">{t('signup.acceptPrivacyLink')}</a>
           </span>
         </label>
         <p className="mt-2 text-[11px] text-gray-500 leading-relaxed">
-          Tras crear tu cuenta, podrás autenticar tu perfil desde tu página de perfil para
-          desbloquear todas las funciones (crear páginas, chats, clasificados, etc.).
+          {t('signup.afterSignupInfo')}
         </p>
       </div>
 
@@ -204,10 +208,10 @@ export function RegisterForm() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            Creando cuenta...
+            {t('signup.submitting')}
           </span>
         ) : (
-          'Registrarte'
+          t('signup.submit')
         )}
       </button>
     </form>

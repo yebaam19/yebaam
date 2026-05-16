@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { createLabel, updateLabel } from '../../../actions/labels.actions';
 import type { MusicLabelRow } from '../../../types/music.types';
-import { COUNTRIES, inputCls } from '../../upload/constants';
+import { COUNTRIES, inputCls, sortCountryCodesByLabel } from '../../upload/constants';
 
 interface InitialValues {
   id?: string;
@@ -19,9 +20,14 @@ interface Props {
   onSaved: (row: MusicLabelRow) => void;
 }
 
-/** Single dialog shared by "Agregar sello" and "Editar sello". */
+/** Single dialog shared by the create / edit label flows. */
 export function LabelFormDialog({ initial, onClose, onSaved }: Props) {
+  const t = useTranslations('musica');
   const isEdit = Boolean(initial?.id);
+  const sortedCountries = useMemo(
+    () => sortCountryCodesByLabel(COUNTRIES, (code) => t(`countries.${code}` as const)),
+    [t],
+  );
   const [name, setName] = useState(initial?.name ?? '');
   const [country, setCountry] = useState(initial?.country ?? '');
   const [founded, setFounded] = useState(initial?.founded?.toString() ?? '');
@@ -54,12 +60,12 @@ export function LabelFormDialog({ initial, onClose, onSaved }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
         <h3 className="mb-4 text-lg font-semibold">
-          {isEdit ? 'Editar sello' : 'Agregar sello'}
+          {isEdit ? t('admin.labelEditor.editTitle') : t('admin.labelEditor.newTitle')}
         </h3>
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Nombre
+              {t('admin.labelEditor.name')}
             </label>
             <input
               type="text"
@@ -67,29 +73,29 @@ export function LabelFormDialog({ initial, onClose, onSaved }: Props) {
               onChange={(e) => setName(e.target.value)}
               className={inputCls}
               maxLength={120}
-              placeholder="Documental"
+              placeholder={t('upload.labelPlaceholder')}
             />
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              País
+              {t('admin.labelEditor.country')}
             </label>
             <select
               value={country ?? ''}
               onChange={(e) => setCountry(e.target.value)}
               className={inputCls}
             >
-              <option value="">—</option>
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
+              <option value="">{t('upload.fieldEmpty')}</option>
+              {sortedCountries.map((code) => (
+                <option key={code} value={code}>
+                  {t(`countries.${code}` as const)}
                 </option>
               ))}
             </select>
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Año de fundación
+              {t('admin.labelEditor.founded')}
             </label>
             <input
               type="number"
@@ -112,7 +118,7 @@ export function LabelFormDialog({ initial, onClose, onSaved }: Props) {
             onClick={onClose}
             className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50"
           >
-            Cancelar
+            {t('admin.cancel')}
           </button>
           <button
             type="button"
@@ -120,7 +126,7 @@ export function LabelFormDialog({ initial, onClose, onSaved }: Props) {
             disabled={saving || !name.trim()}
             className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-60"
           >
-            {saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Agregar sello'}
+            {saving ? t('admin.labelEditor.submitting') : t('admin.labelEditor.submit')}
           </button>
         </div>
       </div>

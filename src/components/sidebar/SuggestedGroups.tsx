@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { UserGroupIcon } from '@/components/icons/heroicons-shim';
+import { useTranslations } from 'next-intl';
 
 interface Group {
   id: string;
@@ -14,17 +15,18 @@ interface SuggestedGroupsProps {
 }
 
 export default function SuggestedGroups({ groups }: SuggestedGroupsProps) {
+  const t = useTranslations('nav');
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Grupos sugeridos
+          {t('suggestedGroups')}
         </h3>
         <Link
           href="/grupos/descubrir"
           className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
-          Explorar
+          {t('explore')}
         </Link>
       </div>
       <div className="space-y-2">

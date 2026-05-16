@@ -1,5 +1,6 @@
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import {
   getForumByslugInSpace,
   getSpaceBySlug,
@@ -23,6 +24,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
   const { spaceSlug, forumSlug } = await params
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
+  const t = await getTranslations('foro')
 
   const space = await getSpaceBySlug(spaceSlug)
   if (!space) notFound()
@@ -38,6 +40,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
   const basePath = `/foro/${space.slug}/${forum.slug}`
   const buildHref = (p: number) => (p === 1 ? basePath : `${basePath}?page=${p}`)
   const totalWithStickies = total + stickies.length
+  const totalLabel = totalWithStickies === 1 ? t('forum.topicOne') : t('forum.topicOther')
 
   const newTopicButton = (
     <Button
@@ -46,7 +49,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
       className="w-full sm:w-auto"
     >
       <PlusIcon data-slot="icon" />
-      Nuevo tema
+      {t('forum.newTopic')}
     </Button>
   )
 
@@ -57,7 +60,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
         subtitle={forum.description ?? undefined}
         crumbs={[
           ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
-          { href: '/foro', label: 'Foros' },
+          { href: '/foro', label: t('crumbs.foros') },
           { href: `/foro/${space.slug}`, label: space.name },
         ]}
         action={newTopicButton}
@@ -66,8 +69,7 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         <ForoPagination page={page} pageSize={PAGE_SIZE} total={total} buildHref={buildHref} />
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
-          <strong>{totalWithStickies}</strong>{' '}
-          {totalWithStickies === 1 ? 'tema' : 'temas'} en total
+          <strong>{totalWithStickies}</strong> {totalLabel} {t('forum.totalSuffix')}
         </span>
       </div>
 
@@ -85,13 +87,13 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
 
       <section className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-[11px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400">
         <p className="font-semibold text-neutral-600 dark:text-neutral-300">
-          Permisos del foro
+          {t('forum.permissionsTitle')}
         </p>
         <ul className="mt-1 grid grid-cols-1 gap-y-0.5 sm:grid-cols-2">
-          <li>✓ Puedes publicar nuevos temas</li>
-          <li>✓ Puedes responder a los temas</li>
-          <li>✓ Puedes editar tus propios mensajes</li>
-          <li>✓ Puedes eliminar tus propios mensajes</li>
+          <li>✓ {t('forum.permissions.post')}</li>
+          <li>✓ {t('forum.permissions.reply')}</li>
+          <li>✓ {t('forum.permissions.editOwn')}</li>
+          <li>✓ {t('forum.permissions.deleteOwn')}</li>
         </ul>
       </section>
     </div>

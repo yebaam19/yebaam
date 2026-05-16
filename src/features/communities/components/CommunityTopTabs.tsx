@@ -3,11 +3,14 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+
+type TabKey = 'posts' | 'photos' | 'videos' | 'articles' | 'files' | 'pdf';
 
 interface TabItem {
   id: string;
-  label: string;
+  labelKey: TabKey;
   href: string;
   comingSoon?: boolean;
 }
@@ -15,12 +18,12 @@ interface TabItem {
 function buildTabs(slug: string): TabItem[] {
   const base = `/feed/comunidades/${slug}`;
   return [
-    { id: 'home', label: 'Publicaciones', href: base },
-    { id: 'fotos', label: 'Fotos', href: `${base}/fotos` },
-    { id: 'videos', label: 'Videos', href: `${base}/videos` },
-    { id: 'articulos', label: 'Articulos', href: `${base}/articulos` },
-    { id: 'archivos', label: 'Archivos', href: `${base}/archivos`, comingSoon: true },
-    { id: 'pdf', label: 'PDF', href: `${base}/pdf`, comingSoon: true },
+    { id: 'home', labelKey: 'posts', href: base },
+    { id: 'fotos', labelKey: 'photos', href: `${base}/fotos` },
+    { id: 'videos', labelKey: 'videos', href: `${base}/videos` },
+    { id: 'articulos', labelKey: 'articles', href: `${base}/articulos` },
+    { id: 'archivos', labelKey: 'files', href: `${base}/archivos`, comingSoon: true },
+    { id: 'pdf', labelKey: 'pdf', href: `${base}/pdf`, comingSoon: true },
   ];
 }
 
@@ -30,12 +33,13 @@ interface CommunityTopTabsProps {
 
 export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
   const pathname = usePathname();
+  const t = useTranslations('communities');
   const tabs = buildTabs(slug);
 
   return (
     <div
       role="tablist"
-      aria-label="Pestañas de contenido"
+      aria-label={t('topTabs.ariaLabel')}
       className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5"
     >
       {tabs.map((tab) => {
@@ -54,7 +58,7 @@ export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
                 : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60',
             )}
           >
-            {tab.label}
+            {t(`topTabs.${tab.labelKey}`)}
             {tab.comingSoon && (
               <span
                 className={cn(
@@ -64,7 +68,7 @@ export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
                     : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
                 )}
               >
-                Pronto
+                {t('topTabs.comingSoon')}
               </span>
             )}
           </Link>

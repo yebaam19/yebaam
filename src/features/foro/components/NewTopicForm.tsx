@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import { createTopic } from '@/features/foro/actions/foro.actions'
 import { Button } from '@/ui/Button'
 import PostEditor from './PostEditor'
@@ -20,6 +21,7 @@ export default function NewTopicForm({
   forumSlug,
 }: Props) {
   const router = useRouter()
+  const t = useTranslations('foro')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +35,7 @@ export default function NewTopicForm({
     startTransition(async () => {
       const result = await createTopic({ forumId, title, content })
       if (!result.ok) {
-        setError(result.error ?? 'No se pudo crear el tema.')
+        setError(result.error ?? t('newTopic.errors.createFailed'))
         return
       }
       router.push(
@@ -52,7 +54,7 @@ export default function NewTopicForm({
           htmlFor="topic-title"
           className="block text-sm font-semibold text-neutral-700 dark:text-neutral-200"
         >
-          Título del tema
+          {t('newTopic.fields.titleLabel')}
         </label>
         <input
           id="topic-title"
@@ -61,12 +63,12 @@ export default function NewTopicForm({
           onChange={(e) => setTitle(e.target.value)}
           maxLength={200}
           required
-          placeholder="Escribe un título claro y descriptivo"
+          placeholder={t('newTopic.fields.titlePlaceholder')}
           className="mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
           disabled={isPending}
         />
         <div className="mt-1 flex items-center justify-between text-[11px] text-neutral-400">
-          <span>Máximo 200 caracteres.</span>
+          <span>{t('newTopic.fields.titleHint')}</span>
           <span>{title.length}/200</span>
         </div>
       </div>
@@ -75,15 +77,15 @@ export default function NewTopicForm({
           htmlFor="topic-content"
           className="mb-1 block text-sm font-semibold text-neutral-700 dark:text-neutral-200"
         >
-          Mensaje
+          {t('newTopic.fields.messageLabel')}
         </label>
         <PostEditor
           id="topic-content"
           value={content}
           onChange={setContent}
           rows={8}
-          placeholder="Escribe el primer mensaje del tema…"
-          ariaLabel="Mensaje"
+          placeholder={t('newTopic.fields.messagePlaceholder')}
+          ariaLabel={t('newTopic.fields.messageAriaLabel')}
           disabled={isPending}
         />
       </div>
@@ -96,10 +98,10 @@ export default function NewTopicForm({
 
       <div className="flex flex-wrap items-center justify-end gap-2">
         <Button href={`/foro/${spaceSlug}/${forumSlug}` as Route} plain>
-          Cancelar
+          {t('newTopic.cancel')}
         </Button>
         <Button type="submit" disabled={!canSubmit} color="primary">
-          {isPending ? 'Publicando…' : 'Publicar tema'}
+          {isPending ? t('newTopic.submitting') : t('newTopic.submit')}
         </Button>
       </div>
     </form>

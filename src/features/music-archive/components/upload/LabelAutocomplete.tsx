@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { searchLabelsAction } from '../../actions/search.actions';
 import type { MusicLabelRow } from '../../types/music.types';
 import { inputCls } from './constants';
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function LabelAutocomplete({ value, onChange }: Props) {
+  const t = useTranslations('musica');
   const [hits, setHits] = useState<MusicLabelRow[]>([]);
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
@@ -59,13 +61,13 @@ export function LabelAutocomplete({ value, onChange }: Props) {
         value={value.name}
         onChange={(e) => onChange({ existingId: null, name: e.target.value })}
         onFocus={() => hits.length > 0 && setOpen(true)}
-        placeholder="Documental"
+        placeholder={t('upload.labelPlaceholder')}
         className={inputCls}
         autoComplete="off"
       />
       {value.existingId && (
         <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-          Existente
+          {t('upload.existingBadge')}
         </span>
       )}
       {open && hits.length > 0 && (

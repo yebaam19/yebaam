@@ -3,6 +3,7 @@
 import { useAuth } from '@/features/auth'
 import { useSocket } from '@/providers/socket-provider'
 import { ChatBubbleLeftIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import type { Comment, CommentUpdatedPayload } from '../interfaces/comment.interfaces'
 import { commentService } from '../services/comment.service'
@@ -26,6 +27,7 @@ interface CommentItemProps {
  * Solo los comentarios raíz pueden tener respuestas (no hay replies anidados)
  */
 export function CommentItem({ comment, isReply = false, onReplyCreated, className = '' }: CommentItemProps) {
+  const t = useTranslations('feed')
   const { user } = useAuth()
   const { postsSocket } = useSocket()
   const { updateComment, deleteComment } = useCommentStore()
@@ -130,7 +132,7 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
   }
 
   const handleDelete = async () => {
-    if (!confirm('¿Estás seguro de eliminar este comentario?')) {
+    if (!confirm(t('comments.deleteConfirm'))) {
       return
     }
 
@@ -199,7 +201,7 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
                         } transition-colors`}
                       >
                         <ChatBubbleLeftIcon className="h-3.5 w-3.5" />
-                        Responder
+                        {t('comments.reply')}
                       </button>
                     )}
 
@@ -212,7 +214,7 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
                         {isLoadingReplies ? (
                           <span className="flex items-center gap-1">
                             <span className="h-3 w-3 animate-spin rounded-full border-2 border-neutral-300 border-t-primary-500" />
-                            Cargando...
+                            {t('comments.loading')}
                           </span>
                         ) : (
                           <>
@@ -221,8 +223,9 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
                             ) : (
                               <ChevronDownIcon className="h-3.5 w-3.5" />
                             )}
-                            {showReplies ? 'Ocultar' : 'Ver'} {localRepliesCount}{' '}
-                            {localRepliesCount === 1 ? 'respuesta' : 'respuestas'}
+                            {showReplies
+                              ? t('comments.hideReplies', { count: localRepliesCount })
+                              : t('comments.showReplies', { count: localRepliesCount })}
                           </>
                         )}
                       </button>
@@ -277,7 +280,7 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
       {showReplies && isLoadingReplies && (
         <div className="ml-12 flex items-center gap-2 py-4">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-primary-500" />
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">Cargando respuestas...</span>
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">{t('comments.loadingReplies')}</span>
         </div>
       )}
     </div>

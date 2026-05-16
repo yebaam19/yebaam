@@ -5,6 +5,7 @@ import { Bars3Icon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@/componen
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { Fragment, useEffect, useMemo, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { getMenuForUser } from '@/config/menuConfig'
 import { AuthUser } from '@/features/auth/interfaces/auth.interfaces'
@@ -60,6 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
   const { isExpanded, toggleExpanded } = useSidebarExpanded()
   const pathname = usePathname()
   const previousPathname = useRef(pathname)
+  const t = useTranslations('nav')
 
   // Cerrar el sidebar móvil solo cuando cambia la ruta (navegación)
   useEffect(() => {
@@ -151,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
             }
           }}
           className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-          aria-label={isMobile ? 'Cerrar menú' : isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+          aria-label={isMobile ? t('closeMenu') : isCollapsed ? t('expandSidebar') : t('collapseSidebar')}
         >
           {isMobile ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
         </button>
@@ -191,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
               <SmartLink
                 key={item.href}
                 href={item.href}
-                title={!showExpanded ? item.label : undefined}
+                title={!showExpanded ? t(item.labelKey) : undefined}
                 className={cn(
                   'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   !showExpanded && 'lg:justify-center lg:px-2',
@@ -209,8 +211,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
 
                 {showExpanded && (
                   <>
-                    <span className="flex-1 truncate">{item.label}</span>
-                    {item.badge && (
+                    <span className="flex-1 truncate">{t(item.labelKey)}</span>
+                    {(item.badgeKey || item.badge) && (
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-semibold',
@@ -220,13 +222,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                         )}
                       >
-                        {item.badge}
+                        {item.badgeKey ? t(item.badgeKey) : item.badge}
                       </span>
                     )}
                   </>
                 )}
 
-                {!showExpanded && item.badge && (
+                {!showExpanded && (item.badgeKey || item.badge) && (
                   <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-red-500" />
                 )}
               </SmartLink>
@@ -245,7 +247,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
                 <ChevronDownIcon className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
               )}
               <span className="flex-1 text-left">
-                {isExpanded ? 'Ver menos' : `Ver más (${additionalItems.length})`}
+                {isExpanded ? t('viewLess') : t('viewMoreCount', { n: additionalItems.length })}
               </span>
             </button>
           )}
@@ -274,8 +276,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
                       isActive ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500 dark:text-neutral-400'
                     )}
                   />
-                  <span className="flex-1 truncate">{item.label}</span>
-                  {item.badge && (
+                  <span className="flex-1 truncate">{t(item.labelKey)}</span>
+                  {(item.badgeKey || item.badge) && (
                     <span
                       className={cn(
                         'rounded-full px-2 py-0.5 text-xs font-semibold',
@@ -285,7 +287,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
                           : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                       )}
                     >
-                      {item.badge}
+                      {item.badgeKey ? t(item.badgeKey) : item.badge}
                     </span>
                   )}
                 </SmartLink>

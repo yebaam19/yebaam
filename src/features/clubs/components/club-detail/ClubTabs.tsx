@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   InformationCircleIcon,
   PhotoIcon,
@@ -10,12 +11,14 @@ import {
 
 export type TabType = 'acerca' | 'fotos' | 'videos' | 'articulos' | 'archivos';
 
-const TABS: { id: TabType; label: string; icon: typeof PhotoIcon }[] = [
-  { id: 'acerca', label: 'Acerca del Club', icon: InformationCircleIcon },
-  { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
-  { id: 'videos', label: 'Videos', icon: VideoCameraIcon },
-  { id: 'articulos', label: 'Artículos', icon: DocumentTextIcon },
-  { id: 'archivos', label: 'Archivos', icon: FolderIcon },
+type TabKey = 'about' | 'photos' | 'videos' | 'articles' | 'files';
+
+const TABS: { id: TabType; labelKey: TabKey; icon: typeof PhotoIcon }[] = [
+  { id: 'acerca', labelKey: 'about', icon: InformationCircleIcon },
+  { id: 'fotos', labelKey: 'photos', icon: PhotoIcon },
+  { id: 'videos', labelKey: 'videos', icon: VideoCameraIcon },
+  { id: 'articulos', labelKey: 'articles', icon: DocumentTextIcon },
+  { id: 'archivos', labelKey: 'files', icon: FolderIcon },
 ];
 
 interface ClubTabsProps {
@@ -24,10 +27,11 @@ interface ClubTabsProps {
 }
 
 export function ClubTabs({ activeTab, onTabChange }: ClubTabsProps) {
+  const t = useTranslations('clubes');
   return (
     <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-      <nav className="-mb-px flex gap-1 overflow-x-auto px-2" aria-label="Club sections">
-        {TABS.map(({ id, label, icon: Icon }) => {
+      <nav className="-mb-px flex gap-1 overflow-x-auto px-2" aria-label={t('detail.tabs.ariaLabel')}>
+        {TABS.map(({ id, labelKey, icon: Icon }) => {
           const active = activeTab === id;
           return (
             <button
@@ -40,7 +44,7 @@ export function ClubTabs({ activeTab, onTabChange }: ClubTabsProps) {
               }`}
             >
               <Icon className="h-4 w-4" />
-              {label}
+              {t(`detail.tabs.${labelKey}`)}
             </button>
           );
         })}

@@ -2,6 +2,7 @@
 
 import { MagnifyingGlassIcon, FaceFrownIcon, ExclamationTriangleIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface EmptyStateProps {
   type: 'no-query' | 'no-results' | 'error';
@@ -14,7 +15,7 @@ interface EmptyStateProps {
  * - no-query: Usuario no ha buscado nada aún
  * - no-results: No se encontraron resultados
  * - error: Error en la búsqueda
- * 
+ *
  * @example
  * <SearchEmptyState type="no-results" query="test" />
  */
@@ -23,25 +24,26 @@ export function SearchEmptyState({
   query,
   className = '',
 }: EmptyStateProps) {
+  const t = useTranslations('search.empty');
   const config = {
     'no-query': {
       icon: MagnifyingGlassIcon,
-      title: 'Busca en Yebaam',
-      description: 'Encuentra personas, publicaciones, hashtags y grupos',
+      title: t('noQueryTitle'),
+      description: t('noQueryDescription'),
       iconColor: 'text-gray-400 dark:text-gray-500',
     },
     'no-results': {
       icon: FaceFrownIcon,
-      title: 'No se encontraron resultados',
+      title: t('noResultsTitle'),
       description: query
-        ? `No hay resultados para "${query}". Intenta con otras palabras clave.`
-        : 'Intenta buscar algo diferente',
+        ? t('noResultsWithQuery', { query })
+        : t('noResultsGeneric'),
       iconColor: 'text-gray-400 dark:text-gray-500',
     },
     error: {
       icon: ExclamationTriangleIcon,
-      title: 'Algo salió mal',
-      description: 'No pudimos completar tu búsqueda. Por favor, intenta de nuevo.',
+      title: t('errorTitle'),
+      description: t('errorDescription'),
       iconColor: 'text-red-500 dark:text-red-400',
     },
   };

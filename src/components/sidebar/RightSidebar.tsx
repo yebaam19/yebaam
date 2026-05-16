@@ -8,6 +8,7 @@ import { SuggestedGroupsCard } from '@/features/communities/components/Suggested
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import BirthdaysSection from './BirthdaysSection'
 import OnlineContacts from './OnlineContacts'
 import { PortalAd } from './PortalAd'
@@ -71,6 +72,7 @@ function DefaultRail() {
 export default function RightSidebar() {
   const pathname = usePathname()
   const extras = resolveRailExtras(pathname)
+  const t = useTranslations('nav')
 
   return (
     <aside className="h-full min-h-0 w-full min-w-0 overflow-y-auto overflow-x-hidden border-l border-neutral-200 bg-white p-3 sm:p-4 dark:border-neutral-800 dark:bg-neutral-900">
@@ -84,26 +86,26 @@ export default function RightSidebar() {
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <Link href="/privacidad" className="hover:underline">
-              Privacidad
+              {t('privacy')}
             </Link>
             <span>·</span>
             <Link href="/terminos" className="hover:underline">
-              Condiciones
+              {t('terms')}
             </Link>
             <span>·</span>
             <Link href="/publicidad" className="hover:underline">
-              Publicidad
+              {t('advertising')}
             </Link>
             <span>·</span>
             <Link href="/cookies" className="hover:underline">
-              Cookies
+              {t('cookies')}
             </Link>
             <span>·</span>
             <Link href={'/mas' as never} className="hover:underline">
-              Más
+              {t('more')}
             </Link>
             <span>·</span>
-            <span>© {new Date().getFullYear()} Yebaam</span>
+            <span>{t('copyrightShort', { year: new Date().getFullYear() })}</span>
           </div>
         </div>
       </div>

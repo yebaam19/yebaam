@@ -3,10 +3,12 @@ import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'sonner';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import 'rc-slider/assets/index.css';
 
 import { AuthProvider } from '@/features/auth/context/auth-context';
-import ThemeProvider from './theme-provider';
+import { ThemeSync } from '@/components/settings/ThemeSync';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import OfflineIndicator from '@/components/OfflineIndicator';
@@ -33,12 +35,19 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode; }) {
+const themeInitScript = `(function(){try{var p=JSON.parse(localStorage.getItem('yebaam.preferences')||'null');var t=p&&p.state&&p.state.theme;var d=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
   return (
-    <html lang="es" className={poppins.className}>
+    <html lang={locale} className={poppins.className} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-dvh bg-gray-50 text-neutral-900 antialiased dark:bg-neutral-900 dark:text-neutral-100">
         <ErrorBoundary>
-          <ThemeProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <ThemeSync />
             <AuthProvider>
               <SocketProvider>
                 <OfflineIndicator />
@@ -46,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
                 <Toaster position="top-center" richColors />
               </SocketProvider>
             </AuthProvider>
-          </ThemeProvider>
+          </NextIntlClientProvider>
         </ErrorBoundary>
         <Analytics />
       </body>

@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CheckIcon, LinkIcon } from '@/components/icons/heroicons-shim'
 import { toast } from 'sonner'
-
-const INVITE_TEXT = '¡Únete a mí en Yebaam! Te encantará la red social donde conecto con mi gente:'
+import { useTranslations } from 'next-intl'
 
 // Canonical share URL: always link to the production app, never the current
 // dev/preview origin — otherwise the copied link is useless to recipients.
@@ -39,7 +38,9 @@ function GmailIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export function InviteFriends() {
+  const t = useTranslations('nav')
   const url = shareUrl()
+  const inviteText = t('inviteText')
   const [copied, setCopied] = useState(false)
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -48,7 +49,7 @@ export function InviteFriends() {
   }, [])
 
   const openWhatsApp = () => {
-    const text = encodeURIComponent(`${INVITE_TEXT} ${url}`)
+    const text = encodeURIComponent(`${inviteText} ${url}`)
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
   }
 
@@ -57,27 +58,27 @@ export function InviteFriends() {
   }
 
   const openGmail = () => {
-    const subject = encodeURIComponent('Únete a mí en Yebaam')
-    const body = encodeURIComponent(`${INVITE_TEXT} ${url}`)
+    const subject = encodeURIComponent(t('inviteSubject'))
+    const body = encodeURIComponent(`${inviteText} ${url}`)
     window.location.href = `mailto:?subject=${subject}&body=${body}`
   }
 
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url)
-      toast.success('Enlace copiado al portapapeles')
+      toast.success(t('linkCopiedToast'))
       setCopied(true)
       if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current)
       copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error('No se pudo copiar el enlace')
+      toast.error(t('linkCopyError'))
     }
   }
 
   const openShareSheet = async () => {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
-        await (navigator as any).share({ title: 'Yebaam', text: INVITE_TEXT, url })
+        await (navigator as any).share({ title: 'Yebaam', text: inviteText, url })
         return
       } catch {
         /* fall through to copy link */
@@ -89,17 +90,17 @@ export function InviteFriends() {
   return (
     <section className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-        Invita a tus amigos
+        {t('inviteFriendsTitle')}
       </h3>
       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-        Conecta con tus amigos y crezcan juntos en Yebaam.
+        {t('inviteFriendsSubtitle')}
       </p>
 
       <div className="mt-3 flex items-center gap-3">
         <button
           type="button"
           onClick={openWhatsApp}
-          aria-label="Compartir por WhatsApp"
+          aria-label={t('shareWhatsApp')}
           className="flex size-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm transition-transform hover:scale-105"
         >
           <WhatsAppIcon className="size-5" />
@@ -107,7 +108,7 @@ export function InviteFriends() {
         <button
           type="button"
           onClick={openInstagram}
-          aria-label="Compartir en Instagram"
+          aria-label={t('shareInstagram')}
           className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#fa7e1e] via-[#d62976] to-[#962fbf] text-white shadow-sm transition-transform hover:scale-105"
         >
           <InstagramIcon className="size-5" />
@@ -115,7 +116,7 @@ export function InviteFriends() {
         <button
           type="button"
           onClick={openGmail}
-          aria-label="Compartir por Gmail"
+          aria-label={t('shareGmail')}
           className="flex size-9 items-center justify-center rounded-full bg-[#EA4335] text-white shadow-sm transition-transform hover:scale-105"
         >
           <GmailIcon className="size-5" />
@@ -124,7 +125,7 @@ export function InviteFriends() {
           <button
             type="button"
             onClick={copyLink}
-            aria-label={copied ? 'Enlace copiado' : 'Copiar enlace'}
+            aria-label={copied ? t('linkCopied') : t('copyLink')}
             aria-live="polite"
             className={`flex size-9 items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-105 ${
               copied
@@ -140,7 +141,7 @@ export function InviteFriends() {
               copied ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
             }`}
           >
-            ¡Copiado!
+            {t('copiedBadge')}
           </span>
         </div>
       </div>
@@ -150,7 +151,7 @@ export function InviteFriends() {
         onClick={openShareSheet}
         className="mt-4 w-full rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700"
       >
-        Invitar amigos
+        {t('inviteCta')}
       </button>
     </section>
   )

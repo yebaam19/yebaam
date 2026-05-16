@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { imageUrl } from '@/lib/media/urls';
 import { UserIcon } from '@/components/icons/heroicons-shim';
 import { removeClubMember, setMemberRole } from '../../actions/club-roles.actions';
@@ -13,13 +14,6 @@ interface Props {
   viewerId: string | null;
 }
 
-const ROLE_LABELS: Record<ClubMemberRole, string> = {
-  OWNER: 'Dueño',
-  ADMIN: 'Admin',
-  MODERATOR: 'Moderador',
-  MEMBER: 'Miembro',
-};
-
 const ROLE_COLORS: Record<ClubMemberRole, string> = {
   OWNER: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
   ADMIN: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
@@ -30,10 +24,15 @@ const ROLE_COLORS: Record<ClubMemberRole, string> = {
 const ROLE_OPTIONS: ClubMemberRole[] = ['OWNER', 'ADMIN', 'MODERATOR', 'MEMBER'];
 
 export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props) {
+  const t = useTranslations('musica');
   const [items, setItems] = useState(members);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const canManage = viewerRole === 'OWNER' || viewerRole === 'ADMIN';
+
+  function displayName(m: ClubMemberRow): string {
+    return m.full_name || m.username || t('club.roleMEMBER');
+  }
 
   function handleRoleChange(target: ClubMemberRow, role: ClubMemberRole) {
     setError(null);
@@ -50,7 +49,7 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
   }
 
   function handleRemove(target: ClubMemberRow) {
-    if (!confirm(`¿Remover a ${displayName(target)} del club?`)) return;
+    if (!confirm(t('club.members.removeConfirmName', { name: displayName(target) }))) return;
     setError(null);
     startTransition(async () => {
       const res = await removeClubMember(clubId, target.user_id);
@@ -71,7 +70,7 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
       )}
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          Sin miembros todavía.
+          {t('club.members.empty')}
         </p>
       ) : (
         <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
@@ -100,7 +99,7 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[m.role]}`}
                 >
-                  {ROLE_LABELS[m.role]}
+                  {t(`club.role${m.role}`)}
                 </span>
                 {canManage && !isSelf && (
                   <div className="flex items-center gap-1">
@@ -112,7 +111,7 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
                     >
                       {ROLE_OPTIONS.map((r) => (
                         <option key={r} value={r}>
-                          {ROLE_LABELS[r]}
+                          {t(`club.role${r}`)}
                         </option>
                       ))}
                     </select>
@@ -122,7 +121,7 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
                       disabled={pending}
                       className="rounded-md border border-rose-300 px-2 py-1 text-xs text-rose-700 hover:bg-rose-50 disabled:opacity-40 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
                     >
-                      Quitar
+                      {t('club.members.remove')}
                     </button>
                   </div>
                 )}
@@ -133,8 +132,4 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
       )}
     </div>
   );
-}
-
-function displayName(m: ClubMemberRow): string {
-  return m.full_name || m.username || 'Miembro';
 }

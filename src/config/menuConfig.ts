@@ -7,7 +7,6 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   EnvelopeIcon,
-  ExclamationCircleIcon,
   GlobeAmericasIcon,
   HeartIcon,
   HomeIcon,
@@ -15,7 +14,6 @@ import {
   MegaphoneIcon,
   MusicalNoteIcon,
   NewspaperIcon,
-  PhoneIcon,
   RectangleStackIcon,
   ShoppingBagIcon,
   SparklesIcon,
@@ -29,191 +27,191 @@ import { isFeatureEnabled } from './features-flag';
 export const menuConfig: Record<string, any[]> = {
   USER: [
     {
-      section: 'Principal',
+      sectionKey: 'sections.principal',
       items: [
-        { icon: HomeIcon, label: 'Feed', href: '{basePath}' },
+        { icon: HomeIcon, labelKey: 'items.feed', href: '{basePath}' },
         {
           icon: RectangleStackIcon,
-          label: 'Perfiles y Espacios',
+          labelKey: 'items.profilesAndSpaces',
           href: '{basePath}/profiles',
         },
-        { icon: UserGroupIcon, label: 'Amigos', href: '{basePath}/friends', badge: '{badgeFriendRequests}' },
+        { icon: UserGroupIcon, labelKey: 'items.friends', href: '{basePath}/friends', badge: '{badgeFriendRequests}' },
         {
           icon: GlobeAmericasIcon,
-          label: 'Ciudades',
+          labelKey: 'items.cities',
           href: '{basePath}/cities',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'CITIES_ENABLED' as FeatureFlag,
         },
         {
           icon: SparklesIcon,
-          label: 'Clubes',
+          labelKey: 'items.clubs',
           href: '{basePath}/clubs',
           featureFlag: 'CLUBES_ENABLED' as FeatureFlag,
         },
         {
           icon: BookOpenIcon,
-          label: 'Blogs',
+          labelKey: 'items.blogs',
           href: '{basePath}/blogs',
           featureFlag: 'BLOGS_ENABLED' as FeatureFlag,
         },
         {
           icon: ShoppingBagIcon,
-          label: 'Comida',
+          labelKey: 'items.food',
           href: 'http://food.yebaam.com/?fbclid=IwY2xjawRk9YVleHRuA2FlbQIxMABicmlkETFGOThUMHJEcEpLUjNlSlRRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHqaDv09UQU7l43k9NGfHzgQtyEl-9GMczTX4bbl8SQ54bvLzpXvnegcacxqB_aem_gLe6_akUqnvd2jSKiom8dg',
-          badge: 'Nuevo',
+          badgeKey: 'badges.nuevo',
           badgeHideOnMobile: true,
         },
         {
           icon: MusicalNoteIcon,
-          label: 'Club de coleccionistas',
+          labelKey: 'items.collectorsClub',
           href: '/musica',
-          badge: 'Nuevo',
+          badgeKey: 'badges.nuevo',
           badgeHideOnMobile: true,
           featureFlag: 'MUSIC_CLUB_ENABLED' as FeatureFlag,
         },
       ],
     },
     {
-      section: 'Espacios',
+      sectionKey: 'sections.espacios',
       items: [
         {
           icon: BriefcaseIcon,
-          label: 'Servicios Profesionales',
+          labelKey: 'items.professionalServices',
           href: '{basePath}/professional-services',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'SERVICIOS_PROFESIONALES_ENABLED' as FeatureFlag,
         },
         {
           icon: BuildingOfficeIcon,
-          label: 'Negocios',
+          labelKey: 'items.businesses',
           href: '{basePath}/businesses',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'NEGOCIOS_ENABLED' as FeatureFlag,
         },
         {
           icon: UsersIcon,
-          label: 'Grupos',
+          labelKey: 'items.groups',
           href: '{basePath}/grupos',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'GRUPOS_ENABLED' as FeatureFlag,
         },
         {
           icon: BuildingOfficeIcon,
-          label: 'Comunidades',
+          labelKey: 'items.communities',
           href: '{basePath}/comunidades',
           featureFlag: 'COMUNIDADES_ENABLED' as FeatureFlag,
         },
         {
           icon: ChatBubbleLeftRightIcon,
-          label: 'Chat Público',
+          labelKey: 'items.publicChat',
           href: '{basePath}/chat-publico',
           featureFlag: 'CHAT_PUBLICO_ENABLED' as FeatureFlag,
         },
         {
           icon: ChatBubbleLeftRightIcon,
-          label: 'Foros',
+          labelKey: 'items.forums',
           href: '{basePath}/foros',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'FOROS_ENABLED' as FeatureFlag,
         },
         {
           icon: MegaphoneIcon,
-          label: 'Promociones',
+          labelKey: 'items.promotions',
           href: '{basePath}/promociones',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'PROMOCIONES_ENABLED' as FeatureFlag,
         },
         {
           icon: NewspaperIcon,
-          label: 'Noticias',
+          labelKey: 'items.news',
           href: '{basePath}/noticias',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'NOTICIAS_ENABLED' as FeatureFlag,
         },
         {
           icon: RectangleStackIcon,
-          label: 'Clasificados',
+          labelKey: 'items.classifieds',
           href: '{basePath}/clasificados',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'CLASIFICADOS_ENABLED' as FeatureFlag,
         },
       ],
     },
     {
-      section: 'Personal',
+      sectionKey: 'sections.personal',
       items: [
         {
           icon: BookmarkIcon,
-          label: 'Guardados',
+          labelKey: 'items.saved',
           href: '{basePath}/guardados',
           featureFlag: 'GUARDADOS_ENABLED' as FeatureFlag,
         },
         {
           icon: HeartIcon,
-          label: 'Me gusta',
+          labelKey: 'items.likes',
           href: '{basePath}/me-gusta',
           featureFlag: 'ME_GUSTA_ENABLED' as FeatureFlag,
         },
         {
           icon: ClockIcon,
-          label: 'Recuerdos',
+          labelKey: 'items.memories',
           href: '{basePath}/recuerdos',
           featureFlag: 'RECUERDOS_ENABLED' as FeatureFlag,
         },
       ],
     },
     {
-      section: 'Ayuda',
+      sectionKey: 'sections.ayuda',
       items: [
         {
           icon: HeartIcon,
-          label: 'Ayuda Social',
+          labelKey: 'items.socialHelp',
           href: '{basePath}/ayuda-social',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'AYUDA_SOCIAL_ENABLED' as FeatureFlag,
         },
         {
           icon: LifebuoyIcon,
-          label: 'Soporte',
+          labelKey: 'items.support',
           href: '{basePath}/soporte',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'SOPORTE_ENABLED' as FeatureFlag,
         },
         {
           icon: EnvelopeIcon,
-          label: 'Contacto',
+          labelKey: 'items.contact',
           href: '{basePath}/contacto',
-          badge: 'Pronto',
+          badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'CONTACTO_ENABLED' as FeatureFlag,
         },
       ],
     },
     {
-      section: 'Perfil',
+      sectionKey: 'sections.perfil',
       items: [
-        { icon: UserIcon, label: 'Mi perfil', href: '/{username}' },
+        { icon: UserIcon, labelKey: 'items.myProfile', href: '/{username}' },
         {
           icon: BriefcaseIcon,
-          label: 'Perfil profesional',
+          labelKey: 'items.professionalProfile',
           href: '{basePath}/professional-profile',
           badgeHideOnMobile: true,
           featureFlag: 'PERFIL_PROFESIONAL_ENABLED' as FeatureFlag,
         },
         {
           icon: ArrowTrendingUpIcon,
-          label: 'Estadísticas',
+          labelKey: 'items.statistics',
           href: '{basePath}/estadisticas',
           featureFlag: 'ESTADISTICAS_ENABLED' as FeatureFlag,
         },
@@ -223,9 +221,8 @@ export const menuConfig: Record<string, any[]> = {
 };
 
 /**
- * Helper para obtener el menú con rutas dinámicas según el usuario
- * @param badges - Objeto opcional con conteos dinámicos para los badges
- * @param username - Username del usuario actual para enlaces de perfil
+ * Helper para obtener el menú con rutas dinámicas según el usuario.
+ * Devuelve `labelKey` y `badgeKey` (resolverlos con `useTranslations('nav')` en el render).
  */
 export function getMenuForUser(
   userType: string,
@@ -246,18 +243,17 @@ export function getMenuForUser(
       ...section,
       items: section.items
         .filter((item: any) => {
-          // Filtrar por feature flag si existe
           if (item.featureFlag) {
             return isFeatureEnabled(item.featureFlag);
           }
-          return true; // Si no tiene feature flag, siempre se muestra
+          return true;
         })
         .map((item: any) => {
-          // Reemplazar href y badges dinámicos
-          let href = item.href.replace('{basePath}', basePath).replace('{username}', username || '');
-          let badge = item.badge;
+          const href = item.href.replace('{basePath}', basePath).replace('{username}', username || '');
 
-          // Reemplazar placeholders de badges dinámicos
+          // Resolver placeholders dinámicos de badges (números/contadores).
+          // Los badges traducibles llegan como `badgeKey` y se resuelven en el render.
+          let badge = item.badge;
           if (badge) {
             if (badge === '{badgeFriendRequests}' && badges?.friendRequests) {
               badge = badges.friendRequests;
@@ -265,13 +261,10 @@ export function getMenuForUser(
               badge = badges.messages;
             } else if (badge === '{badgeGroupInvites}' && badges?.groupInvites) {
               badge = badges.groupInvites;
-            } else if (badge.startsWith('{')) {
-              // Si es un placeholder que no tiene valor, quitarlo
+            } else if (typeof badge === 'string' && badge.startsWith('{')) {
               badge = undefined;
             }
           }
-
-          // Quitar badge si es '0' o undefined
           if (!badge || badge === '0') {
             badge = undefined;
           }
@@ -284,7 +277,7 @@ export function getMenuForUser(
           };
         }),
     }))
-    .filter((section) => section.items.length > 0); // Filtrar secciones vacías
+    .filter((section) => section.items.length > 0);
 
   return result;
 }

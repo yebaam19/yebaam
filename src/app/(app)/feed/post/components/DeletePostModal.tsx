@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
 import { ExclamationTriangleIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
@@ -17,6 +18,7 @@ export default function DeletePostModal({
   onConfirm,
   isDeleting = false,
 }: DeletePostModalProps) {
+  const t = useTranslations('feed');
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -63,13 +65,12 @@ export default function DeletePostModal({
                   as="h3"
                   className="text-xl font-bold text-center text-neutral-900 dark:text-white mt-4"
                 >
-                  ¿Eliminar publicación?
+                  {t('post.delete.title')}
                 </Dialog.Title>
 
                 {/* Descripción */}
                 <Dialog.Description className="mt-3 text-center text-sm text-neutral-600 dark:text-neutral-400">
-                  Esta acción no se puede deshacer. La publicación se eliminará permanentemente
-                  y no podrá ser recuperada.
+                  {t('post.delete.description')}
                 </Dialog.Description>
 
                 {/* Botones de acción */}
@@ -80,7 +81,7 @@ export default function DeletePostModal({
                     onClick={onClose}
                     disabled={isDeleting}
                   >
-                    Cancelar
+                    {t('post.delete.cancel')}
                   </button>
                   <button
                     type="button"
@@ -97,10 +98,10 @@ export default function DeletePostModal({
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        Eliminando...
+                        {t('post.delete.deleting')}
                       </>
                     ) : (
-                      'Eliminar'
+                      t('post.delete.confirm')
                     )}
                   </button>
                 </div>

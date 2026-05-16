@@ -1,0 +1,49 @@
+{
+  "header": {
+    "title": "Notifications",
+    "markAll": "Mark all"
+  },
+  "tabs": {
+    "all": "All",
+    "unread": "Unread",
+    "unreadWithCount": "Unread ({count})"
+  },
+  "list": {
+    "emptyAllTitle": "You have no notifications",
+    "emptyAllDescription": "When you have notifications they will appear here",
+    "emptyUnreadTitle": "You're all caught up!",
+    "emptyUnreadDescription": "You have no unread notifications",
+    "noMore": "No more notifications"
+  },
+  "item": {
+    "requestSentWaiting": "Request sent - Waiting for response",
+    "deleteLabel": "Delete notification"
+  },
+  "friendRequest": {
+    "nowFriends": "You are now friends!",
+    "rejected": "Request declined",
+    "accept": "Accept",
+    "reject": "Decline"
+  },
+  "bell": {
+    "viewAll": "View all notifications"
+  },
+  "page": {
+    "back": "Back",
+    "title": "Notifications",
+    "newCount": "{count, plural, one {# new} other {# new}}",
+    "markAllAsRead": "Mark all as read",
+    "tabAll": "All",
+    "tabUnread": "Unread",
+    "tabRead": "Read",
+    "tabMentions": "Mentions",
+    "tabReactions": "Reactions",
+    "tabComments": "Comments",
+    "emptyUnreadTitle": "You're all caught up!",
+    "emptyUnreadDescription": "You have no unread notifications",
+    "emptyReadTitle": "No read notifications",
+    "emptyAllTitle": "You have no notifications",
+    "emptyDescription": "Notifications about your activity will appear here",
+    "noMore": "No more notifications"
+  }
+}

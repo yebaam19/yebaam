@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "title": "Clubs | Communities and Interest Groups",
+    "description": "Discover and join clubs based on your interests. Connect with like-minded people, take part in exclusive events, and share unique experiences in themed communities.",
+    "ogTitle": "Clubs | Communities and Interest Groups",
+    "ogDescription": "Discover passionate communities around the topics you care about"
+  },
+  "hero": {
+    "title": "Clubs",
+    "subtitle1": "Discover and join passionate communities around the topics you care about.",
+    "subtitle2": "Connect with like-minded people and share unique experiences.",
+    "createCta": "Create a club",
+    "trustPill": "Join thousands of active communities on Yebaam",
+    "features": {
+      "themes": {
+        "title": "Communities and Themes",
+        "description": "Join groups organized by specific interests and shared affiliations."
+      },
+      "events": {
+        "title": "Events and Activities",
+        "description": "Take part in exclusive events and activities run by the clubs."
+      },
+      "connections": {
+        "title": "Authentic Connections",
+        "description": "Meet people who share your same passions and interests."
+      }
+    }
+  },
+  "list": {
+    "tabs": {
+      "mine": "My clubs",
+      "suggested": "Suggested",
+      "popular": "Popular",
+      "new": "New"
+    },
+    "searchPlaceholder": "Search clubs...",
+    "filters": "Filters",
+    "empty": {
+      "mine": "You're not a member of any club yet",
+      "suggested": "There are no suggested clubs at the moment",
+      "new": "No recent clubs found",
+      "popular": "No popular clubs found",
+      "default": "No clubs found"
+    }
+  },
+  "grid": {
+    "emptyDefault": "No clubs found",
+    "exploreHint": "Explore different categories or adjust your filters to discover interesting clubs"
+  },
+  "card": {
+    "private": "Private",
+    "public": "Public",
+    "members": "{count} members",
+    "free": "Free",
+    "viewDetails": "View details"
+  },
+  "create": {
+    "title": "Create club",
+    "stepLabel": "{title} - Step {current} of {total}",
+    "steps": {
+      "basic": "Basic information",
+      "settings": "Settings",
+      "images": "Images",
+      "additional": "Additional information",
+      "fallback": "Create club"
+    },
+    "errorFallback": "Error creating the club. Please try again."
+  },
+  "detail": {
+    "privacy": {
+      "public": "Public",
+      "private": "Private",
+      "secret": "Secret",
+      "affiliation": "Affiliation"
+    },
+    "coverAlt": "Cover of {name}",
+    "actions": {
+      "loading": "...",
+      "member": "Member",
+      "join": "Join",
+      "messageAria": "Send message",
+      "messageTitle": "Send message",
+      "inviteAria": "Invite",
+      "inviteTitle": "Invite"
+    },
+    "tabs": {
+      "ariaLabel": "Club sections",
+      "about": "About the Club",
+      "photos": "Photos",
+      "videos": "Videos",
+      "articles": "Articles",
+      "files": "Files"
+    }
+  },
+  "pagination": {
+    "ariaLabel": "Pagination",
+    "goToPage": "Go to page {page}",
+    "prev": "Previous page",
+    "next": "Next page"
+  }
+}

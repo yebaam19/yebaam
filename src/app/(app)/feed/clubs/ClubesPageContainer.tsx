@@ -20,6 +20,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import type { Route } from 'next'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 
 type TabType = 'mis-clubes' | 'sugeridos' | 'populares' | 'nuevos'
@@ -27,6 +28,7 @@ type TabType = 'mis-clubes' | 'sugeridos' | 'populares' | 'nuevos'
 const PAGE_SIZE = 12
 
 export function ClubesPageContainer() {
+  const t = useTranslations('clubes')
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -90,25 +92,25 @@ export function ClubesPageContainer() {
   const tabs = [
     {
       id: 'mis-clubes' as TabType,
-      label: 'Mis clubes',
+      label: t('list.tabs.mine'),
       icon: UsersIcon,
       count: Array.isArray(myClubs) ? myClubs.length : undefined,
     },
     {
       id: 'sugeridos' as TabType,
-      label: 'Sugeridos',
+      label: t('list.tabs.suggested'),
       icon: SparklesIcon,
       count: suggestedPage?.totalCount,
     },
     {
       id: 'populares' as TabType,
-      label: 'Populares',
+      label: t('list.tabs.popular'),
       icon: FireIcon,
       count: undefined,
     },
     {
       id: 'nuevos' as TabType,
-      label: 'Nuevos',
+      label: t('list.tabs.new'),
       icon: StarIcon,
       count: undefined,
     },
@@ -153,14 +155,14 @@ export function ClubesPageContainer() {
   const getEmptyMessage = () => {
     switch (activeTab) {
       case 'mis-clubes':
-        return 'No eres miembro de ningún club todavía'
+        return t('list.empty.mine')
       case 'sugeridos':
-        return 'No hay clubes sugeridos en este momento'
+        return t('list.empty.suggested')
       case 'nuevos':
-        return 'No se encontraron clubes recientes'
+        return t('list.empty.new')
       case 'populares':
       default:
-        return 'No se encontraron clubes populares'
+        return t('list.empty.popular')
     }
   }
 
@@ -213,7 +215,7 @@ export function ClubesPageContainer() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar clubes..."
+                placeholder={t('list.searchPlaceholder')}
                 className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-3 text-sm text-neutral-700 placeholder:text-neutral-400 focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:bg-neutral-900"
               />
             </div>
@@ -222,7 +224,7 @@ export function ClubesPageContainer() {
               className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300"
             >
               <AdjustmentsHorizontalIcon className="h-4 w-4" />
-              Filtros
+              {t('list.filters')}
             </button>
           </div>
         </div>

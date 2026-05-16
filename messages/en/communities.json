@@ -1,0 +1,126 @@
+{
+  "list": {
+    "title": "Communities",
+    "subtitle": "Join communities of people with similar interests",
+    "tabs": {
+      "discover": "Discover",
+      "myCommunities": "My Communities",
+      "suggested": "Suggested"
+    },
+    "empty": {
+      "discover": "There are no popular communities at the moment",
+      "myCommunities": "You haven't joined any community yet. Explore and join one!",
+      "suggested": "There are no suggested communities at the moment",
+      "default": "No communities found"
+    }
+  },
+  "grid": {
+    "emptyDefault": "No communities found"
+  },
+  "card": {
+    "members": "members",
+    "posts": "posts",
+    "processing": "Processing...",
+    "member": "Member",
+    "requestAccess": "Request Access",
+    "join": "Join"
+  },
+  "create": {
+    "trigger": "Create community",
+    "title": "Create community",
+    "subtitle": "Bring people together around a shared interest, place, or identity.",
+    "fields": {
+      "coverImage": "Cover image",
+      "profileImage": "Profile image",
+      "name": "Name*",
+      "description": "Description",
+      "category": "Category",
+      "privacy": "Privacy",
+      "location": "Location",
+      "website": "Website",
+      "tags": "Tags (comma separated)"
+    },
+    "placeholders": {
+      "website": "https://...",
+      "tags": "technology, community, mexico"
+    },
+    "uploading": "Uploading...",
+    "uploadHint": "PNG, JPG, or WebP",
+    "imageAltCover": "Cover",
+    "imageAltProfile": "Profile",
+    "closeAria": "Close",
+    "errors": {
+      "nameRequired": "Name is required.",
+      "imageUpload": "Error uploading the image"
+    },
+    "privacyOptions": {
+      "public": {
+        "label": "Public",
+        "description": "Anyone can view and join."
+      },
+      "private": {
+        "label": "Private",
+        "description": "Visible to members; an admin controls who can join."
+      },
+      "secret": {
+        "label": "Secret",
+        "description": "Accessible by invitation only."
+      }
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Create community",
+      "submitting": "Creating..."
+    }
+  },
+  "detail": {
+    "members": "members",
+    "posts": "posts",
+    "joinErrorDefault": "Could not leave",
+    "joinButton": {
+      "processing": "Processing...",
+      "guest": "Sign in to join",
+      "member": "Member",
+      "requestPending": "Request sent",
+      "requestDeclined": "Request declined",
+      "invited": "Accept invitation",
+      "requestAccess": "Request access",
+      "secretOnlyInvite": "Invitation only",
+      "join": "Become a Member"
+    }
+  },
+  "sidebar": {
+    "ariaLabel": "Community sections",
+    "items": {
+      "members": "Members and Followers",
+      "rules": "Rules and Reports",
+      "chat": "Public Chat",
+      "forums": "Forums",
+      "classifieds": "Classifieds",
+      "promotions": "Promotions",
+      "links": "Page Links",
+      "events": "Events"
+    },
+    "ownerOnly": "Owner only",
+    "comingSoon": "Soon"
+  },
+  "topTabs": {
+    "ariaLabel": "Content tabs",
+    "posts": "Posts",
+    "photos": "Photos",
+    "videos": "Videos",
+    "articles": "Articles",
+    "files": "Files",
+    "pdf": "PDF",
+    "comingSoon": "Soon"
+  },
+  "members": {
+    "title": "Members and Followers",
+    "total": "{count} total",
+    "empty": "No members available."
+  },
+  "comingSoon": {
+    "defaultDescription": "This section will be available soon.",
+    "badge": "Coming soon"
+  }
+}

@@ -1,5 +1,6 @@
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { getSpaceBoard, getSpaceOwnerBackLink, isSpaceAdmin } from '../server/foro.server'
 import SpaceBoard from '@/features/foro/components/SpaceBoard'
 import ForoHeader from '@/features/foro/components/ForoHeader'
@@ -13,6 +14,7 @@ interface PageProps {
 
 export default async function SpacePage({ params }: PageProps) {
   const { spaceSlug } = await params
+  const t = await getTranslations('foro')
   const result = await getSpaceBoard(spaceSlug)
   if (!result) notFound()
   const { space, categories } = result
@@ -21,14 +23,18 @@ export default async function SpacePage({ params }: PageProps) {
   const ownerBack = await getSpaceOwnerBackLink(space)
   const crumbs = [
     ...(ownerBack ? [{ href: ownerBack.href, label: `← ${ownerBack.label}` }] : []),
-    { href: '/foro', label: 'Foros' },
+    { href: '/foro', label: t('crumbs.foros') },
   ]
 
   const subtitleLine = (
     <span className="flex flex-wrap items-center gap-2">
       <Badge color={owner.badgeColor}>{owner.label}</Badge>
       {space.visibility !== 'public' && (
-        <Badge color="amber">{space.visibility === 'private' ? 'Privado' : 'Secreto'}</Badge>
+        <Badge color="amber">
+          {space.visibility === 'private'
+            ? t('space.visibilityPrivate')
+            : t('space.visibilitySecret')}
+        </Badge>
       )}
       {space.description && (
         <span className="text-neutral-600 dark:text-neutral-400">{space.description}</span>
@@ -45,7 +51,7 @@ export default async function SpacePage({ params }: PageProps) {
         action={
           userIsAdmin ? (
             <Button href={`/foro/${space.slug}/admin` as Route} outline className="w-full sm:w-auto">
-              Administrar
+              {t('space.manage')}
             </Button>
           ) : null
         }

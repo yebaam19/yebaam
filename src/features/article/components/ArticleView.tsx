@@ -9,6 +9,7 @@
 
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useArticleActions } from '../hooks/useArticleActions'
 import { Article } from '../interfaces'
 import { ArticleComments } from './ArticleComments'
@@ -22,6 +23,7 @@ interface ArticleViewProps {
 }
 
 export function ArticleView({ article, currentUserId }: ArticleViewProps) {
+  const t = useTranslations('article.view')
   const [mounted, setMounted] = useState(false)
 
   const {
@@ -114,7 +116,7 @@ export function ArticleView({ article, currentUserId }: ArticleViewProps) {
 
             {currentUserId && (
               <div id="comments-section" className="mt-5 border-t border-neutral-200 px-4 pt-4 dark:border-neutral-700">
-                <h3 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-white">Comentarios</h3>
+                <h3 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-white">{t('commentsTitle')}</h3>
                 <ArticleComments articleId={article.id} currentUserId={currentUserId} />
               </div>
             )}

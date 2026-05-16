@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Community } from '../types/community.types';
 import { CommunityCard } from './CommunityCard';
 
@@ -12,8 +15,10 @@ export function CommunitiesGrid({
   communities,
   onJoinClick,
   loadingCommunityId,
-  emptyMessage = 'No se encontraron comunidades',
+  emptyMessage,
 }: CommunitiesGridProps) {
+  const t = useTranslations('communities');
+  const resolvedEmpty = emptyMessage ?? t('grid.emptyDefault');
   if (communities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -33,7 +38,7 @@ export function CommunitiesGrid({
           </svg>
         </div>
         <p className="text-gray-600 dark:text-gray-400 text-center max-w-md">
-          {emptyMessage}
+          {resolvedEmpty}
         </p>
       </div>
     );

@@ -12,6 +12,7 @@ import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef } from 'react'
 
 interface UserPostsProps {
@@ -20,6 +21,7 @@ interface UserPostsProps {
 }
 
 export default function UserPosts({ userId, isOwnProfile = false }: UserPostsProps) {
+  const t = useTranslations('profile.posts')
   const { user: currentUser } = useAuth()
   const posts = usePostStore((state) => state.posts)
   const isLoading = usePostStore((state) => state.isLoading)
@@ -70,9 +72,7 @@ export default function UserPosts({ userId, isOwnProfile = false }: UserPostsPro
     return (
       <div className="rounded-xl bg-white p-8 text-center shadow-sm dark:bg-gray-800">
         <p className="text-muted-foreground">
-          {isOwnProfile
-            ? 'Aún no has publicado nada. ¡Crea tu primera publicación!'
-            : 'Este usuario no ha publicado nada aún.'}
+          {isOwnProfile ? t('emptyOwn') : t('emptyOther')}
         </p>
       </div>
     )

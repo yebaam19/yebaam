@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "title": "Videos",
+    "description": "Watch the videos the community is posting."
+  },
+  "page": {
+    "title": "Videos",
+    "subtitle": "All videos posted by users — from the feed, galleries, and communities."
+  },
+  "feed": {
+    "empty": "No videos posted yet. Upload one from the feed or your gallery to see it here.",
+    "userFallback": "User",
+    "timeAgo": {
+      "now": "now",
+      "minutes": "{count} min ago",
+      "hours": "{count} h ago",
+      "days": "{count} d ago",
+      "weeks": "{count} w ago"
+    }
+  }
+}

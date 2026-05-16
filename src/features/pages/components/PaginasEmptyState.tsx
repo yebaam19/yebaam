@@ -1,5 +1,8 @@
+'use client';
+
 import { FC } from 'react';
 import { PlusIcon } from '@/components/icons/heroicons-shim';
+import { useTranslations } from 'next-intl';
 
 type EmptyStateType = 'search' | 'my-pages' | 'followed' | 'discover';
 
@@ -16,6 +19,7 @@ export const PaginasEmptyState: FC<PaginasEmptyStateProps> = ({
   onClearSearch,
   onDiscoverClick,
 }) => {
+  const t = useTranslations('pages.empty');
   return (
     <div className="text-center py-12">
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
@@ -37,16 +41,16 @@ export const PaginasEmptyState: FC<PaginasEmptyStateProps> = ({
       {type === 'search' && (
         <>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-            No se encontraron páginas
+            {t('search.title')}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Intenta ajustar tu búsqueda o filtros
+            {t('search.description')}
           </p>
           <button
             onClick={onClearSearch}
             className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium text-sm"
           >
-            Limpiar búsqueda
+            {t('search.action')}
           </button>
         </>
       )}
@@ -54,17 +58,17 @@ export const PaginasEmptyState: FC<PaginasEmptyStateProps> = ({
       {type === 'my-pages' && (
         <>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-            No tienes páginas aún
+            {t('myPages.title')}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Crea tu primera página para comenzar
+            {t('myPages.description')}
           </p>
           <button
             onClick={onCreateClick}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             <PlusIcon className="w-5 h-5" />
-            Crear página
+            {t('myPages.action')}
           </button>
         </>
       )}
@@ -72,16 +76,16 @@ export const PaginasEmptyState: FC<PaginasEmptyStateProps> = ({
       {type === 'followed' && (
         <>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-            No sigues ninguna página
+            {t('followed.title')}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Explora páginas en la sección Descubrir
+            {t('followed.description')}
           </p>
           <button
             onClick={onDiscoverClick}
             className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium text-sm"
           >
-            Ver páginas sugeridas
+            {t('followed.action')}
           </button>
         </>
       )}
@@ -89,10 +93,10 @@ export const PaginasEmptyState: FC<PaginasEmptyStateProps> = ({
       {type === 'discover' && (
         <>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-            No hay páginas sugeridas
+            {t('discover.title')}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Vuelve más tarde para ver nuevas recomendaciones
+            {t('discover.description')}
           </p>
         </>
       )}

@@ -1,0 +1,15 @@
+{
+  "viewProfile": "View profile",
+  "friends": "Friends",
+  "myIdentification": "My identification",
+  "darkMode": "Dark mode",
+  "darkModeToggleA11y": "Enable dark mode",
+  "language": "Language",
+  "languageEs": "Spanish",
+  "languageEn": "English",
+  "logout": "Log out",
+  "pioneerNumber": "Pioneer #{n}",
+  "administration": "Administration",
+  "verifyAccount": "Verify my account",
+  "settings": "Settings"
+}

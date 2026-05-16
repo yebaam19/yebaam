@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "listTitle": "Families",
+    "newTitle": "New family"
+  },
+  "list": {
+    "title": "Families",
+    "subtitle": "Private spaces by invitation: family tree, timeline, photos, stories, and documents.",
+    "createCta": "Create family",
+    "pendingInvitations": "Pending invitations",
+    "myFamilies": "My families",
+    "empty": {
+      "title": "You don't belong to any family yet",
+      "subtitle": "Create one to start your family tree, or ask a relative to invite you to theirs.",
+      "cta": "Create my first family"
+    }
+  },
+  "card": {
+    "owner": "Owner",
+    "memberOne": "{count} member",
+    "memberOther": "{count} members",
+    "personOne": "{count} person in the tree",
+    "personOther": "{count} people in the tree"
+  },
+  "invitation": {
+    "fallbackInviter": "Someone",
+    "fallbackFamily": "A family",
+    "message": "<inviter>{inviterName}</inviter> invited you to <family>{familyName}</family>.",
+    "accepted": "You joined \"{family}\".",
+    "declined": "You declined the invitation to \"{family}\".",
+    "actions": {
+      "accept": "Accept",
+      "decline": "Decline"
+    }
+  },
+  "create": {
+    "backToList": "Back to Families",
+    "title": "Create a new family",
+    "subtitle": "A family is a private, invitation-only space. After creating it you can add people to the tree, events, photos, and invite other relatives.",
+    "fields": {
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Velandia Family",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "A short optional description…",
+      "coverLabel": "Cover photo (optional)",
+      "coverHint": "Uploaded to Cloudflare Images."
+    },
+    "privacyNote": "Your family will be private by invitation. Only members will be able to see the content.",
+    "errors": {
+      "nameRequired": "Name is required.",
+      "uploadFailed": "Image upload failed."
+    },
+    "actions": {
+      "submit": "Create family",
+      "submitting": "Creating…"
+    }
+  },
+  "header": {
+    "backToList": "My families",
+    "memberOne": "{count} member",
+    "memberOther": "{count} members",
+    "personOne": "{count} person in the tree",
+    "personOther": "{count} people in the tree"
+  },
+  "layout": {
+    "pendingInviteHint": "Accept the invitation to see the tree, photos, and timeline.",
+    "fallbackInviter": "Someone"
+  },
+  "tabs": {
+    "ariaLabel": "Family tabs",
+    "home": "Home",
+    "members": "Members",
+    "tree": "Tree",
+    "timeline": "Timeline",
+    "photos": "Photos",
+    "stories": "Stories",
+    "documents": "Documents",
+    "settings": "Settings",
+    "comingSoon": "Soon"
+  },
+  "members": {
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "empty": "There are no members yet.",
+    "noName": "(No name)",
+    "fallbackMemberLabel": "the member"
+  }
+}

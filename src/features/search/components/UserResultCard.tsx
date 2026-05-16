@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CheckBadgeIcon, UserPlusIcon, UserMinusIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import type { UserSearchResult, SearchUserResult } from '../interfaces/search.interfaces';
 
 interface UserResultCardProps {
@@ -29,6 +30,7 @@ export function UserResultCard({
   className = '',
   showScore = false,
 }: UserResultCardProps) {
+  const t = useTranslations('search.user');
   const handleFollowClick = (e: React.MouseEvent) => {
     e.preventDefault();
     onFollowToggle?.(user.id);
@@ -86,14 +88,14 @@ export function UserResultCard({
         {/* Mutual friends */}
         {mutualFriends !== undefined && mutualFriends > 0 && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {mutualFriends} {mutualFriends === 1 ? 'amigo' : 'amigos'} en común
+            {t('mutualFriends', { count: mutualFriends })}
           </p>
         )}
 
         {/* Followers count */}
         {user.followersCount !== undefined && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {user.followersCount} {user.followersCount === 1 ? 'seguidor' : 'seguidores'}
+            {t('followers', { count: user.followersCount })}
           </p>
         )}
       </div>
@@ -112,12 +114,12 @@ export function UserResultCard({
           {isFollowing ? (
             <>
               <UserMinusIcon className="h-4 w-4 inline mr-1" />
-              Siguiendo
+              {t('following')}
             </>
           ) : (
             <>
               <UserPlusIcon className="h-4 w-4 inline mr-1" />
-              Seguir
+              {t('follow')}
             </>
           )}
         </button>

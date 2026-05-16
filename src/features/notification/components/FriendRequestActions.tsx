@@ -5,8 +5,11 @@
  * y mensajes de confirmación
  */
 
+'use client';
+
 import { XMarkIcon, CheckIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface FriendRequestActionsProps {
   isProcessing: boolean;
@@ -23,12 +26,13 @@ export default function FriendRequestActions({
   onAccept,
   onReject,
 }: FriendRequestActionsProps) {
+  const t = useTranslations('notification.friendRequest');
   // Mostrar mensaje de confirmación si fue aceptada
   if (isAccepted) {
     return (
       <div className="mt-3 flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-medium">
         <CheckIcon className="h-5 w-5" />
-        ¡Ahora son amigos!
+        {t('nowFriends')}
       </div>
     );
   }
@@ -37,7 +41,7 @@ export default function FriendRequestActions({
   if (isRejected) {
     return (
       <div className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
-        Solicitud rechazada
+        {t('rejected')}
       </div>
     );
   }
@@ -59,7 +63,7 @@ export default function FriendRequestActions({
         ) : (
           <>
             <CheckIcon className="h-4 w-4" />
-            Aceptar
+            {t('accept')}
           </>
         )}
       </button>
@@ -79,7 +83,7 @@ export default function FriendRequestActions({
         ) : (
           <>
             <XMarkIcon className="h-4 w-4" />
-            Rechazar
+            {t('reject')}
           </>
         )}
       </button>

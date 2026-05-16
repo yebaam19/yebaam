@@ -1,4 +1,7 @@
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Club } from '../types/club.types';
 import { ClubCard } from './ClubCard';
 
@@ -15,8 +18,10 @@ export const ClubsGrid: FC<ClubsGridProps> = ({
   onJoin,
   onLeave,
   loadingClubId,
-  emptyMessage = 'No se encontraron clubes',
+  emptyMessage,
 }) => {
+  const t = useTranslations('clubes');
+  const resolvedEmpty = emptyMessage ?? t('grid.emptyDefault');
   if (clubs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -35,10 +40,10 @@ export const ClubsGrid: FC<ClubsGridProps> = ({
             />
           </svg>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {emptyMessage}
+            {resolvedEmpty}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 max-w-md">
-            Explora diferentes categorías o ajusta tus filtros para descubrir clubes interesantes
+            {t('grid.exploreHint')}
           </p>
         </div>
       </div>

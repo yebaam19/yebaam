@@ -4,6 +4,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
 import { Fragment, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { useCreateBusiness } from '../../hooks/useBusinesses'
 import { CreateBusinessStep1 } from './create-business/CreateBusinessStep1'
@@ -62,6 +63,7 @@ const initialFormData: BusinessFormData = {
 const totalSteps = 4
 
 export function CreateBusinessModal({ open, onOpenChange }: CreateBusinessModalProps) {
+  const t = useTranslations('businesses')
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<BusinessFormData>(initialFormData)
@@ -125,15 +127,15 @@ export function CreateBusinessModal({ open, onOpenChange }: CreateBusinessModalP
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return 'Información básica'
+        return t('createModal.steps.basic')
       case 2:
-        return 'Categoría y ubicación'
+        return t('createModal.steps.categoryLocation')
       case 3:
-        return 'Información de contacto'
+        return t('createModal.steps.contact')
       case 4:
-        return 'Redes sociales'
+        return t('createModal.steps.social')
       default:
-        return 'Crear negocio'
+        return t('createModal.steps.default')
     }
   }
 
@@ -168,10 +170,10 @@ export function CreateBusinessModal({ open, onOpenChange }: CreateBusinessModalP
                 <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
                   <div>
                     <Dialog.Title as="h3" className="text-xl font-semibold text-neutral-900 dark:text-white">
-                      Registrar negocio
+                      {t('createModal.title')}
                     </Dialog.Title>
                     <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-                      {getStepTitle()} - Paso {currentStep} de {totalSteps}
+                      {t('createModal.stepLabel', { step: getStepTitle(), current: currentStep, total: totalSteps })}
                     </p>
                   </div>
                   <button
@@ -234,7 +236,7 @@ export function CreateBusinessModal({ open, onOpenChange }: CreateBusinessModalP
                     <p className="text-sm text-red-800 dark:text-red-200">
                       {createMutation.error instanceof Error
                         ? createMutation.error.message
-                        : 'Error al crear el negocio. Intenta nuevamente.'}
+                        : t('createModal.errorFallback')}
                     </p>
                   </div>
                 )}

@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { BellIcon, CheckIcon } from '@/components/icons/heroicons-shim';
 import NotificationItem from './NotificationItem';
 import type { Notification } from '../interfaces/notification.interfaces';
+import { useTranslations } from 'next-intl';
 
 interface NotificationListProps {
   notifications: Notification[];
@@ -31,6 +32,7 @@ export default function NotificationList({
   onDelete,
 }: NotificationListProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('notification.list');
 
   // Log para debugging
   console.log('[NotificationList] Renderizando con:', {
@@ -95,7 +97,7 @@ export default function NotificationList({
           {/* No hay más notificaciones */}
           {!hasMore && notifications.length > 5 && (
             <div className="py-4 text-center text-xs text-neutral-500 dark:text-neutral-400">
-              No hay más notificaciones
+              {t('noMore')}
             </div>
           )}
         </>
@@ -108,10 +110,10 @@ export default function NotificationList({
             <BellIcon className="h-12 w-12 text-neutral-300 dark:text-neutral-700" />
           )}
           <p className="mt-3 text-sm font-medium text-neutral-900 dark:text-white">
-            {emptyMessage?.title || 'No tienes notificaciones'}
+            {emptyMessage?.title || t('emptyAllTitle')}
           </p>
           <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            {emptyMessage?.description || 'Cuando tengas notificaciones aparecerán aquí'}
+            {emptyMessage?.description || t('emptyAllDescription')}
           </p>
         </div>
       )}

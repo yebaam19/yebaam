@@ -1,0 +1,165 @@
+{
+  "tabs": {
+    "publicaciones": "Publicaciones",
+    "acercaDe": "Acerca de",
+    "amigos": "Amigos",
+    "familias": "Familias",
+    "fotos": "Fotos",
+    "videos": "Videos"
+  },
+  "page": {
+    "notFoundTitle": "Usuario no encontrado",
+    "notFoundDescription": "El perfil que buscas no existe o no está disponible."
+  },
+  "header": {
+    "verifiedBadge": "Cuenta autenticada",
+    "pioneerBadge": "Pionero #{n}",
+    "pioneerTooltip": "Pionero #{n} · entre los primeros 5,000 usuarios autenticados",
+    "pioneerAria": "Pionero número {n}",
+    "publicaciones": "publicaciones",
+    "seguidores": "seguidores",
+    "amigos": "amigos"
+  },
+  "actions": {
+    "editProfile": "Editar perfil",
+    "message": "Mensaje",
+    "professionalProfile": "Perfil profesional",
+    "createProfessionalProfile": "Crear perfil profesional",
+    "moreActions": "Más acciones",
+    "removeFriend": "Eliminar amigo",
+    "blockUser": "Bloquear usuario",
+    "reportUser": "Reportar usuario",
+    "blockComingSoon": "La función de bloqueo estará disponible pronto",
+    "reportComingSoon": "La función de reporte estará disponible pronto",
+    "unfriendTitle": "¿Eliminar de amigos?",
+    "unfriendDescription": "Esta persona dejará de aparecer en tu lista de amigos. Podrás enviarle otra solicitud más tarde.",
+    "cancel": "Cancelar",
+    "removing": "Eliminando...",
+    "remove": "Eliminar"
+  },
+  "posts": {
+    "emptyOwn": "Aún no has publicado nada. ¡Crea tu primera publicación!",
+    "emptyOther": "Este usuario no ha publicado nada aún."
+  },
+  "friends": {
+    "title": "Amigos",
+    "count": "{count, plural, =1 {# amigo} other {# amigos}}",
+    "emptyOwnTitle": "Aún no tienes amigos",
+    "emptyOtherTitle": "Este usuario aún no tiene amigos",
+    "emptyOwnSubtitle": "Comienza a conectar con personas que conozcas."
+  },
+  "media": {
+    "photosEmptyOwn": "¡Sube tu primera foto!",
+    "photosEmptyOther": "Este usuario no ha compartido fotos aún.",
+    "videosEmptyOwn": "¡Sube tu primer video!",
+    "videosEmptyOther": "Este usuario no ha compartido videos aún.",
+    "createAlbum": "Crear álbum",
+    "uploadPhotos": "Subir fotos",
+    "uploadVideo": "Subir video",
+    "backToAlbums": "← Volver a todos los álbumes",
+    "noPhotos": "Sin fotos",
+    "noVideos": "Sin videos",
+    "albumStats": "{photos} fotos · {videos} videos",
+    "albumsHeading": "Álbumes ({count})",
+    "allPhotos": "Todas las fotos",
+    "allVideos": "Todos los videos",
+    "photosInAlbum": "Fotos en \"{name}\"",
+    "videosInAlbum": "Videos en \"{name}\"",
+    "sectionWithCount": "{label} ({count})",
+    "videoFallback": "Video"
+  },
+  "families": {
+    "emptyOwnTitle": "Aún no perteneces a ninguna familia",
+    "emptyOwnSubtitle": "Crea una familia o acepta una invitación para empezar.",
+    "goToFamilies": "Ir a Familias",
+    "emptyOtherTitle": "No tienen familias en común",
+    "emptyOtherSubtitle": "Las familias son privadas; solo aparecen aquí las que ambos comparten.",
+    "roles": {
+      "owner": "Dueño",
+      "admin": "Admin",
+      "member": "Miembro"
+    },
+    "memberCount": "{count, plural, =1 {# miembro} other {# miembros}}",
+    "personCount": "{count, plural, =1 {# persona} other {# personas}}",
+    "stats": "{members} · {persons}"
+  },
+  "sidebar": {
+    "details": "Detalles",
+    "viewAllInfo": "Ver toda la información",
+    "info": "Información",
+    "infoEmptyOwn": "Aún no has agregado información a tu perfil.",
+    "infoEmptyOther": "{name} aún no ha agregado información a su perfil.",
+    "editInfo": "Editar información",
+    "photos": "Fotos",
+    "viewAllPhotos": "Ver todas las fotos",
+    "noPhotos": "Aún no hay fotos",
+    "friends": "Amigos",
+    "viewAllFriends": "Ver todos los amigos",
+    "friendsCount": "{count, plural, =1 {# amigo} other {# amigos}}",
+    "friendsEmptyOwn": "Aún no tienes amigos en Yebaam.",
+    "friendsEmptyOther": "Sin amigos para mostrar.",
+    "explorePeople": "Explorar personas",
+    "moreOf": "Más de {name}"
+  },
+  "details": {
+    "birthday": "Cumpleaños",
+    "residenceCity": "Ciudad de residencia",
+    "birthCity": "Ciudad de origen",
+    "relationshipStatus": "Estado civil",
+    "studyPlace": "Lugar de estudio",
+    "workPlace": "Lugar de trabajo",
+    "gender": "Género",
+    "website": "Sitio web",
+    "memberSince": "Miembro desde",
+    "gender_values": {
+      "MALE": "Hombre",
+      "FEMALE": "Mujer",
+      "OTHER": "Otro"
+    },
+    "relationship_values": {
+      "SINGLE": "Soltero/a",
+      "IN_RELATIONSHIP": "En una relación",
+      "MARRIED": "Casado/a",
+      "DIVORCED": "Divorciado/a",
+      "WIDOWED": "Viudo/a"
+    }
+  },
+  "sections": {
+    "about": "Acerca de",
+    "aboutEmpty": "Agrega una breve descripción y datos personales para que otros te conozcan.",
+    "livesIn": "Vive en {location}",
+    "workEducation": "Trabajo y estudios",
+    "workEducationEmpty": "Agrega tu lugar de trabajo, dónde estudiaste y los idiomas que hablas.",
+    "worksAt": "Trabaja en",
+    "studiedAt": "Estudió en",
+    "languages": "Idiomas",
+    "interests": "Intereses y favoritos",
+    "interestsEmpty": "Agrega tus intereses y favoritos para que otros descubran qué disfrutas.",
+    "favoriteMovies": "Películas",
+    "favoriteBooks": "Libros",
+    "favoriteGames": "Videojuegos",
+    "favoriteTvShows": "Series",
+    "favoriteMusic": "Música",
+    "contact": "Contacto y redes sociales",
+    "contactEmpty": "Agrega tus redes sociales y datos de contacto para conectar con otros.",
+    "contactPrivacyNote": "Solo tú ves tu email y teléfono. Tus redes sociales se muestran como iconos en tu cabecera.",
+    "email": "Email",
+    "phone": "Teléfono",
+    "websiteLabel": "Sitio web",
+    "instagram": "Instagram",
+    "twitter": "X / Twitter",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "facebook": "Facebook",
+    "clubs": "Clubes",
+    "clubsViewAll": "Ver todos",
+    "clubsEmptyOwn": "No eres miembro de ningún club aún",
+    "clubsEmptyOther": "Este usuario no es miembro de ningún club",
+    "clubsMembers": "{count} miembros"
+  },
+  "verificationPrompt": {
+    "title": "Verifica tu cuenta",
+    "description": "Verifica tu identidad para obtener una insignia de verificación y acceder a más funciones.",
+    "start": "Iniciar verificación"
+  }
+}

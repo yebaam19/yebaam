@@ -1,19 +1,24 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 interface GenderFieldProps {
   gender: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function GenderField({ gender, onChange }: GenderFieldProps) {
+  const t = useTranslations('auth');
   const genderOptions = [
-    { value: 'female', label: 'Mujer' },
-    { value: 'male', label: 'Hombre' },
-    { value: 'other', label: 'Otro' }
+    { value: 'female', label: t('signup.genderFemale') },
+    { value: 'male', label: t('signup.genderMale') },
+    { value: 'other', label: t('signup.genderOther') }
   ];
 
   return (
     <div>
       <label className="block text-xs font-medium text-gray-600 mb-2">
-        Género
+        {t('signup.genderLabel')}
       </label>
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {genderOptions.map(({ value, label }) => {

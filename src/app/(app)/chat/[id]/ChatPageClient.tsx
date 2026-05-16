@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import MessengerSidebar from '@/components/chat/MessengerSidebar';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -121,6 +122,7 @@ async function applyPeerContactDisplay(
 
 export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const router = useRouter();
+  const t = useTranslations('chat');
   const user = useAuthStore((state) => state.user);
   const { chatSocket } = useSocket();
 
@@ -131,7 +133,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const [headerEncrypted, setHeaderEncrypted] = useState(false);
   const [inboxDrawerOpen, setInboxDrawerOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({
-    name: 'Chat',
+    name: t('conversation.fallbackName'),
     avatar: '',
     isOnline: false,
   });
@@ -150,7 +152,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
     const loadConversation = async () => {
       try {
         setIsLoading(true);
-        setContactInfo({ name: 'Chat', avatar: '', isOnline: false });
+        setContactInfo({ name: t('conversation.fallbackName'), avatar: '', isOnline: false });
         setHeaderEncrypted(false);
 
         let resolvedConversationId: string;
@@ -200,7 +202,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
     };
 
     loadConversation();
-  }, [contactId, user, chatSocket]);
+  }, [contactId, user, chatSocket, t]);
 
   useEffect(() => {
     if (!chatSocket || !conversationId) return;
@@ -285,7 +287,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
         <button
           type="button"
           className="fixed inset-0 z-30 bg-black/40 md:hidden"
-          aria-label="Cerrar lista de chats"
+          aria-label={t('conversation.drawerCloseAriaLabel')}
           onClick={() => setInboxDrawerOpen(false)}
         />
       )}
@@ -314,7 +316,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
             onClick={() => setInboxDrawerOpen(true)}
             className="rounded-lg px-3 py-1.5 text-sm font-semibold text-primary-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
-            Conversaciones
+            {t('conversation.conversationsButton')}
           </button>
         </div>
 

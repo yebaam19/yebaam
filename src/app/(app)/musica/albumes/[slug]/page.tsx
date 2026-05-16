@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata, Route } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
@@ -14,17 +15,6 @@ import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
 import { AlbumReactionsBar } from '@/features/music-archive/components/club/AlbumReactionsBar';
 import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
-import { ALBUM_CONDITION_LABELS } from '@/features/music-archive/types/music.types';
-
-const FORMAT_LABEL: Record<string, string> = {
-  lp: 'LP',
-  '78rpm': '78 RPM',
-  single: 'Single',
-  ep: 'EP',
-  compilation: 'Compilación',
-  cd: 'CD',
-  cassette: 'Cassette',
-};
 
 export async function generateMetadata({
   params,
@@ -32,11 +22,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const t = await getTranslations('musica');
   const album = await getAlbumBySlug(slug);
-  if (!album) return { title: 'Álbum no encontrado' };
+  if (!album) return { title: t('album.notFound') };
+  const yearPart = album.year ? t('album.metaYear', { year: album.year }) : '';
   return {
     title: `${album.title} — ${album.artist.name}`,
-    description: `${album.title} de ${album.artist.name}${album.year ? ` (${album.year})` : ''}. ${album.tracks.length} canciones disponibles para escuchar.`,
+    description: t('album.metaDescription', {
+      title: album.title,
+      artist: album.artist.name,
+      year: yearPart,
+      trackCount: album.tracks.length,
+    }),
   };
 }
 
@@ -48,6 +45,7 @@ export default async function AlbumPage({
   const { slug } = await params;
   const album = await getAlbumBySlug(slug);
   if (!album) notFound();
+  const t = await getTranslations('musica');
 
   const [clubs, reactions, sessionClient, media] = await Promise.all([
     listClubsForAlbum(album.id),
@@ -61,13 +59,13 @@ export default async function AlbumPage({
   // Pre-sign R2 URLs for every track in parallel. The TTL is 1h which is
   // plenty for a single page session.
   const audioEntries = await Promise.all(
-    album.tracks.map(async (t) => {
+    album.tracks.map(async (track) => {
       try {
-        const url = await getPublicAudioUrl(t.r2_key, 3600);
-        return [t.id, url] as const;
+        const url = await getPublicAudioUrl(track.r2_key, 3600);
+        return [track.id, url] as const;
       } catch (err) {
-        console.error('[album page] R2 presign failed', { trackId: t.id, r2Key: t.r2_key, err: err instanceof Error ? err.message : err });
-        return [t.id, ''] as const;
+        console.error('[album page] R2 presign failed', { trackId: track.id, r2Key: track.r2_key, err: err instanceof Error ? err.message : err });
+        return [track.id, ''] as const;
       }
     }),
   );
@@ -84,7 +82,7 @@ export default async function AlbumPage({
           href={'/musica' as Route}
           className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
         >
-          ← Archivo Musical
+          {t('search.backToArchive')}
         </Link>
       </nav>
 
@@ -95,7 +93,7 @@ export default async function AlbumPage({
           {cover ? (
             <img
               src={cover}
-              alt={`Carátula: ${album.title}`}
+              alt={t('album.coverAlt', { title: album.title })}
               className="aspect-square w-full object-cover"
             />
           ) : (
@@ -117,33 +115,41 @@ export default async function AlbumPage({
           </Link>
           {album.accompaniment && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              <span className="text-zinc-400">Acompañamiento:</span> {album.accompaniment}
+              <span className="text-zinc-400">{t('album.accompaniment')}</span> {album.accompaniment}
             </p>
           )}
 
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm sm:grid-cols-3">
             {album.year ? (
-              <Field label="Año" value={String(album.year)} />
+              <Field label={t('album.year')} value={String(album.year)} />
             ) : album.decade ? (
-              <Field label="Década" value={`Década de los ${album.decade}`} />
+              <Field label={t('album.decade')} value={t('album.decadeValue', { decade: album.decade })} />
             ) : null}
-            {album.country && <Field label="País" value={album.country} />}
-            <Field label="Formato" value={FORMAT_LABEL[album.format] ?? album.format} />
+            {album.country && (
+              <Field
+                label={t('album.country')}
+                value={t.has(`countries.${album.country}`) ? t(`countries.${album.country}`) : album.country}
+              />
+            )}
+            <Field
+              label={t('album.format')}
+              value={t.has(`formats.${album.format}`) ? t(`formats.${album.format}`) : album.format}
+            />
             {album.label && (
               <Field
-                label="Sello"
+                label={t('album.labelField')}
                 value={album.label.name}
                 href={`/musica/sellos/${album.label.slug}`}
               />
             )}
             {album.catalog_number && (
-              <Field label="Cat. #" value={album.catalog_number} mono />
+              <Field label={t('album.catalogNumber')} value={album.catalog_number} mono />
             )}
-            <Field label="Canciones" value={String(album.tracks.length)} />
+            <Field label={t('album.tracks')} value={String(album.tracks.length)} />
             {album.condition && (
-              <Field label="Estado" value={ALBUM_CONDITION_LABELS[album.condition]} />
+              <Field label={t('album.condition')} value={t(`conditions.${album.condition}`)} />
             )}
-            {album.for_trade && <Field label="Intercambio" value="Disponible" />}
+            {album.for_trade && <Field label={t('album.tradeField')} value={t('album.tradeAvailable')} />}
           </dl>
 
           {clubs.length > 0 && (
@@ -159,7 +165,7 @@ export default async function AlbumPage({
       {album.notes && (
         <section className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-900/40 sm:p-5">
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Sobre el disco
+            {t('album.aboutAlbum')}
           </h2>
           <AlbumNotes notes={album.notes} />
         </section>
@@ -167,7 +173,7 @@ export default async function AlbumPage({
 
       <section>
         <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Lista de canciones
+          {t('album.tracklistHeading')}
         </h2>
         <AlbumTracklist album={album} audioUrlByTrackId={audioUrlByTrackId} />
       </section>
@@ -177,7 +183,7 @@ export default async function AlbumPage({
       {media.length > 0 && (
         <section>
           <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            Galería
+            {t('album.galleryHeading')}
           </h2>
           <MusicMediaGrid items={media} />
         </section>
@@ -186,7 +192,7 @@ export default async function AlbumPage({
       {(album.back_cover_cf_image_id || album.label_cf_image_id) && (
         <section>
           <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            Más imágenes
+            {t('album.moreImages')}
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {album.back_cover_cf_image_id && (
@@ -198,7 +204,7 @@ export default async function AlbumPage({
               >
                 <img
                   src={imageUrl(album.back_cover_cf_image_id, 'public')}
-                  alt="Contraportada"
+                  alt={t('album.backCoverAlt')}
                   className="aspect-square w-full object-cover"
                   loading="lazy"
                 />
@@ -213,7 +219,7 @@ export default async function AlbumPage({
               >
                 <img
                   src={imageUrl(album.label_cf_image_id, 'public')}
-                  alt="Etiqueta del disco"
+                  alt={t('album.labelImageAlt')}
                   className="aspect-square w-full object-cover"
                   loading="lazy"
                 />

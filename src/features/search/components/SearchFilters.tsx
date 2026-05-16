@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import type { SearchResultType } from '../interfaces/search.interfaces';
 import {
   UserGroupIcon,
@@ -26,27 +27,27 @@ interface SearchFiltersProps {
 const FILTERS = [
   {
     value: 'all' as SearchResultType,
-    label: 'Todo',
+    labelKey: 'all',
     icon: Squares2X2Icon,
   },
   {
     value: 'users' as SearchResultType,
-    label: 'Usuarios',
+    labelKey: 'users',
     icon: UserIcon,
   },
   {
     value: 'posts' as SearchResultType,
-    label: 'Publicaciones',
+    labelKey: 'posts',
     icon: DocumentTextIcon,
   },
   {
     value: 'hashtags' as SearchResultType,
-    label: 'Hashtags',
+    labelKey: 'hashtags',
     icon: HashtagIcon,
   },
   {
     value: 'groups' as SearchResultType,
-    label: 'Grupos',
+    labelKey: 'groups',
     icon: UserGroupIcon,
   },
 ] as const;
@@ -68,6 +69,7 @@ export function SearchFilters({
   counts,
   className = '',
 }: SearchFiltersProps) {
+  const t = useTranslations('search.filters');
   return (
     <div className={cn('border-b border-gray-200 dark:border-neutral-800', className)}>
       <div className="flex gap-1 overflow-x-auto scrollbar-hide px-4 md:px-0">
@@ -89,7 +91,7 @@ export function SearchFilters({
               )}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-sm">{filter.label}</span>
+              <span className="text-sm">{t(filter.labelKey)}</span>
               {counts && count > 0 && (
                 <span
                   className={cn(

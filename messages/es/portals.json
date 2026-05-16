@@ -1,0 +1,21 @@
+{
+  "header": {
+    "joinCta": "Unirse al Portal"
+  },
+  "tabs": {
+    "explore": "Explora",
+    "photos": "Galería",
+    "videos": "Videos",
+    "photosEmpty": {
+      "title": "Galería de Fotos",
+      "description": "Próximamente: Imágenes icónicas de la salsa caleña"
+    },
+    "videosEmpty": {
+      "title": "Videos de Salsa",
+      "description": "Próximamente: Presentaciones y documentales"
+    }
+  },
+  "section": {
+    "comingSoon": "Próximamente"
+  }
+}

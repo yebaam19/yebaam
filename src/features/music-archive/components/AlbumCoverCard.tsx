@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { EllipsisHorizontalIcon, PlayIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import type { MusicAlbumRow } from '../types/music.types';
@@ -30,6 +33,7 @@ function WaveformFallback() {
 }
 
 export function AlbumCoverCard({ album, artistName }: Props) {
+  const t = useTranslations('musica');
   const cover = album.cover_cf_image_id ? imageUrl(album.cover_cf_image_id, 'thumbnail') : null;
   return (
     <div className="group relative">
@@ -41,7 +45,7 @@ export function AlbumCoverCard({ album, artistName }: Props) {
           {cover ? (
             <img
               src={cover}
-              alt={`Carátula: ${album.title}`}
+              alt={t('albumCard.coverAlt', { title: album.title })}
               className="h-full w-full object-cover transition group-hover:scale-[1.02]"
               loading="lazy"
             />
@@ -57,7 +61,7 @@ export function AlbumCoverCard({ album, artistName }: Props) {
           )}
           {album.for_trade && (
             <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow">
-              Intercambio
+              {t('albumCard.tradeBadge')}
             </span>
           )}
         </div>
@@ -68,7 +72,7 @@ export function AlbumCoverCard({ album, artistName }: Props) {
             </p>
             <p className="mt-0.5 truncate text-xs text-zinc-500">
               {artistName ? `${artistName} · ` : ''}
-              {album.year ?? (album.decade ? `${album.decade}s` : '—')}
+              {album.year ?? (album.decade ? `${album.decade}s` : t('albumCard.yearDash'))}
               {album.country ? ` · ${album.country}` : ''}
             </p>
           </div>

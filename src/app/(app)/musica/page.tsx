@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata, Route } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { MusicalNoteIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import {
   listAlbumsFiltered,
@@ -14,15 +15,20 @@ import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGr
 import { MusicMediaSmartFeed } from '@/features/music-archive/components/media/MusicMediaSmartFeed';
 import { GenreBrowser } from '@/features/music-archive/components/genre/GenreBrowser';
 import { pillClass } from '@/features/music-archive/lib/pill-class';
-import { MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS as COUNTRIES } from '@/features/music-archive/components/upload/constants';
+import {
+  MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS,
+  sortCountryCodesByLabel,
+} from '@/features/music-archive/components/upload/constants';
 import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
 import { getServerClient } from '@/utils/supabase/server';
 
-export const metadata: Metadata = {
-  title: 'Archivo Musical Latinoamericano 1900–1970',
-  description:
-    'Busca y escucha música histórica de Latinoamérica: 78rpm, vinilos y singles de los 30, 40, 50 y 60. Cualquiera puede escuchar; los coleccionistas suben.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('musica');
+  return {
+    title: t('landing.metaTitle'),
+    description: t('landing.metaDescription'),
+  };
+}
 
 const DECADES: Array<{ start: number; label: string }> = [
   { start: 1900, label: '1900s' },
@@ -52,27 +58,6 @@ function buildHref(opts: {
   return (qs ? `/musica?${qs}` : '/musica') as Route;
 }
 
-function filteredHeading(
-  decade: number | undefined,
-  country: string | undefined,
-  forTrade: boolean,
-  genreName: string | null,
-  conditionLabel: string | null,
-): string {
-  const decadeLabel = decade !== undefined ? `los ${decade}s` : null;
-  const countryLabel = country
-    ? COUNTRIES.find((c) => c.code === country)?.label ?? country
-    : null;
-  const parts: string[] = [];
-  if (genreName) parts.push(`de ${genreName.toLowerCase()}`);
-  if (decadeLabel) parts.push(`de ${decadeLabel}`);
-  if (countryLabel) parts.push(`en ${countryLabel}`);
-  if (forTrade) parts.push('para intercambio');
-  if (conditionLabel) parts.push(`en estado ${conditionLabel}`);
-  if (parts.length === 0) return 'Subidos recientemente';
-  return `Álbumes ${parts.join(' ')}`;
-}
-
 export default async function MusicArchiveLandingPage({
   searchParams,
 }: {
@@ -85,11 +70,12 @@ export default async function MusicArchiveLandingPage({
   }>;
 }) {
   const sp = await searchParams;
+  const t = await getTranslations('musica');
 
   const decadeNum = Number(sp.decade);
   const decade = DECADES.some((d) => d.start === decadeNum) ? decadeNum : undefined;
   const countryCode = (sp.country ?? '').toUpperCase();
-  const country = COUNTRIES.some((c) => c.code === countryCode) ? countryCode : undefined;
+  const country = MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS.includes(countryCode) ? countryCode : undefined;
   const forTrade = sp.trade === '1';
   const genreSlug = sp.genre?.trim() || undefined;
   const conditionValue =
@@ -115,7 +101,7 @@ export default async function MusicArchiveLandingPage({
     listMusicGenres(),
   ]);
   const genreName = genreSlug ? genres.find((g) => g.slug === genreSlug)?.name ?? null : null;
-  const conditionLabel = conditionValue ? ALBUM_CONDITION_LABELS[conditionValue] : null;
+  const conditionLabel = conditionValue ? t(`filteredCondition.${conditionValue}`) : null;
   const { data: userData } = await client.auth.getUser();
   const isAuthed = Boolean(userData.user);
 
@@ -128,19 +114,31 @@ export default async function MusicArchiveLandingPage({
     }
   }
 
-  const heading = filteredHeading(decade, country, forTrade, genreName, conditionLabel);
+  const countryLabel = country ? t(`countries.${country}`) : null;
+  const headingFragments: string[] = [];
+  if (genreName) headingFragments.push(t('landing.filteredHeadingOfGenre', { genre: genreName.toLowerCase() }));
+  if (decade !== undefined) headingFragments.push(t('landing.filteredHeadingOfDecade', { decade }));
+  if (countryLabel) headingFragments.push(t('landing.filteredHeadingInCountry', { country: countryLabel }));
+  if (forTrade) headingFragments.push(t('landing.filteredHeadingForTrade'));
+  if (conditionLabel) headingFragments.push(t('landing.filteredHeadingInCondition', { condition: conditionLabel }));
+  const heading =
+    headingFragments.length === 0
+      ? t('landing.recentlyUploaded')
+      : `${t('landing.filteredHeadingBase')} ${headingFragments.join(' ')}`;
+
+  const sortedCountries = sortCountryCodesByLabel(MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS, (code) =>
+    t(`countries.${code}`),
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <header className="max-w-2xl border-b border-zinc-200/80 pb-8 dark:border-zinc-800/80">
         <div className="space-y-3">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Club de Coleccionistas</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('landing.kicker')}</p>
           <h1 className="text-balance text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
-            Música latinoamericana 1900–1970
+            {t('landing.title')}
           </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Busca álbumes y artistas. Escucha sin crear cuenta.
-          </p>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">{t('landing.subtitle')}</p>
           <div className="max-w-xl pt-1">
             <MusicSearchBar size="hero" />
           </div>
@@ -150,7 +148,7 @@ export default async function MusicArchiveLandingPage({
                 href={'/musica/subir' as Route}
                 className="font-medium text-zinc-800 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-500 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:decoration-zinc-400"
               >
-                Subir una digitalización
+                {t('landing.uploadCta')}
               </Link>
             </p>
           )}
@@ -161,15 +159,13 @@ export default async function MusicArchiveLandingPage({
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{heading}</h2>
           <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-            <span>
-              {albums.length} {albums.length === 1 ? 'álbum' : 'álbumes'}
-            </span>
+            <span>{t('landing.albumsCount', { count: albums.length })}</span>
             {isFiltered && (
               <Link
                 href={'/musica' as Route}
                 className="font-medium text-zinc-700 hover:underline dark:text-zinc-300"
               >
-                Quitar filtros
+                {t('landing.removeFilters')}
               </Link>
             )}
           </div>
@@ -178,16 +174,14 @@ export default async function MusicArchiveLandingPage({
           <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-10 text-center dark:border-zinc-700 dark:bg-zinc-900/40">
             <MusicalNoteIcon className="mx-auto h-10 w-10 text-zinc-400" />
             <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-              {isFiltered
-                ? 'Sin álbumes para este filtro.'
-                : 'Aún no hay álbumes en el archivo.'}
+              {isFiltered ? t('landing.emptyFiltered') : t('landing.emptyAll')}
             </p>
             {isFiltered ? (
               <Link
                 href={'/musica' as Route}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
               >
-                Ver todos los álbumes
+                {t('landing.viewAll')}
               </Link>
             ) : (
               isAuthed && (
@@ -196,7 +190,7 @@ export default async function MusicArchiveLandingPage({
                   className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                 >
                   <PlusIcon className="h-4 w-4" />
-                  Sube el primero
+                  {t('landing.uploadFirst')}
                 </Link>
               )
             )}
@@ -219,12 +213,12 @@ export default async function MusicArchiveLandingPage({
       {clubs.length > 0 && (
         <section className="space-y-2">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Clubes</h2>
+            <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.clubsHeading')}</h2>
             <Link
               href={'/musica/clubes' as Route}
               className="text-xs font-medium text-zinc-600 hover:underline dark:text-zinc-400"
             >
-              Ver todos
+              {t('landing.viewAll')}
             </Link>
           </div>
           <MusicClubsGrid clubs={clubs} limit={8} />
@@ -232,7 +226,7 @@ export default async function MusicArchiveLandingPage({
       )}
 
       <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Década</h2>
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.decadeHeading')}</h2>
         <div className="flex flex-wrap gap-2">
           {DECADES.map((d) => {
             const active = decade === d.start;
@@ -257,7 +251,7 @@ export default async function MusicArchiveLandingPage({
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Intercambio</h2>
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.tradeHeading')}</h2>
         <div className="flex flex-wrap gap-2">
           <Link
             href={buildHref({
@@ -270,7 +264,7 @@ export default async function MusicArchiveLandingPage({
             className={pillClass(forTrade)}
             aria-pressed={forTrade}
           >
-            Solo disponibles para intercambio
+            {t('landing.tradeOnly')}
           </Link>
         </div>
       </section>
@@ -282,7 +276,7 @@ export default async function MusicArchiveLandingPage({
       />
 
       <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Conservación</h2>
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.conditionHeading')}</h2>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(ALBUM_CONDITION_LABELS) as AlbumCondition[]).map((c) => {
             const active = conditionValue === c;
@@ -299,7 +293,7 @@ export default async function MusicArchiveLandingPage({
                 className={pillClass(active)}
                 aria-pressed={active}
               >
-                {ALBUM_CONDITION_LABELS[c]}
+                {t(`conditions.${c}`)}
               </Link>
             );
           })}
@@ -307,16 +301,16 @@ export default async function MusicArchiveLandingPage({
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">País</h2>
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.countryHeading')}</h2>
         <div className="flex flex-wrap gap-2">
-          {COUNTRIES.map((c) => {
-            const active = country === c.code;
+          {sortedCountries.map((code) => {
+            const active = country === code;
             return (
               <Link
-                key={c.code}
+                key={code}
                 href={buildHref({
                   decade,
-                  country: active ? undefined : c.code,
+                  country: active ? undefined : code,
                   forTrade,
                   genre: genreSlug,
                   condition: conditionValue,
@@ -324,7 +318,7 @@ export default async function MusicArchiveLandingPage({
                 className={pillClass(active)}
                 aria-pressed={active}
               >
-                {c.label}
+                {t(`countries.${code}`)}
               </Link>
             );
           })}

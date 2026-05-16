@@ -9,6 +9,7 @@
 import { MapPinIcon, StarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { BusinessBasic } from '../../interfaces/business.interfaces'
 
 interface BusinessListCardProps {
@@ -16,6 +17,7 @@ interface BusinessListCardProps {
 }
 
 export function BusinessListCard({ business }: BusinessListCardProps) {
+  const t = useTranslations('businesses')
   return (
     <Link
       href={`/feed/businesses/${business.slug}`}
@@ -96,7 +98,7 @@ export function BusinessListCard({ business }: BusinessListCardProps) {
           <div className="flex items-center gap-1.5 text-sm">
             <StarIcon className="h-4 w-4 text-amber-500" />
             <span className="font-medium text-neutral-700 dark:text-neutral-300">{business._count.reviews}</span>
-            <span className="text-neutral-500 dark:text-neutral-400">reseñas</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('card.reviews')}</span>
           </div>
           <div className="h-4 w-px bg-neutral-300 dark:bg-neutral-600" />
           <div className="flex items-center gap-1.5 text-sm">
@@ -109,7 +111,7 @@ export function BusinessListCard({ business }: BusinessListCardProps) {
               />
             </svg>
             <span className="font-medium text-neutral-700 dark:text-neutral-300">{business._count.media}</span>
-            <span className="text-neutral-500 dark:text-neutral-400">fotos</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('card.photos')}</span>
           </div>
         </div>
 
@@ -119,7 +121,7 @@ export function BusinessListCard({ business }: BusinessListCardProps) {
             {business.user.avatarUrl ? (
               <Image
                 src={business.user.avatarUrl}
-                alt={business.user.firstName || 'User'}
+                alt={business.user.firstName || t('card.userFallback')}
                 width={28}
                 height={28}
                 className="h-7 w-7 rounded-full object-cover ring-2 ring-neutral-100 dark:ring-neutral-700"
@@ -133,7 +135,7 @@ export function BusinessListCard({ business }: BusinessListCardProps) {
               <p className="truncate text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 {business.user.firstName} {business.user.lastName}
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">Propietario</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('card.owner')}</p>
             </div>
           </div>
         )}

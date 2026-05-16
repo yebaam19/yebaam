@@ -1,18 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { UserGroupIcon, PlusIcon, SparklesIcon } from '@/components/icons/heroicons-shim';
 import { GroupsGrid, GroupsSearchBar, GroupsEmptyState, CreateGroupModal } from '@/features/groups/components';
 import { useMyGroups, useSuggestedGroups, useSearchGroups } from '@/features/groups/hooks/useGroups';
 import { useGroupsUIStore } from '@/features/groups/store/groupsUIStore';
-import type { GroupTab } from '@/features/groups/types/group.types';
 
 /**
  * Página de Grupos
- * 
+ *
  * Usa React Query para fetching de datos y Zustand para estado UI
  */
 export default function GruposPage() {
+  const t = useTranslations('grupos');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -29,7 +30,7 @@ export default function GruposPage() {
   const { data: suggestedGroupsRaw, isLoading: isLoadingSuggestions } = useSuggestedGroups();
 
   const suggestedGroups = suggestedGroupsRaw ?? []
-  
+
   // Búsqueda en el backend
   const { data: searchResultsRaw, isLoading: isLoadingSearch } = useSearchGroups(
     searchQuery,
@@ -67,19 +68,19 @@ export default function GruposPage() {
               </div>
               <div className="min-w-0">
                 <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">
-                  Grupos
+                  {t('list.title')}
                 </h1>
                 <p className="text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
-                  Conecta con personas que comparten tus intereses
+                  {t('list.subtitle')}
                 </p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setIsCreateModalOpen(true)}
               className="flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 sm:w-auto"
             >
               <PlusIcon className="h-5 w-5" />
-              Crear grupo
+              {t('list.createCta')}
             </button>
           </div>
 
@@ -93,7 +94,7 @@ export default function GruposPage() {
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              Mis grupos
+              {t('list.tabs.myGroups')}
               {activeTab === 'my-groups' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
               )}
@@ -106,7 +107,7 @@ export default function GruposPage() {
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              Descubrir
+              {t('list.tabs.discover')}
               {activeTab === 'discover' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
               )}
@@ -117,10 +118,11 @@ export default function GruposPage() {
         {/* Search Bar (solo en discover) */}
         {activeTab === 'discover' && (
           <div className="mb-6">
-            <GroupsSearchBar 
+            <GroupsSearchBar
               value={searchQuery}
               onChange={handleSearchChange}
               onSearch={handleSearch}
+              placeholder={t('search.placeholder')}
             />
           </div>
         )}
@@ -143,9 +145,9 @@ export default function GruposPage() {
               </div>
             ) : myGroups.length === 0 ? (
               <GroupsEmptyState
-                title="No eres miembro de ningún grupo"
-                description="Únete a grupos para conectar con personas que comparten tus intereses"
-                actionLabel="Descubrir grupos"
+                title={t('list.empty.title')}
+                description={t('list.empty.description')}
+                actionLabel={t('list.empty.actionLabel')}
                 onAction={() => setActiveTab('discover')}
               />
             ) : (
@@ -157,7 +159,9 @@ export default function GruposPage() {
             <div className="flex items-center gap-2 mb-6">
               <SparklesIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isSearching && searchQuery ? 'Resultados de búsqueda' : 'Grupos sugeridos para ti'}
+                {isSearching && searchQuery
+                  ? t('list.searchResultsHeading')
+                  : t('list.discoverHeading')}
               </h2>
             </div>
             {isLoadingDiscover ? (
@@ -174,12 +178,12 @@ export default function GruposPage() {
                 ))}
               </div>
             ) : (
-              <GroupsGrid 
+              <GroupsGrid
                 groups={discoverGroups}
                 emptyMessage={
-                  isSearching 
-                    ? 'No se encontraron grupos con ese criterio de búsqueda' 
-                    : 'No hay grupos sugeridos disponibles'
+                  isSearching
+                    ? t('list.noSearchResults')
+                    : t('list.noSuggested')
                 }
               />
             )}
@@ -188,7 +192,7 @@ export default function GruposPage() {
       </div>
 
       {/* Modal de Crear Grupo */}
-      <CreateGroupModal 
+      <CreateGroupModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { GlobeAltIcon, LinkIcon, PlusIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 import { addClubLink, removeClubLink } from '../../actions/club-links.actions';
 import type { ClubLinkKind, ClubLinkRow } from '../../types/music.types';
@@ -11,17 +12,17 @@ interface Props {
   canEdit: boolean;
 }
 
-const KIND_LABELS: Record<ClubLinkKind, string> = {
-  venue: 'Tabernas y locales',
-  museum: 'Museos',
-  shop: 'Tiendas',
-  archive: 'Archivos',
-  related: 'Sitios relacionados',
+const KIND_ORDER: ClubLinkKind[] = ['venue', 'museum', 'shop', 'archive', 'related'];
+const KIND_KEY: Record<ClubLinkKind, string> = {
+  venue: 'kindVenue',
+  museum: 'kindMuseum',
+  shop: 'kindShop',
+  archive: 'kindArchive',
+  related: 'kindRelated',
 };
 
-const KIND_ORDER: ClubLinkKind[] = ['venue', 'museum', 'shop', 'archive', 'related'];
-
 export function ClubLinksList({ clubId, links, canEdit }: Props) {
+  const t = useTranslations('musica');
   const [items, setItems] = useState(links);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function ClubLinksList({ clubId, links, canEdit }: Props) {
   for (const l of items) grouped.get(l.kind)?.push(l);
 
   function handleRemove(linkId: string) {
-    if (!confirm('¿Eliminar este enlace?')) return;
+    if (!confirm(t('club.links.deleteConfirm'))) return;
     setError(null);
     startTransition(async () => {
       const res = await removeClubLink(linkId);
@@ -65,7 +66,7 @@ export function ClubLinksList({ clubId, links, canEdit }: Props) {
               onClick={() => setShowForm(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
             >
-              <PlusIcon className="h-4 w-4" /> Agregar enlace
+              <PlusIcon className="h-4 w-4" /> {t('club.links.addCta')}
             </button>
           )}
         </div>
@@ -79,8 +80,7 @@ export function ClubLinksList({ clubId, links, canEdit }: Props) {
 
       {items.length === 0 && !showForm && (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          Aún no hay enlaces asociados. Tabernas, museos, tiendas, archivos — todos los lugares
-          relacionados con este género encajan aquí.
+          {t('club.links.empty')}
         </p>
       )}
 
@@ -90,7 +90,7 @@ export function ClubLinksList({ clubId, links, canEdit }: Props) {
         return (
           <section key={k}>
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              {KIND_LABELS[k]}
+              {t(`club.links.${KIND_KEY[k]}`)}
             </h3>
             <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
               {ls.map((l) => (
@@ -124,7 +124,7 @@ export function ClubLinksList({ clubId, links, canEdit }: Props) {
                       onClick={() => handleRemove(l.id)}
                       disabled={pending}
                       className="text-zinc-400 hover:text-rose-600 disabled:opacity-40"
-                      aria-label="Eliminar"
+                      aria-label={t('club.links.delete')}
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
@@ -148,6 +148,7 @@ function AddLinkForm({
   onCancel: () => void;
   onAdded: (row: ClubLinkRow) => void;
 }) {
+  const t = useTranslations('musica');
   const [label, setLabel] = useState('');
   const [url, setUrl] = useState('');
   const [kind, setKind] = useState<ClubLinkKind>('related');
@@ -181,7 +182,7 @@ function AddLinkForm({
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          placeholder="Nombre (ej. Club Cubano)"
+          placeholder={t('club.links.labelLabel')}
           className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
         />
         <select
@@ -191,7 +192,7 @@ function AddLinkForm({
         >
           {KIND_ORDER.map((k) => (
             <option key={k} value={k}>
-              {KIND_LABELS[k]}
+              {t(`club.links.${KIND_KEY[k]}`)}
             </option>
           ))}
         </select>
@@ -205,7 +206,7 @@ function AddLinkForm({
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Descripción (opcional)"
+        placeholder={t('club.links.descLabel')}
         rows={2}
         className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
       />
@@ -217,14 +218,14 @@ function AddLinkForm({
           disabled={pending || !label.trim() || !url.trim()}
           className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-40"
         >
-          {pending ? 'Agregando…' : 'Agregar'}
+          {pending ? t('club.links.saving') : t('club.links.save')}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
         >
-          Cancelar
+          {t('club.links.cancel')}
         </button>
       </div>
     </div>

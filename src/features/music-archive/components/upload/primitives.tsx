@@ -1,3 +1,5 @@
+/** Pure presentational shells — no Spanish text, callers pass translated strings.
+ *  Kept as server-component-compatible (no hooks) so they work in either tree. */
 export function Section({
   title,
   hint,

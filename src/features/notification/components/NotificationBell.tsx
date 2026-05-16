@@ -9,6 +9,7 @@ import NotificationHeader from './NotificationHeader';
 import NotificationTabs from './NotificationTabs';
 import { cn } from '@/lib/utils';
 import { useNotificationWebSocket } from '../hooks/useNotificationWebSocket';
+import { useTranslations } from 'next-intl';
 
 export default function NotificationBell() {
   const {
@@ -27,6 +28,7 @@ export default function NotificationBell() {
 
   // Conectar a WebSocket para notificaciones en tiempo real
   useNotificationWebSocket();
+  const t = useTranslations('notification.bell');
 
   const [selectedTab, setSelectedTab] = useState<'all' | 'unread'>('all');
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -140,7 +142,7 @@ export default function NotificationBell() {
                         href="/notifications"
                         className="block py-3 text-center text-sm font-semibold text-primary-600 hover:bg-neutral-50 dark:text-primary-400 dark:hover:bg-neutral-800 transition-colors"
                       >
-                        Ver todas las notificaciones
+                        {t('viewAll')}
                       </Link>
                     </div>
                   )}

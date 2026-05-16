@@ -1,0 +1,165 @@
+{
+  "tabs": {
+    "publicaciones": "Posts",
+    "acercaDe": "About",
+    "amigos": "Friends",
+    "familias": "Families",
+    "fotos": "Photos",
+    "videos": "Videos"
+  },
+  "page": {
+    "notFoundTitle": "User not found",
+    "notFoundDescription": "The profile you're looking for doesn't exist or is unavailable."
+  },
+  "header": {
+    "verifiedBadge": "Verified account",
+    "pioneerBadge": "Pioneer #{n}",
+    "pioneerTooltip": "Pioneer #{n} · among the first 5,000 verified users",
+    "pioneerAria": "Pioneer number {n}",
+    "publicaciones": "posts",
+    "seguidores": "followers",
+    "amigos": "friends"
+  },
+  "actions": {
+    "editProfile": "Edit profile",
+    "message": "Message",
+    "professionalProfile": "Professional profile",
+    "createProfessionalProfile": "Create professional profile",
+    "moreActions": "More actions",
+    "removeFriend": "Remove friend",
+    "blockUser": "Block user",
+    "reportUser": "Report user",
+    "blockComingSoon": "Blocking will be available soon",
+    "reportComingSoon": "Reporting will be available soon",
+    "unfriendTitle": "Remove from friends?",
+    "unfriendDescription": "This person will no longer appear in your friends list. You can send another request later.",
+    "cancel": "Cancel",
+    "removing": "Removing...",
+    "remove": "Remove"
+  },
+  "posts": {
+    "emptyOwn": "You haven't posted anything yet. Create your first post!",
+    "emptyOther": "This user hasn't posted anything yet."
+  },
+  "friends": {
+    "title": "Friends",
+    "count": "{count, plural, =1 {# friend} other {# friends}}",
+    "emptyOwnTitle": "You don't have any friends yet",
+    "emptyOtherTitle": "This user doesn't have any friends yet",
+    "emptyOwnSubtitle": "Start connecting with people you know."
+  },
+  "media": {
+    "photosEmptyOwn": "Upload your first photo!",
+    "photosEmptyOther": "This user hasn't shared any photos yet.",
+    "videosEmptyOwn": "Upload your first video!",
+    "videosEmptyOther": "This user hasn't shared any videos yet.",
+    "createAlbum": "Create album",
+    "uploadPhotos": "Upload photos",
+    "uploadVideo": "Upload video",
+    "backToAlbums": "← Back to all albums",
+    "noPhotos": "No photos",
+    "noVideos": "No videos",
+    "albumStats": "{photos} photos · {videos} videos",
+    "albumsHeading": "Albums ({count})",
+    "allPhotos": "All photos",
+    "allVideos": "All videos",
+    "photosInAlbum": "Photos in \"{name}\"",
+    "videosInAlbum": "Videos in \"{name}\"",
+    "sectionWithCount": "{label} ({count})",
+    "videoFallback": "Video"
+  },
+  "families": {
+    "emptyOwnTitle": "You don't belong to any family yet",
+    "emptyOwnSubtitle": "Create a family or accept an invitation to get started.",
+    "goToFamilies": "Go to Families",
+    "emptyOtherTitle": "You don't share any families",
+    "emptyOtherSubtitle": "Families are private; only families you both belong to appear here.",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "memberCount": "{count, plural, =1 {# member} other {# members}}",
+    "personCount": "{count, plural, =1 {# person} other {# people}}",
+    "stats": "{members} · {persons}"
+  },
+  "sidebar": {
+    "details": "Details",
+    "viewAllInfo": "View all information",
+    "info": "Information",
+    "infoEmptyOwn": "You haven't added information to your profile yet.",
+    "infoEmptyOther": "{name} hasn't added information to their profile yet.",
+    "editInfo": "Edit information",
+    "photos": "Photos",
+    "viewAllPhotos": "View all photos",
+    "noPhotos": "No photos yet",
+    "friends": "Friends",
+    "viewAllFriends": "View all friends",
+    "friendsCount": "{count, plural, =1 {# friend} other {# friends}}",
+    "friendsEmptyOwn": "You don't have any friends on Yebaam yet.",
+    "friendsEmptyOther": "No friends to show.",
+    "explorePeople": "Explore people",
+    "moreOf": "More from {name}"
+  },
+  "details": {
+    "birthday": "Birthday",
+    "residenceCity": "City of residence",
+    "birthCity": "Hometown",
+    "relationshipStatus": "Relationship status",
+    "studyPlace": "Place of study",
+    "workPlace": "Workplace",
+    "gender": "Gender",
+    "website": "Website",
+    "memberSince": "Member since",
+    "gender_values": {
+      "MALE": "Male",
+      "FEMALE": "Female",
+      "OTHER": "Other"
+    },
+    "relationship_values": {
+      "SINGLE": "Single",
+      "IN_RELATIONSHIP": "In a relationship",
+      "MARRIED": "Married",
+      "DIVORCED": "Divorced",
+      "WIDOWED": "Widowed"
+    }
+  },
+  "sections": {
+    "about": "About",
+    "aboutEmpty": "Add a short description and personal details so others get to know you.",
+    "livesIn": "Lives in {location}",
+    "workEducation": "Work & education",
+    "workEducationEmpty": "Add your workplace, where you studied, and the languages you speak.",
+    "worksAt": "Works at",
+    "studiedAt": "Studied at",
+    "languages": "Languages",
+    "interests": "Interests & favorites",
+    "interestsEmpty": "Add your interests and favorites so others can discover what you enjoy.",
+    "favoriteMovies": "Movies",
+    "favoriteBooks": "Books",
+    "favoriteGames": "Games",
+    "favoriteTvShows": "TV shows",
+    "favoriteMusic": "Music",
+    "contact": "Contact & social links",
+    "contactEmpty": "Add your social links and contact info to connect with others.",
+    "contactPrivacyNote": "Only you see your email and phone. Your social links appear as icons on your header.",
+    "email": "Email",
+    "phone": "Phone",
+    "websiteLabel": "Website",
+    "instagram": "Instagram",
+    "twitter": "X / Twitter",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "facebook": "Facebook",
+    "clubs": "Clubs",
+    "clubsViewAll": "View all",
+    "clubsEmptyOwn": "You're not a member of any club yet",
+    "clubsEmptyOther": "This user isn't a member of any club",
+    "clubsMembers": "{count} members"
+  },
+  "verificationPrompt": {
+    "title": "Verify your account",
+    "description": "Verify your identity to get a verification badge and access more features.",
+    "start": "Start verification"
+  }
+}

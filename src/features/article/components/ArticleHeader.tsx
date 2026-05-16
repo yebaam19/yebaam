@@ -20,6 +20,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Article } from '../interfaces'
 import { formatRelativeDate } from '../utils/date-utils'
 import type { Route } from 'next';
@@ -39,6 +40,7 @@ export function ArticleHeader({
   onDelete,
   isDeleting = false,
 }: ArticleHeaderProps) {
+  const t = useTranslations('article.header')
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const handleConfirmDelete = () => {
@@ -68,7 +70,7 @@ export function ArticleHeader({
                     <span>•</span>
                     <div className="flex items-center gap-1">
                       <ClockIcon className="h-3 w-3" />
-                      {article.readTime} min de lectura
+                      {t('readTime', { minutes: article.readTime })}
                     </div>
                   </>
                 )}
@@ -88,7 +90,7 @@ export function ArticleHeader({
             <Link href={`/feed/article/${article.id}/edit` as Route}>
               <Button outline className="flex items-center gap-2 px-3 py-1.5 text-sm">
                 <PencilSquareIcon className="h-4 w-4" />
-                Editar artículo
+                {t('editArticle')}
               </Button>
             </Link>
 
@@ -99,7 +101,7 @@ export function ArticleHeader({
               onClick={() => setIsDeleteDialogOpen(true)}
             >
               <TrashIcon className="h-4 w-4" />
-              {isDeleting ? 'Eliminando...' : 'Eliminar artículo'}
+              {isDeleting ? t('deleting') : t('deleteArticle')}
             </Button>
           </div>
         )}
@@ -107,15 +109,15 @@ export function ArticleHeader({
         <div className="flex items-center gap-6 text-sm text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-1">
             <EyeIcon className="h-4 w-4" />
-            {article._count.views} vistas
+            {t('views', { count: article._count.views })}
           </div>
           <div className="flex items-center gap-1">
             <HeartIcon className="h-4 w-4" />
-            {likeCount} me gusta
+            {t('likes', { count: likeCount })}
           </div>
           <div className="flex items-center gap-1">
             <ChatBubbleLeftIcon className="h-4 w-4" />
-            {article._count.comments} comentarios
+            {t('comments', { count: article._count.comments })}
           </div>
         </div>
       </div>
@@ -125,17 +127,16 @@ export function ArticleHeader({
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-800">
-            <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">¿Estás seguro?</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">{t('confirmDeleteTitle')}</DialogTitle>
             <Description className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-              Esta acción no se puede deshacer. El artículo será eliminado permanentemente junto con todos sus
-              comentarios y reacciones.
+              {t('confirmDeleteDescription')}
             </Description>
             <div className="mt-4 flex justify-end gap-3">
               <Button outline onClick={() => setIsDeleteDialogOpen(false)}>
-                Cancelar
+                {t('cancel')}
               </Button>
               <Button color="red" onClick={handleConfirmDelete}>
-                Eliminar artículo
+                {t('deleteArticle')}
               </Button>
             </div>
           </DialogPanel>

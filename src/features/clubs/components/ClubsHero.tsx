@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ClubsHero Component
  *
@@ -7,6 +9,7 @@
  * a dark emerald veil so the art reads like the product mock.
  */
 
+import { useTranslations } from 'next-intl';
 import {
     ShieldCheckIcon,
     UsersIcon,
@@ -23,6 +26,7 @@ interface ClubsHeroProps {
 }
 
 export function ClubsHero({ className, onCreateClick, showCreateButton = true }: ClubsHeroProps) {
+    const t = useTranslations('clubes');
     return (
         <section
             className={cn(
@@ -47,13 +51,13 @@ export function ClubsHero({ className, onCreateClick, showCreateButton = true }:
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-2xl">
                         <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
-                            Clubes
+                            {t('hero.title')}
                         </h1>
                         <p className="mt-3 text-base leading-relaxed text-white/95 md:text-lg">
-                            Descubre y únete a comunidades apasionadas sobre los temas que te interesan.
+                            {t('hero.subtitle1')}
                         </p>
                         <p className="text-base leading-relaxed text-white/95 md:text-lg">
-                            Conecta con personas afines y comparte experiencias únicas.
+                            {t('hero.subtitle2')}
                         </p>
                     </div>
 
@@ -65,9 +69,9 @@ export function ClubsHero({ className, onCreateClick, showCreateButton = true }:
                                 className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-neutral-900 shadow-md transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                             >
                                 <PlusIcon className="h-5 w-5 shrink-0 text-neutral-900" />
-                                Crear un club
+                                {t('hero.createCta')}
                             </button>
-                            <CommunityTrustPill />
+                            <CommunityTrustPill text={t('hero.trustPill')} />
                         </div>
                     )}
                 </div>
@@ -75,18 +79,18 @@ export function ClubsHero({ className, onCreateClick, showCreateButton = true }:
                 <div className="mt-6 grid auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
                     <FeatureCard
                         icon={<ShieldCheckIcon className="h-4 w-4" aria-hidden />}
-                        title="Comunidades y Temáticas"
-                        description="Únete a grupos organizados por intereses específicos y afiliaciones compartidas."
+                        title={t('hero.features.themes.title')}
+                        description={t('hero.features.themes.description')}
                     />
                     <FeatureCard
                         icon={<UsersIcon className="h-4 w-4" aria-hidden />}
-                        title="Eventos y Actividades"
-                        description="Participa en eventos exclusivos y actividades organizadas por los clubes."
+                        title={t('hero.features.events.title')}
+                        description={t('hero.features.events.description')}
                     />
                     <FeatureCard
                         icon={<SparklesIcon className="h-4 w-4" aria-hidden />}
-                        title="Conexiones Auténticas"
-                        description="Conoce personas que comparten tus mismas pasiones e intereses."
+                        title={t('hero.features.connections.title')}
+                        description={t('hero.features.connections.description')}
                     />
                 </div>
             </div>
@@ -102,7 +106,7 @@ function HeroDecor() {
     );
 }
 
-function CommunityTrustPill() {
+function CommunityTrustPill({ text }: { text: string }) {
     const seedAvatars = [
         { tone: 'from-amber-200 via-rose-300 to-rose-400' },
         { tone: 'from-orange-200 via-amber-300 to-amber-500' },
@@ -128,7 +132,7 @@ function CommunityTrustPill() {
                 ))}
             </div>
             <p className="max-w-48 text-xs font-medium leading-tight text-white/90">
-                Únete a miles de comunidades activas en Yebaam
+                {text}
             </p>
         </div>
     );

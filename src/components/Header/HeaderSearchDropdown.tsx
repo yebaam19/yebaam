@@ -8,6 +8,7 @@ import type { SearchResultType } from '@/features/search/interfaces/search.inter
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface UserResult {
   id: string
@@ -22,6 +23,7 @@ interface UserResult {
  */
 export function HeaderSearchDropdown() {
   const router = useRouter()
+  const t = useTranslations('header')
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [results, setResults] = useState<UserResult[]>([])
@@ -105,7 +107,7 @@ export function HeaderSearchDropdown() {
           onChange={setQuery}
           onSearch={handleSearch}
           onClear={handleClear}
-          placeholder="Buscar en Yebaam..."
+          placeholder={t('searchPlaceholder')}
           className="w-full"
         />
       </div>
@@ -120,7 +122,7 @@ export function HeaderSearchDropdown() {
             </div>
           ) : query.trim().length < 2 ? (
             <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-              Escribe al menos 2 caracteres para buscar
+              {t('typeAtLeast2Chars')}
             </div>
           ) : (
             <div>
@@ -164,12 +166,12 @@ export function HeaderSearchDropdown() {
               {/* Estado vacío / cargando */}
               {isLoading && results.length === 0 && (
                 <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Buscando…
+                  {t('searching')}
                 </div>
               )}
               {!isLoading && results.length === 0 && (
                 <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No se encontraron usuarios para &ldquo;{query}&rdquo;
+                  {t('noUsersFound', { query })}
                 </div>
               )}
 
@@ -178,7 +180,7 @@ export function HeaderSearchDropdown() {
                 onClick={() => handleSearch(query)}
                 className="w-full border-t border-gray-200 dark:border-neutral-700 px-4 py-2.5 text-center text-sm font-medium text-primary-600 hover:bg-gray-50 dark:text-primary-400 dark:hover:bg-neutral-700/50"
               >
-                Ver todos los resultados para &ldquo;{query}&rdquo;
+                {t('viewAllResultsFor', { query })}
               </button>
             </div>
           )}

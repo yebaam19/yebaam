@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { getAxiosInstance } from '@/lib/http/legacy-client';
 import { VideoCameraIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
 import { SignalIcon } from '@/components/icons/heroicons-shim';

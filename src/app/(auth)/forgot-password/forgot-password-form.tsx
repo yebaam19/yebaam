@@ -2,17 +2,18 @@
 
 import { Field, Input, Label } from '@headlessui/react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useRef, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 
 import ButtonPrimary from '@/ui/ButtonPrimary';
-import T from '@/utils/getT';
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget';
 import { requestPasswordResetAction } from '@/features/auth/actions/password-recovery.actions';
 import { forgotPasswordSchema } from '@/features/auth/validators/auth.schemas';
 
 export function ForgotPasswordForm() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,13 +26,14 @@ export function ForgotPasswordForm() {
 
     const parsed = forgotPasswordSchema.safeParse({ email });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Email inválido');
+      // TODO: i18n — validator messages defined at module load time
+      setError(parsed.error.issues[0]?.message ?? t('passwordReset.forgotInvalidEmail'));
       return;
     }
 
     const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
     if (turnstileEnabled && !captchaToken) {
-      setError('Completa la verificación de seguridad para continuar.');
+      setError(t('errors.turnstileRequired'));
       return;
     }
 
@@ -44,8 +46,9 @@ export function ForgotPasswordForm() {
       toast.success(result.message);
       router.push(`/reset-password?email=${encodeURIComponent(parsed.data.email)}`);
     } catch (err: any) {
-      setError(err?.message ?? 'No se pudo enviar el código');
-      toast.error(err?.message ?? 'No se pudo enviar el código');
+      const msg = err?.message ?? t('passwordReset.forgotSendError');
+      setError(msg);
+      toast.error(msg);
       setCaptchaToken(null);
       turnstileRef.current?.reset();
     } finally {
@@ -56,12 +59,12 @@ export function ForgotPasswordForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit} noValidate>
       <Field className="block">
-        <Label className="block text-sm font-medium text-gray-700 mb-2">{T['login']['Email address']}</Label>
+        <Label className="block text-sm font-medium text-gray-700 mb-2">{t('passwordReset.emailLabel')}</Label>
         <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="ejemplo@ejemplo.com"
+          placeholder={t('passwordReset.emailPlaceholder')}
           required
           autoComplete="email"
           className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -83,7 +86,7 @@ export function ForgotPasswordForm() {
       )}
 
       <ButtonPrimary type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Enviando...' : T['common']['Continue']}
+        {isSubmitting ? t('passwordReset.submitting') : t('passwordReset.submit')}
       </ButtonPrimary>
     </form>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { getFamilyBySlug } from '@/features/families/server/families.server';
 import { FamilyHeader } from '@/features/families/components/FamilyHeader';
@@ -16,6 +17,7 @@ interface FamilyLayoutProps {
 
 export default async function FamilyLayout({ params, children }: FamilyLayoutProps) {
   const { slug } = await params;
+  const t = await getTranslations('familias');
   const client = await getServerClient();
   const { data: userRes } = await client.auth.getUser();
   if (!userRes.user) redirect(`/login?redirect=/feed/familias/${slug}`);
@@ -45,7 +47,7 @@ export default async function FamilyLayout({ params, children }: FamilyLayoutPro
       .eq('status', 'pending')
       .maybeSingle();
 
-    let inviterName = 'Alguien';
+    let inviterName = t('layout.fallbackInviter');
     if (invite) {
       const { data: profile } = await client
         .from('profiles')
@@ -55,7 +57,7 @@ export default async function FamilyLayout({ params, children }: FamilyLayoutPro
       inviterName =
         [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ||
         (profile?.username as string | undefined) ||
-        'Alguien';
+        t('layout.fallbackInviter');
     }
 
     const vm: FamilyInvitationViewModel | null = invite
@@ -73,7 +75,7 @@ export default async function FamilyLayout({ params, children }: FamilyLayoutPro
         <FamilyHeader family={family} />
         {vm && <FamilyInvitationCard invite={vm} />}
         <p className="text-sm text-zinc-500">
-          Acepta la invitación para ver el árbol, las fotos y la línea de tiempo.
+          {t('layout.pendingInviteHint')}
         </p>
       </div>
     );

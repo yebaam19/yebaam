@@ -1,5 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Community } from '../types/community.types';
 import {
   formatMembersCount,
@@ -22,6 +25,7 @@ interface CommunityCardProps {
 }
 
 export function CommunityCard({ community, onJoinClick, isLoading = false }: CommunityCardProps) {
+  const t = useTranslations('communities');
   const handleJoinClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -108,7 +112,7 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
               <span className="font-semibold text-gray-900 dark:text-white">
                 {formatMembersCount(community.stats.membersCount)}
               </span>
-              <span>miembros</span>
+              <span>{t('card.members')}</span>
             </div>
 
             <div className="flex items-center gap-1">
@@ -116,7 +120,7 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
               <span className="font-semibold text-gray-900 dark:text-white">
                 {community.stats.postsCount}
               </span>
-              <span>posts</span>
+              <span>{t('card.posts')}</span>
             </div>
 
             {community.stats.growthRate > 0 && (
@@ -159,14 +163,14 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Procesando...
+                {t('card.processing')}
               </span>
             ) : community.isMember ? (
-              'Miembro'
+              t('card.member')
             ) : community.requireApproval ? (
-              'Solicitar Acceso'
+              t('card.requestAccess')
             ) : (
-              'Unirse'
+              t('card.join')
             )}
           </button>
         </div>

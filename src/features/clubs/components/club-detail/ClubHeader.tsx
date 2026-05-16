@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import type { Club } from '@/features/clubs/types/club.types';
 import { getCategoryColor, getCategoryLabel } from '@/features/clubs/utils/clubHelpers';
 import {
@@ -20,16 +21,20 @@ interface ClubHeaderProps {
   onMessage: () => void;
 }
 
-function privacyLabel(p: Club['privacy']): { icon: typeof GlobeAltIcon; label: string } {
+function privacyIcon(p: Club['privacy']): typeof GlobeAltIcon {
+  return p === 'PUBLIC' ? GlobeAltIcon : LockClosedIcon;
+}
+
+function privacyKey(p: Club['privacy']): 'public' | 'private' | 'secret' | 'affiliation' {
   switch (p) {
     case 'PUBLIC':
-      return { icon: GlobeAltIcon, label: 'Público' };
+      return 'public';
     case 'PRIVATE':
-      return { icon: LockClosedIcon, label: 'Privado' };
+      return 'private';
     case 'SECRET':
-      return { icon: LockClosedIcon, label: 'Secreto' };
+      return 'secret';
     case 'AFFILIATION':
-      return { icon: LockClosedIcon, label: 'Afiliación' };
+      return 'affiliation';
   }
 }
 
@@ -41,7 +46,9 @@ export function ClubHeader({
   onInvite,
   onMessage,
 }: ClubHeaderProps) {
-  const { icon: PrivIcon, label: privLabel } = privacyLabel(club.privacy);
+  const t = useTranslations('clubes');
+  const PrivIcon = privacyIcon(club.privacy);
+  const privLabel = t(`detail.privacy.${privacyKey(club.privacy)}`);
 
   return (
     <div className="relative">
@@ -50,7 +57,7 @@ export function ClubHeader({
         {club.coverImageUrl && (
           <Image
             src={club.coverImageUrl}
-            alt={`Portada de ${club.name}`}
+            alt={t('detail.coverAlt', { name: club.name })}
             fill
             sizes="100vw"
             className="object-cover"
@@ -115,20 +122,24 @@ export function ClubHeader({
                     : 'bg-primary-600 text-white shadow-sm hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
                 } disabled:cursor-not-allowed disabled:opacity-50`}
               >
-                {isLoading ? '...' : isMember ? 'Miembro' : 'Unirse'}
+                {isLoading
+                  ? t('detail.actions.loading')
+                  : isMember
+                    ? t('detail.actions.member')
+                    : t('detail.actions.join')}
               </button>
               <button
                 onClick={onMessage}
-                aria-label="Enviar mensaje"
-                title="Enviar mensaje"
+                aria-label={t('detail.actions.messageAria')}
+                title={t('detail.actions.messageTitle')}
                 className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 <EnvelopeIcon className="h-4 w-4" />
               </button>
               <button
                 onClick={onInvite}
-                aria-label="Invitar"
-                title="Invitar"
+                aria-label={t('detail.actions.inviteAria')}
+                title={t('detail.actions.inviteTitle')}
                 className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 <UserPlusIcon className="h-4 w-4" />

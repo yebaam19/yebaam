@@ -7,9 +7,11 @@
 import { Button } from '@/ui/Button'
 import { UserPlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { getTranslations } from 'next-intl/server'
 import { PortalHeaderProps } from '../interfaces'
 
-export function PortalHeader({ title, subtitle, description, heroImage }: PortalHeaderProps) {
+export async function PortalHeader({ title, subtitle, description, heroImage }: PortalHeaderProps) {
+  const t = await getTranslations('portals')
   return (
     <div className="relative isolate h-72 overflow-hidden rounded-2xl bg-linear-to-br from-red-600 via-amber-500 to-green-600 text-white shadow-2xl sm:h-96 md:h-120">
       {heroImage && (
@@ -29,7 +31,7 @@ export function PortalHeader({ title, subtitle, description, heroImage }: Portal
       <div className="absolute right-3 bottom-3 z-10 sm:right-6 sm:bottom-6">
         <Button className="bg-linear-to-r from-red-500 to-amber-500 px-3 py-2 text-xs font-semibold text-white shadow-lg transition-all hover:from-red-600 hover:to-amber-600 hover:shadow-xl sm:px-4 sm:text-sm">
           <UserPlusIcon className="mr-1.5 size-4 sm:mr-2 sm:size-5" />
-          Unirse al Portal
+          {t('header.joinCta')}
         </Button>
       </div>
     </div>

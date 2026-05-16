@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "title": "Clubes | Comunidades y Grupos de Interés",
+    "description": "Descubre y únete a clubes basados en tus intereses. Conecta con personas afines, participa en eventos exclusivos y comparte experiencias únicas en comunidades temáticas.",
+    "ogTitle": "Clubes | Comunidades y Grupos de Interés",
+    "ogDescription": "Descubre comunidades apasionadas sobre los temas que te interesan"
+  },
+  "hero": {
+    "title": "Clubes",
+    "subtitle1": "Descubre y únete a comunidades apasionadas sobre los temas que te interesan.",
+    "subtitle2": "Conecta con personas afines y comparte experiencias únicas.",
+    "createCta": "Crear un club",
+    "trustPill": "Únete a miles de comunidades activas en Yebaam",
+    "features": {
+      "themes": {
+        "title": "Comunidades y Temáticas",
+        "description": "Únete a grupos organizados por intereses específicos y afiliaciones compartidas."
+      },
+      "events": {
+        "title": "Eventos y Actividades",
+        "description": "Participa en eventos exclusivos y actividades organizadas por los clubes."
+      },
+      "connections": {
+        "title": "Conexiones Auténticas",
+        "description": "Conoce personas que comparten tus mismas pasiones e intereses."
+      }
+    }
+  },
+  "list": {
+    "tabs": {
+      "mine": "Mis clubes",
+      "suggested": "Sugeridos",
+      "popular": "Populares",
+      "new": "Nuevos"
+    },
+    "searchPlaceholder": "Buscar clubes...",
+    "filters": "Filtros",
+    "empty": {
+      "mine": "No eres miembro de ningún club todavía",
+      "suggested": "No hay clubes sugeridos en este momento",
+      "new": "No se encontraron clubes recientes",
+      "popular": "No se encontraron clubes populares",
+      "default": "No se encontraron clubes"
+    }
+  },
+  "grid": {
+    "emptyDefault": "No se encontraron clubes",
+    "exploreHint": "Explora diferentes categorías o ajusta tus filtros para descubrir clubes interesantes"
+  },
+  "card": {
+    "private": "Privado",
+    "public": "Público",
+    "members": "{count} miembros",
+    "free": "Gratis",
+    "viewDetails": "Ver detalles"
+  },
+  "create": {
+    "title": "Crear club",
+    "stepLabel": "{title} - Paso {current} de {total}",
+    "steps": {
+      "basic": "Información básica",
+      "settings": "Configuración",
+      "images": "Imágenes",
+      "additional": "Información adicional",
+      "fallback": "Crear club"
+    },
+    "errorFallback": "Error al crear el club. Intenta nuevamente."
+  },
+  "detail": {
+    "privacy": {
+      "public": "Público",
+      "private": "Privado",
+      "secret": "Secreto",
+      "affiliation": "Afiliación"
+    },
+    "coverAlt": "Portada de {name}",
+    "actions": {
+      "loading": "...",
+      "member": "Miembro",
+      "join": "Unirse",
+      "messageAria": "Enviar mensaje",
+      "messageTitle": "Enviar mensaje",
+      "inviteAria": "Invitar",
+      "inviteTitle": "Invitar"
+    },
+    "tabs": {
+      "ariaLabel": "Secciones del club",
+      "about": "Acerca del Club",
+      "photos": "Fotos",
+      "videos": "Videos",
+      "articles": "Artículos",
+      "files": "Archivos"
+    }
+  },
+  "pagination": {
+    "ariaLabel": "Paginación",
+    "goToPage": "Ir a la página {page}",
+    "prev": "Página anterior",
+    "next": "Página siguiente"
+  }
+}

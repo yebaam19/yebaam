@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  UserGroupIcon, 
-  GlobeAltIcon, 
+import { useTranslations, useLocale } from 'next-intl';
+import {
+  UserGroupIcon,
+  GlobeAltIcon,
   LockClosedIcon,
   ArrowLeftIcon,
   Cog6ToothIcon,
@@ -21,7 +22,9 @@ type TabType = 'posts' | 'members' | 'about';
 export default function GroupDetailPage() {
   const params = useParams();
   const groupId = params.id as string;
-  
+  const t = useTranslations('grupos');
+  const locale = useLocale();
+
   const { data: group, isLoading } = useGroup(groupId);
   const [activeTab, setActiveTab] = useState<TabType>('posts');
 
@@ -49,17 +52,17 @@ export default function GroupDetailPage() {
         <div className="text-center">
           <UserGroupIcon className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
-            Grupo no encontrado
+            {t('detail.notFoundTitle')}
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-            El grupo que buscas no existe o fue eliminado
+            {t('detail.notFoundDescription')}
           </p>
           <Link
             href="/grupos"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
           >
             <ArrowLeftIcon className="h-5 w-5" />
-            Volver a grupos
+            {t('detail.backToGroups')}
           </Link>
         </div>
       </div>
@@ -128,7 +131,7 @@ export default function GroupDetailPage() {
                         {group.creatorName}
                       </span>
                       <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Creador del grupo
+                        {t('detail.creatorRole')}
                       </span>
                     </div>
                   </div>
@@ -139,18 +142,18 @@ export default function GroupDetailPage() {
                     {group.privacy === 'public' ? (
                       <>
                         <GlobeAltIcon className="h-4 w-4" />
-                        <span>Grupo público</span>
+                        <span>{t('detail.publicGroup')}</span>
                       </>
                     ) : (
                       <>
                         <LockClosedIcon className="h-4 w-4" />
-                        <span>Grupo privado</span>
+                        <span>{t('detail.privateGroup')}</span>
                       </>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
                     <UsersIcon className="h-4 w-4" />
-                    <span>{group.memberCount.toLocaleString()} miembros</span>
+                    <span>{t('detail.members', { count: group.memberCount.toLocaleString() })}</span>
                   </div>
                 </div>
               </div>
@@ -167,7 +170,7 @@ export default function GroupDetailPage() {
                 )}
                 {!group.isMember && (
                   <button className="w-full rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 sm:w-auto">
-                    Unirse al grupo
+                    {t('detail.join')}
                   </button>
                 )}
               </div>
@@ -185,7 +188,7 @@ export default function GroupDetailPage() {
               >
                 <div className="flex items-center gap-2">
                   <DocumentTextIcon className="h-5 w-5" />
-                  Publicaciones
+                  {t('detail.tabs.posts')}
                 </div>
                 {activeTab === 'posts' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
@@ -201,7 +204,7 @@ export default function GroupDetailPage() {
               >
                 <div className="flex items-center gap-2">
                   <UsersIcon className="h-5 w-5" />
-                  Miembros
+                  {t('detail.tabs.members')}
                 </div>
                 {activeTab === 'members' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
@@ -217,7 +220,7 @@ export default function GroupDetailPage() {
               >
                 <div className="flex items-center gap-2">
                   <InformationCircleIcon className="h-5 w-5" />
-                  Acerca de
+                  {t('detail.tabs.about')}
                 </div>
                 {activeTab === 'about' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
@@ -234,10 +237,10 @@ export default function GroupDetailPage() {
           <div className="text-center py-12">
             <DocumentTextIcon className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-              No hay publicaciones aún
+              {t('detail.posts.emptyTitle')}
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              Sé el primero en compartir algo en este grupo
+              {t('detail.posts.emptyDescription')}
             </p>
           </div>
         )}
@@ -246,10 +249,10 @@ export default function GroupDetailPage() {
           <div className="text-center py-12">
             <UsersIcon className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-              {group.memberCount} miembros
+              {t('detail.membersTab.title', { count: group.memberCount })}
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              La lista de miembros se mostrará aquí
+              {t('detail.membersTab.description')}
             </p>
           </div>
         )}
@@ -258,37 +261,42 @@ export default function GroupDetailPage() {
           <div className="max-w-3xl">
             <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-6">
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
-                Descripción
+                {t('detail.about.descriptionTitle')}
               </h3>
               <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
                 {group.description}
               </p>
-              
+
               <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
-                  Detalles
+                  {t('detail.about.detailsTitle')}
                 </h3>
                 <dl className="space-y-3">
                   <div>
-                    <dt className="text-sm text-neutral-600 dark:text-neutral-400">Categoría</dt>
+                    <dt className="text-sm text-neutral-600 dark:text-neutral-400">{t('detail.about.category')}</dt>
                     <dd className="text-sm font-medium text-neutral-900 dark:text-white mt-1">
                       {group.category}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-neutral-600 dark:text-neutral-400">Privacidad</dt>
+                    <dt className="text-sm text-neutral-600 dark:text-neutral-400">{t('detail.about.privacy')}</dt>
                     <dd className="text-sm font-medium text-neutral-900 dark:text-white mt-1">
-                      {group.privacy === 'public' ? 'Público' : 'Privado'}
+                      {group.privacy === 'public'
+                        ? t('detail.about.publicLabel')
+                        : t('detail.about.privateLabel')}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-neutral-600 dark:text-neutral-400">Creado</dt>
+                    <dt className="text-sm text-neutral-600 dark:text-neutral-400">{t('detail.about.createdOn')}</dt>
                     <dd className="text-sm font-medium text-neutral-900 dark:text-white mt-1">
-                      {new Date(group.createdAt || '').toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {new Date(group.createdAt || '').toLocaleDateString(
+                        locale === 'en' ? 'en-US' : 'es-ES',
+                        {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        },
+                      )}
                     </dd>
                   </div>
                 </dl>

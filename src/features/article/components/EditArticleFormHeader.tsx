@@ -12,6 +12,7 @@ import Avatar from '@/ui/Avatar'
 import { Button } from '@/ui/Button'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { CheckIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 
 interface ArticleUser {
   id: string
@@ -37,6 +38,8 @@ export function EditArticleFormHeader({
   isUpdating,
   toolbarSlot,
 }: EditArticleFormHeaderProps) {
+  const t = useTranslations('article.editor')
+  const truncatedTitle = articleTitle.length > 30 ? `${articleTitle.slice(0, 30)}...` : articleTitle
   return (
     <div className="sticky top-[106px] z-20 border-b border-neutral-200 bg-white md:top-14 dark:border-neutral-800 dark:bg-neutral-900">
       <div className="px-4 sm:px-6">
@@ -52,7 +55,7 @@ export function EditArticleFormHeader({
             <div>
               <p className="text-sm font-medium text-neutral-900 dark:text-white">{user.displayName}</p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Editando: {articleTitle.length > 30 ? `${articleTitle.slice(0, 30)}...` : articleTitle}
+                {t('editing', { title: truncatedTitle })}
               </p>
             </div>
           </div>
@@ -62,11 +65,11 @@ export function EditArticleFormHeader({
           <div className="flex shrink-0 items-center gap-2">
             <Button outline onClick={onCancel} disabled={isUpdating} className="gap-2">
               <XMarkIcon className="h-4 w-4" />
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button color="primary" onClick={onUpdate} disabled={isUpdating} className="gap-2">
               <CheckIcon className="h-4 w-4" />
-              {isUpdating ? 'Guardando...' : 'Guardar cambios'}
+              {isUpdating ? t('saving') : t('save')}
             </Button>
           </div>
         </div>
@@ -83,7 +86,7 @@ export function EditArticleFormHeader({
               />
               <div>
                 <p className="text-sm font-medium text-neutral-900 dark:text-white">{user.displayName}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">Editando artículo</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('editingShort')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -92,7 +95,7 @@ export function EditArticleFormHeader({
               </Button>
               <Button color="primary" onClick={onUpdate} disabled={isUpdating} className="gap-1 text-sm">
                 <CheckIcon className="h-4 w-4" />
-                {isUpdating ? 'Guardando...' : 'Guardar'}
+                {isUpdating ? t('saving') : t('saveShort')}
               </Button>
             </div>
           </div>

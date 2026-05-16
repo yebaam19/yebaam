@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "listTitle": "Familias",
+    "newTitle": "Nueva familia"
+  },
+  "list": {
+    "title": "Familias",
+    "subtitle": "Espacios privados por invitación: árbol genealógico, línea de tiempo, fotos, historias y documentos.",
+    "createCta": "Crear familia",
+    "pendingInvitations": "Invitaciones pendientes",
+    "myFamilies": "Mis familias",
+    "empty": {
+      "title": "Aún no perteneces a ninguna familia",
+      "subtitle": "Crea una para comenzar tu árbol genealógico, o pídele a un familiar que te invite a la suya.",
+      "cta": "Crear mi primera familia"
+    }
+  },
+  "card": {
+    "owner": "Dueño",
+    "memberOne": "{count} miembro",
+    "memberOther": "{count} miembros",
+    "personOne": "{count} persona en el árbol",
+    "personOther": "{count} personas en el árbol"
+  },
+  "invitation": {
+    "fallbackInviter": "Alguien",
+    "fallbackFamily": "Una familia",
+    "message": "<inviter>{inviterName}</inviter> te invitó a <family>{familyName}</family>.",
+    "accepted": "Te uniste a \"{family}\".",
+    "declined": "Rechazaste la invitación a \"{family}\".",
+    "actions": {
+      "accept": "Aceptar",
+      "decline": "Rechazar"
+    }
+  },
+  "create": {
+    "backToList": "Volver a Familias",
+    "title": "Crear una nueva familia",
+    "subtitle": "Una familia es un espacio privado por invitación. Después de crearla podrás agregar personas al árbol, eventos, fotos e invitar a otros familiares.",
+    "fields": {
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Ej. Familia Velandia",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Una breve descripción opcional…",
+      "coverLabel": "Foto de portada (opcional)",
+      "coverHint": "Se sube a Cloudflare Images."
+    },
+    "privacyNote": "Tu familia será privada por invitación. Solo los miembros podrán ver el contenido.",
+    "errors": {
+      "nameRequired": "El nombre es obligatorio.",
+      "uploadFailed": "Falló la subida de la imagen."
+    },
+    "actions": {
+      "submit": "Crear familia",
+      "submitting": "Creando…"
+    }
+  },
+  "header": {
+    "backToList": "Mis familias",
+    "memberOne": "{count} miembro",
+    "memberOther": "{count} miembros",
+    "personOne": "{count} persona en el árbol",
+    "personOther": "{count} personas en el árbol"
+  },
+  "layout": {
+    "pendingInviteHint": "Acepta la invitación para ver el árbol, las fotos y la línea de tiempo.",
+    "fallbackInviter": "Alguien"
+  },
+  "tabs": {
+    "ariaLabel": "Pestañas de la familia",
+    "home": "Inicio",
+    "members": "Miembros",
+    "tree": "Árbol",
+    "timeline": "Línea de tiempo",
+    "photos": "Fotos",
+    "stories": "Historias",
+    "documents": "Documentos",
+    "settings": "Configuración",
+    "comingSoon": "Pronto"
+  },
+  "members": {
+    "roles": {
+      "owner": "Dueño",
+      "admin": "Admin",
+      "member": "Miembro"
+    },
+    "empty": "Aún no hay miembros.",
+    "noName": "(Sin nombre)",
+    "fallbackMemberLabel": "el miembro"
+  }
+}

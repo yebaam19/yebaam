@@ -1,0 +1,117 @@
+{
+  "list": {
+    "hero": {
+      "eyebrow": "Your personal space",
+      "title": "Blogs",
+      "description": "Share your knowledge, build an audience and connect with people who share your interests.",
+      "createButton": "Create my blog"
+    },
+    "features": {
+      "publish": {
+        "title": "Publish content",
+        "description": "Share articles, stories and media with your audience."
+      },
+      "audience": {
+        "title": "Build an audience",
+        "description": "Attract followers interested in your topics and create an active community."
+      },
+      "expertise": {
+        "title": "Share expertise",
+        "description": "Position yourself as an expert and add value with your knowledge."
+      }
+    },
+    "section": {
+      "eyebrow": "Explore blogs",
+      "title": "Find voices that inspire you",
+      "subtitle": "Follow creators, discover new topics and grow your own audience.",
+      "tabsAria": "Tabs"
+    },
+    "tabs": {
+      "following": "Following",
+      "suggested": "Suggested",
+      "discover": "Discover"
+    },
+    "empty": {
+      "following": "You're not following any blogs yet",
+      "suggested": "No suggested blogs at this time",
+      "discover": "No popular blogs were found"
+    }
+  },
+  "grid": {
+    "emptyDefault": "No blogs were found",
+    "emptyHint": "Explore different categories or search for specific blogs to find voices that inspire you."
+  },
+  "card": {
+    "unknownUser": "Unknown user",
+    "fallbackUserAlt": "User",
+    "fallbackUsername": "unknown",
+    "processing": "Processing...",
+    "following": "Following",
+    "follow": "Follow"
+  },
+  "tabs": {
+    "about": "About Me",
+    "photos": "Photos",
+    "videos": "Videos",
+    "posts": "Articles",
+    "forum": "Forum",
+    "askme": "Askme"
+  },
+  "detail": {
+    "notFoundTitle": "Blog not found",
+    "notFoundDescription": "The blog you are looking for does not exist or has been deleted",
+    "editBlog": "Edit blog",
+    "menu": {
+      "chat": "Public Chat",
+      "members": "Members and Followers",
+      "askme": "Askme",
+      "foro": "Forum",
+      "events": "Events",
+      "promotions": "Promotions",
+      "related": "Related Pages"
+    },
+    "membersPanel": {
+      "adminLabel": "Administrator:",
+      "unassigned": "Unassigned",
+      "comingSoon": "The full list of members and followers will be shown here soon (paginated in batches of 30 and with a search box)."
+    },
+    "events": "The blogger will be able to create or share events (live or meetups). Coming soon.",
+    "related": "No related pages have been added yet. The blogger will be able to link internal and external pages."
+  },
+  "posts": {
+    "empty": "No posts available",
+    "createFirst": "Create first post",
+    "createNew": "New post"
+  },
+  "create": {
+    "title": "Create Blog",
+    "subtitle": "Share your knowledge and passion with the world",
+    "uploadingHint": "Uploading images to CloudFront...",
+    "submit": "Create blog",
+    "submitting": "Creating...",
+    "uploading": "Uploading images...",
+    "success": "Blog created successfully",
+    "errorCreating": "Error creating the blog",
+    "errorRequired": "Name and description are required",
+    "coverLabel": "Cover image (optional)"
+  },
+  "form": {
+    "name": "Blog name *",
+    "namePlaceholder": "My Awesome Blog",
+    "nameCounter": "{count}/100 characters",
+    "description": "Description *",
+    "descriptionPlaceholder": "Describe what your blog is about...",
+    "descriptionCounter": "{count}/500 characters",
+    "category": "Category *",
+    "subcategory": "Subcategory (optional)",
+    "subcategoryPlaceholder": "e.g. Web Development, Vegan Recipes, etc.",
+    "website": "Website (optional)",
+    "websitePlaceholder": "https://myblog.com",
+    "tags": "Tags (optional)",
+    "tagsPlaceholder": "javascript, react, web development",
+    "tagsHint": "Separate tags with commas"
+  },
+  "actions": {
+    "cancel": "Cancel"
+  }
+}

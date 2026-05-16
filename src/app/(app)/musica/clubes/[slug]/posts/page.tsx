@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getServerClient } from '@/utils/supabase/server';
 import {
   getMusicClubBySlug,
@@ -16,10 +17,11 @@ export default async function ClubPostsPage({
   const { slug } = await params;
   const club = await getMusicClubBySlug(slug);
   if (!club) notFound();
-  const [posts, viewerRole, joinStatus] = await Promise.all([
+  const [posts, viewerRole, joinStatus, t] = await Promise.all([
     listClubPosts(club.id, 50),
     getViewerRoleInClub(club.id),
     getViewerJoinStatus(club.id),
+    getTranslations('musica'),
   ]);
   const client = await getServerClient();
   const { data: u } = await client.auth.getUser();
@@ -29,7 +31,7 @@ export default async function ClubPostsPage({
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Publicaciones
+        {t('clubs.postsHeading')}
       </h2>
       <MusicPostsFeed
         clubId={club.id}

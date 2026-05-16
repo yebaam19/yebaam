@@ -4,12 +4,14 @@ import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import Avatar from '@/ui/Avatar'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 const MAX_VISIBLE = 3
 
 export function FriendRequestsCard() {
   const { pendingRequests, acceptFriendRequest, rejectFriendRequest } = useFriendships()
   const [busyId, setBusyId] = useState<string | null>(null)
+  const t = useTranslations('friendships.requestsCard')
 
   if (!pendingRequests || pendingRequests.length === 0) return null
 
@@ -37,13 +39,13 @@ export function FriendRequestsCard() {
     <div className="rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          Solicitudes de amistad
+          {t('title')}
         </h3>
         <Link
           href={'/friends/requests' as never}
           className="text-xs font-medium text-primary-600 hover:underline"
         >
-          Ver todos
+          {t('viewAll')}
         </Link>
       </div>
 
@@ -53,7 +55,7 @@ export function FriendRequestsCard() {
           const name =
             profile?.firstName && profile?.lastName
               ? `${profile.firstName} ${profile.lastName}`
-              : profile?.username || 'Usuario'
+              : profile?.username || t('fallbackUser')
           const initials = (profile?.firstName?.[0] ?? '') + (profile?.lastName?.[0] ?? '') ||
             profile?.username?.slice(0, 2).toUpperCase() ||
             'U'
@@ -71,7 +73,7 @@ export function FriendRequestsCard() {
                   {name}
                 </p>
                 <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                  Quiere ser tu amigo
+                  {t('wantsToBeFriend')}
                 </p>
                 <div className="mt-2 flex gap-2">
                   <button
@@ -79,14 +81,14 @@ export function FriendRequestsCard() {
                     disabled={busy}
                     className="flex-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
                   >
-                    Confirmar
+                    {t('confirm')}
                   </button>
                   <button
                     onClick={() => onReject(req.id)}
                     disabled={busy}
                     className="flex-1 rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-200 disabled:opacity-60 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
                   >
-                    Eliminar
+                    {t('remove')}
                   </button>
                 </div>
               </div>

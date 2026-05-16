@@ -1,10 +1,18 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { UserGroupIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import type { FamilyWithViewer } from '../types/family.types';
 
-export function FamilyCard({ family }: { family: FamilyWithViewer }) {
+export async function FamilyCard({ family }: { family: FamilyWithViewer }) {
+  const t = await getTranslations('familias');
   const cover = family.cover_cf_image_id ? imageUrl(family.cover_cf_image_id, 'cover') : null;
+  const memberLabel = family.member_count === 1
+    ? t('card.memberOne', { count: family.member_count })
+    : t('card.memberOther', { count: family.member_count });
+  const personLabel = family.person_count === 1
+    ? t('card.personOne', { count: family.person_count })
+    : t('card.personOther', { count: family.person_count });
   return (
     <Link
       href={`/feed/familias/${family.slug}`}
@@ -24,7 +32,7 @@ export function FamilyCard({ family }: { family: FamilyWithViewer }) {
         )}
         {family.viewer_role === 'owner' && (
           <span className="absolute left-2 top-2 rounded-full bg-amber-400/95 px-2 py-0.5 text-xs font-medium text-amber-950">
-            Dueño
+            {t('card.owner')}
           </span>
         )}
       </div>
@@ -38,13 +46,9 @@ export function FamilyCard({ family }: { family: FamilyWithViewer }) {
           </p>
         )}
         <div className="mt-3 flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-          <span>
-            {family.member_count} {family.member_count === 1 ? 'miembro' : 'miembros'}
-          </span>
+          <span>{memberLabel}</span>
           <span>·</span>
-          <span>
-            {family.person_count} {family.person_count === 1 ? 'persona' : 'personas'} en el árbol
-          </span>
+          <span>{personLabel}</span>
         </div>
       </div>
     </Link>

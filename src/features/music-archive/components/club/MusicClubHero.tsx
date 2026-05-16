@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import type { MusicClubRow } from '../../server/clubs.server';
@@ -14,6 +17,7 @@ interface Props {
  *  Cloudflare image id despite the column name) it fills the hero; otherwise we
  *  fall back to the original pastel gradient. */
 export function MusicClubHero({ club }: Props) {
+  const t = useTranslations('musica');
   const bannerUrl = club.cover_image_url ? imageUrl(club.cover_image_url, 'hero') : null;
 
   return (
@@ -23,7 +27,7 @@ export function MusicClubHero({ club }: Props) {
           href={'/musica/clubes' as Route}
           className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
         >
-          ← Clubes
+          {t('clubs.createBack')}
         </Link>
       </nav>
 
@@ -70,8 +74,7 @@ export function MusicClubHero({ club }: Props) {
             {club.description}
           </p>
           <p className={`mt-3 text-xs ${bannerUrl ? 'text-zinc-200' : 'text-zinc-500'}`}>
-            {club.album_count} álbum{club.album_count === 1 ? '' : 'es'} · {club.member_count}{' '}
-            miembro{club.member_count === 1 ? '' : 's'}
+            {t('club.albumsCount', { count: club.album_count })} · {t('club.membersCount', { count: club.member_count })}
           </p>
         </div>
       </header>

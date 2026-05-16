@@ -2,11 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { ChatBubbleLeftRightIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import MessengerSidebar from '@/components/chat/MessengerSidebar';
 
 export default function MessengerLandingClient() {
   const router = useRouter();
+  const t = useTranslations('chat');
 
   const handleSelectConversation = (chat: { id: string }) => {
     router.push(`/chat/${chat.id}` as Route);
@@ -35,7 +37,7 @@ export default function MessengerLandingClient() {
         <button
           type="button"
           onClick={handleCloseMessenger}
-          aria-label="Cerrar Messenger"
+          aria-label={t('landing.closeAriaLabel')}
           className="absolute right-4 top-4 rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
         >
           <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
@@ -46,10 +48,10 @@ export default function MessengerLandingClient() {
             <ChatBubbleLeftRightIcon className="h-10 w-10 text-primary-600 dark:text-primary-400" />
           </div>
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-            Selecciona un chat
+            {t('landing.selectChat')}
           </h2>
           <p className="mt-2 max-w-xs text-sm text-neutral-500 dark:text-neutral-400">
-            Elige una conversación de la lista para empezar a chatear.
+            {t('landing.selectChatDescription')}
           </p>
         </div>
       </div>

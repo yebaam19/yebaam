@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { Post } from '../../interfaces/post.interfaces'
@@ -16,6 +17,7 @@ interface Props {
  *  users, and the GIF if any. Media files render outside this component
  *  because they edge-bleed the card. */
 export function PostCardContent({ post }: Props) {
+  const t = useTranslations('feed')
   return (
     <>
       <div className="overflow-hidden px-4 pb-4">
@@ -23,7 +25,7 @@ export function PostCardContent({ post }: Props) {
           <div className="mb-2 flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
             <span className="wrap-break-word">
               {post.feeling.emoji && `${post.feeling.emoji} `}
-              {post.feeling.prefix || 'se siente'} {post.feeling.label}
+              {post.feeling.prefix || t('feeling.prefix')} {post.feeling.label}
               {post.feeling.activity && ` ${post.feeling.activity}`}
             </span>
           </div>
@@ -53,7 +55,7 @@ export function PostCardContent({ post }: Props) {
 
         {post.taggedUsers && post.taggedUsers.length > 0 && (
           <div className="mt-2 flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
-            <span>con</span>
+            <span>{t('post.with')}</span>
             {post.taggedUsers.map((user, idx) => (
               <span key={user.id}>
                 <Link

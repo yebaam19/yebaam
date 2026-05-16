@@ -1,0 +1,126 @@
+{
+  "list": {
+    "title": "Comunidades",
+    "subtitle": "Únete a comunidades de personas con intereses similares",
+    "tabs": {
+      "discover": "Descubrir",
+      "myCommunities": "Mis Comunidades",
+      "suggested": "Sugeridas"
+    },
+    "empty": {
+      "discover": "No hay comunidades populares en este momento",
+      "myCommunities": "Aún no te has unido a ninguna comunidad. ¡Explora y únete a una!",
+      "suggested": "No hay comunidades sugeridas en este momento",
+      "default": "No se encontraron comunidades"
+    }
+  },
+  "grid": {
+    "emptyDefault": "No se encontraron comunidades"
+  },
+  "card": {
+    "members": "miembros",
+    "posts": "posts",
+    "processing": "Procesando...",
+    "member": "Miembro",
+    "requestAccess": "Solicitar Acceso",
+    "join": "Unirse"
+  },
+  "create": {
+    "trigger": "Crear comunidad",
+    "title": "Crear comunidad",
+    "subtitle": "Reúne personas alrededor de un interés, lugar o identidad común.",
+    "fields": {
+      "coverImage": "Imagen de portada",
+      "profileImage": "Imagen de perfil",
+      "name": "Nombre*",
+      "description": "Descripción",
+      "category": "Categoría",
+      "privacy": "Privacidad",
+      "location": "Ubicación",
+      "website": "Sitio web",
+      "tags": "Etiquetas (separadas por coma)"
+    },
+    "placeholders": {
+      "website": "https://...",
+      "tags": "tecnología, comunidad, mexico"
+    },
+    "uploading": "Subiendo...",
+    "uploadHint": "PNG, JPG o WebP",
+    "imageAltCover": "Portada",
+    "imageAltProfile": "Perfil",
+    "closeAria": "Cerrar",
+    "errors": {
+      "nameRequired": "El nombre es obligatorio.",
+      "imageUpload": "Error subiendo la imagen"
+    },
+    "privacyOptions": {
+      "public": {
+        "label": "Pública",
+        "description": "Cualquiera puede ver y unirse."
+      },
+      "private": {
+        "label": "Privada",
+        "description": "Visible para miembros; el ingreso lo controla un administrador."
+      },
+      "secret": {
+        "label": "Secreta",
+        "description": "Solo accesible por invitación."
+      }
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "submit": "Crear comunidad",
+      "submitting": "Creando..."
+    }
+  },
+  "detail": {
+    "members": "miembros",
+    "posts": "publicaciones",
+    "joinErrorDefault": "No se pudo salir",
+    "joinButton": {
+      "processing": "Procesando...",
+      "guest": "Inicia sesión para unirte",
+      "member": "Miembro",
+      "requestPending": "Solicitud enviada",
+      "requestDeclined": "Solicitud rechazada",
+      "invited": "Aceptar invitación",
+      "requestAccess": "Solicitar acceso",
+      "secretOnlyInvite": "Solo por invitación",
+      "join": "Hacerse Miembro"
+    }
+  },
+  "sidebar": {
+    "ariaLabel": "Secciones de la comunidad",
+    "items": {
+      "members": "Miembros y Seguidores",
+      "rules": "Reglas y Denuncias",
+      "chat": "Chat Publico",
+      "forums": "Foros",
+      "classifieds": "Clasificados",
+      "promotions": "Promociones",
+      "links": "Enlaces a Páginas",
+      "events": "Eventos"
+    },
+    "ownerOnly": "Solo el propietario",
+    "comingSoon": "Pronto"
+  },
+  "topTabs": {
+    "ariaLabel": "Pestañas de contenido",
+    "posts": "Publicaciones",
+    "photos": "Fotos",
+    "videos": "Videos",
+    "articles": "Articulos",
+    "files": "Archivos",
+    "pdf": "PDF",
+    "comingSoon": "Pronto"
+  },
+  "members": {
+    "title": "Miembros y Seguidores",
+    "total": "{count} en total",
+    "empty": "No hay miembros disponibles."
+  },
+  "comingSoon": {
+    "defaultDescription": "Esta sección estará disponible próximamente.",
+    "badge": "Próximamente"
+  }
+}

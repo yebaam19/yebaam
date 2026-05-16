@@ -1,12 +1,14 @@
 'use client'
 
 import { GlobeAmericasIcon, SparklesIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useGlobalStats } from '../hooks/useGlobalStats'
 
 /**
  * Hero section para la página de bienvenida al portal de ciudades
  */
 export function CitiesHero() {
+  const t = useTranslations('cities')
   const { data: stats, isLoading } = useGlobalStats()
 
   // Formatear números con separadores de miles
@@ -38,14 +40,12 @@ export function CitiesHero() {
       <div className="relative z-10 mx-auto max-w-4xl text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
           <GlobeAmericasIcon className="h-5 w-5" />
-          <span>Descubre tu comunidad</span>
+          <span>{t('hero.badge')}</span>
         </div>
 
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Portal de Ciudades</h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">{t('hero.title')}</h1>
 
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90 sm:text-xl">
-          Explora y conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad local.
-        </p>
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90 sm:text-xl">{t('hero.subtitle')}</p>
 
         {/* Stats */}
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -58,7 +58,7 @@ export function CitiesHero() {
                 <span className="text-3xl font-bold">{formatNumber(stats?.totalCities || 0)}</span>
               )}
             </div>
-            <p className="mt-1 text-sm text-white/80">Ciudades activas</p>
+            <p className="mt-1 text-sm text-white/80">{t('hero.stats.cities')}</p>
           </div>
           <div className="rounded-xl bg-white/10 px-6 py-4 backdrop-blur-sm">
             <div className="flex items-center justify-center gap-2">
@@ -69,7 +69,7 @@ export function CitiesHero() {
                 <span className="text-3xl font-bold">{formatNumber(stats?.totalUsers || 0)}</span>
               )}
             </div>
-            <p className="mt-1 text-sm text-white/80">Usuarios conectados</p>
+            <p className="mt-1 text-sm text-white/80">{t('hero.stats.users')}</p>
           </div>
           <div className="rounded-xl bg-white/10 px-6 py-4 backdrop-blur-sm">
             <div className="flex items-center justify-center gap-2">
@@ -80,7 +80,7 @@ export function CitiesHero() {
                 <span className="text-3xl font-bold">{formatNumber(stats?.totalMedia || 0)}</span>
               )}
             </div>
-            <p className="mt-1 text-sm text-white/80">Fotos compartidas</p>
+            <p className="mt-1 text-sm text-white/80">{t('hero.stats.media')}</p>
           </div>
         </div>
       </div>

@@ -1,0 +1,63 @@
+{
+  "friendButton": {
+    "addFriend": "Add friend",
+    "addFriendTitle": "Send friend request",
+    "pendingTitle": "Request pending",
+    "pendingDescription": "Request pending acceptance",
+    "cancelOnHover": "Click to cancel",
+    "cancelRequest": "Cancel request",
+    "requestSent": "Request sent",
+    "accept": "Accept",
+    "acceptTitle": "Accept request",
+    "acceptRequestTitle": "Accept friend request",
+    "reject": "Decline",
+    "rejectTitle": "Decline request",
+    "friends": "Friends",
+    "friendsTitle": "You are friends",
+    "unfriend": "Remove from friends",
+    "unfriendConfirmTitle": "Remove from friends?",
+    "unfriendConfirmDescription": "This person will no longer appear in your friends list. You can send them another request later.",
+    "unfriendCancel": "Cancel",
+    "unfriendConfirm": "Remove"
+  },
+  "actionsButtons": {
+    "accept": "Accept",
+    "accepting": "Accepting...",
+    "reject": "Decline",
+    "rejecting": "Declining...",
+    "cancelRequest": "Cancel request",
+    "cancelling": "Cancelling..."
+  },
+  "requestsCard": {
+    "title": "Friend requests",
+    "viewAll": "View all",
+    "fallbackUser": "User",
+    "wantsToBeFriend": "Wants to be your friend",
+    "confirm": "Confirm",
+    "remove": "Remove"
+  },
+  "detailModal": {
+    "title": "Friend request",
+    "loading": "Loading...",
+    "errorLoad": "Error loading profile",
+    "errorAccept": "Error accepting the request",
+    "errorReject": "Error declining the request",
+    "errorCancel": "Error cancelling the request",
+    "successAccepted": "Request accepted! You are now friends",
+    "successRejected": "Request declined",
+    "successCancelled": "Request cancelled",
+    "messageLabel": "Message",
+    "status": "Status:",
+    "statusPending": "Pending",
+    "type": "Type:",
+    "typeReceived": "Request received",
+    "typeSent": "Request sent",
+    "acceptRequest": "Accept request",
+    "accepting": "Accepting...",
+    "reject": "Decline",
+    "rejecting": "Declining...",
+    "cancelRequest": "Cancel request",
+    "cancelling": "Cancelling...",
+    "unavailable": "Couldn't load the information"
+  }
+}

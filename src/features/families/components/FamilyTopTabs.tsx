@@ -3,11 +3,22 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+
+type TabKey =
+  | 'home'
+  | 'members'
+  | 'tree'
+  | 'timeline'
+  | 'photos'
+  | 'stories'
+  | 'documents'
+  | 'settings';
 
 interface TabItem {
   id: string;
-  label: string;
+  labelKey: TabKey;
   href: string;
   comingSoon?: boolean;
 }
@@ -15,27 +26,28 @@ interface TabItem {
 function buildTabs(slug: string, isAdmin: boolean): TabItem[] {
   const base = `/feed/familias/${slug}`;
   const tabs: TabItem[] = [
-    { id: 'home', label: 'Inicio', href: base },
-    { id: 'miembros', label: 'Miembros', href: `${base}/miembros` },
-    { id: 'arbol', label: 'Árbol', href: `${base}/arbol` },
-    { id: 'timeline', label: 'Línea de tiempo', href: `${base}/timeline` },
-    { id: 'fotos', label: 'Fotos', href: `${base}/fotos` },
-    { id: 'historias', label: 'Historias', href: `${base}/historias` },
-    { id: 'documentos', label: 'Documentos', href: `${base}/documentos` },
+    { id: 'home', labelKey: 'home', href: base },
+    { id: 'miembros', labelKey: 'members', href: `${base}/miembros` },
+    { id: 'arbol', labelKey: 'tree', href: `${base}/arbol` },
+    { id: 'timeline', labelKey: 'timeline', href: `${base}/timeline` },
+    { id: 'fotos', labelKey: 'photos', href: `${base}/fotos` },
+    { id: 'historias', labelKey: 'stories', href: `${base}/historias` },
+    { id: 'documentos', labelKey: 'documents', href: `${base}/documentos` },
   ];
   if (isAdmin) {
-    tabs.push({ id: 'configuracion', label: 'Configuración', href: `${base}/configuracion` });
+    tabs.push({ id: 'configuracion', labelKey: 'settings', href: `${base}/configuracion` });
   }
   return tabs;
 }
 
 export function FamilyTopTabs({ slug, isAdmin = false }: { slug: string; isAdmin?: boolean }) {
   const pathname = usePathname();
+  const t = useTranslations('familias');
   const tabs = buildTabs(slug, isAdmin);
   return (
     <div
       role="tablist"
-      aria-label="Pestañas de la familia"
+      aria-label={t('tabs.ariaLabel')}
       className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-white p-1.5 dark:border-zinc-800 dark:bg-zinc-900"
     >
       {tabs.map((tab) => {
@@ -58,7 +70,7 @@ export function FamilyTopTabs({ slug, isAdmin = false }: { slug: string; isAdmin
                   : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800',
             )}
           >
-            {tab.label}
+            {t(`tabs.${tab.labelKey}`)}
             {tab.comingSoon && (
               <span
                 className={cn(
@@ -68,7 +80,7 @@ export function FamilyTopTabs({ slug, isAdmin = false }: { slug: string; isAdmin
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
                 )}
               >
-                Pronto
+                {t('tabs.comingSoon')}
               </span>
             )}
           </Link>

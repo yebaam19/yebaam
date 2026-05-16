@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "title": "Videos",
+    "description": "Mira los videos que la comunidad está publicando."
+  },
+  "page": {
+    "title": "Videos",
+    "subtitle": "Todos los videos publicados por usuarios — del feed, galerías y comunidades."
+  },
+  "feed": {
+    "empty": "Aún no hay videos publicados. Sube uno desde el feed o tu galería para verlo aquí.",
+    "userFallback": "Usuario",
+    "timeAgo": {
+      "now": "ahora",
+      "minutes": "hace {count} min",
+      "hours": "hace {count} h",
+      "days": "hace {count} d",
+      "weeks": "hace {count} sem"
+    }
+  }
+}

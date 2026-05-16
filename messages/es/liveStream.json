@@ -1,0 +1,38 @@
+{
+  "chat": {
+    "title": "Chat en vivo",
+    "viewersOne": "{count} espectador",
+    "viewersOther": "{count} espectadores",
+    "loginPrompt": "Inicia sesión para ver el chat",
+    "empty": "Sé el primero en comentar",
+    "inputPlaceholder": "Escribe un comentario…",
+    "deleteTitle": "Eliminar comentario",
+    "deleteConfirm": "¿Eliminar este comentario?",
+    "errors": {
+      "send": "Error al enviar comentario",
+      "delete": "Error al eliminar comentario"
+    }
+  },
+  "recorded": {
+    "heading": "Transmisiones grabadas",
+    "countOne": "{count} grabación",
+    "countOther": "{count} grabaciones",
+    "empty": "No hay transmisiones grabadas todavía",
+    "processing": "Procesando",
+    "loadMore": "Cargar más",
+    "loading": "Cargando…",
+    "timeAgo": {
+      "lessThanHour": "Hace menos de 1 hora",
+      "hoursOne": "Hace {count} hora",
+      "hoursOther": "Hace {count} horas",
+      "daysOne": "Hace {count} día",
+      "daysOther": "Hace {count} días"
+    }
+  },
+  "active": {
+    "liveBadge": "LIVE",
+    "liveBadgeLong": "EN VIVO",
+    "countOne": "{count} transmisión activa",
+    "countOther": "{count} transmisiones activas"
+  }
+}

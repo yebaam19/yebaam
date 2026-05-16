@@ -11,6 +11,7 @@ import { BuildingStorefrontIcon, MapPinIcon, PlusIcon, StarIcon } from '@/compon
 
 import { BackgroundPattern } from '@/components/BackgroundPattern'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 // ============================================================================
 // TYPES
@@ -27,6 +28,7 @@ interface BusinessesHeroProps {
 // ============================================================================
 
 export function BusinessesHero({ className, onCreateClick }: BusinessesHeroProps) {
+  const t = useTranslations('businesses')
   return (
     <section
       className={cn(
@@ -40,11 +42,8 @@ export function BusinessesHero({ className, onCreateClick }: BusinessesHeroProps
       {/* Content */}
       <div className="relative z-10">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-2xl font-bold text-white md:text-3xl lg:text-4xl">Directorio de Negocios</h1>
-          <p className="mt-3 text-base text-amber-100 md:text-lg">
-            Descubre restaurantes, tiendas, servicios y más. Conecta con los mejores negocios locales y apoya a tu
-            comunidad.
-          </p>
+          <h1 className="text-2xl font-bold text-white md:text-3xl lg:text-4xl">{t('hero.title')}</h1>
+          <p className="mt-3 text-base text-amber-100 md:text-lg">{t('hero.subtitle')}</p>
 
           {/* Create Button */}
           {onCreateClick && (
@@ -53,7 +52,7 @@ export function BusinessesHero({ className, onCreateClick }: BusinessesHeroProps
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-amber-900 shadow-lg transition-all hover:bg-amber-50 hover:shadow-xl"
             >
               <PlusIcon className="h-5 w-5" />
-              Registrar mi negocio
+              {t('hero.createCta')}
             </button>
           )}
         </div>
@@ -62,18 +61,18 @@ export function BusinessesHero({ className, onCreateClick }: BusinessesHeroProps
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <FeatureCard
             icon={<BuildingStorefrontIcon className="h-6 w-6" />}
-            title="Catálogo de Negocios"
-            description="Explora una amplia variedad de negocios organizados por categoría y ubicación."
+            title={t('hero.features.catalog.title')}
+            description={t('hero.features.catalog.description')}
           />
           <FeatureCard
             icon={<MapPinIcon className="h-6 w-6" />}
-            title="Negocios Locales"
-            description="Encuentra negocios cerca de ti y apoya a tu comunidad local."
+            title={t('hero.features.local.title')}
+            description={t('hero.features.local.description')}
           />
           <FeatureCard
             icon={<StarIcon className="h-6 w-6" />}
-            title="Reseñas Verificadas"
-            description="Consulta las reseñas y calificaciones antes de visitar un negocio."
+            title={t('hero.features.reviews.title')}
+            description={t('hero.features.reviews.description')}
           />
         </div>
       </div>

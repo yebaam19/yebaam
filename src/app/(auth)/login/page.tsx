@@ -2,16 +2,22 @@ import { LoginForm } from '@/features/auth/components/login-form';
 import BackgroundImage from '@/images/brand/Background-1.png';
 import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Iniciar sesión - Yebaam',
-  description: 'Inicia sesión en tu cuenta de Yebaam',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return {
+    title: t('login.metaTitle'),
+    description: t('login.metaDescription'),
+  };
+}
 
-const Page = () => {
+const Page = async () => {
+  const t = await getTranslations('auth');
+
   return (
     <main className="relative flex min-h-screen w-full flex-col md:flex-row">
       <div className="absolute inset-0 z-0">
@@ -33,13 +39,13 @@ const Page = () => {
               />
             </div>
             <p className="text-center text-xl font-semibold text-white md:text-left md:text-2xl lg:text-3xl">
-              Comparte experiencias de otro mundo y mantén vínculos duraderos con las personas que realmente importan.
+              {t('login.tagline')}
             </p>
           </div>
         </div>
         <div className="flex w-full flex-1 flex-col items-center justify-center px-6 py-10 md:px-12 lg:px-20 xl:px-28">
           <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-neutral-900">
-            <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800 dark:text-white">Iniciar sesión</h2>
+            <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800 dark:text-white">{t('login.title')}</h2>
 
             <Suspense
               fallback={
@@ -54,9 +60,9 @@ const Page = () => {
             {/* Create account */}
             <div className="mt-6 border-t border-neutral-200 pt-4 text-center dark:border-neutral-700">
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                ¿No tienes una cuenta?{' '}
+                {t('login.noAccount')}{' '}
                 <Link href="/signup" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
-                  Regístrate
+                  {t('login.signupLink')}
                 </Link>
               </p>
             </div>
@@ -64,9 +70,9 @@ const Page = () => {
           {/* Create Page Link */}
           <p className="mt-6 text-center text-sm text-white">
             <Link href="/feed/paginas" className="font-semibold hover:underline">
-              Crea una página
+              {t('login.createPageLink')}
             </Link>{' '}
-            para una celebridad, una marca o un negocio.
+            {t('login.createPageAfter')}
           </p>
         </div>
       </div>

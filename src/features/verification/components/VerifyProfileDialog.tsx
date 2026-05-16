@@ -3,6 +3,7 @@
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { supabase } from '@/utils/supabase/client';
 import { uploadService } from '@/lib/service/upload.service';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
@@ -42,9 +43,15 @@ interface PendingDocSnapshot {
   url: string;
 }
 
-const SLOT_LABELS = ['Foto de perfil', 'Foto de portada', 'Foto adicional 1', 'Foto adicional 2', 'Foto adicional 3'];
-
 export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Props) {
+  const t = useTranslations('verification');
+  const SLOT_LABELS = [
+    t('photos.slot1'),
+    t('photos.slot2'),
+    t('photos.slot3'),
+    t('photos.slot4'),
+    t('photos.slot5'),
+  ];
   const [tab, setTab] = useState(0);
   const [profile, setProfile] = useState<ProfileSnapshot | null>(null);
   /** Map slot number → signed delivery URL (minted server-side, expires in ~15 min). */
@@ -140,7 +147,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
             <DialogPanel className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-black/5 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-800">
               <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4 dark:border-neutral-700">
                 <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                  Autenticación de perfil
+                  {t('dialog.title')}
                 </h3>
                 <button
                   type="button"
@@ -154,17 +161,17 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
               <div className="max-h-[calc(90vh-4rem)] overflow-y-auto px-4 py-4 sm:px-6">
                 <Tabs selectedIndex={tab} onChange={setTab}>
                   <TabsList>
-                    <TabsTrigger>{`1. Información${requiredFilled ? ' ✓' : ''}`}</TabsTrigger>
-                    <TabsTrigger>{`2. Fotos (${photoCount}/5)`}</TabsTrigger>
-                    <TabsTrigger>{`3. Términos${profile?.terms_accepted_at ? ' ✓' : ''}`}</TabsTrigger>
-                    <TabsTrigger>4. Documento</TabsTrigger>
+                    <TabsTrigger>{t('dialog.tabInfo', { check: requiredFilled ? ' ✓' : '' })}</TabsTrigger>
+                    <TabsTrigger>{t('dialog.tabPhotos', { current: photoCount })}</TabsTrigger>
+                    <TabsTrigger>{t('dialog.tabTerms', { check: profile?.terms_accepted_at ? ' ✓' : '' })}</TabsTrigger>
+                    <TabsTrigger>{t('dialog.tabDocument')}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent>
                     <RequiredInfoTab
                       profile={profile}
                       onSaved={async () => {
-                        toast.success('Información guardada');
+                        toast.success(t('dialog.savedToast'));
                         await refresh();
                         setTab(1);
                       }}
@@ -174,6 +181,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                   <TabsContent>
                     <PhotosTab
                       photoUrls={photoUrls}
+                      slotLabels={SLOT_LABELS}
                       onUploaded={async () => {
                         await refresh();
                       }}
@@ -184,7 +192,7 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                     <TermsTab
                       accepted={Boolean(profile?.terms_accepted_at)}
                       onAccepted={async () => {
-                        toast.success('Términos aceptados');
+                        toast.success(t('dialog.termsAcceptedToast'));
                         await refresh();
                         setTab(3);
                       }}
@@ -203,11 +211,11 @@ export default function VerifyProfileDialog({ open, onClose, ownerUserId }: Prop
                         try {
                           setSubmitting(true);
                           await submitVerificationRequestAction({ cfImageId, mimeType });
-                          toast.success('Solicitud enviada para revisión');
+                          toast.success(t('dialog.submittedToast'));
                           await refresh();
                           onClose();
                         } catch (e) {
-                          toast.error(e instanceof Error ? e.message : 'Error al enviar la solicitud');
+                          toast.error(e instanceof Error ? e.message : t('dialog.submitErrorToast'));
                         } finally {
                           setSubmitting(false);
                         }
@@ -231,6 +239,7 @@ function RequiredInfoTab({
   profile: ProfileSnapshot | null;
   onSaved: () => Promise<void>;
 }) {
+  const t = useTranslations('verification.requiredInfo');
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -270,7 +279,7 @@ function RequiredInfoTab({
       await saveRequiredInfoAction(form);
       await onSaved();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al guardar');
+      toast.error(err instanceof Error ? err.message : t('saveErrorToast'));
     } finally {
       setBusy(false);
     }
@@ -282,18 +291,18 @@ function RequiredInfoTab({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 py-2">
       <p className="text-xs text-neutral-600 dark:text-neutral-400">
-        Toda la información es obligatoria. Puedes ocultarla del público en ajustes — el administrador la verá para verificar.
+        {t('intro')}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <input className={inputCls} placeholder="Nombre real" value={form.firstName} onChange={onChange('firstName')} required />
-        <input className={inputCls} placeholder="Apellidos" value={form.lastName} onChange={onChange('lastName')} required />
+        <input className={inputCls} placeholder={t('firstName')} value={form.firstName} onChange={onChange('firstName')} required />
+        <input className={inputCls} placeholder={t('lastName')} value={form.lastName} onChange={onChange('lastName')} required />
         <input className={inputCls} type="date" value={form.birthDate} onChange={onChange('birthDate')} required />
-        <input className={inputCls} placeholder="Lugar de nacimiento" value={form.birthPlace} onChange={onChange('birthPlace')} required />
-        <input className={inputCls} placeholder="País de residencia" value={form.residenceCountry} onChange={onChange('residenceCountry')} required />
-        <input className={inputCls} placeholder="Estado/Provincia" value={form.residenceState} onChange={onChange('residenceState')} required />
-        <input className={inputCls} placeholder="Ciudad" value={form.residenceCity} onChange={onChange('residenceCity')} required />
-        <input className={inputCls} placeholder="Lugar de estudio" value={form.studyPlace} onChange={onChange('studyPlace')} required />
-        <input className={inputCls} placeholder="Lugar de trabajo" value={form.workPlace} onChange={onChange('workPlace')} required />
+        <input className={inputCls} placeholder={t('birthPlace')} value={form.birthPlace} onChange={onChange('birthPlace')} required />
+        <input className={inputCls} placeholder={t('residenceCountry')} value={form.residenceCountry} onChange={onChange('residenceCountry')} required />
+        <input className={inputCls} placeholder={t('residenceState')} value={form.residenceState} onChange={onChange('residenceState')} required />
+        <input className={inputCls} placeholder={t('residenceCity')} value={form.residenceCity} onChange={onChange('residenceCity')} required />
+        <input className={inputCls} placeholder={t('studyPlace')} value={form.studyPlace} onChange={onChange('studyPlace')} required />
+        <input className={inputCls} placeholder={t('workPlace')} value={form.workPlace} onChange={onChange('workPlace')} required />
       </div>
       <div className="flex justify-end pt-2">
         <button
@@ -301,7 +310,7 @@ function RequiredInfoTab({
           disabled={busy}
           className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-neutral-400"
         >
-          {busy ? 'Guardando…' : 'Guardar y continuar'}
+          {busy ? t('saving') : t('saveContinue')}
         </button>
       </div>
     </form>
@@ -310,11 +319,14 @@ function RequiredInfoTab({
 
 function PhotosTab({
   photoUrls,
+  slotLabels,
   onUploaded,
 }: {
   photoUrls: Record<number, string>;
+  slotLabels: string[];
   onUploaded: () => Promise<void>;
 }) {
+  const t = useTranslations('verification.photos');
   const [busySlot, setBusySlot] = useState<number | null>(null);
 
   const handlePick = (slot: number) => async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,7 +334,7 @@ function PhotosTab({
     e.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes');
+      toast.error(t('onlyImages'));
       return;
     }
     try {
@@ -334,7 +346,7 @@ function PhotosTab({
       await savePhotoSlotAction({ slot, cfImageId: id });
       await onUploaded();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al subir');
+      toast.error(err instanceof Error ? err.message : t('uploadErrorToast'));
     } finally {
       setBusySlot(null);
     }
@@ -343,7 +355,7 @@ function PhotosTab({
   return (
     <div className="space-y-3 py-2">
       <p className="text-xs text-neutral-600 dark:text-neutral-400">
-        Sube 5 fotos. La primera será tu foto de perfil; la segunda, tu portada.
+        {t('intro')}
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[1, 2, 3, 4, 5].map((slot) => {
@@ -355,16 +367,16 @@ function PhotosTab({
             >
               {url ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={url} alt={SLOT_LABELS[slot - 1]} className="h-full w-full object-cover" />
+                <img src={url} alt={slotLabels[slot - 1]} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-1 px-2 text-center">
-                  <span className="font-semibold">{SLOT_LABELS[slot - 1]}</span>
-                  <span className="text-[10px]">Toca para subir</span>
+                  <span className="font-semibold">{slotLabels[slot - 1]}</span>
+                  <span className="text-[10px]">{t('tapToUpload')}</span>
                 </div>
               )}
               {busySlot === slot && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white">
-                  Subiendo…
+                  {t('uploading')}
                 </div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handlePick(slot)} />
@@ -377,20 +389,18 @@ function PhotosTab({
 }
 
 function TermsTab({ accepted, onAccepted }: { accepted: boolean; onAccepted: () => Promise<void> }) {
+  const t = useTranslations('verification.terms');
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
 
   return (
     <div className="space-y-3 py-2">
       <div className="max-h-48 overflow-y-auto rounded border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700 dark:border-neutral-600 dark:bg-neutral-700/50 dark:text-neutral-200">
-        Al solicitar la autenticación, aceptas que (1) la información proporcionada es real y verificable,
-        (2) tu documento de identidad será revisado por administradores con propósito de verificación
-        únicamente, (3) la plataforma podrá revocar tu autenticación si se detectan datos falsos. Lee los
-        términos completos en /terms y la política de datos en /privacy.
+        {t('body')}
       </div>
       {accepted ? (
         <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-          Has aceptado los términos.
+          {t('accepted')}
         </p>
       ) : (
         <label className="flex items-start gap-2 text-sm">
@@ -401,7 +411,7 @@ function TermsTab({ accepted, onAccepted }: { accepted: boolean; onAccepted: () 
             className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
           />
           <span className="text-neutral-700 dark:text-neutral-300">
-            He leído y acepto los términos adicionales para la autenticación.
+            {t('acceptLabel')}
           </span>
         </label>
       )}
@@ -415,14 +425,14 @@ function TermsTab({ accepted, onAccepted }: { accepted: boolean; onAccepted: () 
               await acceptVerificationTermsAction();
               await onAccepted();
             } catch (e) {
-              toast.error(e instanceof Error ? e.message : 'Error');
+              toast.error(e instanceof Error ? e.message : t('errorToast'));
             } finally {
               setBusy(false);
             }
           }}
           className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-neutral-400"
         >
-          {accepted ? 'Aceptado' : busy ? 'Guardando…' : 'Aceptar y continuar'}
+          {accepted ? t('alreadyAccepted') : busy ? t('saving') : t('acceptContinue')}
         </button>
       </div>
     </div>
@@ -446,6 +456,7 @@ function IdDocumentTab({
   submitting: boolean;
   onSubmit: (cfImageId: string, mimeType: string) => Promise<void>;
 }) {
+  const t = useTranslations('verification.document');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -464,11 +475,11 @@ function IdDocumentTab({
   const accept = (f: File | null | undefined) => {
     if (!f) return;
     if (!f.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes (JPG/PNG/HEIC)');
+      toast.error(t('onlyImagesToast'));
       return;
     }
     if (f.size > 10 * 1024 * 1024) {
-      toast.error('El archivo no puede superar 10 MB');
+      toast.error(t('tooLargeToast'));
       return;
     }
     setFile(f);
@@ -487,7 +498,7 @@ function IdDocumentTab({
       });
       await onSubmit(id, file.type);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Error al subir documento');
+      toast.error(e instanceof Error ? e.message : t('uploadErrorToast'));
     } finally {
       setUploading(false);
     }
@@ -498,27 +509,26 @@ function IdDocumentTab({
     return (
       <div className="space-y-3 py-4">
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">
-          <p className="font-semibold">Tu solicitud ya fue enviada y está en revisión.</p>
+          <p className="font-semibold">{t('pendingTitle')}</p>
           <p className="mt-1 text-xs">
-            Los administradores revisarán tu documento de identidad. Recibirás una notificación cuando se apruebe o
-            rechace.
+            {t('pendingBody')}
           </p>
         </div>
 
         {docUrl && (
           <div>
             <p className="mb-2 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Documento enviado:
+              {t('submittedDocLabel')}
             </p>
             <a href={docUrl} target="_blank" rel="noopener" className="block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={docUrl}
-                alt="Documento de identidad enviado"
+                alt={t('sentDocAlt')}
                 className="max-h-64 w-full rounded-md border border-neutral-200 object-contain dark:border-neutral-700"
               />
             </a>
-            <p className="mt-1 text-[10px] text-neutral-500">Toca la imagen para verla en tamaño completo.</p>
+            <p className="mt-1 text-[10px] text-neutral-500">{t('openFullSize')}</p>
           </div>
         )}
       </div>
@@ -530,19 +540,18 @@ function IdDocumentTab({
       {wasRejected && rejectionReason && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm dark:border-red-800 dark:bg-red-900/20">
           <p className="font-semibold text-red-900 dark:text-red-200">
-            Tu solicitud anterior fue rechazada
+            {t('rejectedTitle')}
           </p>
           <p className="mt-1 text-xs text-red-800 dark:text-red-300">
-            <span className="font-medium">Motivo:</span> {rejectionReason}
+            <span className="font-medium">{t('rejectedReason')}</span> {rejectionReason}
           </p>
           <p className="mt-2 text-xs text-red-800 dark:text-red-300">
-            Corrige lo indicado y vuelve a enviar tu solicitud. Tus fotos e información permanecen guardadas.
+            {t('rejectedHint')}
           </p>
         </div>
       )}
       <p className="text-xs text-neutral-600 dark:text-neutral-400">
-        Sube tu cédula o documento de identidad. Solo el administrador podrá visualizarlo. Aceptamos imágenes
-        (JPG/PNG/HEIC) hasta 10 MB.
+        {t('intro')}
       </p>
 
       <label
@@ -576,12 +585,12 @@ function IdDocumentTab({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
-              alt="Vista previa del documento"
+              alt={t('previewAlt')}
               className="max-h-48 w-auto rounded-md border border-neutral-200 object-contain dark:border-neutral-600"
             />
             <p className="text-xs text-neutral-600 dark:text-neutral-300">
               <span className="font-semibold">{file?.name}</span>
-              {file ? ` · ${(file.size / 1024 / 1024).toFixed(2)} MB` : ''}
+              {file ? ` · ${t('fileSize', { size: (file.size / 1024 / 1024).toFixed(2) })}` : ''}
             </p>
             <button
               type="button"
@@ -592,7 +601,7 @@ function IdDocumentTab({
               }}
               className="text-xs font-medium text-red-600 hover:underline"
             >
-              Quitar archivo
+              {t('removeFile')}
             </button>
           </div>
         ) : (
@@ -612,17 +621,17 @@ function IdDocumentTab({
               />
             </svg>
             <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
-              Arrastra tu documento aquí o{' '}
-              <span className="text-emerald-600 underline dark:text-emerald-400">selecciona un archivo</span>
+              {t('dropPromptStart')}
+              <span className="text-emerald-600 underline dark:text-emerald-400">{t('dropPromptLink')}</span>
             </p>
-            <p className="text-[11px] text-neutral-500">JPG, PNG o HEIC · Máx. 10 MB</p>
+            <p className="text-[11px] text-neutral-500">{t('fileTypes')}</p>
           </>
         )}
       </label>
 
       {!canSubmit && (
         <p className="text-xs text-yellow-700 dark:text-yellow-400">
-          Completa los pasos 1, 2 y 3 antes de enviar tu solicitud.
+          {t('stepsHint')}
         </p>
       )}
       <div className="flex justify-end">
@@ -633,10 +642,10 @@ function IdDocumentTab({
           className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-neutral-400"
         >
           {uploading || submitting
-            ? 'Enviando…'
+            ? t('submitting')
             : wasRejected
-            ? 'Reenviar para revisión'
-            : 'Enviar para revisión'}
+            ? t('resubmit')
+            : t('submit')}
         </button>
       </div>
     </div>
