@@ -1,11 +1,6 @@
 import Link from 'next/link';
 import type { Metadata, Route } from 'next';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MusicalNoteIcon,
-  PlusIcon,
-} from '@/components/icons/heroicons-shim';
+import { MusicalNoteIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import {
   listAlbumsFiltered,
   listLatestAlbums,
@@ -17,6 +12,9 @@ import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCa
 import { MusicSearchBar } from '@/features/music-archive/components/MusicSearchBar';
 import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
 import { MusicMediaSmartFeed } from '@/features/music-archive/components/media/MusicMediaSmartFeed';
+import { GenreBrowser } from '@/features/music-archive/components/genre/GenreBrowser';
+import { pillClass } from '@/features/music-archive/lib/pill-class';
+import { MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS as COUNTRIES } from '@/features/music-archive/components/upload/constants';
 import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
 import { getServerClient } from '@/utils/supabase/server';
 
@@ -36,115 +34,6 @@ const DECADES: Array<{ start: number; label: string }> = [
   { start: 1960, label: '1960s' },
   { start: 1970, label: '1970s' },
 ];
-
-const COUNTRIES: Array<{ code: string; label: string }> = [
-  { code: 'AR', label: 'Argentina' },
-  { code: 'BR', label: 'Brasil' },
-  { code: 'CL', label: 'Chile' },
-  { code: 'CO', label: 'Colombia' },
-  { code: 'CU', label: 'Cuba' },
-  { code: 'MX', label: 'México' },
-  { code: 'PE', label: 'Perú' },
-  { code: 'UY', label: 'Uruguay' },
-  { code: 'VE', label: 'Venezuela' },
-];
-
-const PILL_BASE =
-  'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors';
-const PILL_IDLE =
-  'border-zinc-200 bg-white text-zinc-700 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-amber-700 dark:hover:bg-amber-900/20';
-const PILL_ACTIVE =
-  'border-amber-500 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:border-amber-600 dark:bg-amber-900/40 dark:text-amber-200';
-
-function pillClass(active: boolean): string {
-  return `${PILL_BASE} ${active ? PILL_ACTIVE : PILL_IDLE}`;
-}
-
-function TurntableIllustration() {
-  return (
-    <svg
-      viewBox="0 0 320 280"
-      className="mx-auto h-auto w-full max-w-[300px] drop-shadow-xl"
-      aria-hidden="true"
-    >
-      {/* Wooden plinth */}
-      <defs>
-        <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#7a4a23" />
-          <stop offset="55%" stopColor="#5b341a" />
-          <stop offset="100%" stopColor="#3a200f" />
-        </linearGradient>
-        <radialGradient id="vinyl" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#1a1a1a" />
-          <stop offset="100%" stopColor="#000" />
-        </radialGradient>
-        <radialGradient id="label" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f0c97a" />
-          <stop offset="100%" stopColor="#c98a2c" />
-        </radialGradient>
-      </defs>
-      <rect x="10" y="30" width="300" height="220" rx="14" fill="url(#wood)" />
-      <rect x="10" y="30" width="300" height="14" rx="14" fill="#2a160a" opacity="0.55" />
-      {/* Platter */}
-      <circle cx="160" cy="150" r="98" fill="#2a1a10" />
-      <circle cx="160" cy="150" r="92" fill="url(#vinyl)" />
-      {/* Vinyl grooves */}
-      {[88, 80, 72, 64, 56, 48, 40].map((r) => (
-        <circle
-          key={r}
-          cx="160"
-          cy="150"
-          r={r}
-          fill="none"
-          stroke="#222"
-          strokeWidth="0.6"
-          opacity="0.7"
-        />
-      ))}
-      {/* Center label */}
-      <circle cx="160" cy="150" r="34" fill="url(#label)" />
-      <circle cx="160" cy="150" r="34" fill="none" stroke="#7a4a1a" strokeWidth="1" />
-      <circle cx="160" cy="150" r="2.5" fill="#1a0e05" />
-      <text
-        x="160"
-        y="142"
-        textAnchor="middle"
-        fontSize="6"
-        fontFamily="serif"
-        fill="#3a200f"
-        fontWeight="700"
-      >
-        ARCHIVO
-      </text>
-      <text
-        x="160"
-        y="166"
-        textAnchor="middle"
-        fontSize="5"
-        fontFamily="serif"
-        fill="#3a200f"
-      >
-        MUSICAL
-      </text>
-      {/* Tonearm */}
-      <circle cx="276" cy="78" r="10" fill="#caa667" stroke="#7a5a26" strokeWidth="1" />
-      <circle cx="276" cy="78" r="3" fill="#3a2810" />
-      <line
-        x1="276"
-        y1="78"
-        x2="208"
-        y2="158"
-        stroke="#caa667"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <rect x="200" y="152" width="14" height="10" rx="2" fill="#1a1a1a" transform="rotate(-40 207 157)" />
-      {/* Speed/control knobs */}
-      <circle cx="48" cy="220" r="9" fill="#1a1a1a" stroke="#caa667" strokeWidth="1.2" />
-      <circle cx="74" cy="220" r="6" fill="#caa667" />
-    </svg>
-  );
-}
 
 function buildHref(opts: {
   decade?: number;
@@ -242,69 +131,47 @@ export default async function MusicArchiveLandingPage({
   const heading = filteredHeading(decade, country, forTrade, genreName, conditionLabel);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      {/* Hero — search-first, with turntable illustration */}
-      <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50 p-6 sm:p-8 lg:p-10 dark:from-amber-900/10 dark:via-zinc-900 dark:to-rose-900/10">
-        <div className="grid items-center gap-6 xl:grid-cols-[minmax(0,1fr)_240px] xl:gap-10 2xl:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="min-w-0 space-y-4">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
-              <MusicalNoteIcon className="h-4 w-4" />
-              <span>Club de Coleccionistas</span>
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-balance text-zinc-900 sm:text-4xl 2xl:text-5xl dark:text-white">
-              Música latinoamericana 1900–1970
-            </h1>
-            <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-              Encuentra canciones, artistas o álbumes históricos. Reproduce gratis, sin cuenta.
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <header className="max-w-2xl border-b border-zinc-200/80 pb-8 dark:border-zinc-800/80">
+        <div className="space-y-3">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Club de Coleccionistas</p>
+          <h1 className="text-balance text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
+            Música latinoamericana 1900–1970
+          </h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Busca álbumes y artistas. Escucha sin crear cuenta.
+          </p>
+          <div className="max-w-xl pt-1">
+            <MusicSearchBar size="hero" />
+          </div>
+          {isAuthed && (
+            <p className="pt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              <Link
+                href={'/musica/subir' as Route}
+                className="font-medium text-zinc-800 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-500 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:decoration-zinc-400"
+              >
+                Subir una digitalización
+              </Link>
             </p>
-            <div className="max-w-xl pt-2">
-              <MusicSearchBar size="hero" />
-            </div>
-            {isAuthed && (
-              <p className="pt-1 text-xs text-zinc-500">
-                ¿Tienes una digitalización?{' '}
-                <Link
-                  href={'/musica/subir' as Route}
-                  className="font-medium text-amber-700 hover:underline dark:text-amber-400"
-                >
-                  Súbela al archivo
-                </Link>
-              </p>
-            )}
-          </div>
-          <div className="hidden xl:block">
-            <TurntableIllustration />
-          </div>
+          )}
         </div>
       </header>
 
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{heading}</h2>
-          <div className="flex items-center gap-3 text-xs text-zinc-500">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{heading}</h2>
+          <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
             <span>
               {albums.length} {albums.length === 1 ? 'álbum' : 'álbumes'}
             </span>
-            <Link
-              href={'/musica' as Route}
-              className="font-medium text-zinc-600 hover:text-amber-700 hover:underline dark:text-zinc-300"
-            >
-              Ver todos
-            </Link>
-            <div className="flex items-center gap-1">
-              <span
-                aria-hidden="true"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            {isFiltered && (
+              <Link
+                href={'/musica' as Route}
+                className="font-medium text-zinc-700 hover:underline dark:text-zinc-300"
               >
-                <ChevronLeftIcon className="h-4 w-4" />
-              </span>
-              <span
-                aria-hidden="true"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </span>
-            </div>
+                Quitar filtros
+              </Link>
+            )}
           </div>
         </div>
         {albums.length === 0 ? (
@@ -350,28 +217,22 @@ export default async function MusicArchiveLandingPage({
       {media.length > 0 && <MusicMediaSmartFeed items={media} />}
 
       {clubs.length > 0 && (
-        <section className="space-y-3">
+        <section className="space-y-2">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Clubes de coleccionistas
-            </h2>
+            <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Clubes</h2>
             <Link
               href={'/musica/clubes' as Route}
-              className="text-xs font-medium text-zinc-600 hover:text-amber-700 hover:underline dark:text-zinc-300"
+              className="text-xs font-medium text-zinc-600 hover:underline dark:text-zinc-400"
             >
-              Ver todos los clubes →
+              Ver todos
             </Link>
           </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Cada género es un club independiente. Únete y explora discos de salsa, tango, bolero,
-            mambo y más.
-          </p>
           <MusicClubsGrid clubs={clubs} limit={8} />
         </section>
       )}
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Explorar por década</h2>
+      <section className="space-y-2">
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Década</h2>
         <div className="flex flex-wrap gap-2">
           {DECADES.map((d) => {
             const active = decade === d.start;
@@ -395,8 +256,8 @@ export default async function MusicArchiveLandingPage({
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Intercambio</h2>
+      <section className="space-y-2">
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Intercambio</h2>
         <div className="flex flex-wrap gap-2">
           <Link
             href={buildHref({
@@ -414,37 +275,14 @@ export default async function MusicArchiveLandingPage({
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Explorar por género
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {genres.map((g) => {
-            const active = genreSlug === g.slug;
-            return (
-              <Link
-                key={g.id}
-                href={buildHref({
-                  decade,
-                  country,
-                  forTrade,
-                  genre: active ? undefined : g.slug,
-                  condition: conditionValue,
-                })}
-                className={pillClass(active)}
-                aria-pressed={active}
-              >
-                {g.name}
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      <GenreBrowser
+        genres={genres}
+        activeSlug={genreSlug}
+        currentParams={{ decade, country, forTrade, condition: conditionValue }}
+      />
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Estado de conservación
-        </h2>
+      <section className="space-y-2">
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Conservación</h2>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(ALBUM_CONDITION_LABELS) as AlbumCondition[]).map((c) => {
             const active = conditionValue === c;
@@ -468,8 +306,8 @@ export default async function MusicArchiveLandingPage({
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Explorar por país</h2>
+      <section className="space-y-2">
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">País</h2>
         <div className="flex flex-wrap gap-2">
           {COUNTRIES.map((c) => {
             const active = country === c.code;

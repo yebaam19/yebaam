@@ -33,11 +33,19 @@ export const COPYRIGHT_OPTIONS: Array<{ value: MusicCopyrightStatus; label: stri
   { value: 'claimed', label: 'Reclamado por titular' },
 ];
 
-export const COUNTRIES: Array<{ code: string; label: string }> = [
+export function sortCountriesByLabelEs(
+  rows: Array<{ code: string; label: string }>,
+): Array<{ code: string; label: string }> {
+  return [...rows].sort((a, b) => a.label.localeCompare(b.label, 'es', { sensitivity: 'base' }));
+}
+
+/** ISO 3166-1 alpha-2; formularios de carga y edición (lista amplia). */
+const COUNTRY_FORM_OPTIONS: Array<{ code: string; label: string }> = [
   { code: 'DE', label: 'Alemania' },
   { code: 'AR', label: 'Argentina' },
   { code: 'AU', label: 'Australia' },
   { code: 'BE', label: 'Bélgica' },
+  { code: 'BZ', label: 'Belice' },
   { code: 'BO', label: 'Bolivia' },
   { code: 'BR', label: 'Brasil' },
   { code: 'CA', label: 'Canadá' },
@@ -51,6 +59,7 @@ export const COUNTRIES: Array<{ code: string; label: string }> = [
   { code: 'US', label: 'Estados Unidos' },
   { code: 'FR', label: 'Francia' },
   { code: 'GT', label: 'Guatemala' },
+  { code: 'HT', label: 'Haití' },
   { code: 'HN', label: 'Honduras' },
   { code: 'IT', label: 'Italia' },
   { code: 'JM', label: 'Jamaica' },
@@ -67,9 +76,45 @@ export const COUNTRIES: Array<{ code: string; label: string }> = [
   { code: 'GB', label: 'Reino Unido' },
   { code: 'DO', label: 'República Dominicana' },
   { code: 'ZA', label: 'Sudáfrica' },
+  { code: 'TT', label: 'Trinidad y Tobago' },
   { code: 'UY', label: 'Uruguay' },
   { code: 'VE', label: 'Venezuela' },
 ];
+
+export const COUNTRIES: Array<{ code: string; label: string }> = sortCountriesByLabelEs(COUNTRY_FORM_OPTIONS);
+
+/** País chips en /musica — Latinoamérica, Caribe y orígenes frecuentes en el archivo. */
+const MUSIC_ARCHIVE_PUBLIC_COUNTRY_OPTIONS: Array<{ code: string; label: string }> = [
+  { code: 'AR', label: 'Argentina' },
+  { code: 'BO', label: 'Bolivia' },
+  { code: 'BR', label: 'Brasil' },
+  { code: 'BZ', label: 'Belice' },
+  { code: 'CL', label: 'Chile' },
+  { code: 'CO', label: 'Colombia' },
+  { code: 'CR', label: 'Costa Rica' },
+  { code: 'CU', label: 'Cuba' },
+  { code: 'DO', label: 'República Dominicana' },
+  { code: 'EC', label: 'Ecuador' },
+  { code: 'SV', label: 'El Salvador' },
+  { code: 'ES', label: 'España' },
+  { code: 'US', label: 'Estados Unidos' },
+  { code: 'GT', label: 'Guatemala' },
+  { code: 'HT', label: 'Haití' },
+  { code: 'HN', label: 'Honduras' },
+  { code: 'JM', label: 'Jamaica' },
+  { code: 'MX', label: 'México' },
+  { code: 'NI', label: 'Nicaragua' },
+  { code: 'PA', label: 'Panamá' },
+  { code: 'PY', label: 'Paraguay' },
+  { code: 'PE', label: 'Perú' },
+  { code: 'PR', label: 'Puerto Rico' },
+  { code: 'TT', label: 'Trinidad y Tobago' },
+  { code: 'UY', label: 'Uruguay' },
+  { code: 'VE', label: 'Venezuela' },
+];
+
+export const MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS: Array<{ code: string; label: string }> =
+  sortCountriesByLabelEs(MUSIC_ARCHIVE_PUBLIC_COUNTRY_OPTIONS);
 
 export function trackFormatFromMime(mime: string): MusicTrackFormat {
   if (mime.includes('flac')) return 'flac';
