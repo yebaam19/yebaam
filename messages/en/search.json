@@ -46,5 +46,8 @@
     "title": "Trending",
     "searchesCount": "{count} searches",
     "hot": "HOT"
+  },
+  "page": {
+    "backToFeedAria": "Back to feed"
   }
 }

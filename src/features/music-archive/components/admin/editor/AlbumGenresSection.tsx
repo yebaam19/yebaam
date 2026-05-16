@@ -130,7 +130,7 @@ export function AlbumGenresSection({ albumId }: Props) {
                   onChange={() => toggle(c.id)}
                   className="h-3.5 w-3.5"
                 />
-                <span className="truncate">{c.name}</span>
+                <span className="truncate">{c.genre_name || c.name}</span>
               </label>
               {selected && (
                 <button

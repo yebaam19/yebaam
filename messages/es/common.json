@@ -32,5 +32,13 @@
   "send": "Enviar",
   "add": "Agregar",
   "remove": "Quitar",
-  "loadingMore": "Cargando más…"
+  "loadingMore": "Cargando más…",
+  "pagination": {
+    "navAria": "Navegación de páginas",
+    "previous": "Anterior",
+    "previousAria": "Página anterior",
+    "next": "Siguiente",
+    "nextAria": "Página siguiente",
+    "pageAria": "Página {page}"
+  }
 }

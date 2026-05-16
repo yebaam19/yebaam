@@ -11,5 +11,7 @@
   "pioneerNumber": "Pioneer #{n}",
   "administration": "Administration",
   "verifyAccount": "Verify my account",
-  "settings": "Settings"
+  "settings": "Settings",
+  "verifiedBadge": "Verified account",
+  "infoAria": "Information"
 }

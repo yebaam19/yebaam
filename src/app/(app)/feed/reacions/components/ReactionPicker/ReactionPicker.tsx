@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { REACTION_CONFIGS, ReactionType } from '../../interfaces/reaction.interfaces';
 
 interface ReactionPickerProps {
@@ -11,6 +14,7 @@ interface ReactionPickerProps {
  * tener `position: relative`.
  */
 export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProps) {
+  const t = useTranslations('feed.reactionPicker');
   const reactions = Object.values(ReactionType);
 
   return (
@@ -24,7 +28,7 @@ export function ReactionPicker({ onSelect, currentReaction }: ReactionPickerProp
         animate-in fade-in zoom-in-95 duration-200
       "
       role="menu"
-      aria-label="Seleccionar reacción"
+      aria-label={t('menuAria')}
     >
       {reactions.map(type => {
         const config = REACTION_CONFIGS[type];

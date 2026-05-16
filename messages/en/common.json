@@ -32,5 +32,13 @@
   "send": "Send",
   "add": "Add",
   "remove": "Remove",
-  "loadingMore": "Loading more…"
+  "loadingMore": "Loading more…",
+  "pagination": {
+    "navAria": "Page navigation",
+    "previous": "Previous",
+    "previousAria": "Previous page",
+    "next": "Next",
+    "nextAria": "Next page",
+    "pageAria": "Page {page}"
+  }
 }

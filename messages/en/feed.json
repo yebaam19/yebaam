@@ -118,6 +118,9 @@
       "replyEmpty": "Reply cannot be empty",
       "replyTooLong": "Reply is too long (max 500 characters)",
       "replyDefault": "Error creating reply"
+    },
+    "replyInput": {
+      "cancelReplyAria": "Cancel reply"
     }
   },
   "friends": {
@@ -268,5 +271,11 @@
     "friendsDescription": "Only your friends",
     "private": "Only me",
     "privateDescription": "Only you"
+  },
+  "fabComposer": {
+    "createPostAria": "Create post"
+  },
+  "reactionPicker": {
+    "menuAria": "Choose a reaction"
   }
 }

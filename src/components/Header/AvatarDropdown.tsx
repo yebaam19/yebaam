@@ -97,8 +97,8 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
                 <Avatar className="size-12" src={userAvatar} initials={displayName?.slice(0, 2).toUpperCase()} />
                 {isVerified && (
                   <span
-                    aria-label="Cuenta autenticada"
-                    title="Cuenta autenticada"
+                    aria-label={t('verifiedBadge')}
+                    title={t('verifiedBadge')}
                     className="absolute -right-0.5 -bottom-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white shadow ring-2 ring-white dark:ring-neutral-800"
                   >
                     <svg
@@ -123,8 +123,8 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
                   <span>{displayName}</span>
                   {isVerified && (
                     <span
-                      aria-label="Cuenta autenticada"
-                      title="Cuenta autenticada"
+                      aria-label={t('verifiedBadge')}
+                      title={t('verifiedBadge')}
                       className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white"
                     >
                       <svg

@@ -132,16 +132,18 @@ export async function listMusicClubsForPicker(): Promise<
   type Row = { id: string; name: string; slug: string; music_genres: GenreJoin };
   return {
     ok: true,
-    data: ((data ?? []) as unknown as Row[]).map((r) => {
-      const g = Array.isArray(r.music_genres) ? r.music_genres[0] : r.music_genres;
-      return {
-        id: r.id,
-        name: r.name,
-        slug: r.slug,
-        genre_slug: g?.slug ?? '',
-        genre_name: g?.name ?? '',
-      };
-    }),
+    data: ((data ?? []) as unknown as Row[])
+      .map((r) => {
+        const g = Array.isArray(r.music_genres) ? r.music_genres[0] : r.music_genres;
+        return {
+          id: r.id,
+          name: r.name,
+          slug: r.slug,
+          genre_slug: g?.slug ?? '',
+          genre_name: g?.name ?? '',
+        };
+      })
+      .sort((a, b) => a.genre_name.localeCompare(b.genre_name, 'es')),
   };
 }
 

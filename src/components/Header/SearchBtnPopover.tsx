@@ -1,6 +1,7 @@
 'use client'
 
 
+import { useTranslations } from 'next-intl'
 import { Divider } from '@/ui/divider'
 import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { Cancel01Icon, Search01Icon } from '@hugeicons/core-free-icons'
@@ -10,6 +11,7 @@ import { useRouter } from 'next/navigation'
 
 const SearchBtnPopover = () => {
   const router = useRouter()
+  const t = useTranslations('header.searchPopover')
 
   return (
     <Popover>
@@ -38,14 +40,17 @@ const SearchBtnPopover = () => {
                 type="text"
                 className="w-full !border-none px-4 py-2 uppercase !ring-0 focus-visible:outline-none sm:text-sm/6"
                 name="q"
-                aria-label="Search for products"
+                aria-label={t('searchAria')}
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck="false"
                 aria-autocomplete="list"
               />
-              <CloseButton className="-m-2.5 inline-flex cursor-pointer items-center justify-center rounded-md p-2.5 transition-transform duration-300 hover:rotate-90">
+              <CloseButton
+                aria-label={t('closeAria')}
+                className="-m-2.5 inline-flex cursor-pointer items-center justify-center rounded-md p-2.5 transition-transform duration-300 hover:rotate-90"
+              >
                 <HugeiconsIcon icon={Cancel01Icon} size={24} color="currentColor" strokeWidth={1} />
               </CloseButton>
 
@@ -53,18 +58,18 @@ const SearchBtnPopover = () => {
             </form>
             <Divider className="my-4 block md:hidden" />
             <div className="block text-xs/6 text-neutral-500 uppercase md:hidden">
-              Press{' '}
+              {t('pressLabel')}{' '}
               <Link
                 href={'/search'}
                 className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-900"
               >
                 <kbd className="text-xs font-medium">Enter</kbd>
               </Link>{' '}
-              to search or{' '}
+              {t('toSearch')}{' '}
               <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-900">
                 <span className="text-xs font-medium">Esc</span>
               </kbd>{' '}
-              to cancel
+              {t('toCancel')}
             </div>
           </div>
         </div>

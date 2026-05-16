@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import {
   InformationCircleIcon,
   XMarkIcon,
@@ -23,6 +26,7 @@ export default function ChatHeader({
   isEncrypted = false,
   onClose,
 }: ChatHeaderProps) {
+  const t = useTranslations('chat.header');
   return (
     <div className="h-14 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
@@ -41,20 +45,20 @@ export default function ChatHeader({
             {contactName}
             {isEncrypted && (
               <span className="text-xs text-primary-600 dark:text-primary-500 font-normal">
-                 Encriptado
+                {t('encryptedBadge')}
               </span>
             )}
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            {isOnline ? 'Activo ahora' : 'Desconectado'}
+            {isOnline ? t('activeNow') : t('offline')}
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         {conversationId && (
-          <EncryptionButton 
-            conversationId={conversationId} 
+          <EncryptionButton
+            conversationId={conversationId}
             isEncrypted={isEncrypted}
           />
         )}
@@ -62,13 +66,17 @@ export default function ChatHeader({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar chat"
+            aria-label={t('closeAria')}
             className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
           </button>
         ) : (
-          <button className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+          <button
+            type="button"
+            aria-label={t('infoAria')}
+            className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
             <InformationCircleIcon className="h-5 w-5 text-primary-600" />
           </button>
         )}

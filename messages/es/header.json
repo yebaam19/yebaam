@@ -21,5 +21,12 @@
   "timeMinutesShort": "m",
   "timeHoursShort": "h",
   "timeDaysShort": "d",
-  "copyrightFooter": "© {year} Yebaam. Todos los derechos reservados."
+  "copyrightFooter": "© {year} Yebaam. Todos los derechos reservados.",
+  "searchPopover": {
+    "searchAria": "Buscar productos",
+    "closeAria": "Cerrar búsqueda",
+    "pressLabel": "Presiona",
+    "toSearch": "para buscar o",
+    "toCancel": "para cancelar"
+  }
 }

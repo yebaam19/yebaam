@@ -118,6 +118,9 @@
       "replyEmpty": "La respuesta no puede estar vacía",
       "replyTooLong": "La respuesta es demasiado larga (máximo 500 caracteres)",
       "replyDefault": "Error al crear respuesta"
+    },
+    "replyInput": {
+      "cancelReplyAria": "Cancelar respuesta"
     }
   },
   "friends": {
@@ -268,5 +271,11 @@
     "friendsDescription": "Solo tus amigos",
     "private": "Solo yo",
     "privateDescription": "Solo tú"
+  },
+  "fabComposer": {
+    "createPostAria": "Crear publicación"
+  },
+  "reactionPicker": {
+    "menuAria": "Seleccionar reacción"
   }
 }

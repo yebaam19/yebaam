@@ -145,5 +145,38 @@
         "deleteFailed": "Could not delete the message."
       }
     }
+  },
+  "inputForm": {
+    "placeholder": "Write a message...",
+    "attachImage": "Attach image",
+    "emoji": "Emoji",
+    "send": "Send"
+  },
+  "header": {
+    "encryptedBadge": "Encrypted",
+    "activeNow": "Active now",
+    "offline": "Offline",
+    "closeAria": "Close chat",
+    "infoAria": "Conversation info"
+  },
+  "encryptionModal": {
+    "disableTitle": "Disable encryption",
+    "enableTitle": "Encrypt conversation",
+    "closeAria": "Close",
+    "disableDescription": "Disabling encryption will return messages to plain text.",
+    "disableConfirm": "Enter your current password to confirm.",
+    "enableDescription": "Encryption protects your messages with a password only you know.",
+    "enableHint": "Use a secure password of at least 8 characters.",
+    "passwordLabelCurrent": "Current password",
+    "passwordLabelEncryption": "Encryption password",
+    "passwordPlaceholder": "Minimum 8 characters",
+    "showPasswordAria": "Show password",
+    "hidePasswordAria": "Hide password",
+    "encryptExisting": "Also encrypt previous messages",
+    "encryptExistingHint": "This may take a moment if there are many messages",
+    "cancel": "Cancel",
+    "processing": "Processing...",
+    "disable": "Disable",
+    "encrypt": "Encrypt"
   }
 }

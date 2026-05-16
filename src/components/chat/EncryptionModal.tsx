@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { XMarkIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@/components/icons/heroicons-shim';
 import { useEnableEncryption, useDisableEncryption } from '@/features/chat/hooks/useEncryption';
 import { useEncryptionStore } from '@/features/chat/store/encryption.store';
@@ -18,6 +19,7 @@ export default function EncryptionModal({
   onClose,
   onSuccess,
 }: EncryptionModalProps) {
+  const t = useTranslations('chat.encryptionModal');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [encryptExisting, setEncryptExisting] = useState(false);
@@ -46,7 +48,7 @@ export default function EncryptionModal({
       onSuccess?.(); // Refrescar conversación
       onClose();
     } else {
-    
+
       await enableMutation.mutateAsync({
         conversationId,
         data: {
@@ -61,7 +63,7 @@ export default function EncryptionModal({
         passwordGuardada: !!savedPassword,
         sonIguales: savedPassword === password,
       });
-      
+
       onSuccess?.(); // Refrescar conversación
       onClose();
     }
@@ -75,11 +77,12 @@ export default function EncryptionModal({
           <div className="flex items-center gap-2">
             <LockClosedIcon className="w-5 h-5 text-primary-600" />
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-              {isEncrypted ? 'Deshabilitar Encriptación' : 'Encriptar Conversación'}
+              {isEncrypted ? t('disableTitle') : t('enableTitle')}
             </h2>
           </div>
           <button
             onClick={onClose}
+            aria-label={t('closeAria')}
             className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
             <XMarkIcon className="w-5 h-5 text-neutral-500" />
@@ -92,20 +95,16 @@ export default function EncryptionModal({
           <div className="text-sm text-neutral-600 dark:text-neutral-400">
             {isEncrypted ? (
               <>
-                <p className="mb-2">
-                  Al deshabilitar la encriptación, los mensajes volverán a estar en texto plano.
-                </p>
+                <p className="mb-2">{t('disableDescription')}</p>
                 <p className="font-medium text-amber-600 dark:text-amber-500">
-                   Ingresa tu contraseña actual para confirmar.
+                  {t('disableConfirm')}
                 </p>
               </>
             ) : (
               <>
-                <p className="mb-2">
-                  La encriptación protege tus mensajes con una contraseña que solo tú conoces.
-                </p>
+                <p className="mb-2">{t('enableDescription')}</p>
                 <p className="font-medium text-primary-600 dark:text-primary-500">
-                   Usa una contraseña segura de al menos 8 caracteres.
+                  {t('enableHint')}
                 </p>
               </>
             )}
@@ -114,17 +113,17 @@ export default function EncryptionModal({
           {/* Password Input */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Contraseña {isEncrypted ? 'actual' : 'de encriptación'}
+              {isEncrypted ? t('passwordLabelCurrent') : t('passwordLabelEncryption')}
             </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres"
+                placeholder={t('passwordPlaceholder')}
                 minLength={8}
                 required
-                className="w-full px-3 py-2 pr-10 border border-neutral-300 dark:border-neutral-600 rounded-lg 
+                className="w-full px-3 py-2 pr-10 border border-neutral-300 dark:border-neutral-600 rounded-lg
                          bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white
                          focus:ring-2 focus:ring-primary-500 focus:border-transparent
                          placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
@@ -132,6 +131,7 @@ export default function EncryptionModal({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? t('hidePasswordAria') : t('showPasswordAria')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-100 dark:hover:bg-neutral-600 rounded"
               >
                 {showPassword ? (
@@ -151,13 +151,13 @@ export default function EncryptionModal({
                 id="encryptExisting"
                 checked={encryptExisting}
                 onChange={(e) => setEncryptExisting(e.target.checked)}
-                className="mt-0.5 w-4 h-4 text-primary-600 border-neutral-300 rounded 
+                className="mt-0.5 w-4 h-4 text-primary-600 border-neutral-300 rounded
                          focus:ring-primary-500 focus:ring-2"
               />
               <label htmlFor="encryptExisting" className="text-sm text-neutral-600 dark:text-neutral-400">
-                Encriptar también los mensajes anteriores
+                {t('encryptExisting')}
                 <span className="block text-xs text-neutral-500 dark:text-neutral-500 mt-1">
-                  Esto puede tomar un momento si hay muchos mensajes
+                  {t('encryptExistingHint')}
                 </span>
               </label>
             </div>
@@ -175,7 +175,7 @@ export default function EncryptionModal({
                        disabled:opacity-50 disabled:cursor-not-allowed
                        transition-colors"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -189,10 +189,10 @@ export default function EncryptionModal({
                        }`}
             >
               {isLoading
-                ? 'Procesando...'
+                ? t('processing')
                 : isEncrypted
-                  ? 'Deshabilitar'
-                  : 'Encriptar'}
+                  ? t('disable')
+                  : t('encrypt')}
             </button>
           </div>
         </form>

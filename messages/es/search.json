@@ -46,5 +46,8 @@
     "title": "Tendencias",
     "searchesCount": "{count} búsquedas",
     "hot": "HOT"
+  },
+  "page": {
+    "backToFeedAria": "Volver al feed"
   }
 }

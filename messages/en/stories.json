@@ -54,5 +54,17 @@
     "now": "Now",
     "publishing": "Publishing...",
     "publish": "Publish"
+  },
+  "row": {
+    "myStoryVideoAlt": "My story (video)",
+    "myStoryAlt": "My story",
+    "yourStory": "Your story",
+    "storyCount": "{count, plural, =1 {# story} other {# stories}}",
+    "createStory": "Create story",
+    "emptyTile": "No stories yet",
+    "createFirstAria": "Create your first story",
+    "emptyHeroTitle": "Create your first story",
+    "emptyHeroSubtitle": "Share a moment. It disappears in 24 hours.",
+    "emptyHeroCta": "Start"
   }
 }

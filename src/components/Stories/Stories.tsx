@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { PlusIcon } from '@/components/icons/heroicons-shim';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useStoryStore } from '@/app/(app)/stories/store/story.store';
@@ -24,6 +25,7 @@ interface StoriesProps {
 }
 
 export default function Stories({ className }: StoriesProps) {
+  const t = useTranslations('stories.row');
   const router = useRouter();
   const { user } = useAuth();
   const { friendsStories, myStories, fetchFriendsStories, fetchMyStories, isLoading } = useStoryStore();
@@ -75,7 +77,14 @@ export default function Stories({ className }: StoriesProps) {
   if (isEmpty) {
     return (
       <div className={`rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900 ${className || ''}`}>
-        <StoryRailEmptyHero onCreate={handleCreateStory} user={user} />
+        <StoryRailEmptyHero
+          onCreate={handleCreateStory}
+          user={user}
+          ariaLabel={t('createFirstAria')}
+          title={t('emptyHeroTitle')}
+          subtitle={t('emptyHeroSubtitle')}
+          cta={t('emptyHeroCta')}
+        />
       </div>
     )
   }
@@ -97,17 +106,17 @@ export default function Stories({ className }: StoriesProps) {
                 return preview ? (
                   <img
                     src={preview}
-                    alt={myStories[0].type === 'video' ? 'Mi historia (video)' : 'Mi historia'}
+                    alt={myStories[0].type === 'video' ? t('myStoryVideoAlt') : t('myStoryAlt')}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-neutral-700" />
                 )
               })()}
-              
+
               {/* Overlay */}
               <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/60" />
-              
+
               {/* Avatar y nombre */}
               <div className="absolute top-3 left-3">
                 <div className="w-10 h-10 rounded-full ring-4 ring-primary-500">
@@ -118,13 +127,13 @@ export default function Stories({ className }: StoriesProps) {
                   />
                 </div>
               </div>
-              
+
               <div className="absolute bottom-3 left-3 right-3">
                 <p className="text-white text-sm font-semibold drop-shadow-lg">
-                  Tu historia
+                  {t('yourStory')}
                 </p>
                 <p className="text-white/80 text-xs">
-                  {myStories.length} {myStories.length === 1 ? 'historia' : 'historias'}
+                  {t('storyCount', { count: myStories.length })}
                 </p>
               </div>
             </div>
@@ -143,7 +152,7 @@ export default function Stories({ className }: StoriesProps) {
                   <PlusIcon className="w-6 h-6 text-white" />
                 </div>
                 <p className="text-xs font-semibold text-neutral-900 dark:text-white text-center">
-                  Crear historia
+                  {t('createStory')}
                 </p>
               </div>
             </div>
@@ -204,7 +213,7 @@ export default function Stories({ className }: StoriesProps) {
                   {userStories.username}
                 </p>
                 <p className="text-white/80 text-xs">
-                  {userStories.stories.length} {userStories.stories.length === 1 ? 'historia' : 'historias'}
+                  {t('storyCount', { count: userStories.stories.length })}
                 </p>
               </div>
             </div>
@@ -215,7 +224,7 @@ export default function Stories({ className }: StoriesProps) {
             horizontal del carrusel en vez de un mensaje a ancho completo. */}
         {!isLoading && !hasMyStories && friendsStories.length === 0 && (
           <>
-            <StoryPlaceholder label="Aún no hay historias" />
+            <StoryPlaceholder label={t('emptyTile')} />
             <StoryPlaceholder dim />
             <StoryPlaceholder dim />
           </>
@@ -228,19 +237,23 @@ export default function Stories({ className }: StoriesProps) {
 interface HeroProps {
   onCreate: () => void;
   user: { username: string; avatar?: string } | null | undefined;
+  ariaLabel: string;
+  title: string;
+  subtitle: string;
+  cta: string;
 }
 
 /** Single-canvas empty state for the story rail. Replaces the "tiny tile + dead
  *  text" combo when there are zero stories anywhere. Same height as the regular
  *  tiles (200px) so the card's vertical rhythm stays put. */
-function StoryRailEmptyHero({ onCreate, user }: HeroProps) {
+function StoryRailEmptyHero({ onCreate, user, ariaLabel, title, subtitle, cta }: HeroProps) {
   const initials = user?.username.substring(0, 2).toUpperCase() || 'TU';
   return (
     <button
       type="button"
       onClick={onCreate}
       className="group relative flex h-50 w-full items-center gap-5 overflow-hidden rounded-2xl bg-linear-to-br from-emerald-50 via-amber-50 to-orange-50 px-5 text-left transition-colors hover:from-emerald-100 hover:via-amber-100 hover:to-orange-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:px-7 dark:from-emerald-950/30 dark:via-neutral-800 dark:to-orange-950/20 dark:hover:from-emerald-900/30 dark:hover:to-orange-900/20"
-      aria-label="Crear tu primera historia"
+      aria-label={ariaLabel}
     >
       {/* Soft decorative dots, anchored top-right so they don't fight the avatar */}
       <span
@@ -265,13 +278,13 @@ function StoryRailEmptyHero({ onCreate, user }: HeroProps) {
       {/* Copy + CTA */}
       <div className="relative min-w-0 flex-1">
         <p className="text-base font-semibold text-neutral-900 sm:text-lg dark:text-white">
-          Crea tu primera historia
+          {title}
         </p>
         <p className="mt-1 text-xs text-neutral-600 sm:text-sm dark:text-neutral-300">
-          Comparte un momento. Desaparece en 24 horas.
+          {subtitle}
         </p>
         <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors group-hover:bg-primary-700">
-          Empezar
+          {cta}
         </span>
       </div>
     </button>
