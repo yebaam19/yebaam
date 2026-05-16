@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   getAlbumClubAssignments,
   listMusicClubsForPicker,
@@ -23,6 +24,7 @@ interface Props {
  *  category club (genre) with a checkbox + a "Primario" radio. Calls
  *  `setAlbumClubs` to atomically replace the album's club set + primary. */
 export function AlbumGenresSection({ albumId }: Props) {
+  const t = useTranslations('musica.admin.albumGenres');
   const [clubs, setClubs] = useState<ClubOption[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [primaryId, setPrimaryId] = useState<string | null>(null);
@@ -93,14 +95,14 @@ export function AlbumGenresSection({ albumId }: Props) {
     setSaved(true);
   }
 
-  if (loading) return <p className="text-xs text-zinc-500">Cargando géneros…</p>;
+  if (loading) return <p className="text-xs text-zinc-500">{t('loading')}</p>;
 
   return (
     <div className="rounded-md border border-zinc-200 bg-zinc-50/60 p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="mb-2 flex items-center justify-between">
-        <h4 className="text-sm font-semibold">Géneros (clubes)</h4>
+        <h4 className="text-sm font-semibold">{t('heading')}</h4>
         <span className="text-[11px] text-zinc-500">
-          {selectedIds.size} seleccionados · marca uno como primario con ★
+          {t('summary', { count: selectedIds.size })}
         </span>
       </div>
       {error && (
@@ -139,8 +141,8 @@ export function AlbumGenresSection({ albumId }: Props) {
                       ? 'text-amber-600'
                       : 'text-zinc-300 hover:text-amber-500 dark:text-zinc-600'
                   }`}
-                  title="Marcar como género principal"
-                  aria-label={isPrimary ? 'Género principal' : 'Marcar como principal'}
+                  title={t('primaryTitle')}
+                  aria-label={isPrimary ? t('primaryAria') : t('markPrimaryAria')}
                 >
                   ★
                 </button>
@@ -156,9 +158,9 @@ export function AlbumGenresSection({ albumId }: Props) {
           disabled={saving}
           className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-60"
         >
-          {saving ? 'Guardando…' : 'Guardar géneros'}
+          {saving ? t('saving') : t('save')}
         </button>
-        {saved && <span className="text-xs text-emerald-600">Guardado ✓</span>}
+        {saved && <span className="text-xs text-emerald-600">{t('saved')}</span>}
       </div>
     </div>
   );

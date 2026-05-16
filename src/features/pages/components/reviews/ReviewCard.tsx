@@ -4,7 +4,7 @@ import { StarIcon, HandThumbUpIcon } from '@/components/icons/heroicons-shim';
 import { HandThumbUpIcon as HandThumbUpOutline, CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 import { PageReview } from '../../interfaces/page-review.interface';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 
 interface ReviewCardProps {
   review: PageReview;
@@ -24,6 +24,7 @@ export const ReviewCard: FC<ReviewCardProps> = ({
   canEdit,
 }) => {
   const [showFullComment, setShowFullComment] = useState(false);
+  const dateLocale = useDateFnsLocale();
   const shouldTruncate = review.comment.length > 300;
 
   const renderStars = (rating: number) => {
@@ -44,7 +45,7 @@ export const ReviewCard: FC<ReviewCardProps> = ({
   const formatDate = (date: Date) => {
     return formatDistanceToNow(new Date(date), {
       addSuffix: true,
-      locale: es,
+      locale: dateLocale,
     });
   };
 

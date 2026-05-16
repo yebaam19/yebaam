@@ -1,7 +1,7 @@
 import { getUserInitials } from '@/lib/user-helpers'
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale'
 import Avatar from '@/ui/Avatar'
 import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
 import Link from 'next/link'
 import type { CommentAuthor } from '../interfaces/comment.interfaces'
 
@@ -14,15 +14,16 @@ interface CommentHeaderProps {
 }
 
 export function CommentHeader({ author, createdAt, isEdited, editedAt, isReply = false }: CommentHeaderProps) {
+  const dateLocale = useDateFnsLocale()
   const timeAgo = formatDistanceToNow(new Date(createdAt), {
     addSuffix: true,
-    locale: es,
+    locale: dateLocale,
   })
 
   const editedTimeAgo = editedAt
     ? formatDistanceToNow(new Date(editedAt), {
         addSuffix: true,
-        locale: es,
+        locale: dateLocale,
       })
     : null
 

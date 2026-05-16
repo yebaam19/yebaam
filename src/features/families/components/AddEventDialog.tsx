@@ -2,19 +2,20 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { CalendarIcon } from '@/components/icons/heroicons-shim';
 import { addEvent } from '../actions/families.actions';
 import type { FamilyEventType, FamilyPersonRow } from '../types/family.types';
 
-const EVENT_OPTIONS: Array<{ value: FamilyEventType; label: string }> = [
-  { value: 'birth', label: 'Nacimiento' },
-  { value: 'marriage', label: 'Matrimonio' },
-  { value: 'divorce', label: 'Divorcio' },
-  { value: 'death', label: 'Defunción' },
-  { value: 'graduation', label: 'Graduación' },
-  { value: 'migration', label: 'Migración' },
-  { value: 'adoption', label: 'Adopción' },
-  { value: 'custom', label: 'Otro' },
+const EVENT_VALUES: FamilyEventType[] = [
+  'birth',
+  'marriage',
+  'divorce',
+  'death',
+  'graduation',
+  'migration',
+  'adoption',
+  'custom',
 ];
 
 interface Props {
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export function AddEventDialog({ familyId, persons }: Props) {
+  const t = useTranslations('familias');
+  const tc = useTranslations('common');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [eventType, setEventType] = useState<FamilyEventType>('custom');
@@ -58,7 +61,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
     e.preventDefault();
     setError(null);
     if (!title.trim()) {
-      setError('El título es obligatorio.');
+      setError(t('dialogs.event.errors.titleRequired'));
       return;
     }
     startTransition(async () => {
@@ -88,7 +91,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
         className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
       >
         <CalendarIcon className="h-4 w-4" />
-        Agregar evento
+        {t('dialogs.event.trigger')}
       </button>
     );
   }
@@ -97,19 +100,19 @@ export function AddEventDialog({ familyId, persons }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Agregar evento a la línea de tiempo
+          {t('dialogs.event.title')}
         </h3>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Tipo</label>
+            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">{t('dialogs.event.fields.typeLabel')}</label>
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value as FamilyEventType)}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             >
-              {EVENT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
+              {EVENT_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {t(`dialogs.event.types.${v}`)}
                 </option>
               ))}
             </select>
@@ -117,7 +120,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
 
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Título <span className="text-rose-500">*</span>
+              {t('dialogs.event.fields.titleLabel')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -132,7 +135,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Fecha</label>
+              <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">{t('dialogs.event.fields.dateLabel')}</label>
               <input
                 type="date"
                 value={eventDate}
@@ -141,7 +144,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Lugar</label>
+              <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">{t('dialogs.event.fields.placeLabel')}</label>
               <input
                 type="text"
                 value={eventPlace}
@@ -154,7 +157,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
 
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Descripción
+              {t('dialogs.event.fields.descriptionLabel')}
             </label>
             <textarea
               value={description}
@@ -167,7 +170,7 @@ export function AddEventDialog({ familyId, persons }: Props) {
           {persons.length > 0 && (
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                Personas relacionadas ({taggedIds.size})
+                {t('dialogs.event.fields.relatedPersonsLabel', { count: taggedIds.size })}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {persons.map((p) => {
@@ -204,14 +207,14 @@ export function AddEventDialog({ familyId, persons }: Props) {
               disabled={pending}
               className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Cancelar
+              {tc('cancel')}
             </button>
             <button
               type="submit"
               disabled={pending || !title.trim()}
               className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-              {pending ? 'Guardando…' : 'Guardar'}
+              {pending ? t('dialogs.common.saving') : t('dialogs.event.submit')}
             </button>
           </div>
         </form>

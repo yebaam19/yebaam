@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { StreamVideo } from '@/components/media/StreamVideo';
 import { CommunityPostComposer } from './CommunityPostComposer';
 import { CommunityPostCard } from './CommunityPostCard';
@@ -18,12 +19,13 @@ interface CommunityHomeMainProps {
   pendingRequests: PendingJoinRequest[];
 }
 
-export function CommunityHomeMain({
+export async function CommunityHomeMain({
   community: c,
   posts,
   viewerState,
   pendingRequests,
 }: CommunityHomeMainProps) {
+  const t = await getTranslations('communities');
   const isOwner = viewerState.kind === 'owner';
   const isMember = viewerState.kind === 'member' || viewerState.kind === 'owner' || c.isMember;
   const showComposer = isMember && (c.allowMemberPosts || isOwner);
@@ -47,19 +49,19 @@ export function CommunityHomeMain({
 
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
         <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
-          Acerca de la comunidad
+          {t('detail.aboutTitle')}
         </h2>
         {c.description ? (
           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
             {c.description}
           </p>
         ) : (
-          <p className="text-sm text-gray-400 italic">Sin descripción.</p>
+          <p className="text-sm text-gray-400 italic">{t('detail.noDescription')}</p>
         )}
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs">
           {c.location && (
             <span className="text-gray-700 dark:text-gray-300">
-              <strong className="font-medium">Ubicación:</strong> {c.location}
+              <strong className="font-medium">{t('detail.locationLabel')}</strong> {c.location}
             </span>
           )}
           {c.website && (
@@ -91,11 +93,11 @@ export function CommunityHomeMain({
       <section className="@container">
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-            Publicaciones
+            {t('detail.postsHeading')}
           </h2>
           {posts.length > 0 && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {posts.length} {posts.length === 1 ? 'publicación' : 'publicaciones'}
+              {t('detail.postsCount', { count: posts.length })}
             </span>
           )}
         </div>
@@ -105,11 +107,11 @@ export function CommunityHomeMain({
             <CommunityPostComposer communityId={c.id} />
           ) : !isMember ? (
             <div className="rounded-lg bg-white p-4 text-sm text-gray-600 shadow-sm dark:bg-gray-800 dark:text-gray-400">
-              Únete a la comunidad para publicar.
+              {t('detail.joinToPost')}
             </div>
           ) : !c.allowMemberPosts ? (
             <div className="rounded-lg bg-white p-4 text-sm text-gray-600 shadow-sm dark:bg-gray-800 dark:text-gray-400">
-              Solo el propietario puede publicar en esta comunidad.
+              {t('detail.onlyOwnerPosts')}
             </div>
           ) : null}
 
@@ -117,7 +119,7 @@ export function CommunityHomeMain({
             posts.map((post) => <CommunityPostCard key={post.id} post={post} />)
           ) : (
             <div className="rounded-xl border border-dashed border-gray-200 bg-white p-10 text-center text-sm text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-              No hay publicaciones aún. ¡Sé el primero en publicar!
+              {t('detail.noPosts')}
             </div>
           )}
         </div>
@@ -126,7 +128,7 @@ export function CommunityHomeMain({
       {videos.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-            Videos destacados
+            {t('detail.featuredVideosHeading')}
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {videos.map((m) => (
@@ -144,7 +146,7 @@ export function CommunityHomeMain({
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-          Fotos destacadas
+          {t('detail.featuredPhotosHeading')}
         </h2>
         <CommunityFeaturedPhotos posts={posts} />
       </section>

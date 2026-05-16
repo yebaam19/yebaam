@@ -137,5 +137,164 @@
     "errors": {
       "sendFailed": "The message could not be sent."
     }
+  },
+  "pagination": {
+    "ariaLabel": "Forum pagination",
+    "prevAria": "Previous page",
+    "nextAria": "Next page"
+  },
+  "admin": {
+    "nav": {
+      "ariaLabel": "Forum admin sections"
+    },
+    "categories": {
+      "errorGeneric": "Error",
+      "deleteCategoryConfirm": "Delete this category and all its forums?",
+      "deleteForumConfirm": "Delete this forum and all its topics?",
+      "newCategoryPlaceholder": "New category",
+      "addCategory": "Add category",
+      "delete": "Delete",
+      "noForums": "No forums.",
+      "forumNamePlaceholder": "Forum name",
+      "noParent": "— No parent —",
+      "subforumOf": "Subforum of: {name}",
+      "descriptionPlaceholder": "Description (optional)",
+      "addForum": "Add forum"
+    },
+    "owners": {
+      "title": "Profiles",
+      "countLabel": "{filtered} of {total} {count, plural, one {profile} other {profiles}}",
+      "filters": {
+        "allTypes": "All types",
+        "club": "Clubs",
+        "group": "Groups",
+        "page": "Pages",
+        "blog": "Blogs",
+        "profile": "Profiles",
+        "portal": "Portal",
+        "searchPlaceholder": "Search by name or slug…"
+      },
+      "table": {
+        "name": "Name",
+        "type": "Type",
+        "slug": "Slug",
+        "privacy": "Privacy",
+        "status": "Status",
+        "actions": "Actions",
+        "empty": "No results."
+      },
+      "status": {
+        "enabled": "Enabled",
+        "inactive": "Inactive",
+        "noForum": "No forum"
+      },
+      "actions": {
+        "enable": "Enable",
+        "manage": "Manage",
+        "disable": "Disable",
+        "reactivate": "Reactivate"
+      },
+      "ownerType": {
+        "club": "Club",
+        "group": "Group",
+        "blog": "Blog",
+        "page": "Page",
+        "city": "City",
+        "profile": "Profile",
+        "portal": "Portal",
+        "community": "Community"
+      },
+      "errors": {
+        "enableFailed": "Could not enable.",
+        "disableFailed": "Could not disable."
+      }
+    },
+    "topics": {
+      "filters": {
+        "searchPlaceholder": "Search by title…",
+        "allSpaces": "All spaces",
+        "allForums": "All forums",
+        "authorPlaceholder": "Author (username)",
+        "pinnedAny": "Pinned: any",
+        "pinnedOnly": "Only pinned",
+        "pinnedNone": "Not pinned",
+        "statusAny": "Status: any",
+        "lockedOnly": "Only closed",
+        "openOnly": "Only open",
+        "clear": "Clear",
+        "apply": "Apply filters"
+      },
+      "summary": {
+        "found": "{count, plural, one {# topic} other {# topics}} found",
+        "selected": "{count} selected"
+      },
+      "bulk": {
+        "title": "Bulk actions ({count}):",
+        "pin": "Pin",
+        "unpin": "Unpin",
+        "lock": "Close",
+        "unlock": "Reopen",
+        "movePlaceholder": "Move to forum…",
+        "move": "Move",
+        "delete": "Delete",
+        "deleteConfirm": "Delete {count, plural, one {# topic} other {# topics}} and all their messages?",
+        "actionFailed": "Action \"{key}\" failed for {id}"
+      },
+      "table": {
+        "selectAllAria": "Select all on page",
+        "selectAria": "Select {title}",
+        "topic": "Topic",
+        "spaceForum": "Space / Forum",
+        "replies": "Repl.",
+        "views": "Views",
+        "lastPost": "Last post",
+        "pinned": "Pinned",
+        "locked": "Closed",
+        "byAuthor": "by",
+        "empty": "There are no topics that match the filters."
+      },
+      "status": {
+        "applying": "Applying «{action}»…"
+      }
+    },
+    "spaceSettings": {
+      "name": "Name",
+      "description": "Description",
+      "visibility": "Visibility",
+      "visibilityPublic": "Public",
+      "visibilityPrivate": "Private (members only)",
+      "visibilitySecret": "Secret (hidden)",
+      "enabled": "Forum active",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Changes saved.",
+      "errorGeneric": "Error"
+    }
+  },
+  "editor": {
+    "toolbar": {
+      "aria": "Format",
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "link": "Link",
+      "linkInsert": "Insert link",
+      "uploadImage": "Upload image",
+      "uploadImageTitle": "Upload image (PNG, JPG, GIF, WebP — max 10 MB)",
+      "uploadingImage": "Uploading…",
+      "imageLabel": "Image",
+      "code": "Code",
+      "quote": "Quote",
+      "placeholderText": "text",
+      "placeholderCode": "code",
+      "placeholderQuote": "quote",
+      "promptLinkUrl": "Link URL (https://…)",
+      "alertInvalidLink": "The link must start with http:// or https://",
+      "errors": {
+        "onlyImages": "Only images are allowed.",
+        "tooLarge": "The image exceeds the 10 MB limit.",
+        "uploadFailed": "The image could not be uploaded."
+      }
+    }
   }
 }

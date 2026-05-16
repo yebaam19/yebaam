@@ -9,6 +9,7 @@ import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/re
 import { ArrowsPointingOutIcon, CameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { Fragment, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import CoverRepositionEditor from './CoverRepositionEditor'
@@ -21,6 +22,7 @@ interface EditProfileDialogProps {
 }
 
 export default function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialogProps) {
+  const t = useTranslations('profile.dialogs.editProfile')
   const [firstName, setFirstName] = useState(user.firstName || '')
   const [secondName, setSecondName] = useState(user.secondName || '')
   const [lastName, setLastName] = useState(user.lastName || '')
@@ -161,7 +163,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
             <DialogPanel className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               {/* Header */}
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Editar perfil</h2>
+                <h2 className="text-2xl font-bold">{t('title')}</h2>
                 <button
                   onClick={() => onOpenChange(false)}
                   className="text-muted-foreground hover:text-foreground cursor-pointer"
@@ -174,7 +176,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                 <div className="flex flex-col gap-6 lg:flex-row">
                   {/* Avatar Section */}
                   <div className="w-full space-y-3 lg:w-1/3">
-                    <label className="text-sm font-medium">Avatar</label>
+                    <label className="text-sm font-medium">{t('avatarLabel')}</label>
                     <div className="relative">
                       <div className="relative mx-auto h-40 w-40">
                         <Avatar
@@ -209,7 +211,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                   {/* Cover Section */}
                   <div className="w-full space-y-3 lg:w-2/3">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium">Portada</label>
+                      <label className="text-sm font-medium">{t('coverLabel')}</label>
                       {(coverPreview || user.coverPhotoUrl || user.coverUrl) && (
                         <button
                           type="button"
@@ -217,7 +219,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                           className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                         >
                           <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
-                          {isRepositioning ? 'Listo' : 'Reposicionar'}
+                          {isRepositioning ? t('coverDone') : t('coverReposition')}
                         </button>
                       )}
                     </div>
@@ -259,7 +261,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                         type="button"
                         onClick={() => coverInputRef.current?.click()}
                         className="bg-primary hover:bg-primary/90 absolute right-3 bottom-3 rounded-full p-2 text-white shadow-lg"
-                        title="Subir nueva portada"
+                        title={t('coverUploadTitle')}
                       >
                         <CameraIcon className="h-5 w-5" />
                       </button>
@@ -277,41 +279,41 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                 {/* Names Section */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Primer nombre *</label>
+                    <label className="mb-2 block text-sm font-medium">{t('firstNameLabel')}</label>
                     <Input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Tu primer nombre"
+                      placeholder={t('firstNamePlaceholder')}
                       required
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Segundo nombre</label>
+                    <label className="mb-2 block text-sm font-medium">{t('secondNameLabel')}</label>
                     <Input
                       type="text"
                       value={secondName}
                       onChange={(e) => setSecondName(e.target.value)}
-                      placeholder="Tu segundo nombre"
+                      placeholder={t('secondNamePlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Primer apellido *</label>
+                    <label className="mb-2 block text-sm font-medium">{t('lastNameLabel')}</label>
                     <Input
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Tu primer apellido"
+                      placeholder={t('lastNamePlaceholder')}
                       required
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Segundo apellido</label>
+                    <label className="mb-2 block text-sm font-medium">{t('secondLastNameLabel')}</label>
                     <Input
                       type="text"
                       value={secondLastName}
                       onChange={(e) => setSecondLastName(e.target.value)}
-                      placeholder="Tu segundo apellido"
+                      placeholder={t('secondLastNamePlaceholder')}
                     />
                   </div>
                 </div>
@@ -319,10 +321,10 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                 {/* Footer Buttons */}
                 <div className="flex justify-end gap-3 pt-4">
                   <ButtonSecondary type="button" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-                    Cancelar
+                    {t('cancel')}
                   </ButtonSecondary>
                   <ButtonPrimary type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                    {isSubmitting ? t('saving') : t('save')}
                   </ButtonPrimary>
                 </div>
               </form>

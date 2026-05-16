@@ -10,7 +10,7 @@ import {
 } from '@/components/icons/heroicons-shim';
 import { PagePromotion, PromotionType } from '../../interfaces/page-promotion.interface';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 import Image from 'next/image';
 
 interface PromotionCardProps {
@@ -27,6 +27,7 @@ export const PromotionCard: FC<PromotionCardProps> = ({
   canManage,
 }) => {
   const [imageError, setImageError] = useState(false);
+  const dateLocale = useDateFnsLocale();
 
   const getPromotionText = () => {
     switch (promotion.type) {
@@ -165,8 +166,8 @@ export const PromotionCard: FC<PromotionCardProps> = ({
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5" />
             <span>
-              {format(new Date(promotion.startDate), 'dd MMM', { locale: es })} - {' '}
-              {format(new Date(promotion.endDate), 'dd MMM yyyy', { locale: es })}
+              {format(new Date(promotion.startDate), 'dd MMM', { locale: dateLocale })} - {' '}
+              {format(new Date(promotion.endDate), 'dd MMM yyyy', { locale: dateLocale })}
             </span>
           </div>
           {promotion.daysRemaining && promotion.daysRemaining > 0 && (

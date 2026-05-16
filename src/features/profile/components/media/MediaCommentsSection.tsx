@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ChatBubbleOvalLeftIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 import { UserIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
 import {
   profileMediaInteractionsService,
@@ -24,6 +25,8 @@ export default function MediaCommentsSection({
   initialCommentsCount,
   onCommentsCountChange,
 }: MediaCommentsSectionProps) {
+  const t = useTranslations('profile.mediaComments');
+  const locale = useLocale();
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -116,7 +119,7 @@ export default function MediaCommentsSection({
   };
 
   const handleDeleteComment = async (commentId: string, isReply: boolean, parentId?: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este comentario?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
 
     try {
       await profileMediaInteractionsService.deleteComment(entityType, entityId, commentId);
@@ -177,7 +180,7 @@ export default function MediaCommentsSection({
           {/* Actions */}
           <div className="flex items-center gap-4 mt-1 px-4">
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(comment.createdAt).toLocaleDateString('es-ES', {
+              {new Date(comment.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
@@ -190,7 +193,7 @@ export default function MediaCommentsSection({
                 onClick={() => setReplyTo({ id: comment.id, username: comment.user.username })}
                 className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
-                Responder
+                {t('reply')}
               </button>
             )}
 
@@ -200,10 +203,8 @@ export default function MediaCommentsSection({
                 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 {expandedReplies.has(comment.id)
-                  ? 'Ocultar respuestas'
-                  : `Ver ${comment.repliesCount} ${
-                      comment.repliesCount === 1 ? 'respuesta' : 'respuestas'
-                    }`}
+                  ? t('hideReplies')
+                  : t('viewReplies', { count: comment.repliesCount })}
               </button>
             )}
 
@@ -241,7 +242,7 @@ export default function MediaCommentsSection({
       <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         <ChatBubbleOvalLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
         <h3 className="font-semibold text-gray-900 dark:text-white">
-          Comentarios ({commentsCount})
+          {t('commentsCount', { count: commentsCount })}
         </h3>
       </div>
 
@@ -254,7 +255,7 @@ export default function MediaCommentsSection({
         ) : !comments || comments.length === 0 ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <ChatBubbleOvalLeftIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>Sé el primero en comentar</p>
+            <p>{t('beFirstToComment')}</p>
           </div>
         ) : (
           Array.isArray(comments) && comments.map((comment) => <CommentItem key={comment.id} comment={comment} />)
@@ -265,7 +266,7 @@ export default function MediaCommentsSection({
       <form onSubmit={handleSubmitComment} className="border-t border-gray-200 dark:border-gray-700 pt-4">
         {replyTo && (
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <span>Respondiendo a @{replyTo.username}</span>
+            <span>{t('replyingTo', { username: replyTo.username })}</span>
             <button
               type="button"
               onClick={() => setReplyTo(null)}
@@ -293,7 +294,7 @@ export default function MediaCommentsSection({
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder={replyTo ? 'Escribe una respuesta...' : 'Escribe un comentario...'}
+            placeholder={replyTo ? t('writeReplyPlaceholder') : t('writeCommentPlaceholder')}
             disabled={isSubmitting}
             className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full border-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
@@ -302,7 +303,7 @@ export default function MediaCommentsSection({
             disabled={isSubmitting || !newComment.trim()}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-full font-medium transition-colors"
           >
-            {isSubmitting ? 'Enviando...' : 'Enviar'}
+            {isSubmitting ? t('sending') : t('send')}
           </button>
         </div>
       </form>

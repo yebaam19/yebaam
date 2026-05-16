@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Route } from 'next'
 import clsx from 'clsx'
+import { useTranslations } from 'next-intl'
 
 const TABS: { href: Route; label: string }[] = [
   { href: '/admin/foros' as Route, label: 'Espacios y staff' },
@@ -12,9 +13,10 @@ const TABS: { href: Route; label: string }[] = [
 
 export default function AdminForosNav() {
   const pathname = usePathname() ?? ''
+  const t = useTranslations('foro.admin.nav')
   return (
     <nav
-      aria-label="Secciones del admin de foros"
+      aria-label={t('ariaLabel')}
       className="mb-6 flex flex-wrap items-center gap-1 border-b border-neutral-200 dark:border-neutral-800"
     >
       {TABS.map((t) => {

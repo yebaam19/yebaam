@@ -16,7 +16,7 @@ import {
   ChatBubbleLeftRightIcon,
 } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 import { friendshipsService, FriendRequestActionsButtons } from '@/features/friendships';
 import { profileService } from '@/features/profile/services/profile.service';
 import type { UserProfile } from '@/features/profile/interfaces/profile.interfaces';
@@ -52,6 +52,7 @@ export default function FriendRequestDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | 'cancel' | null>(null);
+  const dateLocale = useDateFnsLocale();
 
   useEffect(() => {
     loadData();
@@ -124,7 +125,7 @@ export default function FriendRequestDetailPage() {
   const timeAgo = data?.sentAt
     ? formatDistanceToNow(new Date(data.sentAt), {
         addSuffix: true,
-        locale: es,
+        locale: dateLocale,
       })
     : '';
 
@@ -172,7 +173,7 @@ export default function FriendRequestDetailPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">&quot;{data.message}&quot;</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDistanceToNow(new Date(data.sentAt), { addSuffix: true, locale: es })}
+                  {formatDistanceToNow(new Date(data.sentAt), { addSuffix: true, locale: dateLocale })}
                 </p>
               </div>
             </div>

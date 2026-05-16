@@ -9,6 +9,7 @@
 import { addSkillAction, deleteSkillAction, updateSkillAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { cn } from '@/lib/utils'
 import { LightBulbIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -44,6 +45,7 @@ const getLevelColor = (level?: string | null): string => {
 
 export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -57,7 +59,7 @@ export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionP
       toast.error(result.error)
       return
     }
-    toast.success(selectedSkill ? 'Habilidad actualizada correctamente' : 'Habilidad agregada correctamente')
+    toast.success(selectedSkill ? t('skills.toastUpdated') : t('skills.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -84,7 +86,7 @@ export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionP
       toast.error(result.error)
       return
     }
-    toast.success('Habilidad eliminada')
+    toast.success(t('skills.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedSkill(null)
     router.refresh()
@@ -93,23 +95,23 @@ export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionP
   return (
     <div>
       <SectionHeader
-        title="Habilidades"
+        title={t('skills.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Habilidad"
+        addLabel={t('skills.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={LightBulbIcon}
-          title="Sin habilidades registradas"
+          title={t('skills.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega tus habilidades para mostrar tus competencias profesionales'
-              : 'Este usuario aun no ha agregado habilidades a su perfil'
+              ? t('skills.emptyDescriptionOwner')
+              : t('skills.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Habilidad' : undefined}
+          actionLabel={isOwner ? t('skills.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -159,8 +161,8 @@ export function SkillsSection({ profileId, isOwner, items = [] }: SkillsSectionP
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Habilidad"
-        description="¿Estas seguro de que deseas eliminar esta habilidad? Esta accion no se puede deshacer."
+        title={t('skills.deleteTitle')}
+        description={t('skills.deleteDescription')}
       />
     </div>
   )

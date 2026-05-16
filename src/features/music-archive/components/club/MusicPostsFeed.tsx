@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { imageUrl } from '@/lib/media/urls';
 import { UserIcon } from '@/components/icons/heroicons-shim';
 import {
@@ -34,6 +35,7 @@ export function MusicPostsFeed({
   canModerate,
 }: Props) {
   const router = useRouter();
+  const t = useTranslations('musica.club.posts');
   return (
     <div className="space-y-4">
       {canPost ? (
@@ -43,13 +45,13 @@ export function MusicPostsFeed({
           clubId={clubId}
           clubSlug={clubSlug}
           status={joinStatus}
-          label="Únete al club para publicar y participar en las discusiones."
+          label={t('joinToPost')}
         />
       )}
 
       {posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          Aún no hay publicaciones en este club.
+          {t('empty')}
         </p>
       ) : (
         <ul className="space-y-3">
@@ -74,6 +76,7 @@ function Composer({
   clubId: string;
   onCreated: () => void;
 }) {
+  const t = useTranslations('musica.club.posts');
   const [body, setBody] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -97,7 +100,7 @@ function Composer({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={3}
-        placeholder="Comparte algo con el club…"
+        placeholder={t('newPlaceholder')}
         className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
       />
       {error && <p className="text-xs text-rose-600">{error}</p>}
@@ -108,7 +111,7 @@ function Composer({
           disabled={pending || !body.trim()}
           className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-40"
         >
-          {pending ? 'Publicando…' : 'Publicar'}
+          {pending ? t('publishing') : t('publish')}
         </button>
       </div>
     </div>
@@ -124,6 +127,8 @@ function PostCard({
   canDelete: boolean;
   onDeleted: () => void;
 }) {
+  const t = useTranslations('musica.club.posts');
+  const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const avatar = post.author?.avatar_cf_image_id
@@ -131,7 +136,7 @@ function PostCard({
     : null;
 
   function handleDelete() {
-    if (!confirm('¿Eliminar publicación?')) return;
+    if (!confirm(t('confirmDeletePost'))) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteMusicClubPost(post.id);
@@ -154,9 +159,9 @@ function PostCard({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            {post.author?.full_name || post.author?.username || 'Miembro'}
+            {post.author?.full_name || post.author?.username || t('fallbackMember')}
           </p>
-          <p className="text-xs text-zinc-500">{formatDate(post.created_at)}</p>
+          <p className="text-xs text-zinc-500">{formatDate(post.created_at, locale)}</p>
         </div>
         {canDelete && (
           <button
@@ -165,7 +170,7 @@ function PostCard({
             disabled={pending}
             className="text-xs text-zinc-400 hover:text-rose-600 disabled:opacity-40"
           >
-            Eliminar
+            {t('delete')}
           </button>
         )}
       </div>
@@ -184,9 +189,9 @@ function PostCard({
   );
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleDateString('es', {
+    return new Date(iso).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

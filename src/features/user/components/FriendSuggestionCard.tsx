@@ -4,6 +4,7 @@ import { CheckIcon, UserGroupIcon, UserPlusIcon, XMarkIcon } from '@/components/
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
 import type { Route } from 'next';
@@ -34,6 +35,7 @@ export function FriendSuggestionCard({
   onHide,
 }: FriendSuggestionCardProps) {
   const { sendRequest, isSending, sentRequests } = useFriendRequests()
+  const t = useTranslations('friendships.suggestionCard')
   const [requestSent, setRequestSent] = useState(false)
 
   // Valores por defecto seguros
@@ -60,7 +62,7 @@ export function FriendSuggestionCard({
         <button
           onClick={() => onHide(userId)}
           className="absolute top-1.5 right-1.5 z-10 rounded-full bg-white/80 p-1 transition-colors hover:bg-gray-100 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-          aria-label="Ocultar sugerencia"
+          aria-label={t('hideAria')}
         >
           <XMarkIcon className="h-3.5 w-3.5 text-gray-500" />
         </button>
@@ -127,6 +129,7 @@ export function FriendSuggestionCard({
  */
 export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
   const { suggestions, isLoadingSuggestions } = useFriendRequests()
+  const t = useTranslations('friendships.suggestionCard')
   const [hiddenSuggestions, setHiddenSuggestions] = useState<Set<string>>(new Set())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -195,7 +198,7 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
         <button
           onClick={() => scroll('left')}
           className="absolute top-1/2 left-1 z-10 -translate-y-1/2 rounded-full border border-gray-200 bg-white p-1.5 opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
-          aria-label="Anterior"
+          aria-label={t('prevAria')}
         >
           <ChevronLeftIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
         </button>
@@ -227,7 +230,7 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
         <button
           onClick={() => scroll('right')}
           className="absolute top-1/2 right-1 z-10 -translate-y-1/2 rounded-full border border-gray-200 bg-white p-1.5 opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
-          aria-label="Siguiente"
+          aria-label={t('nextAria')}
         >
           <ChevronRightIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
         </button>

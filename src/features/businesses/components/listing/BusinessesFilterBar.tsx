@@ -8,6 +8,7 @@
 
 import { useBusinessCategories, useCitiesByState, useStates } from '@/features/businesses/hooks'
 import { FunnelIcon, MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 
 interface BusinessesFilterBarProps {
   searchQuery: string
@@ -32,6 +33,7 @@ export function BusinessesFilterBar({
   onCityChange,
   onClearFilters,
 }: BusinessesFilterBarProps) {
+  const t = useTranslations('businesses.filterBar')
   // Fetch data from API
   const { data: categoriesRaw, isLoading: loadingCategories } = useBusinessCategories()
 
@@ -52,7 +54,7 @@ export function BusinessesFilterBar({
         <MagnifyingGlassIcon className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-neutral-400" />
         <input
           type="text"
-          placeholder="Buscar negocios..."
+          placeholder={t('searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2.5 pr-4 pl-10 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700"
@@ -70,7 +72,7 @@ export function BusinessesFilterBar({
           disabled={loadingCategories}
           className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700"
         >
-          <option value="">{loadingCategories ? 'Cargando...' : 'Todas las categorías'}</option>
+          <option value="">{loadingCategories ? t('loading') : t('allCategories')}</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
@@ -86,7 +88,7 @@ export function BusinessesFilterBar({
             disabled={loadingStates}
             className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700"
           >
-            <option value="">{loadingStates ? 'Cargando...' : 'Todos los departamentos'}</option>
+            <option value="">{loadingStates ? t('loading') : t('allStates')}</option>
             {states.map((state) => (
               <option key={state.id} value={state.id}>
                 {state.name}
@@ -102,7 +104,7 @@ export function BusinessesFilterBar({
           disabled={!selectedStateId || cities.length === 0}
           className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700"
         >
-          <option value="">Todas las ciudades</option>
+          <option value="">{t('allCities')}</option>
           {cities.map((city) => (
             <option key={city.id} value={city.id}>
               {city.name}
@@ -117,7 +119,7 @@ export function BusinessesFilterBar({
             className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700"
           >
             <XMarkIcon className="h-4 w-4" />
-            <span>Limpiar</span>
+            <span>{t('clear')}</span>
           </button>
         )}
       </div>

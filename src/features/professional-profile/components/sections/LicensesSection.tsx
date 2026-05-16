@@ -8,6 +8,7 @@
 
 import { addLicenseAction, deleteLicenseAction, updateLicenseAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { DocumentTextIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -22,13 +23,16 @@ interface LicensesSectionProps {
   items?: License[]
 }
 
-function formatDate(dateValue: string | Date): string {
+function formatDate(dateValue: string | Date, locale: string): string {
   const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue
-  return date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })
+  const intlLocale = locale === 'en' ? 'en-US' : 'es-ES'
+  return date.toLocaleDateString(intlLocale, { month: 'short', year: 'numeric' })
 }
 
 export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
+  const locale = useLocale()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null)
@@ -41,7 +45,7 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
       toast.error(result.error)
       return
     }
-    toast.success(selectedLicense ? 'Licencia actualizada correctamente' : 'Licencia agregada correctamente')
+    toast.success(selectedLicense ? t('licenses.toastUpdated') : t('licenses.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -68,7 +72,7 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
       toast.error(result.error)
       return
     }
-    toast.success('Licencia eliminada')
+    toast.success(t('licenses.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedLicense(null)
     router.refresh()
@@ -77,23 +81,23 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
   return (
     <div>
       <SectionHeader
-        title="Licencias y Certificaciones"
+        title={t('licenses.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Licencia"
+        addLabel={t('licenses.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={DocumentTextIcon}
-          title="Sin licencias registradas"
+          title={t('licenses.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega tus licencias profesionales y certificaciones'
-              : 'Este usuario aun no ha agregado licencias a su perfil'
+              ? t('licenses.emptyDescriptionOwner')
+              : t('licenses.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Licencia' : undefined}
+          actionLabel={isOwner ? t('licenses.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -114,9 +118,9 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
                   {license.issuedBy && (
                     <p className="text-sm text-neutral-600 dark:text-neutral-400">{license.issuedBy}</p>
                   )}
-                  {license.number && <p className="text-xs text-neutral-500">No. de Licencia: {license.number}</p>}
+                  {license.number && <p className="text-xs text-neutral-500">{t('licenses.licenseNumber')} {license.number}</p>}
                   {license.issuedAt && (
-                    <p className="mt-1 text-xs text-neutral-500">Emitida: {formatDate(license.issuedAt)}</p>
+                    <p className="mt-1 text-xs text-neutral-500">{t('licenses.issued')} {formatDate(license.issuedAt, locale)}</p>
                   )}
                 </div>
               </div>
@@ -154,8 +158,8 @@ export function LicensesSection({ profileId, isOwner, items = [] }: LicensesSect
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Licencia"
-        description="¿Estas seguro de que deseas eliminar esta licencia? Esta accion no se puede deshacer."
+        title={t('licenses.deleteTitle')}
+        description={t('licenses.deleteDescription')}
       />
     </div>
   )

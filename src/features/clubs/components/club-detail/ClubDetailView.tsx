@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { format } from 'date-fns';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 import type { Club } from '@/features/clubs/types/club.types';
 import type {
   ClubPost,
@@ -39,7 +42,7 @@ import {
   CheckBadgeIcon,
   GlobeAltIcon,
 } from '@/components/icons/heroicons-shim';
-import { formatDate, formatDateShort, formatMembersCount } from '@/features/clubs/utils/clubHelpers';
+import { formatMembersCount } from '@/features/clubs/utils/clubHelpers';
 
 type DrawerKey = 'chat' | 'members' | 'foro' | 'events' | 'promotions' | null;
 
@@ -60,12 +63,12 @@ interface ClubDetailViewProps {
   foroBoard: ClubForoBoard;
 }
 
-const NAV_ITEMS: { key: Exclude<DrawerKey, null>; label: string; icon: typeof UsersIcon }[] = [
-  { key: 'chat', label: 'Chat Público', icon: ChatBubbleLeftRightIcon },
-  { key: 'members', label: 'Miembros', icon: UsersIcon },
-  { key: 'foro', label: 'Foro', icon: ChatBubbleBottomCenterTextIcon },
-  { key: 'events', label: 'Eventos', icon: CalendarDaysIcon },
-  { key: 'promotions', label: 'Promociones', icon: TagIcon },
+const NAV_ITEM_DEFS: { key: Exclude<DrawerKey, null>; labelKey: string; icon: typeof UsersIcon }[] = [
+  { key: 'chat', labelKey: 'publicChat', icon: ChatBubbleLeftRightIcon },
+  { key: 'members', labelKey: 'members', icon: UsersIcon },
+  { key: 'foro', labelKey: 'forum', icon: ChatBubbleBottomCenterTextIcon },
+  { key: 'events', labelKey: 'events', icon: CalendarDaysIcon },
+  { key: 'promotions', labelKey: 'promotions', icon: TagIcon },
 ];
 
 export function ClubDetailView({
@@ -81,10 +84,17 @@ export function ClubDetailView({
   foroBoard,
 }: ClubDetailViewProps) {
   const router = useRouter();
+  const t = useTranslations('clubes');
+  const dateLocale = useDateFnsLocale();
   const [activeTab, setActiveTab] = useState<TabType>('acerca');
   const [drawer, setDrawer] = useState<DrawerKey>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cascade');
   const [pending, startTransition] = useTransition();
+
+  const NAV_ITEMS = NAV_ITEM_DEFS.map((n) => ({
+    ...n,
+    label: t(`detail.sideNav.${n.labelKey}`),
+  }));
 
   const handleMembership = () => {
     startTransition(async () => {
@@ -110,11 +120,11 @@ export function ClubDetailView({
   };
 
   const drawerTitles: Record<Exclude<DrawerKey, null>, string> = {
-    chat: 'Chat Público',
-    members: 'Miembros',
-    foro: 'Foro',
-    events: 'Eventos',
-    promotions: 'Promociones',
+    chat: t('detail.sideNav.publicChat'),
+    members: t('detail.sideNav.members'),
+    foro: t('detail.sideNav.forum'),
+    events: t('detail.sideNav.events'),
+    promotions: t('detail.sideNav.promotions'),
   };
 
   return (
@@ -196,34 +206,34 @@ export function ClubDetailView({
           {/* DETALLES card */}
           <section className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Detalles
+              {t('detail.detailsHeading')}
             </h2>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
               <div className="min-w-0">
-                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Miembros</dt>
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">{t('detail.stats.members')}</dt>
                 <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
                   {formatMembersCount(club.stats.membersCount)}
                 </dd>
               </div>
               <div className="min-w-0">
-                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Eventos</dt>
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">{t('detail.stats.events')}</dt>
                 <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
                   {events.length}
                 </dd>
               </div>
               <div className="min-w-0">
-                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Publicaciones</dt>
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">{t('detail.stats.posts')}</dt>
                 <dd className="mt-0.5 truncate font-semibold tabular-nums text-gray-900 dark:text-white">
                   {initialPosts.length}
                 </dd>
               </div>
               <div className="min-w-0">
-                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">Creado</dt>
+                <dt className="truncate text-xs text-gray-500 dark:text-gray-400">{t('detail.stats.createdAt')}</dt>
                 <dd
                   className="mt-0.5 truncate font-semibold text-gray-900 dark:text-white"
-                  title={formatDate(new Date(club.createdAt))}
+                  title={format(new Date(club.createdAt), 'PPP', { locale: dateLocale })}
                 >
-                  {formatDateShort(new Date(club.createdAt))}
+                  {format(new Date(club.createdAt), 'd MMM yyyy', { locale: dateLocale })}
                 </dd>
               </div>
             </dl>
@@ -254,7 +264,7 @@ export function ClubDetailView({
             <div className="flex justify-end">
               <div
                 role="group"
-                aria-label="Modo de vista"
+                aria-label={t('detail.viewModeAria')}
                 className="inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800"
               >
                 <button

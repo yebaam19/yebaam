@@ -7,6 +7,7 @@ import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Fragment, useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import { CityMedia } from '../interfaces/city.interfaces'
 import { cityService } from '../services/city.service'
 
@@ -23,6 +24,8 @@ interface CityMediaDialogProps {
  * Incluye navegación entre medios y sistema de likes
  */
 export function CityMediaDialog({ cityName, media, open, onClose, initialIndex = 0 }: CityMediaDialogProps) {
+  const t = useTranslations('cities.mediaDialog')
+  const locale = useLocale()
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [likedMedia, setLikedMedia] = useState<Record<string, boolean>>(() => {
     // Inicializar estado de likes desde los datos
@@ -88,7 +91,7 @@ export function CityMediaDialog({ cityName, media, open, onClose, initialIndex =
 
   const isLiked = likedMedia[currentMedia.id]
   const currentLikesCount = likesCount[currentMedia.id]
-  const formattedDate = new Date(currentMedia.createdAt).toLocaleDateString('es-ES', {
+  const formattedDate = new Date(currentMedia.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -127,14 +130,14 @@ export function CityMediaDialog({ cityName, media, open, onClose, initialIndex =
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 z-20 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-                  aria-label="Cerrar"
+                  aria-label={t('close')}
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
 
                 {/* Title (visually hidden for accessibility) */}
                 <DialogTitle className="sr-only">
-                  Foto de {currentMedia.user.firstName} en {cityName}
+                  {t('photoOfUserInCity', { name: currentMedia.user.firstName, city: cityName })}
                 </DialogTitle>
 
                 {/* Media viewer */}
@@ -143,7 +146,7 @@ export function CityMediaDialog({ cityName, media, open, onClose, initialIndex =
                     {currentMedia.type === 'IMAGE' ? (
                       <Image
                         src={currentMedia.url}
-                        alt={`Foto de ${cityName}`}
+                        alt={t('photoOfCity', { city: cityName })}
                         fill
                         className="object-contain"
                         sizes="(max-width: 1536px) 100vw, 1536px"
@@ -162,7 +165,7 @@ export function CityMediaDialog({ cityName, media, open, onClose, initialIndex =
                       <button
                         onClick={goToPrev}
                         className="absolute top-1/2 left-4 z-20 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white transition-colors hover:bg-black/70"
-                        aria-label="Anterior"
+                        aria-label={t('previous')}
                       >
                         <ChevronLeftIcon className="h-6 w-6" />
                       </button>
@@ -171,7 +174,7 @@ export function CityMediaDialog({ cityName, media, open, onClose, initialIndex =
                       <button
                         onClick={goToNext}
                         className="absolute top-1/2 right-4 z-20 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white transition-colors hover:bg-black/70"
-                        aria-label="Siguiente"
+                        aria-label={t('next')}
                       >
                         <ChevronRightIcon className="h-6 w-6" />
                       </button>

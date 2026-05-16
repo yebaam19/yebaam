@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { ProfessionalServiceBasic, ProfessionalServiceCategory } from '../../interfaces/directory.interfaces'
 import { ServiceCard } from './ServiceCard'
@@ -25,6 +26,7 @@ function AlphabetFilter({
   onLetterSelect: (letter: string | null) => void
   availableLetters: Set<string>
 }) {
+  const t = useTranslations('cities.directory.serviceList')
   return (
     <div className="flex flex-wrap justify-center gap-1 rounded-xl bg-neutral-100 p-2 dark:bg-neutral-800">
       <button
@@ -35,7 +37,7 @@ function AlphabetFilter({
             : 'text-neutral-600 hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-700'
         }`}
       >
-        Todos
+        {t('all')}
       </button>
       {ALPHABET.map((letter) => {
         const isAvailable = availableLetters.has(letter)
@@ -70,6 +72,7 @@ function CategoryGroup({
   category: ProfessionalServiceCategory
   services: ProfessionalServiceBasic[]
 }) {
+  const t = useTranslations('cities.directory.serviceList')
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -109,7 +112,7 @@ function CategoryGroup({
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-            aria-label="Scroll izquierda"
+            aria-label={t('scrollLeft')}
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
@@ -117,7 +120,7 @@ function CategoryGroup({
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-            aria-label="Scroll derecha"
+            aria-label={t('scrollRight')}
           >
             <ChevronRightIcon className="h-5 w-5" />
           </button>
@@ -140,6 +143,7 @@ function CategoryGroup({
  * Lista de servicios profesionales con búsqueda, filtro alfabético y agrupación por categoría
  */
 export function ServiceList({ services, categories }: ServiceListProps) {
+  const t = useTranslations('cities.directory.serviceList')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
 
@@ -201,7 +205,7 @@ export function ServiceList({ services, categories }: ServiceListProps) {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Buscar servicios profesionales..."
+          placeholder={t('searchPlaceholder')}
           className="w-full rounded-xl border border-neutral-200 bg-white py-3 pr-4 pl-12 text-neutral-900 placeholder-neutral-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
         />
       </div>
@@ -217,7 +221,7 @@ export function ServiceList({ services, categories }: ServiceListProps) {
       {filteredServices.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-neutral-500 dark:text-neutral-400">
-            No se encontraron servicios profesionales con los criterios de búsqueda
+            {t('noResults')}
           </p>
         </div>
       ) : (

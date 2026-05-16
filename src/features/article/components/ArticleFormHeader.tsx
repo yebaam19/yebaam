@@ -9,6 +9,7 @@
 
 import Avatar from '@/ui/Avatar'
 import { Button } from '@/ui/Button'
+import { useTranslations } from 'next-intl'
 import { ArticleContextType } from '../interfaces'
 import { ArticleContextSelector } from './ArticleContextSelector'
 
@@ -42,6 +43,7 @@ export function ArticleFormHeader({
   isLoadingContexts = false,
   toolbarSlot,
 }: ArticleFormHeaderProps) {
+  const t = useTranslations('article.editor')
   return (
     <div className="border-b border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
       <div className="mx-auto max-w-4xl px-4">
@@ -69,7 +71,7 @@ export function ArticleFormHeader({
           {toolbarSlot && <div className="max-w-md flex-1">{toolbarSlot}</div>}
 
           <Button color="primary" onClick={onPublish} className="shrink-0" disabled={isPublishing}>
-            {isPublishing ? 'Publicando...' : 'Publicar'}
+            {isPublishing ? t('publishing') : t('publish')}
           </Button>
         </div>
 
@@ -95,7 +97,7 @@ export function ArticleFormHeader({
               </div>
             </div>
             <Button color="primary" onClick={onPublish} className="shrink-0" disabled={isPublishing}>
-              {isPublishing ? 'Publicando...' : 'Publicar'}
+              {isPublishing ? t('publishing') : t('publish')}
             </Button>
           </div>
 

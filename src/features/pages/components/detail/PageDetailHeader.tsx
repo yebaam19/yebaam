@@ -1,9 +1,12 @@
+'use client';
+
 import { FC, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  CheckBadgeIcon, 
-  Cog6ToothIcon, 
+import { useTranslations } from 'next-intl';
+import {
+  CheckBadgeIcon,
+  Cog6ToothIcon,
   UserPlusIcon,
   UserMinusIcon,
   ShareIcon,
@@ -25,6 +28,7 @@ interface PageDetailHeaderProps {
 }
 
 export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
+  const t = useTranslations('pages.detail.header');
   // Obtener el usuario actual del store de auth
   const currentUser = useAuthStore((state) => state.user);
   
@@ -62,15 +66,15 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
       if (isFollowing) {
 
         await unfollowMutation.mutateAsync(page.id);
-        toast.success('Dejaste de seguir la página');
+        toast.success(t('unfollowSuccess'));
       } else {
 
         await followMutation.mutateAsync(page.id);
-        toast.success('Ahora sigues esta página');
+        toast.success(t('followSuccess'));
       }
     } catch (error: any) {
       console.error('[PageDetailHeader] Error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Error al procesar la solicitud';
+      const errorMessage = error.response?.data?.message || error.message || t('actionError');
       toast.error(errorMessage);
     }
   };
@@ -86,7 +90,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
       try {
         await navigator.share({
           title: page.name,
-          text: page.description || `Mira esta página: ${page.name}`,
+          text: page.description || t('shareText', { name: page.name }),
           url: window.location.href,
         });
       } catch {
@@ -96,7 +100,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
     }
     const { copyToClipboard } = await import('@/lib/clipboard');
     if (await copyToClipboard(window.location.href)) {
-      alert('Enlace copiado al portapapeles');
+      alert(t('linkCopied'));
     }
   };
 
@@ -107,7 +111,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
         {page.coverImageUrl ? (
           <Image
             src={page.coverImageUrl}
-            alt={`${page.name} cover`}
+            alt={t('coverAlt', { name: page.name })}
             fill
             sizes="100vw"
             className="object-cover"
@@ -156,7 +160,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                   )}
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  {formatFollowersCount(followersCount)} seguidores
+                  {t('followersCount', { count: formatFollowersCount(followersCount) })}
                 </p>
               </div>
 
@@ -170,17 +174,17 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                       className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     >
                       <Cog6ToothIcon className="w-5 h-5" />
-                      <span className="hidden sm:inline">Configuración</span>
-                      <span className="sm:hidden">Config</span>
+                      <span className="hidden sm:inline">{t('settings')}</span>
+                      <span className="sm:hidden">{t('settingsShort')}</span>
                     </Link>
 
-                    <button 
+                    <button
                       onClick={() => setIsMessengerOpen(true)}
                       className="relative inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                     >
                       <ChatBubbleLeftIcon className="w-5 h-5" />
-                      <span className="hidden sm:inline">Ver mensajes</span>
-                      <span className="sm:hidden">Mensajes</span>
+                      <span className="hidden sm:inline">{t('viewMessages')}</span>
+                      <span className="sm:hidden">{t('viewMessagesShort')}</span>
                       {unreadCount > 0 && (
                         <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 rounded-full">
                           {unreadCount > 99 ? '99+' : unreadCount}
@@ -206,17 +210,17 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          <span>Procesando...</span>
+                          <span>{t('processing')}</span>
                         </>
                       ) : isFollowing ? (
                         <>
                           <UserMinusIcon className="w-5 h-5" />
-                          <span>Siguiendo</span>
+                          <span>{t('following')}</span>
                         </>
                       ) : (
                         <>
                           <UserPlusIcon className="w-5 h-5" />
-                          <span>Seguir</span>
+                          <span>{t('follow')}</span>
                         </>
                       )}
                     </button>
@@ -232,8 +236,8 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                         }`}
                         title={
                           isNotificationsEnabled
-                            ? 'Notificaciones activadas'
-                            : 'Activar notificaciones'
+                            ? t('notificationsOn')
+                            : t('notificationsEnable')
                         }
                       >
                         {isNotificationsEnabled ? (
@@ -245,12 +249,12 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                     )}
 
                     {/* Message button - Opens messenger to send message to page */}
-                    <button 
+                    <button
                       onClick={() => setIsMessengerOpen(true)}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     >
                       <ChatBubbleLeftIcon className="w-5 h-5" />
-                      <span className="hidden sm:inline">Mensaje</span>
+                      <span className="hidden sm:inline">{t('message')}</span>
                     </button>
                   </>
                 )}
@@ -259,7 +263,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                 <button
                   onClick={handleShare}
                   className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  title="Compartir página"
+                  title={t('sharePage')}
                 >
                   <ShareIcon className="w-5 h-5" />
                 </button>
@@ -268,7 +272,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                 {!isOwnerOrAdmin && (
                   <button
                     className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    title="Más opciones"
+                    title={t('moreOptions')}
                   >
                     <EllipsisHorizontalIcon className="w-5 h-5" />
                   </button>

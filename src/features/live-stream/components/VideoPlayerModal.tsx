@@ -3,6 +3,7 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { XMarkIcon, UserIcon, EyeIcon, ClockIcon, ChatBubbleLeftIcon } from '@/components/icons/heroicons-shim';
 import { useRef, useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { liveStreamService } from '../services/live-stream.service';
 import { LiveStreamChat } from './LiveStreamChat';
 import { ViewerCounter } from './ViewerCounter';
@@ -37,6 +38,8 @@ interface VideoPlayerModalProps {
 }
 
 export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlayerModalProps) {
+  const t = useTranslations('liveStream.playerModal');
+  const locale = useLocale();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
@@ -44,27 +47,27 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
 
   const checkRecordingStatus = async () => {
     if (!stream) return;
-    
+
     setIsCheckingStatus(true);
-    setStatusMessage('Verificando estado de la grabación...');
-    
+    setStatusMessage(t('checkingStatusMessage'));
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/live-streams/${stream.id}/recording-status`);
       const data = await response.json();
-      
+
       console.log(' Estado de grabación:', data);
-      
+
       if (data.ready && data.recordingUrl) {
-        setStatusMessage('¡Grabación lista! Recargando...');
+        setStatusMessage(t('recordingReady'));
         setTimeout(() => {
           window.location.reload();
         }, 1500);
       } else {
-        setStatusMessage(` ${data.message || 'Aún procesando. Intenta de nuevo en 1-2 minutos.'}`);
+        setStatusMessage(` ${data.message || t('stillProcessing')}`);
       }
     } catch (error) {
       console.error('Error al verificar estado:', error);
-      setStatusMessage('Error al verificar. Intenta recargar la página.');
+      setStatusMessage(t('errorCheckingStatus'));
     } finally {
       setIsCheckingStatus(false);
     }
@@ -120,7 +123,7 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -147,7 +150,7 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
           {/* Header */}
           <div className="flex items-center justify-between border-b border-neutral-800 px-6 py-4 shrink-0">
             <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-               Transmisión Grabada
+               {t('title')}
             </DialogTitle>
             <div className="flex items-center gap-3">
               <button
@@ -160,12 +163,13 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
               >
                 <ChatBubbleLeftIcon className="h-5 w-5" />
                 <span className="text-sm font-medium">
-                  {showChat ? 'Ocultar chat' : 'Mostrar chat'}
+                  {showChat ? t('hideChat') : t('showChat')}
                 </span>
               </button>
               <button
                 onClick={onClose}
                 className="text-neutral-400 hover:text-white transition-colors"
+                aria-label={t('closeAriaLabel')}
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -193,14 +197,14 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
                     console.log('Duration:', videoRef.current?.duration);
                   }}
                 >
-                  Tu navegador no soporta la reproducción de video.
+                  {t('videoNotSupported')}
                 </video>
-                
+
                 {/* Debug Info */}
                 <div className="absolute top-4 left-4 bg-black/80 text-white text-xs p-2 rounded max-w-md">
                   <div className="font-mono">
-                    <div><strong>ID:</strong> {stream.id}</div>
-                    <div className="truncate"><strong>Recording:</strong> {stream.recordingUrl}</div>
+                    <div><strong>{t('debugIdLabel')}</strong> {stream.id}</div>
+                    <div className="truncate"><strong>{t('debugRecordingLabel')}</strong> {stream.recordingUrl}</div>
                   </div>
                 </div>
               </>
@@ -210,21 +214,20 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
                 <div className="text-center px-6">
                   <div className="text-6xl mb-4"></div>
                   <h3 className="text-white text-2xl font-bold mb-2">
-                    Procesando grabación...
+                    {t('processingTitle')}
                   </h3>
                   <p className="text-neutral-300 text-lg mb-4">
-                    AWS IVS está finalizando la grabación de este stream.
+                    {t('processingDescription')}
                   </p>
                   <p className="text-neutral-400 text-sm mb-4">
-                    <strong>Duración del stream:</strong> {formatDuration(stream.stats.duration)}
+                    <strong>{t('streamDurationLabel')}</strong> {formatDuration(stream.stats.duration)}
                   </p>
                   <p className="text-neutral-400 text-sm mb-6">
-                    Tiempo estimado de procesamiento: <strong>1-5 minutos</strong>
+                    {t('estimatedProcessingTime')} <strong>{t('processingTimeRange')}</strong>
                   </p>
                   <div className="bg-black/50 rounded-lg p-4 max-w-lg mx-auto mb-6">
                     <p className="text-neutral-300 text-sm">
-                      <strong> ¿Por qué tarda?</strong> Aunque el stream fue corto, AWS IVS necesita cerrar la transmisión,
-                      finalizar la escritura en S3 y generar el archivo de grabación final.
+                      <strong> {t('whyTakesLongTitle')}</strong> {t('whyTakesLongBody')}
                     </p>
                   </div>
                   
@@ -242,18 +245,18 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
                       disabled={isCheckingStatus}
                       className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-2"
                     >
-                      {isCheckingStatus ? ' Verificando...' : ' Verificar estado'}
+                      {isCheckingStatus ? ` ${t('checking')}` : ` ${t('checkStatus')}`}
                     </button>
                     <button
                       onClick={() => window.location.reload()}
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
                     >
-                       Refrescar página
+                       {t('refreshPage')}
                     </button>
                   </div>
-                  
+
                   <div className="mt-4 text-xs text-neutral-500 font-mono">
-                    Stream ID: {stream.id}
+                    {t('streamIdLabel')} {stream.id}
                   </div>
                 </div>
               </div>
@@ -261,9 +264,9 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-6xl mb-4"></div>
-                  <p className="text-white text-lg">Video no disponible</p>
+                  <p className="text-white text-lg">{t('videoUnavailable')}</p>
                   <p className="text-neutral-400 text-sm mt-2">
-                    La grabación aún se está procesando o no está disponible
+                    {t('videoUnavailableHint')}
                   </p>
                 </div>
               </div>
@@ -320,14 +323,16 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
               <div className="flex items-center gap-2">
                 <EyeIcon className="h-5 w-5" />
                 <span>
-                  {stream.stats.peakViewerCount} {stream.stats.peakViewerCount === 1 ? 'espectador' : 'espectadores'} pico
+                  {stream.stats.peakViewerCount === 1
+                    ? t('viewersPeakOne', { count: stream.stats.peakViewerCount })
+                    : t('viewersPeakOther', { count: stream.stats.peakViewerCount })}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <ClockIcon className="h-5 w-5" />
                 <span>
-                  Duración: {formatDuration(stream.stats.duration)}
+                  {t('durationLabel')} {formatDuration(stream.stats.duration)}
                 </span>
               </div>
 

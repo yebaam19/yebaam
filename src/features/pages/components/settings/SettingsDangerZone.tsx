@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useState, Fragment } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
 import { Page } from '../../types/page.types';
 import {
@@ -13,6 +16,7 @@ interface SettingsDangerZoneProps {
 }
 
 export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
+  const t = useTranslations('pages');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [confirmationText, setConfirmationText] = useState('');
@@ -38,10 +42,10 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">
-          Zona peligrosa
+          {t('settings.dangerZone.title')}
         </h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Acciones irreversibles que afectan permanentemente a la página
+          {t('settings.dangerZone.subtitle')}
         </p>
       </div>
 
@@ -51,11 +55,10 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
           <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div>
             <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
-              Precaución
+              {t('settings.dangerZone.warningTitle')}
             </h3>
             <p className="mt-1 text-sm text-red-700 dark:text-red-400">
-              Las acciones en esta sección son permanentes y no se pueden
-              deshacer. Procede con cuidado.
+              {t('settings.dangerZone.warningDescription')}
             </p>
           </div>
         </div>
@@ -71,28 +74,27 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
               </div>
               <div>
                 <h3 className="text-base font-medium text-gray-900 dark:text-white">
-                  Transferir propiedad
+                  {t('settings.dangerZone.transfer.title')}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Transfiere el control completo de la página a otro
-                  administrador. Esta acción es irreversible.
+                  {t('settings.dangerZone.transfer.description')}
                 </p>
                 <ul className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                   <li className="flex items-start gap-2">
                     <span className="text-orange-500 mt-0.5">•</span>
                     <span>
-                      El nuevo propietario tendrá control total de la página
+                      {t('settings.dangerZone.transfer.bullets.control')}
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-orange-500 mt-0.5">•</span>
                     <span>
-                      Tu rol cambiará automáticamente a Administrador
+                      {t('settings.dangerZone.transfer.bullets.role')}
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-orange-500 mt-0.5">•</span>
-                    <span>No podrás revertir esta acción</span>
+                    <span>{t('settings.dangerZone.transfer.bullets.irreversible')}</span>
                   </li>
                 </ul>
               </div>
@@ -101,7 +103,7 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
               onClick={() => setIsTransferModalOpen(true)}
               className="px-4 py-2 text-sm font-medium text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border border-orange-300 dark:border-orange-700 rounded-lg transition-colors"
             >
-              Transferir
+              {t('settings.dangerZone.transfer.button')}
             </button>
           </div>
         </div>
@@ -116,30 +118,29 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
             </div>
             <div>
               <h3 className="text-base font-medium text-gray-900 dark:text-white">
-                Eliminar página
+                {t('settings.dangerZone.delete.title')}
               </h3>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Elimina permanentemente esta página y todo su contenido. Esta
-                acción no se puede deshacer.
+                {t('settings.dangerZone.delete.description')}
               </p>
               <ul className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-0.5">•</span>
                   <span>
-                    Se eliminarán todas las publicaciones y comentarios
+                    {t('settings.dangerZone.delete.bullets.posts')}
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-0.5">•</span>
-                  <span>Los seguidores perderán acceso a la página</span>
+                  <span>{t('settings.dangerZone.delete.bullets.followers')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-0.5">•</span>
-                  <span>El nombre de usuario quedará disponible</span>
+                  <span>{t('settings.dangerZone.delete.bullets.username')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-0.5">•</span>
-                  <span>No hay forma de recuperar los datos</span>
+                  <span>{t('settings.dangerZone.delete.bullets.recovery')}</span>
                 </li>
               </ul>
             </div>
@@ -149,12 +150,12 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
             disabled={!isOwner}
             className="px-4 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Eliminar
+            {t('settings.dangerZone.delete.button')}
           </button>
         </div>
         {!isOwner && (
           <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 italic">
-            Solo el propietario puede eliminar la página
+            {t('settings.dangerZone.delete.ownerOnly')}
           </p>
         )}
       </div>
@@ -192,7 +193,7 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl transition-all">
                   <div className="flex items-center justify-between mb-4">
                     <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Transferir propiedad
+                      {t('settings.dangerZone.transfer.modalTitle')}
                     </Dialog.Title>
                     <button
                       onClick={() => setIsTransferModalOpen(false)}
@@ -203,9 +204,7 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
                   </div>
 
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Esta funcionalidad estará disponible próximamente.
-                    Selecciona un administrador para transferir la propiedad de
-                    la página.
+                    {t('settings.dangerZone.transfer.modalDescription')}
                   </p>
 
                   <div className="flex justify-end gap-3 mt-6">
@@ -213,7 +212,7 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
                       onClick={() => setIsTransferModalOpen(false)}
                       className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                      Cancelar
+                      {t('settings.dangerZone.delete.cancel')}
                     </button>
                   </div>
                 </Dialog.Panel>
@@ -260,30 +259,32 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
                     </div>
                     <div className="flex-1">
                       <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-                        ¿Eliminar página?
+                        {t('settings.dangerZone.delete.modalTitle')}
                       </Dialog.Title>
                       <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Esta acción es permanente y eliminará todo el contenido
-                        de la página.
+                        {t('settings.dangerZone.delete.modalDescription')}
                       </p>
                     </div>
                   </div>
 
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
                     <p className="text-sm text-red-800 dark:text-red-300 font-medium">
-                      Se eliminarán:
+                      {t('settings.dangerZone.delete.willDelete')}
                     </p>
                     <ul className="mt-2 space-y-1 text-sm text-red-700 dark:text-red-400">
-                      <li>• Todas las publicaciones y comentarios</li>
-                      <li>• {page.followerCount || 0} seguidores</li>
-                      <li>• Todas las fotos y videos</li>
-                      <li>• El historial completo</li>
+                      <li>• {t('settings.dangerZone.delete.willDeleteItems.posts')}</li>
+                      <li>• {t('settings.dangerZone.delete.willDeleteItems.followers', { count: page.followerCount || 0 })}</li>
+                      <li>• {t('settings.dangerZone.delete.willDeleteItems.media')}</li>
+                      <li>• {t('settings.dangerZone.delete.willDeleteItems.history')}</li>
                     </ul>
                   </div>
 
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Escribe <strong>{page.name}</strong> para confirmar:
+                      {t.rich('settings.dangerZone.delete.confirmLabel', {
+                        name: page.name,
+                        strong: (chunks) => <strong>{chunks}</strong>,
+                      })}
                     </label>
                     <input
                       type="text"
@@ -303,14 +304,14 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
                       disabled={isDeleting}
                       className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
                     >
-                      Cancelar
+                      {t('settings.dangerZone.delete.cancel')}
                     </button>
                     <button
                       onClick={handleDeletePage}
                       disabled={confirmationText !== page.name || isDeleting}
                       className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                     >
-                      {isDeleting ? 'Eliminando...' : 'Eliminar página'}
+                      {isDeleting ? t('settings.dangerZone.delete.deleting') : t('settings.dangerZone.delete.confirmButton')}
                     </button>
                   </div>
                 </Dialog.Panel>

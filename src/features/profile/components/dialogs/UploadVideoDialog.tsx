@@ -7,6 +7,7 @@
  */
 
 import { useState, Fragment } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import ButtonPrimary from '@/ui/ButtonPrimary'
 import ButtonSecondary from '@/ui/ButtonSecondary'
@@ -20,6 +21,7 @@ interface UploadVideoDialogProps {
 }
 
 export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDialogProps) {
+  const t = useTranslations('profile.dialogs.uploadVideo')
   const { albums, uploadVideo, isUploading, uploadQueue } = useProfileMediaStore()
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -34,9 +36,9 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
     : undefined
   const statusLabel = (() => {
     if (!currentItem || !isUploading) return null
-    if (currentItem.status === 'uploading') return `Subiendo a Cloudflare… ${currentItem.progress}%`
-    if (currentItem.status === 'processing') return 'Procesando video (Cloudflare Stream)…'
-    if (currentItem.status === 'pending') return 'Preparando…'
+    if (currentItem.status === 'uploading') return t('statusUploading', { progress: currentItem.progress })
+    if (currentItem.status === 'processing') return t('statusProcessing')
+    if (currentItem.status === 'pending') return t('statusPending')
     return null
   })()
 
@@ -71,7 +73,7 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
       })
       handleClose()
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Error al subir el video'
+      const msg = error instanceof Error ? error.message : t('errorFallback')
       setErrorMsg(msg)
     }
   }
@@ -125,7 +127,7 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold text-neutral-900 dark:text-white">
-                    Subir video
+                    {t('title')}
                   </h3>
                   <button
                     onClick={handleClose}
@@ -148,13 +150,13 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                           <VideoCameraIcon className="w-8 h-8 text-neutral-400 dark:text-neutral-600" />
                         </div>
                         <p className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
-                          Selecciona un video
+                          {t('dropzoneTitle')}
                         </p>
                         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
-                          o arrastra y suelta aquí
+                          {t('dropzoneSubtitle')}
                         </p>
                         <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                          Formatos soportados: MP4, MOV, AVI, etc.
+                          {t('dropzoneHint')}
                         </p>
                         <input
                           id="video-upload"
@@ -195,10 +197,10 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                       {/* Caption */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                          Descripción (opcional)
+                          {t('captionLabel')}
                         </label>
                         <Textarea
-                          placeholder="Escribe algo sobre este video..."
+                          placeholder={t('captionPlaceholder')}
                           value={caption}
                           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCaption(e.target.value)}
                           rows={3}
@@ -209,7 +211,7 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                       {/* Album Selection */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                          Álbum (opcional)
+                          {t('albumLabel')}
                         </label>
                         <select
                           value={albumId}
@@ -217,10 +219,10 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                           disabled={isUploading}
                           className="block w-full rounded-xl border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 dark:text-white"
                         >
-                          <option value="">Sin álbum</option>
+                          <option value="">{t('albumNone')}</option>
                           {albums.map((album) => (
                             <option key={album.id} value={album.id}>
-                              {album.name} ({album.videosCount} videos)
+                              {t('albumOption', { name: album.name, count: album.videosCount })}
                             </option>
                           ))}
                         </select>
@@ -229,7 +231,7 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                       {/* Privacy */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                          Privacidad
+                          {t('privacyLabel')}
                         </label>
                         <select
                           value={visibility}
@@ -237,9 +239,9 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                           disabled={isUploading}
                           className="block w-full rounded-xl border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 dark:text-white"
                         >
-                          <option value="public">Público - Todos pueden ver</option>
-                          <option value="friends">Amigos - Solo mis amigos</option>
-                          <option value="only_me">Privado - Solo yo</option>
+                          <option value="public">{t('privacyPublic')}</option>
+                          <option value="friends">{t('privacyFriends')}</option>
+                          <option value="only_me">{t('privacyOnlyMe')}</option>
                         </select>
                       </div>
                     </>
@@ -265,14 +267,14 @@ export default function UploadVideoDialog({ open, onOpenChange }: UploadVideoDia
                         disabled={isUploading}
                         className="flex-1"
                       >
-                        Cancelar
+                        {t('cancel')}
                       </ButtonSecondary>
                       <ButtonPrimary
                         onClick={handleUpload}
                         disabled={isUploading}
                         className="flex-1"
                       >
-                        {isUploading ? 'Subiendo...' : 'Subir video'}
+                        {isUploading ? t('uploading') : t('submit')}
                       </ButtonPrimary>
                     </div>
                   </div>

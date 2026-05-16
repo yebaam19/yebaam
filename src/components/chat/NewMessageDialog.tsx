@@ -3,6 +3,7 @@
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
@@ -36,6 +37,7 @@ interface SearchResult {
 const SEARCH_DEBOUNCE_MS = 250;
 
 export default function NewMessageDialog({ open, onClose, onConversationOpened }: NewMessageDialogProps) {
+  const t = useTranslations('chat.newMessage');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [remoteResults, setRemoteResults] = useState<SearchResult[]>([]);
@@ -140,7 +142,7 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
       addConversation(conversation);
       const displayName = user.firstName
         ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`.trim()
-        : user.username || 'Usuario';
+        : user.username || t('userFallback');
       const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`;
       onConversationOpened({
         id: user.id,
@@ -150,7 +152,7 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
       });
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudo iniciar la conversación';
+      const message = error instanceof Error ? error.message : t('errors.openConversation');
       toast.error(message);
     } finally {
       setPendingId(null);
@@ -189,12 +191,12 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
             >
               <DialogPanel className="w-full max-w-md rounded-xl bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                  <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Nuevo mensaje</h2>
+                  <h2 className="text-base font-semibold text-neutral-900 dark:text-white">{t('title')}</h2>
                   <button
                     type="button"
                     onClick={onClose}
                     className="rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                    aria-label="Cerrar"
+                    aria-label={t('closeAriaLabel')}
                   >
                     <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
                   </button>
@@ -208,7 +210,7 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Buscar amigos o personas"
+                      placeholder={t('searchPlaceholder')}
                       className="w-full rounded-full bg-neutral-100 dark:bg-neutral-800 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                   </div>
@@ -218,7 +220,7 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
                   {filteredFriends.length > 0 && (
                     <div>
                       <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        Amigos
+                        {t('friends')}
                       </div>
                       {filteredFriends.map((user) => (
                         <UserRow
@@ -235,7 +237,7 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
                   {showRemote && (
                     <div>
                       <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        Otras personas
+                        {t('otherPeople')}
                       </div>
                       {remoteResults.map((user) => (
                         <UserRow
@@ -250,18 +252,18 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
                   )}
 
                   {isSearching && debouncedQuery.length >= 2 && (
-                    <div className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">Buscando...</div>
+                    <div className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">{t('searching')}</div>
                   )}
 
                   {nothingFound && (
                     <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                      Sin resultados para &quot;{debouncedQuery}&quot;
+                      {t('noResults', { query: debouncedQuery })}
                     </div>
                   )}
 
                   {!debouncedQuery && filteredFriends.length === 0 && (
                     <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                      Aún no tienes amigos. Busca a alguien por nombre o usuario.
+                      {t('noFriendsYet')}
                     </div>
                   )}
                 </div>
@@ -282,9 +284,10 @@ interface UserRowProps {
 }
 
 function UserRow({ user, pending, disabled, onSelect }: UserRowProps) {
+  const t = useTranslations('chat.newMessage');
   const displayName = user.firstName
     ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`.trim()
-    : user.username || 'Usuario';
+    : user.username || t('userFallback');
   const initials = displayName
     .split(' ')
     .map((n) => n[0])
@@ -306,7 +309,7 @@ function UserRow({ user, pending, disabled, onSelect }: UserRowProps) {
           <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">@{user.username}</div>
         )}
       </div>
-      {pending && <span className="text-xs text-neutral-500">Abriendo...</span>}
+      {pending && <span className="text-xs text-neutral-500">{t('opening')}</span>}
     </button>
   );
 }

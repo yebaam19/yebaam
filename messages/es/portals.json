@@ -17,5 +17,27 @@
   },
   "section": {
     "comingSoon": "Próximamente"
+  },
+  "menu": {
+    "comingSoonBadge": "Pronto"
+  },
+  "salsa": {
+    "config": {
+      "name": "Portal de la Salsa",
+      "title": "Portal de la Salsa",
+      "subtitle": "Cali, Colombia",
+      "description": "La Capital Mundial de la Salsa"
+    },
+    "menu": {
+      "about": "Acerca del Portal",
+      "members": "Miembros y Seguidores",
+      "publicChat": "Chat Público",
+      "articles": "Artículos",
+      "events": "Eventos",
+      "directory": "Directorio de la Salsa",
+      "blogs": "Blogs Coleccionistas",
+      "promotions": "Promociones",
+      "contact": "Contacto"
+    }
   }
 }

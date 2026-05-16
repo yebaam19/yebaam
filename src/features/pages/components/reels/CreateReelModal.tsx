@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog } from '@headlessui/react';
 import {
   XMarkIcon,
@@ -22,6 +23,7 @@ interface CreateReelModalProps {
 type Step = 'choose' | 'record' | 'upload' | 'preview' | 'uploading';
 
 export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProps) {
+  const t = useTranslations('pages.reels.create');
   const [step, setStep] = useState<Step>('choose');
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -108,7 +110,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
 
     } catch (error) {
       console.error('Error al iniciar grabación:', error);
-      alert('No se pudo acceder a la cámara. Verifica los permisos.');
+      alert(t('cameraError'));
     }
   };
 
@@ -132,13 +134,13 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
 
     // Validar tipo
     if (!file.type.startsWith('video/')) {
-      alert('Por favor selecciona un archivo de video');
+      alert(t('invalidVideoType'));
       return;
     }
 
     // Validar tamaño
     if (file.size > MAX_SIZE) {
-      alert(`El archivo es muy grande. Máximo ${MAX_SIZE / (1024 * 1024)}MB`);
+      alert(t('fileTooLargeTemplate', { size: MAX_SIZE / (1024 * 1024) }));
       return;
     }
 
@@ -150,7 +152,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
       const duration = Math.round(video.duration);
 
       if (duration > MAX_DURATION) {
-        alert(`El video es muy largo. Máximo ${MAX_DURATION} segundos`);
+        alert(t('videoTooLongTemplate', { seconds: MAX_DURATION }));
         return;
       }
 
@@ -166,7 +168,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
   const publishMutation = useAsyncAction(
     async () => {
       const videoToUpload = videoBlob || videoFile;
-      if (!videoToUpload) throw new Error('No hay video para subir');
+      if (!videoToUpload) throw new Error(t('noVideoError'));
 
       console.log('[CREATE REEL] Iniciando publicación:', {
         size: videoToUpload.size,
@@ -197,7 +199,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Error al subir video a S3');
+        throw new Error(t('uploadS3Error'));
       }
 
       console.log('[CREATE REEL] Video subido a S3');
@@ -230,7 +232,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
       },
       onError: (error) => {
         console.error('[CREATE REEL] Error:', error);
-        alert('Error al publicar reel. Intenta nuevamente.');
+        alert(t('publishError'));
         setStep('preview');
       },
     }
@@ -259,7 +261,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
           {step === 'choose' && (
             <div className="flex flex-col items-center justify-center h-full p-8">
               <Dialog.Title className="text-2xl font-bold text-white mb-8">
-                Crear Reel
+                {t('title')}
               </Dialog.Title>
 
               <div className="w-full space-y-4">
@@ -268,7 +270,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
                   className="w-full p-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl transition-all flex items-center justify-center gap-3"
                 >
                   <VideoCameraIcon className="w-8 h-8 text-white" />
-                  <span className="text-lg font-semibold text-white">Grabar Video</span>
+                  <span className="text-lg font-semibold text-white">{t('recordVideo')}</span>
                 </button>
 
                 <button
@@ -276,7 +278,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
                   className="w-full p-6 bg-white/10 hover:bg-white/20 rounded-xl transition-all flex items-center justify-center gap-3"
                 >
                   <ArrowUpTrayIcon className="w-8 h-8 text-white" />
-                  <span className="text-lg font-semibold text-white">Subir Video</span>
+                  <span className="text-lg font-semibold text-white">{t('uploadVideo')}</span>
                 </button>
 
                 <input
@@ -289,7 +291,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
               </div>
 
               <p className="text-sm text-gray-400 mt-6 text-center">
-                Videos verticales (9:16) de hasta 90 segundos y 100MB
+                {t('limits')}
               </p>
             </div>
           )}
@@ -348,7 +350,7 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
                 onClick={() => setStep('choose')}
                 className="absolute top-20 left-4 px-4 py-2 bg-black/50 text-white rounded-lg hover:bg-black/70 transition-colors"
               >
-                Cancelar
+                {t('cancel')}
               </button>
             </div>
           )}
@@ -367,21 +369,21 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
               <div className="p-4 bg-gray-800 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Descripción (opcional)
+                    {t('captionLabel')}
                   </label>
                   <textarea
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
-                    placeholder="Agrega una descripción a tu reel..."
+                    placeholder={t('captionPlaceholder')}
                     className="w-full p-3 bg-gray-700 text-white rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
                     rows={3}
                     maxLength={500}
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    {caption.length}/500 caracteres · {videoDuration}s
+                    {t('captionCounter', { count: caption.length, duration: videoDuration })}
                   </p>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
@@ -391,13 +393,13 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
                     }}
                     className="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors font-medium"
                   >
-                    Volver a grabar
+                    {t('recordAgain')}
                   </button>
                   <button
                     onClick={handlePublish}
                     className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors font-medium"
                   >
-                    Publicar Reel
+                    {t('publish')}
                   </button>
                 </div>
               </div>
@@ -408,9 +410,9 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
           {step === 'uploading' && (
             <div className="flex flex-col items-center justify-center h-full text-white p-8">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-white mb-4" />
-              <p className="text-lg font-semibold mb-2">Publicando tu reel...</p>
+              <p className="text-lg font-semibold mb-2">{t('publishing')}</p>
               <p className="text-sm text-gray-400 text-center">
-                Esto puede tomar unos momentos dependiendo del tamaño del video
+                {t('publishingHint')}
               </p>
             </div>
           )}

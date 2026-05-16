@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * EditWorkEducationDialog
  *
@@ -6,6 +8,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import BaseDialog from './BaseDialog'
@@ -23,6 +26,8 @@ export default function EditWorkEducationDialog({
   open,
   onOpenChange,
 }: EditWorkEducationDialogProps) {
+  const t = useTranslations('profile.dialogs.editWorkEducation')
+  const tc = useTranslations('profile.dialogs.common')
   const [workPlace, setWorkPlace] = useState(user.workPlace || '')
   const [studyPlace, setStudyPlace] = useState(user.studyPlace || '')
   const [languages, setLanguages] = useState<string[]>(user.languages ?? [])
@@ -51,40 +56,42 @@ export default function EditWorkEducationDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Editar trabajo y estudios"
-      description="Actualiza tu información profesional, académica e idiomas"
+      title={t('title')}
+      description={t('description')}
       onSubmit={handleSubmit}
       isLoading={isLoading}
+      submitLabel={tc('save')}
+      cancelLabel={tc('cancel')}
     >
       <div className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-2">Lugar de trabajo</label>
+          <label className="block text-sm font-medium mb-2">{t('workPlaceLabel')}</label>
           <Input
             value={workPlace}
             onChange={(e) => setWorkPlace(e.target.value)}
-            placeholder="Ej: Google, Microsoft, Freelance"
+            placeholder={t('workPlacePlaceholder')}
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            Nombre de tu empresa o lugar de trabajo actual
+            {t('workPlaceHelper')}
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Lugar de estudio</label>
+          <label className="block text-sm font-medium mb-2">{t('studyPlaceLabel')}</label>
           <Input
             value={studyPlace}
             onChange={(e) => setStudyPlace(e.target.value)}
-            placeholder="Ej: Universidad Nacional, Instituto Técnico"
+            placeholder={t('studyPlacePlaceholder')}
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            Universidad, instituto o centro educativo
+            {t('studyPlaceHelper')}
           </p>
         </div>
 
         <TagInputRow
-          label="Idiomas"
-          helper="Agrega los idiomas que hablas. Presiona Enter o coma para agregar."
-          placeholder="Ej. Español, Inglés, Francés"
+          label={t('languagesLabel')}
+          helper={t('languagesHelper')}
+          placeholder={t('languagesPlaceholder')}
           value={languages}
           onChange={setLanguages}
           max={15}

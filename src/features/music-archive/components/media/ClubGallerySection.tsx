@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   QueueListIcon,
   Squares2X2Icon,
@@ -47,6 +48,7 @@ interface Props {
 
 export function ClubGallerySection({ clubId, clubName, canUpload, items }: Props) {
   const router = useRouter();
+  const t = useTranslations('musica.media');
   const [showUploader, setShowUploader] = useState(false);
   const stored = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [override, setOverride] = useState<ViewMode | null>(null);
@@ -66,10 +68,10 @@ export function ClubGallerySection({ clubId, clubName, canUpload, items }: Props
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Galería del club
+            {t('clubGalleryHeading')}
           </h2>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Fotos y videos compartidos por miembros de {clubName}.
+            {t('clubGallerySubtitle', { name: clubName })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -80,7 +82,7 @@ export function ClubGallerySection({ clubId, clubName, canUpload, items }: Props
               onClick={() => setShowUploader(true)}
               className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
             >
-              Subir foto / video
+              {t('uploadButton')}
             </button>
           )}
         </div>
@@ -88,9 +90,7 @@ export function ClubGallerySection({ clubId, clubName, canUpload, items }: Props
 
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          {canUpload
-            ? 'Aún no hay fotos ni videos. Sé el primero en aportar.'
-            : 'Aún no hay fotos ni videos en este club.'}
+          {canUpload ? t('clubGalleryEmptyAuthor') : t('galleryEmpty')}
         </p>
       ) : view === 'feed' ? (
         <ClubMediaFeed items={items} />
@@ -116,22 +116,23 @@ function ViewToggle({
   value: ViewMode;
   onChange: (next: ViewMode) => void;
 }) {
+  const t = useTranslations('musica.media');
   return (
     <div
       role="tablist"
-      aria-label="Tipo de vista"
+      aria-label={t('viewToggleAria')}
       className="inline-flex overflow-hidden rounded-md border border-zinc-300 bg-white text-xs dark:border-zinc-700 dark:bg-zinc-900"
     >
       <ToggleButton
         active={value === 'feed'}
         onClick={() => onChange('feed')}
-        label="Feed"
+        label={t('viewFeed')}
         icon={<QueueListIcon className="h-4 w-4" />}
       />
       <ToggleButton
         active={value === 'grid'}
         onClick={() => onChange('grid')}
-        label="Cuadrícula"
+        label={t('viewGrid')}
         icon={<Squares2X2Icon className="h-4 w-4" />}
       />
     </div>

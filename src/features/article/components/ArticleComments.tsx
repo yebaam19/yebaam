@@ -10,6 +10,7 @@ import Avatar from '@/ui/Avatar'
 import { Button } from '@/ui/Button'
 import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { ArticleComment } from '../interfaces'
 import { articleService } from '../services'
 import { formatRelativeDate } from '../utils/date-utils'
@@ -20,6 +21,7 @@ interface ArticleCommentsProps {
 }
 
 export function ArticleComments({ articleId, currentUserId }: ArticleCommentsProps) {
+  const t = useTranslations('article.comments')
   const [comments, setComments] = useState<ArticleComment[]>([])
   const [newComment, setNewComment] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -92,7 +94,7 @@ export function ArticleComments({ articleId, currentUserId }: ArticleCommentsPro
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Escribe un comentario..."
+            placeholder={t('writePlaceholder')}
             className="w-full resize-none rounded-lg border border-neutral-200 bg-white p-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:ring-2 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500"
             rows={3}
           />
@@ -104,7 +106,7 @@ export function ArticleComments({ articleId, currentUserId }: ArticleCommentsPro
               className="gap-2 px-3 py-1.5 text-sm"
             >
               <PaperAirplaneIcon className="h-4 w-4" />
-              {isSubmitting ? 'Enviando...' : 'Comentar'}
+              {isSubmitting ? t('sending') : t('submit')}
             </Button>
           </div>
         </div>
@@ -113,7 +115,7 @@ export function ArticleComments({ articleId, currentUserId }: ArticleCommentsPro
       {/* Comments List */}
       {comments.length === 0 ? (
         <div className="py-8 text-center text-neutral-500 dark:text-neutral-400">
-          <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
+          <p>{t('empty')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -134,9 +136,9 @@ export function ArticleComments({ articleId, currentUserId }: ArticleCommentsPro
                 </div>
                 <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{comment.content}</p>
                 <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
-                  <button className="hover:text-neutral-700 dark:hover:text-neutral-300">Me gusta</button>
-                  <button className="hover:text-neutral-700 dark:hover:text-neutral-300">Responder</button>
-                  {comment._count?.likes ? <span>{comment._count.likes} me gusta</span> : null}
+                  <button className="hover:text-neutral-700 dark:hover:text-neutral-300">{t('like')}</button>
+                  <button className="hover:text-neutral-700 dark:hover:text-neutral-300">{t('reply')}</button>
+                  {comment._count?.likes ? <span>{t('likesCount', { count: comment._count.likes })}</span> : null}
                 </div>
               </div>
             </div>

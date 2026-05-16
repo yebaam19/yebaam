@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PlusIcon, PhotoIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 import { usePagePhotos, useDeletePagePhoto } from '../../hooks/usePagePhotos';
 import { PagePhoto } from '../../interfaces/page-photo.interface';
@@ -14,6 +17,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
   pageId,
   isOwner = false,
 }) => {
+  const t = useTranslations('pages');
   const [selectedPhoto, setSelectedPhoto] = useState<PagePhoto | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -27,8 +31,8 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
 
   const handleDeletePhoto = async (photoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    if (confirm('¿Estás seguro de eliminar esta foto?')) {
+
+    if (confirm(t('photos.deleteConfirm'))) {
       await deletePhotoMutation.mutateAsync(photoId);
     }
   };
@@ -62,7 +66,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Fotos
+            {t('photos.title')}
           </h2>
           {isOwner && (
             <button
@@ -70,7 +74,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
               <PlusIcon className="w-5 h-5" />
-              Subir foto
+              {t('photos.uploadCta')}
             </button>
           )}
         </div>
@@ -81,12 +85,12 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
             <PhotoIcon className="w-8 h-8 text-gray-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {isOwner ? 'No has subido fotos aún' : 'No hay fotos'}
+            {isOwner ? t('photos.emptyOwnerTitle') : t('photos.emptyVisitorTitle')}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
             {isOwner
-              ? 'Comparte momentos especiales de tu negocio. Sube fotos de tus productos, servicios o equipo.'
-              : 'Esta página aún no ha compartido fotos.'}
+              ? t('photos.emptyOwnerDescription')
+              : t('photos.emptyVisitorDescription')}
           </p>
           {isOwner && (
             <button
@@ -94,7 +98,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
             >
               <PlusIcon className="w-5 h-5" />
-              Subir primera foto
+              {t('photos.uploadFirstCta')}
             </button>
           )}
         </div>
@@ -109,10 +113,10 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Fotos
+            {t('photos.title')}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {photos.length} {photos.length === 1 ? 'foto' : 'fotos'}
+            {photos.length} {photos.length === 1 ? t('photos.photoSingular') : t('photos.photoPlural')}
           </p>
         </div>
         {isOwner && (
@@ -121,7 +125,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             <PlusIcon className="w-5 h-5" />
-            Subir foto
+            {t('photos.uploadCta')}
           </button>
         )}
       </div>
@@ -137,7 +141,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
             {/* Photo */}
             <Image
               src={photo.url}
-              alt={photo.caption || 'Foto de página'}
+              alt={photo.caption || t('photos.photoAlt')}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -159,7 +163,7 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
                   onClick={(e) => handleDeletePhoto(photo.id, e)}
                   disabled={deletePhotoMutation.isPending}
                   className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                  title="Eliminar foto"
+                  title={t('photos.deleteTitle')}
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>

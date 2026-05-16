@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/features/auth'
 import { PROFILE_FEATURES } from '../config/features.config'
 import { FeatureCard } from './FeatureCard'
@@ -9,6 +10,7 @@ import { VerificationCard } from './VerificationCard'
 export function ProfilesContent() {
   const { user } = useAuth()
   const canCreate = user?.emailVerified ?? false
+  const t = useTranslations('profiles')
 
   return (
     <div className="bg-linear-to-b from-primary-50/40 via-white to-neutral-50 dark:from-primary-900/10 dark:via-neutral-950 dark:to-neutral-950">
@@ -18,13 +20,13 @@ export function ProfilesContent() {
         <section id="explora-espacios" className="space-y-5">
           <header className="space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:text-primary-400">
-              Explora tus espacios
+              {t('section.eyebrow')}
             </p>
             <h2 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl dark:text-white">
-              Elige dónde quieres crecer hoy
+              {t('section.title')}
             </h2>
             <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
-              Cada espacio tiene su propósito. Únete, crea y conecta a tu ritmo.
+              {t('section.subtitle')}
             </p>
           </header>
 

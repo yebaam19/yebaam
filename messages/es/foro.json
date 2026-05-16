@@ -137,5 +137,164 @@
     "errors": {
       "sendFailed": "No se pudo enviar el mensaje."
     }
+  },
+  "pagination": {
+    "ariaLabel": "Paginación de foro",
+    "prevAria": "Página anterior",
+    "nextAria": "Página siguiente"
+  },
+  "admin": {
+    "nav": {
+      "ariaLabel": "Secciones del admin de foros"
+    },
+    "categories": {
+      "errorGeneric": "Error",
+      "deleteCategoryConfirm": "¿Eliminar esta categoría y todos sus foros?",
+      "deleteForumConfirm": "¿Eliminar este foro y todos sus temas?",
+      "newCategoryPlaceholder": "Nueva categoría",
+      "addCategory": "Añadir categoría",
+      "delete": "Eliminar",
+      "noForums": "Sin foros.",
+      "forumNamePlaceholder": "Nombre del foro",
+      "noParent": "— Sin padre —",
+      "subforumOf": "Subforo de: {name}",
+      "descriptionPlaceholder": "Descripción (opcional)",
+      "addForum": "Añadir foro"
+    },
+    "owners": {
+      "title": "Perfiles",
+      "countLabel": "{filtered} de {total} {count, plural, one {perfil} other {perfiles}}",
+      "filters": {
+        "allTypes": "Todos los tipos",
+        "club": "Clubs",
+        "group": "Grupos",
+        "page": "Páginas",
+        "blog": "Blogs",
+        "profile": "Perfiles",
+        "portal": "Portal",
+        "searchPlaceholder": "Buscar por nombre o slug…"
+      },
+      "table": {
+        "name": "Nombre",
+        "type": "Tipo",
+        "slug": "Slug",
+        "privacy": "Privacidad",
+        "status": "Estado",
+        "actions": "Acciones",
+        "empty": "Sin resultados."
+      },
+      "status": {
+        "enabled": "Habilitado",
+        "inactive": "Inactivo",
+        "noForum": "Sin foro"
+      },
+      "actions": {
+        "enable": "Habilitar",
+        "manage": "Administrar",
+        "disable": "Deshabilitar",
+        "reactivate": "Reactivar"
+      },
+      "ownerType": {
+        "club": "Club",
+        "group": "Grupo",
+        "blog": "Blog",
+        "page": "Página",
+        "city": "Ciudad",
+        "profile": "Perfil",
+        "portal": "Portal",
+        "community": "Comunidad"
+      },
+      "errors": {
+        "enableFailed": "No se pudo habilitar.",
+        "disableFailed": "No se pudo deshabilitar."
+      }
+    },
+    "topics": {
+      "filters": {
+        "searchPlaceholder": "Buscar por título…",
+        "allSpaces": "Todos los espacios",
+        "allForums": "Todos los foros",
+        "authorPlaceholder": "Autor (username)",
+        "pinnedAny": "Fijado: cualquiera",
+        "pinnedOnly": "Solo fijados",
+        "pinnedNone": "Sin fijar",
+        "statusAny": "Estado: cualquiera",
+        "lockedOnly": "Solo cerrados",
+        "openOnly": "Solo abiertos",
+        "clear": "Limpiar",
+        "apply": "Aplicar filtros"
+      },
+      "summary": {
+        "found": "{count, plural, one {# tema} other {# temas}} encontrados",
+        "selected": "{count} seleccionado(s)"
+      },
+      "bulk": {
+        "title": "Acciones en lote ({count}):",
+        "pin": "Fijar",
+        "unpin": "Quitar fijado",
+        "lock": "Cerrar",
+        "unlock": "Reabrir",
+        "movePlaceholder": "Mover a foro…",
+        "move": "Mover",
+        "delete": "Eliminar",
+        "deleteConfirm": "¿Eliminar {count, plural, one {# tema} other {# temas}} y todos sus mensajes?",
+        "actionFailed": "Acción \"{key}\" falló para {id}"
+      },
+      "table": {
+        "selectAllAria": "Seleccionar todos en página",
+        "selectAria": "Seleccionar {title}",
+        "topic": "Tema",
+        "spaceForum": "Espacio / Foro",
+        "replies": "Resp.",
+        "views": "Vistas",
+        "lastPost": "Último mensaje",
+        "pinned": "Fijado",
+        "locked": "Cerrado",
+        "byAuthor": "por",
+        "empty": "No hay temas que coincidan con los filtros."
+      },
+      "status": {
+        "applying": "Aplicando «{action}»…"
+      }
+    },
+    "spaceSettings": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "visibility": "Visibilidad",
+      "visibilityPublic": "Público",
+      "visibilityPrivate": "Privado (solo miembros)",
+      "visibilitySecret": "Secreto (oculto)",
+      "enabled": "Foro activo",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "saved": "Cambios guardados.",
+      "errorGeneric": "Error"
+    }
+  },
+  "editor": {
+    "toolbar": {
+      "aria": "Formato",
+      "bold": "Negrita",
+      "italic": "Cursiva",
+      "underline": "Subrayado",
+      "link": "Enlace",
+      "linkInsert": "Insertar enlace",
+      "uploadImage": "Subir imagen",
+      "uploadImageTitle": "Subir imagen (PNG, JPG, GIF, WebP — máx 10 MB)",
+      "uploadingImage": "Subiendo…",
+      "imageLabel": "Imagen",
+      "code": "Código",
+      "quote": "Cita",
+      "placeholderText": "texto",
+      "placeholderCode": "código",
+      "placeholderQuote": "cita",
+      "promptLinkUrl": "URL del enlace (https://…)",
+      "alertInvalidLink": "El enlace debe empezar con http:// o https://",
+      "errors": {
+        "onlyImages": "Solo se permiten imágenes.",
+        "tooLarge": "La imagen supera el límite de 10 MB.",
+        "uploadFailed": "No se pudo subir la imagen."
+      }
+    }
   }
 }

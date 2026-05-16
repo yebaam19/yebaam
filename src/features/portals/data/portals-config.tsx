@@ -19,75 +19,77 @@ import { PortalConfig, PortalMenuItem } from '../interfaces'
 import { salsaSections } from './salsa-sections'
 
 /**
- * Items del menú para el Portal de la Salsa
+ * Items del menú para el Portal de la Salsa.
+ * `label` holds an i18n key resolved by PortalMenu via next-intl.
  */
 export const salsaMenuItems: PortalMenuItem[] = [
   {
     icon: <MusicalNoteIcon className="size-5" />,
-    label: 'Acerca del Portal',
+    label: 'portals.salsa.menu.about',
     href: '/feed/portals/salsa',
     isComingSoon: false,
   },
   {
     icon: <UserGroupIcon className="size-5" />,
-    label: 'Miembros y Seguidores',
+    label: 'portals.salsa.menu.members',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <ChatBubbleLeftRightIcon className="size-5" />,
-    label: 'Chat Público',
+    label: 'portals.salsa.menu.publicChat',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <NewspaperIcon className="size-5" />,
-    label: 'Artículos',
+    label: 'portals.salsa.menu.articles',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <CalendarDaysIcon className="size-5" />,
-    label: 'Eventos',
+    label: 'portals.salsa.menu.events',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <MapPinIcon className="size-5" />,
-    label: 'Directorio de la Salsa',
+    label: 'portals.salsa.menu.directory',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <BookOpenIcon className="size-5" />,
-    label: 'Blogs Coleccionistas',
+    label: 'portals.salsa.menu.blogs',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <SparklesIcon className="size-5" />,
-    label: 'Promociones',
+    label: 'portals.salsa.menu.promotions',
     href: '#',
     isComingSoon: true,
   },
   {
     icon: <EnvelopeIcon className="size-5" />,
-    label: 'Contacto',
+    label: 'portals.salsa.menu.contact',
     href: '#',
     isComingSoon: true,
   },
 ]
 
 /**
- * Configuración del Portal de la Salsa
+ * Configuración del Portal de la Salsa.
+ * `name`/`title`/`subtitle`/`description` hold i18n keys resolved at render.
  */
 export const salsaPortalConfig: PortalConfig = {
   id: 'salsa',
-  name: 'Portal de la Salsa',
+  name: 'portals.salsa.config.name',
   slug: 'salsa',
-  title: 'Portal de la Salsa',
-  subtitle: 'Cali, Colombia',
-  description: 'La Capital Mundial de la Salsa',
+  title: 'portals.salsa.config.title',
+  subtitle: 'portals.salsa.config.subtitle',
+  description: 'portals.salsa.config.description',
   primaryColor: '#dc2626', // red-600
   secondaryColor: '#f59e0b', // amber-500
   sections: salsaSections,

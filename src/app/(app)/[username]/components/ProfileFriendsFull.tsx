@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { 
+import { useTranslations } from 'next-intl';
+import {
   MagnifyingGlassIcon,
   UserGroupIcon,
   UserPlusIcon,
@@ -33,12 +34,13 @@ export default function ProfileFriendsFull({
   totalFriends,
   isOwnProfile,
 }: ProfileFriendsFullProps) {
+  const t = useTranslations('profile.friendsFull');
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'online' | 'recent'>('all');
 
   const filteredFriends = friends.filter((friend) => {
     const matchesSearch = friend.displayName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = 
+    const matchesFilter =
       filter === 'all' ? true :
       filter === 'online' ? friend.isOnline :
       filter === 'recent' ? true : // TODO: Implementar lógica de recientes
@@ -53,20 +55,20 @@ export default function ProfileFriendsFull({
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Amigos
+              {t('title')}
             </h2>
             <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-              {totalFriends.toLocaleString()} amigos
+              {t('count', { count: totalFriends })}
             </p>
           </div>
-          
+
           {isOwnProfile && (
             <Link
               href={'/friends/requests' as Route}
               className="flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
             >
               <UserPlusIcon className="w-5 h-5" />
-              Solicitudes
+              {t('requests')}
             </Link>
           )}
         </div>
@@ -80,7 +82,7 @@ export default function ProfileFriendsFull({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar amigos..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-12 pr-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
             />
           </div>
@@ -95,7 +97,7 @@ export default function ProfileFriendsFull({
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
               }`}
             >
-              Todos
+              {t('filterAll')}
             </button>
             <button
               onClick={() => setFilter('online')}
@@ -105,7 +107,7 @@ export default function ProfileFriendsFull({
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
               }`}
             >
-              En línea
+              {t('filterOnline')}
             </button>
             <button
               onClick={() => setFilter('recent')}
@@ -115,7 +117,7 @@ export default function ProfileFriendsFull({
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
               }`}
             >
-              Recientes
+              {t('filterRecent')}
             </button>
           </div>
         </div>
@@ -154,19 +156,22 @@ export default function ProfileFriendsFull({
                   </Link>
                   {friend.mutualFriends && friend.mutualFriends > 0 && (
                     <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                      {friend.mutualFriends} amigos en común
+                      {t('mutualCount', { count: friend.mutualFriends })}
                     </p>
                   )}
-                  
+
                   {/* Actions */}
                   <div className="flex gap-2 mt-3">
                     <Link
                       href={`/${friend.username}` as Route}
                       className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg text-sm font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-center"
                     >
-                      Ver perfil
+                      {t('viewProfile')}
                     </Link>
-                    <button className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                    <button
+                      aria-label={t('moreOptionsAria')}
+                      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                    >
                       <EllipsisVerticalIcon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                     </button>
                   </div>
@@ -181,12 +186,12 @@ export default function ProfileFriendsFull({
             <UserGroupIcon className="w-10 h-10 text-neutral-400 dark:text-neutral-600" />
           </div>
           <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
-            No se encontraron amigos
+            {t('emptyTitle')}
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             {searchQuery
-              ? `No hay amigos que coincidan con "${searchQuery}"`
-              : 'No hay amigos para mostrar'}
+              ? t('emptySearchMessage', { query: searchQuery })
+              : t('emptyDefaultMessage')}
           </p>
         </div>
       )}

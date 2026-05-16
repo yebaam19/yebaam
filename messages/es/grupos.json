@@ -93,6 +93,51 @@
     "loadingDelete": "Eliminando grupo...",
     "title": "Configuración del grupo",
     "noPermission": "No tienes permisos para acceder a esta página",
-    "updateSuccess": "Grupo actualizado exitosamente"
+    "updateSuccess": "Grupo actualizado exitosamente",
+    "privacyConfirm": {
+      "title": "Cambiar privacidad del grupo",
+      "questionPrefix": "¿Estás seguro de que quieres cambiar la privacidad del grupo a ",
+      "publicLabel": "público",
+      "privateLabel": "privado",
+      "questionSuffix": "?",
+      "publicWarning": " Al hacer el grupo público, cualquier persona podrá ver todo el contenido y unirse sin aprobación.",
+      "privateWarning": "🔒 Al hacer el grupo privado, solo los miembros actuales podrán ver el contenido. Los nuevos miembros necesitarán aprobación.",
+      "cancel": "Cancelar",
+      "changing": "Cambiando...",
+      "confirm": "Confirmar cambio"
+    },
+    "editInfo": {
+      "heading": "Información del grupo",
+      "subheading": "Edita el nombre, descripción y categoría",
+      "editLabel": "Editar información",
+      "editHint": "Nombre, descripción y categoría"
+    },
+    "deleteConfirm": {
+      "title": "Eliminar grupo",
+      "questionPrefix": "¿Estás seguro de que quieres eliminar ",
+      "questionSuffix": "?",
+      "warningLine": " Esta acción es",
+      "irreversible": "irreversible",
+      "warningTail": ". Se eliminarán:",
+      "removalItems": [
+        "Todas las publicaciones del grupo",
+        "Todos los comentarios y reacciones",
+        "La información de todos los miembros",
+        "El historial completo del grupo"
+      ],
+      "cancel": "Cancelar",
+      "delete": "Eliminar grupo"
+    }
+  },
+  "editModal": {
+    "title": "Editar información del grupo",
+    "nameLabel": "Nombre del grupo *",
+    "namePlaceholder": "Ej: Desarrolladores Web",
+    "descriptionLabel": "Descripción *",
+    "descriptionPlaceholder": "Describe de qué trata tu grupo...",
+    "categoryLabel": "Categoría",
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "save": "Guardar cambios"
   }
 }

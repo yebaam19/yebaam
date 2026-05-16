@@ -1,5 +1,6 @@
 'use client'
 import { useBusinessCategories, useCitiesByState, useStates } from '@/features/businesses/hooks'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import type { BusinessFormData } from '../CreateBusinessModal'
@@ -12,6 +13,7 @@ interface CreateBusinessStep2Props {
 }
 
 export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBusinessStep2Props) {
+  const t = useTranslations('businesses')
   const [categoryId, setCategoryId] = useState(data.categoryId || '')
   const [stateId, setStateId] = useState(data.stateId || '')
   const [cityId, setCityId] = useState(data.cityId || '')
@@ -49,8 +51,8 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
   return (
     <div className="space-y-6">
       <div>
-        <h4 className="mb-2 text-lg font-medium text-neutral-900 dark:text-white">Categoría y ubicación</h4>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">¿Qué tipo de negocio es y dónde está ubicado?</p>
+        <h4 className="mb-2 text-lg font-medium text-neutral-900 dark:text-white">{t('create.step2.title')}</h4>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">{t('create.step2.subtitle')}</p>
       </div>
 
       {/* Categoría */}
@@ -59,7 +61,7 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
           htmlFor="business-category"
           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Categoría <span className="text-red-500">*</span>
+          {t('create.step2.category')} <span className="text-red-500">*</span>
         </label>
         <select
           id="business-category"
@@ -68,7 +70,7 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
           disabled={loadingCategories}
           className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
         >
-          <option value="">{loadingCategories ? 'Cargando categorías...' : 'Selecciona una categoría'}</option>
+          <option value="">{loadingCategories ? t('create.step2.categoryLoading') : t('create.step2.categoryPlaceholder')}</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
@@ -84,7 +86,7 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
             htmlFor="business-state"
             className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
-            Departamento <span className="text-red-500">*</span>
+            {t('create.step2.state')} <span className="text-red-500">*</span>
           </label>
           <select
             id="business-state"
@@ -93,7 +95,7 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
             disabled={loadingStates}
             className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
           >
-            <option value="">{loadingStates ? 'Cargando departamentos...' : 'Selecciona un departamento'}</option>
+            <option value="">{loadingStates ? t('create.step2.stateLoading') : t('create.step2.statePlaceholder')}</option>
             {states.map((state) => (
               <option key={state.id} value={state.id}>
                 {state.name}
@@ -107,7 +109,7 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
             htmlFor="business-city"
             className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
-            Ciudad <span className="text-red-500">*</span>
+            {t('create.step2.city')} <span className="text-red-500">*</span>
           </label>
           <select
             id="business-city"
@@ -116,7 +118,7 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
             disabled={!stateId || loadingCities}
             className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
           >
-            <option value="">{loadingCities ? 'Cargando ciudades...' : 'Selecciona una ciudad'}</option>
+            <option value="">{loadingCities ? t('create.step2.cityLoading') : t('create.step2.cityPlaceholder')}</option>
             {cities.map((city) => (
               <option key={city.id} value={city.id}>
                 {city.name}
@@ -132,14 +134,14 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
           htmlFor="business-address"
           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Dirección <span className="text-xs text-neutral-400">(opcional)</span>
+          {t('create.step2.address')} <span className="text-xs text-neutral-400">{t('create.step2.optional')}</span>
         </label>
         <input
           id="business-address"
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="Ej: Calle 10 #45-20, Zona G"
+          placeholder={t('create.step2.addressPlaceholder')}
           className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder-neutral-400 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
         />
       </div>
@@ -150,14 +152,14 @@ export function CreateBusinessStep2({ data, onChange, onNext, onBack }: CreateBu
           onClick={onBack}
           className="rounded-lg border border-neutral-300 px-6 py-2.5 font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
         >
-          Atrás
+          {t('create.buttons.back')}
         </button>
         <button
           onClick={handleNext}
           disabled={!canProceed}
           className="rounded-lg bg-primary-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Siguiente
+          {t('create.buttons.next')}
         </button>
       </div>
     </div>

@@ -209,7 +209,7 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
                 </div>
               </div>
               <Button color="primary" onClick={handlePublish} className="shrink-0" disabled={isPublishing}>
-                {isPublishing ? 'Publicando...' : 'Publicar'}
+                {isPublishing ? t('publishing') : t('publish')}
               </Button>
             </div>
 

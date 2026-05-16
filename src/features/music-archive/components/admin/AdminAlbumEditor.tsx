@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
 import { uploadService } from '@/lib/service/upload.service';
 import { getAlbumForAdminEdit, updateAlbum } from '../../actions/albums.actions';
@@ -39,6 +40,7 @@ interface Props {
  *  tracks. Server actions called: updateAlbum, updateTrack, deleteTrack,
  *  replaceTrackAudio, createTrack. */
 export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: Props) {
+  const t = useTranslations('musica.admin.albumEditor');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [album, setAlbum] = useState<MusicAlbumRow | null>(null);
@@ -136,8 +138,8 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
     }
   }
 
-  async function patchTrack(t: MusicTrackRow, patch: Partial<MusicTrackRow>) {
-    const res = await updateTrack(t.id, {
+  async function patchTrack(track: MusicTrackRow, patch: Partial<MusicTrackRow>) {
+    const res = await updateTrack(track.id, {
       title: patch.title,
       position: patch.position,
       side: patch.side as MusicTrackSide | null | undefined,
@@ -148,14 +150,14 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
       setError(res.error);
       return;
     }
-    setTracks((prev) => prev.map((x) => (x.id === t.id ? res.data : x)));
+    setTracks((prev) => prev.map((x) => (x.id === track.id ? res.data : x)));
   }
 
-  async function replaceAudio(t: MusicTrackRow, file: File) {
+  async function replaceAudio(track: MusicTrackRow, file: File) {
     setError(null);
     try {
       const upload = await uploadService.uploadAudio(file);
-      const res = await replaceTrackAudio(t.id, {
+      const res = await replaceTrackAudio(track.id, {
         r2Key: upload.key,
         format: trackFormatFromMime(file.type),
         durationSeconds: upload.durationSeconds || null,
@@ -164,9 +166,9 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
         setError(res.error);
         return;
       }
-      setTracks((prev) => prev.map((x) => (x.id === t.id ? res.data : x)));
+      setTracks((prev) => prev.map((x) => (x.id === track.id ? res.data : x)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo reemplazar el audio.');
+      setError(err instanceof Error ? err.message : t('errReplaceAudio'));
     }
   }
 
@@ -195,13 +197,18 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
       <div className="my-8 w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Editar álbum</h3>
-          <button type="button" onClick={onClose} className="text-zinc-500 hover:text-zinc-700">
+          <h3 className="text-lg font-semibold">{t('heading')}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('closeAria')}
+            className="text-zinc-500 hover:text-zinc-700"
+          >
             ✕
           </button>
         </div>
 
-        {loading && <p className="text-sm text-zinc-500">Cargando…</p>}
+        {loading && <p className="text-sm text-zinc-500">{t('loading')}</p>}
         {error && (
           <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
@@ -249,15 +256,15 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
             </div>
 
             <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-              <h4 className="mb-3 text-sm font-semibold">Canciones ({tracks.length})</h4>
+              <h4 className="mb-3 text-sm font-semibold">{t('tracksHeadingWithCount', { count: tracks.length })}</h4>
               <ul className="divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-                {tracks.map((t) => (
+                {tracks.map((track) => (
                   <TrackRow
-                    key={t.id}
-                    track={t}
-                    onPatch={(patch) => patchTrack(t, patch)}
-                    onReplaceAudio={(file) => replaceAudio(t, file)}
-                    onDelete={() => setDeletingTrack(t)}
+                    key={track.id}
+                    track={track}
+                    onPatch={(patch) => patchTrack(track, patch)}
+                    onReplaceAudio={(file) => replaceAudio(track, file)}
+                    onDelete={() => setDeletingTrack(track)}
                   />
                 ))}
               </ul>
@@ -273,8 +280,8 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
 
         <DeleteConfirmDialog
           isOpen={Boolean(deletingTrack)}
-          title={`Eliminar canción "${deletingTrack?.title ?? ''}"`}
-          description="El archivo de audio en R2 también será eliminado."
+          title={t('deleteTrackTitle', { title: deletingTrack?.title ?? '' })}
+          description={t('deleteTrackDescription')}
           onClose={() => setDeletingTrack(null)}
           onConfirm={async () => {
             if (!deletingTrack) return;

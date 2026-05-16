@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ClockIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { useSearchHistory } from '../hooks/useSearchHistory';
@@ -21,6 +22,7 @@ export function SearchHistory({
   onSearchClick,
   className = '',
 }: SearchHistoryProps) {
+  const t = useTranslations('search');
   const { history, removeFromHistory, clearHistory } = useSearchHistory();
 
   if (history.length === 0) {
@@ -45,13 +47,13 @@ export function SearchHistory({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-          Búsquedas recientes
+          {t('history.title')}
         </h3>
         <button
           onClick={handleClearAll}
           className="text-xs text-primary-600 dark:text-primary-500 hover:underline"
         >
-          Limpiar todo
+          {t('history.clearAll')}
         </button>
       </div>
 
@@ -66,7 +68,7 @@ export function SearchHistory({
             <button
               onClick={() => handleItemClick(item.query, item.type)}
               className="absolute inset-0 z-0"
-              aria-label={`Buscar: ${item.query}`}
+              aria-label={t('history.searchAria', { query: item.query })}
             />
 
             {/* Icon */}
@@ -79,7 +81,7 @@ export function SearchHistory({
               </p>
               {item.type && item.type !== 'all' && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  en {getTypeLabel(item.type)}
+                  {t('history.inScope', { scope: t(`filters.${item.type}`) })}
                 </p>
               )}
             </div>
@@ -88,7 +90,7 @@ export function SearchHistory({
             <button
               onClick={(e) => handleRemove(e, item.id)}
               className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-full transition-opacity shrink-0 relative z-10"
-              aria-label="Eliminar de historial"
+              aria-label={t('history.removeAria')}
             >
               <XMarkIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             </button>
@@ -97,18 +99,4 @@ export function SearchHistory({
       </div>
     </div>
   );
-}
-
-/**
- * Helper: Obtener label en español del tipo
- */
-function getTypeLabel(type: SearchResultType): string {
-  const labels: Record<SearchResultType, string> = {
-    all: 'Todo',
-    users: 'Usuarios',
-    posts: 'Publicaciones',
-    hashtags: 'Hashtags',
-    groups: 'Grupos',
-  };
-  return labels[type] || type;
 }

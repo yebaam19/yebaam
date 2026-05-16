@@ -7,6 +7,7 @@
  */
 
 import { useState, Fragment } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import ButtonPrimary from '@/ui/ButtonPrimary'
 import ButtonSecondary from '@/ui/ButtonSecondary'
@@ -22,6 +23,7 @@ interface UploadPhotoDialogProps {
 }
 
 export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDialogProps) {
+  const t = useTranslations('profile.dialogs.uploadPhoto')
   const { albums, uploadPhoto, isUploading } = useProfileMediaStore()
   
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -72,7 +74,7 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
       }
       handleClose()
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Error al subir las fotos'
+      const msg = error instanceof Error ? error.message : t('errorFallback')
       setErrorMsg(msg)
     }
   }
@@ -118,11 +120,12 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold text-neutral-900 dark:text-white">
-                    Subir fotos
+                    {t('title')}
                   </h3>
                   <button
                     onClick={handleClose}
                     className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    aria-label={t('close')}
                   >
                     <XMarkIcon className="h-5 w-5 text-neutral-500" />
                   </button>
@@ -141,10 +144,10 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                           <PhotoIcon className="w-8 h-8 text-neutral-400 dark:text-neutral-600" />
                         </div>
                         <p className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
-                          Selecciona las fotos
+                          {t('dropzoneTitle')}
                         </p>
                         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                          o arrastra y suelta aquí
+                          {t('dropzoneSubtitle')}
                         </p>
                         <input
                           id="photo-upload"
@@ -184,10 +187,10 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                       {/* Caption */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                          Descripción (opcional)
+                          {t('captionLabel')}
                         </label>
                         <Textarea
-                          placeholder="Escribe algo sobre estas fotos..."
+                          placeholder={t('captionPlaceholder')}
                           value={caption}
                           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCaption(e.target.value)}
                           rows={3}
@@ -198,7 +201,7 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                       {/* Album Selection */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                          Álbum (opcional)
+                          {t('albumLabel')}
                         </label>
                         <select
                           value={albumId}
@@ -206,10 +209,10 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                           disabled={isUploading}
                           className="block w-full rounded-xl border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 dark:text-white"
                         >
-                          <option value="">Sin álbum</option>
+                          <option value="">{t('albumNone')}</option>
                           {albums.map((album) => (
                             <option key={album.id} value={album.id}>
-                              {album.name} ({album.photosCount} fotos)
+                              {t('albumOption', { name: album.name, count: album.photosCount })}
                             </option>
                           ))}
                         </select>
@@ -218,7 +221,7 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                       {/* Privacy */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                          Privacidad
+                          {t('privacyLabel')}
                         </label>
                         <select
                           value={visibility}
@@ -226,9 +229,9 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                           disabled={isUploading}
                           className="block w-full rounded-xl border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 dark:text-white"
                         >
-                          <option value="public">Público - Todos pueden ver</option>
-                          <option value="friends">Amigos - Solo mis amigos</option>
-                          <option value="only_me">Privado - Solo yo</option>
+                          <option value="public">{t('privacyPublic')}</option>
+                          <option value="friends">{t('privacyFriends')}</option>
+                          <option value="only_me">{t('privacyOnlyMe')}</option>
                         </select>
                       </div>
                     </>
@@ -249,14 +252,14 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                         disabled={isUploading}
                         className="flex-1"
                       >
-                        Cancelar
+                        {t('cancel')}
                       </ButtonSecondary>
                       <ButtonPrimary
                         onClick={handleUpload}
                         disabled={isUploading}
                         className="flex-1"
                       >
-                        {isUploading ? 'Subiendo...' : `Subir ${selectedFiles.length} foto${selectedFiles.length > 1 ? 's' : ''}`}
+                        {isUploading ? t('uploading') : t('uploadCount', { count: selectedFiles.length })}
                       </ButtonPrimary>
                     </div>
                   </div>

@@ -1,0 +1,58 @@
+{
+  "create": {
+    "title": "Tu historia",
+    "back": "Volver",
+    "visibleFor24h": "Visible por 24 horas",
+    "willBeVisible": "Tu historia será visible durante 24 horas",
+    "addToStory": "Añadir a tu historia",
+    "createWithPhoto": "Crear historia con foto",
+    "shareImage": "Comparte una imagen",
+    "createWithVideo": "Crear historia con video",
+    "upToSeconds": "Hasta {seconds}s",
+    "createTextStory": "Crear historia de texto",
+    "customBackgroundFont": "Fondo y tipografía personalizados",
+    "selectedFile": "Archivo seleccionado",
+    "changeFile": "Cambiar archivo",
+    "background": "Fondo",
+    "backgroundOption": "Fondo {index}",
+    "size": "Tamaño",
+    "align": "Alinear",
+    "preview": "Vista previa",
+    "chooseOption": "Elige una opción para comenzar.",
+    "writeYourStory": "Escribe tu historia...",
+    "startWriting": "Empieza a escribir...",
+    "createYourStory": "Crea tu historia",
+    "photo": "Foto",
+    "video": "Video",
+    "discard": "Descartar",
+    "share": "Compartir",
+    "publishing": "Publicando…",
+    "discardModalTitle": "¿Descartar historia?",
+    "discardModalDescription": "Si sales ahora, perderás todos los cambios que hayas hecho.",
+    "continueEditing": "Continuar editando",
+    "confirmDiscard": "¿Descartar esta historia?",
+    "errors": {
+      "invalidFileType": "Tipo de archivo no válido",
+      "fileExceedsSize": "El archivo excede {size}MB",
+      "videoTooLong": "El video no puede durar más de {seconds} segundos",
+      "writeSomething": "Escribe algo para tu historia",
+      "selectFile": "Selecciona un archivo",
+      "textNotAvailable": "Las historias de texto aún no están disponibles",
+      "publishError": "Error al publicar la historia"
+    },
+    "success": {
+      "published": "¡Historia publicada exitosamente!"
+    }
+  },
+  "ring": {
+    "yourStory": "Tu historia",
+    "create": "Crear",
+    "noStories": "No hay historias disponibles"
+  },
+  "header": {
+    "back": "Atrás",
+    "now": "Ahora",
+    "publishing": "Publicando...",
+    "publish": "Publicar"
+  }
+}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import clsx from 'clsx'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   page: number
@@ -13,6 +14,7 @@ const cell =
   'inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium transition-colors'
 
 export default function ForoPagination({ page, pageSize, total, buildHref }: Props) {
+  const t = useTranslations('foro.pagination')
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   if (totalPages <= 1) return null
 
@@ -50,12 +52,12 @@ export default function ForoPagination({ page, pageSize, total, buildHref }: Pro
   return (
     <nav
       className="flex flex-wrap items-center gap-1.5 text-xs"
-      aria-label="Paginación de foro"
+      aria-label={t('ariaLabel')}
     >
       <span className="mr-1 text-neutral-500 dark:text-neutral-400">
         Página <strong>{page}</strong> de <strong>{totalPages}</strong>
       </span>
-      {page > 1 && pageLink(page - 1, '‹', false, 'Página anterior')}
+      {page > 1 && pageLink(page - 1, '‹', false, t('prevAria'))}
       {items.map((it, i) =>
         it === 'gap' ? (
           <span key={`gap-${i}`} className="px-1 text-neutral-400">
@@ -65,7 +67,7 @@ export default function ForoPagination({ page, pageSize, total, buildHref }: Pro
           pageLink(it, String(it), it === page)
         ),
       )}
-      {page < totalPages && pageLink(page + 1, '›', false, 'Página siguiente')}
+      {page < totalPages && pageLink(page + 1, '›', false, t('nextAria'))}
     </nav>
   )
 }

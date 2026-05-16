@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -50,6 +51,7 @@ export function CommunityRulesPanel({
   isOwner = false,
 }: CommunityRulesPanelProps) {
   const router = useRouter();
+  const t = useTranslations('communities');
   const [isEditing, setIsEditing] = useState(false);
   const [drafts, setDrafts] = useState<DraftRule[]>(() => toDrafts(c.rules));
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export function CommunityRulesPanel({
 
   const handleAddRule = () => {
     if (drafts.length >= MAX_RULES) {
-      setError(`Máximo ${MAX_RULES} reglas.`);
+      setError(t('admin.rules.errorMax', { max: MAX_RULES }));
       return;
     }
     setError(null);
@@ -109,7 +111,7 @@ export function CommunityRulesPanel({
       .filter((d) => d.title.length > 0);
 
     if (cleaned.some((d) => d.title.length === 0)) {
-      setError('Cada regla necesita un título.');
+      setError(t('admin.rules.errorTitleRequired'));
       return;
     }
 
@@ -138,7 +140,7 @@ export function CommunityRulesPanel({
           <div className="flex items-center gap-2">
             <ShieldCheckIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-              Reglas de la comunidad
+              {t('admin.rules.title')}
             </h2>
           </div>
           {isOwner && !isEditing && (
@@ -148,7 +150,7 @@ export function CommunityRulesPanel({
               className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
             >
               <PencilSquareIcon className="h-4 w-4" />
-              {sortedRules.length > 0 ? 'Editar reglas' : 'Añadir reglas'}
+              {sortedRules.length > 0 ? t('admin.rules.editRules') : t('admin.rules.addRules')}
             </button>
           )}
         </div>
@@ -182,8 +184,8 @@ export function CommunityRulesPanel({
             ) : (
               <p className="text-sm italic text-gray-500 dark:text-gray-400">
                 {isOwner
-                  ? 'Aún no has publicado reglas. Añade las primeras para que los miembros sepan qué se espera de ellos.'
-                  : 'Esta comunidad aún no ha publicado reglas.'}
+                  ? t('admin.rules.emptyOwner')
+                  : t('admin.rules.emptyMember')}
               </p>
             )}
           </>
@@ -193,7 +195,7 @@ export function CommunityRulesPanel({
           <div className="space-y-4">
             {drafts.length === 0 && (
               <p className="text-sm italic text-gray-500 dark:text-gray-400">
-                Aún no hay reglas. Pulsa “Añadir regla” para crear la primera.
+                {t('admin.rules.editorEmpty')}
               </p>
             )}
             {drafts.map((draft, idx) => (
@@ -203,7 +205,7 @@ export function CommunityRulesPanel({
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Regla {idx + 1}
+                    {t('admin.rules.ruleLabel', { n: idx + 1 })}
                   </span>
                   <div className="flex items-center gap-1">
                     <button
@@ -211,7 +213,7 @@ export function CommunityRulesPanel({
                       onClick={() => handleMove(idx, -1)}
                       disabled={idx === 0 || isPending}
                       className="rounded-md p-1 text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:text-gray-400 dark:hover:bg-gray-700"
-                      aria-label="Mover regla arriba"
+                      aria-label={t('admin.rules.moveUpAria')}
                     >
                       <ChevronUpIcon className="h-4 w-4" />
                     </button>
@@ -220,7 +222,7 @@ export function CommunityRulesPanel({
                       onClick={() => handleMove(idx, 1)}
                       disabled={idx === drafts.length - 1 || isPending}
                       className="rounded-md p-1 text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:text-gray-400 dark:hover:bg-gray-700"
-                      aria-label="Mover regla abajo"
+                      aria-label={t('admin.rules.moveDownAria')}
                     >
                       <ChevronDownIcon className="h-4 w-4" />
                     </button>
@@ -229,7 +231,7 @@ export function CommunityRulesPanel({
                       onClick={() => handleRemoveRule(draft.key)}
                       disabled={isPending}
                       className="rounded-md p-1 text-red-500 hover:bg-red-50 disabled:opacity-30 dark:hover:bg-red-900/30"
-                      aria-label="Eliminar regla"
+                      aria-label={t('admin.rules.removeAria')}
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
@@ -239,7 +241,7 @@ export function CommunityRulesPanel({
                   type="text"
                   value={draft.title}
                   onChange={(e) => handleField(draft.key, 'title', e.target.value)}
-                  placeholder="Título de la regla"
+                  placeholder={t('admin.rules.titlePlaceholder')}
                   disabled={isPending}
                   maxLength={MAX_TITLE}
                   className="mb-2 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
@@ -247,7 +249,7 @@ export function CommunityRulesPanel({
                 <textarea
                   value={draft.description}
                   onChange={(e) => handleField(draft.key, 'description', e.target.value)}
-                  placeholder="Descripción (opcional)"
+                  placeholder={t('admin.rules.descriptionPlaceholder')}
                   rows={2}
                   disabled={isPending}
                   maxLength={MAX_DESCRIPTION}
@@ -263,7 +265,7 @@ export function CommunityRulesPanel({
               className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:text-blue-400"
             >
               <PlusIcon className="h-4 w-4" />
-              Añadir regla
+              {t('admin.rules.addRule')}
             </button>
 
             <div className="flex items-center justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
@@ -274,7 +276,7 @@ export function CommunityRulesPanel({
                 className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-gray-700/60"
               >
                 <XMarkIcon className="h-4 w-4" />
-                Cancelar
+                {t('admin.rules.cancel')}
               </button>
               <button
                 type="button"
@@ -282,7 +284,7 @@ export function CommunityRulesPanel({
                 disabled={isPending}
                 className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
               >
-                {isPending ? 'Guardando...' : 'Guardar reglas'}
+                {isPending ? t('admin.rules.saving') : t('admin.rules.save')}
               </button>
             </div>
           </div>
@@ -292,10 +294,10 @@ export function CommunityRulesPanel({
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex items-center gap-2 mb-3">
           <FlagIcon className="h-5 w-5 text-red-500" />
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Denuncias</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('admin.rules.reportsTitle')}</h2>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          ¿Viste algo que rompe las reglas? Pronto podrás reportar contenido directamente desde aquí.
+          {t('admin.rules.reportsDescription')}
         </p>
         <button
           type="button"
@@ -303,10 +305,10 @@ export function CommunityRulesPanel({
           className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 cursor-not-allowed"
         >
           <FlagIcon className="h-4 w-4" />
-          Reportar contenido
+          {t('admin.rules.reportContent')}
         </button>
         <span className="ml-2 inline-block rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-[10px] font-medium px-2 py-0.5">
-          Próximamente
+          {t('comingSoon.badge')}
         </span>
       </section>
     </div>

@@ -128,67 +128,68 @@ export const BACKGROUND_COLORS = [
 
 /**
  * Sentimientos disponibles (estilo Facebook)
+ * Label is resolved via i18n: t(`feelings.${id}`)
  */
 export const FEELINGS = [
   {
     type: FeelingType.HAPPY,
-    label: 'feliz',
+    id: 'happy',
     emoji: '',
     color: '#FFD700',
     prefix: 'se siente',
   },
   {
     type: FeelingType.BLESSED,
-    label: 'bendecido/a',
+    id: 'blessed',
     emoji: '',
     color: '#87CEEB',
     prefix: 'se siente',
   },
   {
     type: FeelingType.LOVED,
-    label: 'amado/a',
+    id: 'loved',
     emoji: '',
     color: '#FF69B4',
     prefix: 'se siente',
   },
   {
     type: FeelingType.EXCITED,
-    label: 'emocionado/a',
+    id: 'excited',
     emoji: '',
     color: '#FFA500',
     prefix: 'se siente',
   },
   {
     type: FeelingType.GRATEFUL,
-    label: 'agradecido/a',
+    id: 'grateful',
     emoji: '',
     color: '#32CD32',
     prefix: 'se siente',
   },
   {
     type: FeelingType.SAD,
-    label: 'triste',
+    id: 'sad',
     emoji: '',
     color: '#4682B4',
     prefix: 'se siente',
   },
   {
     type: FeelingType.ANGRY,
-    label: 'molesto/a',
+    id: 'angry',
     emoji: '',
     color: '#DC143C',
     prefix: 'se siente',
   },
   {
     type: FeelingType.CONFUSED,
-    label: 'confundido/a',
+    id: 'confused',
     emoji: '',
     color: '#A9A9A9',
     prefix: 'se siente',
   },
   {
     type: FeelingType.TIRED,
-    label: 'cansado/a',
+    id: 'tired',
     emoji: '',
     color: '#708090',
     prefix: 'se siente',
@@ -197,11 +198,12 @@ export const FEELINGS = [
 
 /**
  * Actividades disponibles (estilo Facebook)
+ * Label is resolved via i18n: t(`activities.${id}`)
  */
 export const ACTIVITIES = [
   {
     type: FeelingType.EATING,
-    label: 'comiendo',
+    id: 'eating',
     emoji: '',
     placeholder: '¿Qué estás comiendo?',
     color: '#FF6347',
@@ -209,7 +211,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.DRINKING,
-    label: 'tomando',
+    id: 'drinking',
     emoji: '',
     placeholder: '¿Qué estás tomando?',
     color: '#FF1493',
@@ -217,7 +219,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.TRAVELING,
-    label: 'viajando a',
+    id: 'traveling',
     emoji: '',
     placeholder: '¿A dónde viajas?',
     color: '#1E90FF',
@@ -225,7 +227,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.WATCHING,
-    label: 'viendo',
+    id: 'watching',
     emoji: '',
     placeholder: '¿Qué estás viendo?',
     color: '#9370DB',
@@ -233,7 +235,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.READING,
-    label: 'leyendo',
+    id: 'reading',
     emoji: '',
     placeholder: '¿Qué estás leyendo?',
     color: '#8B4513',
@@ -241,7 +243,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.PLAYING,
-    label: 'jugando',
+    id: 'playing',
     emoji: '',
     placeholder: '¿A qué estás jugando?',
     color: '#00CED1',
@@ -249,7 +251,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.LISTENING,
-    label: 'escuchando',
+    id: 'listening',
     emoji: '',
     placeholder: '¿Qué estás escuchando?',
     color: '#FF69B4',
@@ -257,7 +259,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.CELEBRATING,
-    label: 'celebrando',
+    id: 'celebrating',
     emoji: '',
     placeholder: '¿Qué estás celebrando?',
     color: '#FFD700',
@@ -265,7 +267,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.WORKING,
-    label: 'trabajando en',
+    id: 'working',
     emoji: '',
     placeholder: '¿En qué estás trabajando?',
     color: '#696969',
@@ -273,7 +275,7 @@ export const ACTIVITIES = [
   },
   {
     type: FeelingType.EXERCISING,
-    label: 'haciendo ejercicio',
+    id: 'exercising',
     emoji: '',
     placeholder: '¿Qué ejercicio haces?',
     color: '#32CD32',

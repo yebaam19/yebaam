@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import type { FamilyWithViewer } from '../types/family.types';
 
-export function FamilyHeader({ family }: { family: FamilyWithViewer }) {
+export async function FamilyHeader({ family }: { family: FamilyWithViewer }) {
+  const t = await getTranslations('familias.detail');
   const cover = family.cover_cf_image_id ? imageUrl(family.cover_cf_image_id, 'cover') : null;
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -14,7 +16,7 @@ export function FamilyHeader({ family }: { family: FamilyWithViewer }) {
           className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 text-xs font-medium text-white backdrop-blur hover:bg-black/60"
         >
           <ArrowLeftIcon className="h-3.5 w-3.5" />
-          Mis familias
+          {t('backToList')}
         </Link>
       </div>
       <div className="p-5">
@@ -23,13 +25,9 @@ export function FamilyHeader({ family }: { family: FamilyWithViewer }) {
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{family.description}</p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
-          <span>
-            {family.member_count} {family.member_count === 1 ? 'miembro' : 'miembros'}
-          </span>
+          <span>{t('memberCount', { count: family.member_count })}</span>
           <span>·</span>
-          <span>
-            {family.person_count} {family.person_count === 1 ? 'persona' : 'personas'} en el árbol
-          </span>
+          <span>{t('personCount', { count: family.person_count })}</span>
           {family.viewer_role && (
             <>
               <span>·</span>

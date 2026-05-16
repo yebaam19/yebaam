@@ -1,4 +1,7 @@
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Cog6ToothIcon,
   UserGroupIcon,
@@ -17,54 +20,24 @@ interface SettingsSidebarProps {
 
 interface SidebarItem {
   id: SettingsSection;
-  label: string;
   icon: typeof Cog6ToothIcon;
-  description: string;
 }
 
 const sections: SidebarItem[] = [
-  {
-    id: 'general',
-    label: 'Información general',
-    icon: Cog6ToothIcon,
-    description: 'Nombre, descripción y contacto',
-  },
-  {
-    id: 'appearance',
-    label: 'Apariencia',
-    icon: PhotoIcon,
-    description: 'Imágenes y diseño',
-  },
-  {
-    id: 'products',
-    label: 'Productos',
-    icon: ShoppingBagIcon,
-    description: 'Gestionar productos y servicios',
-  },
-  {
-    id: 'roles',
-    label: 'Roles y permisos',
-    icon: UserGroupIcon,
-    description: 'Administrar equipo',
-  },
-  {
-    id: 'stats',
-    label: 'Estadísticas',
-    icon: ChartBarIcon,
-    description: 'Métricas y análisis',
-  },
-  {
-    id: 'danger',
-    label: 'Zona peligrosa',
-    icon: ExclamationTriangleIcon,
-    description: 'Eliminar página',
-  },
+  { id: 'general', icon: Cog6ToothIcon },
+  { id: 'appearance', icon: PhotoIcon },
+  { id: 'products', icon: ShoppingBagIcon },
+  { id: 'roles', icon: UserGroupIcon },
+  { id: 'stats', icon: ChartBarIcon },
+  { id: 'danger', icon: ExclamationTriangleIcon },
 ];
 
 export const SettingsSidebar: FC<SettingsSidebarProps> = ({
   activeSection,
   onSectionChange,
 }) => {
+  const t = useTranslations('pages.settings.sidebar');
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2">
       <nav className="space-y-1">
@@ -110,7 +83,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
                       : 'text-gray-900 dark:text-white'
                   }`}
                 >
-                  {section.label}
+                  {t(`items.${section.id}.label`)}
                 </p>
                 <p
                   className={`text-xs mt-0.5 ${
@@ -121,7 +94,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
                       : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
-                  {section.description}
+                  {t(`items.${section.id}.description`)}
                 </p>
               </div>
             </button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { PhotoIcon, PlusIcon, TagIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useLocale, useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { FC, useState } from 'react'
 import { useBusinessPhotos, useDeleteBusinessPhoto } from '../../hooks/useBusinessPhotos'
@@ -13,6 +14,9 @@ interface BusinessDetailPhotosProps {
 }
 
 export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId, isOwner = false }) => {
+  const t = useTranslations('businesses')
+  const locale = useLocale()
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
   const [selectedPhoto, setSelectedPhoto] = useState<BusinessPhoto | null>(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
 
@@ -27,7 +31,7 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
   const handleDeletePhoto = async (photoId: string, e: React.MouseEvent) => {
     e.stopPropagation()
 
-    if (confirm('¿Estás seguro de eliminar esta foto?')) {
+    if (confirm(t('detail.photos.deleteConfirm'))) {
       await deletePhotoMutation.mutateAsync(photoId)
     }
   }
@@ -59,14 +63,14 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Fotos</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('detail.photos.title')}</h2>
           {isOwner && (
             <button
               onClick={() => setIsUploadModalOpen(true)}
               className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700"
             >
               <PlusIcon className="h-5 w-5" />
-              Subir foto
+              {t('detail.photos.uploadCta')}
             </button>
           )}
         </div>
@@ -77,12 +81,12 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
             <PhotoIcon className="h-8 w-8 text-gray-400" />
           </div>
           <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-            {isOwner ? 'No has subido fotos aún' : 'No hay fotos'}
+            {isOwner ? t('detail.photos.emptyOwnerTitle') : t('detail.photos.emptyVisitorTitle')}
           </h3>
           <p className="mb-6 max-w-md text-center text-sm text-gray-600 dark:text-gray-400">
             {isOwner
-              ? 'Comparte momentos especiales de tu negocio. Sube fotos de tus productos, instalaciones o equipo.'
-              : 'Este negocio aún no ha compartido fotos.'}
+              ? t('detail.photos.emptyOwnerDescription')
+              : t('detail.photos.emptyVisitorDescription')}
           </p>
           {isOwner && (
             <button
@@ -90,7 +94,7 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
               className="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 font-medium text-white transition-colors hover:bg-primary-700"
             >
               <PlusIcon className="h-5 w-5" />
-              Subir primera foto
+              {t('detail.photos.uploadFirstCta')}
             </button>
           )}
         </div>
@@ -112,9 +116,9 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Fotos</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('detail.photos.title')}</h2>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              {photos.length} {photos.length === 1 ? 'foto' : 'fotos'}
+              {photos.length} {photos.length === 1 ? t('detail.photos.photoSingular') : t('detail.photos.photoPlural')}
             </p>
           </div>
           {isOwner && (
@@ -123,7 +127,7 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
               className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700"
             >
               <PlusIcon className="h-5 w-5" />
-              Subir foto
+              {t('detail.photos.uploadCta')}
             </button>
           )}
         </div>
@@ -139,7 +143,7 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
               {/* Photo */}
               <Image
                 src={photo.url}
-                alt={photo.caption || 'Foto del negocio'}
+                alt={photo.caption || t('detail.photos.photoAlt')}
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -204,7 +208,7 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
             <div className="relative w-full" style={{ maxHeight: '80vh' }}>
               <Image
                 src={selectedPhoto.url}
-                alt={selectedPhoto.caption || 'Foto del negocio'}
+                alt={selectedPhoto.caption || t('detail.photos.photoAlt')}
                 width={1200}
                 height={800}
                 className="h-auto max-h-[80vh] w-full rounded-lg object-contain"
@@ -233,11 +237,11 @@ export const BusinessDetailPhotos: FC<BusinessDetailPhotosProps> = ({ businessId
               {/* Metadata */}
               <div className="flex items-center gap-4 text-sm text-white/70">
                 <span>
-                  Subida por {selectedPhoto.uploadedBy.firstName} {selectedPhoto.uploadedBy.lastName}
+                  {t('detail.photos.uploadedBy', { name: `${selectedPhoto.uploadedBy.firstName} ${selectedPhoto.uploadedBy.lastName}` })}
                 </span>
                 <span>•</span>
                 <span>
-                  {new Date(selectedPhoto.uploadedAt).toLocaleDateString('es-ES', {
+                  {new Date(selectedPhoto.uploadedAt).toLocaleDateString(dateLocale, {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',

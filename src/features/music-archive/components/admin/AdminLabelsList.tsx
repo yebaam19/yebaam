@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
 import { deleteLabel, listAdminLabels } from '../../actions/labels.actions';
 import type { MusicLabelRow } from '../../types/music.types';
@@ -23,6 +24,7 @@ interface Props {
 
 /** Tab content: searchable list of all record labels with edit + delete + create. */
 export function AdminLabelsList({ initialLabels }: Props) {
+  const t = useTranslations('musica.admin.labelsList');
   const { query, setQuery, rows, setRows, pending, error, refresh } =
     useAdminEntitySearch<LabelRow>({
       initial: initialLabels,
@@ -50,18 +52,18 @@ export function AdminLabelsList({ initialLabels }: Props) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar sello…"
+          placeholder={t('searchPlaceholder')}
           className={`${inputCls} max-w-md`}
         />
         <span className="text-xs text-zinc-500">
-          {pending ? 'Buscando…' : `${rows.length} sellos`}
+          {pending ? t('searching') : t('countLabel', { count: rows.length })}
         </span>
         <button
           type="button"
           onClick={() => setCreating(true)}
           className="ml-auto rounded-lg bg-amber-600 px-3 py-2 text-xs font-medium text-white hover:bg-amber-700"
         >
-          + Agregar sello
+          {t('addCta')}
         </button>
       </div>
       {error && (
@@ -73,18 +75,18 @@ export function AdminLabelsList({ initialLabels }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 text-left text-[11px] uppercase tracking-wide text-zinc-500 dark:bg-zinc-900/50">
             <tr>
-              <th className="px-3 py-2">Nombre</th>
-              <th className="px-3 py-2">País</th>
-              <th className="px-3 py-2">Fundado</th>
-              <th className="px-3 py-2">Álbumes</th>
-              <th className="px-3 py-2 text-right">Acciones</th>
+              <th className="px-3 py-2">{t('colName')}</th>
+              <th className="px-3 py-2">{t('colCountry')}</th>
+              <th className="px-3 py-2">{t('colFounded')}</th>
+              <th className="px-3 py-2">{t('colAlbums')}</th>
+              <th className="px-3 py-2 text-right">{t('colActions')}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-xs text-zinc-500">
-                  {pending ? '…' : 'No hay sellos.'}
+                  {pending ? '…' : t('empty')}
                 </td>
               </tr>
             ) : (
@@ -94,8 +96,8 @@ export function AdminLabelsList({ initialLabels }: Props) {
                   className="border-t border-zinc-100 bg-white dark:border-zinc-800 dark:bg-zinc-900"
                 >
                   <td className="px-3 py-2 font-medium text-zinc-900 dark:text-zinc-100">{l.name}</td>
-                  <td className="px-3 py-2 text-zinc-500">{l.country ?? '—'}</td>
-                  <td className="px-3 py-2 tabular-nums text-zinc-500">{l.founded ?? '—'}</td>
+                  <td className="px-3 py-2 text-zinc-500">{l.country ?? t('fieldEmpty')}</td>
+                  <td className="px-3 py-2 tabular-nums text-zinc-500">{l.founded ?? t('fieldEmpty')}</td>
                   <td className="px-3 py-2 tabular-nums text-zinc-500">{l.album_count}</td>
                   <td className="px-3 py-2 text-right">
                     <button
@@ -103,14 +105,14 @@ export function AdminLabelsList({ initialLabels }: Props) {
                       onClick={() => setEditing(l)}
                       className="mr-2 rounded px-2 py-1 text-xs text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
                     >
-                      Editar
+                      {t('edit')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setDeleting(l)}
                       className="rounded px-2 py-1 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                     >
-                      Eliminar
+                      {t('delete')}
                     </button>
                   </td>
                 </tr>
@@ -150,8 +152,8 @@ export function AdminLabelsList({ initialLabels }: Props) {
 
       <DeleteConfirmDialog
         isOpen={Boolean(deleting)}
-        title={`Eliminar sello "${deleting?.name ?? ''}"`}
-        description="Los álbumes asociados a este sello quedarán sin sello (no se eliminarán)."
+        title={t('deleteTitle', { name: deleting?.name ?? '' })}
+        description={t('deleteDescription')}
         onClose={() => setDeleting(null)}
         onConfirm={async () => {
           if (!deleting) return;

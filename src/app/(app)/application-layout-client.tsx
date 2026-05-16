@@ -79,6 +79,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
     'foro',
     'stories',
     'chat',
+    'watch',
     'login',
     'signup',
     'forgot-password',

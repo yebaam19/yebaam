@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   CameraIcon,
   PencilIcon,
@@ -14,13 +15,6 @@ import { resolveImage, imageUrl } from '@/lib/media/urls';
 import { parseISODate } from '@/lib/utils/date';
 import { updatePerson } from '../actions/families.actions';
 import type { FamilyPersonRow } from '../types/family.types';
-
-const GENDER_LABEL: Record<string, string> = {
-  male: 'Masculino',
-  female: 'Femenino',
-  other: 'Otro',
-  unknown: 'Sin especificar',
-};
 
 interface Props {
   person: FamilyPersonRow | null;
@@ -41,6 +35,9 @@ export function PersonInfoPanel({
   onDelete,
   onAddParents,
 }: Props) {
+  const t = useTranslations('familias');
+  const locale = useLocale();
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES';
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -90,7 +87,7 @@ export function PersonInfoPanel({
       });
     } catch (err) {
       setUploading(false);
-      setUploadError(err instanceof Error ? err.message : 'Falló la subida.');
+      setUploadError(err instanceof Error ? err.message : t('dialogs.personInfo.uploadFailed'));
     }
   }
 
@@ -100,7 +97,7 @@ export function PersonInfoPanel({
       <aside
         className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col overflow-y-auto bg-white shadow-2xl dark:bg-zinc-900"
         role="dialog"
-        aria-label={`Información de ${person.full_name}`}
+        aria-label={t('dialogs.personInfo.ariaLabel', { name: person.full_name })}
       >
         <div className="flex items-start justify-between gap-3 px-5 pt-5">
           <div className="flex items-center gap-3">
@@ -140,8 +137,8 @@ export function PersonInfoPanel({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    title="Cambiar foto"
-                    aria-label="Cambiar foto"
+                    title={t('dialogs.personInfo.changePhoto')}
+                    aria-label={t('dialogs.personInfo.changePhoto')}
                     className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
                   >
                     {uploading ? (
@@ -169,7 +166,7 @@ export function PersonInfoPanel({
                 )}
                 {isDeceased && !isClaimed && (
                   <span className="inline-block rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                    Fallecido/a
+                    {t('dialogs.personInfo.deceased')}
                   </span>
                 )}
               </div>
@@ -179,7 +176,7 @@ export function PersonInfoPanel({
             type="button"
             onClick={onClose}
             className="rounded p-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-            aria-label="Cerrar"
+            aria-label={t('dialogs.personInfo.close')}
           >
             ✕
           </button>
@@ -193,14 +190,21 @@ export function PersonInfoPanel({
 
         <div className="flex-1 space-y-3 px-5 py-5 text-sm">
           {fullClaimedName && (
-            <Field label="Vinculado a" value={fullClaimedName} />
+            <Field label={t('dialogs.personInfo.linkedTo')} value={fullClaimedName} />
           )}
-          <Field label="Género" value={GENDER_LABEL[person.gender] ?? person.gender} />
+          <Field
+            label={t('dialogs.personInfo.gender')}
+            value={
+              person.gender === 'male' || person.gender === 'female' || person.gender === 'other' || person.gender === 'unknown'
+                ? t(`dialogs.genderOptions.${person.gender}`)
+                : person.gender
+            }
+          />
           {person.birth_date && (
             <Field
-              label="Nacimiento"
+              label={t('dialogs.personInfo.birth')}
               value={
-                (parseISODate(person.birth_date)?.toLocaleDateString('es', {
+                (parseISODate(person.birth_date)?.toLocaleDateString(dateLocale, {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
@@ -210,9 +214,9 @@ export function PersonInfoPanel({
           )}
           {person.death_date && (
             <Field
-              label="Defunción"
+              label={t('dialogs.personInfo.death')}
               value={
-                (parseISODate(person.death_date)?.toLocaleDateString('es', {
+                (parseISODate(person.death_date)?.toLocaleDateString(dateLocale, {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
@@ -222,7 +226,7 @@ export function PersonInfoPanel({
           )}
           {person.bio && (
             <div>
-              <p className="text-xs text-zinc-500">Biografía</p>
+              <p className="text-xs text-zinc-500">{t('dialogs.personInfo.bio')}</p>
               <p className="mt-1 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
                 {person.bio}
               </p>
@@ -238,7 +242,7 @@ export function PersonInfoPanel({
               className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
             >
               <PencilIcon className="h-4 w-4" />
-              Editar
+              {t('dialogs.personInfo.edit')}
             </button>
             <button
               type="button"
@@ -246,7 +250,7 @@ export function PersonInfoPanel({
               className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               <UserPlusIcon className="h-4 w-4" />
-              Agregar padres
+              {t('dialogs.personInfo.addParents')}
             </button>
             {canDelete && (
               <button
@@ -255,7 +259,7 @@ export function PersonInfoPanel({
                 className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20"
               >
                 <TrashIcon className="h-4 w-4" />
-                Eliminar
+                {t('dialogs.personInfo.delete')}
               </button>
             )}
           </div>

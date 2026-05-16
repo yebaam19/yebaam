@@ -64,7 +64,74 @@
       "additional": "Additional information",
       "fallback": "Create club"
     },
-    "errorFallback": "Error creating the club. Please try again."
+    "errorFallback": "Error creating the club. Please try again.",
+    "step1": {
+      "heading": "Let's start with the basics",
+      "subtitle": "Give your club a name and description so people can find it",
+      "nameLabel": "Club name",
+      "namePlaceholder": "E.g. Book Club",
+      "nameCounter": "{count}/100 characters",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe your club, its goals and the activities you'll do...",
+      "descriptionCounter": "{count}/500 characters",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "Select a category",
+      "categories": {
+        "DEPORTES": "Sports",
+        "TECNOLOGIA": "Technology",
+        "ARTE": "Art",
+        "MUSICA": "Music",
+        "LECTURA": "Reading",
+        "COCINA": "Cooking",
+        "VIAJES": "Travel",
+        "FOTOGRAFIA": "Photography",
+        "NEGOCIOS": "Business",
+        "EDUCACION": "Education",
+        "SALUD": "Health & Wellness",
+        "GAMING": "Gaming",
+        "CINE": "Film & TV",
+        "OTRO": "Other"
+      },
+      "requiredMark": "*",
+      "next": "Next"
+    },
+    "step4": {
+      "heading": "Additional information",
+      "subtitle": "Add tags and rules for your club (optional)",
+      "tagsLabel": "Tags",
+      "tagsHint": "(optional, max. 10)",
+      "tagsPlaceholder": "Add tag...",
+      "addTag": "Add",
+      "rulesLabel": "Club rules",
+      "rulesHint": "(optional, max. 20)",
+      "rulesPlaceholder": "Add rule...",
+      "addRule": "Add",
+      "summaryHeading": "Club summary",
+      "summaryName": "Name:",
+      "summaryCategory": "Category:",
+      "summaryPrivacy": "Privacy:",
+      "summaryTags": "Tags:",
+      "summaryRules": "Rules:",
+      "privacyDefault": "PUBLIC",
+      "back": "Back",
+      "submit": "Create club",
+      "submitting": "Creating club..."
+    },
+    "step3": {
+      "title": "Club images",
+      "subtitle": "Add images to personalize your club (optional)",
+      "profileLabel": "Profile image",
+      "coverLabel": "Cover image",
+      "optional": "(optional)",
+      "profilePreviewAlt": "Profile preview",
+      "coverPreviewAlt": "Cover preview",
+      "uploading": "Uploading...",
+      "uploadImage": "Upload image",
+      "profileHint": "Recommended: 400x400px, max. 5MB",
+      "coverHint": "Recommended: 1200x400px, max. 5MB",
+      "back": "Back",
+      "next": "Next"
+    }
   },
   "detail": {
     "privacy": {
@@ -83,6 +150,7 @@
       "inviteAria": "Invite",
       "inviteTitle": "Invite"
     },
+    "viewModeAria": "View mode",
     "tabs": {
       "ariaLabel": "Club sections",
       "about": "About the Club",
@@ -90,6 +158,25 @@
       "videos": "Videos",
       "articles": "Articles",
       "files": "Files"
+    },
+    "sideNav": {
+      "publicChat": "Public Chat",
+      "members": "Members",
+      "forum": "Forum",
+      "events": "Events",
+      "promotions": "Promotions"
+    },
+    "detailsHeading": "Details",
+    "stats": {
+      "members": "Members",
+      "events": "Events",
+      "posts": "Posts",
+      "createdAt": "Created"
+    },
+    "sort": {
+      "mostRecent": "Most recent",
+      "mostViewed": "Most viewed",
+      "mostReacted": "Most reacted"
     }
   },
   "pagination": {
@@ -97,5 +184,43 @@
     "goToPage": "Go to page {page}",
     "prev": "Previous page",
     "next": "Next page"
+  },
+  "drawer": {
+    "close": "Close"
+  },
+  "panels": {
+    "members": {
+      "empty": "No members yet.",
+      "fallbackName": "No name"
+    },
+    "events": {
+      "empty": "No scheduled events.",
+      "attendees": "{count, plural, one {# attendee} other {# attendees}}"
+    },
+    "promotions": {
+      "empty": "No active promotions.",
+      "more": "See more"
+    },
+    "foro": {
+      "notEnabled": "This club does not have a forum enabled yet.",
+      "summary": "Club forum · {forums, plural, one {# forum} other {# forums}} · {topics, plural, one {# topic} other {# topics}}",
+      "emptyCategories": "There are no categories in this forum yet.",
+      "topicsCount": "{count, plural, one {# topic} other {# topics}}",
+      "postsCount": "{count, plural, one {# post} other {# posts}}",
+      "lastTopic": "Latest: {title}",
+      "emptyForumsInCategory": "No forums in this category.",
+      "openFull": "Open full forum"
+    },
+    "publicChat": {
+      "notEnabled": "Public chat is not yet enabled for this club.",
+      "description": "Real-time chat with every club member.",
+      "enter": "Enter the public chat"
+    }
+  },
+  "roles": {
+    "OWNER": "Owner",
+    "ADMIN": "Administrator",
+    "MODERATOR": "Moderator",
+    "MEMBER": "Member"
   }
 }

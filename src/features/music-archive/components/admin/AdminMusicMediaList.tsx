@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { imageUrl, streamThumb } from '@/lib/media/urls';
 import { deleteMusicMedia } from '../../actions/music-media.actions';
 import type { MusicMediaItem } from '../../types/music-media.types';
@@ -25,6 +26,7 @@ function thumbFor(item: MusicMediaItem): string | null {
 }
 
 export function AdminMusicMediaList({ initial }: Props) {
+  const t = useTranslations('musica.admin.mediaList');
   const [items, setItems] = useState(initial);
   const [showUploader, setShowUploader] = useState(false);
   const [editing, setEditing] = useState<MusicMediaItem | null>(null);
@@ -33,7 +35,7 @@ export function AdminMusicMediaList({ initial }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   function handleDelete(id: string) {
-    if (!confirm('¿Borrar este item? Esta acción no se puede deshacer.')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     setBusyId(id);
     startTransition(async () => {
       const res = await deleteMusicMedia(id);
@@ -57,20 +59,20 @@ export function AdminMusicMediaList({ initial }: Props) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {items.length} {items.length === 1 ? 'item' : 'items'} en el archivo.
+          {t('itemsCount', { count: items.length })}
         </p>
         <button
           type="button"
           onClick={() => setShowUploader(true)}
           className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
         >
-          Subir foto / video
+          {t('uploadButton')}
         </button>
       </div>
 
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          Aún no hay fotos ni videos en el archivo.
+          {t('empty')}
         </p>
       ) : (
         <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
@@ -82,7 +84,7 @@ export function AdminMusicMediaList({ initial }: Props) {
                   type="button"
                   onClick={() => setPreviewing(item)}
                   className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:bg-zinc-800"
-                  aria-label={`Previsualizar ${item.caption ?? 'item'}`}
+                  aria-label={t('previewAria', { label: item.caption ?? t('previewFallbackLabel') })}
                 >
                   {thumb ? (
                     <img
@@ -93,7 +95,7 @@ export function AdminMusicMediaList({ initial }: Props) {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">
-                      {item.kind === 'video' ? 'Video' : 'Foto'}
+                      {item.kind === 'video' ? t('kindVideo') : t('kindPhoto')}
                     </div>
                   )}
                   {item.kind === 'video' && (
@@ -106,31 +108,31 @@ export function AdminMusicMediaList({ initial }: Props) {
                 </button>
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    {item.caption ?? <span className="italic text-zinc-400">Sin descripción</span>}
+                    {item.caption ?? <span className="italic text-zinc-400">{t('noCaption')}</span>}
                   </p>
                   <p className="text-xs text-zinc-500">
-                    {item.kind === 'photo' ? 'Foto' : 'Video'} ·{' '}
+                    {item.kind === 'photo' ? t('kindPhoto') : t('kindVideo')} ·{' '}
                     {item.source === 'cf_image'
-                      ? 'CF Images'
+                      ? t('sourceCfImages')
                       : item.source === 'cf_stream'
-                        ? 'CF Stream'
-                        : (item.embed_provider ?? 'embed')}
+                        ? t('sourceCfStream')
+                        : (item.embed_provider ?? t('sourceEmbed'))}
                     {' · '}
                     {new Date(item.created_at).toLocaleDateString()}
                   </p>
                   {item.artists.length > 0 && (
                     <p className="text-xs text-zinc-500">
-                      Artistas: {item.artists.map((a) => a.name).join(', ')}
+                      {t('artistsLine', { names: item.artists.map((a) => a.name).join(', ') })}
                     </p>
                   )}
                   {item.albums.length > 0 && (
                     <p className="text-xs text-zinc-500">
-                      Álbum: {item.albums.map((a) => a.title).join(', ')}
+                      {t('albumsLine', { names: item.albums.map((a) => a.title).join(', ') })}
                     </p>
                   )}
                   {item.clubs.length > 0 && (
                     <p className="text-xs text-zinc-500">
-                      Club: {item.clubs.map((c) => c.name).join(', ')}
+                      {t('clubsLine', { names: item.clubs.map((c) => c.name).join(', ') })}
                     </p>
                   )}
                 </div>
@@ -140,7 +142,7 @@ export function AdminMusicMediaList({ initial }: Props) {
                     onClick={() => setEditing(item)}
                     className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200"
                   >
-                    Editar
+                    {t('edit')}
                   </button>
                   <button
                     type="button"
@@ -148,7 +150,7 @@ export function AdminMusicMediaList({ initial }: Props) {
                     disabled={pending && busyId === item.id}
                     className="rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50 dark:border-rose-700 dark:bg-rose-900/20 dark:text-rose-200"
                   >
-                    Borrar
+                    {t('delete')}
                   </button>
                 </div>
               </li>

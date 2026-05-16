@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import dagre from 'dagre';
 import {
   ReactFlow,
@@ -114,16 +115,17 @@ function buildLayout(
 }
 
 function TreeLegend() {
+  const t = useTranslations('familias.tree');
   return (
     <div className="absolute left-3 top-3 z-10 rounded-md bg-white/90 px-3 py-2 text-[11px] text-zinc-600 backdrop-blur-sm dark:bg-zinc-900/90 dark:text-zinc-400">
       <ul className="space-y-1">
         <li className="flex items-center gap-2">
           <span className="inline-block h-0.5 w-5 bg-emerald-500" />
-          <span>Padres → hijos</span>
+          <span>{t('legend.parents')}</span>
         </li>
         <li className="flex items-center gap-2">
           <span className="inline-block h-0.5 w-5 bg-pink-500" />
-          <span>Cónyuges</span>
+          <span>{t('legend.spouses')}</span>
         </li>
         <li className="flex items-center gap-2">
           <span
@@ -132,7 +134,7 @@ function TreeLegend() {
               backgroundImage: 'repeating-linear-gradient(to right, #94a3b8 0 4px, transparent 4px 7px)',
             }}
           />
-          <span>Hermanos</span>
+          <span>{t('legend.siblings')}</span>
         </li>
       </ul>
     </div>
@@ -141,6 +143,7 @@ function TreeLegend() {
 
 export function FamilyTreeView({ familyId, persons, relationships, viewerRole }: Props) {
   const router = useRouter();
+  const t = useTranslations('familias.tree');
   const [editing, setEditing] = useState<FamilyPersonRow | null>(null);
   const [selectedNode, setSelectedNode] = useState<FamilyPersonRow | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<SelectedEdge | null>(null);
@@ -157,9 +160,7 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
   const handleDelete = useCallback(
     (p: FamilyPersonRow) => {
       if (!isAdmin) return;
-      const ok = window.confirm(
-        `¿Eliminar a "${p.full_name}" del árbol? Esto borra también sus relaciones, eventos y fotos asociadas.`,
-      );
+      const ok = window.confirm(t('confirmDeletePerson', { name: p.full_name }));
       if (!ok) return;
       setDeleteError(null);
       startTransition(async () => {
@@ -172,7 +173,7 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
         router.refresh();
       });
     },
-    [isAdmin, router],
+    [isAdmin, router, t],
   );
 
   const { nodes, edges } = useMemo(
@@ -211,8 +212,7 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Árbol genealógico ({persons.length}{' '}
-          {persons.length === 1 ? 'persona' : 'personas'})
+          {t('heading', { count: persons.length })}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <AddPersonDialog familyId={familyId} />
@@ -229,7 +229,7 @@ export function FamilyTreeView({ familyId, persons, relationships, viewerRole }:
       {persons.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center dark:border-zinc-700 dark:bg-zinc-900/40">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Aún no hay personas en este árbol. Empieza agregando familiares vivos o fallecidos.
+            {t('empty')}
           </p>
         </div>
       ) : (

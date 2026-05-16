@@ -8,6 +8,7 @@
 
 import { ArrowUpTrayIcon, PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { CreateProfessionalServiceDTO } from '../../../interfaces/professional-service.interfaces'
 
@@ -29,6 +30,7 @@ interface CreateServiceStep5Props {
 }
 
 export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitting }: CreateServiceStep5Props) {
+  const t = useTranslations('professional.services.createStep5')
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
@@ -63,7 +65,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
       setMediaItems([...mediaItems, ...newItems])
     } catch (error) {
       console.error('Error processing files:', error)
-      alert('Error al procesar archivos. Intenta de nuevo.')
+      alert(t('processError'))
     } finally {
       setUploadingFiles(false)
     }
@@ -93,9 +95,9 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
   return (
     <div className="space-y-6">
       <div>
-        <h4 className="mb-2 text-lg font-medium text-neutral-900 dark:text-white">Galería de imágenes y videos</h4>
+        <h4 className="mb-2 text-lg font-medium text-neutral-900 dark:text-white">{t('heading')}</h4>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Agrega fotos y videos de tu trabajo para mostrar tu portafolio (opcional)
+          {t('subheading')}
         </p>
       </div>
 
@@ -114,15 +116,15 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
           {uploadingFiles ? (
             <>
               <ArrowUpTrayIcon className="mb-3 h-12 w-12 animate-pulse text-primary-500" />
-              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Subiendo archivos...</p>
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('uploading')}</p>
             </>
           ) : (
             <>
               <PhotoIcon className="mb-3 h-12 w-12 text-neutral-400" />
               <p className="mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                Haz clic para subir o arrastra archivos aquí
+                {t('clickToUpload')}
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">PNG, JPG, GIF, MP4 hasta 10MB</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('fileHint')}</p>
             </>
           )}
         </label>
@@ -132,7 +134,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
       {mediaItems.length > 0 && (
         <div>
           <h5 className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Archivos subidos ({mediaItems.length})
+            {t('uploadedHeading', { count: mediaItems.length })}
           </h5>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {mediaItems.map((item) => (
@@ -143,12 +145,12 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
                 {/* Media Preview */}
                 <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-700">
                   {item.type === 'image' ? (
-                    <Image src={item.url} alt={item.caption || 'Imagen del servicio'} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
+                    <Image src={item.url} alt={item.caption || t('imageAlt')} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center">
                       <PhotoIcon className="h-12 w-12 text-neutral-400" />
                       <span className="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
-                        VIDEO
+                        {t('videoLabel')}
                       </span>
                     </div>
                   )}
@@ -169,7 +171,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
                     type="text"
                     value={item.caption}
                     onChange={(e) => handleCaptionChange(item.id, e.target.value)}
-                    placeholder="Descripción (opcional)"
+                    placeholder={t('captionPlaceholder')}
                     className="w-full rounded border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                   />
                 </div>
@@ -182,8 +184,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
       {/* Help Text */}
       <div className="rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800">
         <p className="text-sm text-neutral-800 dark:text-neutral-200">
-          💡 <strong>Consejo:</strong> Las imágenes de alta calidad aumentan las posibilidades de que los clientes se
-          interesen en tu servicio. Muestra ejemplos de tu trabajo anterior.
+          💡 <strong>{t('tipPrefix')}</strong> {t('tipBody')}
         </p>
       </div>
 
@@ -195,7 +196,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
           disabled={isSubmitting}
           className="rounded-lg border border-neutral-300 px-6 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
-          Atrás
+          {t('back')}
         </button>
 
         <div className="flex gap-3">
@@ -208,10 +209,10 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
             {isSubmitting ? (
               <>
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                <span className="ml-2">Creando servicio...</span>
+                <span className="ml-2">{t('creating')}</span>
               </>
             ) : (
-              'Crear servicio'
+              t('create')
             )}
           </button>
         </div>
@@ -225,7 +226,7 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
           disabled={isSubmitting}
           className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
         >
-          Saltar este paso (puedes agregar fotos después)
+          {t('skip')}
         </button>
       </div>
     </div>

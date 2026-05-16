@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import type { ClubPost, ClubPostKind } from '@/features/clubs/server/clubs.server';
 import {
   ClockIcon,
@@ -100,24 +101,25 @@ function Card({
 }
 
 export function ClubHighlightedPosts({ highlights, onOpen }: ClubHighlightedPostsProps) {
+  const t = useTranslations('clubes');
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       <Card
-        title="Más reciente"
+        title={t('detail.sort.mostRecent')}
         subtitle="Última publicación"
         icon={ClockIcon}
         post={highlights.mostRecent}
         onOpen={onOpen}
       />
       <Card
-        title="Más vista"
+        title={t('detail.sort.mostViewed')}
         subtitle="Mayor alcance"
         icon={EyeIcon}
         post={highlights.mostViewed}
         onOpen={onOpen}
       />
       <Card
-        title="Más reaccionada"
+        title={t('detail.sort.mostReacted')}
         subtitle="Mayor engagement"
         icon={HeartIcon}
         post={highlights.mostReacted}

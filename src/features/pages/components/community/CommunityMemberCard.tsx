@@ -1,4 +1,7 @@
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 import { CheckBadgeIcon, UserPlusIcon, ChatBubbleLeftIcon } from '@/components/icons/heroicons-shim';
 import { CommunityMember } from '../../interfaces/community.interface';
 import Image from 'next/image';
@@ -15,6 +18,7 @@ export const CommunityMemberCard: FC<CommunityMemberCardProps> = ({
   onFollow,
   onMessage,
 }) => {
+  const t = useTranslations('pages.community.memberCard');
   const fullName = `${member.firstName} ${member.lastName}`.trim();
 
   return (
@@ -64,7 +68,7 @@ export const CommunityMemberCard: FC<CommunityMemberCardProps> = ({
         <button
           onClick={() => onMessage?.(member.id)}
           className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          title="Enviar mensaje"
+          title={t('messageAria')}
         >
           <ChatBubbleLeftIcon className="w-5 h-5" />
         </button>
@@ -73,7 +77,7 @@ export const CommunityMemberCard: FC<CommunityMemberCardProps> = ({
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <UserPlusIcon className="w-4 h-4" />
-          Seguir
+          {t('follow')}
         </button>
       </div>
     </div>

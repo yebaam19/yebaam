@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { BusinessBasic, BusinessCategory } from '../../interfaces/directory.interfaces'
 import { BusinessCard } from './BusinessCard'
@@ -25,6 +26,7 @@ function AlphabetFilter({
   onLetterSelect: (letter: string | null) => void
   availableLetters: Set<string>
 }) {
+  const t = useTranslations('cities.directory.businessList')
   return (
     <div className="flex flex-wrap justify-center gap-1 rounded-xl bg-neutral-100 p-2 dark:bg-neutral-800">
       <button
@@ -35,7 +37,7 @@ function AlphabetFilter({
             : 'text-neutral-600 hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-700'
         }`}
       >
-        Todos
+        {t('all')}
       </button>
       {ALPHABET.map((letter) => {
         const isAvailable = availableLetters.has(letter)
@@ -64,6 +66,7 @@ function AlphabetFilter({
  * Grupo de categoría con scroll horizontal
  */
 function CategoryGroup({ category, businesses }: { category: BusinessCategory; businesses: BusinessBasic[] }) {
+  const t = useTranslations('cities.directory.businessList')
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -103,7 +106,7 @@ function CategoryGroup({ category, businesses }: { category: BusinessCategory; b
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-            aria-label="Scroll izquierda"
+            aria-label={t('scrollLeft')}
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
@@ -111,7 +114,7 @@ function CategoryGroup({ category, businesses }: { category: BusinessCategory; b
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-            aria-label="Scroll derecha"
+            aria-label={t('scrollRight')}
           >
             <ChevronRightIcon className="h-5 w-5" />
           </button>
@@ -134,6 +137,7 @@ function CategoryGroup({ category, businesses }: { category: BusinessCategory; b
  * Lista de negocios con búsqueda, filtro alfabético y agrupación por categoría
  */
 export function BusinessList({ businesses, categories }: BusinessListProps) {
+  const t = useTranslations('cities.directory.businessList')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
 
@@ -195,7 +199,7 @@ export function BusinessList({ businesses, categories }: BusinessListProps) {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Buscar negocios..."
+          placeholder={t('searchPlaceholder')}
           className="w-full rounded-xl border border-neutral-200 bg-white py-3 pr-4 pl-12 text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
         />
       </div>
@@ -211,7 +215,7 @@ export function BusinessList({ businesses, categories }: BusinessListProps) {
       {filteredBusinesses.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-neutral-500 dark:text-neutral-400">
-            No se encontraron negocios con los criterios de búsqueda
+            {t('noResults')}
           </p>
         </div>
       ) : (

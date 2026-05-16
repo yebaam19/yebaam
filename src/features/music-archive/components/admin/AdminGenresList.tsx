@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { createGenre, deleteGenre, updateGenre } from '../../actions/genres.actions';
 
 export interface AdminGenreRow {
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function AdminGenresList({ initial }: Props) {
+  const t = useTranslations('musica.admin.genresList');
   const [rows, setRows] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export function AdminGenresList({ initial }: Props) {
   function handleDelete(row: AdminGenreRow) {
     if (
       !confirm(
-        `Borrar el género "${row.name}"? Solo se permite si ningún club lo usa (${row.club_count} actualmente).`,
+        t('deleteConfirm', { name: row.name, count: row.club_count }),
       )
     )
       return;
@@ -119,7 +121,10 @@ export function AdminGenresList({ initial }: Props) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {rows.length} géneros · usados por {rows.reduce((sum, r) => sum + r.club_count, 0)} clubes
+          {t('summary', {
+            count: rows.length,
+            clubCount: rows.reduce((sum, r) => sum + r.club_count, 0),
+          })}
         </p>
         {!creating && (
           <button
@@ -127,7 +132,7 @@ export function AdminGenresList({ initial }: Props) {
             onClick={() => setCreating(true)}
             className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
           >
-            Nuevo género
+            {t('newCta')}
           </button>
         )}
       </div>
@@ -144,13 +149,13 @@ export function AdminGenresList({ initial }: Props) {
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Nombre (ej. Música árabe)"
+              placeholder={t('namePlaceholder')}
               className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
             />
             <input
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
-              placeholder="Descripción corta (opcional)"
+              placeholder={t('descPlaceholder')}
               className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
             />
           </div>
@@ -161,7 +166,7 @@ export function AdminGenresList({ initial }: Props) {
               disabled={pending || newName.trim().length < 2}
               className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-40"
             >
-              Crear
+              {t('create')}
             </button>
             <button
               type="button"
@@ -172,7 +177,7 @@ export function AdminGenresList({ initial }: Props) {
               }}
               className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs dark:border-zinc-700"
             >
-              Cancelar
+              {t('cancel')}
             </button>
           </div>
         </div>
@@ -193,7 +198,7 @@ export function AdminGenresList({ initial }: Props) {
                   <input
                     value={draftDesc}
                     onChange={(e) => setDraftDesc(e.target.value)}
-                    placeholder="Descripción"
+                    placeholder={t('editDescPlaceholder')}
                     className="flex-1 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
                   />
                   <input
@@ -208,14 +213,14 @@ export function AdminGenresList({ initial }: Props) {
                     disabled={pending}
                     className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-40"
                   >
-                    Guardar
+                    {t('save')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
                     className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs dark:border-zinc-700"
                   >
-                    Cancelar
+                    {t('cancel')}
                   </button>
                 </>
               ) : (
@@ -229,25 +234,25 @@ export function AdminGenresList({ initial }: Props) {
                       <p className="line-clamp-1 text-xs text-zinc-500">{r.description}</p>
                     )}
                   </div>
-                  <span className="text-xs text-zinc-500">orden: {r.sort_order}</span>
+                  <span className="text-xs text-zinc-500">{t('orderLabel', { order: r.sort_order })}</span>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                    {r.club_count} club{r.club_count === 1 ? '' : 'es'}
+                    {t('clubsCount', { count: r.club_count })}
                   </span>
                   <button
                     type="button"
                     onClick={() => beginEdit(r)}
                     className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
                   >
-                    Editar
+                    {t('edit')}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(r)}
                     disabled={r.club_count > 0}
-                    title={r.club_count > 0 ? 'No se puede borrar mientras hay clubes con este género' : ''}
+                    title={r.club_count > 0 ? t('deleteDisabledTitle') : ''}
                     className="rounded-md border border-rose-300 px-2.5 py-1 text-xs text-rose-700 hover:bg-rose-50 disabled:opacity-30 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
                   >
-                    Borrar
+                    {t('delete')}
                   </button>
                 </>
               )}

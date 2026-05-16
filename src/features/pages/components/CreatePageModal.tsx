@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import { useTranslations } from 'next-intl';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { usePagesUIStore } from '../store/pagesUI.store';
 import { useCreatePage } from '../hooks/usePages';
@@ -16,6 +17,7 @@ import {
 } from './create-page';
 
 export const CreatePageModal = () => {
+  const t = useTranslations('pages.createModal');
   const router = useRouter();
   const { isCreateModalOpen, closeCreateModal } = usePagesUIStore();
   const createMutation = useCreatePage();
@@ -69,15 +71,15 @@ export const CreatePageModal = () => {
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return 'Información básica';
+        return t('step1Title');
       case 2:
-        return 'Categoría';
+        return t('step2Title');
       case 3:
-        return 'Imágenes';
+        return t('step3Title');
       case 4:
-        return 'Información de contacto';
+        return t('step4Title');
       default:
-        return 'Crear página';
+        return t('title');
     }
   };
 
@@ -115,10 +117,10 @@ export const CreatePageModal = () => {
                       as="h3"
                       className="text-xl font-semibold text-gray-900 dark:text-white"
                     >
-                      Crear página
+                      {t('title')}
                     </Dialog.Title>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                      {getStepTitle()} - Paso {currentStep} de {totalSteps}
+                      {t('stepLabel', { title: getStepTitle(), current: currentStep, total: totalSteps })}
                     </p>
                   </div>
                   <button
@@ -187,7 +189,7 @@ export const CreatePageModal = () => {
                     <p className="text-sm text-red-800 dark:text-red-200">
                       {createMutation.error instanceof Error
                         ? createMutation.error.message
-                        : 'Error al crear la página. Intenta nuevamente.'}
+                        : t('errorDefault')}
                     </p>
                   </div>
                 )}

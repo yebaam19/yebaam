@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   HandThumbUpIcon,
   ChatBubbleLeftIcon,
@@ -22,26 +23,29 @@ interface PostActionsProps {
 
 type ReactionType = 'LIKE' | 'LOVE' | 'HAHA' | 'WOW' | 'SAD' | 'ANGRY';
 
-const REACTIONS: Array<{
-  type: ReactionType;
-  emoji: string;
-  label: string;
-  color: string;
-}> = [
-  { type: 'LIKE', emoji: '👍', label: 'Me gusta', color: 'text-blue-600' },
-  { type: 'LOVE', emoji: '❤️', label: 'Me encanta', color: 'text-red-600' },
-  { type: 'HAHA', emoji: '😂', label: 'Me divierte', color: 'text-yellow-600' },
-  { type: 'WOW', emoji: '😮', label: 'Me asombra', color: 'text-orange-600' },
-  { type: 'SAD', emoji: '😢', label: 'Me entristece', color: 'text-neutral-600' },
-  { type: 'ANGRY', emoji: '😡', label: 'Me enoja', color: 'text-red-700' },
-];
-
 export default function PostActions({
   postId,
   reactionsCount,
   commentsCount,
   sharesCount,
 }: PostActionsProps) {
+  const t = useTranslations('feed.postActions');
+  const REACTIONS = useMemo<Array<{
+    type: ReactionType;
+    emoji: string;
+    label: string;
+    color: string;
+  }>>(
+    () => [
+      { type: 'LIKE', emoji: '👍', label: t('reactions.LIKE'), color: 'text-blue-600' },
+      { type: 'LOVE', emoji: '❤️', label: t('reactions.LOVE'), color: 'text-red-600' },
+      { type: 'HAHA', emoji: '😂', label: t('reactions.HAHA'), color: 'text-yellow-600' },
+      { type: 'WOW', emoji: '😮', label: t('reactions.WOW'), color: 'text-orange-600' },
+      { type: 'SAD', emoji: '😢', label: t('reactions.SAD'), color: 'text-neutral-600' },
+      { type: 'ANGRY', emoji: '😡', label: t('reactions.ANGRY'), color: 'text-red-700' },
+    ],
+    [t],
+  );
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [currentReaction, setCurrentReaction] = useState<ReactionType | null>(null);
   const [localReactionsCount, setLocalReactionsCount] = useState(reactionsCount);

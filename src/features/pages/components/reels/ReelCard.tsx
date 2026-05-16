@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   PlayIcon,
   HeartIcon,
@@ -39,6 +42,7 @@ export const ReelCard: FC<ReelCardProps> = ({
   onComment,
   onShare,
 }) => {
+  const t = useTranslations('pages.reels.card');
   const videoRef = useRef<HTMLVideoElement>(null);
   const video = reel.mediaFiles[0];
   const totalLikes = Object.values(reel.reactionsCount || {}).reduce((sum, count) => sum + count, 0);
@@ -130,7 +134,7 @@ export const ReelCard: FC<ReelCardProps> = ({
         {/* Stats Overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
           <h3 className="text-white text-sm font-medium mb-2 line-clamp-2">
-            {reel.content || 'Sin título'}
+            {reel.content || t('noTitle')}
           </h3>
           <div className="flex items-center gap-3 text-white text-xs">
             <div className="flex items-center gap-1">
@@ -152,7 +156,7 @@ export const ReelCard: FC<ReelCardProps> = ({
         <button
           onClick={handleLike}
           className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors"
-          title="Me gusta"
+          title={t('likeAria')}
         >
           {reel.currentUserReaction ? (
             <HeartSolidIcon className="w-5 h-5 text-red-500" />
@@ -163,14 +167,14 @@ export const ReelCard: FC<ReelCardProps> = ({
         <button
           onClick={handleComment}
           className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors"
-          title="Comentar"
+          title={t('commentAria')}
         >
           <ChatBubbleLeftIcon className="w-5 h-5 text-gray-700" />
         </button>
         <button
           onClick={handleShare}
           className="p-2 bg-white/90 hover:bg-white rounded-full transition-colors"
-          title="Compartir"
+          title={t('shareAria')}
         >
           <ShareIcon className="w-5 h-5 text-gray-700" />
         </button>

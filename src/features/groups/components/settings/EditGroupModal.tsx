@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface EditGroupModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function EditGroupModal({
   onSave,
   onCancel,
 }: EditGroupModalProps) {
+  const t = useTranslations('grupos.editModal');
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
   const [category, setCategory] = useState(initialCategory);
@@ -41,21 +43,21 @@ export function EditGroupModal({
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
-            Editar información del grupo
+            {t('title')}
           </h3>
-          
+
           <div className="space-y-4">
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Nombre del grupo *
+                {t('nameLabel')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Ej: Desarrolladores Web"
+                placeholder={t('namePlaceholder')}
                 minLength={3}
                 maxLength={100}
               />
@@ -64,13 +66,13 @@ export function EditGroupModal({
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Descripción *
+                {t('descriptionLabel')}
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-                placeholder="Describe de qué trata tu grupo..."
+                placeholder={t('descriptionPlaceholder')}
                 rows={4}
                 minLength={10}
                 maxLength={500}
@@ -80,7 +82,7 @@ export function EditGroupModal({
             {/* Category */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Categoría
+                {t('categoryLabel')}
               </label>
               <select
                 value={category}
@@ -102,7 +104,7 @@ export function EditGroupModal({
               disabled={isLoading}
               className="flex-1 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               onClick={handleSubmit}
@@ -112,10 +114,10 @@ export function EditGroupModal({
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Guardando...
+                  {t('saving')}
                 </>
               ) : (
-                'Guardar cambios'
+                t('save')
               )}
             </button>
           </div>

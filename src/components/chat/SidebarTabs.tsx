@@ -2,6 +2,7 @@
 
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   CheckCircleIcon,
   EllipsisHorizontalCircleIcon,
@@ -22,6 +23,7 @@ export default function SidebarTabs({
   onMarkAllRead,
   hasUnread = false,
 }: SidebarTabsProps) {
+  const t = useTranslations('chat');
   return (
     <div className="flex items-center gap-2 px-3 pt-3 pb-2">
       <button
@@ -33,7 +35,7 @@ export default function SidebarTabs({
             : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
         }`}
       >
-        Bandejas
+        {t('sidebar.tabInbox')}
       </button>
       <button
         type="button"
@@ -44,7 +46,7 @@ export default function SidebarTabs({
             : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
         }`}
       >
-        Comunidades
+        {t('sidebar.tabCommunities')}
       </button>
 
       <Menu as="div" className="relative">

@@ -3,6 +3,7 @@
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useStoryStore } from '../store';
 import { useStorySocket } from '../hooks/useStorySocket';
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils';
 export default function CreateStoryPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations('stories.create');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -73,13 +75,13 @@ export default function CreateStoryPage() {
     const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
 
     if (!isImage && !isVideo) {
-      toast.error('Tipo de archivo no válido');
+      toast.error(t('errors.invalidFileType'));
       return;
     }
 
     const maxSize = isVideo ? MAX_VIDEO_SIZE_MB : MAX_IMAGE_SIZE_MB;
     if (file.size > maxSize * 1024 * 1024) {
-      toast.error(`El archivo excede ${maxSize}MB`);
+      toast.error(t('errors.fileExceedsSize', { size: maxSize }));
       return;
     }
 
@@ -89,7 +91,7 @@ export default function CreateStoryPage() {
       video.onloadedmetadata = () => {
         window.URL.revokeObjectURL(video.src);
         if (video.duration > MAX_VIDEO_DURATION) {
-          toast.error(`El video no puede durar más de ${MAX_VIDEO_DURATION} segundos`);
+          toast.error(t('errors.videoTooLong', { seconds: MAX_VIDEO_DURATION }));
           return;
         }
       };
@@ -106,41 +108,41 @@ export default function CreateStoryPage() {
 
     // Validaciones
     if (storyType === 'text' && !textContent.trim()) {
-      toast.error('Escribe algo para tu historia');
+      toast.error(t('errors.writeSomething'));
       return;
     }
 
     if ((storyType === 'image' || storyType === 'video') && !selectedFile) {
-      toast.error('Selecciona un archivo');
+      toast.error(t('errors.selectFile'));
       return;
     }
 
     try {
       const formData = new FormData();
-      
+
       // Para historias de imagen/video, solo necesitamos el archivo y tipo
       if (storyType === 'image' || storyType === 'video') {
         if (!selectedFile) {
-          toast.error('Selecciona un archivo');
+          toast.error(t('errors.selectFile'));
           return;
         }
-        
+
         formData.append('file', selectedFile);
         formData.append('type', storyType);
-        
+
         // Caption opcional (puedes agregar un campo de texto si quieres)
         // formData.append('caption', 'Mi historia');
       }
-      
+
       // Para historias de texto (no implementado en el backend aún)
       if (storyType === 'text') {
-        toast.error('Las historias de texto aún no están disponibles');
+        toast.error(t('errors.textNotAvailable'));
         return;
       }
 
       await createStory(formData);
-      
-      toast.success('¡Historia publicada exitosamente! ');
+
+      toast.success(t('success.published'));
       
       // Limpiar estados
       setStoryType(null);
@@ -152,7 +154,7 @@ export default function CreateStoryPage() {
       router.push('/feed');
     } catch (error) {
       console.error('Error creating story:', error);
-      toast.error('Error al publicar la historia');
+      toast.error(t('errors.publishError'));
     }
   };
 
@@ -185,12 +187,12 @@ export default function CreateStoryPage() {
         <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
           <button
             onClick={handleBack}
-            aria-label="Volver"
+            aria-label={t('back')}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800 text-white transition hover:bg-neutral-700"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold">Tu historia</h1>
+          <h1 className="text-xl font-bold">{t('title')}</h1>
         </div>
 
         {/* Tarjeta de usuario */}
@@ -202,7 +204,7 @@ export default function CreateStoryPage() {
           />
           <div className="min-w-0">
             <p className="truncate font-semibold">{user.username}</p>
-            <p className="text-xs text-neutral-400">Visible por 24 horas</p>
+            <p className="text-xs text-neutral-400">{t('visibleFor24h')}</p>
           </div>
         </div>
 
@@ -210,7 +212,7 @@ export default function CreateStoryPage() {
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           {!storyType ? (
             <div className="space-y-3">
-              <p className="mb-1 text-sm font-semibold text-neutral-300">Añadir a tu historia</p>
+              <p className="mb-1 text-sm font-semibold text-neutral-300">{t('addToStory')}</p>
 
               <button
                 onClick={() => handleTypeSelect('image')}
@@ -220,8 +222,8 @@ export default function CreateStoryPage() {
                   <PhotoIcon className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-semibold">Crear historia con foto</p>
-                  <p className="text-xs text-neutral-400">Comparte una imagen</p>
+                  <p className="font-semibold">{t('createWithPhoto')}</p>
+                  <p className="text-xs text-neutral-400">{t('shareImage')}</p>
                 </div>
               </button>
 
@@ -233,8 +235,8 @@ export default function CreateStoryPage() {
                   <VideoCameraIcon className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-semibold">Crear historia con video</p>
-                  <p className="text-xs text-neutral-400">Hasta {MAX_VIDEO_DURATION}s</p>
+                  <p className="font-semibold">{t('createWithVideo')}</p>
+                  <p className="text-xs text-neutral-400">{t('upToSeconds', { seconds: MAX_VIDEO_DURATION })}</p>
                 </div>
               </button>
 
@@ -246,8 +248,8 @@ export default function CreateStoryPage() {
                   <PaintBrushIcon className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-semibold">Crear historia de texto</p>
-                  <p className="text-xs text-neutral-400">Fondo y tipografía personalizados</p>
+                  <p className="font-semibold">{t('createTextStory')}</p>
+                  <p className="text-xs text-neutral-400">{t('customBackgroundFont')}</p>
                 </div>
               </button>
             </div>
@@ -255,13 +257,13 @@ export default function CreateStoryPage() {
             <div className="space-y-5">
               {/* Fondo */}
               <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-300">Fondo</p>
+                <p className="mb-3 text-sm font-semibold text-neutral-300">{t('background')}</p>
                 <div className="grid grid-cols-5 gap-2">
                   {STORY_BACKGROUNDS.map((bg, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedBackground(bg)}
-                      aria-label={`Fondo ${index + 1}`}
+                      aria-label={t('backgroundOption', { index: index + 1 })}
                       className={cn(
                         'h-12 w-full rounded-lg transition',
                         selectedBackground === bg
@@ -276,7 +278,7 @@ export default function CreateStoryPage() {
 
               {/* Tamaño */}
               <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-300">Tamaño</p>
+                <p className="mb-3 text-sm font-semibold text-neutral-300">{t('size')}</p>
                 <div className="flex gap-2">
                   {['S', 'M', 'L'].map((size, index) => (
                     <button
@@ -297,7 +299,7 @@ export default function CreateStoryPage() {
 
               {/* Alineación */}
               <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-300">Alinear</p>
+                <p className="mb-3 text-sm font-semibold text-neutral-300">{t('align')}</p>
                 <div className="flex gap-2">
                   {(['left', 'center', 'right'] as const).map((align) => (
                     <button
@@ -318,7 +320,7 @@ export default function CreateStoryPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm font-semibold text-neutral-300">Archivo seleccionado</p>
+              <p className="text-sm font-semibold text-neutral-300">{t('selectedFile')}</p>
               <div className="rounded-xl border border-neutral-800 bg-neutral-800/60 p-4">
                 <p className="truncate text-sm font-medium">{selectedFile?.name}</p>
                 <p className="mt-1 text-xs text-neutral-400">
@@ -329,7 +331,7 @@ export default function CreateStoryPage() {
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-2.5 text-sm font-semibold text-neutral-200 transition hover:bg-neutral-700"
               >
-                Cambiar archivo
+                {t('changeFile')}
               </button>
             </div>
           )}
@@ -343,19 +345,19 @@ export default function CreateStoryPage() {
                 onClick={handleBack}
                 className="flex-1 rounded-xl bg-neutral-800 py-3 font-semibold text-white transition hover:bg-neutral-700"
               >
-                Descartar
+                {t('discard')}
               </button>
               <button
                 onClick={handlePublish}
                 disabled={isCreating}
                 className="flex-1 rounded-xl bg-primary-600 py-3 font-semibold text-white shadow-lg transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-700"
               >
-                {isCreating ? 'Publicando…' : 'Compartir'}
+                {isCreating ? t('publishing') : t('share')}
               </button>
             </div>
           ) : (
             <p className="text-center text-xs text-neutral-500">
-              Tu historia será visible durante 24 horas
+              {t('willBeVisible')}
             </p>
           )}
         </div>
@@ -370,9 +372,9 @@ export default function CreateStoryPage() {
         {!storyType ? (
           <div className="relative z-10 flex flex-col items-center gap-5 text-center">
             <div className="aspect-9/16 w-40 rounded-2xl border border-dashed border-neutral-700" />
-            <h2 className="text-2xl font-semibold tracking-tight">Vista previa</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">{t('preview')}</h2>
             <p className="max-w-xs text-sm text-neutral-500">
-              Elige una opción para comenzar.
+              {t('chooseOption')}
             </p>
           </div>
         ) : (
@@ -385,7 +387,7 @@ export default function CreateStoryPage() {
                 <textarea
                   value={textContent}
                   onChange={(e) => setTextContent(e.target.value)}
-                  placeholder="Escribe tu historia..."
+                  placeholder={t('writeYourStory')}
                   maxLength={250}
                   style={{
                     color: selectedBackground.textColor,
@@ -437,9 +439,9 @@ export default function CreateStoryPage() {
           <div className="bg-neutral-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-neutral-800">
             {/* Header del modal */}
             <div className="p-6 border-b border-neutral-800">
-              <h3 className="text-xl font-bold text-white">¿Descartar historia?</h3>
+              <h3 className="text-xl font-bold text-white">{t('discardModalTitle')}</h3>
               <p className="text-neutral-400 mt-2">
-                Si sales ahora, perderás todos los cambios que hayas hecho.
+                {t('discardModalDescription')}
               </p>
             </div>
 
@@ -449,13 +451,13 @@ export default function CreateStoryPage() {
                 onClick={() => setShowDiscardModal(false)}
                 className="flex-1 px-4 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-xl transition-colors"
               >
-                Continuar editando
+                {t('continueEditing')}
               </button>
               <button
                 onClick={confirmDiscard}
                 className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors"
               >
-                Descartar
+                {t('discard')}
               </button>
             </div>
           </div>

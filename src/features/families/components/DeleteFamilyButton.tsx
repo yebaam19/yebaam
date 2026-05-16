@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { deleteFamily } from '../actions/families.actions';
 
 export function DeleteFamilyButton({
@@ -11,6 +12,7 @@ export function DeleteFamilyButton({
   familyId: string;
   familyName: string;
 }) {
+  const t = useTranslations('familias.deleteFamily');
   const router = useRouter();
   const [confirmText, setConfirmText] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export function DeleteFamilyButton({
 
   function onDelete() {
     if (confirmText !== familyName) {
-      setError(`Escribe "${familyName}" exactamente para confirmar.`);
+      setError(t('errors.mustMatch', { name: familyName }));
       return;
     }
     setError(null);
@@ -35,13 +37,17 @@ export function DeleteFamilyButton({
 
   return (
     <div className="rounded-xl border border-rose-300 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/40">
-      <h3 className="text-sm font-semibold text-rose-800 dark:text-rose-200">Eliminar familia</h3>
+      <h3 className="text-sm font-semibold text-rose-800 dark:text-rose-200">{t('heading')}</h3>
       <p className="mt-1 text-xs text-rose-700 dark:text-rose-300">
-        Esto borra <span className="font-semibold">todo</span>: árbol, fotos, historias, eventos, documentos y miembros.
-        No se puede deshacer.
+        {t.rich('warning', {
+          semibold: (chunks) => <span className="font-semibold">{chunks}</span>,
+        })}
       </p>
       <label className="mt-3 block text-xs font-medium text-rose-800 dark:text-rose-200">
-        Para confirmar, escribe el nombre exacto: <span className="font-mono">{familyName}</span>
+        {t.rich('confirmLabel', {
+          name: familyName,
+          code: (chunks) => <span className="font-mono">{chunks}</span>,
+        })}
       </label>
       <input
         type="text"
@@ -57,7 +63,7 @@ export function DeleteFamilyButton({
         disabled={pending || confirmText !== familyName}
         className="mt-3 inline-flex items-center rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
       >
-        {pending ? 'Eliminando…' : 'Eliminar familia para siempre'}
+        {pending ? t('deleting') : t('submit')}
       </button>
     </div>
   );

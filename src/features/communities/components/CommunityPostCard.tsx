@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Route } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { StreamVideo } from '@/components/media/StreamVideo';
 import { NewspaperIcon } from '@/components/icons/heroicons-shim';
 import type { CommunityPost } from '@/features/communities/types/community.types';
@@ -9,7 +10,8 @@ interface CommunityPostCardProps {
   post: CommunityPost;
 }
 
-export function CommunityPostCard({ post }: CommunityPostCardProps) {
+export async function CommunityPostCard({ post }: CommunityPostCardProps) {
+  const t = await getTranslations('communities');
   return (
     <article className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-3">
@@ -46,7 +48,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
-              Artículo de la comunidad
+              {t('detail.articleEyebrow')}
             </p>
             <p className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-white">
               {post.articleRef.title}
@@ -92,9 +94,9 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
         </div>
       )}
       <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-        <span>{post.likesCount} me gusta</span>
+        <span>{t('detail.reactions.likeCount', { count: post.likesCount })}</span>
         <span>•</span>
-        <span>{post.commentsCount} comentarios</span>
+        <span>{t('detail.comments.count', { count: post.commentsCount })}</span>
       </div>
     </article>
   );

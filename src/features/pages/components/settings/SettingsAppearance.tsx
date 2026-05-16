@@ -1,5 +1,8 @@
+'use client';
+
 import { FC, useState, useRef } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { Page } from '../../types/page.types';
 import { usePageImageUpload } from '../../hooks/usePageImageUpload';
@@ -11,9 +14,10 @@ interface SettingsAppearanceProps {
 }
 
 export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
+  const t = useTranslations('pages.settings.appearance');
   const [profileImage, setProfileImage] = useState<string | null>(page.profileImageUrl || null);
   const [coverImage, setCoverImage] = useState<string | null>(page.coverImageUrl || null);
-  
+
   const profileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,14 +30,14 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
     onSuccess: (fileUrl) => {
       setProfileImage(fileUrl);
       // Update page with new profile image
-      updatePage.mutate({ 
-        pageId: page.id, 
-        data: { avatarUrl: fileUrl } 
+      updatePage.mutate({
+        pageId: page.id,
+        data: { avatarUrl: fileUrl }
       });
     },
     onError: (error) => {
       console.error('Error uploading profile image:', error);
-      toast.error('Error al subir la imagen de perfil');
+      toast.error(t('errors.uploadProfile'));
     }
   });
 
@@ -45,14 +49,14 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
     onSuccess: (fileUrl) => {
       setCoverImage(fileUrl);
       // Update page with new cover image
-      updatePage.mutate({ 
-        pageId: page.id, 
-        data: { coverImageUrl: fileUrl } 
+      updatePage.mutate({
+        pageId: page.id,
+        data: { coverImageUrl: fileUrl }
       });
     },
     onError: (error) => {
       console.error('Error uploading cover image:', error);
-      toast.error('Error al subir la imagen de portada');
+      toast.error(t('errors.uploadCover'));
     }
   });
 
@@ -69,13 +73,13 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
 
     // Validar tamaño (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen no puede superar los 5MB');
+      toast.error(t('errors.tooLarge'));
       return;
     }
 
     // Validar tipo
     if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes');
+      toast.error(t('errors.invalidType'));
       return;
     }
 
@@ -83,10 +87,10 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
       // Use the appropriate upload function
       if (type === 'profile') {
         await uploadProfileImage(file);
-        toast.success('Imagen de perfil actualizada correctamente');
+        toast.success(t('success.profileUpdated'));
       } else {
         await uploadCoverImage(file);
-        toast.success('Imagen de portada actualizada correctamente');
+        toast.success(t('success.coverUpdated'));
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -98,33 +102,35 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
     try {
       if (type === 'profile') {
         setProfileImage(null);
-        updatePage.mutate({ 
-          pageId: page.id, 
-          data: { avatarUrl: '' } 
+        updatePage.mutate({
+          pageId: page.id,
+          data: { avatarUrl: '' }
         });
       } else {
         setCoverImage(null);
-        updatePage.mutate({ 
-          pageId: page.id, 
-          data: { coverImageUrl: '' } 
+        updatePage.mutate({
+          pageId: page.id,
+          data: { coverImageUrl: '' }
         });
       }
-      toast.success(`Imagen de ${type === 'profile' ? 'perfil' : 'portada'} eliminada`);
+      toast.success(type === 'profile' ? t('success.profileRemoved') : t('success.coverRemoved'));
     } catch (error) {
       console.error('Error removing image:', error);
-      toast.error('Error al eliminar la imagen');
+      toast.error(t('errors.removeError'));
     }
   };
+
+  const tips = t.raw('tips') as string[];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Apariencia
+          {t('heading')}
         </h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Personaliza las imágenes de tu página
+          {t('subheading')}
         </p>
       </div>
 
@@ -133,10 +139,10 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-medium text-gray-900 dark:text-white">
-              Imagen de portada
+              {t('coverHeading')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Recomendado: 1920x1080px • Máx: 5MB
+              {t('coverHint')}
             </p>
           </div>
           {coverImage && (
@@ -145,7 +151,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-1"
             >
               <XMarkIcon className="w-4 h-4" />
-              Eliminar
+              {t('remove')}
             </button>
           )}
         </div>
@@ -155,7 +161,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
           {coverImage ? (
             <Image
               src={coverImage}
-              alt="Cover preview"
+              alt={t('coverAlt')}
               fill
               sizes="(max-width: 768px) 100vw, 600px"
               className="object-cover"
@@ -165,12 +171,12 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               <div className="text-center">
                 <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Sin imagen de portada
+                  {t('noCover')}
                 </p>
               </div>
             </div>
           )}
-          
+
           {/* Upload Overlay */}
           <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
@@ -178,7 +184,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               disabled={isUploading}
               className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
             >
-              {isUploading ? 'Subiendo...' : 'Cambiar imagen'}
+              {isUploading ? t('uploading') : t('changeImage')}
             </button>
           </div>
         </div>
@@ -200,10 +206,10 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-medium text-gray-900 dark:text-white">
-              Imagen de perfil
+              {t('profileHeading')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Recomendado: 400x400px • Máx: 5MB
+              {t('profileHint')}
             </p>
           </div>
           {profileImage && (
@@ -212,7 +218,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-1"
             >
               <XMarkIcon className="w-4 h-4" />
-              Eliminar
+              {t('remove')}
             </button>
           )}
         </div>
@@ -223,7 +229,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
             {profileImage ? (
               <Image
                 src={profileImage}
-                alt="Profile preview"
+                alt={t('profileAlt')}
                 fill
                 sizes="128px"
                 className="object-cover"
@@ -233,7 +239,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
                 <PhotoIcon className="h-12 w-12 text-gray-400" />
               </div>
             )}
-            
+
             {/* Upload Overlay */}
             <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <button
@@ -241,7 +247,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
                 disabled={isUploading}
                 className="px-3 py-1.5 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
-                {isUploading ? 'Subiendo...' : 'Cambiar'}
+                {isUploading ? t('uploading') : t('change')}
               </button>
             </div>
           </div>
@@ -252,10 +258,10 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               disabled={isUploading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {isUploading ? 'Subiendo...' : 'Subir imagen'}
+              {isUploading ? t('uploading') : t('uploadImage')}
             </button>
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              JPG, PNG o GIF. Tamaño máximo de 5MB.
+              {t('fileHint')}
             </p>
           </div>
         </div>
@@ -275,14 +281,12 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
       {/* Tips Section */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
         <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
-          💡 Consejos para mejores imágenes
+          {t('tipsTitle')}
         </h4>
         <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1 list-disc list-inside">
-          <li>Usa imágenes de alta calidad que representen tu marca</li>
-          <li>La imagen de portada debe ser horizontal (16:9 ideal)</li>
-          <li>La imagen de perfil debe ser cuadrada y reconocible</li>
-          <li>Evita texto pequeño que sea difícil de leer</li>
-          <li>Mantén un estilo consistente con tu identidad visual</li>
+          {tips.map((tip, index) => (
+            <li key={index}>{tip}</li>
+          ))}
         </ul>
       </div>
     </div>

@@ -10,6 +10,7 @@ import Textarea from '@/ui/Textarea'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
 import type { Experience, ExperienceFormData } from '../../interfaces/professional-profile.interfaces'
 
@@ -21,6 +22,7 @@ interface ExperienceDialogProps {
 }
 
 export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: ExperienceDialogProps) {
+  const t = useTranslations('professional.dialogs.experience')
   const {
     control,
     handleSubmit,
@@ -84,17 +86,17 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
           >
             <DialogPanel className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {experience ? 'Editar Experiencia' : 'Agregar Experiencia'}
+                {experience ? t('titleEdit') : t('titleCreate')}
               </DialogTitle>
 
               <form className="mt-4 space-y-4" onSubmit={handleSubmit(submit)}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Cargo</label>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('positionLabel')}</label>
                     <Controller
                       control={control}
                       name="position"
-                      rules={{ required: 'Campo requerido' }}
+                      rules={{ required: t('requiredField') }}
                       render={({ field, fieldState }) => (
                         <>
                           <Input
@@ -102,7 +104,7 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
                             className="mt-1"
                             sizeClass="h-10 px-3 py-2"
                             rounded="rounded-lg"
-                            placeholder="Ej. Desarrollador Senior"
+                            placeholder={t('positionPlaceholder')}
                           />
                           {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                         </>
@@ -111,11 +113,11 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Empresa</label>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('companyLabel')}</label>
                     <Controller
                       control={control}
                       name="company"
-                      rules={{ required: 'Campo requerido' }}
+                      rules={{ required: t('requiredField') }}
                       render={({ field, fieldState }) => (
                         <>
                           <Input
@@ -123,7 +125,7 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
                             className="mt-1"
                             sizeClass="h-10 px-3 py-2"
                             rounded="rounded-lg"
-                            placeholder="Ej. Tech Corp"
+                            placeholder={t('companyPlaceholder')}
                           />
                           {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                         </>
@@ -132,11 +134,11 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Fecha inicio</label>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('startDateLabel')}</label>
                     <Controller
                       control={control}
                       name="startDate"
-                      rules={{ required: 'Campo requerido' }}
+                      rules={{ required: t('requiredField') }}
                       render={({ field, fieldState }) => (
                         <>
                           <Input
@@ -154,7 +156,7 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
 
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Fecha fin (opcional)
+                      {t('endDateLabel')}
                     </label>
                     <Controller
                       control={control}
@@ -174,7 +176,7 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
 
                 <div>
                   <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                    Descripcion (opcional)
+                    {t('descriptionLabel')}
                   </label>
                   <Controller
                     control={control}
@@ -184,7 +186,7 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
                         {...field}
                         rows={3}
                         className="mt-1 rounded-lg"
-                        placeholder="Describe tus responsabilidades y logros"
+                        placeholder={t('descriptionPlaceholder')}
                       />
                     )}
                   />
@@ -192,11 +194,11 @@ export function ExperienceDialog({ isOpen, experience, onClose, onSubmit }: Expe
 
                 <div className="flex justify-end gap-3 pt-2">
                   <Button type="button" onClick={onClose} disabled={isSubmitting} outline>
-                    Cancelar
+                    {t('cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
-                    Guardar
+                    {t('submit')}
                   </Button>
                 </div>
               </form>

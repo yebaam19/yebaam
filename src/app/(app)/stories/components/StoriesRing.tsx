@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useStoryStore } from '../store';
 import { useStorySocket } from '../hooks/useStorySocket';
 import { PlusIcon } from '@/components/icons/heroicons-shim';
@@ -16,6 +17,7 @@ interface StoriesRingProps {
 export default function StoriesRing({ className }: StoriesRingProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations('stories.ring');
   const { friendsStories, myStories, fetchFriendsStories, fetchMyStories, isLoading } = useStoryStore();
   
   // Conectar WebSocket
@@ -76,7 +78,7 @@ export default function StoriesRing({ className }: StoriesRingProps) {
         </div>
         
         <span className="text-xs text-neutral-300 max-w-[60px] truncate">
-          {hasMyStories ? 'Tu historia' : 'Crear'}
+          {hasMyStories ? t('yourStory') : t('create')}
         </span>
       </button>
 
@@ -122,7 +124,7 @@ export default function StoriesRing({ className }: StoriesRingProps) {
       {/* Mensaje cuando no hay historias */}
       {!hasMyStories && !hasFriendsStories && !isLoading && (
         <div className="flex items-center justify-center py-8 text-neutral-500">
-          <p className="text-sm">No hay historias disponibles</p>
+          <p className="text-sm">{t('noStories')}</p>
         </div>
       )}
     </div>

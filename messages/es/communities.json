@@ -23,7 +23,10 @@
     "processing": "Procesando...",
     "member": "Miembro",
     "requestAccess": "Solicitar Acceso",
-    "join": "Unirse"
+    "join": "Unirse",
+    "privacyPrivate": "Privada",
+    "privacyPublic": "Pública",
+    "privacySecret": "Secreta"
   },
   "create": {
     "trigger": "Crear comunidad",
@@ -87,7 +90,27 @@
       "requestAccess": "Solicitar acceso",
       "secretOnlyInvite": "Solo por invitación",
       "join": "Hacerse Miembro"
-    }
+    },
+    "aboutTitle": "Acerca de la comunidad",
+    "locationLabel": "Ubicación:",
+    "postsHeading": "Publicaciones",
+    "postsCount": "{count, plural, one {# publicación} other {# publicaciones}}",
+    "composerPlaceholder": "¿Qué quieres compartir con la comunidad?",
+    "composerSubmit": "Publicar",
+    "featuredPhotosHeading": "Fotos destacadas",
+    "featuredPhotosEmpty": "Aún no hay fotos destacadas.",
+    "articleEyebrow": "ARTÍCULO DE LA COMUNIDAD",
+    "reactions": {
+      "likeCount": "{count, plural, one {# me gusta} other {# me gustas}}"
+    },
+    "comments": {
+      "count": "{count, plural, one {# comentario} other {# comentarios}}"
+    },
+    "noDescription": "Sin descripción.",
+    "joinToPost": "Únete a la comunidad para publicar.",
+    "onlyOwnerPosts": "Solo el propietario puede publicar en esta comunidad.",
+    "noPosts": "No hay publicaciones aún. ¡Sé el primero en publicar!",
+    "featuredVideosHeading": "Videos destacados"
   },
   "sidebar": {
     "ariaLabel": "Secciones de la comunidad",
@@ -122,5 +145,97 @@
   "comingSoon": {
     "defaultDescription": "Esta sección estará disponible próximamente.",
     "badge": "Próximamente"
+  },
+  "admin": {
+    "panel": {
+      "title": "Panel de administración",
+      "inviteSectionTitle": "Invitar usuario",
+      "invitePlaceholder": "@usuario",
+      "inviteSubmit": "Invitar",
+      "inviteSuccess": "Invitación enviada a @{username}",
+      "pendingTitle": "Solicitudes pendientes ({count})",
+      "pendingEmpty": "No hay solicitudes pendientes.",
+      "approve": "Aprobar",
+      "declineAria": "Rechazar",
+      "publicNotice": "Esta comunidad es pública — cualquier usuario puede unirse libremente."
+    },
+    "article": {
+      "actionsAria": "Acciones del artículo",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteTitle": "Eliminar artículo",
+      "deleteConfirm": "¿Eliminar “{title}”? Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "composer": {
+        "titleEdit": "Editar artículo",
+        "titleNew": "Nuevo artículo",
+        "cancel": "Cancelar",
+        "submitPublish": "Publicar",
+        "submitPublishing": "Publicando...",
+        "submitSave": "Guardar cambios",
+        "submitSaving": "Guardando...",
+        "errorCoverImage": "La portada debe ser una imagen.",
+        "errorCoverUpload": "Error subiendo la portada.",
+        "errorTitleRequired": "El título es obligatorio.",
+        "errorContentRequired": "Escribe el contenido del artículo.",
+        "coverAlt": "Portada",
+        "removeCoverAria": "Quitar portada",
+        "uploadingCover": "Subiendo portada...",
+        "addCover": "Añadir imagen de portada (opcional)",
+        "titlePlaceholder": "Título del artículo",
+        "subtitlePlaceholder": "Subtítulo (opcional)",
+        "contentPlaceholder": "Escribe tu artículo...",
+        "tagsLabel": "Etiquetas (separadas por coma)",
+        "tagsPlaceholder": "música, coleccionismo, vinilo"
+      },
+      "share": {
+        "copied": "Enlace copiado",
+        "share": "Compartir",
+        "shareToCommunity": "Compartir en la comunidad",
+        "copyLink": "Copiar enlace",
+        "dialogTitle": "Compartir con la comunidad",
+        "dialogDescription": "Se publicará un post en el feed de la comunidad enlazando a “{title}”.",
+        "messagePlaceholder": "Escribe un mensaje opcional para los miembros...",
+        "successToast": "Compartido en la comunidad.",
+        "cancel": "Cancelar",
+        "submit": "Compartir",
+        "submitting": "Compartiendo...",
+        "submitted": "Compartido"
+      }
+    },
+    "owner": {
+      "manageAria": "Gestionar comunidad",
+      "manage": "Gestionar",
+      "deleteCommunity": "Eliminar comunidad",
+      "deleteTitle": "Eliminar comunidad",
+      "deleteConfirm": "¿Eliminar “{name}”? Se borrarán todos sus posts, miembros y artículos. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando..."
+    },
+    "rules": {
+      "title": "Reglas de la comunidad",
+      "editRules": "Editar reglas",
+      "addRules": "Añadir reglas",
+      "emptyOwner": "Aún no has publicado reglas. Añade las primeras para que los miembros sepan qué se espera de ellos.",
+      "emptyMember": "Esta comunidad aún no ha publicado reglas.",
+      "editorEmpty": "Aún no hay reglas. Pulsa “Añadir regla” para crear la primera.",
+      "ruleLabel": "Regla {n}",
+      "moveUpAria": "Mover regla arriba",
+      "moveDownAria": "Mover regla abajo",
+      "removeAria": "Eliminar regla",
+      "titlePlaceholder": "Título de la regla",
+      "descriptionPlaceholder": "Descripción (opcional)",
+      "addRule": "Añadir regla",
+      "cancel": "Cancelar",
+      "save": "Guardar reglas",
+      "saving": "Guardando...",
+      "errorMax": "Máximo {max} reglas.",
+      "errorTitleRequired": "Cada regla necesita un título.",
+      "reportsTitle": "Denuncias",
+      "reportsDescription": "¿Viste algo que rompe las reglas? Pronto podrás reportar contenido directamente desde aquí.",
+      "reportContent": "Reportar contenido"
+    }
   }
 }

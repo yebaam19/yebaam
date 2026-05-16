@@ -1,4 +1,7 @@
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 import { VideoCameraIcon, PlayIcon } from '@/components/icons/heroicons-shim';
 
 interface ReelsEmptyStateProps {
@@ -7,6 +10,7 @@ interface ReelsEmptyStateProps {
 }
 
 export const ReelsEmptyState: FC<ReelsEmptyStateProps> = ({ isOwner, onCreateClick }) => {
+  const t = useTranslations('pages.reels.emptyState');
   return (
     <>
       {/* Empty State Card */}
@@ -15,19 +19,17 @@ export const ReelsEmptyState: FC<ReelsEmptyStateProps> = ({ isOwner, onCreateCli
           <VideoCameraIcon className="w-8 h-8 text-purple-600 dark:text-purple-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Sin reels aún
+          {t('title')}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          {isOwner
-            ? 'Crea tu primer reel para mostrar tu negocio de forma creativa.'
-            : 'Esta página aún no ha compartido ningún reel.'}
+          {isOwner ? t('ownerDescription') : t('visitorDescription')}
         </p>
         {isOwner && (
           <button
             onClick={onCreateClick}
             className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg transition-all"
           >
-            Crear mi primer Reel
+            {t('ownerCta')}
           </button>
         )}
       </div>
@@ -38,11 +40,10 @@ export const ReelsEmptyState: FC<ReelsEmptyStateProps> = ({ isOwner, onCreateCli
           <PlayIcon className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm text-purple-900 dark:text-purple-300 font-medium mb-1">
-              💡 Crea contenido en video
+              {t('infoTitle')}
             </p>
             <p className="text-sm text-purple-700 dark:text-purple-400">
-              Los reels son perfectos para mostrar tu negocio de forma creativa y llegar a más
-              personas. Videos cortos (hasta 90 segundos), verticales y atractivos.
+              {t('infoDescription')}
             </p>
           </div>
         </div>

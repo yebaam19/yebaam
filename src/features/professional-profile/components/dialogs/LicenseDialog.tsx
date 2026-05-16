@@ -10,6 +10,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 import type { License, LicenseFormData } from '../../interfaces/professional-profile.interfaces'
 
 interface LicenseDialogProps {
@@ -20,6 +21,8 @@ interface LicenseDialogProps {
 }
 
 export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDialogProps) {
+  const t = useTranslations('professional.dialogs.license')
+  const tCommon = useTranslations('professional.dialogs.common')
   const {
     control,
     handleSubmit,
@@ -86,19 +89,19 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
           >
             <DialogPanel className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {license ? 'Editar Licencia' : 'Agregar Licencia'}
+                {license ? t('titleEdit') : t('titleCreate')}
               </DialogTitle>
 
               <form className="mt-4 space-y-4" onSubmit={handleSubmit(submit)}>
                 <div className="grid gap-4">
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Nombre de la licencia *
+                      {t('nameLabel')}
                     </label>
                     <Controller
                       control={control}
                       name="name"
-                      rules={{ required: 'Campo requerido' }}
+                      rules={{ required: tCommon('requiredField') }}
                       render={({ field, fieldState }) => (
                         <>
                           <Input
@@ -106,7 +109,7 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
                             className="mt-1"
                             sizeClass="h-10 px-3 py-2"
                             rounded="rounded-lg"
-                            placeholder="Ej. AWS Solutions Architect"
+                            placeholder={t('namePlaceholder')}
                           />
                           {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                         </>
@@ -116,7 +119,7 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
 
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Número de licencia (opcional)
+                      {t('numberLabel')}
                     </label>
                     <Controller
                       control={control}
@@ -127,7 +130,7 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
                           className="mt-1"
                           sizeClass="h-10 px-3 py-2"
                           rounded="rounded-lg"
-                          placeholder="Ej. ABC-123456"
+                          placeholder={t('numberPlaceholder')}
                         />
                       )}
                     />
@@ -135,7 +138,7 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
 
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Emitido por (opcional)
+                      {t('issuedByLabel')}
                     </label>
                     <Controller
                       control={control}
@@ -146,7 +149,7 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
                           className="mt-1"
                           sizeClass="h-10 px-3 py-2"
                           rounded="rounded-lg"
-                          placeholder="Ej. Amazon Web Services"
+                          placeholder={t('issuedByPlaceholder')}
                         />
                       )}
                     />
@@ -154,7 +157,7 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
 
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Fecha de emisión (opcional)
+                      {t('issuedAtLabel')}
                     </label>
                     <Controller
                       control={control}
@@ -174,11 +177,11 @@ export function LicenseDialog({ isOpen, license, onClose, onSubmit }: LicenseDia
 
                 <div className="flex justify-end gap-3 pt-2">
                   <Button type="button" onClick={onClose} disabled={isSubmitting} outline>
-                    Cancelar
+                    {tCommon('cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
-                    Guardar
+                    {tCommon('save')}
                   </Button>
                 </div>
               </form>

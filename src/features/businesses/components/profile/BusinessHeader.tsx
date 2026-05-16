@@ -10,6 +10,7 @@ import { Cog6ToothIcon, ShareIcon } from '@/components/icons/heroicons-shim'
 import { CheckBadgeIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon, StarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Business, BUSINESS_STATUS_LABELS, BusinessStatus } from '../../interfaces/business.interfaces'
 import { EditBusinessModal } from './EditBusinessModal'
@@ -75,6 +76,7 @@ function TikTokIcon({ className }: { className?: string }) {
  * Header del perfil del negocio
  */
 export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps) {
+  const t = useTranslations('businesses.header')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Determinar si el usuario actual es el dueño del negocio
@@ -106,7 +108,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
       {/* Cover Image */}
       <div className="relative h-48 bg-linear-to-r from-amber-500 to-yellow-600 sm:h-64">
         {business.coverUrl && (
-          <Image src={business.coverUrl} alt={`Cover de ${business.name}`} fill sizes="100vw" className="object-cover" priority />
+          <Image src={business.coverUrl} alt={t('coverAlt', { name: business.name })} fill sizes="100vw" className="object-cover" priority />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
 
@@ -148,7 +150,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900 sm:text-2xl dark:text-neutral-100">{business.name}</h1>
               {business.user?.isVerified && (
-                <CheckBadgeIcon className="h-5 w-5 text-primary-500 sm:h-6 sm:w-6" title="Verificado" />
+                <CheckBadgeIcon className="h-5 w-5 text-primary-500 sm:h-6 sm:w-6" title={t('verified')} />
               )}
             </div>
 
@@ -161,7 +163,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
                 <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
                   <StarIcon className="h-4 w-4 text-yellow-500" />
                   <span className="font-medium">{business.averageRating.toFixed(1)}</span>
-                  <span className="text-neutral-400">({business._count.reviews} reseñas)</span>
+                  <span className="text-neutral-400">{t('reviewsCount', { count: business._count.reviews })}</span>
                 </div>
               )}
             </div>
@@ -177,8 +179,8 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
                   className="inline-flex items-center gap-2 rounded-lg bg-neutral-100 px-4 py-2 font-medium text-neutral-900 transition-colors hover:bg-neutral-200 dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-600"
                 >
                   <Cog6ToothIcon className="h-5 w-5" />
-                  <span className="hidden sm:inline">Configuración</span>
-                  <span className="sm:hidden">Config</span>
+                  <span className="hidden sm:inline">{t('settings')}</span>
+                  <span className="sm:hidden">{t('settingsShort')}</span>
                 </button>
               </>
             ) : (
@@ -186,7 +188,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
                 {/* Visitor actions */}
                 <button className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700">
                   <EnvelopeIcon className="h-5 w-5" />
-                  <span className="hidden sm:inline">Contactar</span>
+                  <span className="hidden sm:inline">{t('contact')}</span>
                 </button>
               </>
             )}
@@ -198,7 +200,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
                   try {
                     await navigator.share({
                       title: business.name,
-                      text: business.description || `Mira este negocio: ${business.name}`,
+                      text: business.description || t('shareText', { name: business.name }),
                       url: window.location.href,
                     })
                   } catch {
@@ -208,11 +210,11 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
                 }
                 const { copyToClipboard } = await import('@/lib/clipboard')
                 if (await copyToClipboard(window.location.href)) {
-                  alert('Enlace copiado al portapapeles')
+                  alert(t('linkCopied'))
                 }
               }}
               className="rounded-lg bg-gray-100 p-2 text-gray-900 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-              title="Compartir negocio"
+              title={t('shareTitle')}
             >
               <ShareIcon className="h-5 w-5" />
             </button>
@@ -282,7 +284,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
         {/* Social Links */}
         {socialLinks.length > 0 && (
           <div className="mt-4 flex items-center gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-700">
-            <span className="text-sm font-medium text-neutral-500">Síguenos:</span>
+            <span className="text-sm font-medium text-neutral-500">{t('followUs')}</span>
             <div className="flex gap-2">
               {socialLinks.map((link) => {
                   const Icon = link.icon

@@ -13,6 +13,7 @@ import Image from 'next/image';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import ChatEmojiPopover from '../ChatEmojiPopover';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';
@@ -51,6 +52,7 @@ export function ChatBubbleInput({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useAutoResizeTextArea(message, 120, 1);
+  const t = useTranslations('chat.bubble.input');
 
   const { uploadMedia, isUploading, uploadProgress } = useUploadChatMedia();
 
@@ -58,11 +60,11 @@ export function ChatBubbleInput({
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona una imagen');
+      toast.error(t('errors.invalidImage'));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('La imagen no puede superar 10MB');
+      toast.error(t('errors.imageTooLarge'));
       return;
     }
     setSelectedFile(file);
@@ -117,7 +119,7 @@ export function ChatBubbleInput({
     if (selectedFile) {
       const result = await uploadMedia({ file: selectedFile, mediaType: MediaType.IMAGE });
       if (!result) {
-        toast.error('Error al subir la imagen');
+        toast.error(t('errors.uploadFailed'));
         setIsSending(false);
         return;
       }
@@ -149,7 +151,7 @@ export function ChatBubbleInput({
     }
   };
 
-  const stubSoon = useCallback(() => toast.info('Pronto'), []);
+  const stubSoon = useCallback(() => toast.info(t('toasts.soon')), [t]);
 
   const trimmedEmpty = message.trim() === '';
 
@@ -171,7 +173,7 @@ export function ChatBubbleInput({
           <div className="relative h-24 w-24 overflow-hidden rounded-lg">
             <Image
               src={previewUrl}
-              alt="Vista previa"
+              alt={t('previewAlt')}
               fill
               sizes="96px"
               className="object-cover"
@@ -182,7 +184,7 @@ export function ChatBubbleInput({
               onClick={handleRemoveFile}
               disabled={isUploading || isSending}
               className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80 disabled:opacity-50"
-              aria-label="Quitar imagen"
+              aria-label={t('removeImage')}
             >
               <XMarkIcon className="h-3.5 w-3.5" />
             </button>
@@ -201,7 +203,7 @@ export function ChatBubbleInput({
             type="button"
             onClick={stubSoon}
             className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
-            title="Más"
+            title={t('more')}
           >
             <PlusIcon className="h-7 w-7" aria-hidden />
           </button>
@@ -209,7 +211,7 @@ export function ChatBubbleInput({
             type="button"
             onClick={stubSoon}
             className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
-            title="Foto desde cámara"
+            title={t('cameraPhoto')}
           >
             <CameraIcon className="h-6 w-6" aria-hidden />
           </button>
@@ -226,7 +228,7 @@ export function ChatBubbleInput({
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading || isSending}
             className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-white/10"
-            title="Adjuntar imagen"
+            title={t('attachImage')}
           >
             <PhotoIcon className="h-6 w-6" aria-hidden />
           </button>
@@ -239,9 +241,9 @@ export function ChatBubbleInput({
             rows={1}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Aa"
+            placeholder={t('placeholder')}
             disabled={isSending || isUploading}
-            aria-label="Escribe un mensaje"
+            aria-label={t('ariaLabel')}
             className="max-h-[120px] w-full resize-none rounded-[20px] border-0 bg-white px-3 py-2 text-sm leading-[1.36] wrap-break-word text-neutral-900 shadow-sm outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-blue-500/35 disabled:opacity-60 dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500"
           />
         </div>
@@ -252,7 +254,7 @@ export function ChatBubbleInput({
               type="button"
               onClick={() => setEmojiOpen((v) => !v)}
               className="rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              title="Emoji"
+              title={t('emoji')}
             >
               <FaceSmileIcon className="h-6 w-6 text-[#0084ff] dark:text-blue-400" />
             </button>
@@ -270,7 +272,7 @@ export function ChatBubbleInput({
               onClick={() => void handleThumb()}
               disabled={isSending}
               className="rounded-full p-2 transition-colors hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
-              title="Enviar Me gusta"
+              title={t('sendLike')}
             >
               <HandThumbUpIcon className="h-7 w-7 text-[#0084ff] dark:text-blue-400" aria-hidden />
             </button>
@@ -279,7 +281,7 @@ export function ChatBubbleInput({
               type="submit"
               disabled={isSending || isUploading}
               className="rounded-full bg-[#0084ff] p-2 text-white shadow-sm transition-colors hover:bg-[#1877f2] disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
-              title="Enviar"
+              title={t('send')}
             >
               <PaperAirplaneIcon className="h-5 w-5 rtl:rotate-180" aria-hidden />
             </button>

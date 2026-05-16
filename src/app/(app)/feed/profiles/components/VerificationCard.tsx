@@ -1,28 +1,19 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { NewspaperIcon, CheckCircleIcon } from '@/components/icons/heroicons-shim';
 
-const verificationBenefits = [
-    'Crea y gestiona tus propios espacios',
-    'Acceso a herramientas de creación avanzadas',
-    'Mayor visibilidad en la plataforma',
-    'Construye una reputación sólida',
-];
-
-const verificationSteps = [
-    'Verifica tu correo electrónico',
-    'Confirma tus datos básicos',
-    'Verificación instantánea',
-    'Soporte prioritario',
-];
-
 export function VerificationCard() {
+    const t = useTranslations('profiles');
+    const verificationBenefits = t.raw('verificationCard.benefits') as string[];
+    const verificationSteps = t.raw('verificationCard.steps') as string[];
+
     return (
         <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
             <div className="border-b border-neutral-200 bg-linear-to-r from-primary-50 to-primary-100/60 px-6 py-4 dark:border-neutral-800 dark:from-primary-900/30 dark:to-primary-900/10">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-primary-700 dark:text-primary-400">
                     <NewspaperIcon className="h-5 w-5" />
-                    ¿Por qué verificar mi perfil?
+                    {t('verificationCard.heading')}
                 </h3>
             </div>
 
@@ -30,7 +21,7 @@ export function VerificationCard() {
                 <div className="grid gap-6 sm:grid-cols-2">
                     <div className="space-y-3">
                         <h4 className="font-semibold text-primary-700 dark:text-primary-400">
-                            Beneficios de la verificación
+                            {t('verificationCard.benefitsTitle')}
                         </h4>
                         <ul className="space-y-2">
                             {verificationBenefits.map((benefit) => (
@@ -44,7 +35,7 @@ export function VerificationCard() {
 
                     <div className="space-y-3">
                         <h4 className="font-semibold text-primary-700 dark:text-primary-400">
-                            Proceso simple y rápido
+                            {t('verificationCard.stepsTitle')}
                         </h4>
                         <ul className="space-y-2">
                             {verificationSteps.map((step, index) => (

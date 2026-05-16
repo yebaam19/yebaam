@@ -3,6 +3,7 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { CloudArrowUpIcon, PhotoIcon, TagIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { FC, Fragment, useCallback, useRef, useState } from 'react'
 import { useUploadBusinessPhoto } from '../../hooks/useBusinessPhotos'
 
@@ -13,6 +14,7 @@ interface UploadBusinessPhotoModalProps {
 }
 
 export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ isOpen, onClose, businessId }) => {
+  const t = useTranslations('businesses.uploadPhoto')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
@@ -26,14 +28,14 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
   const handleFileSelect = useCallback((file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen')
+      alert(t('selectImageError'))
       return
     }
 
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxSize) {
-      alert('La imagen no debe superar los 10MB')
+      alert(t('fileTooLargeError'))
       return
     }
 
@@ -45,7 +47,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
       setPreviewUrl(reader.result as string)
     }
     reader.readAsDataURL(file)
-  }, [])
+  }, [t])
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -153,7 +155,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-neutral-200 p-6 dark:border-neutral-700">
                   <Dialog.Title className="text-xl font-semibold text-neutral-900 dark:text-white">
-                    Subir foto
+                    {t('title')}
                   </Dialog.Title>
                   <button
                     onClick={handleClose}
@@ -197,9 +199,9 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                         </div>
                         <div>
                           <p className="mb-1 text-lg font-medium text-gray-900 dark:text-white">
-                            {isDragging ? 'Suelta la imagen aquí' : 'Arrastra una imagen o haz clic para seleccionar'}
+                            {isDragging ? t('dropHere') : t('dragOrClick')}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">JPG, PNG o GIF (máx. 10MB)</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{t('fileHint')}</p>
                         </div>
                       </div>
                     </div>
@@ -207,7 +209,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                     <>
                       {/* Preview */}
                       <div className="relative h-96 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-900">
-                        {previewUrl && <Image src={previewUrl} alt="Preview" fill sizes="(max-width: 768px) 100vw, 600px" className="object-contain" />}
+                        {previewUrl && <Image src={previewUrl} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 600px" className="object-contain" />}
                         <button
                           onClick={() => {
                             setSelectedFile(null)
@@ -223,12 +225,12 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                       {/* Caption */}
                       <div>
                         <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Descripción (opcional)
+                          {t('captionLabel')}
                         </label>
                         <textarea
                           value={caption}
                           onChange={(e) => setCaption(e.target.value)}
-                          placeholder="Escribe una descripción para esta foto..."
+                          placeholder={t('captionPlaceholder')}
                           rows={3}
                           className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           disabled={uploadMutation.isPending}
@@ -239,7 +241,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                       <div>
                         <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           <TagIcon className="mr-1 inline h-4 w-4" />
-                          Etiquetas (opcional)
+                          {t('tagsLabel')}
                         </label>
                         <div className="mb-2 flex gap-2">
                           <input
@@ -247,7 +249,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                             value={tagInput}
                             onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={handleTagInputKeyDown}
-                            placeholder="Ej: interior, menú, ambiente..."
+                            placeholder={t('tagPlaceholder')}
                             className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                             disabled={uploadMutation.isPending || tags.length >= 10}
                           />
@@ -257,7 +259,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                             disabled={!tagInput.trim() || tags.length >= 10 || uploadMutation.isPending}
                             className="rounded-lg bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            Agregar
+                            {t('addTag')}
                           </button>
                         </div>
                         {tags.length > 0 && (
@@ -280,7 +282,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                             ))}
                           </div>
                         )}
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{tags.length}/10 etiquetas</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('tagsCount', { count: tags.length })}</p>
                       </div>
                     </>
                   )}
@@ -293,7 +295,7 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                     className="rounded-lg px-4 py-2 text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                     disabled={uploadMutation.isPending}
                   >
-                    Cancelar
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={handleSubmit}
@@ -303,10 +305,10 @@ export const UploadBusinessPhotoModal: FC<UploadBusinessPhotoModalProps> = ({ is
                     {uploadMutation.isPending ? (
                       <>
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Subiendo...
+                        {t('submitting')}
                       </>
                     ) : (
-                      'Subir foto'
+                      t('submit')
                     )}
                   </button>
                 </div>

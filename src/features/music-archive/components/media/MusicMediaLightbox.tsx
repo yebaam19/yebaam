@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDownIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
 import { parseVideoEmbed } from '@/lib/utils/video-embed';
@@ -13,6 +14,7 @@ import { useMediaPlayerStore } from './mediaPlayerStore';
  *  layout — appears whenever the media-player store flips to `'lightbox'`,
  *  so it works on any route (including expand-from-mini-player). */
 export function MusicMediaLightbox() {
+  const t = useTranslations('musica.lightbox');
   const item = useMediaPlayerStore((s) => s.item);
   const mode = useMediaPlayerStore((s) => s.mode);
   const close = useMediaPlayerStore((s) => s.close);
@@ -53,7 +55,7 @@ export function MusicMediaLightbox() {
         <header className="flex flex-none items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
           <p className="min-w-0 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {item.caption ?? (
-              <span className="italic text-zinc-400">Sin descripción</span>
+              <span className="italic text-zinc-400">{t('noCaption')}</span>
             )}
           </p>
           <div className="flex flex-none items-center gap-1">
@@ -61,8 +63,8 @@ export function MusicMediaLightbox() {
               <button
                 type="button"
                 onClick={minimize}
-                aria-label="Minimizar a mini reproductor"
-                title="Minimizar (seguir viendo mientras navegas)"
+                aria-label={t('minimizeAria')}
+                title={t('minimizeTitle')}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus:ring-2 focus:ring-amber-400 focus:outline-none dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               >
                 <ChevronDownIcon className="h-5 w-5" />
@@ -72,7 +74,7 @@ export function MusicMediaLightbox() {
               ref={closeRef}
               type="button"
               onClick={close}
-              aria-label="Cerrar"
+              aria-label={t('closeAria')}
               className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus:ring-2 focus:ring-amber-400 focus:outline-none dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
               <XMarkIcon className="h-5 w-5" />
@@ -81,7 +83,11 @@ export function MusicMediaLightbox() {
         </header>
 
         <div className="flex flex-none items-center justify-center bg-black">
-          <MediaPreview item={item} />
+          <MediaPreview
+            item={item}
+            videoTitle={t('videoTitle')}
+            unavailableLabel={t('unavailable')}
+          />
         </div>
 
         {(item.caption || hasTags(item)) && (
@@ -117,7 +123,15 @@ export function MusicMediaLightbox() {
   );
 }
 
-function MediaPreview({ item }: { item: MusicMediaItem }) {
+function MediaPreview({
+  item,
+  videoTitle,
+  unavailableLabel,
+}: {
+  item: MusicMediaItem;
+  videoTitle: string;
+  unavailableLabel: string;
+}) {
   if (item.kind === 'photo' && item.cf_image_id) {
     return (
       <img
@@ -135,7 +149,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
           allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
           className="h-full w-full"
-          title={item.caption ?? 'Video'}
+          title={item.caption ?? videoTitle}
         />
       </div>
     );
@@ -151,7 +165,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             className="h-full w-full"
-            title={item.caption ?? 'Video'}
+            title={item.caption ?? videoTitle}
           />
         </div>
       );
@@ -159,7 +173,7 @@ function MediaPreview({ item }: { item: MusicMediaItem }) {
   }
   return (
     <div className="flex aspect-video w-full items-center justify-center bg-zinc-200 text-sm text-zinc-500 dark:bg-zinc-800">
-      Contenido no disponible
+      {unavailableLabel}
     </div>
   );
 }

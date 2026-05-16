@@ -114,7 +114,6 @@ export function SearchPageContent({
               onChange={setQuery}
               onSearch={handleSearch}
               onClear={handleClear}
-              placeholder="Buscar en Yebaam..."
               autoFocus
             />
           </div>

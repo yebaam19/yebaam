@@ -11,6 +11,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 import type { Skill, SkillFormData } from '../../interfaces/professional-profile.interfaces'
 
 interface SkillDialogProps {
@@ -20,15 +21,12 @@ interface SkillDialogProps {
   onSubmit: (data: SkillFormData) => Promise<void>
 }
 
-// Opciones de niveles - valores en inglés para el backend, labels en español para UI
-const levelOptions = [
-  { value: 'beginner', label: 'Principiante' },
-  { value: 'intermediate', label: 'Intermedio' },
-  { value: 'advanced', label: 'Avanzado' },
-  { value: 'expert', label: 'Experto' },
-]
+// Backend values; labels come from i18n
+const levelValues = ['beginner', 'intermediate', 'advanced', 'expert'] as const
 
 export function SkillDialog({ isOpen, skill, onClose, onSubmit }: SkillDialogProps) {
+  const t = useTranslations('professional.dialogs.skill')
+  const tCommon = useTranslations('professional.dialogs.common')
   const {
     control,
     handleSubmit,
@@ -77,16 +75,16 @@ export function SkillDialog({ isOpen, skill, onClose, onSubmit }: SkillDialogPro
           >
             <DialogPanel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {skill ? 'Editar Habilidad' : 'Agregar Habilidad'}
+                {skill ? t('titleEdit') : t('titleCreate')}
               </DialogTitle>
 
               <form className="mt-4 space-y-4" onSubmit={handleSubmit(submit)}>
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Nombre</label>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('nameLabel')}</label>
                   <Controller
                     control={control}
                     name="name"
-                    rules={{ required: 'Campo requerido' }}
+                    rules={{ required: tCommon('requiredField') }}
                     render={({ field, fieldState }) => (
                       <>
                         <Input
@@ -94,7 +92,7 @@ export function SkillDialog({ isOpen, skill, onClose, onSubmit }: SkillDialogPro
                           className="mt-1"
                           sizeClass="h-10 px-3 py-2"
                           rounded="rounded-lg"
-                          placeholder="Ej. React, TypeScript"
+                          placeholder={t('namePlaceholder')}
                         />
                         {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                       </>
@@ -103,16 +101,16 @@ export function SkillDialog({ isOpen, skill, onClose, onSubmit }: SkillDialogPro
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Nivel (opcional)</label>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('levelLabel')}</label>
                   <Controller
                     control={control}
                     name="level"
                     render={({ field }) => (
                       <Select {...field} className="mt-1 rounded-lg">
-                        <option value="">Seleccionar nivel</option>
-                        {levelOptions.map((level) => (
-                          <option key={level.value} value={level.value}>
-                            {level.label}
+                        <option value="">{t('levelSelect')}</option>
+                        {levelValues.map((value) => (
+                          <option key={value} value={value}>
+                            {t(`levelOptions.${value}`)}
                           </option>
                         ))}
                       </Select>
@@ -122,11 +120,11 @@ export function SkillDialog({ isOpen, skill, onClose, onSubmit }: SkillDialogPro
 
                 <div className="flex justify-end gap-3 pt-2">
                   <Button type="button" onClick={onClose} disabled={isSubmitting} outline>
-                    Cancelar
+                    {tCommon('cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
-                    Guardar
+                    {tCommon('save')}
                   </Button>
                 </div>
               </form>

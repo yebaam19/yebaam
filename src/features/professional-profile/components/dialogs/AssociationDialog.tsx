@@ -10,6 +10,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 import type { Association, AssociationFormData } from '../../interfaces/professional-profile.interfaces'
 
 interface AssociationDialogProps {
@@ -20,6 +21,8 @@ interface AssociationDialogProps {
 }
 
 export function AssociationDialog({ isOpen, association, onClose, onSubmit }: AssociationDialogProps) {
+  const t = useTranslations('professional.dialogs.association')
+  const tCommon = useTranslations('professional.dialogs.common')
   const {
     control,
     handleSubmit,
@@ -72,18 +75,18 @@ export function AssociationDialog({ isOpen, association, onClose, onSubmit }: As
           >
             <DialogPanel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {association ? 'Editar Asociación' : 'Agregar Asociación'}
+                {association ? t('titleEdit') : t('titleCreate')}
               </DialogTitle>
 
               <form className="mt-4 space-y-4" onSubmit={handleSubmit(submit)}>
                 <div>
                   <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                    Nombre de la asociación *
+                    {t('nameLabel')}
                   </label>
                   <Controller
                     control={control}
                     name="name"
-                    rules={{ required: 'Campo requerido' }}
+                    rules={{ required: tCommon('requiredField') }}
                     render={({ field, fieldState }) => (
                       <>
                         <Input
@@ -91,7 +94,7 @@ export function AssociationDialog({ isOpen, association, onClose, onSubmit }: As
                           className="mt-1"
                           sizeClass="h-10 px-3 py-2"
                           rounded="rounded-lg"
-                          placeholder="Ej. ACM, IEEE, ACOFI"
+                          placeholder={t('namePlaceholder')}
                         />
                         {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                       </>
@@ -100,7 +103,7 @@ export function AssociationDialog({ isOpen, association, onClose, onSubmit }: As
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Rol (opcional)</label>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('roleLabel')}</label>
                   <Controller
                     control={control}
                     name="role"
@@ -110,7 +113,7 @@ export function AssociationDialog({ isOpen, association, onClose, onSubmit }: As
                         className="mt-1"
                         sizeClass="h-10 px-3 py-2"
                         rounded="rounded-lg"
-                        placeholder="Ej. Miembro, Director, Presidente"
+                        placeholder={t('rolePlaceholder')}
                       />
                     )}
                   />
@@ -118,11 +121,11 @@ export function AssociationDialog({ isOpen, association, onClose, onSubmit }: As
 
                 <div className="flex justify-end gap-3 pt-2">
                   <Button type="button" onClick={onClose} disabled={isSubmitting} outline>
-                    Cancelar
+                    {tCommon('cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
-                    Guardar
+                    {tCommon('save')}
                   </Button>
                 </div>
               </form>

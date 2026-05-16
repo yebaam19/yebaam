@@ -2,10 +2,11 @@
 
 /**
  * BiographyTab Component
- * 
+ *
  * Pestaña para editar biografía y sitio web del usuario
  */
 
+import { useTranslations } from 'next-intl'
 import Input from '@/ui/Input'
 
 interface BiographyTabProps {
@@ -21,28 +22,29 @@ export default function BiographyTab({
   websiteUrl,
   setWebsiteUrl,
 }: BiographyTabProps) {
+  const t = useTranslations('profile.dialogs.tabs.biography')
   return (
     <div className="space-y-6 py-6">
       <div>
-        <h3 className="mb-4 text-lg font-medium">Biografía</h3>
+        <h3 className="mb-4 text-lg font-medium">{t('heading')}</h3>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          placeholder="Cuéntanos sobre ti..."
+          placeholder={t('bioPlaceholder')}
           rows={6}
           maxLength={500}
           className="border-border focus:border-primary w-full rounded-lg border bg-transparent px-3 py-2"
         />
-        <p className="text-muted-foreground mt-2 text-sm">{bio.length}/500 caracteres</p>
+        <p className="text-muted-foreground mt-2 text-sm">{t('bioCounter', { count: bio.length })}</p>
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">Sitio web</label>
+        <label className="mb-2 block text-sm font-medium">{t('websiteLabel')}</label>
         <Input
           type="url"
           value={websiteUrl}
           onChange={(e) => setWebsiteUrl(e.target.value)}
-          placeholder="https://tusitio.com"
+          placeholder={t('websitePlaceholder')}
         />
       </div>
     </div>

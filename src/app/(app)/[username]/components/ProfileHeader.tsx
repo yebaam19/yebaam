@@ -131,11 +131,13 @@ export default function ProfileHeader({
         {/* Cover Image */}
         {coverPhoto ? (
           <div className="relative w-full h-full">
-            <img 
-              src={coverPhoto} 
-              alt="Cover" 
+            <img
+              src={coverPhoto}
+              alt="Cover"
+              loading="eager"
+              fetchPriority="high"
               className="absolute inset-0 w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
-              style={{ 
+              style={{
                 minHeight: '100%',
                 minWidth: '100%',
               }}

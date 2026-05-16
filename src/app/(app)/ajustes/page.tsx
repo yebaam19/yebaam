@@ -1,8 +1,12 @@
+import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import ThemeSettings from '@/features/admin/components/ThemeSettings'
 import LanguageSwitch from '@/components/settings/LanguageSwitch'
 
-export const metadata = { title: 'Ajustes' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('settings')
+  return { title: t('title') }
+}
 
 export default async function AjustesPage() {
   const t = await getTranslations('settings')

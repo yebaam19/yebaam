@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import {
   createCommunityArticle,
@@ -41,6 +42,7 @@ export function CommunityArticleComposer({
   initialCoverImageId,
 }: CommunityArticleComposerProps) {
   const router = useRouter();
+  const t = useTranslations('communities');
   const isEditing = Boolean(initialArticle);
 
   const [title, setTitle] = useState(initialArticle?.title ?? '');
@@ -60,7 +62,7 @@ export function CommunityArticleComposer({
     setError(null);
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setError('La portada debe ser una imagen.');
+      setError(t('admin.article.composer.errorCoverImage'));
       return;
     }
     setUploadingCover(true);
@@ -71,7 +73,7 @@ export function CommunityArticleComposer({
       setCoverPreview(url);
       setCoverDirty(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error subiendo la portada.');
+      setError(err instanceof Error ? err.message : t('admin.article.composer.errorCoverUpload'));
       setCoverPreview(initialArticle?.coverImageUrl ?? null);
       setCoverImageId(initialCoverImageId ?? null);
     } finally {
@@ -98,11 +100,11 @@ export function CommunityArticleComposer({
     setError(null);
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError('El título es obligatorio.');
+      setError(t('admin.article.composer.errorTitleRequired'));
       return;
     }
     if (!content.trim() || content === '<p></p>') {
-      setError('Escribe el contenido del artículo.');
+      setError(t('admin.article.composer.errorContentRequired'));
       return;
     }
     const tags = tagsInput
@@ -156,17 +158,17 @@ export function CommunityArticleComposer({
 
   const submitLabel = isPending
     ? isEditing
-      ? 'Guardando...'
-      : 'Publicando...'
+      ? t('admin.article.composer.submitSaving')
+      : t('admin.article.composer.submitPublishing')
     : isEditing
-      ? 'Guardar cambios'
-      : 'Publicar';
+      ? t('admin.article.composer.submitSave')
+      : t('admin.article.composer.submitPublish');
 
   return (
     <div className="space-y-5">
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {isEditing ? 'Editar artículo' : 'Nuevo artículo'}
+          {isEditing ? t('admin.article.composer.titleEdit') : t('admin.article.composer.titleNew')}
         </h1>
         <div className="flex items-center gap-2">
           <button
@@ -174,7 +176,7 @@ export function CommunityArticleComposer({
             onClick={() => router.back()}
             className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60"
           >
-            Cancelar
+            {t('admin.article.composer.cancel')}
           </button>
           <button
             type="button"
@@ -198,7 +200,7 @@ export function CommunityArticleComposer({
           <div className="relative aspect-[16/6] bg-gray-100 dark:bg-gray-900">
             <Image
               src={coverPreview}
-              alt="Portada"
+              alt={t('admin.article.composer.coverAlt')}
               fill
               sizes="100vw"
               className="object-cover"
@@ -208,13 +210,13 @@ export function CommunityArticleComposer({
               type="button"
               onClick={removeCover}
               className="absolute right-3 top-3 rounded-full bg-black/60 p-1.5 text-white hover:bg-black/80"
-              aria-label="Quitar portada"
+              aria-label={t('admin.article.composer.removeCoverAria')}
             >
               <XMarkIcon className="h-4 w-4" />
             </button>
             {uploadingCover && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-sm text-white">
-                Subiendo portada...
+                {t('admin.article.composer.uploadingCover')}
               </div>
             )}
           </div>
@@ -222,7 +224,7 @@ export function CommunityArticleComposer({
           <label className="flex aspect-[16/6] cursor-pointer items-center justify-center bg-gray-50 dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
             <div className="flex flex-col items-center gap-2">
               <PhotoIcon className="h-8 w-8" />
-              <span>Añadir imagen de portada (opcional)</span>
+              <span>{t('admin.article.composer.addCover')}</span>
             </div>
             <input
               type="file"
@@ -243,7 +245,7 @@ export function CommunityArticleComposer({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value.slice(0, 160))}
-          placeholder="Título del artículo"
+          placeholder={t('admin.article.composer.titlePlaceholder')}
           className="w-full border-0 bg-transparent text-2xl font-bold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-0"
           maxLength={160}
         />
@@ -251,7 +253,7 @@ export function CommunityArticleComposer({
           type="text"
           value={subtitle ?? ''}
           onChange={(e) => setSubtitle(e.target.value.slice(0, 240))}
-          placeholder="Subtítulo (opcional)"
+          placeholder={t('admin.article.composer.subtitlePlaceholder')}
           className="w-full border-0 bg-transparent text-base text-gray-600 dark:text-gray-400 placeholder:text-gray-400 focus:outline-none focus:ring-0"
           maxLength={240}
         />
@@ -269,20 +271,20 @@ export function CommunityArticleComposer({
         <RichTextEditor
           content={content}
           onChange={setContent}
-          placeholder="Escribe tu artículo..."
+          placeholder={t('admin.article.composer.contentPlaceholder')}
           onImageUpload={handleEditorImageUpload}
         />
       </section>
 
       <section className="rounded-lg bg-white dark:bg-gray-800 shadow-sm p-5">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Etiquetas (separadas por coma)
+          {t('admin.article.composer.tagsLabel')}
         </label>
         <input
           type="text"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
-          placeholder="música, coleccionismo, vinilo"
+          placeholder={t('admin.article.composer.tagsPlaceholder')}
           className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </section>

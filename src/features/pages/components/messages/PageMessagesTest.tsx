@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   usePageConversations,
   useSendMessageToPage,
@@ -20,6 +21,7 @@ interface PageMessagesTestProps {
  * Muestra conversaciones, mensajes y permite enviar mensajes
  */
 export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
+  const t = useTranslations('pages.messagesTest');
   const [messageText, setMessageText] = useState('');
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
 
@@ -73,7 +75,7 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
     <div className="container mx-auto p-4 max-w-7xl">
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6 mb-4">
-        <h1 className="text-2xl font-bold mb-2">Sistema de Mensajería - Prueba</h1>
+        <h1 className="text-2xl font-bold mb-2">{t('title')}</h1>
         <p className="text-gray-600">
           PageId: {pageId} | WebSocket:{' '}
           <span
@@ -81,7 +83,7 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
               isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}
           >
-            {isConnected ? 'Conectado' : 'Desconectado'}
+            {isConnected ? t('connected') : t('disconnected')}
           </span>
         </p>
       </div>
@@ -90,16 +92,16 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
         {/* Conversaciones */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold">Conversaciones</h2>
+            <h2 className="text-lg font-semibold">{t('conversationsHeading')}</h2>
             <p className="text-sm text-gray-500">
-              {conversationsData?.total || 0} conversaciones
+              {t('conversationsCount', { count: conversationsData?.total || 0 })}
             </p>
           </div>
           <div className="p-4">
             {loadingConversations ? (
-              <p className="text-sm text-gray-500">Cargando...</p>
+              <p className="text-sm text-gray-500">{t('loading')}</p>
             ) : conversationsData?.conversations.length === 0 ? (
-              <p className="text-sm text-gray-500">Sin conversaciones</p>
+              <p className="text-sm text-gray-500">{t('noConversations')}</p>
             ) : (
               <div className="max-h-[500px] overflow-y-auto space-y-2">
                 {conversationsData?.conversations.map((conv) => (
@@ -114,7 +116,7 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
                   >
                     <div className="flex items-start justify-between mb-1">
                       <p className="font-medium text-sm truncate flex-1">
-                        {conv.pageMetadata.pageName || 'Página'}
+                        {conv.pageMetadata.pageName || t('pageFallback')}
                       </p>
                       {conv.unreadCount > 0 && (
                         <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
@@ -136,24 +138,24 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
         {/* Mensajes */}
         <div className="md:col-span-2 bg-white rounded-lg shadow">
           <div className="p-4 border-b flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Mensajes</h2>
+            <h2 className="text-lg font-semibold">{t('messagesHeading')}</h2>
             {selectedConversationId && (
               <button
                 onClick={handleMarkAsRead}
                 className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
               >
-                ✓✓ Marcar como leído
+                ✓✓ {t('markAsRead')}
               </button>
             )}
           </div>
           <div className="p-4">
             {!selectedConversationId ? (
               <div className="h-[400px] flex items-center justify-center text-gray-500">
-                Selecciona una conversación
+                {t('selectConversation')}
               </div>
             ) : loadingMessages ? (
               <div className="h-[400px] flex items-center justify-center text-gray-500">
-                Cargando mensajes...
+                {t('loadingMessages')}
               </div>
             ) : (
               <>
@@ -202,7 +204,7 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setMessageText(e.target.value)
                     }
-                    placeholder="Escribe un mensaje..."
+                    placeholder={t('messagePlaceholder')}
                     className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -210,8 +212,8 @@ export function PageMessagesTest({ pageId, userId }: PageMessagesTestProps) {
                         handleSendMessage();
                       }
                     }}
-                    onFocus={() => emitTyping(selectedConversationId, 'Tú', true)}
-                    onBlur={() => emitTyping(selectedConversationId, 'Tú', false)}
+                    onFocus={() => emitTyping(selectedConversationId, t('typingSenderName'), true)}
+                    onBlur={() => emitTyping(selectedConversationId, t('typingSenderName'), false)}
                   />
                   <button
                     onClick={handleSendMessage}

@@ -8,9 +8,10 @@ import {
 } from '@/components/icons/heroicons-shim'
 import { HeartIcon as HeartSolid } from '@/components/icons/heroicons-shim'
 import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useFriends } from '../hooks/useFriends'
@@ -35,14 +36,16 @@ interface FriendCardProps {
 }
 
 function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
+  const t = useTranslations('friendships.friendsList')
   const [showMenu, setShowMenu] = useState(false)
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
+  const dateLocale = useDateFnsLocale()
 
   const handleRemove = async () => {
     if (!friend.friendshipId) {
       console.error('No friendshipId available')
-      toast.error('No se puede eliminar este amigo')
+      toast.error(t('removeError'))
       return
     }
 
@@ -77,7 +80,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
         <button
           onClick={() => onToggleClose(friend.friendId)}
           className="absolute top-2 right-2 rounded-full bg-white/90 p-2 transition-colors hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-700"
-          aria-label={friend.closeFriend ? 'Quitar de amigos cercanos' : 'Agregar a amigos cercanos'}
+          aria-label={friend.closeFriend ? t('removeCloseAria') : t('addCloseAria')}
         >
           {friend.closeFriend ? (
             <HeartSolid className="h-5 w-5 text-red-500" />
@@ -99,7 +102,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
 
         {friend.mutualFriends && friend.mutualFriends > 0 && (
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
-            {friend.mutualFriends} {friend.mutualFriends === 1 ? 'amigo' : 'amigos'} en común
+            {t('mutualFriends', { count: friend.mutualFriends })}
           </p>
         )}
 
@@ -112,7 +115,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
         )}
 
         <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
-          Amigos desde {formatDistanceToNow(new Date(friend.friendSince), { locale: es })}
+          {t('friendsSince', { date: formatDistanceToNow(new Date(friend.friendSince), { locale: dateLocale }) })}
         </p>
 
         {/* Acciones */}
@@ -122,7 +125,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           >
             <ChatBubbleLeftIcon className="h-4 w-4" />
-            Mensaje
+            {t('message')}
           </Link>
 
           {/* TODO: REVISAR Botón de menú */}
@@ -149,12 +152,12 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
                     {friend.closeFriend ? (
                       <>
                         <HeartOutline className="h-4 w-4" />
-                        Quitar de cercanos
+                        {t('removeFromClose')}
                       </>
                     ) : (
                       <>
                         <HeartSolid className="h-4 w-4" />
-                        Amigo cercano
+                        {t('markAsClose')}
                       </>
                     )}
                   </button>
@@ -167,7 +170,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
                     className="flex w-full items-center gap-2 rounded-b-lg px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20"
                   >
                     <UserMinusIcon className="h-4 w-4" />
-                    Eliminar amigo
+                    {t('removeFriend')}
                   </button>
                 </div>
               </>
@@ -193,6 +196,7 @@ function FriendCard({ friend, onToggleClose, onRemove }: FriendCardProps) {
  * Muestra la lista de amigos en grid
  */
 export function FriendsList() {
+  const t = useTranslations('friendships.friendsList')
   const { friends, total, isLoading, toggleCloseFriend, removeFriend } = useFriends()
   const [filter, setFilter] = useState<'all' | 'close'>('all')
 
@@ -202,7 +206,7 @@ export function FriendsList() {
     return (
       <div>
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Amigos</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h2>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -231,8 +235,8 @@ export function FriendsList() {
         <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
           <HeartOutline className="h-12 w-12 text-gray-400" />
         </div>
-        <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Aún no tienes amigos</h3>
-        <p className="text-gray-600 dark:text-gray-400">Comienza a conectar con personas que conozcas</p>
+        <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">{t('emptyTitle')}</h3>
+        <p className="text-gray-600 dark:text-gray-400">{t('emptySubtitle')}</p>
       </div>
     )
   }
@@ -241,9 +245,9 @@ export function FriendsList() {
     <div>
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Amigos</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {total} {total === 1 ? 'amigo' : 'amigos'}
+            {t('count', { count: total })}
           </p>
         </div>
 
@@ -257,7 +261,7 @@ export function FriendsList() {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
             }`}
           >
-            Todos ({total})
+            {t('filterAll', { count: total })}
           </button>
           <button
             onClick={() => setFilter('close')}
@@ -268,7 +272,7 @@ export function FriendsList() {
             }`}
           >
             <HeartSolid className="h-4 w-4" />
-            Cercanos ({friends.filter((f) => f.closeFriend).length})
+            {t('filterClose', { count: friends.filter((f) => f.closeFriend).length })}
           </button>
         </div>
       </div>
@@ -276,7 +280,7 @@ export function FriendsList() {
       {filteredFriends.length === 0 ? (
         <div className="rounded-lg bg-gray-50 py-12 text-center dark:bg-gray-800/50">
           <HeartOutline className="mx-auto mb-4 h-16 w-16 text-gray-400" />
-          <p className="text-gray-600 dark:text-gray-400">No tienes amigos cercanos aún</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('noCloseFriends')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

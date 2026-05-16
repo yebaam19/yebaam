@@ -1,4 +1,5 @@
 import { FC, useState, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import {
@@ -20,6 +21,7 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
   onClose,
   pageId,
 }) => {
+  const t = useTranslations('pages.photos.upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
@@ -31,14 +33,14 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
   const handleFileSelect = useCallback((file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen');
+      alert(t('invalidType'));
       return;
     }
 
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert('La imagen no debe superar los 10MB');
+      alert(t('tooLarge'));
       return;
     }
 
@@ -136,7 +138,7 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                   <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Subir foto
+                    {t('title')}
                   </Dialog.Title>
                   <button
                     onClick={handleClose}
@@ -181,11 +183,11 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                         <div>
                           <p className="text-lg font-medium text-gray-900 dark:text-white mb-1">
                             {isDragging
-                              ? 'Suelta la imagen aquí'
-                              : 'Arrastra una imagen o haz clic para seleccionar'}
+                              ? t('dropHere')
+                              : t('dragOrClick')}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            JPG, PNG o GIF (máx. 10MB)
+                            {t('fileHint')}
                           </p>
                         </div>
                       </div>
@@ -197,7 +199,7 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                         {previewUrl && (
                           <Image
                             src={previewUrl}
-                            alt="Preview"
+                            alt={t('previewAlt')}
                             fill
                             sizes="(max-width: 768px) 100vw, 600px"
                             className="object-contain"
@@ -221,20 +223,20 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                           htmlFor="caption"
                           className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                         >
-                          Descripción (opcional)
+                          {t('captionLabel')}
                         </label>
                         <textarea
                           id="caption"
                           rows={3}
                           value={caption}
                           onChange={(e) => setCaption(e.target.value)}
-                          placeholder="Escribe una descripción para esta foto..."
+                          placeholder={t('captionPlaceholder')}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 resize-none"
                           maxLength={200}
                           disabled={uploadMutation.isPending}
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                          {caption.length}/200
+                          {t('captionCounter', { count: caption.length })}
                         </p>
                       </div>
                     </>
@@ -245,10 +247,10 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">
-                          Subiendo foto...
+                          {t('uploading')}
                         </span>
                         <span className="text-blue-600 dark:text-blue-400 font-medium">
-                          Procesando
+                          {t('processing')}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
@@ -265,14 +267,14 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                     className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     disabled={uploadMutation.isPending}
                   >
-                    Cancelar
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={!selectedFile || uploadMutation.isPending}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {uploadMutation.isPending ? 'Subiendo...' : 'Subir foto'}
+                    {uploadMutation.isPending ? t('submitting') : t('submit')}
                   </button>
                 </div>
               </Dialog.Panel>

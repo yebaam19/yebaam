@@ -21,6 +21,7 @@ import {
   XMarkIcon,
 } from '@/components/icons/heroicons-shim'
 import { Fragment, useCallback, useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import type { PortfolioProject } from '../../interfaces/professional-service.interfaces'
 
 interface ProjectsManagerProps {
@@ -29,6 +30,9 @@ interface ProjectsManagerProps {
 }
 
 export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
+  const t = useTranslations('professional.services.projectsManager')
+  const locale = useLocale()
+  const dateLocale = locale === 'es' ? 'es-ES' : 'en-US'
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [currentProject, setCurrentProject] = useState<PortfolioProject>({
@@ -123,14 +127,14 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Portafolio de Proyectos</h3>
+          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{t('heading')}</h3>
           <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
-            Muestra los proyectos en los que has trabajado
+            {t('subheading')}
           </p>
         </div>
         <ButtonPrimary className="px-4 py-2 text-sm" onClick={handleAdd}>
           <PlusIcon className="h-4 w-4" />
-          <span className="ml-2">Agregar Proyecto</span>
+          <span className="ml-2">{t('addCta')}</span>
         </ButtonPrimary>
       </div>
 
@@ -138,9 +142,9 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
       {projects.length === 0 ? (
         <div className="rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-800/50">
           <CodeBracketIcon className="mx-auto h-12 w-12 text-neutral-400" />
-          <p className="mt-3 text-sm font-medium text-neutral-900 dark:text-neutral-100">No hay proyectos aún</p>
+          <p className="mt-3 text-sm font-medium text-neutral-900 dark:text-neutral-100">{t('emptyTitle')}</p>
           <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
-            Agrega proyectos para mostrar tu experiencia
+            {t('emptyDescription')}
           </p>
         </div>
       ) : (
@@ -179,14 +183,14 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                       <button
                         onClick={() => handleEdit(index)}
                         className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                        title="Editar"
+                        title={t('editAria')}
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(index)}
                         className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                        title="Eliminar"
+                        title={t('deleteAria')}
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
@@ -217,7 +221,7 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                         className="flex items-center gap-1 text-primary-600 hover:underline dark:text-primary-400"
                       >
                         <LinkIcon className="h-3.5 w-3.5" />
-                        <span>Ver proyecto</span>
+                        <span>{t('viewProject')}</span>
                       </a>
                     )}
                     {project.githubUrl && (
@@ -228,7 +232,7 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                         className="flex items-center gap-1 text-neutral-600 hover:underline dark:text-neutral-400"
                       >
                         <CodeBracketIcon className="h-3.5 w-3.5" />
-                        <span>GitHub</span>
+                        <span>{t('github')}</span>
                       </a>
                     )}
                   </div>
@@ -237,11 +241,11 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                   {(project.startDate || project.endDate) && (
                     <p className="text-xs text-neutral-500 dark:text-neutral-500">
                       {project.startDate &&
-                        new Date(project.startDate).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}
+                        new Date(project.startDate).toLocaleDateString(dateLocale, { month: 'short', year: 'numeric' })}
                       {project.startDate && project.endDate && ' - '}
                       {project.endDate
-                        ? new Date(project.endDate).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })
-                        : project.startDate && 'Presente'}
+                        ? new Date(project.endDate).toLocaleDateString(dateLocale, { month: 'short', year: 'numeric' })
+                        : project.startDate && t('present')}
                     </p>
                   )}
                 </div>
@@ -282,10 +286,10 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                   <div className="flex items-start justify-between border-b border-neutral-200 pb-4 dark:border-neutral-700">
                     <div>
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-                        {editingIndex !== null ? 'Editar Proyecto' : 'Agregar Proyecto'}
+                        {editingIndex !== null ? t('modal.editTitle') : t('modal.addTitle')}
                       </h3>
                       <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                        Completa la información del proyecto
+                        {t('modal.subtitle')}
                       </p>
                     </div>
                     <button
@@ -301,24 +305,24 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                     {/* Título */}
                     <div>
                       <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                        Título del proyecto <span className="text-red-500">*</span>
+                        {t('modal.titleLabel')} <span className="text-red-500">*</span>
                       </label>
                       <Input
                         type="text"
                         value={currentProject.title}
                         onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
-                        placeholder="Ej: Plataforma de E-commerce"
+                        placeholder={t('modal.titlePlaceholder')}
                         className="mt-1.5"
                       />
                     </div>
 
                     {/* Descripción */}
                     <div>
-                      <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Descripción</label>
+                      <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{t('modal.descriptionLabel')}</label>
                       <textarea
                         value={currentProject.description || ''}
                         onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
-                        placeholder="Describe brevemente el proyecto..."
+                        placeholder={t('modal.descriptionPlaceholder')}
                         rows={3}
                         className="mt-1.5 block w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
                       />
@@ -328,26 +332,26 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                          URL del proyecto
+                          {t('modal.urlLabel')}
                         </label>
                         <Input
                           type="url"
                           value={currentProject.url || ''}
                           onChange={(e) => setCurrentProject({ ...currentProject, url: e.target.value })}
-                          placeholder="https://..."
+                          placeholder={t('modal.urlPlaceholder')}
                           className="mt-1.5"
                         />
                       </div>
 
                       <div>
                         <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                          URL de GitHub
+                          {t('modal.githubLabel')}
                         </label>
                         <Input
                           type="url"
                           value={currentProject.githubUrl || ''}
                           onChange={(e) => setCurrentProject({ ...currentProject, githubUrl: e.target.value })}
-                          placeholder="https://github.com/..."
+                          placeholder={t('modal.githubPlaceholder')}
                           className="mt-1.5"
                         />
                       </div>
@@ -356,20 +360,20 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                     {/* Imagen */}
                     <div>
                       <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                        URL de imagen
+                        {t('modal.imageLabel')}
                       </label>
                       <Input
                         type="url"
                         value={currentProject.imageUrl || ''}
                         onChange={(e) => setCurrentProject({ ...currentProject, imageUrl: e.target.value })}
-                        placeholder="https://..."
+                        placeholder={t('modal.imagePlaceholder')}
                         className="mt-1.5"
                       />
                       {currentProject.imageUrl && (
                         <div className="mt-2">
                           <img
                             src={currentProject.imageUrl}
-                            alt="Preview"
+                            alt={t('modal.previewAlt')}
                             className="h-24 w-24 rounded-lg object-cover"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none'
@@ -381,7 +385,7 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
 
                     {/* Tecnologías */}
                     <div>
-                      <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Tecnologías</label>
+                      <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{t('modal.technologiesLabel')}</label>
                       <div className="mt-1.5 flex gap-2">
                         <Input
                           type="text"
@@ -393,10 +397,10 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                               handleAddTech()
                             }
                           }}
-                          placeholder="Ej: React, Node.js, MongoDB"
+                          placeholder={t('modal.technologiesPlaceholder')}
                         />
                         <ButtonSecondary type="button" className="px-4 py-2.5" onClick={handleAddTech}>
-                          Agregar
+                          {t('modal.addTechnology')}
                         </ButtonSecondary>
                       </div>
                       {currentProject.technologies && currentProject.technologies.length > 0 && (
@@ -424,7 +428,7 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                          Fecha de inicio
+                          {t('modal.startDateLabel')}
                         </label>
                         <Input
                           type="month"
@@ -436,14 +440,14 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
 
                       <div>
                         <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                          Fecha de fin
+                          {t('modal.endDateLabel')}
                         </label>
                         <Input
                           type="month"
                           value={currentProject.endDate || ''}
                           onChange={(e) => setCurrentProject({ ...currentProject, endDate: e.target.value })}
                           className="mt-1.5"
-                          placeholder="Dejar vacío si está en curso"
+                          placeholder={t('modal.endDatePlaceholder')}
                         />
                       </div>
                     </div>
@@ -451,9 +455,9 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
 
                   {/* Footer */}
                   <div className="mt-6 flex justify-end gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <ButtonSecondary onClick={() => setIsModalOpen(false)}>Cancelar</ButtonSecondary>
+                    <ButtonSecondary onClick={() => setIsModalOpen(false)}>{t('modal.cancel')}</ButtonSecondary>
                     <ButtonPrimary onClick={handleSave} disabled={!currentProject.title.trim()}>
-                      {editingIndex !== null ? 'Guardar cambios' : 'Agregar proyecto'}
+                      {editingIndex !== null ? t('modal.saveChanges') : t('modal.addProject')}
                     </ButtonPrimary>
                   </div>
                 </DialogPanel>

@@ -33,5 +33,28 @@
   "grid": {
     "previous": "Página anterior",
     "next": "Página siguiente"
+  },
+  "mediaDialog": {
+    "close": "Cerrar",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "photoOfUserInCity": "Foto de {name} en {city}",
+    "photoOfCity": "Foto de {city}"
+  },
+  "directory": {
+    "serviceList": {
+      "all": "Todos",
+      "scrollLeft": "Scroll izquierda",
+      "scrollRight": "Scroll derecha",
+      "searchPlaceholder": "Buscar servicios profesionales...",
+      "noResults": "No se encontraron servicios profesionales con los criterios de búsqueda"
+    },
+    "businessList": {
+      "all": "Todos",
+      "scrollLeft": "Scroll izquierda",
+      "scrollRight": "Scroll derecha",
+      "searchPlaceholder": "Buscar negocios...",
+      "noResults": "No se encontraron negocios con los criterios de búsqueda"
+    }
   }
 }

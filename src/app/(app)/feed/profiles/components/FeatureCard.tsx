@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
     LockClosedIcon,
@@ -16,9 +17,15 @@ interface FeatureCardProps {
 }
 
 export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
+    const t = useTranslations('profiles');
     const IconComponent = feature.icon;
     const isDisabled = feature.disabled;
     const showVerificationOverlay = !canCreate && !feature.disabled;
+
+    const title = t(`features.${feature.id}.title`);
+    const description = t(`features.${feature.id}.description`);
+    const buttonLabel = t(`features.${feature.id}.buttonLabel`);
+    const benefits = t.raw(`features.${feature.id}.benefits`) as string[];
 
     return (
         <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
@@ -38,16 +45,16 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
             <div className="flex flex-1 flex-col gap-4 px-5 pb-5 pt-10">
                 <div className="space-y-1.5">
                     <h3 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
-                        {feature.title}
+                        {title}
                     </h3>
                     <p className="line-clamp-2 min-h-10 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                        {feature.description}
+                        {description}
                     </p>
                 </div>
 
                 <div className="mt-auto space-y-4">
                     <div className="flex flex-wrap gap-1.5">
-                        {feature.benefits.map((benefit) => (
+                        {benefits.map((benefit) => (
                             <span
                                 key={benefit}
                                 className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
@@ -62,7 +69,7 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                             disabled
                             className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                         >
-                            {feature.buttonLabel}
+                            {buttonLabel}
                         </button>
                     ) : feature.external ? (
                         <a
@@ -71,7 +78,7 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                             rel="noopener noreferrer"
                             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
                         >
-                            {feature.buttonLabel}
+                            {buttonLabel}
                             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                         </a>
                     ) : (
@@ -79,7 +86,7 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                             href={feature.href as Route}
                             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
                         >
-                            {feature.buttonLabel}
+                            {buttonLabel}
                             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                         </Link>
                     )}
@@ -94,16 +101,16 @@ export function FeatureCard({ feature, canCreate }: FeatureCardProps) {
                             <LockClosedIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
                         </div>
                         <h4 className="mb-1 text-base font-semibold text-red-600 dark:text-red-400">
-                            Verificación requerida
+                            {t('verification.overlayTitle')}
                         </h4>
                         <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
-                            Verifica tu email para crear espacios
+                            {t('verification.overlayDescription')}
                         </p>
                         <Link
                             href={'/settings/account' as Route}
                             className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
                         >
-                            Verificar cuenta
+                            {t('verification.overlayCta')}
                         </Link>
                     </div>
                 </div>

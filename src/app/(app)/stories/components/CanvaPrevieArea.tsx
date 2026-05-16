@@ -9,12 +9,14 @@ import {
 import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, useRef, useState } from 'react'
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { StoryType, FONT_STYLES, FONT_SIZES } from '../interfaces/stories.interfaces';
 import { STORY_BACKGROUNDS } from '../utils/colors';
 
 const CanvaPrevieArea = () => {
       const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations('stories.create');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -43,7 +45,7 @@ const CanvaPrevieArea = () => {
 
   // Manejadores
   const handleBack = () => {
-    if (confirm('¿Descartar esta historia?')) {
+    if (confirm(t('confirmDiscard'))) {
       router.back();
     }
   };
@@ -63,14 +65,14 @@ const CanvaPrevieArea = () => {
     const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
 
     if (!isImage && !isVideo) {
-      toast.error('Tipo de archivo no válido');
+      toast.error(t('errors.invalidFileType'));
       return;
     }
 
     // Validar tamaño
     const maxSize = isVideo ? MAX_VIDEO_SIZE_MB : MAX_IMAGE_SIZE_MB;
     if (file.size > maxSize * 1024 * 1024) {
-      toast.error(`El archivo excede ${maxSize}MB`);
+      toast.error(t('errors.fileExceedsSize', { size: maxSize }));
       return;
     }
 
@@ -81,7 +83,7 @@ const CanvaPrevieArea = () => {
       video.onloadedmetadata = () => {
         window.URL.revokeObjectURL(video.src);
         if (video.duration > MAX_VIDEO_DURATION) {
-          toast.error(`El video no puede durar más de ${MAX_VIDEO_DURATION} segundos`);
+          toast.error(t('errors.videoTooLong', { seconds: MAX_VIDEO_DURATION }));
           return;
         }
       };
@@ -97,12 +99,12 @@ const CanvaPrevieArea = () => {
     if (isUploading) return;
 
     if (storyType === 'text' && !textContent.trim()) {
-      toast.error('Escribe algo para tu historia');
+      toast.error(t('errors.writeSomething'));
       return;
     }
 
     if ((storyType === 'image' || storyType === 'video') && !selectedFile) {
-      toast.error('Selecciona un archivo');
+      toast.error(t('errors.selectFile'));
       return;
     }
 
@@ -124,12 +126,12 @@ const CanvaPrevieArea = () => {
 
       // Simulación
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success('Historia publicada exitosamente');
+
+      toast.success(t('success.published'));
       router.push('/feed');
     } catch (error) {
       console.error('Error creating story:', error);
-      toast.error('Error al publicar la historia');
+      toast.error(t('errors.publishError'));
     } finally {
       setIsUploading(false);
     }
@@ -142,35 +144,35 @@ const CanvaPrevieArea = () => {
            {!storyType ? (
              // Selector de tipo de historia
              <div className="flex h-full flex-col items-center justify-center gap-6 bg-neutral-900 p-8">
-               <h2 className="text-2xl font-bold text-white mb-4">Crea tu historia</h2>
-               
+               <h2 className="text-2xl font-bold text-white mb-4">{t('createYourStory')}</h2>
+
                <button
                  onClick={() => handleTypeSelect('text')}
                  className="group relative w-full overflow-hidden rounded-2xl bg-linear-to-br from-primary-600 to-primary-800 p-8 text-white transition-transform hover:scale-105"
                >
                  <div className="flex flex-col items-center gap-3">
                    <PaintBrushIcon className="h-16 w-16" />
-                   <span className="text-xl font-semibold">Crear historia de texto</span>
+                   <span className="text-xl font-semibold">{t('createTextStory')}</span>
                  </div>
                </button>
- 
+
                <button
                  onClick={() => handleTypeSelect('image')}
                  className="group relative w-full overflow-hidden rounded-2xl bg-linear-to-br from-green-600 to-emerald-800 p-8 text-white transition-transform hover:scale-105"
                >
                  <div className="flex flex-col items-center gap-3">
                    <PhotoIcon className="h-16 w-16" />
-                   <span className="text-xl font-semibold">Foto</span>
+                   <span className="text-xl font-semibold">{t('photo')}</span>
                  </div>
                </button>
- 
+
                <button
                  onClick={() => handleTypeSelect('video')}
                  className="group relative w-full overflow-hidden rounded-2xl bg-linear-to-br from-red-600 to-pink-800 p-8 text-white transition-transform hover:scale-105"
                >
                  <div className="flex flex-col items-center gap-3">
                    <VideoCameraIcon className="h-16 w-16" />
-                   <span className="text-xl font-semibold">Video</span>
+                   <span className="text-xl font-semibold">{t('video')}</span>
                  </div>
                </button>
  
@@ -193,7 +195,7 @@ const CanvaPrevieArea = () => {
                <textarea
                  value={textContent}
                  onChange={(e) => setTextContent(e.target.value)}
-                 placeholder="Empieza a escribir..."
+                 placeholder={t('startWriting')}
                  maxLength={500}
                  className={cn(
                    "w-full resize-none bg-transparent text-center outline-none placeholder:opacity-50",

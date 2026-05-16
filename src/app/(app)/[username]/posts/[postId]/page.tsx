@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { usePost } from '@/app/(app)/feed/post/hooks/usePosts';
 import { PostCard } from '@/features/post';
@@ -13,6 +14,7 @@ import { CommentList } from '@/app/(app)/feed/comments';
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations('feed.postDetail');
 
   const postId = params.postId as string;
 
@@ -125,7 +127,7 @@ export default function PostDetailPage() {
               <ArrowLeftIcon className="h-6 w-6 text-neutral-900 dark:text-white" />
             </button>
             <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-              Publicación de {currentPost.author.firstName}
+              {t('headerTitle', { name: currentPost.author.firstName })}
             </h1>
           </div>
 

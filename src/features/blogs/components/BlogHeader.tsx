@@ -1,7 +1,10 @@
+'use client'
+
 import { useAuth } from '@/features/auth'
 import Avatar from '@/ui/Avatar'
 import { CheckBadgeIcon, PencilIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import type { Blog } from '../types/blog.types'
 import { getCategoryColor, getCategoryLabel } from '../utils/blogHelpers'
 
@@ -14,6 +17,9 @@ interface BlogHeaderProps {
 
 export const BlogHeader = ({ blog, onEdit, onFollowToggle, isFollowLoading }: BlogHeaderProps) => {
   const { user } = useAuth()
+  const tHeader = useTranslations('blogs.header')
+  const tCard = useTranslations('blogs.card')
+  const tDetail = useTranslations('blogs.detail')
 
   if (!user) return null
   const userAvatar = user.avatarUrl || user.avatar
@@ -52,9 +58,9 @@ export const BlogHeader = ({ blog, onEdit, onFollowToggle, isFollowLoading }: Bl
                     {/* Owner */}
                     <div className="mb-2 flex items-center gap-2">
                       <span className="text-neutral-600 dark:text-neutral-400">
-                        por{' '}
+                        {tHeader('byPrefix')}{' '}
                         <span className="font-medium text-neutral-900 dark:text-white">
-                          {blog.owner?.name || 'Usuario desconocido'}
+                          {blog.owner?.name || tCard('unknownUser')}
                         </span>
                       </span>
                     </div>
@@ -75,7 +81,7 @@ export const BlogHeader = ({ blog, onEdit, onFollowToggle, isFollowLoading }: Bl
                         className="flex shrink-0 items-center gap-2 rounded-lg bg-neutral-100 px-6 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                       >
                         <PencilIcon className="h-4 w-4" />
-                        Editar blog
+                        {tDetail('editBlog')}
                       </button>
                     ) : (
                       <button
@@ -87,7 +93,11 @@ export const BlogHeader = ({ blog, onEdit, onFollowToggle, isFollowLoading }: Bl
                             : 'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
                         } disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        {isFollowLoading ? 'Procesando...' : blog.isFollowing ? 'Dejar de Seguir' : 'Seguir'}
+                        {isFollowLoading
+                          ? tCard('processing')
+                          : blog.isFollowing
+                            ? tHeader('unfollow')
+                            : tHeader('follow')}
                       </button>
                     )}
                   </div>

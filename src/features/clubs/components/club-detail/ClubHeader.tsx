@@ -68,50 +68,50 @@ export function ClubHeader({
         <div className="absolute inset-0 bg-linear-to-t from-black/35 via-transparent to-transparent" />
       </div>
 
-      {/* Identity row: avatar overlaps cover, title + actions sit on white surface */}
+      {/* Identity: avatar overlaps cover; title + chips + actions sit fully on the white surface below */}
       <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="-mt-10 flex flex-col gap-4 pb-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between sm:pb-5">
-            {/* Avatar + name */}
-            <div className="flex min-w-0 items-end gap-3 sm:gap-4">
-              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-md sm:h-24 sm:w-24 dark:border-gray-800 dark:bg-gray-700">
-                {club.profileImageUrl ? (
-                  <Image
-                    src={club.profileImageUrl}
-                    alt={club.name}
-                    fill
-                    sizes="96px"
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-500 to-primary-700 text-3xl font-bold text-white">
-                    {(club.name || '?').charAt(0).toUpperCase()}
-                  </div>
+        <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 sm:pb-5">
+          {/* Avatar — the only element that overlaps the cover */}
+          <div className="relative -mt-10 h-20 w-20 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-md sm:-mt-12 sm:h-24 sm:w-24 dark:border-gray-800 dark:bg-gray-700">
+            {club.profileImageUrl ? (
+              <Image
+                src={club.profileImageUrl}
+                alt={club.name}
+                fill
+                sizes="96px"
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-500 to-primary-700 text-3xl font-bold text-white">
+                {(club.name || '?').charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+
+          {/* Title + chips + actions — fully below the cover */}
+          <div className="mt-3 flex flex-col gap-3 sm:mt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h1 className="truncate text-lg font-bold text-gray-900 sm:text-xl md:text-2xl dark:text-white">
+                  {club.name}
+                </h1>
+                {club.isVerified && (
+                  <CheckBadgeIcon className="h-5 w-5 shrink-0 text-primary-500" />
                 )}
               </div>
-              <div className="min-w-0 pb-1">
-                <div className="flex items-center gap-1.5">
-                  <h1 className="truncate text-lg font-bold text-gray-900 sm:text-xl md:text-2xl dark:text-white">
-                    {club.name}
-                  </h1>
-                  {club.isVerified && (
-                    <CheckBadgeIcon className="h-5 w-5 shrink-0 text-primary-500" />
-                  )}
-                </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                  <span className={`rounded-full px-2 py-0.5 font-medium ${getCategoryColor(club.category)}`}>
-                    {getCategoryLabel(club.category)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                    <PrivIcon className="h-3.5 w-3.5" />
-                    {privLabel}
-                  </span>
-                </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                <span className={`rounded-full px-2 py-0.5 font-medium ${getCategoryColor(club.category)}`}>
+                  {getCategoryLabel(club.category)}
+                </span>
+                <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                  <PrivIcon className="h-3.5 w-3.5" />
+                  {privLabel}
+                </span>
               </div>
             </div>
 
-            {/* Actions: primary CTA + secondary icons. On mobile, full-width buttons. */}
+            {/* Actions: full-width on mobile, inline on sm+ */}
             <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
               <button
                 onClick={onMembershipToggle}

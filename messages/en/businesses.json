@@ -85,5 +85,237 @@
       "default": "Create business"
     },
     "errorFallback": "Error creating business. Please try again."
+  },
+  "create": {
+    "buttons": {
+      "back": "Back",
+      "next": "Next"
+    },
+    "step1": {
+      "heading": "Let's start with the basics",
+      "subtitle": "Give your business a name and description",
+      "nameLabel": "Business name",
+      "namePlaceholder": "E.g. Restaurante La Cazuela",
+      "nameCounter": "{count}/100 characters",
+      "descriptionLabel": "Description",
+      "descriptionOptional": "(optional)",
+      "descriptionPlaceholder": "Describe your business, what you offer, what makes it special...",
+      "descriptionCounter": "{count}/500 characters",
+      "requiredMark": "*",
+      "next": "Next"
+    },
+    "step2": {
+      "title": "Category and location",
+      "subtitle": "What type of business is it and where is it located?",
+      "category": "Category",
+      "categoryLoading": "Loading categories...",
+      "categoryPlaceholder": "Select a category",
+      "state": "State",
+      "stateLoading": "Loading states...",
+      "statePlaceholder": "Select a state",
+      "city": "City",
+      "cityLoading": "Loading cities...",
+      "cityPlaceholder": "Select a city",
+      "address": "Address",
+      "optional": "(optional)",
+      "addressPlaceholder": "E.g. 10 Main St #45-20, Zone G"
+    },
+    "step3": {
+      "title": "Contact information",
+      "subtitle": "How can your customers reach you? (Optional)",
+      "email": "Email",
+      "emailPlaceholder": "contact@mybusiness.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 555 123 4567",
+      "website": "Website",
+      "websitePlaceholder": "https://www.mybusiness.com"
+    }
+  },
+  "detail": {
+    "photos": {
+      "title": "Photos",
+      "uploadCta": "Upload photo",
+      "uploadFirstCta": "Upload first photo",
+      "deleteConfirm": "Are you sure you want to delete this photo?",
+      "photoSingular": "photo",
+      "photoPlural": "photos",
+      "emptyOwnerTitle": "You haven't uploaded photos yet",
+      "emptyOwnerDescription": "Share special moments of your business. Upload photos of your products, facilities or team.",
+      "emptyVisitorTitle": "No photos",
+      "emptyVisitorDescription": "This business hasn't shared photos yet.",
+      "photoAlt": "Business photo",
+      "uploadedBy": "Uploaded by {name}"
+    }
+  },
+  "editSocial": {
+    "subtitle": "Connect your social media so customers can follow you and learn more about your business.",
+    "clear": "Clear",
+    "tipsTitle": "Why add social media?",
+    "tips": {
+      "visibility": "Increases the visibility of your business",
+      "updates": "Lets customers follow you and receive updates",
+      "trust": "Builds trust by showing your digital presence",
+      "contact": "Makes it easier for customers to reach you on their preferred channel"
+    }
+  },
+  "ownerProduct": {
+    "deleteConfirm": "Are you sure you want to delete this product? This action cannot be undone.",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "imageNumber": "Image {number}",
+    "noImage": "No image",
+    "clickToHide": "Click to hide",
+    "clickToShow": "Click to show",
+    "visible": "Visible",
+    "hidden": "Hidden",
+    "promotion": "PROMOTION",
+    "editProduct": "Edit product",
+    "deleteProduct": "Delete product",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting..."
+  },
+  "reviews": {
+    "title": "Reviews",
+    "businessResponse": "Business response:",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "empty": "This business has no reviews yet. Be the first to leave one!",
+    "count": "{count, plural, one {# review} other {# reviews}}",
+    "viewAll": "View all reviews ({count})",
+    "averageNotAvailable": "N/A"
+  },
+  "header": {
+    "verified": "Verified",
+    "coverAlt": "Cover of {name}",
+    "reviewsCount": "({count, plural, one {# review} other {# reviews}})",
+    "settings": "Settings",
+    "settingsShort": "Config",
+    "contact": "Contact",
+    "shareTitle": "Share business",
+    "shareText": "Check out this business: {name}",
+    "linkCopied": "Link copied to clipboard",
+    "followUs": "Follow us:"
+  },
+  "ownerCard": {
+    "title": "Owner",
+    "verifiedUser": "Verified user",
+    "ownerOf": "Owner of {name}",
+    "memberSince": "Member since {date}",
+    "viewProfile": "View profile",
+    "message": "Message"
+  },
+  "grid": {
+    "emptyDefault": "No businesses available",
+    "createFirstCta": "Create my first business"
+  },
+  "editImages": {
+    "coverLabel": "Cover image",
+    "coverHint": "Recommended: 1200x400 px. It will be shown at the top of the profile.",
+    "coverAlt": "Cover",
+    "logoAlt": "Logo",
+    "change": "Change",
+    "uploadCover": "Upload cover image",
+    "orUrlDirectly": "Or enter a URL directly:",
+    "coverUrlPlaceholder": "https://example.com/image.jpg",
+    "logoLabel": "Business logo",
+    "logoHint": "Recommended: 200x200 px. It will be shown as the business avatar.",
+    "uploadShort": "Upload",
+    "logoUrlPlaceholder": "https://example.com/logo.jpg",
+    "defaultInitialHint": "The first letter of the name will be used as the default logo",
+    "tipsTitle": "Tips for images",
+    "tips": {
+      "quality": "Use high-quality images for a better presentation",
+      "lessText": "Avoid images with a lot of text — they look better on small devices",
+      "logoSquare": "The logo should be square for the best display",
+      "formats": "Recommended formats: JPG, PNG or WebP"
+    }
+  },
+  "uploadPhoto": {
+    "title": "Upload photo",
+    "selectImageError": "Please select an image file",
+    "fileTooLargeError": "The image must not exceed 10MB",
+    "dropHere": "Drop the image here",
+    "dragOrClick": "Drag an image or click to select",
+    "fileHint": "JPG, PNG or GIF (max. 10MB)",
+    "previewAlt": "Preview",
+    "captionLabel": "Description (optional)",
+    "captionPlaceholder": "Write a description for this photo...",
+    "tagsLabel": "Tags (optional)",
+    "tagPlaceholder": "E.g. interior, menu, atmosphere...",
+    "addTag": "Add",
+    "tagsCount": "{count}/10 tags",
+    "cancel": "Cancel",
+    "submitting": "Uploading...",
+    "submit": "Upload photo"
+  },
+  "editInfo": {
+    "nameLabel": "Business name",
+    "namePlaceholder": "My Business",
+    "slugLabel": "Business URL",
+    "slugAutoGenerate": "Generate automatically",
+    "slugPrefix": "/feed/businesses/",
+    "slugPlaceholder": "my-business",
+    "categoryLabel": "Category",
+    "categoryLoading": "Loading categories...",
+    "categoryPlaceholder": "Select category",
+    "descriptionLabel": "Description",
+    "descriptionHint": "Describe your business, services you offer, special hours, etc.",
+    "descriptionPlaceholder": "Write a description for your business...",
+    "descriptionCounter": "{count}/1000 characters",
+    "tagsLabel": "Tags",
+    "tagsHint": "Add tags to help people find your business. Maximum 10 tags.",
+    "tagPlaceholder": "Add tag...",
+    "addTag": "Add",
+    "infoBox": "The information you provide will be visible to all users. Make sure it is accurate and professional."
+  },
+  "filterBar": {
+    "searchPlaceholder": "Search businesses...",
+    "loading": "Loading...",
+    "allCategories": "All categories",
+    "allStates": "All states",
+    "allCities": "All cities",
+    "clear": "Clear"
+  },
+  "products": {
+    "filterBar": {
+      "searchPlaceholder": "Search products...",
+      "filters": "Filters",
+      "categories": "Categories",
+      "quickFilters": "Quick filters",
+      "inStock": "In stock",
+      "onPromotion": "On promotion",
+      "activeFilters": "Active filters:",
+      "searchLabel": "Search: {query}",
+      "removeSearchAria": "Remove search filter",
+      "clearAll": "Clear all"
+    },
+    "formFields": {
+      "nameLabel": "Product name *",
+      "nameRequired": "Name is required",
+      "namePlaceholder": "E.g. Margherita Pizza, Vanilla Ice Cream",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe your product, ingredients, features...",
+      "priceLabel": "Price *",
+      "priceRequired": "Price is required",
+      "priceMin": "Price must be greater than 0",
+      "pricePlaceholder": "0.00",
+      "compareAtPriceLabel": "Previous price",
+      "compareAtPriceMin": "Must be greater than 0",
+      "compareAtPricePlaceholder": "To show discount",
+      "categoryMainLabel": "Category",
+      "categoryMainPlaceholder": "E.g. Pizzas, Desserts, Drinks",
+      "categorySubLabel": "Subcategory",
+      "categorySubPlaceholder": "E.g. Classic, Special",
+      "skuLabel": "SKU / Code",
+      "skuPlaceholder": "Internal code",
+      "stockLabel": "Stock quantity",
+      "stockMin": "Cannot be negative",
+      "stockPlaceholder": "0 = unlimited",
+      "trackInventory": "Track inventory",
+      "allowBackorder": "Allow orders without stock",
+      "weightLabel": "Weight (kg)",
+      "weightPlaceholder": "For shipping calculation"
+    }
   }
 }

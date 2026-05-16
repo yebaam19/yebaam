@@ -5,8 +5,9 @@ import Link from 'next/link'
 import Avatar from '@/ui/Avatar'
 import { ChevronDownIcon } from '@/components/icons/heroicons-shim'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale'
 import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
+import type { Locale as DateFnsLocale } from 'date-fns/locale'
 
 interface ActivityItem {
   id: string
@@ -18,9 +19,9 @@ interface ActivityItem {
   sinceMs: number
 }
 
-function relativeEs(iso: string): string {
+function relativeTime(iso: string, dateLocale: DateFnsLocale): string {
   try {
-    return `Hace ${formatDistanceToNow(new Date(iso), { locale: es, addSuffix: false })}`
+    return formatDistanceToNow(new Date(iso), { locale: dateLocale, addSuffix: true })
   } catch {
     return 'Reciente'
   }
@@ -29,6 +30,7 @@ function relativeEs(iso: string): string {
 export function RecentActivity() {
   const { friends } = useFriendships()
   const [expanded, setExpanded] = useState(false)
+  const dateLocale = useDateFnsLocale()
 
   const items: ActivityItem[] = (friends || [])
     .filter((f: any) => !!f.friendSince)
@@ -41,7 +43,7 @@ export function RecentActivity() {
         name,
         avatar: f.avatar,
         initials,
-        when: relativeEs(f.friendSince),
+        when: relativeTime(f.friendSince, dateLocale),
         sinceMs: new Date(f.friendSince).getTime() || 0,
       }
     })

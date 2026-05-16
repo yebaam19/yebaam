@@ -2,14 +2,17 @@
 
 import Link from 'next/link'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { useProfileStore } from '@/features/profile/store/profile.store'
 import { cn } from '@/lib/utils'
 
+type StepKey = 'avatar' | 'basics' | 'interests' | 'connect5' | 'verified'
+
 interface Step {
-  label: string
+  labelKey: StepKey
   done: boolean
   href: string
 }
@@ -58,6 +61,7 @@ export function ProfileProgress() {
   const { totalFriends, sentRequests } = useFriendships()
   const profile = useProfileStore((s) => s.currentProfile)
   const fetchProfileByUsername = useProfileStore((s) => s.fetchProfileByUsername)
+  const t = useTranslations('friendships.profileProgress')
 
   // Ensure the profile store has the current user's data so completion checks
   // use a single source of truth that reflects EditProfileDialog saves.
@@ -82,17 +86,17 @@ export function ProfileProgress() {
 
   const steps: Step[] = [
     {
-      label: 'Foto de perfil',
+      labelKey: 'avatar',
       done: Boolean(avatar),
       href: editLink('general'),
     },
     {
-      label: 'Información básica',
+      labelKey: 'basics',
       done: Boolean(firstName && lastName && residenceCity),
       href: editLink('general'),
     },
     {
-      label: 'Intereses',
+      labelKey: 'interests',
       done: interests.length > 0,
       href: editLink('interests'),
     },
@@ -100,12 +104,12 @@ export function ProfileProgress() {
       // Counts accepted friendships + outgoing pending requests so the user
       // can flip this on their own (sending 5 invites is enough). Real
       // acceptances still contribute to the same threshold.
-      label: 'Conecta 5 amigos',
+      labelKey: 'connect5',
       done: ((totalFriends || 0) + (sentRequests?.length || 0)) >= 5,
       href: '/feed/friends?tab=suggestions',
     },
     {
-      label: 'Verificado',
+      labelKey: 'verified',
       done: emailVerified,
       href: profileBase,
     },
@@ -123,14 +127,14 @@ export function ProfileProgress() {
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
               <h2 className="text-base font-semibold text-neutral-900 sm:text-lg dark:text-white">
-                Tu progreso
+                {t('title')}
               </h2>
               <p className="text-xs text-neutral-500 sm:text-sm dark:text-neutral-400">
-                Completa tu perfil y consigue más conexiones
+                {t('description')}
               </p>
             </div>
             <span className="shrink-0 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-              {completed} de {steps.length} completados
+              {t('completedRatio', { done: completed, total: steps.length })}
             </span>
           </div>
 
@@ -143,6 +147,7 @@ export function ProfileProgress() {
 
           <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
             {steps.map((step, i) => {
+              const label = t(`steps.${step.labelKey}`)
               const content = (
                 <>
                   {step.done ? (
@@ -152,23 +157,23 @@ export function ProfileProgress() {
                       {i + 1}
                     </span>
                   )}
-                  <span>{step.label}</span>
+                  <span>{label}</span>
                 </>
               )
 
               return (
-                <li key={step.label}>
+                <li key={step.labelKey}>
                   {step.done ? (
                     <span
                       className="flex items-center gap-1.5 text-xs text-neutral-700 sm:text-sm dark:text-neutral-200"
-                      aria-label={`${step.label} (completado)`}
+                      aria-label={t('stepCompletedA11y', { label })}
                     >
                       {content}
                     </span>
                   ) : (
                     <Link
                       href={step.href as any}
-                      aria-label={`Completar paso: ${step.label}`}
+                      aria-label={t('stepIncompleteA11y', { label })}
                       className={cn(
                         'flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -mx-1.5 -my-0.5 text-xs sm:text-sm',
                         'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900',

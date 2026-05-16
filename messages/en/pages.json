@@ -15,6 +15,54 @@
     "followed": "Followed pages",
     "discover": "Discover"
   },
+  "create": {
+    "step1": {
+      "heading": "Let's start with the basics",
+      "subtitle": "Give your page a name and description so people can find it",
+      "nameLabel": "Page name",
+      "namePlaceholder": "E.g. My Business",
+      "nameCounter": "{count}/100 characters",
+      "slugLabel": "Username (URL)",
+      "slugOptional": "(optional)",
+      "slugPrefix": "yebaam.com/paginas/",
+      "slugPlaceholder": "my-business",
+      "slugAvailable": "URL available: yebaam.com/paginas/{slug}",
+      "slugEmptyHint": "If you leave it empty, it will be generated automatically from the page name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe what your page is about...",
+      "descriptionCounter": "{count}/500 characters",
+      "requiredMark": "*",
+      "next": "Next"
+    },
+    "step4": {
+      "heading": "Contact information",
+      "subtitle": "Help people connect with you (all fields are optional)",
+      "emailLabel": "Email",
+      "emailPlaceholder": "contact@example.com",
+      "emailError": "Invalid email",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "+1 234 567 8900",
+      "phoneError": "Invalid phone (e.g. +1 234 567 8900)",
+      "websiteLabel": "Website",
+      "websitePlaceholder": "https://www.example.com",
+      "websiteError": "Invalid URL (must start with http:// or https://)",
+      "addressLabel": "Address",
+      "streetPlaceholder": "123 Main Street",
+      "cityPlaceholder": "City",
+      "statePlaceholder": "State/Province",
+      "countryPlaceholder": "Country",
+      "zipCodePlaceholder": "Zip code",
+      "summaryHeading": "All set!",
+      "summaryBasic": "Basic information complete",
+      "summaryCategory": "Category selected",
+      "summaryProfile": "Profile picture added",
+      "summaryCover": "Cover image added",
+      "summaryContact": "Contact information added",
+      "back": "Back",
+      "submit": "Create page",
+      "submitting": "Creating..."
+    }
+  },
   "empty": {
     "search": {
       "title": "No pages were found",
@@ -46,6 +94,513 @@
       "admin": "Admin",
       "editor": "Editor",
       "moderator": "Moderator"
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Find answers to the most common questions",
+    "all": "All",
+    "noAnswerTitle": "Didn't find your answer?",
+    "noAnswerDescription": "Contact us directly and we'll help you with whatever you need.",
+    "sendMessage": "Send message",
+    "categories": {
+      "hours": "Hours",
+      "shipping": "Shipping",
+      "orders": "Orders",
+      "products": "Products",
+      "payments": "Payments",
+      "benefits": "Benefits"
+    },
+    "items": {
+      "hoursQ": "What are your business hours?",
+      "hoursA": "We're open Monday to Friday from 7:00 AM to 8:00 PM, Saturdays from 8:00 AM to 9:00 PM, and Sundays from 8:00 AM to 6:00 PM.",
+      "shippingQ": "Do you offer home delivery?",
+      "shippingA": "Yes, we deliver within a 5 km radius. Shipping costs $3 for orders under $20, and it's free for larger orders.",
+      "ordersQ": "Do you accept advance orders?",
+      "ordersA": "Of course. You can place orders at least 24 hours in advance by phone or through our social media.",
+      "productsQ": "Do you have gluten-free or vegan options?",
+      "productsA": "Yes, we have a full line of gluten-free products and vegan options. Check our special products section.",
+      "paymentsQ": "What payment methods do you accept?",
+      "paymentsA": "We accept cash, debit and credit cards (Visa, Mastercard, American Express), and bank transfers.",
+      "benefitsQ": "Do you have a loyalty program?",
+      "benefitsA": "Yes, with every $10 purchase you earn 1 point. When you reach 10 points you get 10% off your next purchase."
+    }
+  },
+  "photos": {
+    "title": "Photos",
+    "uploadCta": "Upload photo",
+    "uploadFirstCta": "Upload first photo",
+    "deleteConfirm": "Are you sure you want to delete this photo?",
+    "deleteTitle": "Delete photo",
+    "photoSingular": "photo",
+    "photoPlural": "photos",
+    "emptyOwnerTitle": "You haven't uploaded photos yet",
+    "emptyOwnerDescription": "Share special moments of your business. Upload photos of your products, services or team.",
+    "emptyVisitorTitle": "No photos",
+    "emptyVisitorDescription": "This page hasn't shared photos yet.",
+    "photoAlt": "Page photo",
+    "upload": {
+      "title": "Upload photo",
+      "invalidType": "Please select an image file",
+      "tooLarge": "The image must not exceed 10MB",
+      "dropHere": "Drop the image here",
+      "dragOrClick": "Drag an image or click to select",
+      "fileHint": "JPG, PNG or GIF (max. 10MB)",
+      "previewAlt": "Preview",
+      "captionLabel": "Description (optional)",
+      "captionPlaceholder": "Write a description for this photo...",
+      "captionCounter": "{count}/200",
+      "uploading": "Uploading photo...",
+      "processing": "Processing",
+      "cancel": "Cancel",
+      "submitting": "Uploading...",
+      "submit": "Upload photo"
+    }
+  },
+  "promotions": {
+    "title": "Promotions",
+    "promotionSingular": "promotion",
+    "promotionPlural": "promotions",
+    "newCta": "New promotion",
+    "deleteConfirm": "Are you sure you want to delete this promotion?",
+    "filters": {
+      "all": "All ({count})",
+      "active": "Active ({count})",
+      "upcoming": "Upcoming ({count})",
+      "expired": "Expired ({count})"
+    },
+    "empty": {
+      "all": "No promotions available",
+      "active": "No active promotions",
+      "upcoming": "No upcoming promotions",
+      "expired": "No expired promotions",
+      "ownerHint": "Create your first promotion to attract more customers",
+      "visitorHint": "Come back soon to see special offers"
+    },
+    "infoCard": {
+      "title": "🎉 Take advantage of our promotions!",
+      "description": "Use the promo codes at the time of your purchase or booking to get special discounts."
+    },
+    "create": {
+      "titleEdit": "Edit promotion",
+      "titleCreate": "New promotion",
+      "invalidType": "Please select an image file",
+      "tooLarge": "The image must not exceed 10MB",
+      "validation": {
+        "titleRequired": "Title is required",
+        "descriptionRequired": "Description is required",
+        "valueGreaterThanZero": "Value must be greater than 0",
+        "percentageMax": "Percentage cannot be greater than 100",
+        "endDateAfterStart": "End date must be after start date",
+        "codeMinLength": "Code must be at least 3 characters",
+        "saveError": "Could not save the promotion"
+      },
+      "titleLabel": "Title *",
+      "titlePlaceholder": "e.g. 2x1 on Croissants",
+      "descriptionLabel": "Description *",
+      "descriptionPlaceholder": "Describe the details of the promotion...",
+      "typeLabel": "Type *",
+      "valueLabel": {
+        "PERCENTAGE": "Discount percentage (%)",
+        "FIXED": "Discount amount ($)",
+        "BOGO": "Quantity (e.g. 2 for 2x1)",
+        "DEFAULT": "Value"
+      },
+      "types": {
+        "PERCENTAGE": "Discount %",
+        "FIXED": "Fixed discount",
+        "BOGO": "2x1 / 3x2",
+        "FREE_SHIPPING": "Free shipping",
+        "BUNDLE": "Special bundle"
+      },
+      "codeLabel": "Promo code (optional)",
+      "codePlaceholder": "SUMMER2025",
+      "codeHint": "Only uppercase letters and numbers. E.g. SUMMER2025",
+      "startDateLabel": "Start date *",
+      "endDateLabel": "End date *",
+      "usageLimitLabel": "Usage limit (optional)",
+      "usageLimitPlaceholder": "Leave empty for unlimited",
+      "termsLabel": "Terms and conditions (optional)",
+      "termsPlaceholder": "Applicable terms and conditions...",
+      "isActiveLabel": "Activate promotion immediately",
+      "isFeaturedLabel": "Feature promotion ⭐",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "update": "Update",
+      "create": "Create promotion"
+    }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "reviewSingular": "review",
+    "reviewPlural": "reviews",
+    "writeCta": "Write review",
+    "deleteConfirm": "Are you sure you want to delete this review?",
+    "summaryCount": "{count} reviews",
+    "sortLabel": "Sort",
+    "filterLabel": "Filter",
+    "sort": {
+      "recent": "Most recent",
+      "recentDesc": "Sort by date",
+      "helpful": "Most helpful",
+      "helpfulDesc": "Sorted by helpfulness",
+      "ratingHigh": "Highest rating",
+      "ratingHighDesc": "5 to 1 stars",
+      "ratingLow": "Lowest rating",
+      "ratingLowDesc": "1 to 5 stars"
+    },
+    "filters": {
+      "all": "All ratings",
+      "fiveStars": "5 stars",
+      "fourStars": "4 stars",
+      "threeStars": "3 stars",
+      "twoStars": "2 stars",
+      "oneStar": "1 star"
+    },
+    "empty": {
+      "title": "No reviews yet",
+      "description": "Be the first to leave a review"
+    }
+  },
+  "reels": {
+    "header": {
+      "title": "Reels",
+      "summary": "{videos, plural, one {# video} other {# videos}} · {views} views approx."
+    },
+    "create": {
+      "cameraError": "Could not access the camera. Check permissions.",
+      "invalidVideoType": "Please select a video file",
+      "fileTooLargeTemplate": "The file is too large. Maximum {size}MB",
+      "videoTooLongTemplate": "The video is too long. Maximum {seconds} seconds",
+      "noVideoError": "There is no video to upload",
+      "uploadS3Error": "Error uploading video to S3",
+      "publishError": "Error publishing reel. Please try again.",
+      "title": "Create Reel",
+      "recordVideo": "Record Video",
+      "uploadVideo": "Upload Video",
+      "limits": "Vertical videos (9:16) up to 90 seconds and 100MB",
+      "cancel": "Cancel",
+      "captionLabel": "Description (optional)",
+      "captionPlaceholder": "Add a description to your reel...",
+      "captionCounter": "{count}/500 characters · {duration}s",
+      "recordAgain": "Record again",
+      "publish": "Publish Reel",
+      "publishing": "Publishing your reel...",
+      "publishingHint": "This may take a few moments depending on the video size"
+    },
+    "viewer": {
+      "share": "Share"
+    },
+    "emptyState": {
+      "title": "No reels yet",
+      "ownerDescription": "Create your first reel to showcase your business creatively.",
+      "visitorDescription": "This page hasn't shared any reels yet.",
+      "ownerCta": "Create my first Reel",
+      "infoTitle": "💡 Create video content",
+      "infoDescription": "Reels are perfect for showcasing your business creatively and reaching more people. Short (up to 90 seconds), vertical and engaging videos."
+    },
+    "card": {
+      "noTitle": "Untitled",
+      "likeAria": "Like",
+      "commentAria": "Comment",
+      "shareAria": "Share"
+    }
+  },
+  "community": {
+    "memberCard": {
+      "messageAria": "Send message",
+      "follow": "Follow"
+    }
+  },
+  "createModal": {
+    "title": "Create page",
+    "stepLabel": "{title} - Step {current} of {total}",
+    "step1Title": "Basic information",
+    "step2Title": "Category",
+    "step3Title": "Images",
+    "step4Title": "Contact information",
+    "errorDefault": "Error creating the page. Please try again."
+  },
+  "messenger": {
+    "sidebar": {
+      "searchPlaceholder": "Search conversations...",
+      "loading": "Loading conversations...",
+      "noResults": "No conversations found",
+      "noMessages": "No messages yet",
+      "userFallback": "User",
+      "totalCount": "{count, plural, one {# conversation total} other {# conversations total}}"
+    },
+    "chatView": {
+      "emptyTitle": "Select a conversation",
+      "emptyDescription": "Choose a customer to see the messages",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "markRead": "Mark read",
+      "loadingMessages": "Loading messages...",
+      "noMessages": "No messages yet",
+      "inputPlaceholder": "Type a reply...",
+      "inputHint": "Press Enter to send, Shift+Enter for a new line",
+      "typingSenderName": "Page"
+    }
+  },
+  "searchBar": {
+    "defaultPlaceholder": "Search pages...",
+    "clearSearch": "Clear search",
+    "filters": "Filters",
+    "categoryLabel": "Category",
+    "allCategories": "All categories",
+    "verifiedOnly": "Verified pages only",
+    "locationLabel": "Location",
+    "locationPlaceholder": "City or country...",
+    "applyFilters": "Apply filters",
+    "clear": "Clear",
+    "verifiedChip": "Verified"
+  },
+  "detailCommunity": {
+    "heading": "Community",
+    "emptyTitle": "No followers yet",
+    "emptyDescription": "This page doesn't have any followers yet. Be the first to follow it and become part of its community.",
+    "followerCount": "{count, plural, one {# follower} other {# followers}}",
+    "searchPlaceholder": "Search members...",
+    "sortFallback": "Sort",
+    "noSearchResults": "No members found matching \"{query}\"",
+    "sort": {
+      "recent": {
+        "label": "Recent",
+        "description": "Sort by most recent"
+      },
+      "alphabetical": {
+        "label": "Alphabetical",
+        "description": "Sort A to Z"
+      },
+      "popular": {
+        "label": "Most popular",
+        "description": "Sort by popularity"
+      }
+    }
+  },
+  "messagesTest": {
+    "title": "Messaging System - Test",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "conversationsHeading": "Conversations",
+    "conversationsCount": "{count, plural, one {# conversation} other {# conversations}}",
+    "loading": "Loading...",
+    "noConversations": "No conversations",
+    "pageFallback": "Page",
+    "messagesHeading": "Messages",
+    "markAsRead": "Mark as read",
+    "selectConversation": "Select a conversation",
+    "loadingMessages": "Loading messages...",
+    "messagePlaceholder": "Type a message...",
+    "typingSenderName": "You"
+  },
+  "detail": {
+    "header": {
+      "coverAlt": "{name} cover",
+      "followersCount": "{count} followers",
+      "settings": "Settings",
+      "settingsShort": "Config",
+      "viewMessages": "View messages",
+      "viewMessagesShort": "Messages",
+      "processing": "Processing...",
+      "following": "Following",
+      "follow": "Follow",
+      "notificationsOn": "Notifications enabled",
+      "notificationsEnable": "Enable notifications",
+      "message": "Message",
+      "sharePage": "Share page",
+      "moreOptions": "More options",
+      "shareText": "Check out this page: {name}",
+      "linkCopied": "Link copied to clipboard",
+      "unfollowSuccess": "You unfollowed the page",
+      "followSuccess": "You're now following this page",
+      "actionError": "Error processing the request"
+    }
+  },
+  "settings": {
+    "general": {
+      "heading": "General information",
+      "subheading": "Update the basic information of your page",
+      "basicInfo": "Basic information",
+      "nameLabel": "Page name *",
+      "nameCounter": "{count}/100 characters",
+      "usernameLabel": "Username *",
+      "usernameHint": "Only letters, numbers and underscores",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe what your page is about...",
+      "descriptionCounter": "{count}/500 characters",
+      "categoryLabel": "Category *",
+      "subcategoryLabel": "Subcategory",
+      "subcategoryPlaceholder": "E.g. Artisan bakery",
+      "contactInfo": "Contact information",
+      "emailLabel": "Email",
+      "emailPlaceholder": "contact@yourpage.com",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "+1 234 567 8900",
+      "websiteLabel": "Website",
+      "websitePlaceholder": "https://yourpage.com",
+      "addressLabel": "Address",
+      "addressPlaceholder": "Street, city, country",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save changes"
+    },
+    "roles": {
+      "heading": "Roles and permissions",
+      "subheading": "Manage the team and permissions of your page",
+      "addMember": "Add member",
+      "addAction": "+ Add",
+      "cancel": "Cancel",
+      "searchPlaceholder": "Search user by name or @username...",
+      "searchHint": "Search for users to add them as team members",
+      "membersHeading": "Team members ({count})",
+      "joinedSince": "Since",
+      "removeMember": "Remove member",
+      "permissionsHeading": "Permissions by role",
+      "labels": {
+        "OWNER": "Owner",
+        "ADMIN": "Administrator",
+        "EDITOR": "Editor",
+        "MODERATOR": "Moderator"
+      },
+      "permissions": {
+        "OWNER": [
+          "Full control of the page",
+          "Transfer ownership",
+          "Delete the page",
+          "Manage all roles",
+          "Modify settings",
+          "Publish and delete content"
+        ],
+        "ADMIN": [
+          "Manage roles (except owner)",
+          "Modify settings",
+          "Publish and delete content",
+          "Moderate comments",
+          "View statistics"
+        ],
+        "EDITOR": [
+          "Publish content",
+          "Edit posts",
+          "Reply to comments",
+          "View basic statistics"
+        ],
+        "MODERATOR": [
+          "Moderate comments",
+          "Reply to messages",
+          "Report inappropriate content"
+        ]
+      }
+    },
+    "appearance": {
+      "heading": "Appearance",
+      "subheading": "Customize the images of your page",
+      "coverHeading": "Cover image",
+      "coverHint": "Recommended: 1920x1080px • Max: 5MB",
+      "remove": "Remove",
+      "coverAlt": "Cover preview",
+      "noCover": "No cover image",
+      "uploading": "Uploading...",
+      "changeImage": "Change image",
+      "profileHeading": "Profile image",
+      "profileHint": "Recommended: 400x400px • Max: 5MB",
+      "profileAlt": "Profile preview",
+      "change": "Change",
+      "uploadImage": "Upload image",
+      "fileHint": "JPG, PNG or GIF. Maximum size 5MB.",
+      "tipsTitle": "💡 Tips for better images",
+      "tips": [
+        "Use high-quality images that represent your brand",
+        "The cover image should be horizontal (16:9 ideal)",
+        "The profile image should be square and recognizable",
+        "Avoid small text that is difficult to read",
+        "Keep a consistent style with your visual identity"
+      ],
+      "errors": {
+        "uploadProfile": "Error uploading profile image",
+        "uploadCover": "Error uploading cover image",
+        "tooLarge": "The image cannot exceed 5MB",
+        "invalidType": "Only images are allowed",
+        "removeError": "Error removing the image"
+      },
+      "success": {
+        "profileUpdated": "Profile image updated successfully",
+        "coverUpdated": "Cover image updated successfully",
+        "profileRemoved": "Profile image removed",
+        "coverRemoved": "Cover image removed"
+      }
+    },
+    "sidebar": {
+      "items": {
+        "general": {
+          "label": "General information",
+          "description": "Name, description and contact"
+        },
+        "appearance": {
+          "label": "Appearance",
+          "description": "Images and design"
+        },
+        "products": {
+          "label": "Products",
+          "description": "Manage products and services"
+        },
+        "roles": {
+          "label": "Roles and permissions",
+          "description": "Manage team"
+        },
+        "stats": {
+          "label": "Statistics",
+          "description": "Metrics and analytics"
+        },
+        "danger": {
+          "label": "Danger zone",
+          "description": "Delete page"
+        }
+      }
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "subtitle": "Irreversible actions that permanently affect the page",
+      "warningTitle": "Caution",
+      "warningDescription": "The actions in this section are permanent and cannot be undone. Proceed with care.",
+      "transfer": {
+        "title": "Transfer ownership",
+        "description": "Transfer full control of the page to another administrator. This action is irreversible.",
+        "bullets": {
+          "control": "The new owner will have full control of the page",
+          "role": "Your role will automatically change to Administrator",
+          "irreversible": "You won't be able to revert this action"
+        },
+        "button": "Transfer",
+        "modalTitle": "Transfer ownership",
+        "modalDescription": "This feature will be available soon. Select an administrator to transfer ownership of the page."
+      },
+      "delete": {
+        "title": "Delete page",
+        "description": "Permanently delete this page and all its content. This action cannot be undone.",
+        "bullets": {
+          "posts": "All posts and comments will be deleted",
+          "followers": "Followers will lose access to the page",
+          "username": "The username will become available",
+          "recovery": "There is no way to recover the data"
+        },
+        "button": "Delete",
+        "ownerOnly": "Only the owner can delete the page",
+        "modalTitle": "Delete page?",
+        "modalDescription": "This action is permanent and will remove all content from the page.",
+        "willDelete": "The following will be deleted:",
+        "willDeleteItems": {
+          "posts": "All posts and comments",
+          "followers": "{count} followers",
+          "media": "All photos and videos",
+          "history": "The full history"
+        },
+        "confirmLabel": "Type <strong>{name}</strong> to confirm:",
+        "cancel": "Cancel",
+        "deleting": "Deleting...",
+        "confirmButton": "Delete page"
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 import { FC, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Page } from '../../types/page.types';
 import { PAGE_CATEGORY_LABELS } from '../../utils/pageHelpers';
 
@@ -7,6 +8,7 @@ interface SettingsGeneralProps {
 }
 
 export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
+  const t = useTranslations('pages.settings.general');
   const [formData, setFormData] = useState({
     name: page.name,
     username: page.slug,
@@ -36,10 +38,10 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Información general
+          {t('heading')}
         </h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Actualiza la información básica de tu página
+          {t('subheading')}
         </p>
       </div>
 
@@ -47,7 +49,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
         {/* Basic Info Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
           <h3 className="text-base font-medium text-gray-900 dark:text-white">
-            Información básica
+            {t('basicInfo')}
           </h3>
 
           {/* Name */}
@@ -56,7 +58,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Nombre de la página *
+              {t('nameLabel')}
             </label>
             <input
               type="text"
@@ -70,7 +72,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {formData.name.length}/100 caracteres
+              {t('nameCounter', { count: formData.name.length })}
             </p>
           </div>
 
@@ -80,7 +82,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="username"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Nombre de usuario *
+              {t('usernameLabel')}
             </label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -100,7 +102,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               />
             </div>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Solo letras, números y guiones bajos
+              {t('usernameHint')}
             </p>
           </div>
 
@@ -110,7 +112,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="description"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Descripción
+              {t('descriptionLabel')}
             </label>
             <textarea
               id="description"
@@ -121,10 +123,10 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               rows={4}
               maxLength={500}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-              placeholder="Describe de qué trata tu página..."
+              placeholder={t('descriptionPlaceholder')}
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {formData.description.length}/500 caracteres
+              {t('descriptionCounter', { count: formData.description.length })}
             </p>
           </div>
 
@@ -134,7 +136,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="category"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Categoría *
+              {t('categoryLabel')}
             </label>
             <select
               id="category"
@@ -162,7 +164,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="subcategory"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Subcategoría
+              {t('subcategoryLabel')}
             </label>
             <input
               type="text"
@@ -173,7 +175,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               }
               maxLength={50}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Ej: Panadería artesanal"
+              placeholder={t('subcategoryPlaceholder')}
             />
           </div>
         </div>
@@ -181,7 +183,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
         {/* Contact Info Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
           <h3 className="text-base font-medium text-gray-900 dark:text-white">
-            Información de contacto
+            {t('contactInfo')}
           </h3>
 
           {/* Email */}
@@ -190,7 +192,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Correo electrónico
+              {t('emailLabel')}
             </label>
             <input
               type="email"
@@ -200,7 +202,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
                 setFormData({ ...formData, email: e.target.value })
               }
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="contacto@tupagina.com"
+              placeholder={t('emailPlaceholder')}
             />
           </div>
 
@@ -210,7 +212,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="phone"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Teléfono
+              {t('phoneLabel')}
             </label>
             <input
               type="tel"
@@ -220,7 +222,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
                 setFormData({ ...formData, phone: e.target.value })
               }
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="+1 234 567 8900"
+              placeholder={t('phonePlaceholder')}
             />
           </div>
 
@@ -230,7 +232,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="website"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Sitio web
+              {t('websiteLabel')}
             </label>
             <input
               type="url"
@@ -240,7 +242,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
                 setFormData({ ...formData, website: e.target.value })
               }
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="https://tupagina.com"
+              placeholder={t('websitePlaceholder')}
             />
           </div>
 
@@ -250,7 +252,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               htmlFor="address"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Dirección
+              {t('addressLabel')}
             </label>
             <textarea
               id="address"
@@ -261,7 +263,7 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
               rows={2}
               maxLength={200}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-              placeholder="Calle, ciudad, país"
+              placeholder={t('addressPlaceholder')}
             />
           </div>
         </div>
@@ -273,14 +275,14 @@ export const SettingsGeneral: FC<SettingsGeneralProps> = ({ page }) => {
             onClick={() => window.history.back()}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={isSaving}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
           >
-            {isSaving ? 'Guardando...' : 'Guardar cambios'}
+            {isSaving ? t('saving') : t('save')}
           </button>
         </div>
       </form>

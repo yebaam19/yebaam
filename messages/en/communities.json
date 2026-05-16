@@ -23,7 +23,10 @@
     "processing": "Processing...",
     "member": "Member",
     "requestAccess": "Request Access",
-    "join": "Join"
+    "join": "Join",
+    "privacyPrivate": "Private",
+    "privacyPublic": "Public",
+    "privacySecret": "Secret"
   },
   "create": {
     "trigger": "Create community",
@@ -87,7 +90,27 @@
       "requestAccess": "Request access",
       "secretOnlyInvite": "Invitation only",
       "join": "Become a Member"
-    }
+    },
+    "aboutTitle": "About the community",
+    "locationLabel": "Location:",
+    "postsHeading": "Posts",
+    "postsCount": "{count, plural, one {# post} other {# posts}}",
+    "composerPlaceholder": "What do you want to share with the community?",
+    "composerSubmit": "Post",
+    "featuredPhotosHeading": "Featured photos",
+    "featuredPhotosEmpty": "No featured photos yet.",
+    "articleEyebrow": "COMMUNITY ARTICLE",
+    "reactions": {
+      "likeCount": "{count, plural, one {# like} other {# likes}}"
+    },
+    "comments": {
+      "count": "{count, plural, one {# comment} other {# comments}}"
+    },
+    "noDescription": "No description.",
+    "joinToPost": "Join the community to post.",
+    "onlyOwnerPosts": "Only the owner can post in this community.",
+    "noPosts": "No posts yet. Be the first to post!",
+    "featuredVideosHeading": "Featured videos"
   },
   "sidebar": {
     "ariaLabel": "Community sections",
@@ -122,5 +145,97 @@
   "comingSoon": {
     "defaultDescription": "This section will be available soon.",
     "badge": "Coming soon"
+  },
+  "admin": {
+    "panel": {
+      "title": "Admin panel",
+      "inviteSectionTitle": "Invite user",
+      "invitePlaceholder": "@username",
+      "inviteSubmit": "Invite",
+      "inviteSuccess": "Invitation sent to @{username}",
+      "pendingTitle": "Pending requests ({count})",
+      "pendingEmpty": "No pending requests.",
+      "approve": "Approve",
+      "declineAria": "Decline",
+      "publicNotice": "This community is public — anyone can join freely."
+    },
+    "article": {
+      "actionsAria": "Article actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteTitle": "Delete article",
+      "deleteConfirm": "Delete “{title}”? This action cannot be undone.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "composer": {
+        "titleEdit": "Edit article",
+        "titleNew": "New article",
+        "cancel": "Cancel",
+        "submitPublish": "Publish",
+        "submitPublishing": "Publishing...",
+        "submitSave": "Save changes",
+        "submitSaving": "Saving...",
+        "errorCoverImage": "The cover must be an image.",
+        "errorCoverUpload": "Error uploading the cover.",
+        "errorTitleRequired": "Title is required.",
+        "errorContentRequired": "Write the article content.",
+        "coverAlt": "Cover",
+        "removeCoverAria": "Remove cover",
+        "uploadingCover": "Uploading cover...",
+        "addCover": "Add cover image (optional)",
+        "titlePlaceholder": "Article title",
+        "subtitlePlaceholder": "Subtitle (optional)",
+        "contentPlaceholder": "Write your article...",
+        "tagsLabel": "Tags (comma separated)",
+        "tagsPlaceholder": "music, collecting, vinyl"
+      },
+      "share": {
+        "copied": "Link copied",
+        "share": "Share",
+        "shareToCommunity": "Share in community",
+        "copyLink": "Copy link",
+        "dialogTitle": "Share with the community",
+        "dialogDescription": "A post will be published in the community feed linking to “{title}”.",
+        "messagePlaceholder": "Write an optional message for members...",
+        "successToast": "Shared in the community.",
+        "cancel": "Cancel",
+        "submit": "Share",
+        "submitting": "Sharing...",
+        "submitted": "Shared"
+      }
+    },
+    "owner": {
+      "manageAria": "Manage community",
+      "manage": "Manage",
+      "deleteCommunity": "Delete community",
+      "deleteTitle": "Delete community",
+      "deleteConfirm": "Delete “{name}”? All its posts, members, and articles will be erased. This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "rules": {
+      "title": "Community rules",
+      "editRules": "Edit rules",
+      "addRules": "Add rules",
+      "emptyOwner": "You haven't published any rules yet. Add the first ones so members know what to expect.",
+      "emptyMember": "This community hasn't published rules yet.",
+      "editorEmpty": "There are no rules yet. Press “Add rule” to create the first one.",
+      "ruleLabel": "Rule {n}",
+      "moveUpAria": "Move rule up",
+      "moveDownAria": "Move rule down",
+      "removeAria": "Remove rule",
+      "titlePlaceholder": "Rule title",
+      "descriptionPlaceholder": "Description (optional)",
+      "addRule": "Add rule",
+      "cancel": "Cancel",
+      "save": "Save rules",
+      "saving": "Saving...",
+      "errorMax": "Maximum {max} rules.",
+      "errorTitleRequired": "Each rule needs a title.",
+      "reportsTitle": "Reports",
+      "reportsDescription": "Did you see something that breaks the rules? Soon you'll be able to report content directly from here.",
+      "reportContent": "Report content"
+    }
   }
 }

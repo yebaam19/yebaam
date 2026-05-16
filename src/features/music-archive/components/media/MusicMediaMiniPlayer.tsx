@@ -1,12 +1,14 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ArrowsPointingOutIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { parseVideoEmbed } from '@/lib/utils/video-embed';
 import type { MusicMediaItem } from '../../types/music-media.types';
 import { usePlayerStore } from '../PlayerStore';
 import { useMediaPlayerStore } from './mediaPlayerStore';
 
-function frameFor(item: MusicMediaItem): React.ReactNode {
+function Frame({ item }: { item: MusicMediaItem }) {
+  const t = useTranslations('musica.media.miniPlayer');
   if (item.source === 'cf_stream' && item.cf_stream_uid) {
     return (
       <iframe
@@ -14,7 +16,7 @@ function frameFor(item: MusicMediaItem): React.ReactNode {
         allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
         allowFullScreen
         className="h-full w-full"
-        title={item.caption ?? 'Video'}
+        title={item.caption ?? t('videoTitleFallback')}
       />
     );
   }
@@ -28,19 +30,20 @@ function frameFor(item: MusicMediaItem): React.ReactNode {
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
           className="h-full w-full"
-          title={item.caption ?? 'Video'}
+          title={item.caption ?? t('videoTitleFallback')}
         />
       );
     }
   }
   return (
     <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-xs text-zinc-400">
-      Contenido no disponible
+      {t('unavailable')}
     </div>
   );
 }
 
 export function MusicMediaMiniPlayer() {
+  const t = useTranslations('musica.media.miniPlayer');
   const item = useMediaPlayerStore((s) => s.item);
   const mode = useMediaPlayerStore((s) => s.mode);
   const expand = useMediaPlayerStore((s) => s.expand);
@@ -58,19 +61,19 @@ export function MusicMediaMiniPlayer() {
   return (
     <div
       role="region"
-      aria-label="Mini reproductor de video"
+      aria-label={t('regionAria')}
       className={`fixed inset-x-0 z-40 ${bottomOffsetMobile} sm:inset-x-auto sm:right-4 ${bottomOffsetDesktop} sm:w-[360px]`}
     >
       <div className="overflow-hidden border border-zinc-200 bg-zinc-950 shadow-2xl sm:rounded-xl dark:border-zinc-800">
         <div className="flex items-center justify-between gap-2 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-200">
           <p className="min-w-0 flex-1 truncate" title={item.caption ?? undefined}>
-            {item.caption ?? <span className="text-zinc-500 italic">Sin descripción</span>}
+            {item.caption ?? <span className="text-zinc-500 italic">{t('noCaption')}</span>}
           </p>
           <div className="flex flex-none items-center gap-1">
             <button
               type="button"
               onClick={expand}
-              aria-label="Expandir a vista completa"
+              aria-label={t('expandAria')}
               className="rounded p-1 text-zinc-300 hover:bg-zinc-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               <ArrowsPointingOutIcon className="h-4 w-4" />
@@ -78,14 +81,16 @@ export function MusicMediaMiniPlayer() {
             <button
               type="button"
               onClick={close}
-              aria-label="Cerrar mini reproductor"
+              aria-label={t('closeAria')}
               className="rounded p-1 text-zinc-300 hover:bg-zinc-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               <XMarkIcon className="h-4 w-4" />
             </button>
           </div>
         </div>
-        <div className="aspect-video w-full bg-black">{frameFor(item)}</div>
+        <div className="aspect-video w-full bg-black">
+          <Frame item={item} />
+        </div>
       </div>
     </div>
   );

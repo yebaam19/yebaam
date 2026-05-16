@@ -111,7 +111,111 @@
     "tagsPlaceholder": "javascript, react, web development",
     "tagsHint": "Separate tags with commas"
   },
+  "formFields": {
+    "name": "Blog name *",
+    "namePlaceholder": "My Awesome Blog",
+    "nameCounter": "{count}/100 characters",
+    "description": "Description *",
+    "descriptionPlaceholder": "Describe what your blog is about...",
+    "descriptionCounter": "{count}/500 characters",
+    "category": "Category *",
+    "subcategory": "Subcategory (optional)",
+    "subcategoryPlaceholder": "e.g. Web Development, Vegan Recipes, etc.",
+    "website": "Website (optional)",
+    "websitePlaceholder": "https://myblog.com",
+    "tags": "Tags (optional)",
+    "tagsPlaceholder": "javascript, react, web development",
+    "tagsHint": "Separate tags with commas"
+  },
   "actions": {
     "cancel": "Cancel"
+  },
+  "header": {
+    "byPrefix": "by",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "menuAria": "Blog menu"
+  },
+  "sideMenu": {
+    "aria": "Blog menu",
+    "locked": {
+      "stars3": "Available when you reach ★3",
+      "yebaam": "Enabled by Yebaam"
+    }
+  },
+  "askmeTab": {
+    "loadError": "Could not load Askme.",
+    "composer": {
+      "title": "Ask {blogName}",
+      "hint": "Questions are only published when the blogger approves them.",
+      "placeholder": "Write a question…",
+      "anonymousLabel": "Send anonymously",
+      "submit": "Ask",
+      "submitting": "Sending…",
+      "errorDefault": "The question could not be sent.",
+      "successSent": "Question sent! It will be visible once the blogger approves it."
+    },
+    "stats": {
+      "received": "Received",
+      "pending": "Pending",
+      "answered": "Answered",
+      "responseRate": "Response rate"
+    },
+    "tabs": {
+      "pending": "Pending",
+      "awaiting": "To answer",
+      "public": "Published"
+    },
+    "publicList": {
+      "empty": "There are no public questions for {blogName} yet. Be the first!",
+      "thisBlog": "this blog"
+    },
+    "pendingList": {
+      "empty": "There are no questions pending moderation."
+    },
+    "awaitingList": {
+      "empty": "There are no approved questions awaiting reply."
+    },
+    "pendingCard": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "deleteTitle": "Delete permanently",
+      "errorDefault": "Action failed."
+    },
+    "answerCard": {
+      "placeholder": "Write your reply…",
+      "submit": "Reply",
+      "submitting": "Sending…",
+      "errorDefault": "The reply could not be saved."
+    },
+    "questionCard": {
+      "answerLabel": "Answer"
+    },
+    "questionHeader": {
+      "anonymous": "Anonymous",
+      "publicAnonymousTag": "public anonymous"
+    }
+  },
+  "editModal": {
+    "title": "Edit Blog",
+    "subtitle": "Update your blog information",
+    "avatarLabel": "Blog avatar",
+    "coverLabel": "Cover image",
+    "uploadingHint": "Uploading images to CloudFront...",
+    "uploadingButton": "Uploading images...",
+    "saving": "Saving...",
+    "save": "Save changes",
+    "errorRequired": "Name and description are required",
+    "errorUpdating": "Error updating the blog",
+    "successUpdated": "Blog updated successfully",
+    "dangerZoneTitle": "Danger zone",
+    "dangerZoneDescription": "Deleting the blog permanently removes its posts, followers, forum and associated chat. This action cannot be undone.",
+    "deleteButton": "Delete blog",
+    "confirmDeleteLabel": "Type <name></name> to confirm",
+    "deletingLabel": "Deleting…",
+    "deletePermanently": "Delete permanently",
+    "errorConfirmName": "Type the exact name of the blog to confirm",
+    "successDeleted": "Blog deleted",
+    "errorDeleting": "The blog could not be deleted"
   }
 }

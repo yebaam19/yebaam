@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface ClubDrawerProps {
@@ -12,6 +13,8 @@ interface ClubDrawerProps {
 }
 
 export function ClubDrawer({ open, title, onClose, children, width = 'md' }: ClubDrawerProps) {
+  const t = useTranslations('clubes.drawer');
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -37,7 +40,7 @@ export function ClubDrawer({ open, title, onClose, children, width = 'md' }: Clu
           <h2 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h2>
           <button
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t('close')}
             className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
           >
             <XMarkIcon className="h-5 w-5" />

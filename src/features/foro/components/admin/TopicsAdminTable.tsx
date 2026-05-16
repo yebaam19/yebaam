@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import type { Route } from 'next'
 import clsx from 'clsx'
+import { useTranslations } from 'next-intl'
 import {
   deleteTopic,
   moveTopic,
@@ -36,6 +37,7 @@ interface Props {
 type ActionKey = 'pin' | 'unpin' | 'lock' | 'unlock' | 'move' | 'delete'
 
 export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
+  const t = useTranslations('foro.admin.topics')
   const router = useRouter()
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
@@ -112,7 +114,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
       let firstError: string | null = null
       for (const id of ids) {
         const res = await runner(id)
-        if (!res.ok && !firstError) firstError = res.error ?? `Acción "${key}" falló para ${id}`
+        if (!res.ok && !firstError) firstError = res.error ?? t('bulk.actionFailed', { key, id })
       }
       setPendingAction(null)
       setSelected(new Set())
@@ -126,7 +128,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
   const handleLock = (locked: boolean) =>
     runBulk(locked ? 'lock' : 'unlock', (id) => setTopicLocked(id, locked))
   const handleDelete = () => {
-    if (!confirm(`¿Eliminar ${selected.size} tema(s) y todos sus mensajes?`)) return
+    if (!confirm(t('bulk.deleteConfirm', { count: selected.size }))) return
     runBulk('delete', (id) => deleteTopic(id))
   }
   const handleMove = () => {
@@ -156,7 +158,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           type="search"
           value={draft.q}
           onChange={(e) => setDraft({ ...draft, q: e.target.value })}
-          placeholder="Buscar por título…"
+          placeholder={t('filters.searchPlaceholder')}
           className="min-w-45 flex-1 basis-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <select
@@ -164,7 +166,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           onChange={(e) => setDraft({ ...draft, space: e.target.value, forum: '' })}
           className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
-          <option value="">Todos los espacios</option>
+          <option value="">{t('filters.allSpaces')}</option>
           {spaces.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -176,7 +178,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           onChange={(e) => setDraft({ ...draft, forum: e.target.value })}
           className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
-          <option value="">Todos los foros</option>
+          <option value="">{t('filters.allForums')}</option>
           {filteredForums.map((f) => (
             <option key={f.id} value={f.id}>
               {f.name}
@@ -187,7 +189,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           type="text"
           value={draft.author}
           onChange={(e) => setDraft({ ...draft, author: e.target.value })}
-          placeholder="Autor (username)"
+          placeholder={t('filters.authorPlaceholder')}
           className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <select
@@ -195,25 +197,25 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           onChange={(e) => setDraft({ ...draft, pinned: e.target.value })}
           className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
-          <option value="">Fijado: cualquiera</option>
-          <option value="true">Solo fijados</option>
-          <option value="false">Sin fijar</option>
+          <option value="">{t('filters.pinnedAny')}</option>
+          <option value="true">{t('filters.pinnedOnly')}</option>
+          <option value="false">{t('filters.pinnedNone')}</option>
         </select>
         <select
           value={draft.locked}
           onChange={(e) => setDraft({ ...draft, locked: e.target.value })}
           className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
-          <option value="">Estado: cualquiera</option>
-          <option value="true">Solo cerrados</option>
-          <option value="false">Solo abiertos</option>
+          <option value="">{t('filters.statusAny')}</option>
+          <option value="true">{t('filters.lockedOnly')}</option>
+          <option value="false">{t('filters.openOnly')}</option>
         </select>
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Button type="button" plain onClick={clearFilters}>
-            Limpiar
+            {t('filters.clear')}
           </Button>
           <Button type="submit" color="primary">
-            Aplicar filtros
+            {t('filters.apply')}
           </Button>
         </div>
       </form>
@@ -226,15 +228,11 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
-          <strong className="text-neutral-900 dark:text-neutral-100">{initial.total}</strong>{' '}
-          {initial.total === 1 ? 'tema' : 'temas'} encontrados
+          {t('summary.found', { count: initial.total })}
           {selected.size > 0 && (
             <>
               {' · '}
-              <strong className="text-primary-700 dark:text-primary-400">
-                {selected.size}
-              </strong>{' '}
-              seleccionado(s)
+              {t('summary.selected', { count: selected.size })}
             </>
           )}
         </div>
@@ -249,7 +247,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-primary-200 bg-primary-50/60 p-3 dark:border-primary-800 dark:bg-primary-900/20">
           <span className="text-xs font-semibold text-primary-800 dark:text-primary-300">
-            Acciones en lote ({selected.size}):
+            {t('bulk.title', { count: selected.size })}
           </span>
           <Button
             type="button"
@@ -257,7 +255,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
             disabled={pendingAction !== null}
             onClick={() => handlePin(true)}
           >
-            Fijar
+            {t('bulk.pin')}
           </Button>
           <Button
             type="button"
@@ -265,7 +263,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
             disabled={pendingAction !== null}
             onClick={() => handlePin(false)}
           >
-            Quitar fijado
+            {t('bulk.unpin')}
           </Button>
           <Button
             type="button"
@@ -273,7 +271,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
             disabled={pendingAction !== null}
             onClick={() => handleLock(true)}
           >
-            Cerrar
+            {t('bulk.lock')}
           </Button>
           <Button
             type="button"
@@ -281,7 +279,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
             disabled={pendingAction !== null}
             onClick={() => handleLock(false)}
           >
-            Reabrir
+            {t('bulk.unlock')}
           </Button>
           <div className="flex items-center gap-1">
             <select
@@ -289,7 +287,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
               onChange={(e) => setMoveTarget(e.target.value)}
               className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
             >
-              <option value="">Mover a foro…</option>
+              <option value="">{t('bulk.movePlaceholder')}</option>
               {forums.map((f) => {
                 const space = spaces.find((s) => s.id === f.spaceId)
                 return (
@@ -305,7 +303,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
               disabled={!moveTarget || pendingAction !== null}
               onClick={handleMove}
             >
-              Mover
+              {t('bulk.move')}
             </Button>
           </div>
           <Button
@@ -314,7 +312,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
             disabled={pendingAction !== null}
             onClick={handleDelete}
           >
-            Eliminar
+            {t('bulk.delete')}
           </Button>
         </div>
       )}
@@ -327,32 +325,32 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
               <th className="w-10 px-3 py-2">
                 <input
                   type="checkbox"
-                  aria-label="Seleccionar todos en página"
+                  aria-label={t('table.selectAllAria')}
                   checked={allOnPageSelected}
                   onChange={toggleAll}
                 />
               </th>
-              <th className="px-3 py-2 text-left">Tema</th>
-              <th className="px-3 py-2 text-left">Espacio / Foro</th>
-              <th className="px-3 py-2 text-center">Resp.</th>
-              <th className="px-3 py-2 text-center">Vistas</th>
-              <th className="px-3 py-2 text-right">Último mensaje</th>
+              <th className="px-3 py-2 text-left">{t('table.topic')}</th>
+              <th className="px-3 py-2 text-left">{t('table.spaceForum')}</th>
+              <th className="px-3 py-2 text-center">{t('table.replies')}</th>
+              <th className="px-3 py-2 text-center">{t('table.views')}</th>
+              <th className="px-3 py-2 text-right">{t('table.lastPost')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {topics.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-3 py-8 text-center text-sm text-neutral-500">
-                  No hay temas que coincidan con los filtros.
+                  {t('table.empty')}
                 </td>
               </tr>
             ) : (
-              topics.map((t) => {
-                const replies = Math.max(t.postCount - 1, 0)
-                const isSel = selected.has(t.id)
+              topics.map((tp) => {
+                const replies = Math.max(tp.postCount - 1, 0)
+                const isSel = selected.has(tp.id)
                 return (
                   <tr
-                    key={t.id}
+                    key={tp.id}
                     className={clsx(
                       'transition-colors',
                       isSel
@@ -363,66 +361,66 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
                     <td className="px-3 py-3 align-top">
                       <input
                         type="checkbox"
-                        aria-label={`Seleccionar ${t.title}`}
+                        aria-label={t('table.selectAria', { title: tp.title })}
                         checked={isSel}
-                        onChange={() => toggleOne(t.id)}
+                        onChange={() => toggleOne(tp.id)}
                       />
                     </td>
                     <td className="min-w-0 px-3 py-3 align-top">
                       <div className="flex items-start gap-2">
-                        <UserAvatar author={t.author} className="h-7 w-7 shrink-0" />
+                        <UserAvatar author={tp.author} className="h-7 w-7 shrink-0" />
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-1">
-                            {t.isPinned && <Badge color="amber">Fijado</Badge>}
-                            {t.isLocked && <Badge color="zinc">Cerrado</Badge>}
+                            {tp.isPinned && <Badge color="amber">{t('table.pinned')}</Badge>}
+                            {tp.isLocked && <Badge color="zinc">{t('table.locked')}</Badge>}
                             <Link
                               href={
-                                `/foro/${t.spaceSlug}/${t.forumSlug}/${t.slug}` as Route
+                                `/foro/${tp.spaceSlug}/${tp.forumSlug}/${tp.slug}` as Route
                               }
                               className="truncate text-sm font-semibold text-neutral-900 hover:text-primary-700 dark:text-neutral-100 dark:hover:text-primary-400"
                             >
-                              {t.title}
+                              {tp.title}
                             </Link>
                           </div>
                           <div className="mt-0.5 truncate text-xs text-neutral-500 dark:text-neutral-400">
-                            por{' '}
+                            {t('table.byAuthor')}{' '}
                             <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                              {t.author.displayName}
+                              {tp.author.displayName}
                             </span>{' '}
-                            · {formatRelativeDate(t.createdAt)}
+                            · {formatRelativeDate(tp.createdAt)}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-3 align-top text-xs">
                       <Link
-                        href={`/foro/${t.spaceSlug}` as Route}
+                        href={`/foro/${tp.spaceSlug}` as Route}
                         className="block truncate font-medium text-neutral-700 hover:text-primary-700 dark:text-neutral-300 dark:hover:text-primary-400"
                       >
-                        {t.spaceName}
+                        {tp.spaceName}
                       </Link>
                       <Link
-                        href={`/foro/${t.spaceSlug}/${t.forumSlug}` as Route}
+                        href={`/foro/${tp.spaceSlug}/${tp.forumSlug}` as Route}
                         className="block truncate text-neutral-500 hover:text-primary-700 dark:text-neutral-400 dark:hover:text-primary-400"
                       >
-                        {t.forumName}
+                        {tp.forumName}
                       </Link>
                     </td>
                     <td className="px-3 py-3 text-center align-top text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                       {replies}
                     </td>
                     <td className="px-3 py-3 text-center align-top text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                      {t.viewCount}
+                      {tp.viewCount}
                     </td>
                     <td className="px-3 py-3 text-right align-top text-xs text-neutral-500 dark:text-neutral-400">
-                      {t.lastPostAt ? (
+                      {tp.lastPostAt ? (
                         <>
-                          {t.lastPostAuthor && (
+                          {tp.lastPostAuthor && (
                             <div className="truncate font-medium text-neutral-700 dark:text-neutral-300">
-                              {t.lastPostAuthor.displayName}
+                              {tp.lastPostAuthor.displayName}
                             </div>
                           )}
-                          <div>{formatRelativeDate(t.lastPostAt)}</div>
+                          <div>{formatRelativeDate(tp.lastPostAt)}</div>
                         </>
                       ) : (
                         '—'
@@ -449,7 +447,7 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
       {/* tiny status bar */}
       {pendingAction && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-primary-300 bg-white px-4 py-1.5 text-xs font-medium text-primary-800 shadow-lg dark:border-primary-700 dark:bg-neutral-900 dark:text-primary-300">
-          Aplicando «{pendingAction}»…
+          {t('status.applying', { action: pendingAction })}
         </div>
       )}
       {/* avoids "totalShownPage assigned but never used" if unused later */}

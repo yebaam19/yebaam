@@ -54,5 +54,14 @@
     "editTitle": "Edit Article",
     "editDescription": "Edit your article",
     "notFound": "Article not found"
+  },
+  "comments": {
+    "writePlaceholder": "Write a comment...",
+    "sending": "Sending...",
+    "submit": "Comment",
+    "empty": "No comments yet. Be the first to comment!",
+    "like": "Like",
+    "reply": "Reply",
+    "likesCount": "{count} likes"
   }
 }

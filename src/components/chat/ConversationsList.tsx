@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import ConversationItem from './ConversationItem';
 import type { MessageMedia } from '@/features/chat/types';
 
@@ -39,6 +42,7 @@ export default function ConversationsList({
   searchQuery,
   onSelectChat,
 }: ConversationsListProps) {
+  const t = useTranslations('chat');
   if (conversations.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto">
@@ -85,7 +89,7 @@ export default function ConversationsList({
 
       <div className="mt-4 px-3">
         <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">
-          Contactos conectados
+          {t('sidebar.onlineContacts')}
         </h3>
       </div>
     </div>

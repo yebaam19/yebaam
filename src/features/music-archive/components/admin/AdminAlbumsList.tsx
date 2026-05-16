@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs';
 import { imageUrl } from '@/lib/media/urls';
 import {
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export function AdminAlbumsList({ initialAlbums }: Props) {
+  const t = useTranslations('musica.admin.albumsList');
   const { query, setQuery, rows, setRows, pending, error, refresh } =
     useAdminEntitySearch<AlbumRow>({
       initial: initialAlbums,
@@ -89,20 +91,22 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar álbum…"
+          placeholder={t('searchPlaceholder')}
           className={`${inputCls} max-w-md`}
         />
         <span className="text-xs text-zinc-500">
-          {pending ? 'Buscando…' : `${rows.length} álbumes`}
+          {pending ? t('searching') : t('countLabel', { count: rows.length })}
         </span>
         <span className="ml-auto text-xs text-zinc-500">
-          Para agregar un disco nuevo, usa la pestaña <strong>Subir disco</strong>.
+          {t.rich('uploadHint', {
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </span>
       </div>
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-700 dark:bg-amber-900/20">
           <span className="font-medium text-amber-900 dark:text-amber-100">
-            {selected.size} seleccionado{selected.size === 1 ? '' : 's'}
+            {t('selectedCount', { count: selected.size })}
           </span>
           <button
             type="button"
@@ -110,7 +114,7 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
             disabled={bulkPending}
             className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
           >
-            Marcar para intercambio
+            {t('markForTrade')}
           </button>
           <button
             type="button"
@@ -118,14 +122,14 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
             disabled={bulkPending}
             className="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
           >
-            Quitar de intercambio
+            {t('unmarkForTrade')}
           </button>
           <button
             type="button"
             onClick={() => setSelected(new Set())}
             className="ml-auto text-xs text-amber-800 hover:underline dark:text-amber-200"
           >
-            Limpiar selección
+            {t('clearSelection')}
           </button>
         </div>
       )}
@@ -146,27 +150,27 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
               <th className="px-3 py-2">
                 <input
                   type="checkbox"
-                  aria-label="Seleccionar todos"
+                  aria-label={t('selectAllAria')}
                   checked={allOnPageSelected}
                   onChange={() => selectAllOnPage(rows)}
                 />
               </th>
-              <th className="px-3 py-2">Carátula</th>
-              <th className="px-3 py-2">Título</th>
-              <th className="px-3 py-2">Artista</th>
-              <th className="px-3 py-2">Año</th>
-              <th className="px-3 py-2">País</th>
-              <th className="px-3 py-2">Formato</th>
-              <th className="px-3 py-2">Tracks</th>
-              <th className="px-3 py-2">Intercambio</th>
-              <th className="px-3 py-2 text-right">Acciones</th>
+              <th className="px-3 py-2">{t('colCover')}</th>
+              <th className="px-3 py-2">{t('colTitle')}</th>
+              <th className="px-3 py-2">{t('colArtist')}</th>
+              <th className="px-3 py-2">{t('colYear')}</th>
+              <th className="px-3 py-2">{t('colCountry')}</th>
+              <th className="px-3 py-2">{t('colFormat')}</th>
+              <th className="px-3 py-2">{t('colTracks')}</th>
+              <th className="px-3 py-2">{t('colTrade')}</th>
+              <th className="px-3 py-2 text-right">{t('colActions')}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={10} className="px-3 py-8 text-center text-xs text-zinc-500">
-                  {pending ? '…' : 'No hay álbumes.'}
+                  {pending ? '…' : t('empty')}
                 </td>
               </tr>
             ) : (
@@ -180,7 +184,7 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
                       type="checkbox"
                       checked={selected.has(a.id)}
                       onChange={() => toggleSelect(a.id)}
-                      aria-label={`Seleccionar ${a.title}`}
+                      aria-label={t('selectRowAria', { title: a.title })}
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -198,17 +202,17 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
                     {a.title}
                   </td>
                   <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">{a.artist_name}</td>
-                  <td className="px-3 py-2 tabular-nums text-zinc-500">{a.year ?? '—'}</td>
-                  <td className="px-3 py-2 text-zinc-500">{a.country ?? '—'}</td>
+                  <td className="px-3 py-2 tabular-nums text-zinc-500">{a.year ?? t('fieldEmpty')}</td>
+                  <td className="px-3 py-2 text-zinc-500">{a.country ?? t('fieldEmpty')}</td>
                   <td className="px-3 py-2 text-zinc-500">{a.format.toUpperCase()}</td>
                   <td className="px-3 py-2 tabular-nums text-zinc-500">{a.track_count}</td>
                   <td className="px-3 py-2">
                     {a.for_trade ? (
                       <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
-                        Sí
+                        {t('tradeYes')}
                       </span>
                     ) : (
-                      <span className="text-xs text-zinc-400">—</span>
+                      <span className="text-xs text-zinc-400">{t('fieldEmpty')}</span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -217,14 +221,14 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
                       onClick={() => setEditingId(a.id)}
                       className="mr-2 rounded px-2 py-1 text-xs text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
                     >
-                      Editar
+                      {t('edit')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setDeleting(a)}
                       className="rounded px-2 py-1 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                     >
-                      Eliminar
+                      {t('delete')}
                     </button>
                   </td>
                 </tr>
@@ -266,10 +270,10 @@ export function AdminAlbumsList({ initialAlbums }: Props) {
 
       <DeleteConfirmDialog
         isOpen={Boolean(deleting)}
-        title={`Eliminar álbum "${deleting?.title ?? ''}"`}
+        title={t('deleteTitle', { title: deleting?.title ?? '' })}
         description={
           deleting
-            ? `Las ${deleting.track_count} canciones, sus archivos en R2 y todas las imágenes asociadas serán eliminados permanentemente.`
+            ? t('deleteDescription', { count: deleting.track_count })
             : ''
         }
         onClose={() => setDeleting(null)}

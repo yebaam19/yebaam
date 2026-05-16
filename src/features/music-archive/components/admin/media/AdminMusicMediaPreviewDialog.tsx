@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations, useLocale } from 'next-intl';
 import { imageUrl } from '@/lib/media/urls';
 import { parseVideoEmbed } from '@/lib/utils/video-embed';
 import type { MusicMediaItem } from '../../../types/music-media.types';
@@ -12,7 +13,8 @@ interface Props {
   deleting?: boolean;
 }
 
-function playerFor(item: MusicMediaItem): React.ReactNode {
+function Player({ item }: { item: MusicMediaItem }) {
+  const t = useTranslations('musica.admin.mediaPreviewDialog');
   if (item.source === 'cf_image' && item.cf_image_id) {
     return (
       <img
@@ -51,7 +53,7 @@ function playerFor(item: MusicMediaItem): React.ReactNode {
   }
   return (
     <p className="p-8 text-center text-sm text-zinc-500">
-      No se puede previsualizar este item.
+      {t('cannotPreview')}
     </p>
   );
 }
@@ -63,12 +65,14 @@ export function AdminMusicMediaPreviewDialog({
   onDelete,
   deleting,
 }: Props) {
+  const t = useTranslations('musica.admin.mediaPreviewDialog');
+  const locale = useLocale();
   const sourceLabel =
     item.source === 'cf_image'
-      ? 'CF Images'
+      ? t('sourceCfImages')
       : item.source === 'cf_stream'
-        ? 'CF Stream'
-        : (item.embed_provider ?? 'embed');
+        ? t('sourceCfStream')
+        : (item.embed_provider ?? t('sourceEmbed'));
   return (
     <div
       role="dialog"
@@ -82,45 +86,45 @@ export function AdminMusicMediaPreviewDialog({
       >
         <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            {item.caption ?? <span className="italic text-zinc-400">Sin descripción</span>}
+            {item.caption ?? <span className="italic text-zinc-400">{t('noCaption')}</span>}
           </h3>
           <button
             type="button"
             onClick={onClose}
             className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
-            Cerrar
+            {t('close')}
           </button>
         </header>
-        <div className="bg-zinc-950">{playerFor(item)}</div>
+        <div className="bg-zinc-950"><Player item={item} /></div>
         <div className="space-y-2 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-400">
           <p>
             <span className="font-medium text-zinc-800 dark:text-zinc-200">
-              {item.kind === 'photo' ? 'Foto' : 'Video'}
+              {item.kind === 'photo' ? t('kindPhoto') : t('kindVideo')}
             </span>
             {' · '}
             {sourceLabel}
             {' · '}
-            {new Date(item.created_at).toLocaleString()}
+            {new Date(item.created_at).toLocaleString(locale)}
             {typeof item.duration_seconds === 'number' && item.duration_seconds > 0 && (
-              <> · {Math.round(item.duration_seconds)}s</>
+              <> · {t('durationSeconds', { seconds: Math.round(item.duration_seconds) })}</>
             )}
           </p>
           {item.artists.length > 0 && (
             <p>
-              <span className="text-zinc-500">Artistas:</span>{' '}
+              <span className="text-zinc-500">{t('artistsLabel')}</span>{' '}
               {item.artists.map((a) => a.name).join(', ')}
             </p>
           )}
           {item.albums.length > 0 && (
             <p>
-              <span className="text-zinc-500">Álbum:</span>{' '}
+              <span className="text-zinc-500">{t('albumsLabel')}</span>{' '}
               {item.albums.map((a) => a.title).join(', ')}
             </p>
           )}
           {item.clubs.length > 0 && (
             <p>
-              <span className="text-zinc-500">Clubes:</span>{' '}
+              <span className="text-zinc-500">{t('clubsLabel')}</span>{' '}
               {item.clubs.map((c) => c.name).join(', ')}
             </p>
           )}
@@ -132,14 +136,14 @@ export function AdminMusicMediaPreviewDialog({
             disabled={deleting}
             className="rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50 dark:border-rose-700 dark:bg-rose-900/20 dark:text-rose-200"
           >
-            {deleting ? 'Borrando…' : 'Borrar'}
+            {deleting ? t('deleting') : t('delete')}
           </button>
           <button
             type="button"
             onClick={onEdit}
             className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
           >
-            Editar
+            {t('edit')}
           </button>
         </footer>
       </div>

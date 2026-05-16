@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { GlobeAltIcon, TagIcon, PlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 
 interface InterestsTabProps {
@@ -13,6 +14,7 @@ export function InterestsTab({
   formData,
   onFormChange,
 }: InterestsTabProps) {
+  const t = useTranslations('profile.editProfile.interestsTab');
   const [newLanguage, setNewLanguage] = useState('');
   const [newInterest, setNewInterest] = useState('');
 
@@ -52,7 +54,7 @@ export function InterestsTab({
       <div>
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
           <GlobeAltIcon className="w-5 h-5 text-green-600" />
-          Idiomas
+          {t('languagesHeading')}
         </h3>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -62,11 +64,12 @@ export function InterestsTab({
               onChange={(e) => setNewLanguage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
               className="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-              placeholder="Agregar idioma..."
+              placeholder={t('addLanguagePlaceholder')}
             />
             <button
               type="button"
               onClick={addLanguage}
+              aria-label={t('addLanguageAria')}
               className="p-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
             >
               <PlusIcon className="w-5 h-5" />
@@ -83,6 +86,7 @@ export function InterestsTab({
                   <button
                     type="button"
                     onClick={() => removeLanguage(language)}
+                    aria-label={t('removeLanguageAria')}
                     className="hover:text-green-900 dark:hover:text-green-100"
                   >
                     <XMarkIcon className="w-4 h-4" />
@@ -98,7 +102,7 @@ export function InterestsTab({
       <div className="border-t border-neutral-200 dark:border-neutral-800 pt-6">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
           <TagIcon className="w-5 h-5 text-purple-600" />
-          Intereses y hobbies
+          {t('interestsHeading')}
         </h3>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -108,11 +112,12 @@ export function InterestsTab({
               onChange={(e) => setNewInterest(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
               className="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-              placeholder="Agregar interés..."
+              placeholder={t('addInterestPlaceholder')}
             />
             <button
               type="button"
               onClick={addInterest}
+              aria-label={t('addInterestAria')}
               className="p-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
             >
               <PlusIcon className="w-5 h-5" />
@@ -129,6 +134,7 @@ export function InterestsTab({
                   <button
                     type="button"
                     onClick={() => removeInterest(interest)}
+                    aria-label={t('removeInterestAria')}
                     className="hover:text-purple-900 dark:hover:text-purple-100"
                   >
                     <XMarkIcon className="w-4 h-4" />

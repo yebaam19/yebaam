@@ -18,6 +18,7 @@ import {
   SignalIcon,
 } from '@/components/icons/heroicons-shim';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
 import { useLiveStream } from '@/features/live-stream/hooks/useLiveStream';
 import Avatar from '@/ui/Avatar';
@@ -32,13 +33,19 @@ interface LiveVideoModalProps {
 type LiveStatus = 'preparing' | 'countdown' | 'live' | 'ending';
 type Privacy = 'public' | 'friends' | 'private';
 
-const VISIBILITY_OPTIONS = [
-  { value: 'public' as Privacy, label: 'Público', icon: GlobeAltIcon, description: 'Cualquiera puede ver' },
-  { value: 'friends' as Privacy, label: 'Amigos', icon: UserGroupIcon, description: 'Solo tus amigos' },
-  { value: 'private' as Privacy, label: 'Solo yo', icon: LockClosedIcon, description: 'Solo tú' },
+const VISIBILITY_OPTIONS: Array<{
+  value: Privacy;
+  labelKey: 'public' | 'friends' | 'private';
+  icon: typeof GlobeAltIcon;
+  descriptionKey: 'publicDescription' | 'friendsDescription' | 'privateDescription';
+}> = [
+  { value: 'public', labelKey: 'public', icon: GlobeAltIcon, descriptionKey: 'publicDescription' },
+  { value: 'friends', labelKey: 'friends', icon: UserGroupIcon, descriptionKey: 'friendsDescription' },
+  { value: 'private', labelKey: 'private', icon: LockClosedIcon, descriptionKey: 'privateDescription' },
 ];
 
 export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps) {
+  const t = useTranslations('feed');
   const { user } = useAuth();
   const { startStream, endStream, isStarting, isEnding, currentStream } = useLiveStream();
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('preparing');
@@ -80,7 +87,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      toast.error('No se pudo acceder a la cámara. Verifica los permisos.');
+      toast.error(t('liveVideo.cameraError'));
     }
   };
 
@@ -98,7 +105,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
     console.log(' [handleStartLive] Iniciando proceso de live stream', { title, description, privacy });
     
     if (!title.trim()) {
-      toast.error('Agrega un título para tu video en vivo');
+      toast.error(t('liveVideo.titleRequired'));
       return;
     }
 
@@ -143,8 +150,8 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
         setDuration(0);
 
         // Mostrar información del stream
-        toast.success('¡Estás en vivo! ', {
-          description: `URL de reproducción lista. Stream ID: ${stream.id}`,
+        toast.success(t('liveVideo.liveSuccess'), {
+          description: t('liveVideo.liveSuccessDescription', { id: stream.id }),
           duration: 5000,
         });
 
@@ -159,12 +166,12 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
         }, 1000);
       } else {
         console.error('[startLiveStreamBackend] No se recibió stream del backend');
-        toast.error('Error al iniciar la transmisión');
+        toast.error(t('liveVideo.startError'));
         setLiveStatus('preparing');
       }
     } catch (error) {
       console.error(' [startLiveStreamBackend] Error:', error);
-      toast.error('Error al conectar con el servidor');
+      toast.error(t('liveVideo.connectError'));
       setLiveStatus('preparing');
     }
   };
@@ -185,7 +192,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
 
     if (success) {
       setTimeout(() => {
-        toast.success(`Video en vivo finalizado. Duración: ${formatDuration(duration)}`);
+        toast.success(t('liveVideo.endedToast', { duration: formatDuration(duration) }));
         // Limpiar y cerrar sin volver a preguntar
         stopCamera();
         setLiveStatus('preparing');
@@ -204,7 +211,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
 
   const handleClose = () => {
     if (isRecording) {
-      const confirm = window.confirm('¿Finalizar transmisión en vivo?');
+      const confirm = window.confirm(t('liveVideo.endConfirm'));
       if (!confirm) return;
       handleEndLive();
     } else {
@@ -257,18 +264,18 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
               <div className="flex items-center justify-between border-b border-neutral-800 px-6 py-4">
                 <DialogTitle className="flex items-center gap-3 text-xl font-bold text-white">
                   <VideoCameraIcon className="h-7 w-7 text-red-500" />
-                  {liveStatus === 'preparing' && 'Preparar transmisión en vivo'}
-                  {liveStatus === 'countdown' && 'Iniciando...'}
+                  {liveStatus === 'preparing' && t('liveVideo.titlePreparing')}
+                  {liveStatus === 'countdown' && t('liveVideo.titleCountdown')}
                   {liveStatus === 'live' && (
                     <span className="flex items-center gap-2">
                       <span className="relative flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                       </span>
-                      EN VIVO
+                      {t('liveVideo.titleLive')}
                     </span>
                   )}
-                  {liveStatus === 'ending' && 'Finalizando...'}
+                  {liveStatus === 'ending' && t('liveVideo.titleEnding')}
                 </DialogTitle>
                 <button
                   onClick={handleClose}
@@ -296,7 +303,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                       <div className="text-9xl font-bold text-white animate-pulse">
                         {countdown}
                       </div>
-                      <p className="mt-4 text-xl text-white">Iniciando transmisión...</p>
+                      <p className="mt-4 text-xl text-white">{t('liveVideo.startingBroadcast')}</p>
                     </div>
                   </div>
                 )}
@@ -310,7 +317,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                         </span>
-                        <span className="text-sm font-bold text-white">EN VIVO</span>
+                        <span className="text-sm font-bold text-white">{t('liveVideo.titleLive')}</span>
                       </div>
                       
                       <div className="bg-black/70 px-3 py-1.5 rounded-full">
@@ -324,7 +331,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                       <div className="flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-full">
                         <SignalIcon className="h-4 w-4 text-green-400" />
                         <span className="text-sm font-semibold text-white">
-                          {viewerCount} {viewerCount === 1 ? 'espectador' : 'espectadores'}
+                          {viewerCount} {viewerCount === 1 ? t('liveVideo.viewerSingular') : t('liveVideo.viewerPlural')}
                         </span>
                       </div>
                     </div>
@@ -336,8 +343,8 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                     <div className="text-center">
                       <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
-                      <p className="text-2xl font-bold text-white">Transmisión finalizada</p>
-                      <p className="mt-2 text-neutral-300">Guardando video...</p>
+                      <p className="text-2xl font-bold text-white">{t('liveVideo.broadcastFinished')}</p>
+                      <p className="mt-2 text-neutral-300">{t('liveVideo.savingVideo')}</p>
                     </div>
                   </div>
                 )}
@@ -361,7 +368,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                       >
                         {VISIBILITY_OPTIONS.map(option => (
                           <option key={option.value} value={option.value}>
-                            {option.label}
+                            {t(`visibilityOptions.${option.labelKey}`)}
                           </option>
                         ))}
                       </select>
@@ -372,7 +379,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Título de tu transmisión..."
+                    placeholder={t('liveVideo.titlePlaceholder')}
                     maxLength={100}
                     className="w-full rounded-lg border-0 bg-neutral-800 px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
@@ -381,7 +388,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe tu transmisión en vivo (opcional)..."
+                    placeholder={t('liveVideo.descriptionPlaceholder')}
                     maxLength={200}
                     rows={3}
                     className="w-full resize-none rounded-lg border-0 bg-neutral-800 px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -394,13 +401,13 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-neutral-800 rounded-lg p-4">
                       <VideoCameraIcon className="h-6 w-6 text-red-500 mb-2" />
-                      <p className="text-sm font-semibold text-white">Calidad HD</p>
-                      <p className="text-xs text-neutral-400">1280x720 píxeles</p>
+                      <p className="text-sm font-semibold text-white">{t('liveVideo.hdQuality')}</p>
+                      <p className="text-xs text-neutral-400">{t('liveVideo.hdQualityDetail')}</p>
                     </div>
                     <div className="bg-neutral-800 rounded-lg p-4">
                       <SignalIcon className="h-6 w-6 text-green-500 mb-2" />
-                      <p className="text-sm font-semibold text-white">Conexión estable</p>
-                      <p className="text-xs text-neutral-400">Listo para transmitir</p>
+                      <p className="text-sm font-semibold text-white">{t('liveVideo.stableConnection')}</p>
+                      <p className="text-xs text-neutral-400">{t('liveVideo.stableConnectionDetail')}</p>
                     </div>
                   </div>
 
@@ -410,12 +417,12 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                     disabled={!title.trim() || isStarting}
                     className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
                   >
-                    {isStarting ? 'Iniciando...' : 'Iniciar transmisión en vivo'}
+                    {isStarting ? t('liveVideo.starting') : t('liveVideo.startButton')}
                   </button>
 
                   {/* Note */}
                   <p className="text-xs text-center text-neutral-500">
-                     Tu transmisión se guardará automáticamente cuando finalices
+                     {t('liveVideo.autoSaveNote')}
                   </p>
                 </div>
               )}
@@ -425,10 +432,10 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                   {/* Stream Info */}
                   {currentStream && (
                     <div className="bg-neutral-800 rounded-lg p-4 space-y-2">
-                      <h3 className="font-semibold text-white text-sm">Información del Stream</h3>
+                      <h3 className="font-semibold text-white text-sm">{t('liveVideo.streamInfo')}</h3>
                       <div className="space-y-1 text-xs text-neutral-400">
-                        <p>Stream ID: <span className="text-neutral-300 font-mono">{currentStream.id}</span></p>
-                        <p>URL de reproducción disponible</p>
+                        <p>{t('liveVideo.streamIdLabel')} <span className="text-neutral-300 font-mono">{currentStream.id}</span></p>
+                        <p>{t('liveVideo.playbackUrlAvailable')}</p>
                       </div>
                     </div>
                   )}
@@ -438,10 +445,10 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
                     disabled={isEnding}
                     className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                   >
-                    {isEnding ? 'Finalizando...' : 'Finalizar transmisión en vivo'}
+                    {isEnding ? t('liveVideo.ending') : t('liveVideo.endButton')}
                   </button>
                   <p className="mt-3 text-xs text-center text-neutral-400">
-                    {viewerCount} {viewerCount === 1 ? 'persona está' : 'personas están'} viendo tu transmisión
+                    {viewerCount} {viewerCount === 1 ? t('liveVideo.watchingSingular') : t('liveVideo.watchingPlural')} {t('liveVideo.watchingSuffix')}
                   </p>
                 </div>
               )}

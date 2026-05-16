@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { addFamilyParents } from '../actions/families.actions';
 import type {
   FamilyGender,
@@ -36,6 +37,7 @@ const EMPTY_PARENT: ParentFormState = {
 
 export function AddParentsDialog({ familyId, child, existingPersons, onClose }: Props) {
   const router = useRouter();
+  const t = useTranslations('familias.dialogs.addParents');
   const [father, setFather] = useState<ParentFormState>({ ...EMPTY_PARENT });
   const [mother, setMother] = useState<ParentFormState>({ ...EMPTY_PARENT });
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
     const fatherIsActive = father.enabled && (father.useExisting ? father.existingId : father.fullName.trim());
     const motherIsActive = mother.enabled && (mother.useExisting ? mother.existingId : mother.fullName.trim());
     if (!fatherIsActive && !motherIsActive) {
-      setError('Activa y completa al menos uno (padre o madre).');
+      setError(t('errors.atLeastOne'));
       return;
     }
 
@@ -99,22 +101,22 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl rounded-xl bg-white p-5 shadow-xl dark:bg-zinc-900">
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Agregar padres a {child.full_name}
+          {t('title', { name: child.full_name })}
         </h3>
         <p className="mt-1 text-xs text-zinc-500">
-          Crea nuevas personas o selecciona alguien que ya está en el árbol. Marca al menos un lado.
+          {t('subtitle')}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
             <ParentSubForm
-              title="Padre"
+              title={t('father')}
               state={father}
               setState={setFather}
               existingPersons={eligible}
             />
             <ParentSubForm
-              title="Madre"
+              title={t('mother')}
               state={mother}
               setState={setMother}
               existingPersons={eligible}
@@ -134,14 +136,14 @@ export function AddParentsDialog({ familyId, child, existingPersons, onClose }: 
               disabled={pending}
               className="inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={pending}
               className="inline-flex items-center rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
             >
-              {pending ? 'Guardando…' : 'Agregar padres'}
+              {pending ? t('submitting') : t('submit')}
             </button>
           </div>
         </form>
@@ -161,6 +163,7 @@ function ParentSubForm({
   setState: (s: ParentFormState) => void;
   existingPersons: FamilyPersonRow[];
 }) {
+  const t = useTranslations('familias.dialogs.addParents');
   return (
     <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
       <div className="flex items-center justify-between">
@@ -172,7 +175,7 @@ function ParentSubForm({
             onChange={(e) => setState({ ...state, enabled: e.target.checked })}
             className="h-3.5 w-3.5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
           />
-          Incluir
+          {t('include')}
         </label>
       </div>
 
@@ -185,7 +188,7 @@ function ParentSubForm({
               onChange={(e) => setState({ ...state, useExisting: e.target.checked })}
               className="h-3.5 w-3.5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
             />
-            Usar persona ya en el árbol
+            {t('useExisting')}
           </label>
 
           {state.useExisting ? (
@@ -194,7 +197,7 @@ function ParentSubForm({
               onChange={(e) => setState({ ...state, existingId: e.target.value })}
               className="w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             >
-              <option value="">Selecciona…</option>
+              <option value="">{t('selectPlaceholder')}</option>
               {existingPersons.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.full_name}
@@ -207,7 +210,7 @@ function ParentSubForm({
                 type="text"
                 value={state.fullName}
                 onChange={(e) => setState({ ...state, fullName: e.target.value })}
-                placeholder="Nombre completo"
+                placeholder={t('fullNamePlaceholder')}
                 maxLength={160}
                 className="w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
               />
@@ -217,14 +220,14 @@ function ParentSubForm({
                   value={state.birthDate}
                   onChange={(e) => setState({ ...state, birthDate: e.target.value })}
                   className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-xs text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                  title="Nacimiento"
+                  title={t('birthTitle')}
                 />
                 <input
                   type="date"
                   value={state.deathDate}
                   onChange={(e) => setState({ ...state, deathDate: e.target.value })}
                   className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-xs text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                  title="Defunción"
+                  title={t('deathTitle')}
                 />
               </div>
             </>

@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useState, Fragment } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   UsersIcon,
   MagnifyingGlassIcon,
@@ -22,28 +25,19 @@ type FilterOption = {
   description: string;
 };
 
-const filterOptions: FilterOption[] = [
-  {
-    id: 'recent',
-    label: 'Recientes',
-    description: 'Ordenar por más recientes',
-  },
-  {
-    id: 'alphabetical',
-    label: 'Alfabético',
-    description: 'Ordenar de A a Z',
-  },
-  {
-    id: 'popular',
-    label: 'Más populares',
-    description: 'Ordenar por popularidad',
-  },
-];
+const FILTER_OPTION_IDS: FollowerSortBy[] = ['recent', 'alphabetical', 'popular'];
 
 export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) => {
+  const t = useTranslations('pages.detailCommunity');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<CommunityTabType>('all');
   const [sortBy, setSortBy] = useState<FollowerSortBy>('recent');
+
+  const filterOptions: FilterOption[] = FILTER_OPTION_IDS.map((id) => ({
+    id,
+    label: t(`sort.${id}.label`),
+    description: t(`sort.${id}.description`),
+  }));
 
   const { data, isLoading } = usePageFollowers(pageId, 20, sortBy);
 
@@ -106,7 +100,7 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Comunidad
+          {t('heading')}
         </h2>
 
         <div className="flex flex-col items-center justify-center py-16 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
@@ -114,10 +108,10 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
             <UsersIcon className="w-8 h-8 text-gray-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Sin seguidores aún
+            {t('emptyTitle')}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md">
-            Esta página aún no tiene seguidores. Sé el primero en seguirla para formar parte de su comunidad.
+            {t('emptyDescription')}
           </p>
         </div>
       </div>
@@ -129,10 +123,10 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Comunidad
+          {t('heading')}
         </h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          {totalMembers} {totalMembers === 1 ? 'seguidor' : 'seguidores'}
+          {t('followerCount', { count: totalMembers })}
         </p>
       </div>
 
@@ -154,7 +148,7 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar miembros..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -166,7 +160,7 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
           <Menu.Button className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
             <FunnelIcon className="w-5 h-5" />
             <span className="font-medium">
-              {filterOptions.find((f) => f.id === sortBy)?.label || 'Ordenar'}
+              {filterOptions.find((f) => f.id === sortBy)?.label || t('sortFallback')}
             </span>
             <ChevronDownIcon className="w-4 h-4" />
           </Menu.Button>
@@ -225,7 +219,7 @@ export const PageDetailCommunity: FC<PageDetailCommunityProps> = ({ pageId }) =>
       {filteredMembers.length === 0 && searchQuery && (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">
-            No se encontraron miembros con "{searchQuery}"
+            {t('noSearchResults', { query: searchQuery })}
           </p>
         </div>
       )}

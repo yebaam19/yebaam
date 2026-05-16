@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
 import { AdminAlbumUploadForm } from './AdminAlbumUploadForm';
 import { MusicImporterPanel } from './MusicImporterPanel';
@@ -161,6 +162,7 @@ export function AdminMusicTabs({
   stats,
   statsError,
 }: Props) {
+  const t = useTranslations('musica.admin.tabs');
   const clubOptions = clubs.map((c) => ({ id: c.id, name: c.name }));
   const genreOptions = genres.map((g) => ({ id: g.id, name: g.name }));
   const tabListClass =
@@ -173,25 +175,25 @@ export function AdminMusicTabs({
   return (
     <Tabs>
       <TabsList className={tabListClass}>
-        <TabsTrigger className={triggerClass}>Subir disco</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Pegar enlace</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Discos</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Artistas</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Sellos</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('uploadRecord')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('pasteLink')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('records')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('artists')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('labels')}</TabsTrigger>
         <TabsTrigger className={triggerClass}>
-          Solicitudes
+          {t('requests')}
           {pendingRequests.length > 0 && (
             <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1.5 text-[10px] font-bold text-white">
               {pendingRequests.length}
             </span>
           )}
         </TabsTrigger>
-        <TabsTrigger className={triggerClass}>Miembros</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Clubes</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Moderar</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Fotos y videos</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Géneros</TabsTrigger>
-        <TabsTrigger className={triggerClass}>Estadísticas</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('members')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('clubs')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('moderate')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('photosVideos')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('genres')}</TabsTrigger>
+        <TabsTrigger className={triggerClass}>{t('stats')}</TabsTrigger>
       </TabsList>
       <TabsContent>
         <AdminAlbumUploadForm />

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { Route } from 'next'
 import clsx from 'clsx'
+import { useLocale, useTranslations } from 'next-intl'
 import Avatar from '@/ui/Avatar'
 import { Badge } from '@/ui/Badge'
 import { Button } from '@/ui/Button'
@@ -30,20 +31,20 @@ interface Props {
   topics: PublicChatTopic[]
 }
 
-function senderLabel(sender: PublicMessageSender | null | undefined) {
-  if (!sender) return 'Usuario'
-  return sender.display_name || sender.username || 'Usuario'
+function senderLabel(sender: PublicMessageSender | null | undefined, fallback: string) {
+  if (!sender) return fallback
+  return sender.display_name || sender.username || fallback
 }
 
-function senderInitials(sender: PublicMessageSender | null | undefined) {
-  const label = senderLabel(sender)
+function senderInitials(sender: PublicMessageSender | null | undefined, fallback: string) {
+  const label = senderLabel(sender, fallback)
   const parts = label.split(/\s+/).filter(Boolean)
   return (parts[0]?.[0] ?? 'U').concat(parts[1]?.[0] ?? '').toUpperCase().slice(0, 2)
 }
 
-function formatFullDate(iso: string) {
+function formatFullDate(iso: string, locale: string) {
   const d = new Date(iso)
-  return d.toLocaleString([], {
+  return d.toLocaleString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -53,6 +54,8 @@ function formatFullDate(iso: string) {
 }
 
 export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
+  const t = useTranslations('admin.chatPublicoTable')
+  const locale = useLocale()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
@@ -91,7 +94,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
       const res = await runner(id)
       setPendingId(null)
       if (!res.ok) {
-        setError(res.error ?? 'No se pudo aplicar la acción.')
+        setError(res.error ?? t('errorFallback'))
       }
       router.refresh()
     })
@@ -117,7 +120,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
           type="search"
           value={draft.q}
           onChange={(e) => setDraft({ ...draft, q: e.target.value })}
-          placeholder="Buscar en el contenido…"
+          placeholder={t('searchPlaceholder')}
           className="min-w-45 flex-1 basis-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <select
@@ -125,11 +128,11 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
           onChange={(e) => setDraft({ ...draft, topic: e.target.value })}
           className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
-          <option value="">Todos los canales</option>
-          {topicOptions.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-              {t.is_archived ? ' (archivado)' : ''}
+          <option value="">{t('filterAllChannels')}</option>
+          {topicOptions.map((topic) => (
+            <option key={topic.id} value={topic.id}>
+              {topic.name}
+              {topic.is_archived ? t('filterArchivedSuffix') : ''}
             </option>
           ))}
         </select>
@@ -138,16 +141,16 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
           onChange={(e) => setDraft({ ...draft, deleted: e.target.value })}
           className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
         >
-          <option value="">Cualquier estado</option>
-          <option value="false">Solo visibles</option>
-          <option value="true">Solo eliminados</option>
+          <option value="">{t('filterAnyStatus')}</option>
+          <option value="false">{t('filterOnlyVisible')}</option>
+          <option value="true">{t('filterOnlyDeleted')}</option>
         </select>
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Button type="button" plain onClick={clearFilters}>
-            Limpiar
+            {t('clear')}
           </Button>
           <Button type="submit" color="primary">
-            Aplicar filtros
+            {t('applyFilters')}
           </Button>
         </div>
       </form>
@@ -161,7 +164,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
           <strong className="text-neutral-900 dark:text-neutral-100">{initial.total}</strong>{' '}
-          {initial.total === 1 ? 'mensaje' : 'mensajes'} encontrados
+          {t('countMessages', { count: initial.total })} {t('messagesFound')}
         </div>
         <ForoPagination
           page={initial.page}
@@ -176,23 +179,24 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
           <table className="w-full min-w-180 divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
             <thead className="bg-neutral-50 text-[11px] font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/60 dark:text-neutral-400">
               <tr>
-                <th className="px-3 py-2 text-left">Autor</th>
-                <th className="px-3 py-2 text-left">Mensaje</th>
-                <th className="px-3 py-2 text-left">Canal</th>
-                <th className="px-3 py-2 text-right">Enviado</th>
-                <th className="px-3 py-2 text-right">Acciones</th>
+                <th className="px-3 py-2 text-left">{t('columnAuthor')}</th>
+                <th className="px-3 py-2 text-left">{t('columnMessage')}</th>
+                <th className="px-3 py-2 text-left">{t('columnChannel')}</th>
+                <th className="px-3 py-2 text-right">{t('columnSent')}</th>
+                <th className="px-3 py-2 text-right">{t('columnActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {initial.messages.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-3 py-8 text-center text-sm text-neutral-500">
-                    No hay mensajes que coincidan con los filtros.
+                    {t('emptyResults')}
                   </td>
                 </tr>
               ) : (
                 initial.messages.map((m) => {
-                  const label = senderLabel(m.sender)
+                  const userFallback = t('userFallback')
+                  const label = senderLabel(m.sender, userFallback)
                   const topicName = initial.topicNameById[m.topic_id] ?? '—'
                   const isPending = pendingId === m.id
                   return (
@@ -210,7 +214,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
                           <Avatar
                             src={m.sender?.avatar_url ?? undefined}
                             alt={label}
-                            initials={senderInitials(m.sender)}
+                            initials={senderInitials(m.sender, userFallback)}
                             className="h-8 w-8 shrink-0"
                           />
                           <div className="min-w-0">
@@ -229,7 +233,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
                         <div className="flex flex-col gap-1">
                           {m.is_deleted && (
                             <Badge color="red" className="w-fit">
-                              Eliminado
+                              {t('deletedBadge')}
                             </Badge>
                           )}
                           <p className="text-sm whitespace-pre-wrap break-words text-neutral-800 dark:text-neutral-200">
@@ -241,7 +245,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
                         {topicName}
                       </td>
                       <td className="px-3 py-3 text-right align-top text-xs text-neutral-500 dark:text-neutral-400">
-                        {formatFullDate(m.created_at)}
+                        {formatFullDate(m.created_at, locale)}
                       </td>
                       <td className="px-3 py-3 text-right align-top">
                         {m.is_deleted ? (
@@ -251,7 +255,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
                             disabled={isPending}
                             onClick={() => run(m.id, adminRestoreMessage)}
                           >
-                            {isPending ? 'Restaurando…' : 'Restaurar'}
+                            {isPending ? t('restoring') : t('restore')}
                           </Button>
                         ) : (
                           <Button
@@ -259,11 +263,11 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
                             color="red"
                             disabled={isPending}
                             onClick={() => {
-                              if (!confirm('¿Eliminar este mensaje?')) return
+                              if (!confirm(t('confirmDelete'))) return
                               run(m.id, adminSoftDeleteMessage)
                             }}
                           >
-                            {isPending ? 'Eliminando…' : 'Eliminar'}
+                            {isPending ? t('deleting') : t('delete')}
                           </Button>
                         )}
                       </td>
@@ -286,7 +290,7 @@ export default function ChatPublicoMessagesTable({ initial, topics }: Props) {
       </div>
 
       <p className="text-xs text-neutral-500 dark:text-neutral-400">
-        Ver el chat en vivo:{' '}
+        {t('viewLiveChat')}{' '}
         <Link
           href={'/feed/chat-publico' as Route}
           className="text-primary-700 hover:underline dark:text-primary-400"

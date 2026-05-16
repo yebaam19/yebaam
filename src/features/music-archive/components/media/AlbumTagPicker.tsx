@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { searchAlbumsForTag } from '../../actions/music-media.actions';
 
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function AlbumTagPicker({ value, onChange, max = 4 }: Props) {
+  const t = useTranslations('musica.tags.albums');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AlbumRef[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ export function AlbumTagPicker({ value, onChange, max = 4 }: Props) {
   return (
     <div>
       <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-        Álbumes asociados
+        {t('label')}
       </label>
       {value.length > 0 && (
         <ul className="mb-2 flex flex-wrap gap-1.5">
@@ -59,6 +61,7 @@ export function AlbumTagPicker({ value, onChange, max = 4 }: Props) {
               <button
                 type="button"
                 onClick={() => onChange(value.filter((x) => x.id !== a.id))}
+                aria-label={t('removeAria')}
                 className="inline-flex items-center gap-1 rounded-full border border-zinc-300 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
               >
                 {a.title} <span aria-hidden>✕</span>
@@ -72,10 +75,10 @@ export function AlbumTagPicker({ value, onChange, max = 4 }: Props) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar álbum por título…"
+            placeholder={t('searchPlaceholder')}
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
           />
-          {loading && <p className="mt-1 text-xs text-zinc-500">Buscando…</p>}
+          {loading && <p className="mt-1 text-xs text-zinc-500">{t('searching')}</p>}
           {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
           {results.length > 0 && (
             <ul className="mt-1 max-h-48 overflow-y-auto rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-800">

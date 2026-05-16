@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { usePagesUIStore } from '../store/pagesUI.store';
 import type { PageCategory } from '../types/page.types';
@@ -11,11 +14,13 @@ interface PagesSearchBarProps {
 
 export const PagesSearchBar: FC<PagesSearchBarProps> = ({
   onSearch,
-  placeholder = 'Buscar páginas...',
+  placeholder,
 }) => {
+  const t = useTranslations('pages.searchBar');
   const { searchQuery, setSearchQuery, filters, setFilters, clearFilters } = usePagesUIStore();
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const [showFilters, setShowFilters] = useState(false);
+  const effectivePlaceholder = placeholder ?? t('defaultPlaceholder');
 
   // Debounce del search
   useEffect(() => {
@@ -52,14 +57,14 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
             }
           }}
           className="block w-full pl-10 pr-20 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
         />
         <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-3">
           {(localQuery || hasActiveFilters) && (
             <button
               onClick={handleClearFilters}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-              title="Limpiar búsqueda"
+              title={t('clearSearch')}
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -69,7 +74,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
             className={`text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ${
               hasActiveFilters ? 'text-blue-600 dark:text-blue-400' : ''
             }`}
-            title="Filtros"
+            title={t('filters')}
           >
             <FunnelIcon className="h-5 w-5" />
           </button>
@@ -82,7 +87,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
           {/* Category Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Categoría
+              {t('categoryLabel')}
             </label>
             <select
               value={filters.category || ''}
@@ -94,7 +99,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
               }
               className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Todas las categorías</option>
+              <option value="">{t('allCategories')}</option>
               {Object.entries(PAGE_CATEGORY_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -118,7 +123,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Solo páginas verificadas
+                {t('verifiedOnly')}
               </span>
             </label>
           </div>
@@ -126,7 +131,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
           {/* Location Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Ubicación
+              {t('locationLabel')}
             </label>
             <input
               type="text"
@@ -137,7 +142,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
                   location: e.target.value || undefined,
                 })
               }
-              placeholder="Ciudad o país..."
+              placeholder={t('locationPlaceholder')}
               className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -148,14 +153,14 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
               onClick={() => setShowFilters(false)}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
-              Aplicar filtros
+              {t('applyFilters')}
             </button>
             {hasActiveFilters && (
               <button
                 onClick={handleClearFilters}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
-                Limpiar
+                {t('clear')}
               </button>
             )}
           </div>
@@ -178,7 +183,7 @@ export const PagesSearchBar: FC<PagesSearchBarProps> = ({
           )}
           {filters.verified && (
             <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-full">
-              Verificadas
+              {t('verifiedChip')}
               <button
                 onClick={() => setFilters({ ...filters, verified: undefined })}
                 className="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5"

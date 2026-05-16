@@ -20,7 +20,7 @@ import {
   UserIcon 
 } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 import { friendshipsService } from '../services/friendships.service';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -59,6 +59,7 @@ export default function FriendRequestDetailModal({
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | 'cancel' | null>(null);
   const t = useTranslations('friendships.detailModal');
+  const dateLocale = useDateFnsLocale();
 
   // Cargar datos del perfil
   useEffect(() => {
@@ -137,7 +138,7 @@ export default function FriendRequestDetailModal({
   const timeAgo = data?.sentAt
     ? formatDistanceToNow(new Date(data.sentAt), {
         addSuffix: true,
-        locale: es,
+        locale: dateLocale,
       })
     : '';
 

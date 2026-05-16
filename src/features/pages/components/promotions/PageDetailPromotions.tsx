@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PlusIcon, FunnelIcon, TagIcon } from '@/components/icons/heroicons-shim';
 import { usePagePromotions, useDeletePromotion } from '../../hooks/usePagePromotions';
 import { PromotionCard } from './PromotionCard';
@@ -17,6 +20,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
   pageId,
   isOwner,
 }) => {
+  const t = useTranslations('pages');
   const [filter, setFilter] = useState<FilterType>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<PagePromotion | undefined>();
@@ -26,7 +30,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
   const deletePromotionMutation = useDeletePromotion(pageId);
 
   const handleDelete = (promotionId: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta promoción?')) {
+    if (window.confirm(t('promotions.deleteConfirm'))) {
       deletePromotionMutation.mutate(promotionId);
     }
   };
@@ -73,10 +77,10 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Promociones
+            {t('promotions.title')}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {promotions.length} {promotions.length === 1 ? 'promoción' : 'promociones'}
+            {promotions.length} {promotions.length === 1 ? t('promotions.promotionSingular') : t('promotions.promotionPlural')}
           </p>
         </div>
         {isOwner && (
@@ -85,7 +89,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             <PlusIcon className="w-5 h-5" />
-            <span className="font-medium">Nueva promoción</span>
+            <span className="font-medium">{t('promotions.newCta')}</span>
           </button>
         )}
       </div>
@@ -100,7 +104,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          Todas ({promotions.length})
+          {t('promotions.filters.all', { count: promotions.length })}
         </button>
         <button
           onClick={() => setFilter('active')}
@@ -110,7 +114,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          Activas ({activeCount})
+          {t('promotions.filters.active', { count: activeCount })}
         </button>
         <button
           onClick={() => setFilter('upcoming')}
@@ -120,7 +124,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          Próximas ({upcomingCount})
+          {t('promotions.filters.upcoming', { count: upcomingCount })}
         </button>
         {isOwner && (
           <button
@@ -131,7 +135,7 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            Expiradas ({expiredCount})
+            {t('promotions.filters.expired', { count: expiredCount })}
           </button>
         )}
       </div>
@@ -141,15 +145,15 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
         <div className="text-center py-12">
           <TagIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {filter === 'all' && 'No hay promociones disponibles'}
-            {filter === 'active' && 'No hay promociones activas'}
-            {filter === 'upcoming' && 'No hay promociones próximas'}
-            {filter === 'expired' && 'No hay promociones expiradas'}
+            {filter === 'all' && t('promotions.empty.all')}
+            {filter === 'active' && t('promotions.empty.active')}
+            {filter === 'upcoming' && t('promotions.empty.upcoming')}
+            {filter === 'expired' && t('promotions.empty.expired')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
             {isOwner
-              ? 'Crea tu primera promoción para atraer más clientes'
-              : 'Vuelve pronto para ver ofertas especiales'}
+              ? t('promotions.empty.ownerHint')
+              : t('promotions.empty.visitorHint')}
           </p>
         </div>
       ) : (
@@ -170,10 +174,10 @@ export const PageDetailPromotions: FC<PageDetailPromotionsProps> = ({
       {!isOwner && activeCount > 0 && (
         <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border-2 border-purple-200 dark:border-purple-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            🎉 ¡Aprovecha nuestras promociones!
+            {t('promotions.infoCard.title')}
           </h3>
           <p className="text-gray-700 dark:text-gray-300">
-            Usa los códigos promocionales al momento de tu compra o reserva para obtener descuentos especiales.
+            {t('promotions.infoCard.description')}
           </p>
         </div>
       )}

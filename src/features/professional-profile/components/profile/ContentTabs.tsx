@@ -18,6 +18,7 @@ import {
   Squares2X2Icon,
   UserGroupIcon,
 } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 
 // Sections
 import {
@@ -39,18 +40,20 @@ interface ContentTabsProps {
   isRefetching?: boolean
 }
 
-const tabs = [
-  { name: 'Resumen', icon: Squares2X2Icon, component: SummarySection },
-  { name: 'Titulos', icon: AcademicCapIcon, component: TitlesSection },
-  { name: 'Estudios', icon: BookOpenIcon, component: StudiesSection },
-  { name: 'Experiencia', icon: BriefcaseIcon, component: ExperienceSection },
-  { name: 'Habilidades', icon: LightBulbIcon, component: SkillsSection },
-  { name: 'Idiomas', icon: LanguageIcon, component: LanguagesSection },
-  { name: 'Licencias', icon: DocumentTextIcon, component: LicensesSection },
-  { name: 'Asociaciones', icon: UserGroupIcon, component: AssociationsSection },
-]
-
 export function ContentTabs({ profile, isOwner, isRefetching = false }: ContentTabsProps) {
+  const t = useTranslations('professional')
+
+  const tabs = [
+    { key: 'summary', name: t('profile.tabs.summary'), icon: Squares2X2Icon },
+    { key: 'titles', name: t('profile.tabs.titles'), icon: AcademicCapIcon },
+    { key: 'education', name: t('profile.tabs.education'), icon: BookOpenIcon },
+    { key: 'experience', name: t('profile.tabs.experience'), icon: BriefcaseIcon },
+    { key: 'skills', name: t('profile.tabs.skills'), icon: LightBulbIcon },
+    { key: 'languages', name: t('profile.tabs.languages'), icon: LanguageIcon },
+    { key: 'licenses', name: t('profile.tabs.licenses'), icon: DocumentTextIcon },
+    { key: 'memberships', name: t('profile.tabs.memberships'), icon: UserGroupIcon },
+  ]
+
   // Si está refetching (re-cargando datos), mostrar skeleton
   if (isRefetching && !profile) {
     return <SectionSkeleton />
@@ -63,7 +66,7 @@ export function ContentTabs({ profile, isOwner, isRefetching = false }: ContentT
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
-              <TabsTrigger key={tab.name}>
+              <TabsTrigger key={tab.key}>
                 <Icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{tab.name}</span>
               </TabsTrigger>

@@ -1,4 +1,7 @@
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 import { PlayIcon } from '@/components/icons/heroicons-shim';
 
 interface ReelsHeaderProps {
@@ -24,6 +27,9 @@ export const ReelsHeader: FC<ReelsHeaderProps> = ({
   isOwner,
   onCreateClick,
 }) => {
+  const t = useTranslations('pages.reels.header');
+  const tCreate = useTranslations('pages.reels.create');
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-2">
@@ -33,10 +39,10 @@ export const ReelsHeader: FC<ReelsHeaderProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Reels
+              {t('title')}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {reelsCount} videos · {formatNumber(totalViews)} visualizaciones aprox.
+              {t('summary', { videos: reelsCount, views: formatNumber(totalViews) })}
             </p>
           </div>
         </div>
@@ -45,7 +51,7 @@ export const ReelsHeader: FC<ReelsHeaderProps> = ({
             onClick={onCreateClick}
             className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg transition-all"
           >
-            Crear Reel
+            {tCreate('title')}
           </button>
         )}
       </div>

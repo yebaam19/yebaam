@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { shareCommunityArticleToFeed } from '@/features/communities/actions/communityArticles.actions';
 import {
   LinkIcon,
@@ -30,6 +31,7 @@ export function CommunityArticleShareButton({
   isAuthor,
 }: CommunityArticleShareButtonProps) {
   const router = useRouter();
+  const t = useTranslations('communities');
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -116,12 +118,12 @@ export function CommunityArticleShareButton({
           {copied ? (
             <>
               <LinkIcon className="h-4 w-4" />
-              Enlace copiado
+              {t('admin.article.share.copied')}
             </>
           ) : (
             <>
               <ShareIcon className="h-4 w-4" />
-              Compartir
+              {t('admin.article.share.share')}
             </>
           )}
         </button>
@@ -144,7 +146,7 @@ export function CommunityArticleShareButton({
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60"
               >
                 <UserGroupIcon className="h-4 w-4" />
-                Compartir en la comunidad
+                {t('admin.article.share.shareToCommunity')}
               </button>
             )}
             <button
@@ -157,7 +159,7 @@ export function CommunityArticleShareButton({
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60"
             >
               <LinkIcon className="h-4 w-4" />
-              Copiar enlace
+              {t('admin.article.share.copyLink')}
             </button>
           </div>
         )}
@@ -167,16 +169,16 @@ export function CommunityArticleShareButton({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800">
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-              Compartir con la comunidad
+              {t('admin.article.share.dialogTitle')}
             </h2>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-              Se publicará un post en el feed de la comunidad enlazando a “{articleTitle}”.
+              {t('admin.article.share.dialogDescription', { title: articleTitle })}
             </p>
 
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value.slice(0, 1000))}
-              placeholder="Escribe un mensaje opcional para los miembros..."
+              placeholder={t('admin.article.share.messagePlaceholder')}
               rows={3}
               disabled={isPending || shared}
               className="mt-3 w-full resize-none rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
@@ -189,7 +191,7 @@ export function CommunityArticleShareButton({
             )}
             {shared && (
               <p className="mt-3 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
-                Compartido en la comunidad.
+                {t('admin.article.share.successToast')}
               </p>
             )}
 
@@ -205,7 +207,7 @@ export function CommunityArticleShareButton({
                 disabled={isPending}
                 className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60 disabled:opacity-50"
               >
-                Cancelar
+                {t('admin.article.share.cancel')}
               </button>
               <button
                 type="button"
@@ -213,7 +215,11 @@ export function CommunityArticleShareButton({
                 disabled={isPending || shared}
                 className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                {isPending ? 'Compartiendo...' : shared ? 'Compartido' : 'Compartir'}
+                {isPending
+                  ? t('admin.article.share.submitting')
+                  : shared
+                    ? t('admin.article.share.submitted')
+                    : t('admin.article.share.submit')}
               </button>
             </div>
           </div>

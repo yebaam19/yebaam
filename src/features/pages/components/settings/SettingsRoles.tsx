@@ -1,4 +1,5 @@
 import { FC, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Page, PageRole } from '../../types/page.types';
 import {
   UserCircleIcon,
@@ -48,13 +49,6 @@ const mockTeamMembers: TeamMember[] = [
   },
 ];
 
-const ROLE_LABELS: Record<PageRole, string> = {
-  OWNER: 'Propietario',
-  ADMIN: 'Administrador',
-  EDITOR: 'Editor',
-  MODERATOR: 'Moderador',
-};
-
 const ROLE_COLORS: Record<
   PageRole,
   { bg: string; text: string; border: string }
@@ -81,36 +75,11 @@ const ROLE_COLORS: Record<
   },
 };
 
-const ROLE_PERMISSIONS: Record<PageRole, string[]> = {
-  OWNER: [
-    'Control total de la página',
-    'Transferir propiedad',
-    'Eliminar la página',
-    'Gestionar todos los roles',
-    'Modificar configuración',
-    'Publicar y eliminar contenido',
-  ],
-  ADMIN: [
-    'Gestionar roles (excepto propietario)',
-    'Modificar configuración',
-    'Publicar y eliminar contenido',
-    'Moderar comentarios',
-    'Ver estadísticas',
-  ],
-  EDITOR: [
-    'Publicar contenido',
-    'Editar publicaciones',
-    'Responder comentarios',
-    'Ver estadísticas básicas',
-  ],
-  MODERATOR: [
-    'Moderar comentarios',
-    'Responder mensajes',
-    'Reportar contenido inapropiado',
-  ],
-};
+const PAGE_ROLES: PageRole[] = ['OWNER', 'ADMIN', 'EDITOR', 'MODERATOR'];
 
 export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
+  const t = useTranslations('pages.settings.roles');
+  const locale = useLocale();
   const [teamMembers] = useState<TeamMember[]>(mockTeamMembers);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddingMember, setIsAddingMember] = useState(false);
@@ -130,10 +99,10 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Roles y permisos
+          {t('heading')}
         </h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Gestiona el equipo y los permisos de tu página
+          {t('subheading')}
         </p>
       </div>
 
@@ -141,13 +110,13 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-medium text-gray-900 dark:text-white">
-            Agregar miembro
+            {t('addMember')}
           </h3>
           <button
             onClick={() => setIsAddingMember(!isAddingMember)}
             className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
           >
-            {isAddingMember ? 'Cancelar' : '+ Agregar'}
+            {isAddingMember ? t('cancel') : t('addAction')}
           </button>
         </div>
 
@@ -159,12 +128,12 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar usuario por nombre o @usuario..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Busca usuarios para agregarlos como miembros del equipo
+              {t('searchHint')}
             </p>
           </div>
         )}
@@ -173,7 +142,7 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
       {/* Team Members List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <h3 className="text-base font-medium text-gray-900 dark:text-white mb-4">
-          Miembros del equipo ({teamMembers.length})
+          {t('membersHeading', { count: teamMembers.length })}
         </h3>
 
         <div className="space-y-3">
@@ -210,8 +179,8 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    @{member.username} · Desde{' '}
-                    {member.joinedAt.toLocaleDateString('es-ES', {
+                    @{member.username} · {t('joinedSince')}{' '}
+                    {member.joinedAt.toLocaleDateString(locale, {
                       month: 'short',
                       year: 'numeric',
                     })}
@@ -222,7 +191,7 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
                 <span
                   className={`px-3 py-1 text-xs font-medium rounded-full border ${roleColor.bg} ${roleColor.text} ${roleColor.border}`}
                 >
-                  {ROLE_LABELS[member.role]}
+                  {t(`labels.${member.role}`)}
                 </span>
 
                 {/* Role Dropdown (if not owner) */}
@@ -235,15 +204,15 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
                       }
                       className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 dark:bg-gray-700 dark:text-white"
                     >
-                      <option value="ADMIN">Administrador</option>
-                      <option value="EDITOR">Editor</option>
-                      <option value="MODERATOR">Moderador</option>
+                      <option value="ADMIN">{t('labels.ADMIN')}</option>
+                      <option value="EDITOR">{t('labels.EDITOR')}</option>
+                      <option value="MODERATOR">{t('labels.MODERATOR')}</option>
                     </select>
 
                     <button
                       onClick={() => handleRemoveMember(member.id)}
                       className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      title="Eliminar miembro"
+                      title={t('removeMember')}
                     >
                       <XMarkIcon className="w-5 h-5" />
                     </button>
@@ -258,12 +227,13 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
       {/* Permissions Reference */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <h3 className="text-base font-medium text-gray-900 dark:text-white mb-4">
-          Permisos por rol
+          {t('permissionsHeading')}
         </h3>
 
         <div className="space-y-4">
-          {Object.entries(ROLE_PERMISSIONS).map(([role, permissions]) => {
-            const roleColor = ROLE_COLORS[role as PageRole];
+          {PAGE_ROLES.map((role) => {
+            const roleColor = ROLE_COLORS[role];
+            const permissions = t.raw(`permissions.${role}`) as string[];
 
             return (
               <div key={role}>
@@ -271,7 +241,7 @@ export const SettingsRoles: FC<SettingsRolesProps> = ({ page }) => {
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded-full ${roleColor.bg} ${roleColor.text}`}
                   >
-                    {ROLE_LABELS[role as PageRole]}
+                    {t(`labels.${role}`)}
                   </span>
                 </div>
                 <ul className="space-y-1 ml-4">

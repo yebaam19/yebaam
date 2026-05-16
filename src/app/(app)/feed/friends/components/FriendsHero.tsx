@@ -4,6 +4,7 @@ import Avatar from '@/ui/Avatar'
 import { UserPlusIcon } from '@/components/icons/heroicons-shim'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { useAuth } from '@/features/auth/context/auth-context'
+import { useTranslations } from 'next-intl'
 
 interface NetworkAvatar {
   src?: string
@@ -89,8 +90,9 @@ interface FriendsHeroProps {
 export function FriendsHero({ onFindFriends }: FriendsHeroProps = {}) {
   const { user } = useAuth()
   const { friends, suggestions } = useFriendships()
+  const t = useTranslations('friendships.friendsHero')
 
-  const firstName = user?.firstName || user?.username || 'amig@'
+  const firstName = user?.firstName || user?.username || t('fallbackName')
 
   const pool = [...(friends || []), ...(suggestions || [])]
   const avatars: NetworkAvatar[] = pool.slice(0, 5).map((p: any) => ({
@@ -106,14 +108,13 @@ export function FriendsHero({ onFindFriends }: FriendsHeroProps = {}) {
       <div className="flex items-center justify-between gap-6">
         <div className="min-w-0 flex-1">
           <p className="text-sm text-neutral-700 dark:text-neutral-300">
-            ¡Hola, <span className="font-medium">{firstName}</span>! <span aria-hidden>👋</span>
+            {t('greeting', { name: firstName })} <span aria-hidden>👋</span>
           </p>
           <h1 className="mt-1 text-2xl font-bold leading-tight text-neutral-900 sm:text-3xl dark:text-white">
-            Conecta, comparte y
-            <br className="hidden sm:block" /> crece tu red
+            {t('title')}
           </h1>
           <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-            Hay miles de personas esperándote.
+            {t('subtitle')}
           </p>
 
           <div className="mt-4 sm:mt-5">
@@ -123,7 +124,7 @@ export function FriendsHero({ onFindFriends }: FriendsHeroProps = {}) {
               className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700"
             >
               <UserPlusIcon className="size-4" />
-              Encontrar amigos
+              {t('findFriends')}
             </button>
           </div>
         </div>

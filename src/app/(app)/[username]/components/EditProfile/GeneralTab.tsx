@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { GlobeAltIcon, HeartIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 
@@ -21,14 +22,15 @@ export function GeneralTab({
   avatarPreview,
   onFormChange,
 }: GeneralTabProps) {
+  const t = useTranslations('profile.editProfile.generalTab');
   return (
     <>
       {/* Cover Photo Section - DISABLED TEMPORARILY */}
       <div className="opacity-50 pointer-events-none">
         <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-          Foto de portada
+          {t('coverPhotoLabel')}
           <span className="ml-2 text-xs text-amber-600 dark:text-amber-500 font-normal">
-            (Próximamente disponible)
+            {t('comingSoon')}
           </span>
         </label>
         <div className="relative group">
@@ -36,7 +38,7 @@ export function GeneralTab({
             {coverPreview ? (
               <img
                 src={coverPreview}
-                alt="Cover preview"
+                alt={t('coverPreviewAlt')}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -49,9 +51,9 @@ export function GeneralTab({
       {/* Avatar Section - DISABLED TEMPORARILY */}
       <div className="opacity-50 pointer-events-none">
         <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-          Foto de perfil
+          {t('profilePhotoLabel')}
           <span className="ml-2 text-xs text-amber-600 dark:text-amber-500 font-normal">
-            (Próximamente disponible)
+            {t('comingSoon')}
           </span>
         </label>
         <div className="flex items-center gap-6">
@@ -71,21 +73,21 @@ export function GeneralTab({
         {/* Display Name */}
         <div className="mb-5">
           <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
-            Nombre completo
+            {t('fullNameLabel')}
           </label>
           <input
             type="text"
             value={formData.displayName}
             onChange={(e) => onFormChange({ displayName: e.target.value })}
             className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-            placeholder="Tu nombre completo"
+            placeholder={t('fullNamePlaceholder')}
           />
         </div>
 
         {/* Bio */}
         <div className="mb-5">
           <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
-            Biografía
+            {t('bioLabel')}
           </label>
           <textarea
             value={formData.bio || ''}
@@ -93,7 +95,7 @@ export function GeneralTab({
             rows={3}
             maxLength={150}
             className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white resize-none"
-            placeholder="Cuéntanos un poco sobre ti..."
+            placeholder={t('bioPlaceholder')}
           />
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 text-right">
             {formData.bio?.length || 0}/150
@@ -104,14 +106,14 @@ export function GeneralTab({
         <div className="mb-5">
           <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
             <GlobeAltIcon className="w-4 h-4 inline-block mr-1" />
-            Ubicación
+            {t('locationLabel')}
           </label>
           <input
             type="text"
             value={formData.location || ''}
             onChange={(e) => onFormChange({ location: e.target.value })}
             className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-            placeholder="Ciudad, País"
+            placeholder={t('locationPlaceholder')}
           />
         </div>
 
@@ -119,19 +121,19 @@ export function GeneralTab({
         <div>
           <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
             <HeartIcon className="w-4 h-4 inline-block mr-1" />
-            Estado civil
+            {t('relationshipLabel')}
           </label>
           <select
             value={formData.relationship || ''}
             onChange={(e) => onFormChange({ relationship: e.target.value })}
             className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
           >
-            <option value="">Seleccionar...</option>
-            <option value="Soltero/a">Soltero/a</option>
-            <option value="En una relación">En una relación</option>
-            <option value="Comprometido/a">Comprometido/a</option>
-            <option value="Casado/a">Casado/a</option>
-            <option value="Es complicado">Es complicado</option>
+            <option value="">{t('relationshipSelect')}</option>
+            <option value="Soltero/a">{t('relationshipSingle')}</option>
+            <option value="En una relación">{t('relationshipInRelationship')}</option>
+            <option value="Comprometido/a">{t('relationshipEngaged')}</option>
+            <option value="Casado/a">{t('relationshipMarried')}</option>
+            <option value="Es complicado">{t('relationshipComplicated')}</option>
           </select>
         </div>
       </div>

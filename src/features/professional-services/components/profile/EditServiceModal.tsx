@@ -14,6 +14,7 @@ import Input from '@/ui/Input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Fragment, useCallback, useState } from 'react'
 import { useUpdateService } from '../../hooks/useServices'
@@ -34,6 +35,7 @@ interface EditServiceModalProps {
 }
 
 export function EditServiceModal({ service, open, onOpenChange }: EditServiceModalProps) {
+  const t = useTranslations('professional.services.editModal')
   const router = useRouter()
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -52,7 +54,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
   }
 
   const handleUpdateError = (err: unknown) => {
-    const message = err instanceof Error ? err.message : 'Error al actualizar el servicio'
+    const message = err instanceof Error ? err.message : t('updateError')
     setError(message)
   }
 
@@ -210,21 +212,21 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
       updateServiceMutation.mutate({ id: service.id, data: updateData })
     } catch (error: any) {
       console.error('Error uploading images:', error)
-      setError(error.message || 'Error al subir las imágenes')
+      setError(error.message || t('uploadError'))
     }
   }
 
   const workTypeOptions = [
-    { value: 'remote', label: 'Remoto' },
-    { value: 'on-site', label: 'Presencial' },
-    { value: 'hybrid', label: 'Híbrido' },
+    { value: 'remote', label: t('rates.workTypes.remote') },
+    { value: 'on-site', label: t('rates.workTypes.onSite') },
+    { value: 'hybrid', label: t('rates.workTypes.hybrid') },
   ]
 
   const currencyOptions = [
-    { value: 'USD', label: 'USD - Dólar' },
-    { value: 'EUR', label: 'EUR - Euro' },
-    { value: 'COP', label: 'COP - Peso Colombiano' },
-    { value: 'MXN', label: 'MXN - Peso Mexicano' },
+    { value: 'USD', label: t('rates.currencies.USD') },
+    { value: 'EUR', label: t('rates.currencies.EUR') },
+    { value: 'COP', label: t('rates.currencies.COP') },
+    { value: 'MXN', label: t('rates.currencies.MXN') },
   ]
 
   return (
@@ -255,7 +257,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
             <DialogPanel className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               {/* Header */}
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Editar Servicio Profesional</h2>
+                <h2 className="text-2xl font-bold">{t('title')}</h2>
                 <button
                   onClick={() => onOpenChange(false)}
                   className="cursor-pointer text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
@@ -277,7 +279,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                      ¡Cambios guardados exitosamente!
+                      {t('saveSuccess')}
                     </p>
                   </div>
                 </div>
@@ -303,23 +305,23 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
               <form onSubmit={handleSubmit}>
                 <Tabs>
                   <TabsList className="w-full">
-                    <TabsTrigger>Imágenes</TabsTrigger>
-                    <TabsTrigger>Información</TabsTrigger>
-                    <TabsTrigger>Contacto</TabsTrigger>
-                    <TabsTrigger>Redes</TabsTrigger>
-                    <TabsTrigger>Tarifas</TabsTrigger>
-                    {FEATURE_FLAGS.SERVICES_CV_UPLOAD && <TabsTrigger>CV</TabsTrigger>}
-                    {FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO && <TabsTrigger>Proyectos</TabsTrigger>}
+                    <TabsTrigger>{t('tabs.images')}</TabsTrigger>
+                    <TabsTrigger>{t('tabs.info')}</TabsTrigger>
+                    <TabsTrigger>{t('tabs.contact')}</TabsTrigger>
+                    <TabsTrigger>{t('tabs.social')}</TabsTrigger>
+                    <TabsTrigger>{t('tabs.rates')}</TabsTrigger>
+                    {FEATURE_FLAGS.SERVICES_CV_UPLOAD && <TabsTrigger>{t('tabs.cv')}</TabsTrigger>}
+                    {FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO && <TabsTrigger>{t('tabs.projects')}</TabsTrigger>}
                   </TabsList>
 
                   {/* Tab Imágenes */}
                   <TabsContent>
                     <div className="space-y-6 py-4">
-                      <h3 className="text-lg font-medium">Imágenes del Servicio</h3>
+                      <h3 className="text-lg font-medium">{t('images.heading')}</h3>
 
                       {/* Cover Image */}
                       <ImageUploader
-                        label="Imagen de portada"
+                        label={t('images.coverLabel')}
                         currentImageUrl={coverUrl || undefined}
                         onImageSelect={handleCoverSelect}
                         onUrlChange={handleCoverUrlChange}
@@ -331,7 +333,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
 
                       {/* Logo Image */}
                       <ImageUploader
-                        label="Logo / Avatar"
+                        label={t('images.logoLabel')}
                         currentImageUrl={logoUrl || undefined}
                         onImageSelect={handleLogoSelect}
                         onUrlChange={handleLogoUrlChange}
@@ -346,29 +348,29 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                   {/* Tab Información Básica */}
                   <TabsContent>
                     <div className="space-y-4 py-4">
-                      <h3 className="text-lg font-medium">Información Básica</h3>
+                      <h3 className="text-lg font-medium">{t('basic.heading')}</h3>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Nombre del servicio *
+                          {t('basic.nameLabel')}
                         </label>
                         <Input
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="Ej: Diseño Gráfico Profesional"
+                          placeholder={t('basic.namePlaceholder')}
                           required
                         />
                       </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Descripción
+                          {t('basic.descriptionLabel')}
                         </label>
                         <textarea
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Describe tu servicio profesional..."
+                          placeholder={t('basic.descriptionPlaceholder')}
                           rows={4}
                           className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800"
                         />
@@ -376,15 +378,15 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Etiquetas
+                          {t('basic.tagsLabel')}
                         </label>
                         <Input
                           type="text"
                           value={tags}
                           onChange={(e) => setTags(e.target.value)}
-                          placeholder="diseño, branding, logos (separados por coma)"
+                          placeholder={t('basic.tagsPlaceholder')}
                         />
-                        <p className="mt-1 text-xs text-neutral-500">Separa las etiquetas con comas</p>
+                        <p className="mt-1 text-xs text-neutral-500">{t('basic.tagsHint')}</p>
                       </div>
                     </div>
                   </TabsContent>
@@ -392,55 +394,55 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                   {/* Tab Contacto */}
                   <TabsContent>
                     <div className="space-y-4 py-4">
-                      <h3 className="text-lg font-medium">Información de Contacto</h3>
+                      <h3 className="text-lg font-medium">{t('contact.heading')}</h3>
 
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Email
+                            {t('contact.emailLabel')}
                           </label>
                           <Input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="contacto@ejemplo.com"
+                            placeholder={t('contact.emailPlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Teléfono
+                            {t('contact.phoneLabel')}
                           </label>
                           <Input
                             type="tel"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            placeholder="+57 300 123 4567"
+                            placeholder={t('contact.phonePlaceholder')}
                           />
                         </div>
                       </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Sitio web
+                          {t('contact.websiteLabel')}
                         </label>
                         <Input
                           type="url"
                           value={website}
                           onChange={(e) => setWebsite(e.target.value)}
-                          placeholder="https://www.ejemplo.com"
+                          placeholder={t('contact.websitePlaceholder')}
                         />
                       </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Dirección
+                          {t('contact.addressLabel')}
                         </label>
                         <Input
                           type="text"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
-                          placeholder="Calle 123 #45-67, Ciudad"
+                          placeholder={t('contact.addressPlaceholder')}
                         />
                       </div>
                     </div>
@@ -449,78 +451,78 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                   {/* Tab Redes Sociales */}
                   <TabsContent>
                     <div className="space-y-4 py-4">
-                      <h3 className="text-lg font-medium">Redes Sociales</h3>
+                      <h3 className="text-lg font-medium">{t('social.heading')}</h3>
 
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Facebook
+                            {t('social.facebookLabel')}
                           </label>
                           <Input
                             type="url"
                             value={facebookUrl}
                             onChange={(e) => setFacebookUrl(e.target.value)}
-                            placeholder="https://facebook.com/tu-pagina"
+                            placeholder={t('social.facebookPlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Instagram
+                            {t('social.instagramLabel')}
                           </label>
                           <Input
                             type="url"
                             value={instagramUrl}
                             onChange={(e) => setInstagramUrl(e.target.value)}
-                            placeholder="https://instagram.com/tu-cuenta"
+                            placeholder={t('social.instagramPlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Twitter / X
+                            {t('social.twitterLabel')}
                           </label>
                           <Input
                             type="url"
                             value={twitterUrl}
                             onChange={(e) => setTwitterUrl(e.target.value)}
-                            placeholder="https://x.com/tu-cuenta"
+                            placeholder={t('social.twitterPlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            LinkedIn
+                            {t('social.linkedinLabel')}
                           </label>
                           <Input
                             type="url"
                             value={linkedinUrl}
                             onChange={(e) => setLinkedinUrl(e.target.value)}
-                            placeholder="https://linkedin.com/in/tu-perfil"
+                            placeholder={t('social.linkedinPlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            YouTube
+                            {t('social.youtubeLabel')}
                           </label>
                           <Input
                             type="url"
                             value={youtubeUrl}
                             onChange={(e) => setYoutubeUrl(e.target.value)}
-                            placeholder="https://youtube.com/@tu-canal"
+                            placeholder={t('social.youtubePlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            TikTok
+                            {t('social.tiktokLabel')}
                           </label>
                           <Input
                             type="url"
                             value={tiktokUrl}
                             onChange={(e) => setTiktokUrl(e.target.value)}
-                            placeholder="https://tiktok.com/@tu-cuenta"
+                            placeholder={t('social.tiktokPlaceholder')}
                           />
                         </div>
                       </div>
@@ -530,11 +532,11 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                   {/* Tab Tarifas */}
                   <TabsContent>
                     <div className="space-y-4 py-4">
-                      <h3 className="text-lg font-medium">Tarifas y Disponibilidad</h3>
+                      <h3 className="text-lg font-medium">{t('rates.heading')}</h3>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Moneda
+                          {t('rates.currencyLabel')}
                         </label>
                         <select
                           value={currency}
@@ -552,7 +554,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                       <div className="grid gap-4 sm:grid-cols-3">
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Tarifa por hora
+                            {t('rates.hourlyLabel')}
                           </label>
                           <Input
                             type="number"
@@ -566,7 +568,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Tarifa por día
+                            {t('rates.dailyLabel')}
                           </label>
                           <Input
                             type="number"
@@ -580,7 +582,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
 
                         <div>
                           <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Tarifa por proyecto
+                            {t('rates.projectLabel')}
                           </label>
                           <Input
                             type="number"
@@ -595,7 +597,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
 
                       <div>
                         <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          Modalidad de trabajo
+                          {t('rates.workTypeLabel')}
                         </label>
                         <div className="flex flex-wrap gap-3">
                           {workTypeOptions.map((opt) => (
@@ -628,7 +630,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                           className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                         />
                         <label htmlFor="availableForHire" className="text-sm text-neutral-700 dark:text-neutral-300">
-                          Disponible para contratar
+                          {t('rates.availableLabel')}
                         </label>
                       </div>
                     </div>
@@ -671,7 +673,7 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                       cvUpload.isUploading
                     }
                   >
-                    Cancelar
+                    {t('cancel')}
                   </ButtonSecondary>
                   <ButtonPrimary
                     type="submit"
@@ -686,8 +688,8 @@ export function EditServiceModal({ service, open, onOpenChange }: EditServiceMod
                     coverUpload.isUploading ||
                     logoUpload.isUploading ||
                     cvUpload.isUploading
-                      ? 'Guardando...'
-                      : 'Guardar cambios'}
+                      ? t('saving')
+                      : t('save')}
                   </ButtonPrimary>
                 </div>
               </form>

@@ -2,13 +2,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import type {
   ClubEventLite,
   ClubMemberLite,
   ClubPromotionLite,
   ClubForoBoard,
 } from '@/features/clubs/server/clubs.server';
-import { CLUB_ROLE_LABELS } from '@/features/clubs/utils/clubHelpers';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -18,8 +18,10 @@ import {
 } from '@/components/icons/heroicons-shim';
 
 export function MembersPanel({ members }: { members: ClubMemberLite[] }) {
+  const t = useTranslations('clubes.panels.members');
+  const tRoles = useTranslations('clubes.roles');
   if (!members.length) {
-    return <p className="text-sm text-gray-500 dark:text-gray-400">Aún no hay miembros.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">{t('empty')}</p>;
   }
   return (
     <ul className="space-y-2">
@@ -39,10 +41,10 @@ export function MembersPanel({ members }: { members: ClubMemberLite[] }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium text-gray-900 dark:text-white">
-              {m.displayName || m.username || 'Sin nombre'}
+              {m.displayName || m.username || t('fallbackName')}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              {CLUB_ROLE_LABELS[m.role]} · {m.membershipTier}
+              {tRoles(m.role)} · {m.membershipTier}
             </div>
           </div>
         </li>
@@ -52,8 +54,10 @@ export function MembersPanel({ members }: { members: ClubMemberLite[] }) {
 }
 
 export function EventsPanel({ events }: { events: ClubEventLite[] }) {
+  const t = useTranslations('clubes.panels.events');
+  const locale = useLocale();
   if (!events.length) {
-    return <p className="text-sm text-gray-500 dark:text-gray-400">No hay eventos programados.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">{t('empty')}</p>;
   }
   return (
     <ul className="space-y-3">
@@ -69,7 +73,7 @@ export function EventsPanel({ events }: { events: ClubEventLite[] }) {
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
             <span className="inline-flex items-center gap-1">
               <CalendarIcon className="h-3.5 w-3.5" />
-              {new Date(e.startsAt).toLocaleString('es-ES')}
+              {new Date(e.startsAt).toLocaleString(locale)}
             </span>
             {e.location && (
               <span className="inline-flex items-center gap-1">
@@ -77,7 +81,7 @@ export function EventsPanel({ events }: { events: ClubEventLite[] }) {
                 {e.location}
               </span>
             )}
-            <span>{e.attendeesCount} asistentes</span>
+            <span>{t('attendees', { count: e.attendeesCount })}</span>
           </div>
         </li>
       ))}
@@ -86,8 +90,9 @@ export function EventsPanel({ events }: { events: ClubEventLite[] }) {
 }
 
 export function PromotionsPanel({ promotions }: { promotions: ClubPromotionLite[] }) {
+  const t = useTranslations('clubes.panels.promotions');
   if (!promotions.length) {
-    return <p className="text-sm text-gray-500 dark:text-gray-400">No hay promociones activas.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">{t('empty')}</p>;
   }
   return (
     <ul className="space-y-3">
@@ -117,7 +122,7 @@ export function PromotionsPanel({ promotions }: { promotions: ClubPromotionLite[
                 rel="noopener noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs text-primary-600 hover:underline dark:text-primary-400"
               >
-                Ver más <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+                {t('more')} <ArrowTopRightOnSquareIcon className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -134,10 +139,11 @@ export function ForoPanel({
   foroSpaceSlug: string | null;
   foroBoard: ClubForoBoard;
 }) {
+  const t = useTranslations('clubes.panels.foro');
   if (!foroSpaceSlug || !foroBoard) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        Este club aún no tiene foro habilitado.
+        {t('notEnabled')}
       </p>
     );
   }
@@ -154,12 +160,12 @@ export function ForoPanel({
   return (
     <div className="space-y-4">
       <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-400">
-        Foro del club · {totalForums} foro(s) · {totalTopics} tema(s)
+        {t('summary', { forums: totalForums, topics: totalTopics })}
       </div>
 
       {foroBoard.categories.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Aún no hay categorías en este foro.
+          {t('emptyCategories')}
         </p>
       ) : (
         foroBoard.categories.map((cat) => (
@@ -189,20 +195,20 @@ export function ForoPanel({
                         )}
                       </div>
                       <div className="shrink-0 text-right text-[11px] text-gray-500 dark:text-gray-400">
-                        <div>{forum.topicCount ?? 0} temas</div>
-                        <div>{forum.postCount ?? 0} posts</div>
+                        <div>{t('topicsCount', { count: forum.topicCount ?? 0 })}</div>
+                        <div>{t('postsCount', { count: forum.postCount ?? 0 })}</div>
                       </div>
                     </div>
                     {forum.lastTopicTitle && forum.lastTopicSlug && (
                       <div className="mt-1 truncate text-[11px] text-gray-500 dark:text-gray-400">
-                        Último: {forum.lastTopicTitle}
+                        {t('lastTopic', { title: forum.lastTopicTitle })}
                       </div>
                     )}
                   </Link>
                 </li>
               ))}
               {cat.forums.length === 0 && (
-                <li className="text-xs text-gray-400">Sin foros en esta categoría.</li>
+                <li className="text-xs text-gray-400">{t('emptyForumsInCategory')}</li>
               )}
             </ul>
           </section>
@@ -213,7 +219,7 @@ export function ForoPanel({
         href={`/foro/${foroSpaceSlug}`}
         className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
       >
-        Abrir foro completo
+        {t('openFull')}
         <ArrowTopRightOnSquareIcon className="h-4 w-4" />
       </Link>
     </div>
@@ -221,24 +227,25 @@ export function ForoPanel({
 }
 
 export function PublicChatPanel({ publicChatId }: { publicChatId: string | null }) {
+  const t = useTranslations('clubes.panels.publicChat');
   if (!publicChatId) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        El chat público aún no está habilitado para este club.
+        {t('notEnabled')}
       </p>
     );
   }
   return (
     <div className="space-y-3">
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        Chat en tiempo real con todos los miembros del club.
+        {t('description')}
       </p>
       <Link
         href={`/chat/${publicChatId}`}
         className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
       >
         <ChatBubbleLeftRightIcon className="h-4 w-4" />
-        Entrar al chat público
+        {t('enter')}
       </Link>
     </div>
   );

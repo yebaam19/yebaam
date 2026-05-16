@@ -85,5 +85,237 @@
       "default": "Crear negocio"
     },
     "errorFallback": "Error al crear el negocio. Intenta nuevamente."
+  },
+  "create": {
+    "buttons": {
+      "back": "Atrás",
+      "next": "Siguiente"
+    },
+    "step1": {
+      "heading": "Comencemos con lo básico",
+      "subtitle": "Dale un nombre y descripción a tu negocio",
+      "nameLabel": "Nombre del negocio",
+      "namePlaceholder": "Ej: Restaurante La Cazuela",
+      "nameCounter": "{count}/100 caracteres",
+      "descriptionLabel": "Descripción",
+      "descriptionOptional": "(opcional)",
+      "descriptionPlaceholder": "Describe tu negocio, qué ofreces, qué te hace especial...",
+      "descriptionCounter": "{count}/500 caracteres",
+      "requiredMark": "*",
+      "next": "Siguiente"
+    },
+    "step2": {
+      "title": "Categoría y ubicación",
+      "subtitle": "¿Qué tipo de negocio es y dónde está ubicado?",
+      "category": "Categoría",
+      "categoryLoading": "Cargando categorías...",
+      "categoryPlaceholder": "Selecciona una categoría",
+      "state": "Departamento",
+      "stateLoading": "Cargando departamentos...",
+      "statePlaceholder": "Selecciona un departamento",
+      "city": "Ciudad",
+      "cityLoading": "Cargando ciudades...",
+      "cityPlaceholder": "Selecciona una ciudad",
+      "address": "Dirección",
+      "optional": "(opcional)",
+      "addressPlaceholder": "Ej: Calle 10 #45-20, Zona G"
+    },
+    "step3": {
+      "title": "Información de contacto",
+      "subtitle": "¿Cómo pueden contactarte tus clientes? (Opcional)",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "contacto@minegocio.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+57 300 123 4567",
+      "website": "Sitio web",
+      "websitePlaceholder": "https://www.minegocio.com"
+    }
+  },
+  "detail": {
+    "photos": {
+      "title": "Fotos",
+      "uploadCta": "Subir foto",
+      "uploadFirstCta": "Subir primera foto",
+      "deleteConfirm": "¿Estás seguro de eliminar esta foto?",
+      "photoSingular": "foto",
+      "photoPlural": "fotos",
+      "emptyOwnerTitle": "No has subido fotos aún",
+      "emptyOwnerDescription": "Comparte momentos especiales de tu negocio. Sube fotos de tus productos, instalaciones o equipo.",
+      "emptyVisitorTitle": "No hay fotos",
+      "emptyVisitorDescription": "Este negocio aún no ha compartido fotos.",
+      "photoAlt": "Foto del negocio",
+      "uploadedBy": "Subida por {name}"
+    }
+  },
+  "editSocial": {
+    "subtitle": "Conecta tus redes sociales para que los clientes puedan seguirte y conocer más sobre tu negocio.",
+    "clear": "Limpiar",
+    "tipsTitle": "¿Por qué agregar redes sociales?",
+    "tips": {
+      "visibility": "Aumenta la visibilidad de tu negocio",
+      "updates": "Permite a los clientes seguirte y recibir actualizaciones",
+      "trust": "Genera confianza mostrando tu presencia digital",
+      "contact": "Facilita que los clientes te contacten por su canal preferido"
+    }
+  },
+  "ownerProduct": {
+    "deleteConfirm": "¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.",
+    "previousImage": "Imagen anterior",
+    "nextImage": "Siguiente imagen",
+    "imageNumber": "Imagen {number}",
+    "noImage": "Sin imagen",
+    "clickToHide": "Click para ocultar",
+    "clickToShow": "Click para mostrar",
+    "visible": "Visible",
+    "hidden": "Oculto",
+    "promotion": "PROMOCIÓN",
+    "editProduct": "Editar producto",
+    "deleteProduct": "Eliminar producto",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleting": "Borrando..."
+  },
+  "reviews": {
+    "title": "Reseñas",
+    "businessResponse": "Respuesta del negocio:",
+    "showMore": "Ver más",
+    "showLess": "Ver menos",
+    "empty": "Este negocio aún no tiene reseñas. ¡Sé el primero en dejar una!",
+    "count": "{count, plural, one {# reseña} other {# reseñas}}",
+    "viewAll": "Ver todas las reseñas ({count})",
+    "averageNotAvailable": "N/D"
+  },
+  "header": {
+    "verified": "Verificado",
+    "coverAlt": "Cover de {name}",
+    "reviewsCount": "({count, plural, one {# reseña} other {# reseñas}})",
+    "settings": "Configuración",
+    "settingsShort": "Config",
+    "contact": "Contactar",
+    "shareTitle": "Compartir negocio",
+    "shareText": "Mira este negocio: {name}",
+    "linkCopied": "Enlace copiado al portapapeles",
+    "followUs": "Síguenos:"
+  },
+  "ownerCard": {
+    "title": "Propietario",
+    "verifiedUser": "Usuario verificado",
+    "ownerOf": "Propietario de {name}",
+    "memberSince": "Miembro desde {date}",
+    "viewProfile": "Ver perfil",
+    "message": "Mensaje"
+  },
+  "grid": {
+    "emptyDefault": "No hay negocios disponibles",
+    "createFirstCta": "Crear mi primer negocio"
+  },
+  "editImages": {
+    "coverLabel": "Imagen de portada",
+    "coverHint": "Recomendado: 1200x400 px. Se mostrará en la parte superior del perfil.",
+    "coverAlt": "Portada",
+    "logoAlt": "Logo",
+    "change": "Cambiar",
+    "uploadCover": "Subir imagen de portada",
+    "orUrlDirectly": "O ingresa una URL directamente:",
+    "coverUrlPlaceholder": "https://ejemplo.com/imagen.jpg",
+    "logoLabel": "Logo del negocio",
+    "logoHint": "Recomendado: 200x200 px. Se mostrará como avatar del negocio.",
+    "uploadShort": "Subir",
+    "logoUrlPlaceholder": "https://ejemplo.com/logo.jpg",
+    "defaultInitialHint": "Se usará la inicial del nombre como logo predeterminado",
+    "tipsTitle": "Consejos para las imágenes",
+    "tips": {
+      "quality": "Usa imágenes de alta calidad para una mejor presentación",
+      "lessText": "Evita imágenes con mucho texto, se verá mejor en dispositivos pequeños",
+      "logoSquare": "El logo debe ser cuadrado para mejor visualización",
+      "formats": "Formatos recomendados: JPG, PNG o WebP"
+    }
+  },
+  "uploadPhoto": {
+    "title": "Subir foto",
+    "selectImageError": "Por favor selecciona un archivo de imagen",
+    "fileTooLargeError": "La imagen no debe superar los 10MB",
+    "dropHere": "Suelta la imagen aquí",
+    "dragOrClick": "Arrastra una imagen o haz clic para seleccionar",
+    "fileHint": "JPG, PNG o GIF (máx. 10MB)",
+    "previewAlt": "Vista previa",
+    "captionLabel": "Descripción (opcional)",
+    "captionPlaceholder": "Escribe una descripción para esta foto...",
+    "tagsLabel": "Etiquetas (opcional)",
+    "tagPlaceholder": "Ej: interior, menú, ambiente...",
+    "addTag": "Agregar",
+    "tagsCount": "{count}/10 etiquetas",
+    "cancel": "Cancelar",
+    "submitting": "Subiendo...",
+    "submit": "Subir foto"
+  },
+  "editInfo": {
+    "nameLabel": "Nombre del negocio",
+    "namePlaceholder": "Mi Negocio",
+    "slugLabel": "URL del negocio",
+    "slugAutoGenerate": "Generar automáticamente",
+    "slugPrefix": "/feed/businesses/",
+    "slugPlaceholder": "mi-negocio",
+    "categoryLabel": "Categoría",
+    "categoryLoading": "Cargando categorías...",
+    "categoryPlaceholder": "Seleccionar categoría",
+    "descriptionLabel": "Descripción",
+    "descriptionHint": "Describe tu negocio, servicios que ofreces, horarios especiales, etc.",
+    "descriptionPlaceholder": "Escribe una descripción de tu negocio...",
+    "descriptionCounter": "{count}/1000 caracteres",
+    "tagsLabel": "Etiquetas",
+    "tagsHint": "Añade etiquetas para ayudar a las personas a encontrar tu negocio. Máximo 10 etiquetas.",
+    "tagPlaceholder": "Agregar etiqueta...",
+    "addTag": "Agregar",
+    "infoBox": "La información que proporciones será visible para todos los usuarios. Asegúrate de que sea precisa y profesional."
+  },
+  "filterBar": {
+    "searchPlaceholder": "Buscar negocios...",
+    "loading": "Cargando...",
+    "allCategories": "Todas las categorías",
+    "allStates": "Todos los departamentos",
+    "allCities": "Todas las ciudades",
+    "clear": "Limpiar"
+  },
+  "products": {
+    "filterBar": {
+      "searchPlaceholder": "Buscar productos...",
+      "filters": "Filtros",
+      "categories": "Categorías",
+      "quickFilters": "Filtros rápidos",
+      "inStock": "En stock",
+      "onPromotion": "En promoción",
+      "activeFilters": "Filtros activos:",
+      "searchLabel": "Búsqueda: {query}",
+      "removeSearchAria": "Quitar filtro de búsqueda",
+      "clearAll": "Limpiar todo"
+    },
+    "formFields": {
+      "nameLabel": "Nombre del producto *",
+      "nameRequired": "El nombre es requerido",
+      "namePlaceholder": "Ej: Pizza Margarita, Helado de Vainilla",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe tu producto, ingredientes, características...",
+      "priceLabel": "Precio *",
+      "priceRequired": "El precio es requerido",
+      "priceMin": "El precio debe ser mayor a 0",
+      "pricePlaceholder": "0.00",
+      "compareAtPriceLabel": "Precio anterior",
+      "compareAtPriceMin": "Debe ser mayor a 0",
+      "compareAtPricePlaceholder": "Para mostrar descuento",
+      "categoryMainLabel": "Categoría",
+      "categoryMainPlaceholder": "Ej: Pizzas, Postres, Bebidas",
+      "categorySubLabel": "Subcategoría",
+      "categorySubPlaceholder": "Ej: Clásicas, Especiales",
+      "skuLabel": "SKU / Código",
+      "skuPlaceholder": "Código interno",
+      "stockLabel": "Cantidad en stock",
+      "stockMin": "No puede ser negativo",
+      "stockPlaceholder": "0 = ilimitado",
+      "trackInventory": "Rastrear inventario",
+      "allowBackorder": "Permitir pedidos sin stock",
+      "weightLabel": "Peso (kg)",
+      "weightPlaceholder": "Para cálculo de envío"
+    }
   }
 }

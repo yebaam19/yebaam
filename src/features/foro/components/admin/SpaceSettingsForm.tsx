@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import { updateSpace } from '@/features/foro/actions/admin.actions'
 import type { ForoSpace, SpaceVisibility } from '@/features/foro/types'
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function SpaceSettingsForm({ space }: Props) {
+  const t = useTranslations('foro.admin.spaceSettings')
   const [name, setName] = useState(space.name)
   const [description, setDescription] = useState(space.description ?? '')
   const [visibility, setVisibility] = useState<SpaceVisibility>(space.visibility)
@@ -30,10 +32,10 @@ export default function SpaceSettingsForm({ space }: Props) {
         enabled,
       })
       if (!result.ok) {
-        setError(result.error ?? 'Error')
+        setError(result.error ?? t('errorGeneric'))
         return
       }
-      setMessage('Cambios guardados.')
+      setMessage(t('saved'))
     })
   }
 
@@ -55,7 +57,7 @@ export default function SpaceSettingsForm({ space }: Props) {
 
       <div>
         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Nombre
+          {t('name')}
         </label>
         <input
           value={name}
@@ -67,7 +69,7 @@ export default function SpaceSettingsForm({ space }: Props) {
 
       <div>
         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Descripción
+          {t('description')}
         </label>
         <textarea
           value={description}
@@ -79,16 +81,16 @@ export default function SpaceSettingsForm({ space }: Props) {
 
       <div>
         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Visibilidad
+          {t('visibility')}
         </label>
         <select
           value={visibility}
           onChange={(e) => setVisibility(e.target.value as SpaceVisibility)}
           className="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         >
-          <option value="public">Público</option>
-          <option value="private">Privado (solo miembros)</option>
-          <option value="secret">Secreto (oculto)</option>
+          <option value="public">{t('visibilityPublic')}</option>
+          <option value="private">{t('visibilityPrivate')}</option>
+          <option value="secret">{t('visibilitySecret')}</option>
         </select>
       </div>
 
@@ -99,7 +101,7 @@ export default function SpaceSettingsForm({ space }: Props) {
           onChange={(e) => setEnabled(e.target.checked)}
           className="rounded border-neutral-300"
         />
-        Foro activo
+        {t('enabled')}
       </label>
 
       <div className="flex justify-end">
@@ -108,7 +110,7 @@ export default function SpaceSettingsForm({ space }: Props) {
           disabled={isPending}
           className="rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
         >
-          {isPending ? 'Guardando…' : 'Guardar cambios'}
+          {isPending ? t('saving') : t('save')}
         </button>
       </div>
     </form>

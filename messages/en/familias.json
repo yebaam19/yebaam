@@ -22,6 +22,16 @@
     "personOne": "{count} person in the tree",
     "personOther": "{count} people in the tree"
   },
+  "detail": {
+    "backToList": "My families",
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "personCount": "{count, plural, one {# person in the tree} other {# people in the tree}}"
+  },
+  "home": {
+    "title": "Your family is ready to grow",
+    "description": "{count, plural, one {There is # person registered in this tree.} other {There are # people registered in this tree.}} Start by inviting relatives and adding them to the tree.",
+    "viewMembers": "View members"
+  },
   "invitation": {
     "fallbackInviter": "Someone",
     "fallbackFamily": "A family",
@@ -87,5 +97,371 @@
     "empty": "There are no members yet.",
     "noName": "(No name)",
     "fallbackMemberLabel": "the member"
+  },
+  "memberActions": {
+    "menuAria": "Member actions"
+  },
+  "dialogs": {
+    "common": {
+      "saving": "Saving…",
+      "uploadingToCloudflare": "Uploading to Cloudflare…"
+    },
+    "genderOptions": {
+      "unknown": "Unspecified",
+      "female": "Female",
+      "male": "Male",
+      "other": "Other"
+    },
+    "person": {
+      "trigger": "Add person",
+      "title": "Add person to the tree",
+      "subtitle": "People can be living or deceased. The data is only visible to family members.",
+      "submit": "Add",
+      "fields": {
+        "fullNameLabel": "Full name",
+        "genderLabel": "Gender",
+        "birthDateLabel": "Date of birth",
+        "birthPlaceLabel": "Place of birth",
+        "deathDateLabel": "Date of death",
+        "deathPlaceLabel": "Place of death",
+        "deathDateHint": "Leave blank if living.",
+        "bioLabel": "Short bio",
+        "avatarLabel": "Photo (avatar)"
+      },
+      "errors": {
+        "fullNameRequired": "Full name is required.",
+        "avatarUploadFailed": "Photo upload failed."
+      }
+    },
+    "editPerson": {
+      "title": "Edit person",
+      "fields": {
+        "birthDateLabel": "Birth",
+        "birthPlaceLabel": "Place of birth",
+        "deathDateLabel": "Death",
+        "deathPlaceLabel": "Place of death",
+        "bioLabel": "Bio",
+        "removeCurrentPhoto": "Remove current photo"
+      }
+    },
+    "event": {
+      "trigger": "Add event",
+      "title": "Add event to the timeline",
+      "submit": "Save",
+      "fields": {
+        "typeLabel": "Type",
+        "titleLabel": "Title",
+        "dateLabel": "Date",
+        "placeLabel": "Place",
+        "descriptionLabel": "Description",
+        "relatedPersonsLabel": "Related people ({count})"
+      },
+      "types": {
+        "birth": "Birth",
+        "marriage": "Marriage",
+        "divorce": "Divorce",
+        "death": "Death",
+        "graduation": "Graduation",
+        "migration": "Migration",
+        "adoption": "Adoption",
+        "custom": "Other"
+      },
+      "errors": {
+        "titleRequired": "Title is required."
+      }
+    },
+    "story": {
+      "trigger": "New story",
+      "title": "Write a family story",
+      "subtitle": "Anecdotes, memories, narratives worth keeping.",
+      "submit": "Publish",
+      "fields": {
+        "titleLabel": "Title",
+        "eventDateLabel": "Event date (optional)",
+        "bodyLabel": "Content",
+        "bodyPlaceholder": "Tell the story…",
+        "bodyHint": "Plain text accepted. (Markdown coming soon.)"
+      },
+      "errors": {
+        "titleAndBodyRequired": "Title and content are required."
+      }
+    },
+    "personInfo": {
+      "ariaLabel": "Information about {name}",
+      "close": "Close",
+      "changePhoto": "Change photo",
+      "deceased": "Deceased",
+      "linkedTo": "Linked to",
+      "gender": "Gender",
+      "birth": "Birth",
+      "death": "Death",
+      "bio": "Bio",
+      "edit": "Edit",
+      "addParents": "Add parents",
+      "delete": "Delete",
+      "uploadFailed": "Upload failed."
+    },
+    "addParents": {
+      "title": "Add parents to {name}",
+      "subtitle": "Create new people or pick someone who's already in the tree. Tick at least one side.",
+      "father": "Father",
+      "mother": "Mother",
+      "include": "Include",
+      "useExisting": "Use a person already in the tree",
+      "selectPlaceholder": "Select…",
+      "fullNamePlaceholder": "Full name",
+      "birthTitle": "Birth",
+      "deathTitle": "Death",
+      "cancel": "Cancel",
+      "submit": "Add parents",
+      "submitting": "Saving…",
+      "errors": {
+        "atLeastOne": "Enable and complete at least one (father or mother)."
+      }
+    },
+    "editEdge": {
+      "title": "Relationship",
+      "kindLabels": {
+        "parent": "Parent → Child",
+        "spouse": "Spouses",
+        "sibling": "Siblings"
+      },
+      "confirmDelete": "Delete the relationship \"{source} {arrow} {target}\"? You can undo this by recreating it.",
+      "deleting": "Deleting…",
+      "delete": "Delete relationship",
+      "close": "Close"
+    }
+  },
+  "tree": {
+    "legend": {
+      "parents": "Parents → children",
+      "spouses": "Spouses",
+      "siblings": "Siblings"
+    },
+    "heading": "Family tree ({count, plural, one {# person} other {# people}})",
+    "empty": "There are no people in this tree yet. Start by adding living or deceased relatives.",
+    "confirmDeletePerson": "Delete \"{name}\" from the tree? This also deletes their associated relationships, events, and photos."
+  },
+  "permissions": {
+    "table": {
+      "columns": {
+        "persons": "People",
+        "events": "Events",
+        "photos": "Photos",
+        "stories": "Stories",
+        "documents": "Documents"
+      },
+      "headers": {
+        "member": "Member",
+        "reset": "Reset"
+      },
+      "emptyHint": "Once you add members, you'll be able to restrict what they see here.",
+      "fallbackUnnamed": "(no name)",
+      "canSee": "Can see {label}",
+      "cannotSee": "Cannot see {label}",
+      "removeOverride": "Remove override",
+      "noOverride": "No override",
+      "footerNote": "Note: if you remove \"Photos\" from a member, they also won't see photos in the timeline. Owners always see everything."
+    },
+    "roleMatrix": {
+      "intro": "Summary of what each role can do. The \"General permissions\" toggles can restrict members even further.",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "capabilities": {
+        "editFamilyInfo": "Edit family information",
+        "changeGeneralPermissions": "Change general permissions",
+        "promoteRemoveMembers": "Promote / remove members",
+        "inviteRemoveMembers": "Invite / remove members",
+        "restrictPerPersonViews": "Restrict views per person",
+        "transferOwnership": "Transfer ownership",
+        "deleteFamily": "Delete the family",
+        "manageContent": "Add/edit/delete people, events, photos, etc.",
+        "addContentSubjectToToggles": "Add content (subject to toggles)"
+      }
+    }
+  },
+  "toggleSettings": {
+    "intro": "These toggles only apply <semibold>to members</semibold>. Owners and admins can always do everything.",
+    "saving": "saving…",
+    "items": {
+      "invite": {
+        "label": "Invite relatives",
+        "hint": "Members can invite other @username."
+      },
+      "addPersons": {
+        "label": "Add people to the tree",
+        "hint": "Members can add new relatives (living or deceased)."
+      },
+      "addEvents": {
+        "label": "Add events",
+        "hint": "Weddings, births, deaths in the timeline."
+      },
+      "addPhotos": {
+        "label": "Upload photos",
+        "hint": "Family gallery (Cloudflare Images)."
+      },
+      "addStories": {
+        "label": "Write stories",
+        "hint": "Anecdotes and memories."
+      },
+      "addDocuments": {
+        "label": "Upload documents",
+        "hint": "Certificates, letters, identifications."
+      }
+    }
+  },
+  "transferOwnership": {
+    "needAnotherMember": "To transfer ownership you need another member in the family. Invite someone first.",
+    "trigger": "Transfer ownership",
+    "title": "Transfer family ownership",
+    "subtitle": "After transferring, your role becomes <semibold>admin</semibold> and the new owner takes full control (including being able to delete the family or remove you).",
+    "newOwnerLabel": "New owner",
+    "selectPlaceholder": "Select…",
+    "fallbackUnnamed": "(no name)",
+    "confirmLabel": "To confirm, type <code>TRANSFER</code>",
+    "confirmKeyword": "TRANSFER",
+    "cancel": "Cancel",
+    "submit": "Transfer",
+    "submitting": "Transferring…",
+    "errors": {
+      "selectOwner": "Pick a new owner.",
+      "typeConfirm": "Type TRANSFER to confirm."
+    }
+  },
+  "editForm": {
+    "fields": {
+      "nameLabel": "Name",
+      "descriptionLabel": "Description",
+      "coverLabel": "Cover photo",
+      "removeCurrentCover": "Remove current photo"
+    },
+    "errors": {
+      "uploadFailed": "Image upload failed."
+    },
+    "savedMessage": "Changes saved.",
+    "submit": "Save changes",
+    "submitting": "Saving…"
+  },
+  "deleteFamily": {
+    "heading": "Delete family",
+    "warning": "This wipes <semibold>everything</semibold>: tree, photos, stories, events, documents, and members. It cannot be undone.",
+    "confirmLabel": "To confirm, type the exact name: <code>{name}</code>",
+    "deleting": "Deleting…",
+    "submit": "Delete family forever",
+    "errors": {
+      "mustMatch": "Type \"{name}\" exactly to confirm."
+    }
+  },
+  "uploadDocument": {
+    "trigger": "Upload document",
+    "title": "Upload family document",
+    "subtitle": "PDFs go to private storage (signed URL on download). Images go to Cloudflare.",
+    "fields": {
+      "titleLabel": "Title",
+      "titlePlaceholder": "E.g. María's birth certificate",
+      "kindLabel": "Type",
+      "fileLabel": "File",
+      "fileHint": "Images (JPG/PNG) or PDFs."
+    },
+    "kindOptions": {
+      "birth_cert": "Birth certificate",
+      "marriage_cert": "Marriage certificate",
+      "death_cert": "Death certificate",
+      "id": "Identification",
+      "letter": "Letter",
+      "other": "Other"
+    },
+    "progress": {
+      "uploadingToCloudflare": "Uploading to Cloudflare…",
+      "uploadingPdf": "Uploading PDF to private storage…"
+    },
+    "errors": {
+      "selectFile": "Select a file (image or PDF).",
+      "titleRequired": "Title is required.",
+      "fileType": "Only images (JPG/PNG) or PDFs are allowed.",
+      "uploadFailed": "Upload failed."
+    },
+    "cancel": "Cancel",
+    "submit": "Upload",
+    "submitting": "Saving…"
+  },
+  "uploadPhoto": {
+    "trigger": "Upload photo",
+    "title": "Upload family photo",
+    "subtitle": "Photos are stored on Cloudflare and only visible to family members.",
+    "fields": {
+      "imageLabel": "Image",
+      "captionLabel": "Description",
+      "captionPlaceholder": "E.g. Christmas gathering 2010",
+      "takenAtLabel": "Photo date",
+      "taggedLabel": "Tagged people ({count})"
+    },
+    "progress": "Uploading to Cloudflare… {progress}%",
+    "errors": {
+      "selectImage": "Select an image.",
+      "mustBeImage": "The file must be an image.",
+      "uploadFailed": "Upload failed."
+    },
+    "cancel": "Cancel",
+    "submit": "Upload",
+    "submitting": "Saving…"
+  },
+  "linkRelationship": {
+    "trigger": "Connect relationship",
+    "title": "Connect two people",
+    "kindLabel": "Relationship type",
+    "kindOptions": {
+      "parent": {
+        "label": "Parent → Child",
+        "help": "A is parent of B (directional)."
+      },
+      "spouse": {
+        "label": "Spouses",
+        "help": "A and B are married (non-directional)."
+      },
+      "sibling": {
+        "label": "Siblings",
+        "help": "A and B are siblings (non-directional)."
+      }
+    },
+    "labels": {
+      "parentA": "Parent (father/mother)",
+      "parentB": "Child",
+      "spouseA": "Person A",
+      "spouseB": "Person B",
+      "siblingA": "Sibling A",
+      "siblingB": "Sibling B"
+    },
+    "selectPlaceholder": "Select…",
+    "errors": {
+      "selectTwo": "Select two different people.",
+      "mustDiffer": "The two people must be different."
+    },
+    "cancel": "Cancel",
+    "submit": "Connect",
+    "submitting": "Saving…"
+  },
+  "leaveFamily": {
+    "trigger": "Leave family",
+    "confirm": "Are you sure you want to leave <semibold>{name}</semibold>? You will lose access to the tree and content. If you are invited again you can return.",
+    "yes": "Yes, leave",
+    "leaving": "Leaving…",
+    "cancel": "Cancel"
+  },
+  "inviteMember": {
+    "trigger": "Invite relative",
+    "label": "Invite a relative by @username",
+    "placeholder": "@username",
+    "hint": "Only existing Yebaam users. They will receive an invitation to join this family.",
+    "errors": {
+      "usernameRequired": "Type an @username."
+    },
+    "success": "Invitation sent to @{username}.",
+    "close": "Close",
+    "submit": "Send invitation",
+    "submitting": "Sending…"
   }
 }

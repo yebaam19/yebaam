@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   useConversationMessages,
   useSendMessageAsPage,
@@ -11,7 +12,7 @@ import { MessageType } from '../../interfaces/page-message.interface';
 import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
 import { CheckIcon } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 
 interface ActiveConversation {
   id: string;
@@ -33,10 +34,12 @@ export function PageMessengerChatView({
   activeConversation,
   onClose,
 }: PageMessengerChatViewProps) {
+  const t = useTranslations('pages.messenger.chatView');
   const [messageText, setMessageText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dateLocale = useDateFnsLocale();
 
   // Queries
   const { data: messagesData, isLoading } = useConversationMessages(
@@ -103,7 +106,7 @@ export function PageMessengerChatView({
     if (!activeConversation) return;
 
     // Emitir evento de typing
-    emitTyping(activeConversation.id, 'Página', true);
+    emitTyping(activeConversation.id, t('typingSenderName'), true);
 
     // Clear previous timeout
     if (typingTimeoutRef.current) {
@@ -112,7 +115,7 @@ export function PageMessengerChatView({
 
     // Set timeout to stop typing
     typingTimeoutRef.current = setTimeout(() => {
-      emitTyping(activeConversation.id, 'Página', false);
+      emitTyping(activeConversation.id, t('typingSenderName'), false);
     }, 3000);
   };
 
@@ -133,8 +136,8 @@ export function PageMessengerChatView({
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        <p className="text-lg font-medium">Selecciona una conversación</p>
-        <p className="text-sm">Elige un cliente para ver los mensajes</p>
+        <p className="text-lg font-medium">{t('emptyTitle')}</p>
+        <p className="text-sm">{t('emptyDescription')}</p>
       </div>
     );
   }
@@ -164,10 +167,10 @@ export function PageMessengerChatView({
               {isConnected ? (
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  Conectado
+                  {t('connected')}
                 </span>
               ) : (
-                'Desconectado'
+                t('disconnected')
               )}
             </p>
           </div>
@@ -178,7 +181,7 @@ export function PageMessengerChatView({
           className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
         >
           <CheckIcon className="h-4 w-4" />
-          Marcar leído
+          {t('markRead')}
         </button>
       </div>
 
@@ -188,12 +191,12 @@ export function PageMessengerChatView({
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-sm text-neutral-500">Cargando mensajes...</p>
+              <p className="text-sm text-neutral-500">{t('loadingMessages')}</p>
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-neutral-500">
-            <p>No hay mensajes aún</p>
+            <p>{t('noMessages')}</p>
           </div>
         ) : (
           <>
@@ -201,7 +204,7 @@ export function PageMessengerChatView({
               const isFromPage = msg.senderType === 'page';
               const timeAgo = formatDistanceToNow(new Date(msg.createdAt), {
                 addSuffix: true,
-                locale: es,
+                locale: dateLocale,
               });
 
               return (
@@ -270,7 +273,7 @@ export function PageMessengerChatView({
                 handleSendMessage();
               }
             }}
-            placeholder="Escribe una respuesta..."
+            placeholder={t('inputPlaceholder')}
             rows={1}
             className="flex-1 resize-none px-4 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-32"
             style={{
@@ -287,7 +290,7 @@ export function PageMessengerChatView({
           </button>
         </div>
         <p className="text-xs text-neutral-500 mt-2">
-          Presiona Enter para enviar, Shift+Enter para nueva línea
+          {t('inputHint')}
         </p>
       </div>
     </div>

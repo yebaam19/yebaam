@@ -8,7 +8,6 @@ import {
   formatMembersCount,
   getCategoryLabel,
   getCategoryColor,
-  getPrivacyLabel,
 } from '../utils/communityHelpers';
 import {
   UserGroupIcon,
@@ -52,7 +51,7 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
           {community.privacy === 'PRIVATE' && (
             <div className="absolute top-2 right-2 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs font-medium px-2 py-1 rounded-full">
               <LockClosedIcon className="w-3 h-3" />
-              {getPrivacyLabel(community.privacy)}
+              {t('card.privacyPrivate')}
             </div>
           )}
         </div>

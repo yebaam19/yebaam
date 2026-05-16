@@ -1,0 +1,58 @@
+{
+  "create": {
+    "title": "Your story",
+    "back": "Back",
+    "visibleFor24h": "Visible for 24 hours",
+    "willBeVisible": "Your story will be visible for 24 hours",
+    "addToStory": "Add to your story",
+    "createWithPhoto": "Create photo story",
+    "shareImage": "Share an image",
+    "createWithVideo": "Create video story",
+    "upToSeconds": "Up to {seconds}s",
+    "createTextStory": "Create text story",
+    "customBackgroundFont": "Custom background and font",
+    "selectedFile": "Selected file",
+    "changeFile": "Change file",
+    "background": "Background",
+    "backgroundOption": "Background {index}",
+    "size": "Size",
+    "align": "Align",
+    "preview": "Preview",
+    "chooseOption": "Choose an option to start.",
+    "writeYourStory": "Write your story...",
+    "startWriting": "Start writing...",
+    "createYourStory": "Create your story",
+    "photo": "Photo",
+    "video": "Video",
+    "discard": "Discard",
+    "share": "Share",
+    "publishing": "Publishing…",
+    "discardModalTitle": "Discard story?",
+    "discardModalDescription": "If you leave now, you will lose any changes you have made.",
+    "continueEditing": "Continue editing",
+    "confirmDiscard": "Discard this story?",
+    "errors": {
+      "invalidFileType": "Invalid file type",
+      "fileExceedsSize": "File exceeds {size}MB",
+      "videoTooLong": "Video cannot last more than {seconds} seconds",
+      "writeSomething": "Write something for your story",
+      "selectFile": "Select a file",
+      "textNotAvailable": "Text stories are not available yet",
+      "publishError": "Error publishing the story"
+    },
+    "success": {
+      "published": "Story published successfully!"
+    }
+  },
+  "ring": {
+    "yourStory": "Your story",
+    "create": "Create",
+    "noStories": "No stories available"
+  },
+  "header": {
+    "back": "Back",
+    "now": "Now",
+    "publishing": "Publishing...",
+    "publish": "Publish"
+  }
+}

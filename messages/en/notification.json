@@ -28,6 +28,28 @@
   "bell": {
     "viewAll": "View all notifications"
   },
+  "type": {
+    "POST_LIKE": "reacted to your post",
+    "POST_COMMENT": "commented on your post",
+    "POST_SHARE": "shared your post",
+    "COMMENT_LIKE": "reacted to your comment",
+    "COMMENT_REPLY": "replied to your comment",
+    "POST_MENTION": "mentioned you in a post",
+    "COMMENT_MENTION": "mentioned you in a comment",
+    "POST_TAG": "tagged you in a post",
+    "FRIEND_REQUEST": "sent you a friend request",
+    "FRIEND_ACCEPTED": "accepted your friend request",
+    "FRIEND_SUGGESTION": "is a friend suggestion",
+    "GROUP_INVITE": "invited you to a group",
+    "GROUP_POST": "posted in a group",
+    "GROUP_JOIN": "joined your group",
+    "EVENT_INVITE": "invited you to an event",
+    "EVENT_REMINDER": "Event reminder",
+    "NEW_MESSAGE": "sent you a message",
+    "MUSIC_ARTICLE_PUBLISHED": "published a new article",
+    "SYSTEM": "System notification",
+    "ANNOUNCEMENT": "Announcement"
+  },
   "page": {
     "back": "Back",
     "title": "Notifications",

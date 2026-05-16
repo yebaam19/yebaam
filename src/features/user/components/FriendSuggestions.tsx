@@ -4,6 +4,7 @@ import { UserPlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
 import type { Route } from 'next';
@@ -21,6 +22,7 @@ import type { Route } from 'next';
  */
 export function FriendSuggestions() {
   const { suggestions, isLoadingSuggestions, sendRequest, isSending } = useFriendRequests()
+  const t = useTranslations('friendships.suggestions')
 
   const [hiddenSuggestions, setHiddenSuggestions] = useState<Set<string>>(new Set())
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
@@ -85,7 +87,7 @@ export function FriendSuggestions() {
               <button
                 onClick={() => handleHideSuggestion(suggestion.id)}
                 className="absolute top-2 right-2 z-10 rounded-full bg-white/90 p-1.5 transition-colors hover:bg-gray-100 dark:bg-gray-800/90 dark:hover:bg-gray-700"
-                aria-label="Ocultar sugerencia"
+                aria-label={t('hideAria')}
               >
                 <XMarkIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </button>

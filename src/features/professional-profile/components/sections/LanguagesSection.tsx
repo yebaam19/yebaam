@@ -9,6 +9,7 @@
 import { addLanguageAction, deleteLanguageAction, updateLanguageAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { cn } from '@/lib/utils'
 import { LanguageIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -44,6 +45,7 @@ const getProficiencyColor = (proficiency?: string | null): string => {
 
 export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -57,7 +59,7 @@ export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSe
       toast.error(result.error)
       return
     }
-    toast.success(selectedLanguage ? 'Idioma actualizado correctamente' : 'Idioma agregado correctamente')
+    toast.success(selectedLanguage ? t('languages.toastUpdated') : t('languages.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -84,7 +86,7 @@ export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSe
       toast.error(result.error)
       return
     }
-    toast.success('Idioma eliminado')
+    toast.success(t('languages.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedLanguage(null)
     router.refresh()
@@ -93,23 +95,23 @@ export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSe
   return (
     <div>
       <SectionHeader
-        title="Idiomas"
+        title={t('languages.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Idioma"
+        addLabel={t('languages.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={LanguageIcon}
-          title="Sin idiomas registrados"
+          title={t('languages.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega los idiomas que dominas y tu nivel de competencia'
-              : 'Este usuario aun no ha agregado idiomas a su perfil'
+              ? t('languages.emptyDescriptionOwner')
+              : t('languages.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Idioma' : undefined}
+          actionLabel={isOwner ? t('languages.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -171,8 +173,8 @@ export function LanguagesSection({ profileId, isOwner, items = [] }: LanguagesSe
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Idioma"
-        description="¿Estas seguro de que deseas eliminar este idioma? Esta accion no se puede deshacer."
+        title={t('languages.deleteTitle')}
+        description={t('languages.deleteDescription')}
       />
     </div>
   )

@@ -22,6 +22,16 @@
     "personOne": "{count} persona en el árbol",
     "personOther": "{count} personas en el árbol"
   },
+  "detail": {
+    "backToList": "Mis familias",
+    "memberCount": "{count, plural, one {# miembro} other {# miembros}}",
+    "personCount": "{count, plural, one {# persona en el árbol} other {# personas en el árbol}}"
+  },
+  "home": {
+    "title": "Tu familia está lista para crecer",
+    "description": "{count, plural, one {Por ahora hay # persona registrada} other {Por ahora hay # personas registradas}} en este árbol. Empieza invitando a familiares y agregándolos al árbol.",
+    "viewMembers": "Ver miembros"
+  },
   "invitation": {
     "fallbackInviter": "Alguien",
     "fallbackFamily": "Una familia",
@@ -87,5 +97,371 @@
     "empty": "Aún no hay miembros.",
     "noName": "(Sin nombre)",
     "fallbackMemberLabel": "el miembro"
+  },
+  "memberActions": {
+    "menuAria": "Acciones del miembro"
+  },
+  "dialogs": {
+    "common": {
+      "saving": "Guardando…",
+      "uploadingToCloudflare": "Subiendo a Cloudflare…"
+    },
+    "genderOptions": {
+      "unknown": "Sin especificar",
+      "female": "Femenino",
+      "male": "Masculino",
+      "other": "Otro"
+    },
+    "person": {
+      "trigger": "Agregar persona",
+      "title": "Agregar persona al árbol",
+      "subtitle": "Las personas pueden estar vivas o fallecidas. Los datos solo son visibles para los miembros de la familia.",
+      "submit": "Agregar",
+      "fields": {
+        "fullNameLabel": "Nombre completo",
+        "genderLabel": "Género",
+        "birthDateLabel": "Fecha de nacimiento",
+        "birthPlaceLabel": "Lugar de nacimiento",
+        "deathDateLabel": "Fecha de defunción",
+        "deathPlaceLabel": "Lugar de defunción",
+        "deathDateHint": "Vacío si está viva.",
+        "bioLabel": "Biografía corta",
+        "avatarLabel": "Foto (avatar)"
+      },
+      "errors": {
+        "fullNameRequired": "El nombre completo es obligatorio.",
+        "avatarUploadFailed": "Falló la subida de la foto."
+      }
+    },
+    "editPerson": {
+      "title": "Editar persona",
+      "fields": {
+        "birthDateLabel": "Nacimiento",
+        "birthPlaceLabel": "Lugar nacimiento",
+        "deathDateLabel": "Defunción",
+        "deathPlaceLabel": "Lugar defunción",
+        "bioLabel": "Biografía",
+        "removeCurrentPhoto": "Quitar la foto actual"
+      }
+    },
+    "event": {
+      "trigger": "Agregar evento",
+      "title": "Agregar evento a la línea de tiempo",
+      "submit": "Guardar",
+      "fields": {
+        "typeLabel": "Tipo",
+        "titleLabel": "Título",
+        "dateLabel": "Fecha",
+        "placeLabel": "Lugar",
+        "descriptionLabel": "Descripción",
+        "relatedPersonsLabel": "Personas relacionadas ({count})"
+      },
+      "types": {
+        "birth": "Nacimiento",
+        "marriage": "Matrimonio",
+        "divorce": "Divorcio",
+        "death": "Defunción",
+        "graduation": "Graduación",
+        "migration": "Migración",
+        "adoption": "Adopción",
+        "custom": "Otro"
+      },
+      "errors": {
+        "titleRequired": "El título es obligatorio."
+      }
+    },
+    "story": {
+      "trigger": "Nueva historia",
+      "title": "Escribir una historia familiar",
+      "subtitle": "Anécdotas, recuerdos, narraciones que vale la pena guardar.",
+      "submit": "Publicar",
+      "fields": {
+        "titleLabel": "Título",
+        "eventDateLabel": "Fecha del evento (opcional)",
+        "bodyLabel": "Contenido",
+        "bodyPlaceholder": "Cuenta la historia…",
+        "bodyHint": "Acepta texto plano. (Markdown próximamente.)"
+      },
+      "errors": {
+        "titleAndBodyRequired": "El título y el contenido son obligatorios."
+      }
+    },
+    "personInfo": {
+      "ariaLabel": "Información de {name}",
+      "close": "Cerrar",
+      "changePhoto": "Cambiar foto",
+      "deceased": "Fallecido/a",
+      "linkedTo": "Vinculado a",
+      "gender": "Género",
+      "birth": "Nacimiento",
+      "death": "Defunción",
+      "bio": "Biografía",
+      "edit": "Editar",
+      "addParents": "Agregar padres",
+      "delete": "Eliminar",
+      "uploadFailed": "Falló la subida."
+    },
+    "addParents": {
+      "title": "Agregar padres a {name}",
+      "subtitle": "Crea nuevas personas o selecciona alguien que ya está en el árbol. Marca al menos un lado.",
+      "father": "Padre",
+      "mother": "Madre",
+      "include": "Incluir",
+      "useExisting": "Usar persona ya en el árbol",
+      "selectPlaceholder": "Selecciona…",
+      "fullNamePlaceholder": "Nombre completo",
+      "birthTitle": "Nacimiento",
+      "deathTitle": "Defunción",
+      "cancel": "Cancelar",
+      "submit": "Agregar padres",
+      "submitting": "Guardando…",
+      "errors": {
+        "atLeastOne": "Activa y completa al menos uno (padre o madre)."
+      }
+    },
+    "editEdge": {
+      "title": "Relación",
+      "kindLabels": {
+        "parent": "Padre/madre → Hijo/a",
+        "spouse": "Cónyuges",
+        "sibling": "Hermanos"
+      },
+      "confirmDelete": "¿Eliminar la relación \"{source} {arrow} {target}\"? La acción se puede deshacer creándola otra vez.",
+      "deleting": "Eliminando…",
+      "delete": "Eliminar relación",
+      "close": "Cerrar"
+    }
+  },
+  "tree": {
+    "legend": {
+      "parents": "Padres → hijos",
+      "spouses": "Cónyuges",
+      "siblings": "Hermanos"
+    },
+    "heading": "Árbol genealógico ({count, plural, one {# persona} other {# personas}})",
+    "empty": "Aún no hay personas en este árbol. Empieza agregando familiares vivos o fallecidos.",
+    "confirmDeletePerson": "¿Eliminar a \"{name}\" del árbol? Esto borra también sus relaciones, eventos y fotos asociadas."
+  },
+  "permissions": {
+    "table": {
+      "columns": {
+        "persons": "Personas",
+        "events": "Eventos",
+        "photos": "Fotos",
+        "stories": "Historias",
+        "documents": "Documentos"
+      },
+      "headers": {
+        "member": "Miembro",
+        "reset": "Reset"
+      },
+      "emptyHint": "Cuando agregues miembros podrás restringir qué ven aquí.",
+      "fallbackUnnamed": "(sin nombre)",
+      "canSee": "Puede ver {label}",
+      "cannotSee": "No puede ver {label}",
+      "removeOverride": "Quitar override",
+      "noOverride": "Sin override",
+      "footerNote": "Nota: si quitas \"Fotos\" a un miembro, tampoco verá fotos en la línea de tiempo. Owners ven todo siempre."
+    },
+    "roleMatrix": {
+      "intro": "Resumen de qué puede hacer cada rol. Los toggles de \"Permisos generales\" pueden restringir aún más a los miembros.",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "capabilities": {
+        "editFamilyInfo": "Editar información de la familia",
+        "changeGeneralPermissions": "Cambiar permisos generales",
+        "promoteRemoveMembers": "Promover / expulsar miembros",
+        "inviteRemoveMembers": "Invitar / expulsar miembros",
+        "restrictPerPersonViews": "Restringir vistas por persona",
+        "transferOwnership": "Transferir propiedad",
+        "deleteFamily": "Eliminar la familia",
+        "manageContent": "Agregar/editar/borrar personas, eventos, fotos, etc.",
+        "addContentSubjectToToggles": "Agregar contenido (sujeto a toggles)"
+      }
+    }
+  },
+  "toggleSettings": {
+    "intro": "Estos toggles aplican <semibold>solo a miembros</semibold>. Owners y admins siempre pueden todo.",
+    "saving": "guardando…",
+    "items": {
+      "invite": {
+        "label": "Invitar familiares",
+        "hint": "Los miembros pueden invitar a otros @username."
+      },
+      "addPersons": {
+        "label": "Agregar personas al árbol",
+        "hint": "Los miembros pueden añadir nuevos familiares (vivos o fallecidos)."
+      },
+      "addEvents": {
+        "label": "Agregar eventos",
+        "hint": "Bodas, nacimientos, defunciones en la línea de tiempo."
+      },
+      "addPhotos": {
+        "label": "Subir fotos",
+        "hint": "Galería familiar (Cloudflare Images)."
+      },
+      "addStories": {
+        "label": "Escribir historias",
+        "hint": "Anécdotas y recuerdos."
+      },
+      "addDocuments": {
+        "label": "Subir documentos",
+        "hint": "Actas, cartas, identificaciones."
+      }
+    }
+  },
+  "transferOwnership": {
+    "needAnotherMember": "Para transferir la propiedad necesitas otro miembro en la familia. Invita a alguien primero.",
+    "trigger": "Transferir propiedad",
+    "title": "Transferir propiedad de la familia",
+    "subtitle": "Después de transferir, tu rol pasa a <semibold>admin</semibold> y el nuevo dueño asume control total (incluyendo poder eliminar la familia o expulsarte).",
+    "newOwnerLabel": "Nuevo dueño",
+    "selectPlaceholder": "Selecciona…",
+    "fallbackUnnamed": "(sin nombre)",
+    "confirmLabel": "Para confirmar, escribe <code>TRANSFERIR</code>",
+    "confirmKeyword": "TRANSFERIR",
+    "cancel": "Cancelar",
+    "submit": "Transferir",
+    "submitting": "Transfiriendo…",
+    "errors": {
+      "selectOwner": "Selecciona un nuevo dueño.",
+      "typeConfirm": "Escribe TRANSFERIR para confirmar."
+    }
+  },
+  "editForm": {
+    "fields": {
+      "nameLabel": "Nombre",
+      "descriptionLabel": "Descripción",
+      "coverLabel": "Foto de portada",
+      "removeCurrentCover": "Eliminar la foto actual"
+    },
+    "errors": {
+      "uploadFailed": "Falló la subida de la imagen."
+    },
+    "savedMessage": "Cambios guardados.",
+    "submit": "Guardar cambios",
+    "submitting": "Guardando…"
+  },
+  "deleteFamily": {
+    "heading": "Eliminar familia",
+    "warning": "Esto borra <semibold>todo</semibold>: árbol, fotos, historias, eventos, documentos y miembros. No se puede deshacer.",
+    "confirmLabel": "Para confirmar, escribe el nombre exacto: <code>{name}</code>",
+    "deleting": "Eliminando…",
+    "submit": "Eliminar familia para siempre",
+    "errors": {
+      "mustMatch": "Escribe \"{name}\" exactamente para confirmar."
+    }
+  },
+  "uploadDocument": {
+    "trigger": "Subir documento",
+    "title": "Subir documento familiar",
+    "subtitle": "Los PDFs van a almacenamiento privado (URL firmada al descargar). Las imágenes van a Cloudflare.",
+    "fields": {
+      "titleLabel": "Título",
+      "titlePlaceholder": "Ej. Acta de nacimiento de María",
+      "kindLabel": "Tipo",
+      "fileLabel": "Archivo",
+      "fileHint": "Imágenes (JPG/PNG) o PDFs."
+    },
+    "kindOptions": {
+      "birth_cert": "Acta de nacimiento",
+      "marriage_cert": "Acta de matrimonio",
+      "death_cert": "Acta de defunción",
+      "id": "Identificación",
+      "letter": "Carta",
+      "other": "Otro"
+    },
+    "progress": {
+      "uploadingToCloudflare": "Subiendo a Cloudflare…",
+      "uploadingPdf": "Subiendo PDF a almacenamiento privado…"
+    },
+    "errors": {
+      "selectFile": "Selecciona un archivo (imagen o PDF).",
+      "titleRequired": "El título es obligatorio.",
+      "fileType": "Solo se permiten imágenes (JPG/PNG) o PDFs.",
+      "uploadFailed": "Falló la subida."
+    },
+    "cancel": "Cancelar",
+    "submit": "Subir",
+    "submitting": "Guardando…"
+  },
+  "uploadPhoto": {
+    "trigger": "Subir foto",
+    "title": "Subir foto familiar",
+    "subtitle": "Las fotos se almacenan en Cloudflare y solo son visibles para los miembros de la familia.",
+    "fields": {
+      "imageLabel": "Imagen",
+      "captionLabel": "Descripción",
+      "captionPlaceholder": "Ej. Reunión navideña 2010",
+      "takenAtLabel": "Fecha de la foto",
+      "taggedLabel": "Personas etiquetadas ({count})"
+    },
+    "progress": "Subiendo a Cloudflare… {progress}%",
+    "errors": {
+      "selectImage": "Selecciona una imagen.",
+      "mustBeImage": "El archivo debe ser una imagen.",
+      "uploadFailed": "Falló la subida."
+    },
+    "cancel": "Cancelar",
+    "submit": "Subir",
+    "submitting": "Guardando…"
+  },
+  "linkRelationship": {
+    "trigger": "Conectar relación",
+    "title": "Conectar dos personas",
+    "kindLabel": "Tipo de relación",
+    "kindOptions": {
+      "parent": {
+        "label": "Padre/Madre → Hijo/a",
+        "help": "A es padre/madre de B (direccional)."
+      },
+      "spouse": {
+        "label": "Cónyuges",
+        "help": "A y B están casados (no direccional)."
+      },
+      "sibling": {
+        "label": "Hermanos",
+        "help": "A y B son hermanos (no direccional)."
+      }
+    },
+    "labels": {
+      "parentA": "Padre o madre",
+      "parentB": "Hijo/a",
+      "spouseA": "Persona A",
+      "spouseB": "Persona B",
+      "siblingA": "Hermano A",
+      "siblingB": "Hermano B"
+    },
+    "selectPlaceholder": "Selecciona…",
+    "errors": {
+      "selectTwo": "Selecciona dos personas distintas.",
+      "mustDiffer": "Las dos personas deben ser distintas."
+    },
+    "cancel": "Cancelar",
+    "submit": "Conectar",
+    "submitting": "Guardando…"
+  },
+  "leaveFamily": {
+    "trigger": "Abandonar familia",
+    "confirm": "¿Seguro que quieres salir de <semibold>{name}</semibold>? Perderás acceso al árbol y al contenido. Si te invitan de nuevo podrás volver.",
+    "yes": "Sí, salir",
+    "leaving": "Saliendo…",
+    "cancel": "Cancelar"
+  },
+  "inviteMember": {
+    "trigger": "Invitar familiar",
+    "label": "Invitar a un familiar por @username",
+    "placeholder": "@username",
+    "hint": "Solo usuarios existentes en Yebaam. Recibirán una invitación para unirse a esta familia.",
+    "errors": {
+      "usernameRequired": "Escribe un @username."
+    },
+    "success": "Invitación enviada a @{username}.",
+    "close": "Cerrar",
+    "submit": "Enviar invitación",
+    "submitting": "Enviando…"
   }
 }

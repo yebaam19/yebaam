@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { imageUrl } from '@/lib/media/urls';
 import { updateFamily } from '../actions/families.actions';
@@ -9,6 +10,7 @@ import type { FamilyWithViewer } from '../types/family.types';
 
 export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
   const router = useRouter();
+  const t = useTranslations('familias.editForm');
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState(family.name);
   const [description, setDescription] = useState(family.description ?? '');
@@ -34,7 +36,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
         const r = await uploadService.uploadImage(coverFile);
         coverImageId = r.id;
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Falló la subida de la imagen.');
+        setError(err instanceof Error ? err.message : t('errors.uploadFailed'));
         setUploading(false);
         return;
       } finally {
@@ -55,7 +57,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
         setError(res.error);
         return;
       }
-      setOkMessage('Cambios guardados.');
+      setOkMessage(t('savedMessage'));
       setCoverFile(null);
       setRemoveCover(false);
       router.refresh();
@@ -68,7 +70,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Nombre
+          {t('fields.nameLabel')}
         </label>
         <input
           type="text"
@@ -82,7 +84,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
 
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Descripción
+          {t('fields.descriptionLabel')}
         </label>
         <textarea
           value={description}
@@ -95,7 +97,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
 
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Foto de portada
+          {t('fields.coverLabel')}
         </label>
         {currentCover && (
           <img
@@ -120,7 +122,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
               checked={removeCover}
               onChange={(e) => setRemoveCover(e.target.checked)}
             />
-            Eliminar la foto actual
+            {t('fields.removeCurrentCover')}
           </label>
         )}
       </div>
@@ -142,7 +144,7 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
           disabled={busy}
           className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
         >
-          {busy ? 'Guardando…' : 'Guardar cambios'}
+          {busy ? t('submitting') : t('submit')}
         </button>
       </div>
     </form>

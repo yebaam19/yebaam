@@ -6,7 +6,7 @@ import { useChatStore } from '@/features/chat/store/chat.store';
 import { ConversationType } from '@/features/chat/types';
 import { supabase } from '@/utils/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 
 interface UserBasicInfo {
   id: string;
@@ -22,6 +22,7 @@ export function useMessengerSidebar() {
   const [usersMap, setUsersMap] = useState<Map<string, UserBasicInfo>>(new Map());
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const dateLocale = useDateFnsLocale();
 
   const { conversations, isLoadingConversations } = useChat();
   const { user: currentUser } = useAuthStore();
@@ -149,9 +150,9 @@ export function useMessengerSidebar() {
   // Helper: Formatear timestamp relativo
   const formatTimestamp = (date: Date) => {
     try {
-      return formatDistanceToNow(new Date(date), { 
-        addSuffix: false, 
-        locale: es 
+      return formatDistanceToNow(new Date(date), {
+        addSuffix: false,
+        locale: dateLocale
       });
     } catch {
       return '';

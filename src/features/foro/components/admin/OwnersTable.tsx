@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import {
   disableForumSpaceBySlug,
   enableForumForOwner,
@@ -13,23 +14,15 @@ interface Props {
   initial: OwnerCandidate[]
 }
 
-const TYPE_LABELS: Record<OwnerType, string> = {
-  club: 'Club',
-  group: 'Grupo',
-  blog: 'Blog',
-  page: 'Página',
-  city: 'Ciudad',
-  profile: 'Perfil',
-  portal: 'Portal',
-  community: 'Comunidad',
-}
-
 export default function OwnersTable({ initial }: Props) {
+  const t = useTranslations('foro.admin.owners')
   const [candidates, setCandidates] = useState(initial)
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'all' | OwnerType>('all')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  const typeLabel = (type: OwnerType) => t(`ownerType.${type}`)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -48,7 +41,7 @@ export default function OwnersTable({ initial }: Props) {
         ownerId: c.ownerId,
       })
       if (!result.ok) {
-        setError(result.error ?? 'No se pudo habilitar.')
+        setError(result.error ?? t('errors.enableFailed'))
         return
       }
       setCandidates((prev) =>
@@ -72,7 +65,7 @@ export default function OwnersTable({ initial }: Props) {
     startTransition(async () => {
       const result = await disableForumSpaceBySlug(c.spaceSlug!)
       if (!result.ok) {
-        setError(result.error ?? 'No se pudo deshabilitar.')
+        setError(result.error ?? t('errors.disableFailed'))
         return
       }
       setCandidates((prev) =>
@@ -90,11 +83,14 @@ export default function OwnersTable({ initial }: Props) {
       <header className="flex flex-col gap-4 border-b border-neutral-200 px-5 py-4 md:flex-row md:items-center md:justify-between dark:border-neutral-800">
         <div>
           <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-            Perfiles
+            {t('title')}
           </h2>
           <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-            {filtered.length} de {candidates.length}{' '}
-            {candidates.length === 1 ? 'perfil' : 'perfiles'}
+            {t('countLabel', {
+              filtered: filtered.length,
+              total: candidates.length,
+              count: candidates.length,
+            })}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -103,19 +99,19 @@ export default function OwnersTable({ initial }: Props) {
             onChange={(e) => setTypeFilter(e.target.value as 'all' | OwnerType)}
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none sm:w-auto dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
           >
-            <option value="all">Todos los tipos</option>
-            <option value="club">Clubs</option>
-            <option value="group">Grupos</option>
-            <option value="page">Páginas</option>
-            <option value="blog">Blogs</option>
-            <option value="profile">Perfiles</option>
-            <option value="portal">Portal</option>
+            <option value="all">{t('filters.allTypes')}</option>
+            <option value="club">{t('filters.club')}</option>
+            <option value="group">{t('filters.group')}</option>
+            <option value="page">{t('filters.page')}</option>
+            <option value="blog">{t('filters.blog')}</option>
+            <option value="profile">{t('filters.profile')}</option>
+            <option value="portal">{t('filters.portal')}</option>
           </select>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por nombre o slug…"
+            placeholder={t('filters.searchPlaceholder')}
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none sm:w-56 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
           />
         </div>
@@ -131,19 +127,19 @@ export default function OwnersTable({ initial }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50/60 text-left text-[11px] font-semibold tracking-wider text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/40 dark:text-neutral-400">
-              <th className="px-5 py-3">Nombre</th>
-              <th className="hidden px-4 py-3 md:table-cell">Tipo</th>
-              <th className="hidden px-4 py-3 lg:table-cell">Slug</th>
-              <th className="hidden px-4 py-3 lg:table-cell">Privacidad</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-5 py-3 text-right">Acciones</th>
+              <th className="px-5 py-3">{t('table.name')}</th>
+              <th className="hidden px-4 py-3 md:table-cell">{t('table.type')}</th>
+              <th className="hidden px-4 py-3 lg:table-cell">{t('table.slug')}</th>
+              <th className="hidden px-4 py-3 lg:table-cell">{t('table.privacy')}</th>
+              <th className="px-4 py-3">{t('table.status')}</th>
+              <th className="px-5 py-3 text-right">{t('table.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-5 py-12 text-center text-sm text-neutral-500">
-                  Sin resultados.
+                  {t('table.empty')}
                 </td>
               </tr>
             ) : (
@@ -159,12 +155,12 @@ export default function OwnersTable({ initial }: Props) {
                         {c.name}
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-neutral-500 md:hidden">
-                        <span>{TYPE_LABELS[c.ownerType]}</span>
+                        <span>{typeLabel(c.ownerType)}</span>
                         {c.slug && <span className="truncate">· {c.slug}</span>}
                       </div>
                     </td>
                     <td className="hidden px-4 py-4 align-middle text-neutral-600 md:table-cell dark:text-neutral-300">
-                      {TYPE_LABELS[c.ownerType]}
+                      {typeLabel(c.ownerType)}
                     </td>
                     <td className="hidden max-w-[220px] px-4 py-4 align-middle text-neutral-500 lg:table-cell">
                       <span className="block truncate">{c.slug ?? '—'}</span>
@@ -176,17 +172,17 @@ export default function OwnersTable({ initial }: Props) {
                       {enabled ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-green-700 uppercase dark:bg-green-900/30 dark:text-green-300">
                           <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                          Habilitado
+                          {t('status.enabled')}
                         </span>
                       ) : c.hasSpace ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-amber-800 uppercase dark:bg-amber-900/30 dark:text-amber-300">
                           <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                          Inactivo
+                          {t('status.inactive')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-neutral-600 uppercase dark:bg-neutral-800 dark:text-neutral-400">
                           <span className="h-1.5 w-1.5 rounded-full bg-neutral-400" />
-                          Sin foro
+                          {t('status.noForum')}
                         </span>
                       )}
                     </td>
@@ -198,7 +194,7 @@ export default function OwnersTable({ initial }: Props) {
                           onClick={() => handleEnable(c)}
                           className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-primary-500 disabled:opacity-50"
                         >
-                          Habilitar
+                          {t('actions.enable')}
                         </button>
                       )}
                       {c.hasSpace && c.spaceSlug && (
@@ -207,7 +203,7 @@ export default function OwnersTable({ initial }: Props) {
                             href={`/foro/${c.spaceSlug}/admin` as Route}
                             className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
                           >
-                            Administrar
+                            {t('actions.manage')}
                           </Link>
                           {enabled ? (
                             <button
@@ -216,7 +212,7 @@ export default function OwnersTable({ initial }: Props) {
                               onClick={() => handleDisable(c)}
                               className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-900/20"
                             >
-                              Deshabilitar
+                              {t('actions.disable')}
                             </button>
                           ) : (
                             <button
@@ -225,7 +221,7 @@ export default function OwnersTable({ initial }: Props) {
                               onClick={() => handleEnable(c)}
                               className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 disabled:opacity-50 dark:border-green-900/60 dark:text-green-300 dark:hover:bg-green-900/20"
                             >
-                              Reactivar
+                              {t('actions.reactivate')}
                             </button>
                           )}
                         </div>

@@ -2,10 +2,13 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { DocumentTextIcon } from '@/components/icons/heroicons-shim';
 import { addStory } from '../actions/families.actions';
 
 export function AddStoryDialog({ familyId }: { familyId: string }) {
+  const t = useTranslations('familias');
+  const tc = useTranslations('common');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -26,7 +29,7 @@ export function AddStoryDialog({ familyId }: { familyId: string }) {
     e.preventDefault();
     setError(null);
     if (!title.trim() || !body.trim()) {
-      setError('El título y el contenido son obligatorios.');
+      setError(t('dialogs.story.errors.titleAndBodyRequired'));
       return;
     }
     startTransition(async () => {
@@ -53,7 +56,7 @@ export function AddStoryDialog({ familyId }: { familyId: string }) {
         className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
       >
         <DocumentTextIcon className="h-4 w-4" />
-        Nueva historia
+        {t('dialogs.story.trigger')}
       </button>
     );
   }
@@ -62,15 +65,15 @@ export function AddStoryDialog({ familyId }: { familyId: string }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Escribir una historia familiar
+          {t('dialogs.story.title')}
         </h3>
         <p className="mt-1 text-xs text-zinc-500">
-          Anécdotas, recuerdos, narraciones que vale la pena guardar.
+          {t('dialogs.story.subtitle')}
         </p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Título <span className="text-rose-500">*</span>
+              {t('dialogs.story.fields.titleLabel')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -84,7 +87,7 @@ export function AddStoryDialog({ familyId }: { familyId: string }) {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Fecha del evento (opcional)
+              {t('dialogs.story.fields.eventDateLabel')}
             </label>
             <input
               type="date"
@@ -95,17 +98,17 @@ export function AddStoryDialog({ familyId }: { familyId: string }) {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Contenido <span className="text-rose-500">*</span>
+              {t('dialogs.story.fields.bodyLabel')} <span className="text-rose-500">*</span>
             </label>
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={8}
-              placeholder="Cuenta la historia…"
+              placeholder={t('dialogs.story.fields.bodyPlaceholder')}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
               required
             />
-            <p className="mt-1 text-[10px] text-zinc-500">Acepta texto plano. (Markdown próximamente.)</p>
+            <p className="mt-1 text-[10px] text-zinc-500">{t('dialogs.story.fields.bodyHint')}</p>
           </div>
 
           {error && (
@@ -121,14 +124,14 @@ export function AddStoryDialog({ familyId }: { familyId: string }) {
               disabled={pending}
               className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Cancelar
+              {tc('cancel')}
             </button>
             <button
               type="submit"
               disabled={pending || !title.trim() || !body.trim()}
               className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-              {pending ? 'Guardando…' : 'Publicar'}
+              {pending ? t('dialogs.common.saving') : t('dialogs.story.submit')}
             </button>
           </div>
         </form>

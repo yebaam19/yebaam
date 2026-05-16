@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { XMarkIcon, MinusIcon, PhoneIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
@@ -19,17 +22,18 @@ export default function ChatWindowHeader({
   onMinimize,
   onClose,
 }: ChatWindowHeaderProps) {
-  // Obtener estado online en tiempo real desde el store
+  const t = useTranslations('chat.windowHeader');
+  // Real-time online status from the presence store.
   const isOnline = usePresenceStore(state => state.isUserOnline(contactId));
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-t-xl">
       <div className="flex items-center gap-3">
         <div className="relative">
-          <Avatar 
-            src={contactAvatar} 
-            alt={contactName} 
+          <Avatar
+            src={contactAvatar}
+            alt={contactName}
             initials={contactName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-            className="h-9 w-9" 
+            className="h-9 w-9"
           />
           {isOnline && (
             <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-neutral-900" />
@@ -40,7 +44,7 @@ export default function ChatWindowHeader({
             {contactName}
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            {isOnline ? 'En línea' : 'Desconectado'}
+            {isOnline ? t('online') : t('offline')}
           </p>
         </div>
       </div>
@@ -49,28 +53,28 @@ export default function ChatWindowHeader({
         <button
           onClick={() => {}}
           className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
-          title="Llamada de voz"
+          title={t('voiceCall')}
         >
           <PhoneIcon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
         </button>
         <button
           onClick={() => {}}
           className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
-          title="Videollamada"
+          title={t('videoCall')}
         >
           <VideoCameraIcon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
         </button>
         <button
           onClick={onMinimize}
           className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
-          title={isMinimized ? 'Expandir' : 'Minimizar'}
+          title={isMinimized ? t('expand') : t('minimize')}
         >
           <MinusIcon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
         </button>
         <button
           onClick={onClose}
           className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
-          title="Cerrar"
+          title={t('close')}
         >
           <XMarkIcon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
         </button>

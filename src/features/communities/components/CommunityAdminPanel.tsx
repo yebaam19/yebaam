@@ -3,6 +3,7 @@
 import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   approveJoinRequest,
   declineJoinRequest,
@@ -24,6 +25,7 @@ export function CommunityAdminPanel({
   pendingRequests,
 }: CommunityAdminPanelProps) {
   const router = useRouter();
+  const t = useTranslations('communities');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [inviteUsername, setInviteUsername] = useState('');
@@ -68,7 +70,7 @@ export function CommunityAdminPanel({
         setError(result.error);
         return;
       }
-      setInviteResult(`Invitación enviada a @${result.data.invitee.username}`);
+      setInviteResult(t('admin.panel.inviteSuccess', { username: result.data.invitee.username }));
       setInviteUsername('');
       router.refresh();
     });
@@ -78,20 +80,20 @@ export function CommunityAdminPanel({
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
         <CheckBadgeIcon className="h-5 w-5 text-blue-500" />
-        Panel de administración
+        {t('admin.panel.title')}
       </h2>
 
       {privacy === 'SECRET' && (
         <div className="mb-6">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Invitar usuario
+            {t('admin.panel.inviteSectionTitle')}
           </h3>
           <form onSubmit={handleInvite} className="flex gap-2">
             <input
               type="text"
               value={inviteUsername}
               onChange={(e) => setInviteUsername(e.target.value)}
-              placeholder="@usuario"
+              placeholder={t('admin.panel.invitePlaceholder')}
               className="flex-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
             />
             <button
@@ -99,7 +101,7 @@ export function CommunityAdminPanel({
               disabled={isPending || !inviteUsername.trim()}
               className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              Invitar
+              {t('admin.panel.inviteSubmit')}
             </button>
           </form>
           {inviteResult && (
@@ -111,11 +113,11 @@ export function CommunityAdminPanel({
       {privacy === 'PRIVATE' && (
         <div>
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Solicitudes pendientes ({pendingRequests.length})
+            {t('admin.panel.pendingTitle', { count: pendingRequests.length })}
           </h3>
           {pendingRequests.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No hay solicitudes pendientes.
+              {t('admin.panel.pendingEmpty')}
             </p>
           ) : (
             <ul className="space-y-3">
@@ -160,14 +162,14 @@ export function CommunityAdminPanel({
                       disabled={isPending}
                       className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
                     >
-                      Aprobar
+                      {t('admin.panel.approve')}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDecline(req.id)}
                       disabled={isPending}
                       className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50"
-                      aria-label="Rechazar"
+                      aria-label={t('admin.panel.declineAria')}
                     >
                       <XMarkIcon className="h-3.5 w-3.5" />
                     </button>
@@ -181,7 +183,7 @@ export function CommunityAdminPanel({
 
       {privacy === 'PUBLIC' && (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Esta comunidad es pública — cualquier usuario puede unirse libremente.
+          {t('admin.panel.publicNotice')}
         </p>
       )}
 

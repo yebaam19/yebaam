@@ -8,5 +8,142 @@
     "fallbackName": "Chat",
     "conversationsButton": "Conversaciones",
     "drawerCloseAriaLabel": "Cerrar lista de chats"
+  },
+  "sidebar": {
+    "searchPlaceholder": "Buscar en Messenger",
+    "tabInbox": "Bandejas",
+    "tabCommunities": "Comunidades",
+    "onlineContacts": "Contactos conectados",
+    "newMessage": "Nuevo mensaje"
+  },
+  "attachments": {
+    "photo": "Foto",
+    "video": "Video",
+    "audio": "Audio",
+    "file": "Archivo"
+  },
+  "bubble": {
+    "header": {
+      "activeNow": "Activo ahora",
+      "expand": "Expandir",
+      "minimize": "Minimizar",
+      "close": "Cerrar"
+    },
+    "input": {
+      "placeholder": "Aa",
+      "ariaLabel": "Escribe un mensaje",
+      "more": "Más",
+      "cameraPhoto": "Foto desde cámara",
+      "attachImage": "Adjuntar imagen",
+      "emoji": "Emoji",
+      "sendLike": "Enviar Me gusta",
+      "send": "Enviar",
+      "previewAlt": "Vista previa",
+      "removeImage": "Quitar imagen",
+      "errors": {
+        "invalidImage": "Por favor selecciona una imagen",
+        "imageTooLarge": "La imagen no puede superar 10MB",
+        "uploadFailed": "Error al subir la imagen"
+      },
+      "toasts": {
+        "soon": "Pronto"
+      }
+    },
+    "messages": {
+      "loading": "Cargando mensajes...",
+      "emptyTitle": "No hay mensajes aún",
+      "emptySubtitle": "Envía el primer mensaje",
+      "status": {
+        "read": "Leído",
+        "delivered": "Entregado",
+        "sent": "Enviado"
+      }
+    }
+  },
+  "windowHeader": {
+    "online": "En línea",
+    "offline": "Desconectado",
+    "voiceCall": "Llamada de voz",
+    "videoCall": "Videollamada",
+    "expand": "Expandir",
+    "minimize": "Minimizar",
+    "close": "Cerrar"
+  },
+  "newMessage": {
+    "title": "Nuevo mensaje",
+    "closeAriaLabel": "Cerrar",
+    "searchPlaceholder": "Buscar amigos o personas",
+    "friends": "Amigos",
+    "otherPeople": "Otras personas",
+    "searching": "Buscando...",
+    "noResults": "Sin resultados para \"{query}\"",
+    "noFriendsYet": "Aún no tienes amigos. Busca a alguien por nombre o usuario.",
+    "opening": "Abriendo...",
+    "userFallback": "Usuario",
+    "errors": {
+      "openConversation": "No se pudo iniciar la conversación"
+    }
+  },
+  "public": {
+    "roomsSidebar": {
+      "ariaLabel": "Lista de salas"
+    },
+    "topicTabs": {
+      "ariaLabel": "Temas del chat público"
+    },
+    "shell": {
+      "mediaTabsAria": "Tabs de medios"
+    },
+    "gate": {
+      "title": "Entrar a {channel}",
+      "fallbackDescription": "Canal público de chat en tiempo real",
+      "joinAsProfile": "Entrar como {name}",
+      "useNickname": "Usar un nickname",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "p. ej. trotamundos",
+      "nicknameHint": "2-24 caracteres · letras, números, _ . -",
+      "enter": "Entrar",
+      "entering": "Entrando…",
+      "back": "← Volver",
+      "loginPrompt": "¿Ya tienes cuenta?",
+      "loginLink": "Inicia sesión",
+      "loginPromptSuffix": " para subir fotos, videos y links.",
+      "errors": {
+        "emptyNickname": "Escribe un nickname.",
+        "nicknameTaken": "Ese nickname ya está en uso en esta sala. Elige otro.",
+        "invalid": "Nickname inválido. Usa 2-24 caracteres (letras, números, _ . -).",
+        "unauthorized": "Debes iniciar sesión para usar tu perfil.",
+        "roomClosed": "Esta sala está cerrada o archivada.",
+        "roomFull": "La sala está llena. Intenta entrar más tarde.",
+        "generic": "No se pudo entrar. Intenta de nuevo."
+      }
+    },
+    "view": {
+      "loading": "Cargando…",
+      "loadOlder": "Cargar mensajes anteriores",
+      "emptyState": "Todavía no hay mensajes. Sé el primero en saludar.",
+      "badgeGuest": "invitado",
+      "badgeNick": "nick",
+      "deletedMessage": "Mensaje eliminado",
+      "deleteAria": "Eliminar mensaje",
+      "deleteTitle": "Eliminar",
+      "placeholderActive": "Escribe un mensaje en {channel}…",
+      "placeholderInactive": "Entra a la sala para chatear",
+      "submitCooldown": "Espera {seconds}s",
+      "submitSending": "Enviando…",
+      "submit": "Enviar",
+      "hintEnter": "· Enter para enviar · Shift+Enter para salto de línea",
+      "hintGuest": " · Invitado: solo texto",
+      "hintNick": " · Nick: texto + imágenes",
+      "fallbackUser": "Usuario",
+      "fallbackGuest": "Invitado",
+      "errors": {
+        "rateLimited": "Espera {seconds}s antes de enviar otro mensaje.",
+        "invalid": "El mensaje no puede estar vacío ni exceder 2000 caracteres.",
+        "unauthorized": "Debes entrar a la sala para enviar mensajes.",
+        "sendFailed": "No se pudo enviar el mensaje. Intenta de nuevo.",
+        "deleteFailed": "No se pudo eliminar el mensaje."
+      }
+    }
   }
 }

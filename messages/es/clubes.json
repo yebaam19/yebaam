@@ -64,7 +64,74 @@
       "additional": "Información adicional",
       "fallback": "Crear club"
     },
-    "errorFallback": "Error al crear el club. Intenta nuevamente."
+    "errorFallback": "Error al crear el club. Intenta nuevamente.",
+    "step1": {
+      "heading": "Comencemos con lo básico",
+      "subtitle": "Dale un nombre y descripción a tu club para que las personas puedan encontrarlo",
+      "nameLabel": "Nombre del club",
+      "namePlaceholder": "Ej: Club de Lectura",
+      "nameCounter": "{count}/100 caracteres",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe tu club, sus objetivos y qué actividades realizarán...",
+      "descriptionCounter": "{count}/500 caracteres",
+      "categoryLabel": "Categoría",
+      "categoryPlaceholder": "Selecciona una categoría",
+      "categories": {
+        "DEPORTES": "Deportes",
+        "TECNOLOGIA": "Tecnología",
+        "ARTE": "Arte",
+        "MUSICA": "Música",
+        "LECTURA": "Lectura",
+        "COCINA": "Cocina",
+        "VIAJES": "Viajes",
+        "FOTOGRAFIA": "Fotografía",
+        "NEGOCIOS": "Negocios",
+        "EDUCACION": "Educación",
+        "SALUD": "Salud y Bienestar",
+        "GAMING": "Gaming",
+        "CINE": "Cine y TV",
+        "OTRO": "Otro"
+      },
+      "requiredMark": "*",
+      "next": "Siguiente"
+    },
+    "step4": {
+      "heading": "Información adicional",
+      "subtitle": "Añade etiquetas y reglas para tu club (opcional)",
+      "tagsLabel": "Etiquetas",
+      "tagsHint": "(opcional, máx. 10)",
+      "tagsPlaceholder": "Añadir etiqueta...",
+      "addTag": "Añadir",
+      "rulesLabel": "Reglas del club",
+      "rulesHint": "(opcional, máx. 20)",
+      "rulesPlaceholder": "Añadir regla...",
+      "addRule": "Añadir",
+      "summaryHeading": "Resumen del club",
+      "summaryName": "Nombre:",
+      "summaryCategory": "Categoría:",
+      "summaryPrivacy": "Privacidad:",
+      "summaryTags": "Etiquetas:",
+      "summaryRules": "Reglas:",
+      "privacyDefault": "PÚBLICO",
+      "back": "Atrás",
+      "submit": "Crear club",
+      "submitting": "Creando club..."
+    },
+    "step3": {
+      "title": "Imágenes del club",
+      "subtitle": "Añade imágenes para personalizar tu club (opcional)",
+      "profileLabel": "Imagen de perfil",
+      "coverLabel": "Imagen de portada",
+      "optional": "(opcional)",
+      "profilePreviewAlt": "Vista previa de perfil",
+      "coverPreviewAlt": "Vista previa de portada",
+      "uploading": "Subiendo...",
+      "uploadImage": "Subir imagen",
+      "profileHint": "Recomendado: 400x400px, máx. 5MB",
+      "coverHint": "Recomendado: 1200x400px, máx. 5MB",
+      "back": "Atrás",
+      "next": "Siguiente"
+    }
   },
   "detail": {
     "privacy": {
@@ -83,6 +150,7 @@
       "inviteAria": "Invitar",
       "inviteTitle": "Invitar"
     },
+    "viewModeAria": "Modo de vista",
     "tabs": {
       "ariaLabel": "Secciones del club",
       "about": "Acerca del Club",
@@ -90,6 +158,25 @@
       "videos": "Videos",
       "articles": "Artículos",
       "files": "Archivos"
+    },
+    "sideNav": {
+      "publicChat": "Chat Público",
+      "members": "Miembros",
+      "forum": "Foro",
+      "events": "Eventos",
+      "promotions": "Promociones"
+    },
+    "detailsHeading": "Detalles",
+    "stats": {
+      "members": "Miembros",
+      "events": "Eventos",
+      "posts": "Publicaciones",
+      "createdAt": "Creado"
+    },
+    "sort": {
+      "mostRecent": "Más reciente",
+      "mostViewed": "Más visto",
+      "mostReacted": "Más reaccionado"
     }
   },
   "pagination": {
@@ -97,5 +184,43 @@
     "goToPage": "Ir a la página {page}",
     "prev": "Página anterior",
     "next": "Página siguiente"
+  },
+  "drawer": {
+    "close": "Cerrar"
+  },
+  "panels": {
+    "members": {
+      "empty": "Aún no hay miembros.",
+      "fallbackName": "Sin nombre"
+    },
+    "events": {
+      "empty": "No hay eventos programados.",
+      "attendees": "{count, plural, one {# asistente} other {# asistentes}}"
+    },
+    "promotions": {
+      "empty": "No hay promociones activas.",
+      "more": "Ver más"
+    },
+    "foro": {
+      "notEnabled": "Este club aún no tiene foro habilitado.",
+      "summary": "Foro del club · {forums, plural, one {# foro} other {# foros}} · {topics, plural, one {# tema} other {# temas}}",
+      "emptyCategories": "Aún no hay categorías en este foro.",
+      "topicsCount": "{count, plural, one {# tema} other {# temas}}",
+      "postsCount": "{count, plural, one {# post} other {# posts}}",
+      "lastTopic": "Último: {title}",
+      "emptyForumsInCategory": "Sin foros en esta categoría.",
+      "openFull": "Abrir foro completo"
+    },
+    "publicChat": {
+      "notEnabled": "El chat público aún no está habilitado para este club.",
+      "description": "Chat en tiempo real con todos los miembros del club.",
+      "enter": "Entrar al chat público"
+    }
+  },
+  "roles": {
+    "OWNER": "Propietario",
+    "ADMIN": "Administrador",
+    "MODERATOR": "Moderador",
+    "MEMBER": "Miembro"
   }
 }

@@ -9,6 +9,7 @@
 import { ChatBubbleLeftIcon, StarIcon, UserCircleIcon } from '@/components/icons/heroicons-shim'
 import { StarIcon as StarSolidIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { BusinessReview } from '../../interfaces/business.interfaces'
 
@@ -48,11 +49,13 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md
  * Tarjeta de reseña individual
  */
 function ReviewCard({ review }: { review: BusinessReview }) {
+  const t = useTranslations('businesses.reviews')
+  const locale = useLocale()
   const [isExpanded, setIsExpanded] = useState(false)
   const needsExpansion = review.content && review.content.length > 200
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('es', {
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -102,7 +105,7 @@ function ReviewCard({ review }: { review: BusinessReview }) {
               onClick={() => setIsExpanded(!isExpanded)}
               className="mt-1 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
             >
-              {isExpanded ? 'Ver menos' : 'Ver más'}
+              {isExpanded ? t('showLess') : t('showMore')}
             </button>
           )}
         </div>
@@ -111,7 +114,7 @@ function ReviewCard({ review }: { review: BusinessReview }) {
       {/* Owner Response */}
       {review.response && (
         <div className="mt-3 rounded-lg bg-neutral-50 p-3 dark:bg-neutral-700/50">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Respuesta del negocio:</p>
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{t('businessResponse')}</p>
           <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{review.response}</p>
         </div>
       )}
@@ -158,6 +161,7 @@ export function BusinessReviews({
   totalReviews,
   initialDisplayCount = 5,
 }: BusinessReviewsProps) {
+  const t = useTranslations('businesses.reviews')
   const [showAll, setShowAll] = useState(false)
 
   // Manejar caso cuando reviews es undefined o null
@@ -172,13 +176,13 @@ export function BusinessReviews({
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-100 dark:bg-yellow-900/30">
             <ChatBubbleLeftIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
           </div>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Reseñas</h2>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('title')}</h2>
         </div>
 
         <div className="mt-4 rounded-xl bg-neutral-50 p-8 text-center dark:bg-neutral-700/50">
           <ChatBubbleLeftIcon className="mx-auto h-12 w-12 text-neutral-400" />
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-            Este negocio aún no tiene reseñas. ¡Sé el primero en dejar una!
+            {t('empty')}
           </p>
         </div>
       </div>
@@ -192,7 +196,7 @@ export function BusinessReviews({
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-100 dark:bg-yellow-900/30">
           <ChatBubbleLeftIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
         </div>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Reseñas</h2>
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('title')}</h2>
         <span className="text-sm text-neutral-500 dark:text-neutral-400">({totalReviews})</span>
       </div>
 
@@ -202,10 +206,10 @@ export function BusinessReviews({
         <div className="flex items-center gap-4">
           <div className="text-center">
             <div className="text-4xl font-bold text-neutral-900 dark:text-neutral-100">
-              {averageRating?.toFixed(1) || 'N/A'}
+              {averageRating?.toFixed(1) || t('averageNotAvailable')}
             </div>
             <StarRating rating={Math.round(averageRating || 0)} size="md" />
-            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{totalReviews} reseñas</p>
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{t('count', { count: totalReviews })}</p>
           </div>
         </div>
 
@@ -226,7 +230,7 @@ export function BusinessReviews({
           onClick={() => setShowAll(true)}
           className="mt-4 w-full rounded-xl bg-neutral-100 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
         >
-          Ver todas las reseñas ({reviews.length})
+          {t('viewAll', { count: reviews.length })}
         </button>
       )}
     </div>

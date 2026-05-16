@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useMemo, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   adminDeleteMusicClub,
   toggleClubForum,
@@ -46,6 +47,7 @@ interface Props {
 }
 
 export function AdminClubsTable({ initial, genres }: Props) {
+  const t = useTranslations('musica.admin.clubsTable');
   const [rows, setRows] = useState(initial);
   const [editing, setEditing] = useState<ClubRow | null>(null);
   const [creating, setCreating] = useState(false);
@@ -127,8 +129,8 @@ export function AdminClubsTable({ initial, genres }: Props) {
               <span className="font-medium text-zinc-900 dark:text-zinc-100">
                 {filteredRows.length}
               </span>{' '}
-              de {rows.length} {rows.length === 1 ? 'club' : 'clubes'}
-              {' · filtro: '}
+              {t('filteredSummary', { total: rows.length })}
+              {' · '}{t('filterLabel')}{' '}
               <span className="font-medium text-zinc-700 dark:text-zinc-200">
                 &ldquo;{debouncedQuery.trim()}&rdquo;
               </span>
@@ -138,13 +140,11 @@ export function AdminClubsTable({ initial, genres }: Props) {
                 onClick={() => setQuery('')}
                 className="text-xs font-medium text-amber-700 hover:underline dark:text-amber-300"
               >
-                limpiar
+                {t('clearFilter')}
               </button>
             </>
           ) : (
-            <>
-              {rows.length} {rows.length === 1 ? 'club' : 'clubes'} registrados.
-            </>
+            <>{t('registeredSummary', { count: rows.length })}</>
           )}
         </p>
         <button
@@ -152,15 +152,15 @@ export function AdminClubsTable({ initial, genres }: Props) {
           onClick={() => setCreating(true)}
           className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
         >
-          + Crear club
+          {t('createCta')}
         </button>
       </div>
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={`Buscar club por nombre, género o descripción… (${rows.length} disponibles)`}
-        aria-label="Buscar club"
+        placeholder={t('searchPlaceholder', { count: rows.length })}
+        aria-label={t('searchAriaLabel')}
         className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
       />
       {error && (
@@ -170,13 +170,13 @@ export function AdminClubsTable({ initial, genres }: Props) {
       )}
       {isFiltering && filteredRows.length === 0 && (
         <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40">
-          Ningún club coincide con &ldquo;{debouncedQuery.trim()}&rdquo;.{' '}
+          {t('noMatches', { query: debouncedQuery.trim() })}{' '}
           <button
             type="button"
             onClick={() => setCreating(true)}
             className="font-medium text-amber-700 hover:underline dark:text-amber-300"
           >
-            ¿Crear uno nuevo?
+            {t('createNewPrompt')}
           </button>
         </div>
       )}
@@ -192,13 +192,13 @@ export function AdminClubsTable({ initial, genres }: Props) {
                 {r.name}
               </Link>
               <p className="text-xs text-zinc-500">
-                {r.genre_name} · {r.member_count} miembros ·{' '}
+                {r.genre_name} · {t('membersLine', { count: r.member_count })} ·{' '}
                 {r.pending_count > 0 && (
                   <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-                    {r.pending_count} pendientes
+                    {t('pendingBadge', { count: r.pending_count })}
                   </span>
                 )}{' '}
-                {r.post_count} posts · {r.article_count} artículos
+                {t('postsLine', { count: r.post_count })} · {t('articlesLine', { count: r.article_count })}
               </p>
               <p className="line-clamp-2 text-xs text-zinc-500">{r.description}</p>
             </div>
@@ -217,22 +217,22 @@ export function AdminClubsTable({ initial, genres }: Props) {
                 {pendingId === r.id
                   ? '…'
                   : r.forum_enabled
-                  ? 'Deshabilitar foro'
-                  : 'Habilitar foro'}
+                  ? t('disableForum')
+                  : t('enableForum')}
               </button>
               <button
                 type="button"
                 onClick={() => setEditing(r)}
                 className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200"
               >
-                Editar
+                {t('edit')}
               </button>
               <button
                 type="button"
                 onClick={() => setDeleting(r)}
                 className="rounded-md border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
               >
-                Eliminar
+                {t('delete')}
               </button>
             </div>
           </li>
@@ -259,10 +259,14 @@ export function AdminClubsTable({ initial, genres }: Props) {
       )}
       <DeleteConfirmDialog
         isOpen={Boolean(deleting)}
-        title={deleting ? `Eliminar club "${deleting.name}"` : 'Eliminar club'}
+        title={deleting ? t('deleteDialogTitleWithName', { name: deleting.name }) : t('deleteDialogTitleGeneric')}
         description={
           deleting
-            ? `Se borrarán permanentemente ${deleting.member_count} miembros, ${deleting.post_count} publicaciones y ${deleting.article_count} artículos relacionados (los artículos quedan sin club asignado). Esta acción no se puede deshacer.`
+            ? t('deleteDialogDescription', {
+                memberCount: deleting.member_count,
+                postCount: deleting.post_count,
+                articleCount: deleting.article_count,
+              })
             : ''
         }
         onClose={() => setDeleting(null)}

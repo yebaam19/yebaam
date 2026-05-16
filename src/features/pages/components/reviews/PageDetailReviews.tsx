@@ -1,4 +1,7 @@
+'use client';
+
 import { FC, useState, Fragment } from 'react';
+import { useTranslations } from 'next-intl';
 import { Menu, Transition } from '@headlessui/react';
 import {
   StarIcon,
@@ -18,29 +21,30 @@ interface PageDetailReviewsProps {
   isOwner?: boolean;
 }
 
-const sortOptions = [
-  { id: 'recent' as ReviewSortBy, label: 'Más recientes', description: 'Ordenar por fecha' },
-  { id: 'helpful' as ReviewSortBy, label: 'Más útiles', description: 'Ordenadas por utilidad' },
-  { id: 'rating-high' as ReviewSortBy, label: 'Calificación más alta', description: '5 a 1 estrellas' },
-  { id: 'rating-low' as ReviewSortBy, label: 'Calificación más baja', description: '1 a 5 estrellas' },
-];
-
-const filterOptions = [
-  { id: 'all' as ReviewFilterBy, label: 'Todas las calificaciones' },
-  { id: '5' as ReviewFilterBy, label: '5 estrellas' },
-  { id: '4' as ReviewFilterBy, label: '4 estrellas' },
-  { id: '3' as ReviewFilterBy, label: '3 estrellas' },
-  { id: '2' as ReviewFilterBy, label: '2 estrellas' },
-  { id: '1' as ReviewFilterBy, label: '1 estrella' },
-];
-
 export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
   pageId,
   currentUserId,
   isOwner,
 }) => {
+  const t = useTranslations('pages');
   const [sortBy, setSortBy] = useState<ReviewSortBy>('recent');
   const [filterBy, setFilterBy] = useState<ReviewFilterBy>('all');
+
+  const sortOptions: { id: ReviewSortBy; label: string; description: string }[] = [
+    { id: 'recent', label: t('reviews.sort.recent'), description: t('reviews.sort.recentDesc') },
+    { id: 'helpful', label: t('reviews.sort.helpful'), description: t('reviews.sort.helpfulDesc') },
+    { id: 'rating-high', label: t('reviews.sort.ratingHigh'), description: t('reviews.sort.ratingHighDesc') },
+    { id: 'rating-low', label: t('reviews.sort.ratingLow'), description: t('reviews.sort.ratingLowDesc') },
+  ];
+
+  const filterOptions: { id: ReviewFilterBy; label: string }[] = [
+    { id: 'all', label: t('reviews.filters.all') },
+    { id: '5', label: t('reviews.filters.fiveStars') },
+    { id: '4', label: t('reviews.filters.fourStars') },
+    { id: '3', label: t('reviews.filters.threeStars') },
+    { id: '2', label: t('reviews.filters.twoStars') },
+    { id: '1', label: t('reviews.filters.oneStar') },
+  ];
 
   // Fetch data
   const { data: stats } = useReviewStats(pageId);
@@ -57,7 +61,7 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
   };
 
   const handleDelete = (reviewId: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta valoración?')) {
+    if (window.confirm(t('reviews.deleteConfirm'))) {
       deleteReviewMutation.mutate(reviewId);
     }
   };
@@ -105,17 +109,17 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Valoraciones
+            {t('reviews.title')}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {totalReviews} {totalReviews === 1 ? 'valoración' : 'valoraciones'}
+            {totalReviews} {totalReviews === 1 ? t('reviews.reviewSingular') : t('reviews.reviewPlural')}
           </p>
         </div>
         <button
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <PlusIcon className="w-5 h-5" />
-          <span className="font-medium">Escribir valoración</span>
+          <span className="font-medium">{t('reviews.writeCta')}</span>
         </button>
       </div>
 
@@ -140,7 +144,7 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
               ))}
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {stats.totalReviews} valoraciones
+              {t('reviews.summaryCount', { count: stats.totalReviews })}
             </p>
           </div>
 
@@ -167,7 +171,7 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
             <div className="flex items-center gap-2">
               <FunnelIcon className="w-5 h-5" />
               <span className="font-medium">
-                {sortOptions.find((o) => o.id === sortBy)?.label || 'Ordenar'}
+                {sortOptions.find((o) => o.id === sortBy)?.label || t('reviews.sortLabel')}
               </span>
             </div>
             <ChevronDownIcon className="w-4 h-4" />
@@ -216,7 +220,7 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
             <div className="flex items-center gap-2">
               <StarIcon className="w-5 h-5" />
               <span className="font-medium">
-                {filterOptions.find((o) => o.id === filterBy)?.label || 'Filtrar'}
+                {filterOptions.find((o) => o.id === filterBy)?.label || t('reviews.filterLabel')}
               </span>
             </div>
             <ChevronDownIcon className="w-4 h-4" />
@@ -262,10 +266,10 @@ export const PageDetailReviews: FC<PageDetailReviewsProps> = ({
         <div className="text-center py-12">
           <StarIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            No hay valoraciones todavía
+            {t('reviews.empty.title')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
-            Sé el primero en dejar una valoración
+            {t('reviews.empty.description')}
           </p>
         </div>
       ) : (

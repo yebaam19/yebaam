@@ -8,6 +8,7 @@
 
 import { addStudyAction, deleteStudyAction, updateStudyAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { BookOpenIcon, CheckBadgeIcon, PencilIcon, ShieldCheckIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -26,6 +27,7 @@ interface StudiesSectionProps {
 
 export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -40,7 +42,7 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
       toast.error(result.error)
       return
     }
-    toast.success(selectedStudy ? 'Estudio actualizado correctamente' : 'Estudio agregado correctamente')
+    toast.success(selectedStudy ? t('studies.toastUpdated') : t('studies.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -67,7 +69,7 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
       toast.error(result.error)
       return
     }
-    toast.success('Estudio eliminado')
+    toast.success(t('studies.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedStudy(null)
     router.refresh()
@@ -76,23 +78,23 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
   return (
     <div>
       <SectionHeader
-        title="Estudios"
+        title={t('studies.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Estudio"
+        addLabel={t('studies.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={BookOpenIcon}
-          title="Sin estudios registrados"
+          title={t('studies.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega tus estudios y formacion academica'
-              : 'Este usuario aun no ha agregado estudios a su perfil'
+              ? t('studies.emptyDescriptionOwner')
+              : t('studies.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Estudio' : undefined}
+          actionLabel={isOwner ? t('studies.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -116,22 +118,22 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
                       {verified && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                           <CheckBadgeIcon className="h-3.5 w-3.5" />
-                          Verificado
+                          {t('common.verified')}
                         </span>
                       )}
                       {isOwner && status === 'pending' && (
                         <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                          Pendiente de verificación
+                          {t('common.pending')}
                         </span>
                       )}
                       {isOwner && status === 'review_needed' && (
                         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                          Revisión por edición
+                          {t('common.reviewNeeded')}
                         </span>
                       )}
                       {isOwner && status === 'rejected' && (
                         <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                          Verificación rechazada
+                          {t('common.rejected')}
                         </span>
                       )}
                     </div>
@@ -144,7 +146,7 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
                       type="button"
                       onClick={() => setCredentialDialogStudy(study)}
                       className="cursor-pointer rounded-lg p-2 text-neutral-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
-                      title={status === 'approved' ? 'Verificado' : 'Autenticar'}
+                      title={status === 'approved' ? t('common.verified') : t('common.authenticate')}
                     >
                       <ShieldCheckIcon className="h-4 w-4" />
                     </button>
@@ -193,8 +195,8 @@ export function StudiesSection({ profileId, isOwner, items = [] }: StudiesSectio
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Estudio"
-        description="¿Estas seguro de que deseas eliminar este estudio? Esta accion no se puede deshacer."
+        title={t('studies.deleteTitle')}
+        description={t('studies.deleteDescription')}
       />
     </div>
   )

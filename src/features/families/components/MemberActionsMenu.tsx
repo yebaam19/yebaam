@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { EllipsisVerticalIcon } from '@/components/icons/heroicons-shim';
 import { removeMember, updateMemberRole } from '../actions/families.actions';
 import type { FamilyMemberRole } from '../types/family.types';
@@ -14,6 +15,7 @@ interface Props {
 
 export function MemberActionsMenu({ familyId, member, memberLabel }: Props) {
   const router = useRouter();
+  const t = useTranslations('familias.memberActions');
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -76,7 +78,7 @@ export function MemberActionsMenu({ familyId, member, memberLabel }: Props) {
         onClick={() => setOpen((v) => !v)}
         disabled={pending}
         className="rounded p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-        aria-label="Acciones del miembro"
+        aria-label={t('menuAria')}
         title="Acciones"
       >
         <EllipsisVerticalIcon className="h-4 w-4" />

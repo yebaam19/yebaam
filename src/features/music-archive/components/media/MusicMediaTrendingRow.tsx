@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import { ChevronRightIcon, PlayIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl, streamThumb } from '@/lib/media/urls';
 import type { MusicMediaItem } from '../../types/music-media.types';
@@ -40,6 +41,7 @@ export function MusicMediaTrendingRow({
   seeAllHref,
   cardWidthClass = 'w-[220px]',
 }: Props) {
+  const t = useTranslations('musica.media.trendingRow');
   const openLightbox = useMediaPlayerStore((s) => s.openLightbox);
   const openMini = useMediaPlayerStore((s) => s.openMini);
 
@@ -112,7 +114,7 @@ export function MusicMediaTrendingRow({
                         openMini(item);
                       }}
                       aria-label={`Reproducir ${label} en mini-reproductor`}
-                      title="Reproducir sin abrir el modal"
+                      title={t('playInlineTitle')}
                       className="absolute top-1/2 left-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-lg transition hover:scale-110 hover:bg-black/75 focus:ring-2 focus:ring-amber-400 focus:outline-none"
                     >
                       <PlayIcon className="h-5 w-5 translate-x-0.5" />

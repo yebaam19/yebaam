@@ -10,6 +10,7 @@ import {
   SpeakerWaveIcon,
   UserGroupIcon,
 } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import type { ComponentType } from 'react'
 
 interface BlogSideMenuProps {
@@ -35,47 +36,50 @@ interface MenuEntry {
 }
 
 export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
+  const tMenu = useTranslations('blogs.detail.menu')
+  const tSide = useTranslations('blogs.sideMenu')
+
   const entries: MenuEntry[] = [
     {
       key: 'chat',
-      label: 'Chat Público',
+      label: tMenu('chat'),
       icon: SpeakerWaveIcon,
       locked: false,
     },
     {
       key: 'members',
-      label: 'Miembros y Seguidores',
+      label: tMenu('members'),
       icon: UserGroupIcon,
       locked: false,
     },
     {
       key: 'askme',
-      label: 'Askme',
+      label: tMenu('askme'),
       icon: QuestionMarkCircleIcon,
       locked: false,
     },
     {
       key: 'foro',
-      label: 'Foro',
+      label: tMenu('foro'),
       icon: ChatBubbleLeftRightIcon,
       locked: false,
     },
     {
       key: 'events',
-      label: 'Eventos',
+      label: tMenu('events'),
       icon: CalendarIcon,
       locked: false,
     },
     {
       key: 'promotions',
-      label: 'Promociones',
+      label: tMenu('promotions'),
       icon: MegaphoneIcon,
       locked: stars < 3,
-      reason: stars < 3 ? 'Disponible al alcanzar ★3' : 'Activado por Yebaam',
+      reason: stars < 3 ? tSide('locked.stars3') : tSide('locked.yebaam'),
     },
     {
       key: 'related',
-      label: 'Páginas Relacionadas',
+      label: tMenu('related'),
       icon: LinkIcon,
       locked: false,
     },
@@ -83,7 +87,7 @@ export const BlogSideMenu = ({ stars, onSelect }: BlogSideMenuProps) => {
 
   return (
     <nav
-      aria-label="Menú del blog"
+      aria-label={tSide('aria')}
       className="-mx-1 flex shrink-0 flex-row gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:w-44 lg:flex-col lg:overflow-visible lg:pb-0"
     >
       {entries.map((entry) => {

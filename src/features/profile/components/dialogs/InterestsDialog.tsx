@@ -13,6 +13,7 @@ import ButtonSecondary from '@/ui/ButtonSecondary'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { Fragment, useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
@@ -45,6 +46,7 @@ function hydrate(user: UserProfile): FavoritesState {
 }
 
 export default function InterestsDialog({ user, open, onOpenChange }: InterestsDialogProps) {
+  const t = useTranslations('profile.dialogs.interests')
   const { updateProfile } = useProfileStore()
   const [state, setState] = useState<FavoritesState>(() => hydrate(user))
   const [isLoading, setIsLoading] = useState(false)
@@ -69,11 +71,11 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
         favoriteTvShows: state.favoriteTvShows,
         favoriteMusic: state.favoriteMusic,
       })
-      toast.success('Intereses actualizados correctamente')
+      toast.success(t('toastSuccess'))
       onOpenChange(false)
     } catch (error) {
       console.error('Error al guardar intereses:', error)
-      toast.error('Error al guardar los intereses')
+      toast.error(t('toastError'))
     } finally {
       setIsLoading(false)
     }
@@ -106,11 +108,11 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
           >
             <DialogPanel className="flex w-full max-w-md max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-neutral-900">
               <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
-                <h2 className="text-xl font-bold">Editar intereses y favoritos</h2>
+                <h2 className="text-xl font-bold">{t('title')}</h2>
                 <button
                   onClick={() => onOpenChange(false)}
                   className="text-muted-foreground hover:text-foreground cursor-pointer"
-                  aria-label="Cerrar"
+                  aria-label={t('close')}
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -119,39 +121,39 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
               <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
                 <div className="thin-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
                   <TagInputRow
-                    label="Intereses"
-                    helper="Presiona Enter o coma para agregar."
-                    placeholder="Ej. Música, Viajes, Fotografía…"
+                    label={t('interestsLabel')}
+                    helper={t('interestsHelper')}
+                    placeholder={t('interestsPlaceholder')}
                     value={state.interests}
                     onChange={(next) => set('interests', next)}
                   />
                   <TagInputRow
-                    label="Películas favoritas"
-                    placeholder="Ej. Inception"
+                    label={t('favoriteMoviesLabel')}
+                    placeholder={t('favoriteMoviesPlaceholder')}
                     value={state.favoriteMovies}
                     onChange={(next) => set('favoriteMovies', next)}
                   />
                   <TagInputRow
-                    label="Libros favoritos"
-                    placeholder="Ej. Cien años de soledad"
+                    label={t('favoriteBooksLabel')}
+                    placeholder={t('favoriteBooksPlaceholder')}
                     value={state.favoriteBooks}
                     onChange={(next) => set('favoriteBooks', next)}
                   />
                   <TagInputRow
-                    label="Videojuegos favoritos"
-                    placeholder="Ej. The Witcher 3"
+                    label={t('favoriteGamesLabel')}
+                    placeholder={t('favoriteGamesPlaceholder')}
                     value={state.favoriteGames}
                     onChange={(next) => set('favoriteGames', next)}
                   />
                   <TagInputRow
-                    label="Series favoritas"
-                    placeholder="Ej. Breaking Bad"
+                    label={t('favoriteTvShowsLabel')}
+                    placeholder={t('favoriteTvShowsPlaceholder')}
                     value={state.favoriteTvShows}
                     onChange={(next) => set('favoriteTvShows', next)}
                   />
                   <TagInputRow
-                    label="Música favorita"
-                    placeholder="Ej. Coldplay"
+                    label={t('favoriteMusicLabel')}
+                    placeholder={t('favoriteMusicPlaceholder')}
                     value={state.favoriteMusic}
                     onChange={(next) => set('favoriteMusic', next)}
                   />
@@ -159,10 +161,10 @@ export default function InterestsDialog({ user, open, onOpenChange }: InterestsD
 
                 <div className="flex shrink-0 justify-end gap-3 border-t border-neutral-200 px-6 py-4 dark:border-neutral-800">
                   <ButtonSecondary type="button" onClick={() => onOpenChange(false)} disabled={isLoading}>
-                    Cancelar
+                    {t('cancel')}
                   </ButtonSecondary>
                   <ButtonPrimary type="submit" disabled={isLoading}>
-                    {isLoading ? 'Guardando...' : 'Guardar cambios'}
+                    {isLoading ? t('saving') : t('save')}
                   </ButtonPrimary>
                 </div>
               </form>

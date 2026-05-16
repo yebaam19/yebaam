@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ExclamationTriangleIcon } from '@/components/icons/heroicons-shim';
 
 interface PrivacyConfirmModalProps {
@@ -17,6 +18,7 @@ export function PrivacyConfirmModal({
   onConfirm,
   onCancel,
 }: PrivacyConfirmModalProps) {
+  const t = useTranslations('grupos.settings.privacyConfirm');
   if (!isOpen) return null;
 
   return (
@@ -28,21 +30,22 @@ export function PrivacyConfirmModal({
               <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
-              Cambiar privacidad del grupo
+              {t('title')}
             </h3>
           </div>
-          
+
           <p className="text-neutral-700 dark:text-neutral-300 mb-6">
-            ¿Estás seguro de que quieres cambiar la privacidad del grupo a{' '}
+            {t('questionPrefix')}
             <span className="font-semibold">
-              {newPrivacy === 'public' ? 'público' : 'privado'}
-            </span>?
+              {newPrivacy === 'public' ? t('publicLabel') : t('privateLabel')}
+            </span>
+            {t('questionSuffix')}
           </p>
 
           {newPrivacy === 'public' && (
             <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg mb-6">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                 Al hacer el grupo público, cualquier persona podrá ver todo el contenido y unirse sin aprobación.
+                {t('publicWarning')}
               </p>
             </div>
           )}
@@ -50,7 +53,7 @@ export function PrivacyConfirmModal({
           {newPrivacy === 'private' && (
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-6">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                🔒 Al hacer el grupo privado, solo los miembros actuales podrán ver el contenido. Los nuevos miembros necesitarán aprobación.
+                {t('privateWarning')}
               </p>
             </div>
           )}
@@ -61,7 +64,7 @@ export function PrivacyConfirmModal({
               disabled={isLoading}
               className="flex-1 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               onClick={onConfirm}
@@ -71,10 +74,10 @@ export function PrivacyConfirmModal({
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Cambiando...
+                  {t('changing')}
                 </>
               ) : (
-                'Confirmar cambio'
+                t('confirm')
               )}
             </button>
           </div>

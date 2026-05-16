@@ -8,7 +8,8 @@ import { Button } from '@/ui/Button'
 import Select from '@/ui/Select'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import { ArrowPathIcon, ClipboardDocumentIcon } from '@/components/icons/heroicons-shim'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type {
@@ -31,13 +32,16 @@ export interface EditProfileFormData {
   visibility: ProfessionalProfileVisibility
 }
 
-const visibilityOptions = [
-  { value: 'PUBLIC', label: 'Público - Visible para todos' },
-  { value: 'LIMITED', label: 'Limitado - Solo conexiones' },
-  { value: 'PRIVATE', label: 'Privado - Solo yo' },
-]
-
 export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditProfileDialogProps) {
+  const t = useTranslations('professional.dialogs.editProfile')
+  const visibilityOptions = useMemo(
+    () => [
+      { value: 'PUBLIC', label: t('visibilityPublic') },
+      { value: 'LIMITED', label: t('visibilityLimited') },
+      { value: 'PRIVATE', label: t('visibilityPrivate') },
+    ],
+    [t]
+  )
   const {
     control,
     handleSubmit,
@@ -68,9 +72,9 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
   const handleCopyUrl = async () => {
     try {
       await navigator.clipboard.writeText(profileUrl)
-      toast.success('¡URL copiada al portapapeles!')
+      toast.success(t('copySuccess'))
     } catch (error) {
-      toast.error('No se pudo copiar la URL')
+      toast.error(t('copyError'))
     }
   }
 
@@ -134,17 +138,16 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
             <DialogPanel className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-neutral-900">
               <div className="shrink-0 border-b border-neutral-200 p-6 dark:border-neutral-700">
                 <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                  Editar Perfil
+                  {t('title')}
                 </DialogTitle>
               </div>
 
               <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit(submit)}>
                 <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-6">
                   {/* URL del Perfil - Solo lectura */}
-                  {/* URL del Perfil - Solo lectura */}
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      URL de tu perfil
+                      {t('urlLabel')}
                     </label>
                     <div className="mt-1 flex gap-2">
                       <input
@@ -157,31 +160,31 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
                         type="button"
                         onClick={handleCopyUrl}
                         className="inline-flex items-center rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                        title="Copiar URL"
+                        title={t('copyUrlTitle')}
                       >
                         <ClipboardDocumentIcon className="h-4 w-4" />
                       </button>
                     </div>
                     <p className="mt-1 text-xs text-neutral-500">
-                      Comparte esta URL para que otros vean tu perfil profesional
+                      {t('urlHint')}
                     </p>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Biografía (opcional)
+                      {t('bioLabel')}
                     </label>
                     <Controller
                       control={control}
                       name="bio"
-                      rules={{ maxLength: { value: 500, message: 'Máximo 500 caracteres' } }}
+                      rules={{ maxLength: { value: 500, message: t('bioMaxLength') } }}
                       render={({ field, fieldState }) => (
                         <>
                           <textarea
                             {...field}
                             className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                             rows={4}
-                            placeholder="Describe tu perfil profesional..."
+                            placeholder={t('bioPlaceholder')}
                             maxLength={500}
                           />
                           <div className="mt-1 flex justify-between">
@@ -199,7 +202,7 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
                   <ImageUpload
                     currentImageUrl={avatarUrl}
                     onImageChange={(url) => setValue('avatarUrl', url)}
-                    label="Foto de Perfil"
+                    label={t('avatarLabel')}
                     imageType="avatar"
                     maxSizeMB={5}
                   />
@@ -208,13 +211,13 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
                   <ImageUpload
                     currentImageUrl={coverUrl}
                     onImageChange={(url) => setValue('coverUrl', url)}
-                    label="Imagen de Portada"
+                    label={t('coverLabel')}
                     imageType="cover"
                     maxSizeMB={10}
                   />
 
                   <div>
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Visibilidad</label>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('visibilityLabel')}</label>
                     <Controller
                       control={control}
                       name="visibility"
@@ -234,11 +237,11 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
                 <div className="shrink-0 border-t border-neutral-200 p-6 dark:border-neutral-700">
                   <div className="flex justify-end gap-3">
                     <Button type="button" onClick={onClose} disabled={isSubmitting} outline>
-                      Cancelar
+                      {t('cancel')}
                     </Button>
                     <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
-                      Guardar
+                      {t('submit')}
                     </Button>
                   </div>
                 </div>

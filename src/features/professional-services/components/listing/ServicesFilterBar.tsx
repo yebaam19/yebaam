@@ -9,6 +9,7 @@
 
 import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { cn } from '@/lib/utils'
 import Input from '@/ui/Input'
@@ -47,6 +48,7 @@ export function ServicesFilterBar({
   isLoading = false,
   className,
 }: ServicesFilterBarProps) {
+  const t = useTranslations('professional.services.filterBar')
   const [searchValue, setSearchValue] = useState(filters.search ?? '')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
@@ -114,7 +116,7 @@ export function ServicesFilterBar({
           <MagnifyingGlassIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400" />
           <Input
             type="text"
-            placeholder="Buscar servicios profesionales..."
+            placeholder={t('searchPlaceholder')}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="pr-10 pl-10"
@@ -147,7 +149,7 @@ export function ServicesFilterBar({
             htmlFor="state-filter"
             className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
-            Departamento
+            {t('stateLabel')}
           </label>
           <select
             id="state-filter"
@@ -156,7 +158,7 @@ export function ServicesFilterBar({
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
             disabled={isLoading}
           >
-            <option value="">Todos los departamentos</option>
+            <option value="">{t('stateAll')}</option>
             {states.map((state) => (
               <option key={state.id} value={state.id}>
                 {state.name}
@@ -171,7 +173,7 @@ export function ServicesFilterBar({
             htmlFor="city-filter"
             className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
-            Ciudad
+            {t('cityLabel')}
           </label>
           <select
             id="city-filter"
@@ -180,7 +182,7 @@ export function ServicesFilterBar({
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
             disabled={isLoading || (!filters.stateId && filteredCities.length === 0)}
           >
-            <option value="">Todas las ciudades</option>
+            <option value="">{t('cityAll')}</option>
             {filteredCities.map((city) => (
               <option key={city.id} value={city.id}>
                 {city.name}
@@ -195,7 +197,7 @@ export function ServicesFilterBar({
             htmlFor="category-filter"
             className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
-            Categoría
+            {t('categoryLabel')}
           </label>
           <select
             id="category-filter"
@@ -204,7 +206,7 @@ export function ServicesFilterBar({
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
             disabled={isLoading}
           >
-            <option value="">Todas las categorías</option>
+            <option value="">{t('categoryAll')}</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -222,7 +224,7 @@ export function ServicesFilterBar({
               disabled={isLoading}
             >
               <XMarkIcon className="h-4 w-4" />
-              Limpiar filtros
+              {t('clearFilters')}
             </button>
           )}
         </div>
@@ -233,7 +235,7 @@ export function ServicesFilterBar({
         <div className="flex flex-wrap gap-2">
           {filters.search && (
             <FilterTag
-              label={`Búsqueda: "${filters.search}"`}
+              label={t('searchTag', { query: filters.search })}
               onRemove={() => {
                 setSearchValue('')
                 onFiltersChange({ ...filters, search: undefined, page: 1 })
@@ -242,19 +244,19 @@ export function ServicesFilterBar({
           )}
           {filters.stateId && (
             <FilterTag
-              label={states.find((s) => s.id === filters.stateId)?.name ?? 'Departamento'}
+              label={states.find((s) => s.id === filters.stateId)?.name ?? t('stateFallback')}
               onRemove={() => handleStateChange('')}
             />
           )}
           {filters.cityId && (
             <FilterTag
-              label={cities.find((c) => c.id === filters.cityId)?.name ?? 'Ciudad'}
+              label={cities.find((c) => c.id === filters.cityId)?.name ?? t('cityFallback')}
               onRemove={() => handleCityChange('')}
             />
           )}
           {filters.categoryId && (
             <FilterTag
-              label={categories.find((c) => c.id === filters.categoryId)?.name ?? 'Categoría'}
+              label={categories.find((c) => c.id === filters.categoryId)?.name ?? t('categoryFallback')}
               onRemove={() => handleCategoryChange('')}
             />
           )}

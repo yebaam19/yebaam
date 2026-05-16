@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { createCommunityPost } from '@/features/communities/actions/communities.actions';
 import { invalidate } from '@/lib/hooks/cacheStore';
@@ -18,6 +19,7 @@ type PendingMedia =
 
 export function CommunityPostComposer({ communityId }: CommunityPostComposerProps) {
   const router = useRouter();
+  const t = useTranslations('communities');
   const [body, setBody] = useState('');
   const [media, setMedia] = useState<PendingMedia[]>([]);
   const [uploading, setUploading] = useState<'image' | 'video' | null>(null);
@@ -95,7 +97,7 @@ export function CommunityPostComposer({ communityId }: CommunityPostComposerProp
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={3}
-        placeholder="¿Qué quieres compartir con la comunidad?"
+        placeholder={t('detail.composerPlaceholder')}
         className="w-full resize-none border-0 bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-0"
       />
 
@@ -186,7 +188,7 @@ export function CommunityPostComposer({ communityId }: CommunityPostComposerProp
           disabled={submitting || uploading !== null}
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {submitting ? 'Publicando...' : 'Publicar'}
+          {submitting ? 'Publicando...' : t('detail.composerSubmit')}
         </button>
       </div>
     </form>

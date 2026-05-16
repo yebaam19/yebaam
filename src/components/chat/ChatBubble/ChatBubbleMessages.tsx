@@ -1,4 +1,7 @@
+'use client';
+
 import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -51,10 +54,12 @@ export function ChatBubbleMessages({
 }: ChatBubbleMessagesProps) {
   const user = useAuthStore((state) => state.user);
   const [zoomMedia, setZoomMedia] = useState<MessageMedia | null>(null);
+  const t = useTranslations('chat.bubble.messages');
+  const locale = useLocale();
 
   const formatTime = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat('es', {
+    return new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
     }).format(dateObj);
@@ -64,20 +69,20 @@ export function ChatBubbleMessages({
     switch (status) {
       case 'read':
         return (
-          <span className="ml-1 text-xs font-bold text-white/80" title="Leído">
+          <span className="ml-1 text-xs font-bold text-white/80" title={t('status.read')}>
             ✓✓
           </span>
         );
       case 'delivered':
         return (
-          <span className="ml-1 text-xs font-bold text-white/70" title="Entregado">
+          <span className="ml-1 text-xs font-bold text-white/70" title={t('status.delivered')}>
             ✓
           </span>
         );
       case 'sent':
       case 'sending':
         return (
-          <span className="ml-1 text-xs font-bold text-white/60" title="Enviado">
+          <span className="ml-1 text-xs font-bold text-white/60" title={t('status.sent')}>
             ✓
           </span>
         );
@@ -99,7 +104,7 @@ export function ChatBubbleMessages({
       <div className={scrollPadding}>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-sm text-neutral-500 dark:text-neutral-400">
-            Cargando mensajes...
+            {t('loading')}
           </div>
         </div>
       </div>
@@ -111,9 +116,9 @@ export function ChatBubbleMessages({
       <div className={scrollPadding}>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">No hay mensajes aún</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('emptyTitle')}</p>
             <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
-              Envía el primer mensaje
+              {t('emptySubtitle')}
             </p>
           </div>
         </div>

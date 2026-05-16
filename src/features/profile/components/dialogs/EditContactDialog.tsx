@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * EditContactDialog
  *
@@ -8,6 +10,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import BaseDialog from './BaseDialog'
@@ -30,6 +33,8 @@ const initialFor = (user: UserProfile) => ({
 })
 
 export default function EditContactDialog({ user, open, onOpenChange }: EditContactDialogProps) {
+  const t = useTranslations('profile.dialogs.editContact')
+  const tc = useTranslations('profile.dialogs.common')
   const [formData, setFormData] = useState(() => initialFor(user))
 
   const { updateProfile, isLoading } = useProfileStore()
@@ -64,92 +69,94 @@ export default function EditContactDialog({ user, open, onOpenChange }: EditCont
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Editar contacto y redes sociales"
-      description="Tu teléfono y email se mantienen privados. Tus redes sociales se muestran como iconos en tu cabecera."
+      title={t('title')}
+      description={t('description')}
       onSubmit={handleSubmit}
       isLoading={isLoading}
+      submitLabel={tc('save')}
+      cancelLabel={tc('cancel')}
     >
       <div className="space-y-5">
         {user.email && (
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <Input type="email" value={user.email} disabled placeholder="correo@ejemplo.com" />
+            <label className="block text-sm font-medium mb-2">{t('emailLabel')}</label>
+            <Input type="email" value={user.email} disabled placeholder={t('emailPlaceholder')} />
             <p className="mt-2 text-xs text-muted-foreground">
-              El email solo puede cambiarse desde la configuración de la cuenta.
+              {t('emailHelper')}
             </p>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium mb-2">Teléfono (privado)</label>
+          <label className="block text-sm font-medium mb-2">{t('phoneLabel')}</label>
           <Input
             type="tel"
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="+51 999 999 999"
+            placeholder={t('phonePlaceholder')}
           />
         </div>
 
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold">Redes sociales</h4>
+          <h4 className="text-sm font-semibold">{t('socialHeading')}</h4>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Sitio web</label>
+            <label className="block text-sm font-medium mb-2">{t('websiteLabel')}</label>
             <Input
               type="url"
               value={formData.websiteUrl}
               onChange={(e) => handleChange('websiteUrl', e.target.value)}
-              placeholder="https://ejemplo.com"
+              placeholder={t('websitePlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Instagram</label>
+            <label className="block text-sm font-medium mb-2">{t('instagramLabel')}</label>
             <Input
               type="url"
               value={formData.instagramUrl}
               onChange={(e) => handleChange('instagramUrl', e.target.value)}
-              placeholder="https://instagram.com/usuario"
+              placeholder={t('instagramPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">X (Twitter)</label>
+            <label className="block text-sm font-medium mb-2">{t('twitterLabel')}</label>
             <Input
               type="url"
               value={formData.twitterUrl}
               onChange={(e) => handleChange('twitterUrl', e.target.value)}
-              placeholder="https://x.com/usuario"
+              placeholder={t('twitterPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">LinkedIn</label>
+            <label className="block text-sm font-medium mb-2">{t('linkedinLabel')}</label>
             <Input
               type="url"
               value={formData.linkedinUrl}
               onChange={(e) => handleChange('linkedinUrl', e.target.value)}
-              placeholder="https://linkedin.com/in/usuario"
+              placeholder={t('linkedinPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">GitHub</label>
+            <label className="block text-sm font-medium mb-2">{t('githubLabel')}</label>
             <Input
               type="url"
               value={formData.githubUrl}
               onChange={(e) => handleChange('githubUrl', e.target.value)}
-              placeholder="https://github.com/usuario"
+              placeholder={t('githubPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Facebook</label>
+            <label className="block text-sm font-medium mb-2">{t('facebookLabel')}</label>
             <Input
               type="url"
               value={formData.facebookUrl}
               onChange={(e) => handleChange('facebookUrl', e.target.value)}
-              placeholder="https://facebook.com/usuario"
+              placeholder={t('facebookPlaceholder')}
             />
           </div>
         </div>

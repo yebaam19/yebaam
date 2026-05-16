@@ -8,5 +8,142 @@
     "fallbackName": "Chat",
     "conversationsButton": "Conversations",
     "drawerCloseAriaLabel": "Close chat list"
+  },
+  "sidebar": {
+    "searchPlaceholder": "Search in Messenger",
+    "tabInbox": "Inbox",
+    "tabCommunities": "Communities",
+    "onlineContacts": "Online contacts",
+    "newMessage": "New message"
+  },
+  "attachments": {
+    "photo": "Photo",
+    "video": "Video",
+    "audio": "Audio",
+    "file": "File"
+  },
+  "bubble": {
+    "header": {
+      "activeNow": "Active now",
+      "expand": "Expand",
+      "minimize": "Minimize",
+      "close": "Close"
+    },
+    "input": {
+      "placeholder": "Aa",
+      "ariaLabel": "Write a message",
+      "more": "More",
+      "cameraPhoto": "Photo from camera",
+      "attachImage": "Attach image",
+      "emoji": "Emoji",
+      "sendLike": "Send like",
+      "send": "Send",
+      "previewAlt": "Preview",
+      "removeImage": "Remove image",
+      "errors": {
+        "invalidImage": "Please choose an image",
+        "imageTooLarge": "The image cannot exceed 10MB",
+        "uploadFailed": "Failed to upload image"
+      },
+      "toasts": {
+        "soon": "Soon"
+      }
+    },
+    "messages": {
+      "loading": "Loading messages…",
+      "emptyTitle": "No messages yet",
+      "emptySubtitle": "Send the first message",
+      "status": {
+        "read": "Read",
+        "delivered": "Delivered",
+        "sent": "Sent"
+      }
+    }
+  },
+  "windowHeader": {
+    "online": "Online",
+    "offline": "Offline",
+    "voiceCall": "Voice call",
+    "videoCall": "Video call",
+    "expand": "Expand",
+    "minimize": "Minimize",
+    "close": "Close"
+  },
+  "newMessage": {
+    "title": "New message",
+    "closeAriaLabel": "Close",
+    "searchPlaceholder": "Search friends or people",
+    "friends": "Friends",
+    "otherPeople": "Other people",
+    "searching": "Searching…",
+    "noResults": "No results for \"{query}\"",
+    "noFriendsYet": "You don't have any friends yet. Search for someone by name or username.",
+    "opening": "Opening…",
+    "userFallback": "User",
+    "errors": {
+      "openConversation": "Could not start the conversation"
+    }
+  },
+  "public": {
+    "roomsSidebar": {
+      "ariaLabel": "Rooms list"
+    },
+    "topicTabs": {
+      "ariaLabel": "Public chat topics"
+    },
+    "shell": {
+      "mediaTabsAria": "Media tabs"
+    },
+    "gate": {
+      "title": "Enter {channel}",
+      "fallbackDescription": "Public real-time chat channel",
+      "joinAsProfile": "Enter as {name}",
+      "useNickname": "Use a nickname",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "e.g. globetrotter",
+      "nicknameHint": "2-24 characters · letters, numbers, _ . -",
+      "enter": "Enter",
+      "entering": "Entering…",
+      "back": "← Back",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Sign in",
+      "loginPromptSuffix": " to upload photos, videos and links.",
+      "errors": {
+        "emptyNickname": "Type a nickname.",
+        "nicknameTaken": "That nickname is already in use in this room. Pick another.",
+        "invalid": "Invalid nickname. Use 2-24 characters (letters, numbers, _ . -).",
+        "unauthorized": "You must sign in to use your profile.",
+        "roomClosed": "This room is closed or archived.",
+        "roomFull": "The room is full. Try entering later.",
+        "generic": "Couldn't enter. Try again."
+      }
+    },
+    "view": {
+      "loading": "Loading…",
+      "loadOlder": "Load older messages",
+      "emptyState": "No messages yet. Be the first to say hi.",
+      "badgeGuest": "guest",
+      "badgeNick": "nick",
+      "deletedMessage": "Message deleted",
+      "deleteAria": "Delete message",
+      "deleteTitle": "Delete",
+      "placeholderActive": "Write a message in {channel}…",
+      "placeholderInactive": "Enter the room to chat",
+      "submitCooldown": "Wait {seconds}s",
+      "submitSending": "Sending…",
+      "submit": "Send",
+      "hintEnter": "· Enter to send · Shift+Enter for new line",
+      "hintGuest": " · Guest: text only",
+      "hintNick": " · Nick: text + images",
+      "fallbackUser": "User",
+      "fallbackGuest": "Guest",
+      "errors": {
+        "rateLimited": "Wait {seconds}s before sending another message.",
+        "invalid": "The message cannot be empty or exceed 2000 characters.",
+        "unauthorized": "You must enter the room to send messages.",
+        "sendFailed": "Could not send the message. Try again.",
+        "deleteFailed": "Could not delete the message."
+      }
+    }
   }
 }

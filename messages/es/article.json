@@ -54,5 +54,14 @@
     "editTitle": "Editar Artículo",
     "editDescription": "Edita tu artículo",
     "notFound": "Artículo no encontrado"
+  },
+  "comments": {
+    "writePlaceholder": "Escribe un comentario...",
+    "sending": "Enviando...",
+    "submit": "Comentar",
+    "empty": "No hay comentarios aún. ¡Sé el primero en comentar!",
+    "like": "Me gusta",
+    "reply": "Responder",
+    "likesCount": "{count} me gusta"
   }
 }

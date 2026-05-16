@@ -2,7 +2,6 @@
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import {
@@ -13,6 +12,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import { getUserInitials } from '@/lib/user-helpers'
 import { cn } from '@/lib/utils'
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale'
 import Avatar from '@/ui/Avatar'
 import type { Post } from '../../interfaces/post.interfaces'
 
@@ -26,10 +26,8 @@ interface Props {
 
 export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteClick }: Props) {
   const t = useTranslations('feed')
-  // NOTE: date-fns locale is hard-coded to Spanish here — relative-time strings
-  // ("hace 5 min") will stay Spanish even when the UI is set to English.
-  // TODO: i18n - swap locale based on next-intl active locale.
-  const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: es })
+  const dateLocale = useDateFnsLocale()
+  const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: dateLocale })
   const authorInitials = getUserInitials(post.author.username)
   const privacyValue = post.privacy.value as 'public' | 'friends' | 'private'
   const privacyLabel = ['public', 'friends', 'private'].includes(privacyValue)

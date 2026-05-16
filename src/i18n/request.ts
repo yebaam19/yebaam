@@ -14,6 +14,7 @@ const MESSAGE_NAMESPACES = [
   'familias',
   'clubes',
   'profile',
+  'profiles',
   'search',
   'verification',
   'landing',
@@ -34,6 +35,7 @@ const MESSAGE_NAMESPACES = [
   'notification',
   'friendships',
   'settings',
+  'stories',
 ] as const;
 
 async function loadMessages(locale: Locale) {

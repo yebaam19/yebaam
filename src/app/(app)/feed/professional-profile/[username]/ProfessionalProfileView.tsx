@@ -2,6 +2,7 @@
 
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
@@ -21,6 +22,7 @@ interface ProfessionalProfileViewProps {
 
 export function ProfessionalProfileView({ profile, isOwner, initialIsFollowing }: ProfessionalProfileViewProps) {
   const router = useRouter();
+  const t = useTranslations('professional');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -61,7 +63,7 @@ export function ProfessionalProfileView({ profile, isOwner, initialIsFollowing }
             className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-4 w-4" />
-            Volver
+            {t('profile.back')}
           </button>
         </div>
 

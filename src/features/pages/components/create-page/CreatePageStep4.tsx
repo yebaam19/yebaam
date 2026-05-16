@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { FC, useState } from 'react';
 import { EnvelopeIcon, PhoneIcon, GlobeAltIcon, MapPinIcon } from '@/components/icons/heroicons-shim';
 import type { CreatePageDto, PageContact } from '../../types/page.types';
@@ -18,6 +19,7 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
   onBack,
   isSubmitting,
 }) => {
+  const t = useTranslations('pages.create.step4');
   const [contact, setContact] = useState<PageContact>(data.contact || {});
   const [errors, setErrors] = useState<{
     email?: string;
@@ -34,19 +36,19 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
     if (value.trim()) {
       if (field === 'email') {
         if (!validateEmail(value)) {
-          newErrors.email = 'Email inválido';
+          newErrors.email = t('emailError');
         } else {
           delete newErrors.email;
         }
       } else if (field === 'phone') {
         if (!validatePhone(value)) {
-          newErrors.phone = 'Teléfono inválido (ej: +1 234 567 8900)';
+          newErrors.phone = t('phoneError');
         } else {
           delete newErrors.phone;
         }
       } else if (field === 'website') {
         if (!validateUrl(value)) {
-          newErrors.website = 'URL inválida (debe empezar con http:// o https://)';
+          newErrors.website = t('websiteError');
         } else {
           delete newErrors.website;
         }
@@ -76,12 +78,12 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
 
     // Filtrar campos vacíos
     const filteredContact: PageContact = {};
-    
+
     // Campos simples
     if (contact.email?.trim()) filteredContact.email = contact.email.trim();
     if (contact.phone?.trim()) filteredContact.phone = contact.phone.trim();
     if (contact.website?.trim()) filteredContact.website = contact.website.trim();
-    
+
     // Address - solo incluir si tiene al menos un campo
     if (contact.address) {
       const address: NonNullable<PageContact['address']> = {};
@@ -90,7 +92,7 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
       if (contact.address.state?.trim()) address.state = contact.address.state.trim();
       if (contact.address.country?.trim()) address.country = contact.address.country.trim();
       if (contact.address.zipCode?.trim()) address.zipCode = contact.address.zipCode.trim();
-      
+
       if (Object.keys(address).length > 0) {
         filteredContact.address = address;
       }
@@ -108,10 +110,10 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
     <div className="space-y-6">
       <div>
         <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          Información de contacto
+          {t('heading')}
         </h4>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Ayuda a las personas a conectar contigo (todos los campos son opcionales)
+          {t('subtitle')}
         </p>
       </div>
 
@@ -119,14 +121,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
       <div>
         <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           <EnvelopeIcon className="w-4 h-4 inline mr-1" />
-          Correo electrónico
+          {t('emailLabel')}
         </label>
         <input
           id="contact-email"
           type="email"
           value={contact.email || ''}
           onChange={(e) => handleSimpleChange('email', e.target.value)}
-          placeholder="contacto@ejemplo.com"
+          placeholder={t('emailPlaceholder')}
           className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {errors.email && (
@@ -138,14 +140,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
       <div>
         <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           <PhoneIcon className="w-4 h-4 inline mr-1" />
-          Teléfono
+          {t('phoneLabel')}
         </label>
         <input
           id="contact-phone"
           type="tel"
           value={contact.phone || ''}
           onChange={(e) => handleSimpleChange('phone', e.target.value)}
-          placeholder="+1 234 567 8900"
+          placeholder={t('phonePlaceholder')}
           className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {errors.phone && (
@@ -157,14 +159,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
       <div>
         <label htmlFor="contact-website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           <GlobeAltIcon className="w-4 h-4 inline mr-1" />
-          Sitio web
+          {t('websiteLabel')}
         </label>
         <input
           id="contact-website"
           type="url"
           value={contact.website || ''}
           onChange={(e) => handleSimpleChange('website', e.target.value)}
-          placeholder="https://www.ejemplo.com"
+          placeholder={t('websitePlaceholder')}
           className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {errors.website && (
@@ -176,14 +178,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           <MapPinIcon className="w-4 h-4 inline mr-1" />
-          Dirección
+          {t('addressLabel')}
         </label>
         <div className="space-y-3">
           <input
             type="text"
             value={contact.address?.street || ''}
             onChange={(e) => handleAddressChange('street', e.target.value)}
-            placeholder="Calle Principal #123"
+            placeholder={t('streetPlaceholder')}
             className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <div className="grid grid-cols-2 gap-3">
@@ -191,14 +193,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
               type="text"
               value={contact.address?.city || ''}
               onChange={(e) => handleAddressChange('city', e.target.value)}
-              placeholder="Ciudad"
+              placeholder={t('cityPlaceholder')}
               className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
               type="text"
               value={contact.address?.state || ''}
               onChange={(e) => handleAddressChange('state', e.target.value)}
-              placeholder="Estado/Provincia"
+              placeholder={t('statePlaceholder')}
               className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -207,14 +209,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
               type="text"
               value={contact.address?.country || ''}
               onChange={(e) => handleAddressChange('country', e.target.value)}
-              placeholder="País"
+              placeholder={t('countryPlaceholder')}
               className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
               type="text"
               value={contact.address?.zipCode || ''}
               onChange={(e) => handleAddressChange('zipCode', e.target.value)}
-              placeholder="Código postal"
+              placeholder={t('zipCodePlaceholder')}
               className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -223,15 +225,15 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
 
       <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
         <p className="text-sm font-medium text-green-900 dark:text-green-200 mb-2">
-          ¡Todo listo!
+          {t('summaryHeading')}
         </p>
         <div className="space-y-1 text-sm text-green-700 dark:text-green-300">
-          <p>Información básica completa</p>
-          <p>Categoría seleccionada</p>
-          {data.profileImageUrl && <p>✓ Foto de perfil agregada</p>}
-          {data.coverImageUrl && <p>✓ Imagen de portada agregada</p>}
+          <p>{t('summaryBasic')}</p>
+          <p>{t('summaryCategory')}</p>
+          {data.profileImageUrl && <p>✓ {t('summaryProfile')}</p>}
+          {data.coverImageUrl && <p>✓ {t('summaryCover')}</p>}
           {(contact.email || contact.phone || contact.website || contact.address) && (
-            <p>Información de contacto agregada</p>
+            <p>{t('summaryContact')}</p>
           )}
         </div>
       </div>
@@ -243,14 +245,14 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
           disabled={isSubmitting}
           className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Atrás
+          {t('back')}
         </button>
         <button
           onClick={handleSubmit}
           disabled={hasValidationErrors || isSubmitting}
           className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Creando...' : 'Crear página'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </div>
     </div>

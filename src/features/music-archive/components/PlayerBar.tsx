@@ -24,7 +24,7 @@ function formatTime(seconds: number): string {
 }
 
 export function PlayerBar() {
-  const t = useTranslations('musica');
+  const t = useTranslations('musica.player.bar');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playCountFiredRef = useRef<Set<string>>(new Set());
 
@@ -130,7 +130,7 @@ export function PlayerBar() {
             type="button"
             onClick={prev}
             className="rounded p-1.5 text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            aria-label={t('player.previousAria')}
+            aria-label={t('previousAria')}
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
@@ -138,7 +138,7 @@ export function PlayerBar() {
             type="button"
             onClick={togglePlay}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-            aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+            aria-label={isPlaying ? t('pauseAria') : t('playAria')}
           >
             {isPlaying ? <PauseIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
           </button>
@@ -147,7 +147,7 @@ export function PlayerBar() {
             onClick={next}
             disabled={currentIndex >= queue.length - 1}
             className="rounded p-1.5 text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            aria-label="Siguiente"
+            aria-label={t('nextAria')}
           >
             <ChevronRightIcon className="h-5 w-5" />
           </button>
@@ -166,7 +166,7 @@ export function PlayerBar() {
             value={Math.min(currentTime, duration)}
             onChange={(e) => seek(Number(e.target.value))}
             className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-zinc-900 dark:bg-zinc-800 dark:accent-zinc-100"
-            aria-label="Posición"
+            aria-label={t('seekAria')}
             style={{
               background: `linear-gradient(to right, currentColor ${progress}%, transparent ${progress}%)`,
             }}
@@ -186,7 +186,7 @@ export function PlayerBar() {
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
             className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-zinc-900 dark:bg-zinc-800 dark:accent-zinc-100"
-            aria-label="Volumen"
+            aria-label={t('volumeAria')}
           />
         </div>
 
@@ -195,7 +195,7 @@ export function PlayerBar() {
           type="button"
           onClick={() => usePlayerStore.setState({ queue: [], isPlaying: false, currentIndex: 0 })}
           className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800"
-          aria-label="Cerrar reproductor"
+          aria-label={t('closeAria')}
         >
           <XMarkIcon className="h-4 w-4" />
         </button>

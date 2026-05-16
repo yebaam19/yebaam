@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { Fragment, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { useDeleteBlog, useUpdateBlog } from '../hooks/useBlogs'
 import { blogsService } from '../services/blogs.service'
 import type { Blog } from '../types/blog.types'
@@ -21,6 +22,8 @@ interface EditBlogModalProps {
 
 export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModalProps) => {
   const router = useRouter()
+  const t = useTranslations('blogs.editModal')
+  const tActions = useTranslations('blogs.actions')
   const updateBlogMutation = useUpdateBlog()
   const deleteBlogMutation = useDeleteBlog()
   const [uploadingImages, setUploadingImages] = useState(false)
@@ -123,7 +126,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
     e.preventDefault()
 
     if (!formData.name || !formData.description) {
-      toast.error('El nombre y descripción son requeridos')
+      toast.error(t('errorRequired'))
       return
     }
 
@@ -149,12 +152,12 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
         },
       })
 
-      toast.success('Blog actualizado exitosamente')
+      toast.success(t('successUpdated'))
       onSuccess?.()
       handleClose()
     } catch (error: any) {
       console.error('Error updating blog:', error)
-      toast.error(error?.response?.data?.message || 'Error al actualizar el blog')
+      toast.error(error?.response?.data?.message || t('errorUpdating'))
     }
   }
 
@@ -168,17 +171,17 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
 
   const handleDelete = async () => {
     if (confirmDeleteText.trim() !== blog.name) {
-      toast.error('Escribe el nombre exacto del blog para confirmar')
+      toast.error(t('errorConfirmName'))
       return
     }
     try {
       await deleteBlogMutation.mutateAsync(blog.id)
-      toast.success('Blog eliminado')
+      toast.success(t('successDeleted'))
       onClose()
       router.push('/feed/blogs' as Route)
     } catch (error: any) {
       console.error('[EditBlogModal] delete error:', error)
-      toast.error(error?.message || 'No se pudo eliminar el blog')
+      toast.error(error?.message || t('errorDeleting'))
     }
   }
 
@@ -217,10 +220,10 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                       className="flex items-center gap-2 text-xl font-semibold text-neutral-900 dark:text-white"
                     >
                       <PencilIcon className="h-5 w-5" />
-                      Editar Blog
+                      {t('title')}
                     </Dialog.Title>
                     <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-                      Actualiza la información de tu blog
+                      {t('subtitle')}
                     </p>
                   </div>
                   <button
@@ -244,7 +247,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                   {/* Imágenes */}
                   <div className="grid grid-cols-2 gap-4">
                     <BlogImageUploader
-                      label="Avatar del blog"
+                      label={t('avatarLabel')}
                       preview={avatarPreview}
                       file={avatarFile}
                       onFileChange={handleAvatarChange}
@@ -254,7 +257,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                     />
 
                     <BlogImageUploader
-                      label="Imagen de portada"
+                      label={t('coverLabel')}
                       preview={coverPreview}
                       file={coverFile}
                       onFileChange={handleCoverChange}
@@ -266,7 +269,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
 
                   {uploadingImages && (
                     <div className="text-center text-sm text-primary-600 dark:text-primary-400">
-                      ⏳ Subiendo imágenes a CloudFront...
+                      ⏳ {t('uploadingHint')}
                     </div>
                   )}
 
@@ -278,7 +281,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                       disabled={updateBlogMutation.isPending || uploadingImages || deleteBlogMutation.isPending}
                       className="flex-1 rounded-lg border border-neutral-300 px-4 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
                     >
-                      Cancelar
+                      {tActions('cancel')}
                     </button>
                     <button
                       type="submit"
@@ -288,10 +291,10 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                       className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {uploadingImages
-                        ? 'Subiendo imágenes...'
+                        ? t('uploadingButton')
                         : updateBlogMutation.isPending
-                          ? 'Guardando...'
-                          : 'Guardar cambios'}
+                          ? t('saving')
+                          : t('save')}
                     </button>
                   </div>
 
@@ -299,10 +302,10 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                   <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/50 dark:bg-rose-950/30">
                     <h4 className="flex items-center gap-2 text-sm font-semibold text-rose-700 dark:text-rose-300">
                       <TrashIcon className="h-4 w-4" />
-                      Zona peligrosa
+                      {t('dangerZoneTitle')}
                     </h4>
                     <p className="mt-1 text-xs text-rose-600/80 dark:text-rose-300/80">
-                      Eliminar el blog borra de forma permanente sus publicaciones, seguidores, foro y chat asociados. Esta acción no se puede deshacer.
+                      {t('dangerZoneDescription')}
                     </p>
                     {!showDeleteConfirm ? (
                       <button
@@ -312,12 +315,14 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                         className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-50 dark:border-rose-800 dark:bg-neutral-900 dark:text-rose-300 dark:hover:bg-rose-950/60"
                       >
                         <TrashIcon className="h-3.5 w-3.5" />
-                        Eliminar blog
+                        {t('deleteButton')}
                       </button>
                     ) : (
                       <div className="mt-3 space-y-2">
                         <label className="block text-xs font-medium text-rose-700 dark:text-rose-300">
-                          Escribe <span className="font-semibold">{blog.name}</span> para confirmar
+                          {t.rich('confirmDeleteLabel', {
+                            name: () => <span className="font-semibold">{blog.name}</span>,
+                          })}
                         </label>
                         <input
                           type="text"
@@ -337,7 +342,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                             disabled={deleteBlogMutation.isPending}
                             className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
-                            Cancelar
+                            {tActions('cancel')}
                           </button>
                           <button
                             type="button"
@@ -346,7 +351,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                             className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             <TrashIcon className="h-3.5 w-3.5" />
-                            {deleteBlogMutation.isPending ? 'Eliminando…' : 'Eliminar definitivamente'}
+                            {deleteBlogMutation.isPending ? t('deletingLabel') : t('deletePermanently')}
                           </button>
                         </div>
                       </div>

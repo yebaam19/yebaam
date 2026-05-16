@@ -8,6 +8,7 @@
 
 import { addTitleAction, deleteTitleAction, updateTitleAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { AcademicCapIcon, CheckBadgeIcon, PencilIcon, ShieldCheckIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -26,6 +27,7 @@ interface TitlesSectionProps {
 
 export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -46,7 +48,7 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
       toast.error(result.error)
       return
     }
-    toast.success(selectedTitle ? 'Título actualizado correctamente' : 'Título agregado correctamente')
+    toast.success(selectedTitle ? t('titles.toastUpdated') : t('titles.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -73,7 +75,7 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
       toast.error(result.error)
       return
     }
-    toast.success('Título eliminado')
+    toast.success(t('titles.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedTitle(null)
     router.refresh()
@@ -82,23 +84,23 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
   return (
     <div>
       <SectionHeader
-        title="Titulos Profesionales"
+        title={t('titles.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Titulo"
+        addLabel={t('titles.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={AcademicCapIcon}
-          title="Sin titulos registrados"
+          title={t('titles.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega tus titulos academicos y certificaciones para mostrar tu formacion profesional'
-              : 'Este usuario aun no ha agregado titulos a su perfil'
+              ? t('titles.emptyDescriptionOwner')
+              : t('titles.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Titulo' : undefined}
+          actionLabel={isOwner ? t('titles.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -122,22 +124,22 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
                       {verified && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                           <CheckBadgeIcon className="h-3.5 w-3.5" />
-                          Verificado
+                          {t('common.verified')}
                         </span>
                       )}
                       {isOwner && status === 'pending' && (
                         <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                          Pendiente de verificación
+                          {t('common.pending')}
                         </span>
                       )}
                       {isOwner && status === 'review_needed' && (
                         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                          Revisión por edición
+                          {t('common.reviewNeeded')}
                         </span>
                       )}
                       {isOwner && status === 'rejected' && (
                         <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                          Verificación rechazada
+                          {t('common.rejected')}
                         </span>
                       )}
                     </div>
@@ -162,7 +164,7 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
                       type="button"
                       onClick={() => setCredentialDialogTitle(title)}
                       className="cursor-pointer rounded-lg p-2 text-neutral-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
-                      title={status === 'approved' ? 'Verificado' : 'Autenticar'}
+                      title={status === 'approved' ? t('common.verified') : t('common.authenticate')}
                     >
                       <ShieldCheckIcon className="h-4 w-4" />
                     </button>
@@ -212,8 +214,8 @@ export function TitlesSection({ profileId, isOwner, items = [] }: TitlesSectionP
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Titulo"
-        description="¿Estas seguro de que deseas eliminar este titulo? Esta accion no se puede deshacer."
+        title={t('titles.deleteTitle')}
+        description={t('titles.deleteDescription')}
       />
     </div>
   )

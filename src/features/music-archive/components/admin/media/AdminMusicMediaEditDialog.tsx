@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArtistTagPicker } from '../../club/ArtistTagPicker';
 import { AlbumTagPicker, type AlbumRef } from '../../media/AlbumTagPicker';
 import {
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export function AdminMusicMediaEditDialog({ item, onClose, onSaved }: Props) {
+  const t = useTranslations('musica.admin.mediaEditDialog');
   const [caption, setCaption] = useState(item.caption ?? '');
   const [artists, setArtists] = useState<ArtistRef[]>(item.artists);
   const [albums, setAlbums] = useState<AlbumRef[]>(
@@ -98,27 +100,27 @@ export function AdminMusicMediaEditDialog({ item, onClose, onSaved }: Props) {
       >
         <header className="mb-3 flex items-center justify-between">
           <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            Editar {item.kind === 'photo' ? 'foto' : 'video'}
+            {item.kind === 'photo' ? t('editPhoto') : t('editVideo')}
           </h3>
           <button
             type="button"
             onClick={onClose}
             className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
-            Cerrar
+            {t('close')}
           </button>
         </header>
 
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Descripción
+              {t('descriptionLabel')}
             </label>
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               rows={2}
-              placeholder="Contexto, fecha aproximada, fuente…"
+              placeholder={t('descriptionPlaceholder')}
               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
             />
           </div>
@@ -130,7 +132,7 @@ export function AdminMusicMediaEditDialog({ item, onClose, onSaved }: Props) {
           {clubs.length > 0 && (
             <div>
               <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Clubes
+                {t('clubsLabel')}
               </p>
               <ul className="flex flex-wrap gap-1.5">
                 {clubs.map((c) => {
@@ -175,7 +177,7 @@ export function AdminMusicMediaEditDialog({ item, onClose, onSaved }: Props) {
               onClick={onClose}
               className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               type="button"
@@ -183,7 +185,7 @@ export function AdminMusicMediaEditDialog({ item, onClose, onSaved }: Props) {
               disabled={pending}
               className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
             >
-              {pending ? 'Guardando…' : 'Guardar'}
+              {pending ? t('saving') : t('save')}
             </button>
           </div>
         </div>

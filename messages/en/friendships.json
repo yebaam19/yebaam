@@ -36,6 +36,27 @@
     "confirm": "Confirm",
     "remove": "Remove"
   },
+  "friendsHero": {
+    "greeting": "Hi, {name}!",
+    "title": "Connect, share and grow your network",
+    "subtitle": "Thousands of people are waiting for you.",
+    "findFriends": "Find friends",
+    "fallbackName": "friend"
+  },
+  "profileProgress": {
+    "title": "Your progress",
+    "description": "Complete your profile and unlock more connections",
+    "completedRatio": "{done} of {total} completed",
+    "stepCompletedA11y": "{label} (completed)",
+    "stepIncompleteA11y": "Complete step: {label}",
+    "steps": {
+      "avatar": "Profile photo",
+      "basics": "Basic info",
+      "interests": "Interests",
+      "connect5": "Connect with 5 friends",
+      "verified": "Verified"
+    }
+  },
   "detailModal": {
     "title": "Friend request",
     "loading": "Loading...",
@@ -59,5 +80,57 @@
     "cancelRequest": "Cancel request",
     "cancelling": "Cancelling...",
     "unavailable": "Couldn't load the information"
+  },
+  "friendsList": {
+    "title": "Friends",
+    "count": "{count, plural, =1 {# friend} other {# friends}}",
+    "emptyTitle": "You don't have any friends yet",
+    "emptySubtitle": "Start connecting with people you know",
+    "removeError": "Couldn't remove this friend",
+    "filterAll": "All ({count})",
+    "filterClose": "Close friends ({count})",
+    "noCloseFriends": "You don't have any close friends yet",
+    "removeCloseAria": "Remove from close friends",
+    "addCloseAria": "Add to close friends",
+    "message": "Message",
+    "removeFromClose": "Remove from close",
+    "markAsClose": "Close friend",
+    "removeFriend": "Remove friend",
+    "friendsSince": "Friends since {date}",
+    "mutualFriends": "{count, plural, =1 {# mutual friend} other {# mutual friends}}"
+  },
+  "friendRequestsList": {
+    "title": "Friend requests",
+    "tabReceived": "Received",
+    "tabSent": "Sent",
+    "emptyReceivedTitle": "No pending requests",
+    "emptyReceivedSubtitle": "Requests you receive will appear here",
+    "emptySentTitle": "You haven't sent any requests",
+    "emptySentSubtitle": "Explore users and send friend requests",
+    "acceptTitle": "Accept request",
+    "rejectTitle": "Decline request",
+    "cancelLabel": "Cancel",
+    "cancelling": "Cancelling..."
+  },
+  "suggestions": {
+    "hideAria": "Hide suggestion"
+  },
+  "suggestionCard": {
+    "hideAria": "Hide suggestion",
+    "prevAria": "Previous",
+    "nextAria": "Next"
+  },
+  "friendCard": {
+    "removeUnavailable": "Couldn't remove this friend. Reload the page and try again.",
+    "removeConfirm": "Remove {name} from your friends?",
+    "moreOptions": "More options",
+    "removeFromClose": "Remove from close",
+    "markAsClose": "Mark as close",
+    "removeFriend": "Remove friend",
+    "message": "Message",
+    "viewProfile": "View profile",
+    "friendsSince": "Friends since {date}",
+    "fallbackUser": "User {id}",
+    "mutualFriends": "{count, plural, =1 {# mutual friend} other {# mutual friends}}"
   }
 }

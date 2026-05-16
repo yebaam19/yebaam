@@ -11,6 +11,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
 import type { Language, LanguageFormData } from '../../interfaces/professional-profile.interfaces'
 
 interface LanguageDialogProps {
@@ -20,16 +21,12 @@ interface LanguageDialogProps {
   onSubmit: (data: LanguageFormData) => Promise<void>
 }
 
-// Opciones de nivel - valores en inglés para el backend, labels en español para UI
-const proficiencyOptions = [
-  { value: 'basic', label: 'Básico' },
-  { value: 'intermediate', label: 'Intermedio' },
-  { value: 'advanced', label: 'Avanzado' },
-  { value: 'fluent', label: 'Fluido' },
-  { value: 'native', label: 'Nativo/Bilingüe' },
-]
+// Backend values; labels come from i18n
+const proficiencyValues = ['basic', 'intermediate', 'advanced', 'fluent', 'native'] as const
 
 export function LanguageDialog({ isOpen, language, onClose, onSubmit }: LanguageDialogProps) {
+  const t = useTranslations('professional.dialogs.language')
+  const tCommon = useTranslations('professional.dialogs.common')
   const {
     control,
     handleSubmit,
@@ -78,16 +75,16 @@ export function LanguageDialog({ isOpen, language, onClose, onSubmit }: Language
           >
             <DialogPanel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
               <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {language ? 'Editar Idioma' : 'Agregar Idioma'}
+                {language ? t('titleEdit') : t('titleCreate')}
               </DialogTitle>
 
               <form className="mt-4 space-y-4" onSubmit={handleSubmit(submit)}>
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Idioma</label>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('nameLabel')}</label>
                   <Controller
                     control={control}
                     name="name"
-                    rules={{ required: 'Campo requerido' }}
+                    rules={{ required: tCommon('requiredField') }}
                     render={({ field, fieldState }) => (
                       <>
                         <Input
@@ -95,7 +92,7 @@ export function LanguageDialog({ isOpen, language, onClose, onSubmit }: Language
                           className="mt-1"
                           sizeClass="h-10 px-3 py-2"
                           rounded="rounded-lg"
-                          placeholder="Ej. Ingles"
+                          placeholder={t('namePlaceholder')}
                         />
                         {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                       </>
@@ -104,15 +101,15 @@ export function LanguageDialog({ isOpen, language, onClose, onSubmit }: Language
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Nivel</label>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{t('proficiencyLabel')}</label>
                   <Controller
                     control={control}
                     name="proficiency"
                     render={({ field }) => (
                       <Select {...field} className="mt-1 rounded-lg">
-                        {proficiencyOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
+                        {proficiencyValues.map((value) => (
+                          <option key={value} value={value}>
+                            {t(`proficiencyOptions.${value}`)}
                           </option>
                         ))}
                       </Select>
@@ -122,11 +119,11 @@ export function LanguageDialog({ isOpen, language, onClose, onSubmit }: Language
 
                 <div className="flex justify-end gap-3 pt-2">
                   <Button type="button" onClick={onClose} disabled={isSubmitting} outline>
-                    Cancelar
+                    {tCommon('cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
-                    Guardar
+                    {tCommon('save')}
                   </Button>
                 </div>
               </form>

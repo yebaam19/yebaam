@@ -1,4 +1,5 @@
 import { FC, useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import {
@@ -33,6 +34,7 @@ export const ReelViewerModal: FC<ReelViewerModalProps> = ({
   onComment,
   onShare,
 }) => {
+  const t = useTranslations('pages.reels.viewer');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -236,7 +238,7 @@ export const ReelViewerModal: FC<ReelViewerModalProps> = ({
                         className="flex flex-col items-center gap-1 group"
                       >
                         <PaperAirplaneIcon className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
-                        <span className="text-xs text-white font-semibold">Compartir</span>
+                        <span className="text-xs text-white font-semibold">{t('share')}</span>
                       </button>
 
                       {/* More Options */}

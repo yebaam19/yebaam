@@ -1,4 +1,5 @@
 import { FC, Fragment, useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, PhotoIcon, CloudArrowUpIcon } from '@/components/icons/heroicons-shim';
 import { useCreatePromotion, useUpdatePromotion } from '../../hooks/usePagePromotions';
@@ -18,6 +19,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
   pageId,
   promotion,
 }) => {
+  const t = useTranslations('pages.promotions.create');
   const isEditMode = !!promotion;
   const createMutation = useCreatePromotion(pageId);
   const updateMutation = useUpdatePromotion(pageId, promotion?.id || '');
@@ -69,14 +71,14 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
   const handleFileSelect = useCallback((file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen');
+      alert(t('invalidType'));
       return;
     }
 
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert('La imagen no debe superar los 10MB');
+      alert(t('tooLarge'));
       return;
     }
 
@@ -181,27 +183,27 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'El título es requerido';
+      newErrors.title = t('validation.titleRequired');
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'La descripción es requerida';
+      newErrors.description = t('validation.descriptionRequired');
     }
 
     if (formData.value <= 0) {
-      newErrors.value = 'El valor debe ser mayor a 0';
+      newErrors.value = t('validation.valueGreaterThanZero');
     }
 
     if (formData.type === PromotionType.PERCENTAGE && formData.value > 100) {
-      newErrors.value = 'El porcentaje no puede ser mayor a 100';
+      newErrors.value = t('validation.percentageMax');
     }
 
     if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      newErrors.endDate = 'La fecha de fin debe ser posterior a la fecha de inicio';
+      newErrors.endDate = t('validation.endDateAfterStart');
     }
 
     if (formData.code && formData.code.length < 3) {
-      newErrors.code = 'El código debe tener al menos 3 caracteres';
+      newErrors.code = t('validation.codeMinLength');
     }
 
     setErrors(newErrors);
@@ -251,7 +253,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
     } catch (error: any) {
       console.error('Error saving promotion:', error);
       console.error('Error response:', error.response?.data);
-      alert(`Error: ${error.response?.data?.message || 'No se pudo guardar la promoción'}`);
+      alert(`Error: ${error.response?.data?.message || t('validation.saveError')}`);
     }
   };
 
@@ -281,13 +283,13 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
   const getValueLabel = () => {
     switch (formData.type) {
       case PromotionType.PERCENTAGE:
-        return 'Porcentaje de descuento (%)';
+        return t('valueLabel.PERCENTAGE');
       case PromotionType.FIXED:
-        return 'Monto de descuento ($)';
+        return t('valueLabel.FIXED');
       case PromotionType.BOGO:
-        return 'Cantidad (ej: 2 para 2x1)';
+        return t('valueLabel.BOGO');
       default:
-        return 'Valor';
+        return t('valueLabel.DEFAULT');
     }
   };
 
@@ -324,7 +326,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                     as="h3"
                     className="text-2xl font-bold text-gray-900 dark:text-white"
                   >
-                    {isEditMode ? 'Editar Promoción' : 'Nueva Promoción'}
+                    {isEditMode ? t('titleEdit') : t('titleCreate')}
                   </Dialog.Title>
                   <button
                     onClick={handleClose}
@@ -339,7 +341,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                   {/* Title */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Título *
+                      {t('titleLabel')}
                     </label>
                     <input
                       type="text"
@@ -347,7 +349,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       value={formData.title}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="ej: 2x1 en Croissants"
+                      placeholder={t('titlePlaceholder')}
                     />
                     {errors.title && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -359,7 +361,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                   {/* Description */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Descripción *
+                      {t('descriptionLabel')}
                     </label>
                     <textarea
                       name="description"
@@ -367,7 +369,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       onChange={handleChange}
                       rows={3}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="Describe los detalles de la promoción..."
+                      placeholder={t('descriptionPlaceholder')}
                     />
                     {errors.description && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -380,7 +382,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Tipo *
+                        {t('typeLabel')}
                       </label>
                       <select
                         name="type"
@@ -388,11 +390,11 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                         onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
-                        <option value={PromotionType.PERCENTAGE}>Descuento %</option>
-                        <option value={PromotionType.FIXED}>Descuento fijo</option>
-                        <option value={PromotionType.BOGO}>2x1 / 3x2</option>
-                        <option value={PromotionType.FREE_SHIPPING}>Envío gratis</option>
-                        <option value={PromotionType.BUNDLE}>Paquete especial</option>
+                        <option value={PromotionType.PERCENTAGE}>{t('types.PERCENTAGE')}</option>
+                        <option value={PromotionType.FIXED}>{t('types.FIXED')}</option>
+                        <option value={PromotionType.BOGO}>{t('types.BOGO')}</option>
+                        <option value={PromotionType.FREE_SHIPPING}>{t('types.FREE_SHIPPING')}</option>
+                        <option value={PromotionType.BUNDLE}>{t('types.BUNDLE')}</option>
                       </select>
                     </div>
 
@@ -420,7 +422,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                   {/* Code */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Código promocional (opcional)
+                      {t('codeLabel')}
                     </label>
                     <input
                       type="text"
@@ -428,11 +430,11 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       value={formData.code}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase"
-                      placeholder="VERANO2025"
+                      placeholder={t('codePlaceholder')}
                       maxLength={20}
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Solo letras mayúsculas y números. Ej: VERANO2025
+                      {t('codeHint')}
                     </p>
                     {errors.code && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -445,7 +447,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Fecha de inicio *
+                        {t('startDateLabel')}
                       </label>
                       <input
                         type="datetime-local"
@@ -457,7 +459,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Fecha de fin *
+                        {t('endDateLabel')}
                       </label>
                       <input
                         type="datetime-local"
@@ -488,7 +490,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                   {/* Usage Limit */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Límite de usos (opcional)
+                      {t('usageLimitLabel')}
                     </label>
                     <input
                       type="number"
@@ -497,14 +499,14 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       onChange={handleChange}
                       min="1"
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="Dejar vacío para ilimitado"
+                      placeholder={t('usageLimitPlaceholder')}
                     />
                   </div>
 
                   {/* Terms */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Términos y condiciones (opcional)
+                      {t('termsLabel')}
                     </label>
                     <textarea
                       name="terms"
@@ -512,7 +514,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       onChange={handleChange}
                       rows={2}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="Términos y condiciones aplicables..."
+                      placeholder={t('termsPlaceholder')}
                     />
                   </div>
 
@@ -527,7 +529,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                         className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                       />
                       <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Activar promoción inmediatamente
+                        {t('isActiveLabel')}
                       </span>
                     </label>
 
@@ -540,7 +542,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                         className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                       />
                       <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        Destacar promoción ⭐
+                        {t('isFeaturedLabel')}
                       </span>
                     </label>
                   </div>
@@ -552,7 +554,7 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       onClick={handleClose}
                       className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                      Cancelar
+                      {t('cancel')}
                     </button>
                     <button
                       type="submit"
@@ -560,10 +562,10 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                       className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {createMutation.isPending || updateMutation.isPending
-                        ? 'Guardando...'
+                        ? t('saving')
                         : isEditMode
-                        ? 'Actualizar'
-                        : 'Crear promoción'}
+                        ? t('update')
+                        : t('create')}
                     </button>
                   </div>
                 </form>

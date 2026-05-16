@@ -9,6 +9,7 @@
 import { CheckBadgeIcon, EnvelopeIcon, UserIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import type { BusinessOwner } from '../../interfaces/business.interfaces'
 import type { Route } from 'next';
 
@@ -24,8 +25,11 @@ interface BusinessOwnerCardProps {
  * Tarjeta con información del propietario del negocio
  */
 export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOwnerCardProps) {
+  const t = useTranslations('businesses.ownerCard')
+  const locale = useLocale()
+
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('es', {
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'long',
     }).format(new Date(date))
@@ -38,7 +42,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
           <UserIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
         </div>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Propietario</h2>
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('title')}</h2>
       </div>
 
       {/* Owner Info */}
@@ -66,10 +70,10 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
             >
               {owner.username}
             </Link>
-            {owner.isVerified && <CheckBadgeIcon className="h-5 w-5 text-primary-500" title="Usuario verificado" />}
+            {owner.isVerified && <CheckBadgeIcon className="h-5 w-5 text-primary-500" title={t('verifiedUser')} />}
           </div>
-          <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">Propietario de {businessName}</p>
-          <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">Miembro desde {formatDate(createdAt)}</p>
+          <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">{t('ownerOf', { name: businessName })}</p>
+          <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">{t('memberSince', { date: formatDate(createdAt) })}</p>
         </div>
       </div>
 
@@ -80,7 +84,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
           className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
         >
           <UserIcon className="h-4 w-4" />
-          Ver perfil
+          {t('viewProfile')}
         </Link>
         <button
           className="flex items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
@@ -90,7 +94,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
           }}
         >
           <EnvelopeIcon className="h-4 w-4" />
-          Mensaje
+          {t('message')}
         </button>
       </div>
     </div>

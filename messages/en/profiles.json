@@ -1,0 +1,121 @@
+{
+  "hero": {
+    "title": "Your Digital Spaces",
+    "subtitle": "Create, share and connect through different spaces designed for you.",
+    "cta": "Explore spaces",
+    "pills": {
+      "digitalPresence": "Digital presence",
+      "community": "Community",
+      "knowledge": "Knowledge"
+    }
+  },
+  "section": {
+    "eyebrow": "Explore your spaces",
+    "title": "Choose where you want to grow today",
+    "subtitle": "Each space has its purpose. Join, create and connect at your own pace."
+  },
+  "verification": {
+    "overlayTitle": "Verification required",
+    "overlayDescription": "Verify your email to create spaces",
+    "overlayCta": "Verify account"
+  },
+  "verificationCard": {
+    "heading": "Why verify my profile?",
+    "benefitsTitle": "Benefits of verification",
+    "stepsTitle": "Simple and fast process",
+    "benefits": [
+      "Create and manage your own spaces",
+      "Access to advanced creation tools",
+      "Greater visibility on the platform",
+      "Build a solid reputation"
+    ],
+    "steps": [
+      "Verify your email address",
+      "Confirm your basic information",
+      "Instant verification",
+      "Priority support"
+    ]
+  },
+  "features": {
+    "clubs": {
+      "title": "Clubs",
+      "description": "Create and manage communities based on shared interests or affiliations.",
+      "benefits": [
+        "Build themed communities",
+        "Organize events and activities",
+        "Connect with like-minded people"
+      ],
+      "buttonLabel": "Explore Clubs"
+    },
+    "blogs": {
+      "title": "Blogs",
+      "description": "Share knowledge and experiences in your personal publishing space.",
+      "benefits": [
+        "Publish articles and content",
+        "Build an audience",
+        "Share your expertise"
+      ],
+      "buttonLabel": "Explore Blogs"
+    },
+    "professional-profile": {
+      "title": "Professional Profile",
+      "description": "Showcase your achievements and professional experience with a verified profile.",
+      "benefits": [
+        "Professional portfolio",
+        "Work network",
+        "Career opportunities"
+      ],
+      "buttonLabel": "Edit Profile"
+    },
+    "music-archive": {
+      "title": "Music Archive",
+      "description": "Latin American music 1900–1970: upload, listen and connect with other collectors.",
+      "benefits": [
+        "Upload songs with cover art",
+        "Play song by song",
+        "Historic catalog open to the public"
+      ],
+      "buttonLabel": "Go to Archive"
+    },
+    "families": {
+      "title": "Families",
+      "description": "Private invite-only space: family tree, timeline, photos and stories.",
+      "benefits": [
+        "Collaborative family tree",
+        "Timeline with photos and stories",
+        "Access by invitation only"
+      ],
+      "buttonLabel": "Go to Families"
+    },
+    "communities": {
+      "title": "Communities",
+      "description": "Join large regional and thematic communities to connect at scale.",
+      "benefits": [
+        "Access to massive communities",
+        "Large-scale networking",
+        "Regional and national events"
+      ],
+      "buttonLabel": "Explore Communities"
+    },
+    "companies": {
+      "title": "Companies",
+      "description": "Corporate space for companies with multiple collaborators and projects.",
+      "benefits": [
+        "Full corporate profile",
+        "Team management",
+        "Collaborative projects"
+      ],
+      "buttonLabel": "Explore Companies"
+    },
+    "food": {
+      "title": "Food",
+      "description": "Discover and share the best gastronomy: restaurants, recipes and culinary experiences.",
+      "benefits": [
+        "Discover local restaurants",
+        "Share recipes and reviews",
+        "Connect with foodies and chefs"
+      ],
+      "buttonLabel": "Explore Food"
+    }
+  }
+}

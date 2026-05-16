@@ -1,4 +1,17 @@
 {
+  "postDetail": {
+    "headerTitle": "{name}'s post"
+  },
+  "postActions": {
+    "reactions": {
+      "LIKE": "Like",
+      "LOVE": "Love",
+      "HAHA": "Haha",
+      "WOW": "Wow",
+      "SAD": "Sad",
+      "ANGRY": "Angry"
+    }
+  },
   "composer": {
     "placeholder": "What are you thinking, {name}?",
     "addToPost": "Add to your post",
@@ -171,5 +184,89 @@
   },
   "feeling": {
     "prefix": "is feeling"
+  },
+  "editModal": {
+    "title": "Edit post",
+    "discardConfirm": "Discard changes?",
+    "uploading": "Uploading files...",
+    "uploadedCount": "{count} file(s) uploaded successfully",
+    "uploadOnlyMedia": "Only image and video files are allowed",
+    "uploadLimit": "You can only upload up to 10 files",
+    "updateSuccess": "Post updated successfully",
+    "updateError": "Error updating the post",
+    "save": "Save changes",
+    "saving": "Saving..."
+  },
+  "liveVideo": {
+    "titlePreparing": "Prepare live broadcast",
+    "titleCountdown": "Starting...",
+    "titleLive": "LIVE",
+    "titleEnding": "Ending...",
+    "startingBroadcast": "Starting broadcast...",
+    "broadcastFinished": "Broadcast finished",
+    "savingVideo": "Saving video...",
+    "viewerSingular": "viewer",
+    "viewerPlural": "viewers",
+    "watchingSingular": "person is",
+    "watchingPlural": "people are",
+    "watchingSuffix": "watching your broadcast",
+    "cameraError": "Could not access the camera. Check your permissions.",
+    "titleRequired": "Add a title for your live video",
+    "liveSuccess": "You are live!",
+    "liveSuccessDescription": "Playback URL ready. Stream ID: {id}",
+    "startError": "Error starting the broadcast",
+    "connectError": "Error connecting to the server",
+    "endedToast": "Live video ended. Duration: {duration}",
+    "endConfirm": "End live broadcast?",
+    "titlePlaceholder": "Title of your broadcast...",
+    "descriptionPlaceholder": "Describe your live broadcast (optional)...",
+    "hdQuality": "HD Quality",
+    "hdQualityDetail": "1280x720 pixels",
+    "stableConnection": "Stable connection",
+    "stableConnectionDetail": "Ready to broadcast",
+    "startButton": "Start live broadcast",
+    "starting": "Starting...",
+    "autoSaveNote": "Your broadcast will be saved automatically when you finish",
+    "streamInfo": "Stream Information",
+    "streamIdLabel": "Stream ID:",
+    "playbackUrlAvailable": "Playback URL available",
+    "endButton": "End live broadcast",
+    "ending": "Ending..."
+  },
+  "feelings": {
+    "happy": "happy",
+    "blessed": "blessed",
+    "loved": "loved",
+    "excited": "excited",
+    "grateful": "grateful",
+    "sad": "sad",
+    "angry": "upset",
+    "confused": "confused",
+    "tired": "tired"
+  },
+  "activities": {
+    "eating": "eating",
+    "drinking": "drinking",
+    "traveling": "traveling to",
+    "watching": "watching",
+    "reading": "reading",
+    "playing": "playing",
+    "listening": "listening to",
+    "celebrating": "celebrating",
+    "working": "working on",
+    "exercising": "exercising"
+  },
+  "feelingPicker": {
+    "title": "Feeling/activity",
+    "feelingsHeading": "How are you feeling?",
+    "activitiesHeading": "What are you doing?"
+  },
+  "visibilityOptions": {
+    "public": "Public",
+    "publicDescription": "Anyone can see",
+    "friends": "Friends",
+    "friendsDescription": "Only your friends",
+    "private": "Only me",
+    "privateDescription": "Only you"
   }
 }

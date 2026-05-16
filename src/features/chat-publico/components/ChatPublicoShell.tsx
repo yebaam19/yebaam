@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import ChatPublicoView from './ChatPublicoView'
 import MediaGallery, { type MediaMode } from './MediaGallery'
@@ -37,6 +38,7 @@ export default function ChatPublicoShell({
   const [roomsOpen, setRoomsOpen] = useState(true)
   const [usersOpen, setUsersOpen] = useState(true)
   const [view, setView] = useState<ViewMode>('chat')
+  const t = useTranslations('chat.public.shell')
 
   return (
     <div className="flex h-full flex-col bg-neutral-50 dark:bg-neutral-950">
@@ -60,7 +62,7 @@ export default function ChatPublicoShell({
           </p>
         </div>
 
-        <nav aria-label="Tabs de medios" className="hidden items-center gap-1 md:flex">
+        <nav aria-label={t('mediaTabsAria')} className="hidden items-center gap-1 md:flex">
           <TabButton
             label="Fotos y Gifs"
             active={view === 'photos'}

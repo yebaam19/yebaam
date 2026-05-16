@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { createMusicArticle } from '../../actions/music-articles.actions';
 import { ArtistTagPicker } from './ArtistTagPicker';
@@ -28,6 +29,7 @@ interface LabelRef {
 /** Composer for new articles. Hero image goes to Cloudflare Images via the
  *  shared uploadService. On success → /musica/clubes/<slug>/articulos/<new>. */
 export function MusicArticleEditor({ clubId, clubSlug }: Props) {
+  const t = useTranslations('musica.article.editor');
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -68,7 +70,7 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
           `/musica/clubes/${clubSlug}/articulos/${res.data.slug}` as Route,
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'No se pudo crear el artículo.');
+        setError(err instanceof Error ? err.message : t('errGeneric'));
       }
     });
   }
@@ -77,44 +79,44 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
     <div className="space-y-5">
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Título
+          {t('titleLabel')}
         </label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="El nacimiento de la salsa en NYC"
+          placeholder={t('titlePlaceholder')}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base font-semibold dark:border-zinc-700 dark:bg-zinc-800"
         />
       </div>
 
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Subtítulo
+          {t('subtitleLabel')}
         </label>
         <input
           value={subtitle}
           onChange={(e) => setSubtitle(e.target.value)}
-          placeholder="Opcional"
+          placeholder={t('subtitlePlaceholder')}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
         />
       </div>
 
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Resumen
+          {t('summaryLabel')}
         </label>
         <textarea
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           rows={2}
-          placeholder="Una o dos oraciones que aparecen en la lista de artículos."
+          placeholder={t('summaryPlaceholder')}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
         />
       </div>
 
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Imagen principal
+          {t('heroLabel')}
         </label>
         <input
           type="file"
@@ -130,13 +132,13 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
 
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Contenido
+          {t('contentLabel')}
         </label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={14}
-          placeholder="Escribe aquí…"
+          placeholder={t('contentPlaceholder')}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-relaxed dark:border-zinc-700 dark:bg-zinc-800"
         />
       </div>
@@ -148,7 +150,7 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
             checked={publish}
             onChange={(e) => setPublish(e.target.checked)}
           />
-          Publicar inmediatamente
+          {t('publishImmediately')}
         </label>
       </div>
 
@@ -165,7 +167,7 @@ export function MusicArticleEditor({ clubId, clubSlug }: Props) {
           disabled={pending || !title.trim()}
           className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-40"
         >
-          {pending ? 'Guardando…' : publish ? 'Publicar' : 'Guardar borrador'}
+          {pending ? t('submitSaving') : publish ? t('submitPublish') : t('submitDraft')}
         </button>
       </div>
     </div>

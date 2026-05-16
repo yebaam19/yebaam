@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { CameraIcon } from '@/components/icons/heroicons-shim';
 import { uploadService } from '@/lib/service/upload.service';
 import { addPhoto } from '../actions/families.actions';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function UploadPhotoDialog({ familyId, persons }: Props) {
+  const t = useTranslations('familias.uploadPhoto');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -50,11 +52,11 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
     e.preventDefault();
     setError(null);
     if (!file) {
-      setError('Selecciona una imagen.');
+      setError(t('errors.selectImage'));
       return;
     }
     if (!file.type.startsWith('image/')) {
-      setError('El archivo debe ser una imagen.');
+      setError(t('errors.mustBeImage'));
       return;
     }
     let cfImageId: string;
@@ -63,7 +65,7 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
       const result = await uploadService.uploadImage(file, (p) => setProgress(p));
       cfImageId = result.id;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falló la subida.');
+      setError(err instanceof Error ? err.message : t('errors.uploadFailed'));
       setProgress(null);
       return;
     }
@@ -93,7 +95,7 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
         className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
       >
         <CameraIcon className="h-4 w-4" />
-        Subir foto
+        {t('trigger')}
       </button>
     );
   }
@@ -103,13 +105,13 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Subir foto familiar</h3>
-        <p className="mt-1 text-xs text-zinc-500">Las fotos se almacenan en Cloudflare y solo son visibles para los miembros de la familia.</p>
+        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{t('title')}</h3>
+        <p className="mt-1 text-xs text-zinc-500">{t('subtitle')}</p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Imagen <span className="text-rose-500">*</span>
+              {t('fields.imageLabel')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="file"
@@ -121,19 +123,19 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Descripción</label>
+            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">{t('fields.captionLabel')}</label>
             <input
               type="text"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               maxLength={300}
-              placeholder="Ej. Reunión navideña 2010"
+              placeholder={t('fields.captionPlaceholder')}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Fecha de la foto</label>
+            <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">{t('fields.takenAtLabel')}</label>
             <input
               type="date"
               value={takenAt}
@@ -145,7 +147,7 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
           {persons.length > 0 && (
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                Personas etiquetadas ({taggedIds.size})
+                {t('fields.taggedLabel', { count: taggedIds.size })}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {persons.map((p) => {
@@ -170,7 +172,7 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
           )}
 
           {progress !== null && progress < 100 && (
-            <div className="text-xs text-zinc-500">Subiendo a Cloudflare… {progress}%</div>
+            <div className="text-xs text-zinc-500">{t('progress', { progress })}</div>
           )}
 
           {error && (
@@ -186,14 +188,14 @@ export function UploadPhotoDialog({ familyId, persons }: Props) {
               disabled={busy}
               className="inline-flex items-center rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={busy || !file}
               className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-              {busy ? 'Guardando…' : 'Subir'}
+              {busy ? t('submitting') : t('submit')}
             </button>
           </div>
         </form>

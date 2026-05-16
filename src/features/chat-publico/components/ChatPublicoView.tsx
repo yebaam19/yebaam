@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import Avatar from '@/ui/Avatar'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
@@ -30,7 +31,11 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function resolveAuthor(message: PublicMessageWithSender): ResolvedMessageAuthor {
+function resolveAuthor(
+  message: PublicMessageWithSender,
+  fallbackUser: string,
+  fallbackGuest: string,
+): ResolvedMessageAuthor {
   const kind = (message.sender_kind as ResolvedMessageAuthor['kind']) || 'profile'
   if (kind === 'profile' || kind === 'nick') {
     if (message.sender) {
@@ -38,7 +43,7 @@ function resolveAuthor(message: PublicMessageWithSender): ResolvedMessageAuthor 
         message.sender.display_name ||
         message.sender.username ||
         message.sender_nickname ||
-        'Usuario'
+        fallbackUser
       return {
         label,
         avatarUrl: message.sender.avatar_url ?? message.sender_avatar_url ?? null,
@@ -47,14 +52,14 @@ function resolveAuthor(message: PublicMessageWithSender): ResolvedMessageAuthor 
       }
     }
     return {
-      label: message.sender_nickname || 'Usuario',
+      label: message.sender_nickname || fallbackUser,
       avatarUrl: message.sender_avatar_url ?? null,
       kind,
       userId: message.sender_id ?? null,
     }
   }
   return {
-    label: message.sender_nickname || 'Invitado',
+    label: message.sender_nickname || fallbackGuest,
     avatarUrl: null,
     kind: 'guest',
     userId: null,
@@ -67,6 +72,7 @@ function authorInitials(label: string) {
 }
 
 export default function ChatPublicoView({ topic, initialMessages, identity }: Props) {
+  const t = useTranslations('chat.public.view')
   const [messages, setMessages] = useState<PublicMessageWithSender[]>(() =>
     [...initialMessages].reverse(),
   )
@@ -228,17 +234,17 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
           const ms = res.retryAfterMs ?? 2000
           setCooldownUntil(Date.now() + ms)
           setCooldownNow(Date.now())
-          setError(`Espera ${Math.ceil(ms / 1000)}s antes de enviar otro mensaje.`)
+          setError(t('errors.rateLimited', { seconds: Math.ceil(ms / 1000) }))
         } else if (res.error === 'invalid') {
-          setError('El mensaje no puede estar vacío ni exceder 2000 caracteres.')
+          setError(t('errors.invalid'))
         } else if (res.error === 'unauthorized') {
-          setError('Debes entrar a la sala para enviar mensajes.')
+          setError(t('errors.unauthorized'))
         } else {
-          setError('No se pudo enviar el mensaje. Intenta de nuevo.')
+          setError(t('errors.sendFailed'))
         }
       })
     },
-    [topic.id],
+    [t, topic.id],
   )
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -260,9 +266,9 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
   const handleDelete = useCallback(async (id: string) => {
     const res = await softDeletePublicMessage(id)
     if (!res.ok) {
-      setError('No se pudo eliminar el mensaje.')
+      setError(t('errors.deleteFailed'))
     }
-  }, [])
+  }, [t])
 
   const grouped = useMemo(() => {
     return messages.map((m, i) => {
@@ -292,20 +298,20 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
               disabled={isLoadingOlder}
               className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
             >
-              {isLoadingOlder ? 'Cargando…' : 'Cargar mensajes anteriores'}
+              {isLoadingOlder ? t('loading') : t('loadOlder')}
             </button>
           </div>
         )}
 
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400">
-            <p className="text-sm">Todavía no hay mensajes. Sé el primero en saludar.</p>
+            <p className="text-sm">{t('emptyState')}</p>
           </div>
         )}
 
         <ul className="flex flex-col gap-1">
           {grouped.map(({ message, showHeader }) => {
-            const author = resolveAuthor(message)
+            const author = resolveAuthor(message, t('fallbackUser'), t('fallbackGuest'))
             const isOwn =
               !!identity &&
               ((identity.kind !== 'guest' &&
@@ -333,12 +339,12 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
                       {author.label}
                       {author.kind === 'guest' && (
                         <span className="rounded-full bg-neutral-100 px-1.5 py-[1px] text-[9px] font-medium uppercase text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                          invitado
+                          {t('badgeGuest')}
                         </span>
                       )}
                       {author.kind === 'nick' && (
                         <span className="rounded-full bg-neutral-100 px-1.5 py-[1px] text-[9px] font-medium uppercase text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                          nick
+                          {t('badgeNick')}
                         </span>
                       )}
                     </span>
@@ -353,14 +359,14 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
                           : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100',
                     )}
                   >
-                    {message.is_deleted ? 'Mensaje eliminado' : message.content ?? ''}
+                    {message.is_deleted ? t('deletedMessage') : message.content ?? ''}
                     {isOwn && !message.is_deleted && identity?.kind !== 'guest' && (
                       <button
                         type="button"
                         onClick={() => handleDelete(message.id)}
                         className="absolute -top-2 -left-2 hidden rounded-full bg-white p-1 text-neutral-500 shadow ring-1 ring-black/5 hover:text-red-600 group-hover:inline-flex dark:bg-neutral-700 dark:text-neutral-300"
-                        aria-label="Eliminar mensaje"
-                        title="Eliminar"
+                        aria-label={t('deleteAria')}
+                        title={t('deleteTitle')}
                       >
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -393,8 +399,8 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
             disabled={!caps.canChat}
             placeholder={
               caps.canChat
-                ? `Escribe un mensaje en ${topic.name}…`
-                : 'Entra a la sala para chatear'
+                ? t('placeholderActive', { channel: topic.name })
+                : t('placeholderInactive')
             }
             className="min-h-[40px] flex-1 resize-none rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm text-neutral-900 outline-hidden focus:border-primary-500 focus:bg-white disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
           />
@@ -403,13 +409,17 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
             disabled={isPending || cooling || !draft.trim() || !caps.canChat}
             className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {cooling ? `Espera ${Math.ceil(remainingMs / 1000)}s` : isPending ? 'Enviando…' : 'Enviar'}
+            {cooling
+              ? t('submitCooldown', { seconds: Math.ceil(remainingMs / 1000) })
+              : isPending
+                ? t('submitSending')
+                : t('submit')}
           </button>
         </div>
         <p className="mt-1 px-1 text-[10px] text-neutral-400 dark:text-neutral-500">
-          {draft.length}/{MAX_LENGTH} · Enter para enviar · Shift+Enter para salto de línea
-          {identity?.kind === 'guest' && ' · Invitado: solo texto'}
-          {identity?.kind === 'nick' && ' · Nick: texto + imágenes'}
+          {draft.length}/{MAX_LENGTH} {t('hintEnter')}
+          {identity?.kind === 'guest' && t('hintGuest')}
+          {identity?.kind === 'nick' && t('hintNick')}
         </p>
       </form>
     </div>

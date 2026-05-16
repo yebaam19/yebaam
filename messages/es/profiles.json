@@ -1,0 +1,121 @@
+{
+  "hero": {
+    "title": "Tus Espacios Digitales",
+    "subtitle": "Crea, comparte y conecta a través de diferentes espacios diseñados para ti.",
+    "cta": "Explorar espacios",
+    "pills": {
+      "digitalPresence": "Presencia digital",
+      "community": "Comunidad",
+      "knowledge": "Conocimiento"
+    }
+  },
+  "section": {
+    "eyebrow": "Explora tus espacios",
+    "title": "Elige dónde quieres crecer hoy",
+    "subtitle": "Cada espacio tiene su propósito. Únete, crea y conecta a tu ritmo."
+  },
+  "verification": {
+    "overlayTitle": "Verificación requerida",
+    "overlayDescription": "Verifica tu email para crear espacios",
+    "overlayCta": "Verificar cuenta"
+  },
+  "verificationCard": {
+    "heading": "¿Por qué verificar mi perfil?",
+    "benefitsTitle": "Beneficios de la verificación",
+    "stepsTitle": "Proceso simple y rápido",
+    "benefits": [
+      "Crea y gestiona tus propios espacios",
+      "Acceso a herramientas de creación avanzadas",
+      "Mayor visibilidad en la plataforma",
+      "Construye una reputación sólida"
+    ],
+    "steps": [
+      "Verifica tu correo electrónico",
+      "Confirma tus datos básicos",
+      "Verificación instantánea",
+      "Soporte prioritario"
+    ]
+  },
+  "features": {
+    "clubs": {
+      "title": "Clubs",
+      "description": "Crea y gestiona comunidades basadas en intereses o afiliaciones compartidas.",
+      "benefits": [
+        "Construye comunidades temáticas",
+        "Organiza eventos y actividades",
+        "Conecta con personas afines"
+      ],
+      "buttonLabel": "Explorar Clubs"
+    },
+    "blogs": {
+      "title": "Blogs",
+      "description": "Comparte conocimiento y experiencias en tu espacio personal de publicación.",
+      "benefits": [
+        "Publica artículos y contenido",
+        "Construye una audiencia",
+        "Comparte tu experiencia"
+      ],
+      "buttonLabel": "Explorar Blogs"
+    },
+    "professional-profile": {
+      "title": "Perfil Profesional",
+      "description": "Destaca tus logros y experiencia profesional con un perfil verificado.",
+      "benefits": [
+        "Portafolio profesional",
+        "Red de contactos laborales",
+        "Oportunidades de carrera"
+      ],
+      "buttonLabel": "Editar Perfil"
+    },
+    "music-archive": {
+      "title": "Archivo Musical",
+      "description": "Música latinoamericana 1900–1970: sube, escucha y conecta con otros coleccionistas.",
+      "benefits": [
+        "Sube canciones con carátula",
+        "Reproduce canción por canción",
+        "Catálogo histórico abierto al público"
+      ],
+      "buttonLabel": "Ir al Archivo"
+    },
+    "families": {
+      "title": "Familias",
+      "description": "Espacio privado por invitación: árbol genealógico, línea de tiempo, fotos e historias.",
+      "benefits": [
+        "Árbol genealógico colaborativo",
+        "Línea de tiempo con fotos e historias",
+        "Acceso solo por invitación"
+      ],
+      "buttonLabel": "Ir a Familias"
+    },
+    "communities": {
+      "title": "Comunidades",
+      "description": "Únete a grandes comunidades regionales y temáticas para conectar a mayor escala.",
+      "benefits": [
+        "Acceso a comunidades masivas",
+        "Networking a gran escala",
+        "Eventos regionales y nacionales"
+      ],
+      "buttonLabel": "Explorar Comunidades"
+    },
+    "companies": {
+      "title": "Empresas",
+      "description": "Espacio corporativo para empresas con múltiples colaboradores y proyectos.",
+      "benefits": [
+        "Perfil corporativo completo",
+        "Gestión de equipos",
+        "Proyectos colaborativos"
+      ],
+      "buttonLabel": "Explorar Empresas"
+    },
+    "food": {
+      "title": "Food",
+      "description": "Explora y comparte la mejor gastronomía: restaurantes, recetas y experiencias culinarias.",
+      "benefits": [
+        "Descubre restaurantes locales",
+        "Comparte recetas y reseñas",
+        "Conecta con foodies y chefs"
+      ],
+      "buttonLabel": "Explorar Food"
+    }
+  }
+}

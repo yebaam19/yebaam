@@ -111,7 +111,111 @@
     "tagsPlaceholder": "javascript, react, web development",
     "tagsHint": "Separa las etiquetas con comas"
   },
+  "formFields": {
+    "name": "Nombre del blog *",
+    "namePlaceholder": "Mi Blog Increíble",
+    "nameCounter": "{count}/100 caracteres",
+    "description": "Descripción *",
+    "descriptionPlaceholder": "Describe de qué trata tu blog...",
+    "descriptionCounter": "{count}/500 caracteres",
+    "category": "Categoría *",
+    "subcategory": "Subcategoría (opcional)",
+    "subcategoryPlaceholder": "ej. Desarrollo Web, Recetas Veganas, etc.",
+    "website": "Sitio web (opcional)",
+    "websitePlaceholder": "https://miblog.com",
+    "tags": "Etiquetas (opcional)",
+    "tagsPlaceholder": "javascript, react, web development",
+    "tagsHint": "Separa las etiquetas con comas"
+  },
   "actions": {
     "cancel": "Cancelar"
+  },
+  "header": {
+    "byPrefix": "por",
+    "follow": "Seguir",
+    "unfollow": "Dejar de Seguir",
+    "menuAria": "Menú del blog"
+  },
+  "sideMenu": {
+    "aria": "Menú del blog",
+    "locked": {
+      "stars3": "Disponible al alcanzar ★3",
+      "yebaam": "Activado por Yebaam"
+    }
+  },
+  "askmeTab": {
+    "loadError": "No se pudo cargar Askme.",
+    "composer": {
+      "title": "Pregúntale a {blogName}",
+      "hint": "Las preguntas se publican solo cuando el bloguero las aprueba.",
+      "placeholder": "Escribe una pregunta…",
+      "anonymousLabel": "Enviar de forma anónima",
+      "submit": "Preguntar",
+      "submitting": "Enviando…",
+      "errorDefault": "No se pudo enviar la pregunta.",
+      "successSent": "¡Pregunta enviada! Quedará visible cuando el bloguero la apruebe."
+    },
+    "stats": {
+      "received": "Recibidas",
+      "pending": "Pendientes",
+      "answered": "Respondidas",
+      "responseRate": "Tasa de respuesta"
+    },
+    "tabs": {
+      "pending": "Pendientes",
+      "awaiting": "Por responder",
+      "public": "Publicadas"
+    },
+    "publicList": {
+      "empty": "Aún no hay preguntas públicas para {blogName}. ¡Sé el primero!",
+      "thisBlog": "este blog"
+    },
+    "pendingList": {
+      "empty": "No hay preguntas pendientes de moderar."
+    },
+    "awaitingList": {
+      "empty": "No hay preguntas aprobadas esperando respuesta."
+    },
+    "pendingCard": {
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "deleteTitle": "Eliminar definitivamente",
+      "errorDefault": "Acción fallida."
+    },
+    "answerCard": {
+      "placeholder": "Escribe tu respuesta…",
+      "submit": "Responder",
+      "submitting": "Enviando…",
+      "errorDefault": "No se pudo guardar la respuesta."
+    },
+    "questionCard": {
+      "answerLabel": "Respuesta"
+    },
+    "questionHeader": {
+      "anonymous": "Anónimo",
+      "publicAnonymousTag": "anónimo público"
+    }
+  },
+  "editModal": {
+    "title": "Editar Blog",
+    "subtitle": "Actualiza la información de tu blog",
+    "avatarLabel": "Avatar del blog",
+    "coverLabel": "Imagen de portada",
+    "uploadingHint": "Subiendo imágenes a CloudFront...",
+    "uploadingButton": "Subiendo imágenes...",
+    "saving": "Guardando...",
+    "save": "Guardar cambios",
+    "errorRequired": "El nombre y descripción son requeridos",
+    "errorUpdating": "Error al actualizar el blog",
+    "successUpdated": "Blog actualizado exitosamente",
+    "dangerZoneTitle": "Zona peligrosa",
+    "dangerZoneDescription": "Eliminar el blog borra de forma permanente sus publicaciones, seguidores, foro y chat asociados. Esta acción no se puede deshacer.",
+    "deleteButton": "Eliminar blog",
+    "confirmDeleteLabel": "Escribe <name></name> para confirmar",
+    "deletingLabel": "Eliminando…",
+    "deletePermanently": "Eliminar definitivamente",
+    "errorConfirmName": "Escribe el nombre exacto del blog para confirmar",
+    "successDeleted": "Blog eliminado",
+    "errorDeleting": "No se pudo eliminar el blog"
   }
 }

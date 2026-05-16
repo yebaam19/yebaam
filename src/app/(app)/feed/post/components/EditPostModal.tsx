@@ -12,6 +12,7 @@ import {
 } from '@headlessui/react';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/features/auth';
 import { usePostStore } from '../stores/post.store';
@@ -34,11 +35,12 @@ import { useRef } from 'react';
 import { useUpdatePost } from '../hooks/usePosts';
 
 export default function EditPostModal() {
+  const t = useTranslations('feed');
   const { user } = useAuth();
-  const { 
-    isEditModalOpen, 
-    postToEdit, 
-    closeEditModal, 
+  const {
+    isEditModalOpen,
+    postToEdit,
+    closeEditModal,
   } = usePostStore();
   
   // Usar TanStack Query mutation para actualizar
@@ -88,13 +90,13 @@ export default function EditPostModal() {
     });
 
     if (validFiles.length !== files.length) {
-      toast.error('Solo se permiten archivos de imagen o video');
+      toast.error(t('editModal.uploadOnlyMedia'));
     }
 
     // Limitar a 10 archivos
     const limitedFiles = validFiles.slice(0, 10);
     if (validFiles.length > 10) {
-      toast.warning('Solo puedes subir hasta 10 archivos');
+      toast.warning(t('editModal.uploadLimit'));
     }
 
     // Crear URLs de preview
@@ -163,7 +165,7 @@ export default function EditPostModal() {
       selectedFiles.length > 0;
     
     if (hasChanges) {
-      const confirm = window.confirm('¿Descartar los cambios?');
+      const confirm = window.confirm(t('editModal.discardConfirm'));
       if (!confirm) return;
     }
     
@@ -207,7 +209,7 @@ export default function EditPostModal() {
 
       // Subir nuevos archivos si hay archivos seleccionados
       if (selectedFiles.length > 0) {
-        toast.info('Subiendo archivos...');
+        toast.info(t('editModal.uploading'));
         
         // Importar el uploadService dinámicamente
         const { uploadService } = await import('@/lib/service/upload.service');
@@ -231,7 +233,7 @@ export default function EditPostModal() {
           thumbnailUrl: result.thumbnailUrl,
         }));
 
-        toast.success(`${selectedFiles.length} archivo(s) subido(s) exitosamente`);
+        toast.success(t('editModal.uploadedCount', { count: selectedFiles.length }));
       }
       
       const updatePayload = {
@@ -253,7 +255,7 @@ export default function EditPostModal() {
         data: updatePayload,
       });
       
-      toast.success('Publicación actualizada exitosamente');
+      toast.success(t('editModal.updateSuccess'));
       
       // Limpiar preview URLs
       previewUrls.forEach(url => URL.revokeObjectURL(url));
@@ -265,7 +267,7 @@ export default function EditPostModal() {
    
     } catch (error: any) {
       console.error('Error al actualizar publicación:', error);
-      toast.error(error.message || 'Error al actualizar la publicación');
+      toast.error(error.message || t('editModal.updateError'));
     }
   };
 
@@ -302,7 +304,7 @@ export default function EditPostModal() {
                 {/* Header */}
                 <div className="relative border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
                   <DialogTitle className="text-center text-xl font-bold text-neutral-900 dark:text-white">
-                    Editar publicación
+                    {t('editModal.title')}
                   </DialogTitle>
                   <button
                     onClick={handleClose}
@@ -346,7 +348,7 @@ export default function EditPostModal() {
                     <PostContentEditor
                       content={content}
                       onChange={(value) => setValue('content', value)}
-                      placeholder={`¿Qué estás pensando, ${userFirstName}?`}
+                      placeholder={t('composer.placeholder', { name: userFirstName })}
                       backgroundColor={backgroundColor}
                       error={errors.content?.message}
                       disabled={isCreating}
@@ -412,7 +414,7 @@ export default function EditPostModal() {
                       disabled={isCreating || (!content?.trim() && !selectedGif)}
                       className="w-full rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300 dark:disabled:bg-neutral-700"
                     >
-                      {isCreating ? 'Guardando...' : 'Guardar cambios'}
+                      {isCreating ? t('editModal.saving') : t('editModal.save')}
                     </button>
                   </div>
                 </form>

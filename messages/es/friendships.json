@@ -36,6 +36,27 @@
     "confirm": "Confirmar",
     "remove": "Eliminar"
   },
+  "friendsHero": {
+    "greeting": "¡Hola, {name}!",
+    "title": "Conecta, comparte y crece tu red",
+    "subtitle": "Hay miles de personas esperándote.",
+    "findFriends": "Encontrar amigos",
+    "fallbackName": "amig@"
+  },
+  "profileProgress": {
+    "title": "Tu progreso",
+    "description": "Completa tu perfil y consigue más conexiones",
+    "completedRatio": "{done} de {total} completados",
+    "stepCompletedA11y": "{label} (completado)",
+    "stepIncompleteA11y": "Completar paso: {label}",
+    "steps": {
+      "avatar": "Foto de perfil",
+      "basics": "Información básica",
+      "interests": "Intereses",
+      "connect5": "Conecta 5 amigos",
+      "verified": "Verificado"
+    }
+  },
   "detailModal": {
     "title": "Solicitud de amistad",
     "loading": "Cargando...",
@@ -59,5 +80,57 @@
     "cancelRequest": "Cancelar solicitud",
     "cancelling": "Cancelando...",
     "unavailable": "No se pudo cargar la información"
+  },
+  "friendsList": {
+    "title": "Amigos",
+    "count": "{count, plural, =1 {# amigo} other {# amigos}}",
+    "emptyTitle": "Aún no tienes amigos",
+    "emptySubtitle": "Comienza a conectar con personas que conozcas",
+    "removeError": "No se puede eliminar este amigo",
+    "filterAll": "Todos ({count})",
+    "filterClose": "Cercanos ({count})",
+    "noCloseFriends": "No tienes amigos cercanos aún",
+    "removeCloseAria": "Quitar de amigos cercanos",
+    "addCloseAria": "Agregar a amigos cercanos",
+    "message": "Mensaje",
+    "removeFromClose": "Quitar de cercanos",
+    "markAsClose": "Amigo cercano",
+    "removeFriend": "Eliminar amigo",
+    "friendsSince": "Amigos desde {date}",
+    "mutualFriends": "{count, plural, =1 {# amigo en común} other {# amigos en común}}"
+  },
+  "friendRequestsList": {
+    "title": "Solicitudes de amistad",
+    "tabReceived": "Recibidas",
+    "tabSent": "Enviadas",
+    "emptyReceivedTitle": "No tienes solicitudes pendientes",
+    "emptyReceivedSubtitle": "Las solicitudes que recibas aparecerán aquí",
+    "emptySentTitle": "No has enviado solicitudes",
+    "emptySentSubtitle": "Explora usuarios y envía solicitudes de amistad",
+    "acceptTitle": "Aceptar solicitud",
+    "rejectTitle": "Rechazar solicitud",
+    "cancelLabel": "Cancelar",
+    "cancelling": "Cancelando..."
+  },
+  "suggestions": {
+    "hideAria": "Ocultar sugerencia"
+  },
+  "suggestionCard": {
+    "hideAria": "Ocultar sugerencia",
+    "prevAria": "Anterior",
+    "nextAria": "Siguiente"
+  },
+  "friendCard": {
+    "removeUnavailable": "No se puede eliminar este amigo. Recarga la página e intenta de nuevo.",
+    "removeConfirm": "¿Eliminar a {name} de tus amigos?",
+    "moreOptions": "Más opciones",
+    "removeFromClose": "Quitar de cercanos",
+    "markAsClose": "Marcar como cercano",
+    "removeFriend": "Eliminar amigo",
+    "message": "Mensaje",
+    "viewProfile": "Ver perfil",
+    "friendsSince": "Amigos desde {date}",
+    "fallbackUser": "Usuario {id}",
+    "mutualFriends": "{count, plural, =1 {# amigo en común} other {# amigos en común}}"
   }
 }

@@ -8,6 +8,7 @@
 
 import { addAssociationAction, deleteAssociationAction, updateAssociationAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { PencilIcon, TrashIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -24,6 +25,7 @@ interface AssociationsSectionProps {
 
 export function AssociationsSection({ profileId, isOwner, items = [] }: AssociationsSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -37,7 +39,7 @@ export function AssociationsSection({ profileId, isOwner, items = [] }: Associat
       toast.error(result.error)
       return
     }
-    toast.success(selectedAssociation ? 'Asociación actualizada correctamente' : 'Asociación agregada correctamente')
+    toast.success(selectedAssociation ? t('associations.toastUpdated') : t('associations.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -64,7 +66,7 @@ export function AssociationsSection({ profileId, isOwner, items = [] }: Associat
       toast.error(result.error)
       return
     }
-    toast.success('Asociación eliminada')
+    toast.success(t('associations.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedAssociation(null)
     router.refresh()
@@ -73,23 +75,23 @@ export function AssociationsSection({ profileId, isOwner, items = [] }: Associat
   return (
     <div>
       <SectionHeader
-        title="Asociaciones Profesionales"
+        title={t('associations.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Asociacion"
+        addLabel={t('associations.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={UserGroupIcon}
-          title="Sin asociaciones registradas"
+          title={t('associations.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega las asociaciones profesionales a las que perteneces'
-              : 'Este usuario aun no ha agregado asociaciones a su perfil'
+              ? t('associations.emptyDescriptionOwner')
+              : t('associations.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Asociacion' : undefined}
+          actionLabel={isOwner ? t('associations.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -144,8 +146,8 @@ export function AssociationsSection({ profileId, isOwner, items = [] }: Associat
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Asociacion"
-        description="¿Estas seguro de que deseas eliminar esta asociacion? Esta accion no se puede deshacer."
+        title={t('associations.deleteTitle')}
+        description={t('associations.deleteDescription')}
       />
     </div>
   )

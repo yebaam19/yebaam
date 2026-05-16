@@ -4,16 +4,17 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useFriendRequests } from '../hooks/useFriendRequests';
-import { 
-  CheckIcon, 
-  XMarkIcon, 
+import {
+  CheckIcon,
+  XMarkIcon,
   UserGroupIcon,
   ClockIcon,
   PaperAirplaneIcon,
   InboxArrowDownIcon
 } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
+import { useTranslations } from 'next-intl';
 
 type TabType = 'received' | 'sent';
 
@@ -33,8 +34,10 @@ export function FriendRequestsList() {
     cancelRequest,
   } = useFriendRequests();
 
+  const t = useTranslations('friendships.friendRequestsList');
   const [activeTab, setActiveTab] = useState<TabType>('received');
   const [processingRequests, setProcessingRequests] = useState<Set<string>>(new Set());
+  const dateLocale = useDateFnsLocale();
 
   const handleAccept = async (requestId: string) => {
 
@@ -118,7 +121,7 @@ export function FriendRequestsList() {
       {/* Header con tabs integrados */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Solicitudes de amistad feed
+          {t('title')}
         </h2>
         {totalPending > 0 && (
           <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-semibold rounded-full">
@@ -138,7 +141,7 @@ export function FriendRequestsList() {
           }`}
         >
           <InboxArrowDownIcon className="w-5 h-5" />
-          <span>Recibidas</span>
+          <span>{t('tabReceived')}</span>
           {pendingReceived.length > 0 && (
             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
               activeTab === 'received' 
@@ -159,7 +162,7 @@ export function FriendRequestsList() {
           }`}
         >
           <PaperAirplaneIcon className="w-5 h-5" />
-          <span>Enviadas</span>
+          <span>{t('tabSent')}</span>
           {pendingSent.length > 0 && (
             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
               activeTab === 'sent' 
@@ -180,14 +183,14 @@ export function FriendRequestsList() {
               <UserGroupIcon className="w-10 h-10 text-gray-400 dark:text-gray-600" />
             </div>
             <p className="text-gray-500 dark:text-gray-400 font-medium">
-              {activeTab === 'received' 
-                ? 'No tienes solicitudes pendientes' 
-                : 'No has enviado solicitudes'}
+              {activeTab === 'received'
+                ? t('emptyReceivedTitle')
+                : t('emptySentTitle')}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              {activeTab === 'received' 
-                ? 'Las solicitudes que recibas aparecerán aquí' 
-                : 'Explora usuarios y envía solicitudes de amistad'}
+              {activeTab === 'received'
+                ? t('emptyReceivedSubtitle')
+                : t('emptySentSubtitle')}
             </p>
           </div>
         ) : (
@@ -243,9 +246,9 @@ export function FriendRequestsList() {
                   <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500 dark:text-gray-400">
                     <ClockIcon className="w-3.5 h-3.5" />
                     <span>
-                      {formatDistanceToNow(new Date(request.sentAt), { 
+                      {formatDistanceToNow(new Date(request.sentAt), {
                         addSuffix: true,
-                        locale: es 
+                        locale: dateLocale
                       })}
                     </span>
                   </div>
@@ -260,7 +263,7 @@ export function FriendRequestsList() {
                         onClick={() => handleAccept(request.requestId)}
                         disabled={isProcessing}
                         className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-sm hover:shadow"
-                        title="Aceptar solicitud"
+                        title={t('acceptTitle')}
                       >
                         <CheckIcon className="w-4 h-4" />
                       </button>
@@ -270,7 +273,7 @@ export function FriendRequestsList() {
                         onClick={() => handleReject(request.requestId)}
                         disabled={isProcessing}
                         className="px-5 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-50"
-                        title="Rechazar solicitud"
+                        title={t('rejectTitle')}
                       >
                         <XMarkIcon className="w-4 h-4" />
                       </button>
@@ -284,7 +287,7 @@ export function FriendRequestsList() {
                         className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         <XMarkIcon className="w-4 h-4" />
-                        <span className="hidden sm:inline">{isProcessing ? 'Cancelando...' : 'Cancelar'}</span>
+                        <span className="hidden sm:inline">{isProcessing ? t('cancelling') : t('cancelLabel')}</span>
                       </button>
                     </>
                   )}

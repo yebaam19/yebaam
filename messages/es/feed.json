@@ -1,4 +1,17 @@
 {
+  "postDetail": {
+    "headerTitle": "Publicación de {name}"
+  },
+  "postActions": {
+    "reactions": {
+      "LIKE": "Me gusta",
+      "LOVE": "Me encanta",
+      "HAHA": "Me divierte",
+      "WOW": "Me asombra",
+      "SAD": "Me entristece",
+      "ANGRY": "Me enoja"
+    }
+  },
   "composer": {
     "placeholder": "¿Qué estás pensando, {name}?",
     "addToPost": "Agregar a tu publicación",
@@ -171,5 +184,89 @@
   },
   "feeling": {
     "prefix": "se siente"
+  },
+  "editModal": {
+    "title": "Editar publicación",
+    "discardConfirm": "¿Descartar los cambios?",
+    "uploading": "Subiendo archivos...",
+    "uploadedCount": "{count} archivo(s) subido(s) exitosamente",
+    "uploadOnlyMedia": "Solo se permiten archivos de imagen o video",
+    "uploadLimit": "Solo puedes subir hasta 10 archivos",
+    "updateSuccess": "Publicación actualizada exitosamente",
+    "updateError": "Error al actualizar la publicación",
+    "save": "Guardar cambios",
+    "saving": "Guardando..."
+  },
+  "liveVideo": {
+    "titlePreparing": "Preparar transmisión en vivo",
+    "titleCountdown": "Iniciando...",
+    "titleLive": "EN VIVO",
+    "titleEnding": "Finalizando...",
+    "startingBroadcast": "Iniciando transmisión...",
+    "broadcastFinished": "Transmisión finalizada",
+    "savingVideo": "Guardando video...",
+    "viewerSingular": "espectador",
+    "viewerPlural": "espectadores",
+    "watchingSingular": "persona está",
+    "watchingPlural": "personas están",
+    "watchingSuffix": "viendo tu transmisión",
+    "cameraError": "No se pudo acceder a la cámara. Verifica los permisos.",
+    "titleRequired": "Agrega un título para tu video en vivo",
+    "liveSuccess": "¡Estás en vivo!",
+    "liveSuccessDescription": "URL de reproducción lista. Stream ID: {id}",
+    "startError": "Error al iniciar la transmisión",
+    "connectError": "Error al conectar con el servidor",
+    "endedToast": "Video en vivo finalizado. Duración: {duration}",
+    "endConfirm": "¿Finalizar transmisión en vivo?",
+    "titlePlaceholder": "Título de tu transmisión...",
+    "descriptionPlaceholder": "Describe tu transmisión en vivo (opcional)...",
+    "hdQuality": "Calidad HD",
+    "hdQualityDetail": "1280x720 píxeles",
+    "stableConnection": "Conexión estable",
+    "stableConnectionDetail": "Listo para transmitir",
+    "startButton": "Iniciar transmisión en vivo",
+    "starting": "Iniciando...",
+    "autoSaveNote": "Tu transmisión se guardará automáticamente cuando finalices",
+    "streamInfo": "Información del Stream",
+    "streamIdLabel": "Stream ID:",
+    "playbackUrlAvailable": "URL de reproducción disponible",
+    "endButton": "Finalizar transmisión en vivo",
+    "ending": "Finalizando..."
+  },
+  "feelings": {
+    "happy": "feliz",
+    "blessed": "bendecido/a",
+    "loved": "amado/a",
+    "excited": "emocionado/a",
+    "grateful": "agradecido/a",
+    "sad": "triste",
+    "angry": "molesto/a",
+    "confused": "confundido/a",
+    "tired": "cansado/a"
+  },
+  "activities": {
+    "eating": "comiendo",
+    "drinking": "tomando",
+    "traveling": "viajando a",
+    "watching": "viendo",
+    "reading": "leyendo",
+    "playing": "jugando",
+    "listening": "escuchando",
+    "celebrating": "celebrando",
+    "working": "trabajando en",
+    "exercising": "haciendo ejercicio"
+  },
+  "feelingPicker": {
+    "title": "Sentimiento/actividad",
+    "feelingsHeading": "¿Cómo te sientes?",
+    "activitiesHeading": "¿Qué estás haciendo?"
+  },
+  "visibilityOptions": {
+    "public": "Público",
+    "publicDescription": "Cualquiera puede ver",
+    "friends": "Amigos",
+    "friendsDescription": "Solo tus amigos",
+    "private": "Solo yo",
+    "privateDescription": "Solo tú"
   }
 }

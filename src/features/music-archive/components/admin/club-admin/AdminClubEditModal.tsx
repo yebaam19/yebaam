@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { imageUrl } from '@/lib/media/urls';
 import { updateClubProfile } from '../../../actions/club-admin.actions';
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
+  const t = useTranslations('musica.admin.clubEdit');
   const [name, setName] = useState(club.name);
   const [description, setDescription] = useState(club.description);
   const [rules, setRules] = useState<string[]>(club.rules.length ? club.rules : ['']);
@@ -97,7 +99,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
         });
         onClose();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'No se pudo guardar.');
+        setError(err instanceof Error ? err.message : t('errGeneric'));
       }
     });
   }
@@ -106,12 +108,12 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
       <div className="my-8 w-full max-w-2xl space-y-4 rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Editar club</h3>
+          <h3 className="text-lg font-semibold">{t('heading')}</h3>
           <button
             type="button"
             onClick={onClose}
             className="text-zinc-500 hover:text-zinc-700"
-            aria-label="Cerrar"
+            aria-label={t('closeAria')}
           >
             ✕
           </button>
@@ -119,7 +121,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Nombre
+              {t('nameLabel')}
             </label>
             <input
               value={name}
@@ -129,7 +131,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Descripción
+              {t('descriptionLabel')}
             </label>
             <textarea
               value={description}
@@ -141,14 +143,14 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
           {genres && genres.length > 0 && (
             <div>
               <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Género
+                {t('genreLabel')}
               </label>
               <select
                 value={genreId}
                 onChange={(e) => setGenreId(e.target.value)}
                 className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
               >
-                {!club.music_genre_id && <option value="">— Sin género —</option>}
+                {!club.music_genre_id && <option value="">{t('noGenreOption')}</option>}
                 {genres.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
@@ -156,13 +158,13 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
                 ))}
               </select>
               <p className="mt-1 text-[11px] text-zinc-500">
-                Cambiar el género reclasifica este club bajo otro genre slug.
+                {t('genreHint')}
               </p>
             </div>
           )}
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Reglas
+              {t('rulesLabel')}
             </label>
             <ul className="space-y-2">
               {rules.map((r, i) => (
@@ -178,7 +180,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
                     onClick={() => removeRule(i)}
                     className="text-xs text-rose-600 hover:underline"
                   >
-                    Quitar
+                    {t('ruleRemove')}
                   </button>
                 </li>
               ))}
@@ -188,24 +190,24 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
               onClick={addRule}
               className="mt-2 text-xs text-amber-700 hover:underline dark:text-amber-300"
             >
-              + Agregar regla
+              {t('addRule')}
             </button>
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Imagen de portada
+              {t('coverLabel')}
             </label>
             {(newCoverPreview || currentCoverUrl) && (
               <div className="mb-2 flex items-center gap-3">
                 <div className="h-20 w-32 overflow-hidden rounded-md border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
                   <img
                     src={newCoverPreview ?? currentCoverUrl ?? ''}
-                    alt={newCoverPreview ? 'Nueva portada' : 'Portada actual'}
+                    alt={newCoverPreview ? t('newCoverAlt') : t('currentCoverAlt')}
                     className="h-full w-full object-cover"
                   />
                 </div>
                 <p className="text-xs text-zinc-500">
-                  {newCoverPreview ? 'Nueva portada (sin guardar)' : 'Portada actual'}
+                  {newCoverPreview ? t('newCoverNote') : t('currentCoverNote')}
                 </p>
               </div>
             )}
@@ -216,7 +218,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
               className="text-sm"
             />
             <p className="mt-1 text-xs text-zinc-500">
-              Se sube a Cloudflare Images y se muestra como banner en /musica/clubes/{club.slug}.
+              {t('coverHint', { slug: club.slug })}
             </p>
           </div>
         </div>
@@ -231,7 +233,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
             onClick={onClose}
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             type="button"
@@ -239,7 +241,7 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
             disabled={pending || !name.trim()}
             className="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-40"
           >
-            {pending ? 'Guardando…' : 'Guardar cambios'}
+            {pending ? t('saving') : t('save')}
           </button>
         </div>
       </div>

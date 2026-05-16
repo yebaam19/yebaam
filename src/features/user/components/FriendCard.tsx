@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { 
+import {
   ChatBubbleLeftIcon,
   EllipsisHorizontalIcon,
   StarIcon,
@@ -11,6 +11,8 @@ import { StarIcon as StarIconSolid } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import { Friend } from '@/features/user/services/friends.service';
+import { useTranslations, useLocale } from 'next-intl';
+import { toast } from 'sonner';
 
 interface FriendCardProps {
   friend: Friend;
@@ -28,6 +30,8 @@ const formatLocation = (location?: string | { city?: string; country?: string })
 };
 
 export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: FriendCardProps) {
+  const t = useTranslations('friendships.friendCard');
+  const locale = useLocale();
   const [showMenu, setShowMenu] = useState(false);
   const [isCloseFriend, setIsCloseFriend] = useState(friend.closeFriend);
 
@@ -39,16 +43,16 @@ export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: Fr
   const handleRemove = () => {
     if (!friend.friendshipId) {
       console.error('No friendshipId available for friend:', friend);
-      alert('No se puede eliminar este amigo. Recarga la página e intenta de nuevo.');
+      toast.error(t('removeUnavailable'));
       return;
     }
-    
-    if (confirm(`¿Eliminar a ${friend.firstName} ${friend.lastName} de tus amigos?`)) {
+
+    if (confirm(t('removeConfirm', { name: `${friend.firstName} ${friend.lastName}` }))) {
       onRemove?.(friend.friendshipId);
     }
   };
 
-  const friendSinceDate = new Date(friend.friendSince).toLocaleDateString('es-ES', {
+  const friendSinceDate = new Date(friend.friendSince).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
   });
@@ -81,7 +85,7 @@ export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: Fr
               <h3 className="font-semibold text-neutral-900 dark:text-white truncate">
                 {friend.firstName && friend.lastName
                   ? `${friend.firstName} ${friend.lastName}`
-                  : friend.username || `Usuario ${friend.friendId.slice(0, 8)}`
+                  : friend.username || t('fallbackUser', { id: friend.friendId.slice(0, 8) })
                 }
               </h3>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
@@ -93,7 +97,7 @@ export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: Fr
             <div className="relative shrink-0 -mr-1 -mt-1">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                aria-label="Más opciones"
+                aria-label={t('moreOptions')}
                 className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 <EllipsisHorizontalIcon className="w-5 h-5 text-neutral-500" />
@@ -112,14 +116,14 @@ export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: Fr
                       className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3"
                     >
                       <StarIcon className="w-5 h-5" />
-                      {isCloseFriend ? 'Quitar de cercanos' : 'Marcar como cercano'}
+                      {isCloseFriend ? t('removeFromClose') : t('markAsClose')}
                     </button>
                     <button
                       onClick={handleRemove}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-3"
                     >
                       <UserMinusIcon className="w-5 h-5" />
-                      Eliminar amigo
+                      {t('removeFriend')}
                     </button>
                   </div>
                 </>
@@ -132,12 +136,12 @@ export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: Fr
             {friend.location && (
               <div className="truncate">{formatLocation(friend.location)}</div>
             )}
-            <div className="truncate">👥 Amigos desde {friendSinceDate}</div>
+            <div className="truncate">👥 {t('friendsSince', { date: friendSinceDate })}</div>
           </div>
 
           {friend.mutualFriends && friend.mutualFriends > 0 && (
             <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-              {friend.mutualFriends} {friend.mutualFriends === 1 ? 'amigo' : 'amigos'} en común
+              {t('mutualFriends', { count: friend.mutualFriends })}
             </div>
           )}
         </div>
@@ -150,13 +154,13 @@ export function FriendCard({ friend, onToggleCloseFriend, onRemove, onChat }: Fr
           className="flex-1 min-w-0 w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
         >
           <ChatBubbleLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-          Mensaje
+          {t('message')}
         </button>
         <button
           onClick={() => window.location.href = `/${friend.username}`}
           className="w-full @[18rem]:w-auto @[18rem]:shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
         >
-          Ver perfil
+          {t('viewProfile')}
         </button>
       </div>
     </div>

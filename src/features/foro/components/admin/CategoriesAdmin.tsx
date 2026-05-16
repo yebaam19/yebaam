@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   deleteCategory,
   deleteForum,
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function CategoriesAdmin({ space, categories }: Props) {
+  const t = useTranslations('foro.admin.categories')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -32,7 +34,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
     startTransition(async () => {
       const result = await upsertCategory({ spaceId: space.id, name })
       if (!result.ok) {
-        setError(result.error ?? 'Error')
+        setError(result.error ?? t('errorGeneric'))
         return
       }
       setNewCategoryName('')
@@ -41,12 +43,12 @@ export default function CategoriesAdmin({ space, categories }: Props) {
   }
 
   const handleDeleteCategory = (id: string) => {
-    if (!confirm('¿Eliminar esta categoría y todos sus foros?')) return
+    if (!confirm(t('deleteCategoryConfirm'))) return
     setError(null)
     startTransition(async () => {
       const result = await deleteCategory(id)
       if (!result.ok) {
-        setError(result.error ?? 'Error')
+        setError(result.error ?? t('errorGeneric'))
         return
       }
       router.refresh()
@@ -82,7 +84,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
         description: form.description.trim() || null,
       })
       if (!result.ok) {
-        setError(result.error ?? 'Error')
+        setError(result.error ?? t('errorGeneric'))
         return
       }
       setForumForms((prev) => ({ ...prev, [cat.id]: { name: '', description: '', parent: '' } }))
@@ -91,12 +93,12 @@ export default function CategoriesAdmin({ space, categories }: Props) {
   }
 
   const handleDeleteForum = (forumId: string) => {
-    if (!confirm('¿Eliminar este foro y todos sus temas?')) return
+    if (!confirm(t('deleteForumConfirm'))) return
     setError(null)
     startTransition(async () => {
       const result = await deleteForum(forumId)
       if (!result.ok) {
-        setError(result.error ?? 'Error')
+        setError(result.error ?? t('errorGeneric'))
         return
       }
       router.refresh()
@@ -127,7 +129,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
         <input
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
-          placeholder="Nueva categoría"
+          placeholder={t('newCategoryPlaceholder')}
           className="min-w-45 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
         <button
@@ -135,7 +137,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
           disabled={isPending || !newCategoryName.trim()}
           className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
         >
-          Añadir categoría
+          {t('addCategory')}
         </button>
       </form>
 
@@ -156,13 +158,13 @@ export default function CategoriesAdmin({ space, categories }: Props) {
                 onClick={() => handleDeleteCategory(cat.id)}
                 className="text-xs font-medium text-red-600 hover:underline"
               >
-                Eliminar
+                {t('delete')}
               </button>
             </header>
 
             <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {allForums.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-neutral-500">Sin foros.</li>
+                <li className="px-4 py-3 text-sm text-neutral-500">{t('noForums')}</li>
               ) : (
                 allForums.map((f) => (
                   <li
@@ -189,7 +191,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
                       onClick={() => handleDeleteForum(f.id)}
                       className="text-xs font-medium text-red-600 hover:underline"
                     >
-                      Eliminar
+                      {t('delete')}
                     </button>
                   </li>
                 ))
@@ -204,7 +206,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
                 <input
                   value={form.name}
                   onChange={(e) => updateForumForm(cat.id, 'name', e.target.value)}
-                  placeholder="Nombre del foro"
+                  placeholder={t('forumNamePlaceholder')}
                   className="min-w-40 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
                 <select
@@ -212,12 +214,12 @@ export default function CategoriesAdmin({ space, categories }: Props) {
                   onChange={(e) => updateForumForm(cat.id, 'parent', e.target.value)}
                   className="min-w-40 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 >
-                  <option value="">— Sin padre —</option>
+                  <option value="">{t('noParent')}</option>
                   {cat.forums
                     .filter((f) => f.parentForumId === null)
                     .map((f) => (
                       <option key={f.id} value={f.id}>
-                        Subforo de: {f.name}
+                        {t('subforumOf', { name: f.name })}
                       </option>
                     ))}
                 </select>
@@ -225,7 +227,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
               <input
                 value={form.description}
                 onChange={(e) => updateForumForm(cat.id, 'description', e.target.value)}
-                placeholder="Descripción (opcional)"
+                placeholder={t('descriptionPlaceholder')}
                 className="w-full rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
               />
               <div className="flex justify-end">
@@ -234,7 +236,7 @@ export default function CategoriesAdmin({ space, categories }: Props) {
                   disabled={isPending || !form.name.trim()}
                   className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
                 >
-                  Añadir foro
+                  {t('addForum')}
                 </button>
               </div>
             </form>

@@ -69,5 +69,442 @@
         "description": "Recibe tu insignia de profesional verificado y accede a todos los beneficios"
       }
     }
+  },
+  "profile": {
+    "back": "Volver",
+    "publicBadge": "Perfil Público",
+    "edit": "Editar Perfil",
+    "share": "Compartir perfil",
+    "verifiedIdentityAria": "Identidad verificada",
+    "stats": {
+      "titles": "Titulos",
+      "experiences": "Experiencias",
+      "followers": "Seguidores"
+    },
+    "tabs": {
+      "summary": "Resumen",
+      "titles": "Titulos",
+      "education": "Estudios",
+      "experience": "Experiencia",
+      "skills": "Habilidades",
+      "languages": "Idiomas",
+      "licenses": "Licencias",
+      "memberships": "Asociaciones"
+    },
+    "sections": {
+      "titles": "Títulos",
+      "education": "Estudios",
+      "experience": "Experiencia"
+    },
+    "empty": {
+      "titles": "Agrega tus títulos en la pestaña Títulos.",
+      "education": "Agrega tus estudios en la pestaña Estudios.",
+      "experience": "Agrega tu experiencia en la pestaña Experiencia."
+    }
+  },
+  "sections": {
+    "common": {
+      "verified": "Verificado",
+      "pending": "Pendiente de verificación",
+      "reviewNeeded": "Revisión por edición",
+      "rejected": "Verificación rechazada",
+      "authenticate": "Autenticar",
+      "deleteConfirm": "¿Estás seguro de que deseas eliminar esto? Esta acción no se puede deshacer.",
+      "present": "Presente"
+    },
+    "titles": {
+      "heading": "Títulos Profesionales",
+      "addButton": "Agregar Título",
+      "emptyTitle": "Sin títulos registrados",
+      "emptyDescriptionOwner": "Agrega tus títulos académicos y certificaciones para mostrar tu formación profesional",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado títulos a su perfil",
+      "deleteTitle": "Eliminar Título",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar este título? Esta acción no se puede deshacer.",
+      "toastAdded": "Título agregado correctamente",
+      "toastUpdated": "Título actualizado correctamente",
+      "toastDeleted": "Título eliminado"
+    },
+    "studies": {
+      "heading": "Estudios",
+      "addButton": "Agregar Estudio",
+      "emptyTitle": "Sin estudios registrados",
+      "emptyDescriptionOwner": "Agrega tus estudios y formación académica",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado estudios a su perfil",
+      "deleteTitle": "Eliminar Estudio",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar este estudio? Esta acción no se puede deshacer.",
+      "toastAdded": "Estudio agregado correctamente",
+      "toastUpdated": "Estudio actualizado correctamente",
+      "toastDeleted": "Estudio eliminado"
+    },
+    "experience": {
+      "heading": "Experiencia Laboral",
+      "addButton": "Agregar Experiencia",
+      "emptyTitle": "Sin experiencia registrada",
+      "emptyDescriptionOwner": "Agrega tu experiencia laboral para mostrar tu trayectoria profesional",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado experiencia a su perfil",
+      "deleteTitle": "Eliminar Experiencia",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar esta experiencia? Esta acción no se puede deshacer.",
+      "toastAdded": "Experiencia agregada correctamente",
+      "toastUpdated": "Experiencia actualizada correctamente",
+      "toastDeleted": "Experiencia eliminada"
+    },
+    "skills": {
+      "heading": "Habilidades",
+      "addButton": "Agregar Habilidad",
+      "emptyTitle": "Sin habilidades registradas",
+      "emptyDescriptionOwner": "Agrega tus habilidades para mostrar tus competencias profesionales",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado habilidades a su perfil",
+      "deleteTitle": "Eliminar Habilidad",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar esta habilidad? Esta acción no se puede deshacer.",
+      "toastAdded": "Habilidad agregada correctamente",
+      "toastUpdated": "Habilidad actualizada correctamente",
+      "toastDeleted": "Habilidad eliminada"
+    },
+    "languages": {
+      "heading": "Idiomas",
+      "addButton": "Agregar Idioma",
+      "emptyTitle": "Sin idiomas registrados",
+      "emptyDescriptionOwner": "Agrega los idiomas que dominas y tu nivel de competencia",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado idiomas a su perfil",
+      "deleteTitle": "Eliminar Idioma",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar este idioma? Esta acción no se puede deshacer.",
+      "toastAdded": "Idioma agregado correctamente",
+      "toastUpdated": "Idioma actualizado correctamente",
+      "toastDeleted": "Idioma eliminado"
+    },
+    "licenses": {
+      "heading": "Licencias y Certificaciones",
+      "addButton": "Agregar Licencia",
+      "emptyTitle": "Sin licencias registradas",
+      "emptyDescriptionOwner": "Agrega tus licencias profesionales y certificaciones",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado licencias a su perfil",
+      "deleteTitle": "Eliminar Licencia",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar esta licencia? Esta acción no se puede deshacer.",
+      "toastAdded": "Licencia agregada correctamente",
+      "toastUpdated": "Licencia actualizada correctamente",
+      "toastDeleted": "Licencia eliminada",
+      "licenseNumber": "No. de Licencia:",
+      "issued": "Emitida:"
+    },
+    "associations": {
+      "heading": "Asociaciones Profesionales",
+      "addButton": "Agregar Asociación",
+      "emptyTitle": "Sin asociaciones registradas",
+      "emptyDescriptionOwner": "Agrega las asociaciones profesionales a las que perteneces",
+      "emptyDescriptionOther": "Este usuario aún no ha agregado asociaciones a su perfil",
+      "deleteTitle": "Eliminar Asociación",
+      "deleteDescription": "¿Estás seguro de que deseas eliminar esta asociación? Esta acción no se puede deshacer.",
+      "toastAdded": "Asociación agregada correctamente",
+      "toastUpdated": "Asociación actualizada correctamente",
+      "toastDeleted": "Asociación eliminada"
+    }
+  },
+  "dialogs": {
+    "common": {
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saveChanges": "Guardar cambios",
+      "add": "Agregar",
+      "requiredField": "Campo requerido",
+      "yearMin": "Año mínimo: 1900",
+      "yearMax": "Año máximo excedido",
+      "editReviewNotice": "Editar abrirá una nueva revisión administrativa y pausará la verificación hasta que un admin decida.",
+      "selectPlaceholder": "— Selecciona —",
+      "noSelection": "— Sin selección —",
+      "optional": "(opcional)"
+    },
+    "study": {
+      "titleEdit": "Editar Estudio",
+      "titleCreate": "Agregar Estudio",
+      "submitEdit": "Guardar Cambios",
+      "submitCreate": "Agregar",
+      "studyTypeLabel": "Tipo de estudio",
+      "studyTypeSelect": "— Selecciona —",
+      "nameLabel": "Nombre del estudio *",
+      "namePlaceholder": "Ej. Licenciatura en Ingeniería de Sistemas",
+      "institutionLabel": "Institución (opcional)",
+      "institutionPlaceholder": "Ej. Universidad Nacional",
+      "yearLabel": "Año (opcional)",
+      "yearPlaceholder": "Ej. 2020"
+    },
+    "title": {
+      "titleEdit": "Editar Titulo",
+      "titleCreate": "Agregar Titulo",
+      "submit": "Guardar",
+      "categoryLabel": "Categoría",
+      "categorySelect": "— Selecciona —",
+      "nameLabel": "Nombre del titulo",
+      "namePlaceholder": "Ej. Antropología",
+      "distinctionLabel": "Distinción",
+      "distinctionOptional": "(opcional)",
+      "distinctionNone": "— Sin distinción —",
+      "institutionLabel": "Institucion",
+      "institutionPlaceholder": "Universidad, Instituto, etc",
+      "yearLabel": "Año",
+      "yearPlaceholder": "Ej. 2020",
+      "focusesLabel": "Enfoques profesionales",
+      "focusesMax": "(máx. 12)",
+      "focusesPlaceholder": "Añade un enfoque y pulsa Enter",
+      "focusesMaxReached": "Máximo alcanzado",
+      "focusRemove": "Eliminar {focus}"
+    },
+    "association": {
+      "titleEdit": "Editar Asociación",
+      "titleCreate": "Agregar Asociación",
+      "nameLabel": "Nombre de la asociación *",
+      "namePlaceholder": "Ej. ACM, IEEE, ACOFI",
+      "roleLabel": "Rol (opcional)",
+      "rolePlaceholder": "Ej. Miembro, Director, Presidente"
+    },
+    "language": {
+      "titleEdit": "Editar Idioma",
+      "titleCreate": "Agregar Idioma",
+      "nameLabel": "Idioma",
+      "namePlaceholder": "Ej. Ingles",
+      "proficiencyLabel": "Nivel",
+      "proficiencyOptions": {
+        "basic": "Básico",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado",
+        "fluent": "Fluido",
+        "native": "Nativo/Bilingüe"
+      }
+    },
+    "skill": {
+      "titleEdit": "Editar Habilidad",
+      "titleCreate": "Agregar Habilidad",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Ej. React, TypeScript",
+      "levelLabel": "Nivel (opcional)",
+      "levelSelect": "Seleccionar nivel",
+      "levelOptions": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado",
+        "expert": "Experto"
+      }
+    },
+    "license": {
+      "titleEdit": "Editar Licencia",
+      "titleCreate": "Agregar Licencia",
+      "nameLabel": "Nombre de la licencia *",
+      "namePlaceholder": "Ej. AWS Solutions Architect",
+      "numberLabel": "Número de licencia (opcional)",
+      "numberPlaceholder": "Ej. ABC-123456",
+      "issuedByLabel": "Emitido por (opcional)",
+      "issuedByPlaceholder": "Ej. Amazon Web Services",
+      "issuedAtLabel": "Fecha de emisión (opcional)"
+    },
+    "experience": {
+      "titleEdit": "Editar Experiencia",
+      "titleCreate": "Agregar Experiencia",
+      "positionLabel": "Cargo",
+      "positionPlaceholder": "Ej. Desarrollador Senior",
+      "companyLabel": "Empresa",
+      "companyPlaceholder": "Ej. Tech Corp",
+      "startDateLabel": "Fecha inicio",
+      "endDateLabel": "Fecha fin (opcional)",
+      "descriptionLabel": "Descripcion (opcional)",
+      "descriptionPlaceholder": "Describe tus responsabilidades y logros",
+      "requiredField": "Campo requerido",
+      "cancel": "Cancelar",
+      "submit": "Guardar"
+    },
+    "editProfile": {
+      "title": "Editar Perfil",
+      "urlLabel": "URL de tu perfil",
+      "copyUrlTitle": "Copiar URL",
+      "urlHint": "Comparte esta URL para que otros vean tu perfil profesional",
+      "copySuccess": "¡URL copiada al portapapeles!",
+      "copyError": "No se pudo copiar la URL",
+      "bioLabel": "Biografía (opcional)",
+      "bioPlaceholder": "Describe tu perfil profesional...",
+      "bioMaxLength": "Máximo 500 caracteres",
+      "avatarLabel": "Foto de Perfil",
+      "coverLabel": "Imagen de Portada",
+      "visibilityLabel": "Visibilidad",
+      "visibilityPublic": "Público - Visible para todos",
+      "visibilityLimited": "Limitado - Solo conexiones",
+      "visibilityPrivate": "Privado - Solo yo",
+      "cancel": "Cancelar",
+      "submit": "Guardar"
+    }
+  },
+  "services": {
+    "imageUploader": {
+      "uploadFile": "Subir archivo",
+      "useUrl": "Usar URL",
+      "urlPlaceholder": "https://ejemplo.com/imagen.jpg",
+      "apply": "Aplicar",
+      "invalidUrl": "Por favor ingresa una URL válida",
+      "uploading": "Subiendo imagen...",
+      "dragOrClick": "Arrastra una imagen o haz clic para seleccionar",
+      "fileHint": "PNG, JPG, WebP hasta 5MB",
+      "previewAlt": "Vista previa"
+    },
+    "createStep1": {
+      "heading": "Comencemos con lo básico",
+      "subtitle": "Dale un nombre y descripción a tu servicio profesional",
+      "nameLabel": "Nombre del servicio",
+      "namePlaceholder": "Ej: Consultoría Legal Express",
+      "nameCounter": "{count}/100 caracteres",
+      "descriptionLabel": "Descripción",
+      "descriptionOptional": "(opcional)",
+      "descriptionPlaceholder": "Describe los servicios que ofreces, tu experiencia y especialidades...",
+      "descriptionCounter": "{count}/1000 caracteres",
+      "addressLabel": "Dirección",
+      "addressOptional": "(opcional)",
+      "addressPlaceholder": "Ej: Calle 100 #15-20, Oficina 501",
+      "requiredMark": "*",
+      "next": "Siguiente"
+    },
+    "createStep5": {
+      "heading": "Galería de imágenes y videos",
+      "subheading": "Agrega fotos y videos de tu trabajo para mostrar tu portafolio (opcional)",
+      "processError": "Error al procesar archivos. Intenta de nuevo.",
+      "uploading": "Subiendo archivos...",
+      "clickToUpload": "Haz clic para subir o arrastra archivos aquí",
+      "fileHint": "PNG, JPG, GIF, MP4 hasta 10MB",
+      "uploadedHeading": "Archivos subidos ({count})",
+      "videoLabel": "VIDEO",
+      "captionPlaceholder": "Descripción (opcional)",
+      "imageAlt": "Imagen del servicio",
+      "tipPrefix": "Consejo:",
+      "tipBody": "Las imágenes de alta calidad aumentan las posibilidades de que los clientes se interesen en tu servicio. Muestra ejemplos de tu trabajo anterior.",
+      "back": "Atrás",
+      "creating": "Creando servicio...",
+      "create": "Crear servicio",
+      "skip": "Saltar este paso (puedes agregar fotos después)"
+    },
+    "editModal": {
+      "title": "Editar Servicio Profesional",
+      "updateError": "Error al actualizar el servicio",
+      "uploadError": "Error al subir las imágenes",
+      "saveSuccess": "¡Cambios guardados exitosamente!",
+      "tabs": {
+        "images": "Imágenes",
+        "info": "Información",
+        "contact": "Contacto",
+        "social": "Redes",
+        "rates": "Tarifas",
+        "cv": "CV",
+        "projects": "Proyectos"
+      },
+      "images": {
+        "heading": "Imágenes del Servicio",
+        "coverLabel": "Imagen de portada",
+        "logoLabel": "Logo / Avatar"
+      },
+      "basic": {
+        "heading": "Información Básica",
+        "nameLabel": "Nombre del servicio *",
+        "namePlaceholder": "Ej: Diseño Gráfico Profesional",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "Describe tu servicio profesional...",
+        "tagsLabel": "Etiquetas",
+        "tagsPlaceholder": "diseño, branding, logos (separados por coma)",
+        "tagsHint": "Separa las etiquetas con comas"
+      },
+      "contact": {
+        "heading": "Información de Contacto",
+        "emailLabel": "Email",
+        "emailPlaceholder": "contacto@ejemplo.com",
+        "phoneLabel": "Teléfono",
+        "phonePlaceholder": "+57 300 123 4567",
+        "websiteLabel": "Sitio web",
+        "websitePlaceholder": "https://www.ejemplo.com",
+        "addressLabel": "Dirección",
+        "addressPlaceholder": "Calle 123 #45-67, Ciudad"
+      },
+      "social": {
+        "heading": "Redes Sociales",
+        "facebookLabel": "Facebook",
+        "facebookPlaceholder": "https://facebook.com/tu-pagina",
+        "instagramLabel": "Instagram",
+        "instagramPlaceholder": "https://instagram.com/tu-cuenta",
+        "twitterLabel": "Twitter / X",
+        "twitterPlaceholder": "https://x.com/tu-cuenta",
+        "linkedinLabel": "LinkedIn",
+        "linkedinPlaceholder": "https://linkedin.com/in/tu-perfil",
+        "youtubeLabel": "YouTube",
+        "youtubePlaceholder": "https://youtube.com/@tu-canal",
+        "tiktokLabel": "TikTok",
+        "tiktokPlaceholder": "https://tiktok.com/@tu-cuenta"
+      },
+      "rates": {
+        "heading": "Tarifas y Disponibilidad",
+        "currencyLabel": "Moneda",
+        "currencies": {
+          "USD": "USD - Dólar",
+          "EUR": "EUR - Euro",
+          "COP": "COP - Peso Colombiano",
+          "MXN": "MXN - Peso Mexicano"
+        },
+        "hourlyLabel": "Tarifa por hora",
+        "dailyLabel": "Tarifa por día",
+        "projectLabel": "Tarifa por proyecto",
+        "workTypeLabel": "Modalidad de trabajo",
+        "workTypes": {
+          "remote": "Remoto",
+          "onSite": "Presencial",
+          "hybrid": "Híbrido"
+        },
+        "availableLabel": "Disponible para contratar"
+      },
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "save": "Guardar cambios"
+    },
+    "projectsManager": {
+      "heading": "Portafolio de Proyectos",
+      "subheading": "Muestra los proyectos en los que has trabajado",
+      "addCta": "Agregar Proyecto",
+      "emptyTitle": "No hay proyectos aún",
+      "emptyDescription": "Agrega proyectos para mostrar tu experiencia",
+      "editAria": "Editar",
+      "deleteAria": "Eliminar",
+      "viewProject": "Ver proyecto",
+      "github": "GitHub",
+      "present": "Presente",
+      "modal": {
+        "editTitle": "Editar Proyecto",
+        "addTitle": "Agregar Proyecto",
+        "subtitle": "Completa la información del proyecto",
+        "titleLabel": "Título del proyecto",
+        "titlePlaceholder": "Ej: Plataforma de E-commerce",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "Describe brevemente el proyecto...",
+        "urlLabel": "URL del proyecto",
+        "urlPlaceholder": "https://...",
+        "githubLabel": "URL de GitHub",
+        "githubPlaceholder": "https://github.com/...",
+        "imageLabel": "URL de imagen",
+        "imagePlaceholder": "https://...",
+        "previewAlt": "Vista previa",
+        "technologiesLabel": "Tecnologías",
+        "technologiesPlaceholder": "Ej: React, Node.js, MongoDB",
+        "addTechnology": "Agregar",
+        "startDateLabel": "Fecha de inicio",
+        "endDateLabel": "Fecha de fin",
+        "endDatePlaceholder": "Dejar vacío si está en curso",
+        "cancel": "Cancelar",
+        "saveChanges": "Guardar cambios",
+        "addProject": "Agregar proyecto"
+      }
+    },
+    "filterBar": {
+      "searchPlaceholder": "Buscar servicios profesionales...",
+      "stateLabel": "Departamento",
+      "stateAll": "Todos los departamentos",
+      "cityLabel": "Ciudad",
+      "cityAll": "Todas las ciudades",
+      "categoryLabel": "Categoría",
+      "categoryAll": "Todas las categorías",
+      "clearFilters": "Limpiar filtros",
+      "searchTag": "Búsqueda: \"{query}\"",
+      "stateFallback": "Departamento",
+      "cityFallback": "Ciudad",
+      "categoryFallback": "Categoría"
+    }
   }
 }

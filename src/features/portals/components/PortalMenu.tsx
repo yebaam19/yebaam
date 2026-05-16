@@ -10,6 +10,7 @@ import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { PortalMenuItem } from '../interfaces'
 import type { Route } from 'next';
 
@@ -22,6 +23,7 @@ interface MenuItemProps {
 }
 
 function MenuItem({ icon, label, href, isActive, isComingSoon }: MenuItemProps) {
+  const tMenu = useTranslations('portals.menu')
   const content = (
     <div
       className={`group flex items-center gap-3 rounded-xl border p-4 transition-all ${
@@ -42,7 +44,7 @@ function MenuItem({ icon, label, href, isActive, isComingSoon }: MenuItemProps) 
       </span>
       {isComingSoon && (
         <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-          Pronto
+          {tMenu('comingSoonBadge')}
         </span>
       )}
     </div>
@@ -65,7 +67,10 @@ interface PortalMenuProps {
 }
 
 export function PortalMenu({ portalSlug, menuItems }: PortalMenuProps) {
+  void portalSlug
   const pathname = usePathname()
+  const t = useTranslations()
+  const tMenu = useTranslations('portals.menu')
   const [isOpen, setIsOpen] = useState(false)
 
   const getIsActive = (path: string) => {
@@ -80,7 +85,7 @@ export function PortalMenu({ portalSlug, menuItems }: PortalMenuProps) {
           <MenuItem
             key={index}
             icon={item.icon}
-            label={item.label}
+            label={t(item.label)}
             href={item.href as Route}
             isActive={getIsActive(item.href)}
             isComingSoon={item.isComingSoon}
@@ -115,9 +120,9 @@ export function PortalMenu({ portalSlug, menuItems }: PortalMenuProps) {
                     } ${item.isComingSoon ? 'cursor-not-allowed opacity-60' : ''}`}
                   >
                     {item.icon}
-                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className="text-sm font-medium">{t(item.label)}</span>
                     {item.isComingSoon && (
-                      <span className="ml-auto text-xs text-amber-600 dark:text-amber-400">Pronto</span>
+                      <span className="ml-auto text-xs text-amber-600 dark:text-amber-400">{tMenu('comingSoonBadge')}</span>
                     )}
                   </div>
                 )

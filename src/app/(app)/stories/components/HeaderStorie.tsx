@@ -11,11 +11,14 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth';
 import {useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { StoryType } from '../interfaces/stories.interfaces';
 
 const HeaderStorie = () => {
       const router = useRouter();
       const { user } = useAuth();
+      const t = useTranslations('stories');
+      const tCreate = useTranslations('stories.create');
 
 // Estados principales
   const [storyType, setStoryType] = useState<StoryType | null>(null);
@@ -27,7 +30,7 @@ const HeaderStorie = () => {
 
   // Manejadores
   const handleBack = () => {
-    if (confirm('¿Descartar esta historia?')) {
+    if (confirm(tCreate('confirmDiscard'))) {
       router.back();
     }
   };
@@ -38,12 +41,12 @@ const HeaderStorie = () => {
     if (isUploading) return;
 
     if (storyType === 'text' && !textContent.trim()) {
-      toast.error('Escribe algo para tu historia');
+      toast.error(tCreate('errors.writeSomething'));
       return;
     }
 
     if ((storyType === 'image' || storyType === 'video') && !selectedFile) {
-      toast.error('Selecciona un archivo');
+      toast.error(tCreate('errors.selectFile'));
       return;
     }
 
@@ -65,12 +68,12 @@ const HeaderStorie = () => {
 
       // Simulación
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success('Historia publicada exitosamente');
+
+      toast.success(tCreate('success.published'));
       router.push('/feed');
     } catch (error) {
       console.error('Error creating story:', error);
-      toast.error('Error al publicar la historia');
+      toast.error(tCreate('errors.publishError'));
     } finally {
       setIsUploading(false);
     }
@@ -85,7 +88,7 @@ const HeaderStorie = () => {
             className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
           >
             <ArrowLeftIcon className="h-6 w-6" />
-            <span className="font-medium">Atrás</span>
+            <span className="font-medium">{t('header.back')}</span>
           </button>
           
           <div className="flex items-center gap-3">
@@ -96,7 +99,7 @@ const HeaderStorie = () => {
             />
             <div className="text-white">
               <p className="font-semibold">{user.firstName || user.username}</p>
-              <p className="text-xs opacity-80">Ahora</p>
+              <p className="text-xs opacity-80">{t('header.now')}</p>
             </div>
           </div>
 
@@ -108,12 +111,12 @@ const HeaderStorie = () => {
             {isUploading ? (
               <>
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                <span>Publicando...</span>
+                <span>{t('header.publishing')}</span>
               </>
             ) : (
               <>
                 <CheckIcon className="h-5 w-5" />
-                <span>Publicar</span>
+                <span>{t('header.publish')}</span>
               </>
             )}
           </button>

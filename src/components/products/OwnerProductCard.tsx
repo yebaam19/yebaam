@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim';
 import { PageProduct } from '@/interfaces/page-product.interface';
 import { useUpdateProduct, useDeleteProduct } from '@/hooks/usePageProducts';
@@ -17,6 +18,7 @@ export function OwnerProductCard({
   pageId,
   onEdit,
 }: OwnerProductCardProps) {
+  const t = useTranslations('businesses.ownerProduct');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -54,7 +56,7 @@ export function OwnerProductCard({
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.')) return;
+    if (!confirm(t('deleteConfirm'))) return;
 
     try {
       setIsDeleting(true);
@@ -104,7 +106,7 @@ export function OwnerProductCard({
                 <button
                   onClick={handlePrevImage}
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover/image:opacity-100 transition-opacity z-20"
-                  title="Imagen anterior"
+                  title={t('previousImage')}
                 >
                   <ChevronLeftIcon className="w-5 h-5" />
                 </button>
@@ -113,7 +115,7 @@ export function OwnerProductCard({
                 <button
                   onClick={handleNextImage}
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover/image:opacity-100 transition-opacity z-20"
-                  title="Siguiente imagen"
+                  title={t('nextImage')}
                 >
                   <ChevronRightIcon className="w-5 h-5" />
                 </button>
@@ -132,7 +134,7 @@ export function OwnerProductCard({
                           ? 'bg-white w-6'
                           : 'bg-white/50 hover:bg-white/75'
                       }`}
-                      title={`Imagen ${index + 1}`}
+                      title={t('imageNumber', { number: index + 1 })}
                     />
                   ))}
                 </div>
@@ -149,7 +151,7 @@ export function OwnerProductCard({
             <svg className="w-12 h-12 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span className="text-xs">Sin imagen</span>
+            <span className="text-xs">{t('noImage')}</span>
           </div>
         )}
         
@@ -163,7 +165,7 @@ export function OwnerProductCard({
                 ? 'bg-green-500 text-white hover:bg-green-600'
                 : 'bg-gray-700 text-white hover:bg-gray-800'
             } disabled:opacity-50`}
-            title={product.isActive ? 'Click para ocultar' : 'Click para mostrar'}
+            title={product.isActive ? t('clickToHide') : t('clickToShow')}
           >
             {isToggling ? (
               <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -175,14 +177,14 @@ export function OwnerProductCard({
             ) : (
               <EyeSlashIcon className="w-3.5 h-3.5" />
             )}
-            <span className="hidden sm:inline">{product.isActive ? 'Visible' : 'Oculto'}</span>
+            <span className="hidden sm:inline">{product.isActive ? t('visible') : t('hidden')}</span>
           </button>
         </div>
 
         {/* Promotion Badge */}
         {product.promotion?.isActive && (
           <div className="absolute top-2 left-2 bg-linear-to-r from-red-500 to-pink-500 text-white px-2 py-1 rounded-md text-xs font-bold">
-            PROMOCIÓN
+            {t('promotion')}
           </div>
         )}
       </div>
@@ -220,19 +222,19 @@ export function OwnerProductCard({
           <button
             onClick={handleEdit}
             className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors font-medium shadow-sm"
-            title="Editar producto"
+            title={t('editProduct')}
           >
             <PencilIcon className="w-5 h-5" />
-            <span className="text-sm font-semibold">Editar</span>
+            <span className="text-sm font-semibold">{t('edit')}</span>
           </button>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
             className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
-            title="Eliminar producto"
+            title={t('deleteProduct')}
           >
             <TrashIcon className="w-5 h-5" />
-            <span className="text-sm font-semibold">{isDeleting ? 'Borrando...' : 'Eliminar'}</span>
+            <span className="text-sm font-semibold">{isDeleting ? t('deleting') : t('delete')}</span>
           </button>
         </div>
       </div>

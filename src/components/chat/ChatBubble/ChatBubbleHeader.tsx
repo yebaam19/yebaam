@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { MinusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 
@@ -22,6 +25,7 @@ export function ChatBubbleHeader({
   onClose,
 }: ChatBubbleHeaderProps) {
   void isChatConnected;
+  const t = useTranslations('chat.bubble.header');
 
   return (
     <div className="flex items-center justify-between rounded-t-xl border-b border-neutral-200/90 bg-[#f0f2f5] px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
@@ -46,7 +50,7 @@ export function ChatBubbleHeader({
           </h3>
           {!isMinimized && isOnline && (
             <p className="truncate text-[12px] text-neutral-500 dark:text-neutral-400">
-              Activo ahora
+              {t('activeNow')}
             </p>
           )}
         </div>
@@ -57,7 +61,7 @@ export function ChatBubbleHeader({
           type="button"
           onClick={onToggleMinimize}
           className="rounded-full p-1.5 text-neutral-600 transition-colors hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10"
-          title={isMinimized ? 'Expandir' : 'Minimizar'}
+          title={isMinimized ? t('expand') : t('minimize')}
         >
           <MinusIcon className="h-6 w-6" aria-hidden />
         </button>
@@ -65,7 +69,7 @@ export function ChatBubbleHeader({
           type="button"
           onClick={onClose}
           className="rounded-full p-1.5 text-neutral-600 transition-colors hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10"
-          title="Cerrar"
+          title={t('close')}
         >
           <XMarkIcon className="h-6 w-6" aria-hidden />
         </button>

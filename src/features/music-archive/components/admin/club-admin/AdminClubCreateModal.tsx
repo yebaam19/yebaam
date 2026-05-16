@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { adminCreateMusicClub } from '../../../actions/club-admin.actions';
 
@@ -42,6 +43,7 @@ interface Props {
 }
 
 export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated }: Props) {
+  const t = useTranslations('musica.admin.clubCreate');
   const [name, setName] = useState('');
   const [genreId, setGenreId] = useState<string>(genres[0]?.id ?? '');
   const [genreQuery, setGenreQuery] = useState('');
@@ -109,7 +111,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
         });
         onClose();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'No se pudo crear el club.');
+        setError(err instanceof Error ? err.message : t('errGeneric'));
       }
     });
   }
@@ -118,12 +120,12 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
       <div className="my-8 w-full max-w-2xl space-y-4 rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Crear club</h3>
+          <h3 className="text-lg font-semibold">{t('heading')}</h3>
           <button
             type="button"
             onClick={onClose}
             className="text-zinc-500 hover:text-zinc-700"
-            aria-label="Cerrar"
+            aria-label={t('closeAria')}
           >
             ✕
           </button>
@@ -131,24 +133,24 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Nombre del club
+              {t('nameLabel')}
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={80}
-              placeholder="Boleros yucatecos"
+              placeholder={t('namePlaceholder')}
               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base font-semibold dark:border-zinc-700 dark:bg-zinc-800"
             />
-            <p className="mt-1 text-xs text-zinc-500">{name.length}/80 · mínimo 3 caracteres</p>
+            <p className="mt-1 text-xs text-zinc-500">{t('nameCounter', { current: name.length })}</p>
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Género musical
+              {t('genreLabel')}
             </label>
             {genres.length === 0 ? (
               <p className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
-                — Sin géneros disponibles —
+                {t('noGenres')}
               </p>
             ) : (
               <div className="space-y-2">
@@ -156,18 +158,18 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
                   type="search"
                   value={genreQuery}
                   onChange={(e) => setGenreQuery(e.target.value)}
-                  placeholder={`Buscar entre ${genres.length} géneros… (ej. bachata, jazz, k-pop)`}
+                  placeholder={t('searchPlaceholder', { count: genres.length })}
                   className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-                  aria-label="Buscar género"
+                  aria-label={t('searchAriaLabel')}
                 />
                 <div
                   role="listbox"
-                  aria-label="Lista de géneros"
+                  aria-label={t('listAriaLabel')}
                   className="max-h-56 overflow-y-auto rounded-md border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900"
                 >
                   {filteredGenres.length === 0 ? (
                     <p className="px-2 py-3 text-center text-xs text-zinc-500">
-                      Ningún género coincide con &ldquo;{genreQuery}&rdquo;.
+                      {t('noMatches', { query: genreQuery })}
                     </p>
                   ) : (
                     filteredGenres.map((g) => {
@@ -194,7 +196,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
                 </div>
                 {selectedGenreName && (
                   <p className="text-xs text-zinc-500">
-                    Seleccionado: <span className="font-medium text-zinc-700 dark:text-zinc-200">{selectedGenreName}</span>
+                    {t('selectedLabel')} <span className="font-medium text-zinc-700 dark:text-zinc-200">{selectedGenreName}</span>
                   </p>
                 )}
               </div>
@@ -202,25 +204,25 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Descripción
+              {t('descriptionLabel')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               maxLength={1000}
-              placeholder="Cuéntale a los miembros de qué trata este club…"
+              placeholder={t('descriptionPlaceholder')}
               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-relaxed dark:border-zinc-700 dark:bg-zinc-800"
             />
-            <p className="mt-1 text-xs text-zinc-500">{description.length}/1000</p>
+            <p className="mt-1 text-xs text-zinc-500">{t('descCounter', { current: description.length })}</p>
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Imagen de portada (opcional)
+              {t('coverLabel')}
             </label>
             {coverPreview && (
               <div className="mb-2 h-20 w-32 overflow-hidden rounded-md border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
-                <img src={coverPreview} alt="Vista previa" className="h-full w-full object-cover" />
+                <img src={coverPreview} alt={t('previewAlt')} className="h-full w-full object-cover" />
               </div>
             )}
             <input
@@ -230,7 +232,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
               className="text-sm"
             />
             <p className="mt-1 text-xs text-zinc-500">
-              Se sube a Cloudflare Images y aparece como banner en la página del club.
+              {t('coverHint')}
             </p>
           </div>
         </div>
@@ -245,7 +247,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
             onClick={onClose}
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             type="button"
@@ -253,7 +255,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
             disabled={pending || name.trim().length < 3 || !genreId}
             className="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-40"
           >
-            {pending ? 'Creando…' : 'Crear club'}
+            {pending ? t('submitting') : t('submit')}
           </button>
         </div>
       </div>

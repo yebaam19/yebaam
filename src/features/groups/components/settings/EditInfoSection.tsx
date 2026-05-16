@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { PencilIcon, ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 
 interface EditInfoSectionProps {
@@ -7,14 +8,15 @@ interface EditInfoSectionProps {
 }
 
 export function EditInfoSection({ onEdit }: EditInfoSectionProps) {
+  const t = useTranslations('grupos.settings.editInfo');
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
       <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-1">
-          Información del grupo
+          {t('heading')}
         </h2>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Edita el nombre, descripción y categoría
+          {t('subheading')}
         </p>
       </div>
       <div className="p-6">
@@ -28,10 +30,10 @@ export function EditInfoSection({ onEdit }: EditInfoSectionProps) {
             </div>
             <div className="text-left">
               <h3 className="font-semibold text-neutral-900 dark:text-white">
-                Editar información
+                {t('editLabel')}
               </h3>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                Nombre, descripción y categoría
+                {t('editHint')}
               </p>
             </div>
           </div>

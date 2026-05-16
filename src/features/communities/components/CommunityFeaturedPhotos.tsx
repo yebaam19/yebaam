@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import type { CommunityPost } from '@/features/communities/types/community.types';
 
 interface CommunityFeaturedPhotosProps {
@@ -6,7 +7,8 @@ interface CommunityFeaturedPhotosProps {
   limit?: number;
 }
 
-export function CommunityFeaturedPhotos({ posts, limit = 6 }: CommunityFeaturedPhotosProps) {
+export async function CommunityFeaturedPhotos({ posts, limit = 6 }: CommunityFeaturedPhotosProps) {
+  const t = await getTranslations('communities');
   const photos: string[] = [];
   for (const post of posts) {
     if (!post.media) continue;
@@ -22,7 +24,7 @@ export function CommunityFeaturedPhotos({ posts, limit = 6 }: CommunityFeaturedP
   if (photos.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-        Aún no hay fotos destacadas.
+        {t('detail.featuredPhotosEmpty')}
       </div>
     );
   }

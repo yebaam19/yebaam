@@ -8,6 +8,7 @@
 
 import { addExperienceAction, deleteExperienceAction, updateExperienceAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
 import { BriefcaseIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -22,13 +23,16 @@ interface ExperienceSectionProps {
   items?: Experience[]
 }
 
-function formatDate(dateValue: string | Date): string {
+function formatDate(dateValue: string | Date, locale: string): string {
   const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue
-  return date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })
+  const intlLocale = locale === 'en' ? 'en-US' : 'es-ES'
+  return date.toLocaleDateString(intlLocale, { month: 'short', year: 'numeric' })
 }
 
 export function ExperienceSection({ profileId, isOwner, items = [] }: ExperienceSectionProps) {
   const router = useRouter()
+  const t = useTranslations('professional.sections')
+  const locale = useLocale()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -42,7 +46,7 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
       toast.error(result.error)
       return
     }
-    toast.success(selectedExperience ? 'Experiencia actualizada correctamente' : 'Experiencia agregada correctamente')
+    toast.success(selectedExperience ? t('experience.toastUpdated') : t('experience.toastAdded'))
     setIsDialogOpen(false)
     router.refresh()
   }
@@ -69,7 +73,7 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
       toast.error(result.error)
       return
     }
-    toast.success('Experiencia eliminada')
+    toast.success(t('experience.toastDeleted'))
     setIsDeleteDialogOpen(false)
     setSelectedExperience(null)
     router.refresh()
@@ -78,23 +82,23 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
   return (
     <div>
       <SectionHeader
-        title="Experiencia Laboral"
+        title={t('experience.heading')}
         count={items.length}
         onAdd={handleAdd}
-        addLabel="Agregar Experiencia"
+        addLabel={t('experience.addButton')}
         showAdd={isOwner}
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={BriefcaseIcon}
-          title="Sin experiencia registrada"
+          title={t('experience.emptyTitle')}
           description={
             isOwner
-              ? 'Agrega tu experiencia laboral para mostrar tu trayectoria profesional'
-              : 'Este usuario aun no ha agregado experiencia a su perfil'
+              ? t('experience.emptyDescriptionOwner')
+              : t('experience.emptyDescriptionOther')
           }
-          actionLabel={isOwner ? 'Agregar Experiencia' : undefined}
+          actionLabel={isOwner ? t('experience.addButton') : undefined}
           onAction={isOwner ? handleAdd : undefined}
         />
       ) : (
@@ -113,7 +117,7 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
                   {exp.company && <p className="text-sm text-neutral-600 dark:text-neutral-400">{exp.company}</p>}
                   {exp.startDate && (
                     <p className="mt-1 text-xs text-neutral-500">
-                      {formatDate(exp.startDate)} - {exp.endDate ? formatDate(exp.endDate) : 'Presente'}
+                      {formatDate(exp.startDate, locale)} - {exp.endDate ? formatDate(exp.endDate, locale) : t('common.present')}
                     </p>
                   )}
                   {exp.description && (
@@ -155,8 +159,8 @@ export function ExperienceSection({ profileId, isOwner, items = [] }: Experience
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Eliminar Experiencia"
-        description="¿Estas seguro de que deseas eliminar esta experiencia? Esta accion no se puede deshacer."
+        title={t('experience.deleteTitle')}
+        description={t('experience.deleteDescription')}
       />
     </div>
   )

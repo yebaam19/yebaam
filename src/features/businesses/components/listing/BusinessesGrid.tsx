@@ -7,6 +7,7 @@
  */
 
 import { PlusIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { BusinessBasic } from '../../interfaces/business.interfaces'
 import { BusinessListCard } from './BusinessListCard'
 
@@ -41,9 +42,12 @@ function LoadingSkeleton() {
 export function BusinessesGrid({
   businesses,
   isLoading,
-  emptyMessage = 'No hay negocios disponibles',
+  emptyMessage,
   onCreateClick,
 }: BusinessesGridProps) {
+  const t = useTranslations('businesses.grid')
+  const resolvedEmptyMessage = emptyMessage ?? t('emptyDefault')
+
   if (isLoading) {
     return (
       <div className="grid w-full gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))]">
@@ -67,14 +71,14 @@ export function BusinessesGrid({
             />
           </svg>
         </div>
-        <p className="text-neutral-600 dark:text-neutral-400">{emptyMessage}</p>
+        <p className="text-neutral-600 dark:text-neutral-400">{resolvedEmptyMessage}</p>
         {onCreateClick && (
           <button
             onClick={onCreateClick}
             className="mt-4 flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
           >
             <PlusIcon className="h-4 w-4" />
-            Crear mi primer negocio
+            {t('createFirstCta')}
           </button>
         )}
       </div>

@@ -93,6 +93,51 @@
     "loadingDelete": "Deleting group...",
     "title": "Group settings",
     "noPermission": "You do not have permission to access this page",
-    "updateSuccess": "Group updated successfully"
+    "updateSuccess": "Group updated successfully",
+    "privacyConfirm": {
+      "title": "Change group privacy",
+      "questionPrefix": "Are you sure you want to change the group privacy to ",
+      "publicLabel": "public",
+      "privateLabel": "private",
+      "questionSuffix": "?",
+      "publicWarning": " Making the group public allows anyone to see all content and join without approval.",
+      "privateWarning": "🔒 Making the group private means only current members can see the content. New members will need approval.",
+      "cancel": "Cancel",
+      "changing": "Changing...",
+      "confirm": "Confirm change"
+    },
+    "editInfo": {
+      "heading": "Group information",
+      "subheading": "Edit the name, description, and category",
+      "editLabel": "Edit information",
+      "editHint": "Name, description, and category"
+    },
+    "deleteConfirm": {
+      "title": "Delete group",
+      "questionPrefix": "Are you sure you want to delete ",
+      "questionSuffix": "?",
+      "warningLine": " This action is",
+      "irreversible": "irreversible",
+      "warningTail": ". The following will be removed:",
+      "removalItems": [
+        "All posts in the group",
+        "All comments and reactions",
+        "Information for every member",
+        "The complete group history"
+      ],
+      "cancel": "Cancel",
+      "delete": "Delete group"
+    }
+  },
+  "editModal": {
+    "title": "Edit group information",
+    "nameLabel": "Group name *",
+    "namePlaceholder": "E.g. Web Developers",
+    "descriptionLabel": "Description *",
+    "descriptionPlaceholder": "Describe what your group is about...",
+    "categoryLabel": "Category",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "save": "Save changes"
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   useCallback,
   useEffect,
@@ -56,6 +57,7 @@ export default function CoverRepositionEditor({
   className,
   alt = 'Cover',
 }: CoverRepositionEditorProps) {
+  const t = useTranslations('profile.coverReposition');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pointersRef = useRef<Map<number, Pointer>>(new Map());
   const lastPanRef = useRef<{
@@ -239,7 +241,7 @@ export default function CoverRepositionEditor({
         ref={containerRef}
         tabIndex={0}
         role="application"
-        aria-label="Reposicionar portada — arrastra, pellizca para hacer zoom, o usa las flechas"
+        aria-label={t('ariaLabel')}
         className={`relative h-48 w-full overflow-hidden rounded-xl bg-gray-900 select-none focus:ring-2 focus:ring-emerald-500 focus:outline-none ${
           isInteracting ? 'cursor-grabbing' : 'cursor-grab'
         } touch-none ${className ?? ''}`}
@@ -273,7 +275,7 @@ export default function CoverRepositionEditor({
           onClick={() => commit({ zoom: zoom - 10 })}
           disabled={zoom <= ZOOM_MIN}
           className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-          aria-label="Alejar"
+          aria-label={t('zoomOutAria')}
         >
           −
         </button>
@@ -292,7 +294,7 @@ export default function CoverRepositionEditor({
           onClick={() => commit({ zoom: zoom + 10 })}
           disabled={zoom >= ZOOM_MAX}
           className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-          aria-label="Acercar"
+          aria-label={t('zoomInAria')}
         >
           +
         </button>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Avatar from '@/ui/Avatar';
 import type { MessageMedia } from '@/features/chat/types';
 
@@ -18,16 +21,6 @@ interface ConversationItemProps {
   onClick: () => void;
 }
 
-function getPreviewText(lastMessage: LastMessagePreview | null | undefined): string {
-  if (!lastMessage) return 'Sin mensajes';
-  if (lastMessage.content && lastMessage.content.length > 0) return lastMessage.content;
-  const media = lastMessage.media;
-  if (media?.type === 'image') return '📷 Foto';
-  if (media?.type === 'video') return '🎥 Video';
-  if (media) return '📎 Archivo';
-  return 'Sin mensajes';
-}
-
 export default function ConversationItem({
   displayName,
   displayAvatar,
@@ -38,6 +31,19 @@ export default function ConversationItem({
   isOnline = false,
   onClick,
 }: ConversationItemProps) {
+  const t = useTranslations('chat');
+
+  const getPreviewText = (msg: LastMessagePreview | null | undefined): string => {
+    if (!msg) return 'Sin mensajes';
+    if (msg.content && msg.content.length > 0) return msg.content;
+    const media = msg.media;
+    if (media?.type === 'image') return `📷 ${t('attachments.photo')}`;
+    if (media?.type === 'video') return `🎥 ${t('attachments.video')}`;
+    if (media?.type === 'audio') return `🎵 ${t('attachments.audio')}`;
+    if (media) return `📎 ${t('attachments.file')}`;
+    return 'Sin mensajes';
+  };
+
   const messageText = getPreviewText(lastMessage);
 
   return (

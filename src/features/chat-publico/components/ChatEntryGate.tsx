@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import { joinRoomAsNickname, joinRoomAsProfile } from '../actions/identity.actions'
 import type { PublicChatTopic } from '../types'
 
@@ -23,6 +24,7 @@ type Mode = 'pick' | 'nickname'
 
 export default function ChatEntryGate({ topic, authedUser, preferredNickname }: Props) {
   const router = useRouter()
+  const t = useTranslations('chat.public.gate')
   const [mode, setMode] = useState<Mode>(authedUser ? 'pick' : 'nickname')
   const [nickname, setNickname] = useState(preferredNickname ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -36,14 +38,14 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
         router.refresh()
         return
       }
-      setError(mapError(res.error))
+      setError(mapError(res.error, t))
     })
   }
 
   const joinAsNick = () => {
     const value = nickname.trim()
     if (!value) {
-      setError('Escribe un nickname.')
+      setError(t('errors.emptyNickname'))
       return
     }
     setError(null)
@@ -53,7 +55,7 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
         router.refresh()
         return
       }
-      setError(mapError(res.error))
+      setError(mapError(res.error, t))
     })
   }
 
@@ -61,10 +63,10 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
     <div className="mx-auto flex min-h-[60dvh] w-full max-w-md flex-col items-center justify-center px-4 py-10">
       <div className="w-full rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          Entrar a {topic.name}
+          {t('title', { channel: topic.name })}
         </h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          {topic.description ?? 'Canal público de chat en tiempo real'}
+          {topic.description ?? t('fallbackDescription')}
         </p>
 
         {mode === 'pick' && authedUser && (
@@ -75,14 +77,14 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
               disabled={isPending}
               className="w-full rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
-              Entrar como {authedUser.displayName}
+              {t('joinAsProfile', { name: authedUser.displayName })}
             </button>
             <button
               type="button"
               onClick={() => setMode('nickname')}
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
             >
-              Usar un nickname
+              {t('useNickname')}
             </button>
           </div>
         )}
@@ -91,18 +93,18 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
           <div className="mt-5 space-y-3">
             <label className="block">
               <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                Nickname
+                {t('nicknameLabel')}
               </span>
               <input
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={24}
-                placeholder="p. ej. trotamundos"
+                placeholder={t('nicknamePlaceholder')}
                 className="mt-1 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 outline-hidden focus:border-primary-500 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
               />
               <span className="mt-1 block text-[11px] text-neutral-500 dark:text-neutral-400">
-                2-24 caracteres · letras, números, _ . -
+                {t('nicknameHint')}
               </span>
             </label>
             <button
@@ -111,7 +113,7 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
               disabled={isPending || !nickname.trim()}
               className="w-full rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
-              {isPending ? 'Entrando…' : 'Entrar'}
+              {isPending ? t('entering') : t('enter')}
             </button>
             {authedUser && (
               <button
@@ -119,16 +121,16 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
                 onClick={() => setMode('pick')}
                 className="w-full text-xs text-neutral-500 hover:underline dark:text-neutral-400"
               >
-                ← Volver
+                {t('back')}
               </button>
             )}
             {!authedUser && (
               <p className="text-center text-[11px] text-neutral-500 dark:text-neutral-400">
-                ¿Ya tienes cuenta?{' '}
+                {t('loginPrompt')}{' '}
                 <Link href={'/login' as Route} className="text-primary-600 hover:underline">
-                  Inicia sesión
-                </Link>{' '}
-                para subir fotos, videos y links.
+                  {t('loginLink')}
+                </Link>
+                {t('loginPromptSuffix')}
               </p>
             )}
           </div>
@@ -144,19 +146,19 @@ export default function ChatEntryGate({ topic, authedUser, preferredNickname }: 
   )
 }
 
-function mapError(code: string): string {
+function mapError(code: string, t: (key: string) => string): string {
   switch (code) {
     case 'nickname_taken':
-      return 'Ese nickname ya está en uso en esta sala. Elige otro.'
+      return t('errors.nicknameTaken')
     case 'invalid':
-      return 'Nickname inválido. Usa 2-24 caracteres (letras, números, _ . -).'
+      return t('errors.invalid')
     case 'unauthorized':
-      return 'Debes iniciar sesión para usar tu perfil.'
+      return t('errors.unauthorized')
     case 'room_closed':
-      return 'Esta sala está cerrada o archivada.'
+      return t('errors.roomClosed')
     case 'room_full':
-      return 'La sala está llena. Intenta entrar más tarde.'
+      return t('errors.roomFull')
     default:
-      return 'No se pudo entrar. Intenta de nuevo.'
+      return t('errors.generic')
   }
 }

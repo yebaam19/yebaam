@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import type { PublicChatTopic } from '../types'
 
@@ -9,6 +12,7 @@ interface Props {
 }
 
 export default function RoomsSidebar({ topics, activeSlug }: Props) {
+  const t = useTranslations('chat.public.roomsSidebar')
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
       <header className="shrink-0 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
@@ -16,7 +20,7 @@ export default function RoomsSidebar({ topics, activeSlug }: Props) {
           Salas
         </h2>
       </header>
-      <nav aria-label="Lista de salas" className="min-h-0 flex-1 overflow-y-auto py-2">
+      <nav aria-label={t('ariaLabel')} className="min-h-0 flex-1 overflow-y-auto py-2">
         <ul className="flex flex-col gap-0.5 px-2">
           {topics.length === 0 && (
             <li className="px-2 py-3 text-xs text-neutral-400">Sin salas todavía.</li>

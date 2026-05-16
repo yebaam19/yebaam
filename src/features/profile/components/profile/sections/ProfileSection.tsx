@@ -5,7 +5,10 @@
  * en lugar de sombra, título mediano para reducir peso visual.
  */
 
+'use client'
+
 import { PencilIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 
 interface ProfileSectionProps {
@@ -27,6 +30,7 @@ export default function ProfileSection({
   actionHref,
   className = '',
 }: ProfileSectionProps) {
+  const t = useTranslations('profile.section')
   return (
     <section
       className={`rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800 ${className}`}
@@ -39,8 +43,8 @@ export default function ProfileSection({
             type="button"
             onClick={onEdit}
             className="rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            title="Editar"
-            aria-label={`Editar ${title.toLowerCase()}`}
+            title={t('edit')}
+            aria-label={t('editAria', { title: title.toLowerCase() })}
           >
             <PencilIcon className="h-4 w-4" />
           </button>

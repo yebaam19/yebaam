@@ -28,6 +28,28 @@
   "bell": {
     "viewAll": "Ver todas las notificaciones"
   },
+  "type": {
+    "POST_LIKE": "reaccionó a tu publicación",
+    "POST_COMMENT": "comentó en tu publicación",
+    "POST_SHARE": "compartió tu publicación",
+    "COMMENT_LIKE": "reaccionó a tu comentario",
+    "COMMENT_REPLY": "respondió a tu comentario",
+    "POST_MENTION": "te mencionó en una publicación",
+    "COMMENT_MENTION": "te mencionó en un comentario",
+    "POST_TAG": "te etiquetó en una publicación",
+    "FRIEND_REQUEST": "te envió una solicitud de amistad",
+    "FRIEND_ACCEPTED": "aceptó tu solicitud de amistad",
+    "FRIEND_SUGGESTION": "es una sugerencia de amigo",
+    "GROUP_INVITE": "te invitó a un grupo",
+    "GROUP_POST": "publicó en un grupo",
+    "GROUP_JOIN": "se unió a tu grupo",
+    "EVENT_INVITE": "te invitó a un evento",
+    "EVENT_REMINDER": "Recordatorio de evento",
+    "NEW_MESSAGE": "te envió un mensaje",
+    "MUSIC_ARTICLE_PUBLISHED": "publicó un nuevo artículo",
+    "SYSTEM": "Notificación del sistema",
+    "ANNOUNCEMENT": "Anuncio"
+  },
   "page": {
     "back": "Volver",
     "title": "Notificaciones",

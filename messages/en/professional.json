@@ -69,5 +69,442 @@
         "description": "Receive your verified professional badge and access all the benefits"
       }
     }
+  },
+  "profile": {
+    "back": "Back",
+    "publicBadge": "Public Profile",
+    "edit": "Edit Profile",
+    "share": "Share profile",
+    "verifiedIdentityAria": "Verified identity",
+    "stats": {
+      "titles": "Titles",
+      "experiences": "Experiences",
+      "followers": "Followers"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "titles": "Titles",
+      "education": "Education",
+      "experience": "Experience",
+      "skills": "Skills",
+      "languages": "Languages",
+      "licenses": "Licenses",
+      "memberships": "Memberships"
+    },
+    "sections": {
+      "titles": "Titles",
+      "education": "Education",
+      "experience": "Experience"
+    },
+    "empty": {
+      "titles": "Add your titles in the Titles tab.",
+      "education": "Add your education in the Education tab.",
+      "experience": "Add your experience in the Experience tab."
+    }
+  },
+  "sections": {
+    "common": {
+      "verified": "Verified",
+      "pending": "Pending verification",
+      "reviewNeeded": "Review for edit",
+      "rejected": "Verification rejected",
+      "authenticate": "Authenticate",
+      "deleteConfirm": "Are you sure you want to delete this? This action cannot be undone.",
+      "present": "Present"
+    },
+    "titles": {
+      "heading": "Professional Titles",
+      "addButton": "Add Title",
+      "emptyTitle": "No titles registered",
+      "emptyDescriptionOwner": "Add your academic titles and certifications to showcase your professional training",
+      "emptyDescriptionOther": "This user has not added any titles to their profile yet",
+      "deleteTitle": "Delete Title",
+      "deleteDescription": "Are you sure you want to delete this title? This action cannot be undone.",
+      "toastAdded": "Title added successfully",
+      "toastUpdated": "Title updated successfully",
+      "toastDeleted": "Title deleted"
+    },
+    "studies": {
+      "heading": "Education",
+      "addButton": "Add Study",
+      "emptyTitle": "No education registered",
+      "emptyDescriptionOwner": "Add your studies and academic background",
+      "emptyDescriptionOther": "This user has not added any education to their profile yet",
+      "deleteTitle": "Delete Study",
+      "deleteDescription": "Are you sure you want to delete this study? This action cannot be undone.",
+      "toastAdded": "Study added successfully",
+      "toastUpdated": "Study updated successfully",
+      "toastDeleted": "Study deleted"
+    },
+    "experience": {
+      "heading": "Work Experience",
+      "addButton": "Add Experience",
+      "emptyTitle": "No experience registered",
+      "emptyDescriptionOwner": "Add your work experience to showcase your professional career",
+      "emptyDescriptionOther": "This user has not added any experience to their profile yet",
+      "deleteTitle": "Delete Experience",
+      "deleteDescription": "Are you sure you want to delete this experience? This action cannot be undone.",
+      "toastAdded": "Experience added successfully",
+      "toastUpdated": "Experience updated successfully",
+      "toastDeleted": "Experience deleted"
+    },
+    "skills": {
+      "heading": "Skills",
+      "addButton": "Add Skill",
+      "emptyTitle": "No skills registered",
+      "emptyDescriptionOwner": "Add your skills to showcase your professional competencies",
+      "emptyDescriptionOther": "This user has not added any skills to their profile yet",
+      "deleteTitle": "Delete Skill",
+      "deleteDescription": "Are you sure you want to delete this skill? This action cannot be undone.",
+      "toastAdded": "Skill added successfully",
+      "toastUpdated": "Skill updated successfully",
+      "toastDeleted": "Skill deleted"
+    },
+    "languages": {
+      "heading": "Languages",
+      "addButton": "Add Language",
+      "emptyTitle": "No languages registered",
+      "emptyDescriptionOwner": "Add the languages you speak and your proficiency level",
+      "emptyDescriptionOther": "This user has not added any languages to their profile yet",
+      "deleteTitle": "Delete Language",
+      "deleteDescription": "Are you sure you want to delete this language? This action cannot be undone.",
+      "toastAdded": "Language added successfully",
+      "toastUpdated": "Language updated successfully",
+      "toastDeleted": "Language deleted"
+    },
+    "licenses": {
+      "heading": "Licenses and Certifications",
+      "addButton": "Add License",
+      "emptyTitle": "No licenses registered",
+      "emptyDescriptionOwner": "Add your professional licenses and certifications",
+      "emptyDescriptionOther": "This user has not added any licenses to their profile yet",
+      "deleteTitle": "Delete License",
+      "deleteDescription": "Are you sure you want to delete this license? This action cannot be undone.",
+      "toastAdded": "License added successfully",
+      "toastUpdated": "License updated successfully",
+      "toastDeleted": "License deleted",
+      "licenseNumber": "License No.:",
+      "issued": "Issued:"
+    },
+    "associations": {
+      "heading": "Professional Associations",
+      "addButton": "Add Association",
+      "emptyTitle": "No associations registered",
+      "emptyDescriptionOwner": "Add the professional associations you belong to",
+      "emptyDescriptionOther": "This user has not added any associations to their profile yet",
+      "deleteTitle": "Delete Association",
+      "deleteDescription": "Are you sure you want to delete this association? This action cannot be undone.",
+      "toastAdded": "Association added successfully",
+      "toastUpdated": "Association updated successfully",
+      "toastDeleted": "Association deleted"
+    }
+  },
+  "dialogs": {
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saveChanges": "Save changes",
+      "add": "Add",
+      "requiredField": "Required field",
+      "yearMin": "Minimum year: 1900",
+      "yearMax": "Maximum year exceeded",
+      "editReviewNotice": "Editing will open a new admin review and pause verification until an admin decides.",
+      "selectPlaceholder": "— Select —",
+      "noSelection": "— None —",
+      "optional": "(optional)"
+    },
+    "study": {
+      "titleEdit": "Edit Study",
+      "titleCreate": "Add Study",
+      "submitEdit": "Save Changes",
+      "submitCreate": "Add",
+      "studyTypeLabel": "Study type",
+      "studyTypeSelect": "— Select —",
+      "nameLabel": "Study name *",
+      "namePlaceholder": "E.g. Bachelor's in Systems Engineering",
+      "institutionLabel": "Institution (optional)",
+      "institutionPlaceholder": "E.g. National University",
+      "yearLabel": "Year (optional)",
+      "yearPlaceholder": "E.g. 2020"
+    },
+    "title": {
+      "titleEdit": "Edit Title",
+      "titleCreate": "Add Title",
+      "submit": "Save",
+      "categoryLabel": "Category",
+      "categorySelect": "— Select —",
+      "nameLabel": "Title name",
+      "namePlaceholder": "E.g. Anthropology",
+      "distinctionLabel": "Distinction",
+      "distinctionOptional": "(optional)",
+      "distinctionNone": "— No distinction —",
+      "institutionLabel": "Institution",
+      "institutionPlaceholder": "University, Institute, etc.",
+      "yearLabel": "Year",
+      "yearPlaceholder": "E.g. 2020",
+      "focusesLabel": "Professional focuses",
+      "focusesMax": "(max. 12)",
+      "focusesPlaceholder": "Add a focus and press Enter",
+      "focusesMaxReached": "Maximum reached",
+      "focusRemove": "Remove {focus}"
+    },
+    "association": {
+      "titleEdit": "Edit Association",
+      "titleCreate": "Add Association",
+      "nameLabel": "Association name *",
+      "namePlaceholder": "E.g. ACM, IEEE, ACOFI",
+      "roleLabel": "Role (optional)",
+      "rolePlaceholder": "E.g. Member, Director, President"
+    },
+    "language": {
+      "titleEdit": "Edit Language",
+      "titleCreate": "Add Language",
+      "nameLabel": "Language",
+      "namePlaceholder": "E.g. English",
+      "proficiencyLabel": "Level",
+      "proficiencyOptions": {
+        "basic": "Basic",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "fluent": "Fluent",
+        "native": "Native/Bilingual"
+      }
+    },
+    "skill": {
+      "titleEdit": "Edit Skill",
+      "titleCreate": "Add Skill",
+      "nameLabel": "Name",
+      "namePlaceholder": "E.g. React, TypeScript",
+      "levelLabel": "Level (optional)",
+      "levelSelect": "Select level",
+      "levelOptions": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "expert": "Expert"
+      }
+    },
+    "license": {
+      "titleEdit": "Edit License",
+      "titleCreate": "Add License",
+      "nameLabel": "License name *",
+      "namePlaceholder": "E.g. AWS Solutions Architect",
+      "numberLabel": "License number (optional)",
+      "numberPlaceholder": "E.g. ABC-123456",
+      "issuedByLabel": "Issued by (optional)",
+      "issuedByPlaceholder": "E.g. Amazon Web Services",
+      "issuedAtLabel": "Issue date (optional)"
+    },
+    "experience": {
+      "titleEdit": "Edit Experience",
+      "titleCreate": "Add Experience",
+      "positionLabel": "Position",
+      "positionPlaceholder": "E.g. Senior Developer",
+      "companyLabel": "Company",
+      "companyPlaceholder": "E.g. Tech Corp",
+      "startDateLabel": "Start date",
+      "endDateLabel": "End date (optional)",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Describe your responsibilities and achievements",
+      "requiredField": "Required field",
+      "cancel": "Cancel",
+      "submit": "Save"
+    },
+    "editProfile": {
+      "title": "Edit Profile",
+      "urlLabel": "Your profile URL",
+      "copyUrlTitle": "Copy URL",
+      "urlHint": "Share this URL so others can see your professional profile",
+      "copySuccess": "URL copied to clipboard!",
+      "copyError": "Could not copy the URL",
+      "bioLabel": "Biography (optional)",
+      "bioPlaceholder": "Describe your professional profile...",
+      "bioMaxLength": "Maximum 500 characters",
+      "avatarLabel": "Profile Picture",
+      "coverLabel": "Cover Image",
+      "visibilityLabel": "Visibility",
+      "visibilityPublic": "Public - Visible to everyone",
+      "visibilityLimited": "Limited - Connections only",
+      "visibilityPrivate": "Private - Only me",
+      "cancel": "Cancel",
+      "submit": "Save"
+    }
+  },
+  "services": {
+    "imageUploader": {
+      "uploadFile": "Upload file",
+      "useUrl": "Use URL",
+      "urlPlaceholder": "https://example.com/image.jpg",
+      "apply": "Apply",
+      "invalidUrl": "Please enter a valid URL",
+      "uploading": "Uploading image...",
+      "dragOrClick": "Drag an image or click to select",
+      "fileHint": "PNG, JPG, WebP up to 5MB",
+      "previewAlt": "Preview"
+    },
+    "createStep1": {
+      "heading": "Let's start with the basics",
+      "subtitle": "Give your professional service a name and description",
+      "nameLabel": "Service name",
+      "namePlaceholder": "E.g. Express Legal Consulting",
+      "nameCounter": "{count}/100 characters",
+      "descriptionLabel": "Description",
+      "descriptionOptional": "(optional)",
+      "descriptionPlaceholder": "Describe the services you offer, your experience and specialties...",
+      "descriptionCounter": "{count}/1000 characters",
+      "addressLabel": "Address",
+      "addressOptional": "(optional)",
+      "addressPlaceholder": "E.g. 100th Street #15-20, Office 501",
+      "requiredMark": "*",
+      "next": "Next"
+    },
+    "createStep5": {
+      "heading": "Image and video gallery",
+      "subheading": "Add photos and videos of your work to showcase your portfolio (optional)",
+      "processError": "Error processing files. Please try again.",
+      "uploading": "Uploading files...",
+      "clickToUpload": "Click to upload or drag files here",
+      "fileHint": "PNG, JPG, GIF, MP4 up to 10MB",
+      "uploadedHeading": "Files uploaded ({count})",
+      "videoLabel": "VIDEO",
+      "captionPlaceholder": "Description (optional)",
+      "imageAlt": "Service image",
+      "tipPrefix": "Tip:",
+      "tipBody": "High-quality images increase the chances that customers will be interested in your service. Show examples of your previous work.",
+      "back": "Back",
+      "creating": "Creating service...",
+      "create": "Create service",
+      "skip": "Skip this step (you can add photos later)"
+    },
+    "editModal": {
+      "title": "Edit Professional Service",
+      "updateError": "Error updating the service",
+      "uploadError": "Error uploading the images",
+      "saveSuccess": "Changes saved successfully!",
+      "tabs": {
+        "images": "Images",
+        "info": "Information",
+        "contact": "Contact",
+        "social": "Social",
+        "rates": "Rates",
+        "cv": "CV",
+        "projects": "Projects"
+      },
+      "images": {
+        "heading": "Service Images",
+        "coverLabel": "Cover image",
+        "logoLabel": "Logo / Avatar"
+      },
+      "basic": {
+        "heading": "Basic Information",
+        "nameLabel": "Service name *",
+        "namePlaceholder": "E.g. Professional Graphic Design",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Describe your professional service...",
+        "tagsLabel": "Tags",
+        "tagsPlaceholder": "design, branding, logos (comma separated)",
+        "tagsHint": "Separate tags with commas"
+      },
+      "contact": {
+        "heading": "Contact Information",
+        "emailLabel": "Email",
+        "emailPlaceholder": "contact@example.com",
+        "phoneLabel": "Phone",
+        "phonePlaceholder": "+57 300 123 4567",
+        "websiteLabel": "Website",
+        "websitePlaceholder": "https://www.example.com",
+        "addressLabel": "Address",
+        "addressPlaceholder": "Street 123 #45-67, City"
+      },
+      "social": {
+        "heading": "Social Networks",
+        "facebookLabel": "Facebook",
+        "facebookPlaceholder": "https://facebook.com/your-page",
+        "instagramLabel": "Instagram",
+        "instagramPlaceholder": "https://instagram.com/your-account",
+        "twitterLabel": "Twitter / X",
+        "twitterPlaceholder": "https://x.com/your-account",
+        "linkedinLabel": "LinkedIn",
+        "linkedinPlaceholder": "https://linkedin.com/in/your-profile",
+        "youtubeLabel": "YouTube",
+        "youtubePlaceholder": "https://youtube.com/@your-channel",
+        "tiktokLabel": "TikTok",
+        "tiktokPlaceholder": "https://tiktok.com/@your-account"
+      },
+      "rates": {
+        "heading": "Rates and Availability",
+        "currencyLabel": "Currency",
+        "currencies": {
+          "USD": "USD - Dollar",
+          "EUR": "EUR - Euro",
+          "COP": "COP - Colombian Peso",
+          "MXN": "MXN - Mexican Peso"
+        },
+        "hourlyLabel": "Hourly rate",
+        "dailyLabel": "Daily rate",
+        "projectLabel": "Project rate",
+        "workTypeLabel": "Work modality",
+        "workTypes": {
+          "remote": "Remote",
+          "onSite": "On-site",
+          "hybrid": "Hybrid"
+        },
+        "availableLabel": "Available for hire"
+      },
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save changes"
+    },
+    "projectsManager": {
+      "heading": "Project Portfolio",
+      "subheading": "Showcase the projects you've worked on",
+      "addCta": "Add Project",
+      "emptyTitle": "No projects yet",
+      "emptyDescription": "Add projects to showcase your experience",
+      "editAria": "Edit",
+      "deleteAria": "Delete",
+      "viewProject": "View project",
+      "github": "GitHub",
+      "present": "Present",
+      "modal": {
+        "editTitle": "Edit Project",
+        "addTitle": "Add Project",
+        "subtitle": "Complete the project information",
+        "titleLabel": "Project title",
+        "titlePlaceholder": "E.g. E-commerce Platform",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Briefly describe the project...",
+        "urlLabel": "Project URL",
+        "urlPlaceholder": "https://...",
+        "githubLabel": "GitHub URL",
+        "githubPlaceholder": "https://github.com/...",
+        "imageLabel": "Image URL",
+        "imagePlaceholder": "https://...",
+        "previewAlt": "Preview",
+        "technologiesLabel": "Technologies",
+        "technologiesPlaceholder": "E.g. React, Node.js, MongoDB",
+        "addTechnology": "Add",
+        "startDateLabel": "Start date",
+        "endDateLabel": "End date",
+        "endDatePlaceholder": "Leave empty if ongoing",
+        "cancel": "Cancel",
+        "saveChanges": "Save changes",
+        "addProject": "Add project"
+      }
+    },
+    "filterBar": {
+      "searchPlaceholder": "Search professional services...",
+      "stateLabel": "State",
+      "stateAll": "All states",
+      "cityLabel": "City",
+      "cityAll": "All cities",
+      "categoryLabel": "Category",
+      "categoryAll": "All categories",
+      "clearFilters": "Clear filters",
+      "searchTag": "Search: \"{query}\"",
+      "stateFallback": "State",
+      "cityFallback": "City",
+      "categoryFallback": "Category"
+    }
   }
 }

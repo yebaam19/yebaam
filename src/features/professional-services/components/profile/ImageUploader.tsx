@@ -1,6 +1,7 @@
 import Input from '@/ui/Input'
 import { ArrowUpTrayIcon, LinkIcon, PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import React, { DragEvent, useRef, useState } from 'react'
 
 interface ImageUploaderProps {
@@ -24,6 +25,7 @@ export function ImageUploader({
   error = null,
   aspectRatio = 'cover',
 }: ImageUploaderProps) {
+  const t = useTranslations('professional.services.imageUploader')
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [preview, setPreview] = useState<string | null>(currentImageUrl || null)
@@ -90,7 +92,7 @@ export function ImageUploader({
       setPreview(imageUrl)
       onUrlChange?.(imageUrl)
     } catch {
-      alert('Por favor ingresa una URL válida')
+      alert(t('invalidUrl'))
     }
   }
 
@@ -113,7 +115,7 @@ export function ImageUploader({
           }`}
         >
           <ArrowUpTrayIcon className="h-4 w-4" />
-          Subir archivo
+          {t('uploadFile')}
         </button>
         <button
           type="button"
@@ -125,7 +127,7 @@ export function ImageUploader({
           }`}
         >
           <LinkIcon className="h-4 w-4" />
-          Usar URL
+          {t('useUrl')}
         </button>
       </div>
 
@@ -155,7 +157,7 @@ export function ImageUploader({
           {/* Preview o estado inicial */}
           {preview ? (
             <div className={`relative h-full w-full ${aspectClass}`}>
-              <Image src={preview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" />
+              <Image src={preview} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" />
               {!isUploading && (
                 <button
                   onClick={(e) => {
@@ -179,9 +181,9 @@ export function ImageUploader({
               </div>
               <div>
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {isUploading ? 'Subiendo imagen...' : 'Arrastra una imagen o haz clic para seleccionar'}
+                  {isUploading ? t('uploading') : t('dragOrClick')}
                 </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">PNG, JPG, WebP hasta 5MB</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('fileHint')}</p>
               </div>
             </div>
           )}
@@ -203,7 +205,7 @@ export function ImageUploader({
               type="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://ejemplo.com/imagen.jpg"
+              placeholder={t('urlPlaceholder')}
               className="flex-1"
               disabled={isUploading}
             />
@@ -213,7 +215,7 @@ export function ImageUploader({
               disabled={!imageUrl.trim() || isUploading}
               className="rounded-lg bg-primary-500 px-4 py-2 text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Aplicar
+              {t('apply')}
             </button>
           </div>
 
@@ -223,7 +225,7 @@ export function ImageUploader({
               className={`relative ${heightClass} w-full overflow-hidden rounded-lg border-2 border-neutral-300 dark:border-neutral-600`}
             >
               <div className={`relative h-full w-full ${aspectClass}`}>
-                <Image src={preview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" />
+                <Image src={preview} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" />
                 <button
                   onClick={handleRemove}
                   className="absolute top-2 right-2 rounded-full bg-red-500 p-1.5 text-white shadow-lg transition-colors hover:bg-red-600"

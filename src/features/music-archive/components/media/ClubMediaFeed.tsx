@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   ArrowsPointingOutIcon,
   PhotoIcon,
@@ -31,6 +32,7 @@ export function ClubMediaFeed({ items }: Props) {
 }
 
 function FeedCard({ item, onExpand }: { item: MusicMediaItem; onExpand: () => void }) {
+  const t = useTranslations('musica.media.clubFeed');
   return (
     <article className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <header className="flex items-center justify-between gap-2 border-b border-zinc-100 px-4 py-2.5 dark:border-zinc-800">
@@ -45,8 +47,8 @@ function FeedCard({ item, onExpand }: { item: MusicMediaItem; onExpand: () => vo
         <button
           type="button"
           onClick={onExpand}
-          aria-label="Ver en pantalla completa"
-          title="Ver en pantalla completa"
+          aria-label={t('fullscreenTitle')}
+          title={t('fullscreenTitle')}
           className="rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
         >
           <ArrowsPointingOutIcon className="h-4 w-4" />

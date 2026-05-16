@@ -6,6 +6,8 @@
  * Tab para editar enlaces de redes sociales del negocio.
  */
 
+import { useTranslations } from 'next-intl'
+
 interface EditBusinessSocialTabProps {
   facebookUrl: string
   instagramUrl: string
@@ -140,6 +142,7 @@ export function EditBusinessSocialTab({
   onYoutubeChange,
   onTiktokChange,
 }: EditBusinessSocialTabProps) {
+  const t = useTranslations('businesses')
   // Mapear valores y handlers
   const values: Record<string, string> = {
     facebook: facebookUrl,
@@ -162,7 +165,7 @@ export function EditBusinessSocialTab({
   return (
     <div className="p-6">
       <p className="mb-6 text-sm text-neutral-600 dark:text-neutral-400">
-        Conecta tus redes sociales para que los clientes puedan seguirte y conocer más sobre tu negocio.
+        {t('editSocial.subtitle')}
       </p>
 
       <div className="space-y-4">
@@ -198,7 +201,7 @@ export function EditBusinessSocialTab({
                 <button
                   onClick={() => onChange('')}
                   className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
-                  title="Limpiar"
+                  title={t('editSocial.clear')}
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -212,12 +215,12 @@ export function EditBusinessSocialTab({
 
       {/* Tips */}
       <div className="mt-6 rounded-xl bg-neutral-100 p-4 dark:bg-neutral-800">
-        <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">¿Por qué agregar redes sociales?</h4>
+        <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('editSocial.tipsTitle')}</h4>
         <ul className="mt-2 space-y-1 text-xs text-neutral-600 dark:text-neutral-400">
-          <li>• Aumenta la visibilidad de tu negocio</li>
-          <li>• Permite a los clientes seguirte y recibir actualizaciones</li>
-          <li>• Genera confianza mostrando tu presencia digital</li>
-          <li>• Facilita que los clientes te contacten por su canal preferido</li>
+          <li>• {t('editSocial.tips.visibility')}</li>
+          <li>• {t('editSocial.tips.updates')}</li>
+          <li>• {t('editSocial.tips.trust')}</li>
+          <li>• {t('editSocial.tips.contact')}</li>
         </ul>
       </div>
     </div>

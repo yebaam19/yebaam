@@ -1,6 +1,7 @@
 'use client';
 
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
 import type { MusicMediaItem } from '../../types/music-media.types';
 import { MusicMediaTrendingRow } from './MusicMediaTrendingRow';
 
@@ -61,6 +62,7 @@ export function MusicMediaSmartFeed({
   perClubLimit = 8,
   minClubsForGrouping = 2,
 }: Props) {
+  const t = useTranslations('musica.media.smartFeed');
   if (items.length === 0) return null;
 
   const buckets = bucketByClub(items);
@@ -72,8 +74,8 @@ export function MusicMediaSmartFeed({
     return (
       <MusicMediaTrendingRow
         items={trending}
-        title="Fotos y videos"
-        subtitle="Sesiones de fotos, prensa de época y performances."
+        title={t('recentTitle')}
+        subtitle={t('recentSubtitle')}
       />
     );
   }
@@ -93,8 +95,8 @@ export function MusicMediaSmartFeed({
     <div className="space-y-6">
       <MusicMediaTrendingRow
         items={trending}
-        title="Tendencias · Fotos y videos"
-        subtitle="Lo más reciente de todos los clubes."
+        title={t('trendingTitle')}
+        subtitle={t('trendingSubtitle')}
       />
       {clubRows.map((row) => (
         <MusicMediaTrendingRow

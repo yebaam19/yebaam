@@ -10,6 +10,7 @@ import { followProfileAction, unfollowProfileAction } from '@/app/(app)/feed/pro
 import { CheckBadgeIcon, Cog6ToothIcon, ShareIcon, UserMinusIcon, UserPlusIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
@@ -33,6 +34,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = false, onEditProfile }: ProfileHeaderProps) {
   const fullName = `${user.firstName} ${user.lastName}`
   const router = useRouter()
+  const t = useTranslations('professional')
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const [isPending, startTransition] = useTransition()
 
@@ -155,7 +157,7 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
                 {identityVerified && (
                   <CheckBadgeIcon
                     className="h-5 w-5 text-primary-500"
-                    aria-label="Identidad verificada"
+                    aria-label={t('profile.verifiedIdentityAria')}
                   />
                 )}
                 {topDegree && <DegreeBadge category={topDegree} />}
@@ -171,7 +173,7 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
                   {profile.visibility === 'PUBLIC' && (
                     <>
                       <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                      <span className="text-neutral-700 dark:text-neutral-300">Perfil Público</span>
+                      <span className="text-neutral-700 dark:text-neutral-300">{t('profile.publicBadge')}</span>
                     </>
                   )}
                   {profile.visibility === 'LIMITED' && (
@@ -193,19 +195,19 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
               <div className="mt-3 flex flex-wrap gap-4 text-sm">
                 <div>
                   <span className="font-semibold text-neutral-900 dark:text-white">{profile._count?.titles || 0}</span>{' '}
-                  <span className="text-neutral-500 dark:text-neutral-400">Titulos</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">{t('profile.stats.titles')}</span>
                 </div>
                 <div>
                   <span className="font-semibold text-neutral-900 dark:text-white">
                     {profile._count?.experience || 0}
                   </span>{' '}
-                  <span className="text-neutral-500 dark:text-neutral-400">Experiencias</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">{t('profile.stats.experiences')}</span>
                 </div>
                 <div>
                   <span className="font-semibold text-neutral-900 dark:text-white">
                     {profile._count?.followers || 0}
                   </span>{' '}
-                  <span className="text-neutral-500 dark:text-neutral-400">Seguidores</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">{t('profile.stats.followers')}</span>
                 </div>
               </div>
             </div>
@@ -219,12 +221,12 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
                     className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                   >
                     <Cog6ToothIcon className="h-4 w-4" />
-                    Editar Perfil
+                    {t('profile.edit')}
                   </button>
                   <button
                     onClick={handleShareProfile}
                     className="rounded-lg border border-neutral-200 bg-white p-2 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                    title="Compartir perfil"
+                    title={t('profile.share')}
                   >
                     <ShareIcon className="h-4 w-4" />
                   </button>
@@ -253,7 +255,7 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
                   <button
                     onClick={handleShareProfile}
                     className="rounded-lg border border-neutral-200 bg-white p-2 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                    title="Compartir perfil"
+                    title={t('profile.share')}
                   >
                     <ShareIcon className="h-4 w-4" />
                   </button>

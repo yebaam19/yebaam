@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { HeartIcon } from '@/components/icons/heroicons-shim';
 import {
   profileMediaInteractionsService,
@@ -25,15 +26,6 @@ const REACTION_EMOJIS: Record<ReactionType, string> = {
   angry: '😠',
 };
 
-const REACTION_LABELS: Record<ReactionType, string> = {
-  like: 'Me gusta',
-  love: 'Me encanta',
-  haha: 'Me divierte',
-  wow: 'Me asombra',
-  sad: 'Me entristece',
-  angry: 'Me enoja',
-};
-
 const REACTION_ORDER: ReactionType[] = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
 
 export default function MediaReactionButton({
@@ -42,6 +34,7 @@ export default function MediaReactionButton({
   initialLikesCount,
   onReactionChange,
 }: MediaReactionButtonProps) {
+  const t = useTranslations('profile.media.reactionButton');
   const [myReaction, setMyReaction] = useState<ReactionType | null>(null);
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [showPicker, setShowPicker] = useState(false);
@@ -206,12 +199,12 @@ export default function MediaReactionButton({
           {myReaction ? (
             <>
               <span className="text-xl leading-none">{REACTION_EMOJIS[myReaction]}</span>
-              <span>{REACTION_LABELS[myReaction]}</span>
+              <span>{t(myReaction)}</span>
             </>
           ) : (
             <>
               <HeartIcon className="w-5 h-5" />
-              <span>Me gusta</span>
+              <span>{t('defaultLabel')}</span>
             </>
           )}
         </button>
@@ -222,7 +215,7 @@ export default function MediaReactionButton({
             onMouseLeave={scheduleHide}
             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 bg-white dark:bg-gray-800 rounded-full shadow-xl border border-gray-200 dark:border-gray-700 p-2 flex gap-1 animate-in fade-in zoom-in-95 duration-200"
             role="menu"
-            aria-label="Seleccionar reacción"
+            aria-label={t('pickerAria')}
           >
             {REACTION_ORDER.map((type) => (
               <button
@@ -232,13 +225,13 @@ export default function MediaReactionButton({
                 className={`relative group w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-125 hover:-translate-y-1 ${
                   myReaction === type ? 'scale-110' : ''
                 }`}
-                title={REACTION_LABELS[type]}
-                aria-label={REACTION_LABELS[type]}
+                title={t(type)}
+                aria-label={t(type)}
                 role="menuitem"
               >
                 <span className="text-2xl">{REACTION_EMOJIS[type]}</span>
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  {REACTION_LABELS[type]}
+                  {t(type)}
                 </span>
               </button>
             ))}
@@ -251,10 +244,9 @@ export default function MediaReactionButton({
           type="button"
           onClick={() => setListOpen(true)}
           className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
-          aria-label={`Ver las ${likesCount} reacciones`}
+          aria-label={t('viewReactionsAria', { count: likesCount })}
         >
-          {likesCount.toLocaleString()}{' '}
-          {likesCount === 1 ? 'reacción' : 'reacciones'}
+          {t('reactionsCount', { count: likesCount })}
         </button>
       )}
 

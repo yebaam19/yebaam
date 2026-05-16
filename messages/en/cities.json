@@ -33,5 +33,28 @@
   "grid": {
     "previous": "Previous page",
     "next": "Next page"
+  },
+  "mediaDialog": {
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "photoOfUserInCity": "Photo of {name} in {city}",
+    "photoOfCity": "Photo of {city}"
+  },
+  "directory": {
+    "serviceList": {
+      "all": "All",
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right",
+      "searchPlaceholder": "Search professional services...",
+      "noResults": "No professional services were found matching your search"
+    },
+    "businessList": {
+      "all": "All",
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right",
+      "searchPlaceholder": "Search businesses...",
+      "noResults": "No businesses were found matching your search"
+    }
   }
 }

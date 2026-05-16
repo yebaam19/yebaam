@@ -9,6 +9,7 @@
 import { useBusinessCategories } from '@/features/businesses/hooks'
 import { InformationCircleIcon, TagIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface EditBusinessInfoTabProps {
   name: string
@@ -50,6 +51,7 @@ export function EditBusinessInfoTab({
   onTagsChange,
   onCategoryChange,
 }: EditBusinessInfoTabProps) {
+  const t = useTranslations('businesses.editInfo')
   const [newTag, setNewTag] = useState('')
   const [autoSlug, setAutoSlug] = useState(true)
 
@@ -96,14 +98,14 @@ export function EditBusinessInfoTab({
           htmlFor="business-name"
           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Nombre del negocio <span className="text-red-500">*</span>
+          {t('nameLabel')} <span className="text-red-500">*</span>
         </label>
         <input
           id="business-name"
           type="text"
           value={name}
           onChange={(e) => handleNameChange(e.target.value)}
-          placeholder="Mi Negocio"
+          placeholder={t('namePlaceholder')}
           className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
         />
       </div>
@@ -112,7 +114,7 @@ export function EditBusinessInfoTab({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <label htmlFor="business-slug" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            URL del negocio <span className="text-red-500">*</span>
+            {t('slugLabel')} <span className="text-red-500">*</span>
           </label>
           <label className="flex items-center gap-2 text-xs">
             <input
@@ -121,11 +123,11 @@ export function EditBusinessInfoTab({
               onChange={(e) => setAutoSlug(e.target.checked)}
               className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
             />
-            <span className="text-neutral-500 dark:text-neutral-400">Generar automáticamente</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('slugAutoGenerate')}</span>
           </label>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">/feed/businesses/</span>
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">{t('slugPrefix')}</span>
           <input
             id="business-slug"
             type="text"
@@ -134,7 +136,7 @@ export function EditBusinessInfoTab({
               setAutoSlug(false)
               onSlugChange(e.target.value)
             }}
-            placeholder="mi-negocio"
+            placeholder={t('slugPlaceholder')}
             className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
           />
         </div>
@@ -146,7 +148,7 @@ export function EditBusinessInfoTab({
           htmlFor="business-category"
           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Categoría <span className="text-red-500">*</span>
+          {t('categoryLabel')} <span className="text-red-500">*</span>
         </label>
         <select
           id="business-category"
@@ -155,7 +157,7 @@ export function EditBusinessInfoTab({
           disabled={loadingCategories}
           className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100"
         >
-          <option value="">{loadingCategories ? 'Cargando categorías...' : 'Seleccionar categoría'}</option>
+          <option value="">{loadingCategories ? t('categoryLoading') : t('categoryPlaceholder')}</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -170,27 +172,27 @@ export function EditBusinessInfoTab({
           htmlFor="business-description"
           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Descripción
+          {t('descriptionLabel')}
         </label>
         <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
-          Describe tu negocio, servicios que ofreces, horarios especiales, etc.
+          {t('descriptionHint')}
         </p>
         <textarea
           id="business-description"
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
-          placeholder="Escribe una descripción de tu negocio..."
+          placeholder={t('descriptionPlaceholder')}
           rows={5}
           className="w-full resize-none rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
         />
-        <div className="mt-1 text-right text-xs text-neutral-500">{description.length}/1000 caracteres</div>
+        <div className="mt-1 text-right text-xs text-neutral-500">{t('descriptionCounter', { count: description.length })}</div>
       </div>
 
       {/* Tags */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Etiquetas</label>
+        <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('tagsLabel')}</label>
         <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
-          Añade etiquetas para ayudar a las personas a encontrar tu negocio. Máximo 10 etiquetas.
+          {t('tagsHint')}
         </p>
 
         {/* Current Tags */}
@@ -222,7 +224,7 @@ export function EditBusinessInfoTab({
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               onKeyDown={handleTagKeyDown}
-              placeholder="Agregar etiqueta..."
+              placeholder={t('tagPlaceholder')}
               className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
             />
             <button
@@ -230,7 +232,7 @@ export function EditBusinessInfoTab({
               disabled={!newTag.trim()}
               className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
             >
-              Agregar
+              {t('addTag')}
             </button>
           </div>
         )}
@@ -242,8 +244,7 @@ export function EditBusinessInfoTab({
           <InformationCircleIcon className="h-5 w-5 shrink-0 text-neutral-500" />
           <div>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              La información que proporciones será visible para todos los usuarios. Asegúrate de que sea precisa y
-              profesional.
+              {t('infoBox')}
             </p>
           </div>
         </div>

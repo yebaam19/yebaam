@@ -10,6 +10,7 @@ import {
   LightBulbIcon,
   UserGroupIcon,
 } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
 import {
   composeStudyLine,
@@ -33,6 +34,7 @@ function formatDateRange(start?: string | Date | null, end?: string | Date | nul
 }
 
 export function SummarySection({ profile, isOwner }: Props) {
+  const t = useTranslations('professional')
   const titles = profile.titles ?? []
   const studies = profile.studies ?? []
   const experience = profile.experience ?? []
@@ -79,17 +81,17 @@ export function SummarySection({ profile, isOwner }: Props) {
       )}
 
       <Block
-        title="Títulos"
+        title={t('profile.sections.titles')}
         icon={AcademicCapIcon}
-        emptyMsg={isOwner ? 'Agrega tus títulos en la pestaña Títulos.' : null}
+        emptyMsg={isOwner ? t('profile.empty.titles') : null}
         empty={topTitles.length === 0}
       >
         <ul className="space-y-1.5 text-sm">
-          {topTitles.map((t) => (
-            <li key={t.id} className="flex flex-wrap items-center gap-2 text-neutral-800 dark:text-neutral-200">
-              <span>{composeTitleLine(t)}</span>
-              {t.credentialStatus === 'approved' && (
-                <CheckBadgeIcon className="h-4 w-4 text-emerald-600" aria-label="Verificado" />
+          {topTitles.map((title) => (
+            <li key={title.id} className="flex flex-wrap items-center gap-2 text-neutral-800 dark:text-neutral-200">
+              <span>{composeTitleLine(title)}</span>
+              {title.credentialStatus === 'approved' && (
+                <CheckBadgeIcon className="h-4 w-4 text-emerald-600" aria-label={t('sections.common.verified')} />
               )}
             </li>
           ))}
@@ -97,9 +99,9 @@ export function SummarySection({ profile, isOwner }: Props) {
       </Block>
 
       <Block
-        title="Estudios"
+        title={t('profile.sections.education')}
         icon={BookOpenIcon}
-        emptyMsg={isOwner ? 'Agrega tus estudios en la pestaña Estudios.' : null}
+        emptyMsg={isOwner ? t('profile.empty.education') : null}
         empty={topStudies.length === 0}
       >
         <ul className="space-y-1.5 text-sm">
@@ -107,7 +109,7 @@ export function SummarySection({ profile, isOwner }: Props) {
             <li key={s.id} className="flex flex-wrap items-center gap-2 text-neutral-800 dark:text-neutral-200">
               <span>{composeStudyLine(s)}</span>
               {s.credentialStatus === 'approved' && (
-                <CheckBadgeIcon className="h-4 w-4 text-emerald-600" aria-label="Verificado" />
+                <CheckBadgeIcon className="h-4 w-4 text-emerald-600" aria-label={t('sections.common.verified')} />
               )}
             </li>
           ))}
@@ -115,9 +117,9 @@ export function SummarySection({ profile, isOwner }: Props) {
       </Block>
 
       <Block
-        title="Experiencia"
+        title={t('profile.sections.experience')}
         icon={BriefcaseIcon}
-        emptyMsg={isOwner ? 'Agrega tu experiencia en la pestaña Experiencia.' : null}
+        emptyMsg={isOwner ? t('profile.empty.experience') : null}
         empty={recentExperience.length === 0}
       >
         <ul className="space-y-2 text-sm">

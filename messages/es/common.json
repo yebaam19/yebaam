@@ -1,4 +1,14 @@
 {
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Lo sentimos, la página que estás buscando no existe o ha sido movida.",
+    "goHome": "Ir al inicio",
+    "goBack": "Volver atrás",
+    "usefulLinks": "Enlaces útiles:",
+    "feed": "Feed",
+    "messages": "Mensajes",
+    "notifications": "Notificaciones"
+  },
   "loading": "Cargando…",
   "error": "Algo salió mal",
   "save": "Guardar",

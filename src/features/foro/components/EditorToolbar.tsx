@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, type RefObject } from 'react'
+import { useTranslations } from 'next-intl'
 import { ChatBubbleLeftRightIcon, CodeBracketIcon, LinkIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
 import { uploadService } from '@/lib/service/upload.service'
 
@@ -71,6 +72,7 @@ function insertImage(
 // tag syntax themselves. Keyboard-accessible: every button is a real <button>
 // with aria-label and keeps focus on the textarea after acting.
 export default function EditorToolbar({ textareaRef, value, onChange, disabled }: Props) {
+  const t = useTranslations('foro.editor.toolbar')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -92,11 +94,11 @@ export default function EditorToolbar({ textareaRef, value, onChange, disabled }
   const handleFile = async (file: File) => {
     setUploadError(null)
     if (!file.type.startsWith('image/')) {
-      setUploadError('Solo se permiten imágenes.')
+      setUploadError(t('errors.onlyImages'))
       return
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      setUploadError('La imagen supera el límite de 10 MB.')
+      setUploadError(t('errors.tooLarge'))
       return
     }
     try {
@@ -104,7 +106,7 @@ export default function EditorToolbar({ textareaRef, value, onChange, disabled }
       const { url } = await uploadService.uploadImage(file)
       apply((ta, v) => insertImage(ta, v, url))
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'No se pudo subir la imagen.')
+      setUploadError(err instanceof Error ? err.message : t('errors.uploadFailed'))
     } finally {
       setIsUploading(false)
     }
@@ -115,7 +117,7 @@ export default function EditorToolbar({ textareaRef, value, onChange, disabled }
 
   return (
     <div className="space-y-1">
-      <div role="toolbar" aria-label="Formato" className="flex flex-wrap items-center gap-1">
+      <div role="toolbar" aria-label={t('aria')} className="flex flex-wrap items-center gap-1">
       <input
         ref={fileInputRef}
         type="file"
@@ -130,46 +132,46 @@ export default function EditorToolbar({ textareaRef, value, onChange, disabled }
       <button
         type="button"
         disabled={disabled}
-        aria-label="Negrita"
-        title="Negrita"
+        aria-label={t('bold')}
+        title={t('bold')}
         className={btn}
-        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'b', 'texto'))}
+        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'b', t('placeholderText')))}
       >
         <span className="font-bold">B</span>
       </button>
       <button
         type="button"
         disabled={disabled}
-        aria-label="Cursiva"
-        title="Cursiva"
+        aria-label={t('italic')}
+        title={t('italic')}
         className={btn}
-        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'i', 'texto'))}
+        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'i', t('placeholderText')))}
       >
         <span className="italic">I</span>
       </button>
       <button
         type="button"
         disabled={disabled}
-        aria-label="Subrayado"
-        title="Subrayado"
+        aria-label={t('underline')}
+        title={t('underline')}
         className={btn}
-        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'u', 'texto'))}
+        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'u', t('placeholderText')))}
       >
         <span className="underline">U</span>
       </button>
       <button
         type="button"
         disabled={disabled}
-        aria-label="Enlace"
-        title="Insertar enlace"
+        aria-label={t('link')}
+        title={t('linkInsert')}
         className={btn}
         onClick={() =>
           apply((ta, v) => {
-            const raw = window.prompt('URL del enlace (https://…)')
+            const raw = window.prompt(t('promptLinkUrl'))
             if (!raw) return null
             const href = raw.trim()
             if (!/^https?:\/\//i.test(href)) {
-              window.alert('El enlace debe empezar con http:// o https://')
+              window.alert(t('alertInvalidLink'))
               return null
             }
             return wrapLink(ta, v, href)
@@ -177,40 +179,40 @@ export default function EditorToolbar({ textareaRef, value, onChange, disabled }
         }
       >
         <LinkIcon className="h-4 w-4" />
-        <span>Enlace</span>
+        <span>{t('link')}</span>
       </button>
       <button
         type="button"
         disabled={disabled || isUploading}
-        aria-label="Subir imagen"
-        title="Subir imagen (PNG, JPG, GIF, WebP — máx 10 MB)"
+        aria-label={t('uploadImage')}
+        title={t('uploadImageTitle')}
         className={btn}
         onClick={() => fileInputRef.current?.click()}
       >
         <PhotoIcon className="h-4 w-4" />
-        <span>{isUploading ? 'Subiendo…' : 'Imagen'}</span>
+        <span>{isUploading ? t('uploadingImage') : t('imageLabel')}</span>
       </button>
       <button
         type="button"
         disabled={disabled}
-        aria-label="Código"
-        title="Código"
+        aria-label={t('code')}
+        title={t('code')}
         className={btn}
-        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'code', 'código'))}
+        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'code', t('placeholderCode')))}
       >
         <CodeBracketIcon className="h-4 w-4" />
-        <span>Código</span>
+        <span>{t('code')}</span>
       </button>
       <button
         type="button"
         disabled={disabled}
-        aria-label="Cita"
-        title="Cita"
+        aria-label={t('quote')}
+        title={t('quote')}
         className={btn}
-        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'quote', 'cita'))}
+        onClick={() => apply((ta, v) => wrapSelection(ta, v, 'quote', t('placeholderQuote')))}
       >
         <ChatBubbleLeftRightIcon className="h-4 w-4" />
-        <span>Cita</span>
+        <span>{t('quote')}</span>
       </button>
       </div>
       {uploadError && (
