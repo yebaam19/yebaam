@@ -144,7 +144,8 @@ credentials.json
 client_secret*.json
 token.json
 tokens.json
-auth.json
+# Stray OAuth/client dump at repo root — do NOT glob `auth.json` (blocks messages/*/auth.json translations).
+/auth.json
 
 # markdown docs — don't push to repo
 *.md
