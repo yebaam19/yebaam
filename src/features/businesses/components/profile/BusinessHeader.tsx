@@ -308,7 +308,7 @@ export function BusinessHeader({ business, currentUserId }: BusinessHeaderProps)
         {/* City Link */}
         <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-700">
           <Link
-            href={`/feed/cities/${business.city.slug}`}
+            href={`/cities/${business.city.slug}`}
             className="flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400"
           >
             <MapPinIcon className="h-4 w-4" />

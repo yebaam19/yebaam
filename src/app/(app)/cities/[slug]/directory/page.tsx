@@ -51,14 +51,14 @@ export default async function DirectoryPage({ params }: DirectoryPageProps) {
         </Link>
         <ChevronRightIcon className="h-4 w-4" />
         <Link
-          href="/feed/cities"
+          href="/cities"
           className="hover:text-primary-600 dark:hover:text-primary-400"
         >
           Ciudades
         </Link>
         <ChevronRightIcon className="h-4 w-4" />
         <Link
-          href={`/feed/cities/${slug}`}
+          href={`/cities/${slug}`}
           className="hover:text-primary-600 dark:hover:text-primary-400"
         >
           {city.name}

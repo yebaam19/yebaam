@@ -34,7 +34,7 @@ export function mapCategoryToMenuItem(category: CityCategory) {
     label: category.name,
     icon: category.icon,
     color: category.color,
-    link: `/feed/cities/:city/categoria/${category.slug}`,
+    link: `/cities/:city/categoria/${category.slug}`,
     description: category.description,
   };
 }

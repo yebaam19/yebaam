@@ -30,7 +30,7 @@ export function ServiceBreadcrumb({ cityName, citySlug, serviceName }: ServiceBr
 
         <li>
           <Link
-            href={`/feed/cities/${citySlug}`}
+            href={`/cities/${citySlug}`}
             className="transition-colors hover:text-primary-600 dark:hover:text-primary-400"
           >
             {cityName}

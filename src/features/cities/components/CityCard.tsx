@@ -13,7 +13,7 @@ interface CityCardProps {
 export function CityCard({ city }: CityCardProps) {
   return (
     <Link
-      href={`/feed/cities/${slugify(city.name)}`}
+      href={`/cities/${slugify(city.name)}`}
       className="group block rounded-xl border border-neutral-200 bg-white p-5 transition-all hover:border-primary-300 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-primary-600"
     >
       <div className="flex items-start gap-3">

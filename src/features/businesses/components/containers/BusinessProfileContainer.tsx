@@ -50,7 +50,7 @@ export function BusinessProfileContainer({ business, currentUserId }: BusinessPr
           </Link>
           <ChevronRightIcon className="h-4 w-4 text-neutral-400" />
           <Link
-            href={`/feed/cities/${business.city.slug}`}
+            href={`/cities/${business.city.slug}`}
             className="text-neutral-500 transition-colors hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
           >
             {business.city.name}

@@ -57,16 +57,16 @@ export default async function BusinessesPage({ params }: BusinessesPageProps) {
           <span>Inicio</span>
         </Link>
         <ChevronRightIcon className="h-4 w-4" />
-        <Link href="/feed/cities" className="hover:text-primary-600 dark:hover:text-primary-400">
+        <Link href="/cities" className="hover:text-primary-600 dark:hover:text-primary-400">
           Ciudades
         </Link>
         <ChevronRightIcon className="h-4 w-4" />
-        <Link href={`/feed/cities/${slug}`} className="hover:text-primary-600 dark:hover:text-primary-400">
+        <Link href={`/cities/${slug}`} className="hover:text-primary-600 dark:hover:text-primary-400">
           {city.name}
         </Link>
         <ChevronRightIcon className="h-4 w-4" />
         <Link
-          href={`/feed/cities/${slug}/directory`}
+          href={`/cities/${slug}/directory`}
           className="hover:text-primary-600 dark:hover:text-primary-400"
         >
           Directorio

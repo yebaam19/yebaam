@@ -42,7 +42,7 @@ export function CategoryCard({ citySlug, category }: CategoryCardProps) {
 
   // Las categorías redirigen al directorio de la ciudad
   // donde se muestran negocios, servicios, páginas, etc. filtrados por categoría
-  const href = `/feed/cities/${citySlug}/directory`
+  const href = `/cities/${citySlug}/directory`
 
   return (
     <Link

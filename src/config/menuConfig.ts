@@ -39,7 +39,7 @@ export const menuConfig: Record<string, any[]> = {
         {
           icon: GlobeAmericasIcon,
           labelKey: 'items.cities',
-          href: '{basePath}/cities',
+          href: '/cities',
           badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'CITIES_ENABLED' as FeatureFlag,

@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
     return [
       { source: '/messages/:id', destination: '/chat/:id', permanent: true },
       { source: '/messages', destination: '/feed', permanent: true },
+      { source: '/feed/cities', destination: '/cities', permanent: true },
+      { source: '/feed/cities/:path*', destination: '/cities/:path*', permanent: true },
     ]
   },
   typescript: {

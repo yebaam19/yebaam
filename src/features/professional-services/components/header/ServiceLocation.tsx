@@ -15,7 +15,7 @@ export function ServiceLocation({ citySlug, cityName, stateName, availableForHir
   return (
     <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-700">
       <Link
-        href={`/feed/cities/${citySlug}`}
+        href={`/cities/${citySlug}`}
         className="flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400"
       >
         <MapPinIcon className="h-4 w-4" />

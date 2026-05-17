@@ -47,7 +47,7 @@ export function DirectoryCategoryCard({ category, citySlug }: DirectoryCategoryC
     } else if (category.type === DirectoryCategoryType.SERVICE) {
       return `/feed/professional-services?city=${citySlug}`
     }
-    return `/feed/cities/${citySlug}/directory`
+    return `/cities/${citySlug}/directory`
   }
 
   const isGreen = category.color === '#16A44C'
