@@ -1,6 +1,8 @@
 import React, { FC } from 'react'
 import { Toaster } from 'sonner'
 
+import LanguageSwitch from '@/components/settings/LanguageSwitch'
+
 interface Props {
   children?: React.ReactNode
 }
@@ -8,7 +10,12 @@ interface Props {
 const Layout: FC<Props> = ({ children }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-white dark:bg-neutral-950">
-      {children}
+      <div className="relative min-h-full">
+        <div className="absolute top-4 start-4 z-[60]">
+          <LanguageSwitch className="border-neutral-300/80 bg-white/90 shadow-sm backdrop-blur-sm dark:border-neutral-600 dark:bg-neutral-900/90" />
+        </div>
+        {children}
+      </div>
       <Toaster position="top-center" richColors />
     </div>
   )
