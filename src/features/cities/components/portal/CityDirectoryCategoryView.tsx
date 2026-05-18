@@ -10,7 +10,7 @@ import {
   PhoneIcon,
   StarIcon,
 } from '@/components/icons/heroicons-shim';
-import type { CityBusinessListing } from '@/features/cities/server/city.server';
+import type { CityBusinessListing } from '@/features/cities/server/directory.server';
 
 interface CityDirectoryCategoryViewProps {
   citySlug: string;

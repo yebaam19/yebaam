@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { ArrowTrendingUpIcon } from '@/components/icons/heroicons-shim';
-import type { CityTrendingItem } from '@/features/cities/server/city.server';
+import type { CityTrendingItem } from '@/features/cities/server/trending.server';
 
 interface CityTrendingListProps {
   citySlug: string;

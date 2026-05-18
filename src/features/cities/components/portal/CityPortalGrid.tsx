@@ -3,7 +3,7 @@ import {
   type PortalCountKey,
   type PortalSection,
 } from '@/features/cities/data/portal-sections';
-import type { CityPortalData } from '@/features/cities/server/city.server';
+import type { CityPortalData } from '@/features/cities/server/portal-data.server';
 import { PortalTile } from './PortalTile';
 
 interface CityPortalGridProps {

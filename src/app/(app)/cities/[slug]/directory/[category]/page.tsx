@@ -3,10 +3,8 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { CityDirectoryCategoryView } from '@/features/cities/components/portal/CityDirectoryCategoryView';
 import { PORTAL_SECTIONS } from '@/features/cities/data/portal-sections';
-import {
-  getCityBusinessesByCategory,
-  getCityBySlug,
-} from '@/features/cities/server/city.server';
+import { getCityBySlug } from '@/features/cities/server/city.server';
+import { getCityBusinessesByCategory } from '@/features/cities/server/directory.server';
 
 interface Props {
   params: Promise<{ slug: string; category: string }>;

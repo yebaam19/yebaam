@@ -3,7 +3,7 @@ import {
   DISCOVERY_SECTIONS,
   resolveDiscoveryHref,
 } from '@/features/cities/data/discovery-sections';
-import { getDiscoveryThumbnails } from '@/features/cities/server/city.server';
+import { getDiscoveryThumbnails } from '@/features/cities/server/discovery.server';
 import { DiscoveryTile } from './DiscoveryTile';
 
 interface DiscoveryGridProps {

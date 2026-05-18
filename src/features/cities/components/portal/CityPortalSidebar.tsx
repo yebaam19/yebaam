@@ -1,4 +1,5 @@
-import { getCityTrending, type CityDetail } from '@/features/cities/server/city.server';
+import type { CityDetail } from '@/features/cities/server/city.server';
+import { getCityTrending } from '@/features/cities/server/trending.server';
 import { CityFactsCard } from './CityFactsCard';
 import { CityTrendingList } from './CityTrendingList';
 

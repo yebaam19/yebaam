@@ -9,11 +9,9 @@ import { CityPortalGridSkeleton } from '@/features/cities/components/portal/City
 import { CityPortalSidebar } from '@/features/cities/components/portal/CityPortalSidebar'
 import { CityPortalSidebarSkeleton } from '@/features/cities/components/portal/CityPortalSidebarSkeleton'
 import { DiscoveryGrid } from '@/features/cities/components/portal/DiscoveryGrid'
-import {
-  fetchIsFollowing,
-  getCityBySlug,
-  getCityPortalData,
-} from '@/features/cities/server/city.server'
+import { getCityBySlug } from '@/features/cities/server/city.server'
+import { fetchIsFollowing } from '@/features/cities/server/followers.server'
+import { getCityPortalData } from '@/features/cities/server/portal-data.server'
 import { getServerClient } from '@/utils/supabase/server'
 
 interface Props {
