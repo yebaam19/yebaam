@@ -27,10 +27,10 @@ function formatFollowers(n: number): string {
 /**
  * Image-forward city card. Pure presentation, zero hooks.
  *
- * Layout matches `public/cities.png`: cover photo fills the 4:3 frame, a
- * follower-count pill sits top-right, and a dark gradient at the bottom
- * holds the city name, country, and an "Explorar" affordance. Subtle hover
- * lift + image zoom adds depth without breaking the gallery rhythm.
+ * Layout matches `docs/cities-reference/cities.png`: cover photo fills the
+ * 4:3 frame, a follower-count pill sits top-right, and a dark gradient at the
+ * bottom holds the city name, country, and an "Explorar" affordance. Subtle
+ * hover lift + image zoom adds depth without breaking the gallery rhythm.
  */
 export function CityCard({ city, exploreLabel }: CityCardProps) {
   const followers = formatFollowers(city.stats.followerCount)

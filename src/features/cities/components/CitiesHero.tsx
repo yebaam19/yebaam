@@ -20,8 +20,8 @@ interface CitiesHeroProps {
  *
  * Full-bleed cover photo behind a darkening gradient, with the campaign
  * headline and tagline anchored bottom-left. Mirrors the reference in
- * `public/cities.png`: bold left-aligned title, soft subtitle, generous
- * vertical padding so the banner reads as a postcard, not a thin bar.
+ * `docs/cities-reference/cities.png`: bold left-aligned title, soft subtitle,
+ * generous vertical padding so the banner reads as a postcard, not a thin bar.
  */
 export async function CitiesHero({
   backgroundImageUrl,

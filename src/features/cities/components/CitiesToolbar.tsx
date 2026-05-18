@@ -77,7 +77,7 @@ export function CitiesToolbar({ countries }: Props) {
       <label className="relative flex-1">
         <span className="sr-only">{t('searchPlaceholder')}</span>
         <MagnifyingGlassIcon
-          className="pointer-events-none absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-neutral-400"
+          className="pointer-events-none absolute top-1/2 left-3.5 h-[1.125rem] w-[1.125rem] -translate-y-1/2 text-neutral-400"
           aria-hidden="true"
         />
         <input

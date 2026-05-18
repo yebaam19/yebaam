@@ -16,9 +16,9 @@ interface CityPortalCoverProps {
  * follower count paint with the page shell. The tile grid streams in
  * underneath. The only client component on the page is the inner
  * `<FollowCityButton>` — keeping client JS minimal is what protects the
- * Lighthouse Performance budget. Mirrors the layout in `public/city.png`:
- * green country chip top-left, large name, follower pill below, follow CTA
- * floating top-right.
+ * Lighthouse Performance budget. Mirrors the layout in
+ * `docs/cities-reference/city.png`: green country chip top-left, large name,
+ * follower pill below, follow CTA floating top-right.
  */
 export async function CityPortalCover({ city, isFollowing }: CityPortalCoverProps) {
   const t = await getTranslations('cities.portal');
