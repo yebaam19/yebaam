@@ -68,7 +68,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   }
 
   // Rutas que renderizan su propia chrome completa (Header + Sidebar):
-  // /feed/* y /[username]. Para estas, omitimos el wrapper externo
+  // /feed/*, /cities/* y /[username]. Para estas, omitimos el wrapper externo
   // (header + main + padding) para evitar duplicación de header y padding-top
   // que rompía la responsividad.
   const RESERVED_TOP_LEVEL = new Set([
@@ -91,6 +91,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   const firstSegment = segments[0]
   const hasOwnChrome =
     firstSegment === 'feed' ||
+    firstSegment === 'cities' ||
     (segments.length === 1 && !!firstSegment && !RESERVED_TOP_LEVEL.has(firstSegment))
 
   if (hasOwnChrome) {

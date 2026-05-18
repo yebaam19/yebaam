@@ -127,5 +127,153 @@
       "complaints": { "label": "Portal de Denuncias" },
       "rural": { "label": "Zona Rural" }
     }
+  },
+  "classifieds": {
+    "metadata": {
+      "title": "Clasificados — {city}",
+      "description": "Compra, vende, intercambia o regala en la comunidad de {city}."
+    },
+    "header": {
+      "title": "Clasificados",
+      "subtitle": "Lo que ofrece y necesita la comunidad de {city}",
+      "newCta": "Publicar"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Buscar por título...",
+      "all": "Todos"
+    },
+    "kinds": {
+      "offer": "Vendo",
+      "want": "Busco",
+      "trade": "Intercambio",
+      "free": "Regalo"
+    },
+    "list": {
+      "empty": "Aún no hay clasificados en esta ciudad.",
+      "emptyHint": "¡Sé el primero en publicar algo!",
+      "free": "Gratis",
+      "openImage": "Abrir imagen"
+    },
+    "detail": {
+      "back": "Volver a clasificados",
+      "publishedAt": "Publicado el {date}",
+      "noDescription": "Sin descripción.",
+      "free": "Gratis"
+    },
+    "composer": {
+      "title": "Publicar un clasificado",
+      "fields": {
+        "titleLabel": "Título",
+        "titlePlaceholder": "Bicicleta de montaña, perro perdido, etc.",
+        "kindLabel": "Tipo",
+        "priceLabel": "Precio (opcional)",
+        "pricePlaceholder": "0",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "Describe los detalles, condición, contacto...",
+        "imagesLabel": "Imágenes",
+        "imagesHint": "Añade hasta 6 fotos"
+      },
+      "actions": {
+        "submit": "Publicar",
+        "submitting": "Publicando...",
+        "cancel": "Cancelar",
+        "removeImage": "Quitar imagen"
+      },
+      "errors": {
+        "titleRequired": "El título es obligatorio.",
+        "invalidPrice": "El precio debe ser un número válido.",
+        "uploadFailed": "No se pudo subir la imagen.",
+        "submitFailed": "No se pudo publicar el clasificado."
+      },
+      "signInRequired": "Inicia sesión para publicar un clasificado.",
+      "signInCta": "Iniciar sesión"
+    }
+  },
+  "socialHelp": {
+    "metadata": {
+      "title": "Ayuda Social — {city}",
+      "description": "Solicita o brinda ayuda a la comunidad de {city}."
+    },
+    "header": {
+      "title": "Ayuda Social",
+      "subtitle": "Brinda o pide ayuda en la comunidad de {city}",
+      "newCta": "Publicar"
+    },
+    "toolbar": {
+      "all": "Todos"
+    },
+    "kinds": {
+      "offer": "Ofrezco ayuda",
+      "need": "Necesito ayuda"
+    },
+    "list": {
+      "empty": "Aún no hay publicaciones de ayuda social.",
+      "emptyHint": "¡Sé el primero en proponer ayuda!"
+    },
+    "detail": {
+      "back": "Volver a ayuda social",
+      "publishedAt": "Publicado el {date}",
+      "noDescription": "Sin descripción.",
+      "closed": "Cerrado"
+    },
+    "composer": {
+      "title": "Publicar ayuda social",
+      "fields": {
+        "titleLabel": "Título",
+        "titlePlaceholder": "Necesito un coche para ir al médico, ofrezco clases...",
+        "kindLabel": "Tipo",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "Cuéntanos más sobre la situación...",
+        "imageLabel": "Imagen (opcional)",
+        "imageHint": "Una foto vale más que mil palabras"
+      },
+      "actions": {
+        "submit": "Publicar",
+        "submitting": "Publicando...",
+        "cancel": "Cancelar",
+        "removeImage": "Quitar imagen"
+      },
+      "errors": {
+        "titleRequired": "El título es obligatorio.",
+        "uploadFailed": "No se pudo subir la imagen.",
+        "submitFailed": "No se pudo publicar."
+      },
+      "signInRequired": "Inicia sesión para publicar.",
+      "signInCta": "Iniciar sesión"
+    }
+  },
+  "contact": {
+    "metadata": {
+      "title": "Contacto — {city}",
+      "description": "Envía un mensaje al equipo administrador de {city}."
+    },
+    "header": {
+      "title": "Contactar a {city}",
+      "subtitle": "Envíanos un mensaje. Los administradores responden los más pronto posible."
+    },
+    "form": {
+      "subjectLabel": "Asunto (opcional)",
+      "subjectPlaceholder": "Sugerencia, reporte, agradecimiento...",
+      "bodyLabel": "Mensaje",
+      "bodyPlaceholder": "Cuéntanos en qué te podemos ayudar...",
+      "submit": "Enviar mensaje",
+      "submitting": "Enviando...",
+      "success": "Mensaje enviado. ¡Gracias!",
+      "errors": {
+        "bodyRequired": "El mensaje no puede estar vacío.",
+        "submitFailed": "No se pudo enviar el mensaje."
+      },
+      "signInRequired": "Inicia sesión para enviar un mensaje.",
+      "signInCta": "Iniciar sesión"
+    },
+    "history": {
+      "title": "Mis mensajes anteriores",
+      "empty": "Aún no has enviado mensajes a esta ciudad.",
+      "status": {
+        "new": "Nuevo",
+        "read": "Leído",
+        "resolved": "Resuelto"
+      }
+    }
   }
 }

@@ -97,7 +97,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'left',
     icon: 'MegaphoneIcon',
     hrefTemplate: '/cities/:slug/classifieds',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'classifiedCount',
   },
   {
@@ -232,7 +232,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'right',
     icon: 'HeartIcon',
     hrefTemplate: '/cities/:slug/social-help',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'socialHelpCount',
   },
   {
@@ -240,7 +240,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'right',
     icon: 'EnvelopeIcon',
     hrefTemplate: '/cities/:slug/contact',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'complaints',

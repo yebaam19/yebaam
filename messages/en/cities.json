@@ -127,5 +127,153 @@
       "complaints": { "label": "Complaints Portal" },
       "rural": { "label": "Rural Area" }
     }
+  },
+  "classifieds": {
+    "metadata": {
+      "title": "Classifieds — {city}",
+      "description": "Buy, sell, trade or give away inside the {city} community."
+    },
+    "header": {
+      "title": "Classifieds",
+      "subtitle": "What the {city} community offers and needs",
+      "newCta": "Post"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search by title...",
+      "all": "All"
+    },
+    "kinds": {
+      "offer": "Selling",
+      "want": "Looking for",
+      "trade": "Trading",
+      "free": "Free"
+    },
+    "list": {
+      "empty": "No classifieds in this city yet.",
+      "emptyHint": "Be the first to post one!",
+      "free": "Free",
+      "openImage": "Open image"
+    },
+    "detail": {
+      "back": "Back to classifieds",
+      "publishedAt": "Published on {date}",
+      "noDescription": "No description.",
+      "free": "Free"
+    },
+    "composer": {
+      "title": "Post a classified",
+      "fields": {
+        "titleLabel": "Title",
+        "titlePlaceholder": "Mountain bike, lost dog, etc.",
+        "kindLabel": "Kind",
+        "priceLabel": "Price (optional)",
+        "pricePlaceholder": "0",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Describe condition, contact info, details...",
+        "imagesLabel": "Images",
+        "imagesHint": "Add up to 6 photos"
+      },
+      "actions": {
+        "submit": "Post",
+        "submitting": "Posting...",
+        "cancel": "Cancel",
+        "removeImage": "Remove image"
+      },
+      "errors": {
+        "titleRequired": "Title is required.",
+        "invalidPrice": "Price must be a valid number.",
+        "uploadFailed": "Could not upload image.",
+        "submitFailed": "Could not post the classified."
+      },
+      "signInRequired": "Sign in to post a classified.",
+      "signInCta": "Sign in"
+    }
+  },
+  "socialHelp": {
+    "metadata": {
+      "title": "Social Help — {city}",
+      "description": "Request or offer help inside the {city} community."
+    },
+    "header": {
+      "title": "Social Help",
+      "subtitle": "Offer or request help in the {city} community",
+      "newCta": "Post"
+    },
+    "toolbar": {
+      "all": "All"
+    },
+    "kinds": {
+      "offer": "Offering help",
+      "need": "Needing help"
+    },
+    "list": {
+      "empty": "No social help posts yet.",
+      "emptyHint": "Be the first to offer help!"
+    },
+    "detail": {
+      "back": "Back to social help",
+      "publishedAt": "Published on {date}",
+      "noDescription": "No description.",
+      "closed": "Closed"
+    },
+    "composer": {
+      "title": "Post social help",
+      "fields": {
+        "titleLabel": "Title",
+        "titlePlaceholder": "Need a ride to the doctor, offering tutoring...",
+        "kindLabel": "Kind",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Tell us more about the situation...",
+        "imageLabel": "Image (optional)",
+        "imageHint": "A picture is worth a thousand words"
+      },
+      "actions": {
+        "submit": "Post",
+        "submitting": "Posting...",
+        "cancel": "Cancel",
+        "removeImage": "Remove image"
+      },
+      "errors": {
+        "titleRequired": "Title is required.",
+        "uploadFailed": "Could not upload image.",
+        "submitFailed": "Could not post."
+      },
+      "signInRequired": "Sign in to post.",
+      "signInCta": "Sign in"
+    }
+  },
+  "contact": {
+    "metadata": {
+      "title": "Contact — {city}",
+      "description": "Send a message to the {city} admin team."
+    },
+    "header": {
+      "title": "Contact {city}",
+      "subtitle": "Send us a message. Admins reply as soon as possible."
+    },
+    "form": {
+      "subjectLabel": "Subject (optional)",
+      "subjectPlaceholder": "Suggestion, report, thanks...",
+      "bodyLabel": "Message",
+      "bodyPlaceholder": "Let us know how we can help...",
+      "submit": "Send message",
+      "submitting": "Sending...",
+      "success": "Message sent. Thanks!",
+      "errors": {
+        "bodyRequired": "Message cannot be empty.",
+        "submitFailed": "Could not send the message."
+      },
+      "signInRequired": "Sign in to send a message.",
+      "signInCta": "Sign in"
+    },
+    "history": {
+      "title": "My previous messages",
+      "empty": "You haven't sent any messages to this city yet.",
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "resolved": "Resolved"
+      }
+    }
   }
 }
