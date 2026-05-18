@@ -12,20 +12,21 @@ interface CitiesGridProps {
 }
 
 /**
- * Grid de ciudades con paginación
+ * Paginated 4-column city grid. The page list is rendered URL-stateless on
+ * purpose — the URL already encodes filters via `<CitiesToolbar>`; pagination
+ * is purely visual scrolling within the filtered set so we don't pollute the
+ * URL with `?page=N`.
  */
-export function CitiesGrid({ cities, citiesPerPage = 9 }: CitiesGridProps) {
+export function CitiesGrid({ cities, citiesPerPage = 8 }: CitiesGridProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const t = useTranslations('cities.list')
+  const tCard = useTranslations('cities.card')
+  const tGrid = useTranslations('cities.grid')
 
   const totalPages = Math.ceil(cities.length / citiesPerPage)
   const indexOfLastCity = currentPage * citiesPerPage
   const indexOfFirstCity = indexOfLastCity - citiesPerPage
   const currentCities = cities.slice(indexOfFirstCity, indexOfLastCity)
-
-  // Slots vacíos para mantener el grid uniforme
-  const emptySlotsNeeded = citiesPerPage - currentCities.length
-  const emptySlots = Array(Math.max(0, emptySlotsNeeded)).fill(null)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -33,65 +34,66 @@ export function CitiesGrid({ cities, citiesPerPage = 9 }: CitiesGridProps) {
 
   if (cities.length === 0) {
     return (
-      <section className="rounded-2xl bg-white p-10 text-center shadow-sm dark:bg-neutral-900">
-        <p className="text-neutral-500 dark:text-neutral-400">{t('empty')}</p>
+      <section className="rounded-2xl border border-dashed border-neutral-200 bg-white p-12 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('empty')}</p>
       </section>
     )
   }
 
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-900">
-      <div className="mx-auto space-y-6">
-        {/* Grid de ciudades */}
-        <div className="grid w-full gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))]" style={{ minHeight: '400px' }}>
-          {currentCities.map((city) => (
-            <CityCard key={city.id} city={city} />
-          ))}
-          {emptySlots.map((_, index) => (
-            <div key={`empty-${index}`} className="invisible">
-              <div className="rounded-xl border bg-white p-5 dark:bg-neutral-800">
-                <div className="mb-2 h-6 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
-              </div>
-            </div>
-          ))}
-        </div>
+    <section aria-label="Cities">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+        {currentCities.map((city) => (
+          <CityCard key={city.id} city={city} exploreLabel={tCard('explore')} />
+        ))}
+      </div>
 
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-            >
-              <ChevronLeftIcon className="h-5 w-5" />
-            </button>
+      {totalPages > 1 && (
+        <nav
+          aria-label="Pagination"
+          className="mt-8 flex items-center justify-center gap-1.5"
+        >
+          <button
+            type="button"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            aria-label={tGrid('previous')}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+          </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+            const isActive = currentPage === page
+            return (
               <button
                 key={page}
+                type="button"
                 onClick={() => handlePageChange(page)}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? 'bg-primary-600 text-white'
-                    : 'border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
-                }`}
+                aria-current={isActive ? 'page' : undefined}
+                className={
+                  'flex h-9 min-w-[2.25rem] items-center justify-center rounded-full px-3 text-sm font-medium transition-colors ' +
+                  (isActive
+                    ? 'bg-primary-600 text-white shadow-sm'
+                    : 'border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800')
+                }
               >
                 {page}
               </button>
-            ))}
+            )
+          })}
 
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-            >
-              <ChevronRightIcon className="h-5 w-5" />
-            </button>
-          </div>
-        )}
-      </div>
+          <button
+            type="button"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            aria-label={tGrid('next')}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            <ChevronRightIcon className="h-4 w-4" />
+          </button>
+        </nav>
+      )}
     </section>
   )
 }

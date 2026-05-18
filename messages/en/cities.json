@@ -10,14 +10,8 @@
     "detailOgDescription": "Discover everything about {city}: photos, videos, events, and more."
   },
   "hero": {
-    "badge": "Discover your community",
-    "title": "Cities Portal",
-    "subtitle": "Explore and discover featured cities known for their culture, history, and connection. Connect with your local community.",
-    "stats": {
-      "cities": "Active cities",
-      "users": "Connected users",
-      "media": "Shared photos"
-    }
+    "title": "Explore. Connect. Discover.",
+    "subtitle": "Meet featured cities for their culture, history and connection. Connect with your community."
   },
   "header": {
     "coverAlt": "View of {city}",
@@ -28,7 +22,8 @@
     }
   },
   "card": {
-    "locationFallback": "Location unavailable"
+    "locationFallback": "Location unavailable",
+    "explore": "Explore"
   },
   "grid": {
     "previous": "Previous page",

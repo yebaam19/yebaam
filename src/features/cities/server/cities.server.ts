@@ -182,3 +182,35 @@ export const getCountriesWithCities = cache(async (): Promise<CountryOption[]> =
   const client = await getServerClient();
   return fetchCountriesWithCities(client);
 });
+
+/**
+ * Returns the single most prominent featured city (or, if no city is flagged
+ * `is_featured`, the city with the highest follower count). Used by the
+ * `/cities` hero to back its full-bleed background image. Tiny SELECT
+ * (id + name + cover only) so this is essentially free.
+ */
+export async function fetchFeaturedHeroCity(
+  client: SupabaseClient,
+): Promise<{ name: string; coverImageUrl?: string } | null> {
+  const { data, error } = await client
+    .from('cities')
+    .select('name, cover_cf_image_id')
+    .order('is_featured', { ascending: false })
+    .order('follower_count', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error('[fetchFeaturedHeroCity]', error);
+    return null;
+  }
+  if (!data) return null;
+  return {
+    name: (data as { name: string }).name,
+    coverImageUrl: cfImageUrl((data as { cover_cf_image_id: string | null }).cover_cf_image_id),
+  };
+}
+
+export const getFeaturedHeroCity = cache(async () => {
+  const client = await getServerClient();
+  return fetchFeaturedHeroCity(client);
+});

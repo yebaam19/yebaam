@@ -72,12 +72,12 @@ export function CitiesToolbar({ countries }: Props) {
     <form
       role="search"
       onSubmit={onSubmit}
-      className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-center dark:bg-neutral-900"
+      className="flex flex-col gap-3 rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:gap-2.5 sm:p-2.5 dark:border-neutral-800 dark:bg-neutral-900"
     >
       <label className="relative flex-1">
         <span className="sr-only">{t('searchPlaceholder')}</span>
         <MagnifyingGlassIcon
-          className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-neutral-400"
+          className="pointer-events-none absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-neutral-400"
           aria-hidden="true"
         />
         <input
@@ -86,7 +86,7 @@ export function CitiesToolbar({ countries }: Props) {
           value={localQuery}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder={t('searchPlaceholder')}
-          className="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pr-3 pl-10 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+          className="w-full rounded-full border border-transparent bg-neutral-100 py-2 pr-3 pl-10 text-sm text-neutral-900 placeholder:text-neutral-500 transition-colors focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-900"
         />
       </label>
 
@@ -96,7 +96,12 @@ export function CitiesToolbar({ countries }: Props) {
           name="country"
           value={country}
           onChange={(e) => onCountryChange(e.target.value)}
-          className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+          className="w-full appearance-none rounded-full border border-transparent bg-neutral-100 bg-[right_0.875rem_center] bg-no-repeat py-2 pr-9 pl-4 text-sm text-neutral-900 transition-colors focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23737373' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E\")",
+            backgroundSize: '1.25rem 1.25rem',
+          }}
           aria-label={t('filterByCountry')}
         >
           <option value="">{t('allCountries')}</option>
@@ -112,7 +117,7 @@ export function CitiesToolbar({ countries }: Props) {
       <noscript>
         <button
           type="submit"
-          className="rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
+          className="rounded-full bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           {t('applyFilters')}
         </button>

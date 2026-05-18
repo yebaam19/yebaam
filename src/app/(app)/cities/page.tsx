@@ -10,7 +10,7 @@ import { CitiesToolbar } from '@/features/cities/components/CitiesToolbar'
 import {
   getCities,
   getCountriesWithCities,
-  getGlobalStats,
+  getFeaturedHeroCity,
 } from '@/features/cities/server/cities.server'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,22 +33,25 @@ interface PageProps {
 /**
  * Cities Portal landing page (`/cities`).
  *
- * Pure RSC. The hero stats and country options are awaited eagerly so the
- * shell renders SSR-complete (no client fetch, no "..." flash). The cities
- * grid is wrapped in a Suspense boundary whose `key` includes the active
- * filters — so the skeleton appears between filter applies without blocking
- * the rest of the shell.
+ * Pure RSC. The hero background image and the country options are awaited
+ * eagerly so the shell renders SSR-complete (no client fetch, no "..." flash).
+ * The cities grid is wrapped in a Suspense boundary whose `key` includes the
+ * active filters — so the skeleton appears between filter applies without
+ * blocking the rest of the shell.
  */
 export default async function CitiesPage({ searchParams }: PageProps) {
   const { q, country } = await searchParams
-  const [stats, countries] = await Promise.all([
-    getGlobalStats(),
+  const [heroCity, countries] = await Promise.all([
+    getFeaturedHeroCity(),
     getCountriesWithCities(),
   ])
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
-      <CitiesHero stats={stats} />
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+      <CitiesHero
+        backgroundImageUrl={heroCity?.coverImageUrl}
+        backgroundImageAlt={heroCity?.name}
+      />
       <CitiesToolbar countries={countries} />
       <Suspense fallback={<CitiesGridSkeleton />} key={`${q ?? ''}::${country ?? ''}`}>
         <CitiesGridAsync q={q} countryCode={country} />
@@ -64,24 +67,17 @@ async function CitiesGridAsync({ q, countryCode }: { q?: string; countryCode?: s
 
 /**
  * Skeleton for the cities grid; rendered while the filtered query resolves.
+ * Mirrors the 4-col image-card grid shape so the loading state doesn't jump.
  */
 function CitiesGridSkeleton() {
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-900">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 9 }).map((_, index) => (
+    <section>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
           <div
             key={index}
-            className="animate-pulse rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800"
-          >
-            <div className="flex items-start gap-3">
-              <div className="h-12 w-12 shrink-0 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-              <div className="flex-1 space-y-2">
-                <div className="h-5 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-                <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
-              </div>
-            </div>
-          </div>
+            className="aspect-[4/3] animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800"
+          />
         ))}
       </div>
     </section>

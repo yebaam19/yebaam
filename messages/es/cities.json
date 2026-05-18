@@ -10,14 +10,8 @@
     "detailOgDescription": "Descubre todo sobre {city}: fotos, videos, eventos y más."
   },
   "hero": {
-    "badge": "Descubre tu comunidad",
-    "title": "Portal de Ciudades",
-    "subtitle": "Explora y conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad local.",
-    "stats": {
-      "cities": "Ciudades activas",
-      "users": "Usuarios conectados",
-      "media": "Fotos compartidas"
-    }
+    "title": "Explora. Conecta. Descubre.",
+    "subtitle": "Conoce ciudades destacadas por su cultura, historia y conexión. Conecta con tu comunidad."
   },
   "header": {
     "coverAlt": "Vista de {city}",
@@ -28,7 +22,8 @@
     }
   },
   "card": {
-    "locationFallback": "Ubicación no disponible"
+    "locationFallback": "Ubicación no disponible",
+    "explore": "Explorar"
   },
   "grid": {
     "previous": "Página anterior",
