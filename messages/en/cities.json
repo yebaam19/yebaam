@@ -34,6 +34,14 @@
     "previous": "Previous page",
     "next": "Next page"
   },
+  "list": {
+    "searchPlaceholder": "Search cities",
+    "filterByCountry": "Filter by country",
+    "allCountries": "All countries",
+    "empty": "No cities match your search",
+    "followers": "{count, plural, =0 {No followers} one {# follower} other {# followers}}",
+    "applyFilters": "Apply"
+  },
   "mediaDialog": {
     "close": "Close",
     "previous": "Previous",
@@ -55,6 +63,69 @@
       "scrollRight": "Scroll right",
       "searchPlaceholder": "Search businesses...",
       "noResults": "No businesses were found matching your search"
+    }
+  },
+  "publicChat": {
+    "metadata": {
+      "title": "Public chat — {city}",
+      "description": "Join the permanent public chat of {city}. Talk live with the local community."
+    },
+    "header": {
+      "title": "Public chat",
+      "subtitle": "Live conversation with the {city} community",
+      "capacity": "{count}/{max} online"
+    },
+    "composer": {
+      "placeholder": "Write a message",
+      "send": "Send",
+      "signedOut": "Sign in to participate",
+      "signInCta": "Sign in"
+    },
+    "messages": {
+      "empty": "No messages yet. Be the first to say hi!",
+      "you": "You"
+    }
+  },
+  "portal": {
+    "follow": "Follow",
+    "following": "Following",
+    "unfollow": "Unfollow",
+    "coverAlt": "{city} cover photo",
+    "tileCount": "{count, plural, =0 {No items} one {# item} other {# items}}",
+    "comingSoonPill": "Soon",
+    "underConstruction": {
+      "title": "Coming soon",
+      "subtitle": "This section will be available soon.",
+      "backToPortal": "Back to portal"
+    },
+    "sections": {
+      "chats": { "label": "Public Chats" },
+      "forums": { "label": "Forums" },
+      "promotions": { "label": "Promotions" },
+      "news": { "label": "News" },
+      "directories": { "label": "Directories" },
+      "classifieds": { "label": "Classifieds" },
+      "events": { "label": "Events" },
+      "photos": { "label": "Photos" },
+      "videos": { "label": "Videos" },
+      "publications": { "label": "Publications" },
+      "history": { "label": "History & Economy" },
+      "places": { "label": "Places of Interest" },
+      "government": { "label": "Government Entities" },
+      "education": { "label": "Schools & Universities" },
+      "food": { "label": "Restaurants & Cafés" },
+      "nightlife": { "label": "Nightlife" },
+      "lodging": { "label": "Hotels & Lodging" },
+      "religion": { "label": "Churches & Religious Centers" },
+      "malls": { "label": "Shopping Malls" },
+      "sports": { "label": "Sports & Entertainment" },
+      "health": { "label": "Hospitals, Clinics & Pharmacies" },
+      "grocery": { "label": "Supermarkets & Grocers" },
+      "clubs-blogs": { "label": "Communities, Clubs, Blogs" },
+      "social-help": { "label": "Social Help" },
+      "contact": { "label": "Contact" },
+      "complaints": { "label": "Complaints Portal" },
+      "rural": { "label": "Rural Area" }
     }
   }
 }

@@ -8,9 +8,9 @@ interface CityHeaderProps {
   countryName: string
   coverImage?: string
   stats?: {
-    photosCount: number
-    videosCount: number
-    followersCount: number
+    photoCount: number
+    videoCount: number
+    followerCount: number
   }
 }
 
@@ -60,18 +60,18 @@ export async function CityHeader({
           {stats && (
             <div className="hidden items-center gap-6 sm:flex">
               <div className="text-center">
-                <p className="text-2xl font-bold">{stats.photosCount}</p>
+                <p className="text-2xl font-bold">{stats.photoCount}</p>
                 <p className="text-sm text-white/70">{t('header.stats.photos')}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">{stats.videosCount}</p>
+                <p className="text-2xl font-bold">{stats.videoCount}</p>
                 <p className="text-sm text-white/70">{t('header.stats.videos')}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">
-                  {stats.followersCount >= 1000
-                    ? `${(stats.followersCount / 1000).toFixed(1)}K`
-                    : stats.followersCount}
+                  {stats.followerCount >= 1000
+                    ? `${(stats.followerCount / 1000).toFixed(1)}K`
+                    : stats.followerCount}
                 </p>
                 <p className="text-sm text-white/70">{t('header.stats.members')}</p>
               </div>

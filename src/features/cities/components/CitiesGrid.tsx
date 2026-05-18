@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { CityBasic } from '../interfaces/city.interfaces'
 import { CityCard } from './CityCard'
@@ -15,6 +16,7 @@ interface CitiesGridProps {
  */
 export function CitiesGrid({ cities, citiesPerPage = 9 }: CitiesGridProps) {
   const [currentPage, setCurrentPage] = useState(1)
+  const t = useTranslations('cities.list')
 
   const totalPages = Math.ceil(cities.length / citiesPerPage)
   const indexOfLastCity = currentPage * citiesPerPage
@@ -27,6 +29,14 @@ export function CitiesGrid({ cities, citiesPerPage = 9 }: CitiesGridProps) {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+  }
+
+  if (cities.length === 0) {
+    return (
+      <section className="rounded-2xl bg-white p-10 text-center shadow-sm dark:bg-neutral-900">
+        <p className="text-neutral-500 dark:text-neutral-400">{t('empty')}</p>
+      </section>
+    )
   }
 
   return (

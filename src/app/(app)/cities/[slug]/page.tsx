@@ -1,21 +1,27 @@
-import { CityHeader, cityService, CityTabs, MediaType } from '@/features/cities'
-import { unslugify } from '@/lib/utils'
+import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
+import { CityPortalCover } from '@/features/cities/components/portal/CityPortalCover'
+import { CityPortalGrid } from '@/features/cities/components/portal/CityPortalGrid'
+import { CityPortalGridSkeleton } from '@/features/cities/components/portal/CityPortalGridSkeleton'
+import {
+  fetchIsFollowing,
+  getCityBySlug,
+  getCityPortalData,
+} from '@/features/cities/server/city.server'
+import { getServerClient } from '@/utils/supabase/server'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
-/**
- * Genera metadata dinámica para SEO
- */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const cityName = unslugify(slug)
+  const city = await getCityBySlug(slug)
   const t = await getTranslations('cities')
+
+  const cityName = city?.name ?? slug
 
   return {
     title: t('metadata.detailTitle', { city: cityName }),
@@ -29,64 +35,42 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * Página de detalle de ciudad
- * Server Component - Fetching de datos en el servidor
+ * Portal de la Ciudad — `/cities/[slug]`.
+ *
+ * Pure RSC. The cover (city name, location chip, Seguir button) paints
+ * eagerly so the page never looks blank; the 27-tile grid is wrapped in a
+ * Suspense boundary keyed on the city id and streams in as soon as the
+ * 10 parallel counts in `getCityPortalData` resolve.
+ *
+ * The only client component on this page is `<FollowCityButton>` (inside the
+ * cover) — that is what keeps the Lighthouse Performance budget healthy.
  */
-export default async function CityDetailPage({ params }: Props) {
+export default async function CityPortalPage({ params }: Props) {
   const { slug } = await params
+  const city = await getCityBySlug(slug)
+  if (!city) notFound()
 
-  // Fetch en el servidor
-  const city = await cityService.getCityBySlug(slug)
-
-  if (!city || !(city as any).id || !city.stats) {
-    notFound()
-  }
-
-  // Filtrar media por tipo
-  const photos = (city.cityMedia ?? []).filter((m) => m.type === MediaType.IMAGE)
-  const videos = (city.cityMedia ?? []).filter((m) => m.type === MediaType.VIDEO)
+  const client = await getServerClient()
+  const { data: auth } = await client.auth.getUser()
+  const isFollowing = await fetchIsFollowing(client, city.id, auth.user?.id ?? null)
 
   return (
     <div className="space-y-6">
-      {/* Header - Server Component con estadísticas reales */}
-      <CityHeader
-        cityName={city.name}
-        stateName={city.state?.name}
-        countryName={city.country.name}
-        coverImage={city.coverImageUrl}
-        stats={{
-          photosCount: city.stats.photosCount,
-          videosCount: city.stats.videosCount,
-          followersCount: city.stats.followersCount,
-        }}
-      />
-
-      {/* Tabs - Client Component para interactividad */}
-      <Suspense fallback={<CityTabsSkeleton />}>
-        <CityTabs cityName={city.name} citySlug={slug} photos={photos} videos={videos} />
+      <CityPortalCover city={city} isFollowing={isFollowing} />
+      <Suspense fallback={<CityPortalGridSkeleton />} key={city.id}>
+        <PortalGridAsync cityId={city.id} citySlug={slug} />
       </Suspense>
     </div>
   )
 }
 
-/**
- * Skeleton para los tabs
- */
-function CityTabsSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4">
-      <div className="rounded-xl bg-white p-1.5 shadow-sm dark:bg-neutral-800">
-        <div className="flex gap-1">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-10 w-24 rounded-lg bg-neutral-200 dark:bg-neutral-700" />
-          ))}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-24 rounded-xl bg-neutral-200 dark:bg-neutral-700" />
-        ))}
-      </div>
-    </div>
-  )
+async function PortalGridAsync({
+  cityId,
+  citySlug,
+}: {
+  cityId: string
+  citySlug: string
+}) {
+  const portalData = await getCityPortalData(cityId)
+  return <CityPortalGrid citySlug={citySlug} portalData={portalData} />
 }

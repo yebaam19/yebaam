@@ -72,10 +72,10 @@ export interface City {
   coverImageUrl?: string
   logoUrl?: string
   stats: {
-    followersCount: number
-    photosCount: number
-    videosCount: number
-    postsCount: number
+    followerCount: number
+    photoCount: number
+    videoCount: number
+    postCount: number
   }
   isFollowing: boolean
   isFeatured: boolean
@@ -99,12 +99,13 @@ export interface CityBasic {
   country: {
     id: string
     name: string
+    code?: string
   }
   stats: {
-    followersCount: number
-    photosCount: number
-    videosCount: number
-    postsCount: number
+    followerCount: number
+    photoCount: number
+    videoCount: number
+    postCount: number
   }
   isFollowing: boolean
   isFeatured: boolean

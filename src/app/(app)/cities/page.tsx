@@ -1,7 +1,17 @@
-import { CitiesGrid, CitiesHero, cityService } from '@/features/cities'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
+
+// Import directly, not via the @/features/cities barrel — avoids dragging
+// every export into the page's bundle (bundle-barrel-imports).
+import { CitiesGrid } from '@/features/cities/components/CitiesGrid'
+import { CitiesHero } from '@/features/cities/components/CitiesHero'
+import { CitiesToolbar } from '@/features/cities/components/CitiesToolbar'
+import {
+  getCities,
+  getCountriesWithCities,
+  getGlobalStats,
+} from '@/features/cities/server/cities.server'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('cities')
@@ -16,29 +26,44 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+interface PageProps {
+  searchParams: Promise<{ q?: string; country?: string }>
+}
+
 /**
- * Página principal del Portal de Ciudades
- * Server Component - Fetching de datos en el servidor
+ * Cities Portal landing page (`/cities`).
+ *
+ * Pure RSC. The hero stats and country options are awaited eagerly so the
+ * shell renders SSR-complete (no client fetch, no "..." flash). The cities
+ * grid is wrapped in a Suspense boundary whose `key` includes the active
+ * filters — so the skeleton appears between filter applies without blocking
+ * the rest of the shell.
  */
-export default async function CitiesPage() {
-  // Fetch en el servidor
-  const { cities } = await cityService.getAllCities()
+export default async function CitiesPage({ searchParams }: PageProps) {
+  const { q, country } = await searchParams
+  const [stats, countries] = await Promise.all([
+    getGlobalStats(),
+    getCountriesWithCities(),
+  ])
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
-      {/* Hero Section - Server Component */}
-      <CitiesHero />
-
-      {/* Cities Grid - Server Component con datos pre-fetched */}
-      <Suspense fallback={<CitiesGridSkeleton />}>
-        <CitiesGrid cities={cities} />
+      <CitiesHero stats={stats} />
+      <CitiesToolbar countries={countries} />
+      <Suspense fallback={<CitiesGridSkeleton />} key={`${q ?? ''}::${country ?? ''}`}>
+        <CitiesGridAsync q={q} countryCode={country} />
       </Suspense>
     </div>
   )
 }
 
+async function CitiesGridAsync({ q, countryCode }: { q?: string; countryCode?: string }) {
+  const cities = await getCities({ q, countryCode })
+  return <CitiesGrid cities={cities} />
+}
+
 /**
- * Skeleton loader para el grid de ciudades
+ * Skeleton for the cities grid; rendered while the filtered query resolves.
  */
 function CitiesGridSkeleton() {
   return (

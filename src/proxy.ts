@@ -23,6 +23,10 @@ const PUBLIC_ROUTES = [
   // Music archive: público abierto by design. /musica/subir adds its own
   // server-side auth check inside the page component.
   '/musica',
+  // Cities Portal: public read by design (PDF spec, see foamy-singing-lemur).
+  // Writes (follow, post, complaint) gate at the server-action layer via
+  // requireUserId(); guests can browse the portal without an account.
+  '/cities',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
@@ -31,6 +35,7 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/feed/chat-publico',
   '/verification/certificate',
   '/musica',
+  '/cities',
 ];
 
 export async function proxy(request: NextRequest) {
