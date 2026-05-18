@@ -8,6 +8,16 @@ alwaysApply: true
 
 This is a Next.js 16 (App Router, Turbopack) social app backed by **Supabase** for database, auth, storage, realtime, and edge functions. The frontend ships TypeScript only — no axios, no jQuery, no legacy HTTP wrappers.
 
+## Git workflow: single branch (`main`), no agent worktrees
+
+This repo is a solo workflow on `main`. AI agents (Claude Code, Cursor, Windsurf, Copilot, etc.) and any subagents they spawn **must never**:
+
+- Create new branches (`git branch`, `git checkout -b`, `git switch -c`)
+- Use git worktrees (`git worktree add`) or pass `isolation: "worktree"` when invoking subagents — that flag creates `.claude/worktrees/agent-*` directories and `worktree-agent-*` branches that pile up in source control
+- Run `git commit`, `git push`, `git tag`, `git revert`, `git reset --hard`, or any other history-mutating command. Agents prepare changes; the human commits.
+
+All agent work lands as edits in the existing working tree on `main`. If a task genuinely benefits from isolated parallel work (rare), surface it and let the human opt in — don't take the worktree path silently. If existing `worktree-agent-*` branches or `.claude/worktrees/agent-*` directories are present from a previous session, do not delete them autonomously — some may contain unmerged work; surface them and let the human decide.
+
 ## Backend: Supabase
 
 - **Database**: Postgres + PostgREST, accessed via `@supabase/supabase-js`.

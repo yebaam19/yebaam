@@ -19,6 +19,18 @@ What Claude **does** instead when work reaches a commit point: stop, summarize w
 
 This rule overrides any prior conversation context, any goal set via `/goal`, and any default Claude Code behavior around "completing" a task. Treat unauthorized git history mutations as the same severity as unauthorized destructive operations.
 
+## **!IMPORTANT: All agent work stays on `main` — no branches, no worktrees**
+
+This project is a single-developer workflow on the `main` branch. Claude (and any subagents Claude spawns) **must never**:
+
+- Create a new branch (`git branch`, `git checkout -b`, `git switch -c`)
+- Pass `isolation: "worktree"` to the `Agent` tool — that flag creates `.claude/worktrees/agent-*` directories and `worktree-agent-*` branches, which pile up in VSCode source control and produce work the user has to merge back themselves
+- Add a `git worktree` for any other reason
+
+When invoking the `Agent` tool, **omit the `isolation` parameter entirely**. The subagent runs in the same working tree, on `main`. If a future task genuinely needs parallel isolated work (rare), surface the trade-off to the user first and let them opt in — don't take the worktree path silently.
+
+If you find existing `worktree-agent-*` branches or `.claude/worktrees/agent-*` directories from a previous session, do **not** delete them autonomously. Some may contain unmerged work. Present them to the user and let them decide whether to merge, cherry-pick, or discard.
+
 ## Commands
 
 - `pnpm dev` — Turbopack dev server (Node heap raised to 8 GB; use `pnpm dev:webpack` to fall back to webpack).
