@@ -21,6 +21,18 @@ function cfImageUrl(id: string | null): string | undefined {
   return `https://imagedelivery.net/${CF_ACCOUNT_HASH}/${id}/public`;
 }
 
+export interface CityFacts {
+  /** Most recent population estimate (from Wikidata P1082). */
+  population: number | null;
+  /** Elevation above sea level in meters (P2044). */
+  altitudeM: number | null;
+  /** Year the city was founded (P571, earliest claim). */
+  foundedYear: number | null;
+  /** Administrative region the city belongs to — department, state,
+   *  province, etc. (P131) — already localized to Spanish at seed time. */
+  department: string | null;
+}
+
 export interface CityDetail {
   id: string;
   name: string;
@@ -32,6 +44,7 @@ export interface CityDetail {
   state?: { id: string; name: string };
   country: { id: string; code: string; name: string };
   isFeatured: boolean;
+  facts: CityFacts;
   stats: {
     followerCount: number;
     photoCount: number;
@@ -52,12 +65,17 @@ type CityRow = {
   photo_count: number | null;
   video_count: number | null;
   post_count: number | null;
+  population: number | null;
+  altitude_m: number | null;
+  founded_year: number | null;
+  department: string | null;
   country: { id: string; code: string | null; name: string } | null;
   state: { id: string; name: string } | null;
 };
 
 const CITY_SELECT = `id, name, slug, description, cover_cf_image_id, logo_cf_image_id,
   is_featured, follower_count, photo_count, video_count, post_count,
+  population, altitude_m, founded_year, department,
   country:countries!inner(id, code, name),
   state:states(id, name)`;
 
@@ -77,6 +95,12 @@ function toDetail(row: CityRow): CityDetail {
       name: row.country?.name ?? '',
     },
     isFeatured: Boolean(row.is_featured),
+    facts: {
+      population: row.population,
+      altitudeM: row.altitude_m,
+      foundedYear: row.founded_year,
+      department: row.department,
+    },
     stats: {
       followerCount: row.follower_count ?? 0,
       photoCount: row.photo_count ?? 0,
@@ -238,6 +262,69 @@ export async function fetchCityPortalData(
   };
 }
 
+export interface CityTrendingItem {
+  id: string;
+  title: string;
+  coverImageUrl?: string;
+  publishedAt: string;
+}
+
+/**
+ * Top approved city news items, newest first. Powers the "En tendencia"
+ * sidebar on the city detail page. We don't paginate here — three rows is
+ * plenty for the rail; the full list lives at `/cities/[slug]/news`.
+ */
+export async function fetchCityTrending(
+  client: SupabaseClient,
+  cityId: string,
+  limit = 3,
+): Promise<CityTrendingItem[]> {
+  const { data, error } = await client
+    .from('city_news')
+    .select('id, title, cover_cf_image_id, published_at')
+    .eq('city_id', cityId)
+    .eq('status', 'approved')
+    .order('published_at', { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error('[fetchCityTrending]', error);
+    return [];
+  }
+  return (data ?? []).map((row) => {
+    const r = row as { id: string; title: string; cover_cf_image_id: string | null; published_at: string | null };
+    return {
+      id: r.id,
+      title: r.title,
+      coverImageUrl: cfImageUrl(r.cover_cf_image_id),
+      publishedAt: r.published_at ?? new Date(0).toISOString(),
+    };
+  });
+}
+
+export type DiscoveryThumbnails = Record<string, string | undefined>;
+
+/**
+ * Shared CF image ids for the discovery tile grid, keyed by category id.
+ * Returned as a plain map so the React tree doesn't need to know about
+ * the underlying table. One row per category, hit once per request.
+ */
+export async function fetchDiscoveryThumbnails(
+  client: SupabaseClient,
+): Promise<DiscoveryThumbnails> {
+  const { data, error } = await client
+    .from('discovery_thumbnails')
+    .select('category, cf_image_id');
+  if (error) {
+    console.error('[fetchDiscoveryThumbnails]', error);
+    return {};
+  }
+  const out: DiscoveryThumbnails = {};
+  for (const row of (data ?? []) as Array<{ category: string; cf_image_id: string }>) {
+    out[row.category] = cfImageUrl(row.cf_image_id);
+  }
+  return out;
+}
+
 export async function fetchIsFollowing(
   client: SupabaseClient,
   cityId: string,
@@ -277,3 +364,15 @@ export const getIsFollowing = cache(
     return fetchIsFollowing(client, cityId, userId);
   },
 );
+
+export const getCityTrending = cache(
+  async (cityId: string, limit = 3): Promise<CityTrendingItem[]> => {
+    const client = await getServerClient();
+    return fetchCityTrending(client, cityId, limit);
+  },
+);
+
+export const getDiscoveryThumbnails = cache(async (): Promise<DiscoveryThumbnails> => {
+  const client = await getServerClient();
+  return fetchDiscoveryThumbnails(client);
+});

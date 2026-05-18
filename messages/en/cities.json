@@ -88,6 +88,31 @@
     "coverAlt": "{city} cover photo",
     "tileCount": "{count, plural, =0 {No items} one {# item} other {# items}}",
     "comingSoonPill": "Soon",
+    "discoverHeading": "Explore {city}",
+    "viewAllCategories": "View all categories",
+    "discovery": {
+      "places": { "label": "Places of Interest" },
+      "food": { "label": "Restaurants & Cafés" },
+      "events": { "label": "Events" },
+      "tourism": { "label": "Tourism & Nature" },
+      "nightlife": { "label": "Nightlife" },
+      "lodging": { "label": "Hotels & Lodging" },
+      "education": { "label": "Schools & Universities" },
+      "commerce": { "label": "Commerce & Services" },
+      "history": { "label": "History & Culture" }
+    },
+    "knowCity": {
+      "heading": "Know {city}",
+      "population": "Population",
+      "department": "Region",
+      "altitude": "Altitude",
+      "founded": "Founded",
+      "altitudeUnit": "m above sea level"
+    },
+    "trending": {
+      "heading": "Trending",
+      "empty": "No news yet."
+    },
     "underConstruction": {
       "title": "Coming soon",
       "subtitle": "This section will be available soon.",
