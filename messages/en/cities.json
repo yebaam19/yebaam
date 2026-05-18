@@ -44,20 +44,6 @@
     "photoOfUserInCity": "Photo of {name} in {city}",
     "photoOfCity": "Photo of {city}"
   },
-  "directoryCategory": {
-    "metadata": {
-      "title": "{category} in {city} | Directory",
-      "description": "Discover {category} in {city}. Full local directory listing."
-    },
-    "subtitle": "{category} businesses and places in {city}.",
-    "count": "{count, plural, =0 {No results} one {# result} other {# results}}",
-    "empty": "No businesses in this category yet for this city.",
-    "emptyCta": "Browse all directory categories",
-    "breadcrumb": {
-      "home": "Home",
-      "directory": "Directory"
-    }
-  },
   "directory": {
     "serviceList": {
       "all": "All",

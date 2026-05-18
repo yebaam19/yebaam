@@ -44,20 +44,6 @@
     "photoOfUserInCity": "Foto de {name} en {city}",
     "photoOfCity": "Foto de {city}"
   },
-  "directoryCategory": {
-    "metadata": {
-      "title": "{category} en {city} | Directorio",
-      "description": "Encuentra {category} en {city}. Listado completo del directorio local."
-    },
-    "subtitle": "Negocios y lugares de {category} en {city}.",
-    "count": "{count, plural, =0 {Sin resultados} one {# resultado} other {# resultados}}",
-    "empty": "Todavía no hay negocios en esta categoría para esta ciudad.",
-    "emptyCta": "Ver todas las categorías del directorio",
-    "breadcrumb": {
-      "home": "Inicio",
-      "directory": "Directorio"
-    }
-  },
   "directory": {
     "serviceList": {
       "all": "Todos",
