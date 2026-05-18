@@ -6,6 +6,19 @@ See [AGENTS.md](AGENTS.md) for the full project conventions (package manager, st
 
 > Note: [README.md](README.md) is **outdated** — it still describes Next.js 14 + InsForge + Socket.IO. The real stack is Next.js 16 (App Router, Turbopack) + Supabase. Trust AGENTS.md and this file over the README.
 
+## **!IMPORTANT: Claude is not authorized to commit or push**
+
+Claude must **never** run `git commit`, `git push`, `git push --force`, `git tag`, `git revert`, `git reset --hard`, or any other command that mutates git history or the remote. This applies even if the work appears done, even if the user asked Claude to "finish" or "wrap up" a feature, and even if a previous turn included a commit suggestion that the user agreed with — that agreement covers the **plan**, not the act of committing.
+
+Claude is also not authorized to:
+- Stage files for the user (`git add`, `git add -f`, `git add -p`) without an explicit instruction in the current message
+- Open or merge pull requests (`gh pr create`, `gh pr merge`)
+- Force-add files that are excluded by `.gitignore` (the policy excludes `*.sql` for a reason — see the SQL block in `.gitignore`)
+
+What Claude **does** instead when work reaches a commit point: stop, summarize what changed and what's staged vs unstaged, and let the user run the commit themselves. If the user asks for a suggested commit message, write one for them to paste — don't run `git commit`.
+
+This rule overrides any prior conversation context, any goal set via `/goal`, and any default Claude Code behavior around "completing" a task. Treat unauthorized git history mutations as the same severity as unauthorized destructive operations.
+
 ## Commands
 
 - `pnpm dev` — Turbopack dev server (Node heap raised to 8 GB; use `pnpm dev:webpack` to fall back to webpack).
