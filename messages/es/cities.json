@@ -103,7 +103,6 @@
     "tileCount": "{count, plural, =0 {Sin elementos} one {# elemento} other {# elementos}}",
     "comingSoonPill": "Pronto",
     "discoverHeading": "Explora {city}",
-    "viewAllCategories": "Ver todas las categorías",
     "discovery": {
       "places": { "label": "Sitios de Interés" },
       "food": { "label": "Restaurantes y Cafeterías" },

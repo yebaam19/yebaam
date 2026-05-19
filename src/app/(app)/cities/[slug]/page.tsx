@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { CityPortalCover } from '@/features/cities/components/portal/CityPortalCover'
@@ -8,7 +7,6 @@ import { CityPortalGrid } from '@/features/cities/components/portal/CityPortalGr
 import { CityPortalGridSkeleton } from '@/features/cities/components/portal/CityPortalGridSkeleton'
 import { CityPortalSidebar } from '@/features/cities/components/portal/CityPortalSidebar'
 import { CityPortalSidebarSkeleton } from '@/features/cities/components/portal/CityPortalSidebarSkeleton'
-import { DiscoveryGrid } from '@/features/cities/components/portal/DiscoveryGrid'
 import { getCityBySlug } from '@/features/cities/server/city.server'
 import { fetchIsFollowing } from '@/features/cities/server/followers.server'
 import { getCityPortalData } from '@/features/cities/server/portal-data.server'
@@ -41,11 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  *
  * Layout mirrors `docs/cities-reference/city.png`:
  *  - Full-width cover up top (eager, no Suspense)
- *  - 2-column body: "Explora <city>" discovery grid (col-span-2) + right
- *    rail with facts + trending (col-span-1, Suspense-streamed)
- *  - The full 27-tile `<CityPortalGrid>` lives below the discovery grid so
- *    every existing per-section route stays one click away. A future
- *    `/cities/[slug]/categories` overflow page can replace it.
+ *  - 2-column body:
+ *      - main column (col-span-2): "Explora <city>" picture-card grid over
+ *        every `PORTAL_SECTIONS` entry (Cloudflare thumbnail or brand
+ *        gradient + icon fallback)
+ *      - right rail (col-span-1): facts + trending (Suspense-streamed)
  *
  * The only client component on this page is `<FollowCityButton>` (inside the
  * cover) — that is what keeps the Lighthouse Performance budget healthy.
@@ -73,27 +71,15 @@ export default async function CityPortalPage({ params }: Props) {
             </h2>
           </header>
 
-          <DiscoveryGrid citySlug={slug} />
-
-          <div className="pt-2 text-right">
-            <Link
-              href={`/cities/${slug}` as `/${string}`}
-              aria-disabled="true"
-              className="text-sm font-medium text-primary-700 hover:underline dark:text-primary-400"
-            >
-              {t('viewAllCategories')}
-            </Link>
-          </div>
+          <Suspense fallback={<CityPortalGridSkeleton />} key={city.id}>
+            <PortalGridAsync cityId={city.id} citySlug={slug} />
+          </Suspense>
         </section>
 
         <Suspense fallback={<CityPortalSidebarSkeleton />} key={`sidebar-${city.id}`}>
           <CityPortalSidebar city={city} />
         </Suspense>
       </div>
-
-      <Suspense fallback={<CityPortalGridSkeleton />} key={city.id}>
-        <PortalGridAsync cityId={city.id} citySlug={slug} />
-      </Suspense>
     </div>
   )
 }

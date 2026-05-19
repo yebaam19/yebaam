@@ -1,10 +1,14 @@
+import { getTranslations } from 'next-intl/server';
 import {
   PORTAL_SECTIONS,
+  resolveHref,
   type PortalCountKey,
   type PortalSection,
 } from '@/features/cities/data/portal-sections';
+import { getDiscoveryThumbnails } from '@/features/cities/server/discovery.server';
 import type { CityPortalData } from '@/features/cities/server/portal-data.server';
-import { PortalTile } from './PortalTile';
+import { DiscoveryTile } from './DiscoveryTile';
+import { getPortalIcon } from './icons';
 
 interface CityPortalGridProps {
   citySlug: string;
@@ -21,75 +25,42 @@ function resolveCount(
 }
 
 /**
- * The 3-column tile grid from PDF page 4.
+ * Flat picture-card grid over every `PORTAL_SECTIONS` entry for the
+ * "Explora <city>" section. Cloudflare cover image when the section has
+ * one, otherwise a brand-gradient + icon fallback.
  *
- * Desktop layout (>= lg):
- *  - Left column: 7 tall communication tiles in a vertical stack.
- *  - Center column: three wide media tiles on top, then a 2-column inner
- *    grid for the 12 directory + history/places tiles.
- *  - Right column: 5 right-rail tiles in a vertical stack.
- *
- * Mobile (< lg): everything collapses to a single column in the order
- * left → center-top → center → right. The mobile FAB CityMenu provides a
- * quick-jump alternative.
+ * Server component — translations and thumbnails are fetched in parallel;
+ * `getDiscoveryThumbnails()` is `react.cache()`-wrapped so repeated reads
+ * within the same request dedupe to a single DB hit.
  */
-export function CityPortalGrid({ citySlug, portalData }: CityPortalGridProps) {
-  const left = PORTAL_SECTIONS.filter((s) => s.column === 'left');
-  const centerTop = PORTAL_SECTIONS.filter((s) => s.column === 'center-top');
-  const center = PORTAL_SECTIONS.filter((s) => s.column === 'center');
-  const right = PORTAL_SECTIONS.filter((s) => s.column === 'right');
+export async function CityPortalGrid({ citySlug, portalData }: CityPortalGridProps) {
+  const [t, thumbnails] = await Promise.all([
+    getTranslations('cities.portal'),
+    getDiscoveryThumbnails(),
+  ]);
+
+  const comingSoonLabel = t('comingSoonPill');
 
   return (
-    <section className="grid grid-cols-1 gap-3 lg:grid-cols-[180px_minmax(0,1fr)_180px]">
-      {/* LEFT COLUMN */}
-      <div className="flex flex-col gap-3">
-        {left.map((section) => (
-          <PortalTile
+    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      {PORTAL_SECTIONS.map((section) => {
+        const count = resolveCount(section, portalData);
+        const showCount = typeof count === 'number' && count > 0;
+        return (
+          <DiscoveryTile
             key={section.id}
-            section={section}
-            citySlug={citySlug}
-            count={resolveCount(section, portalData)}
+            href={resolveHref(section, citySlug)}
+            label={t(`sections.${section.id}.label`)}
+            coverImageUrl={thumbnails[section.id]}
+            Icon={getPortalIcon(section.icon)}
+            count={count}
+            comingSoonLabel={
+              section.comingSoon && !showCount ? comingSoonLabel : undefined
+            }
+            sectionId={section.id}
           />
-        ))}
-      </div>
-
-      {/* CENTER COLUMN */}
-      <div className="flex flex-col gap-3">
-        {/* Top row — Fotos / Videos / Publicaciones */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {centerTop.map((section) => (
-            <PortalTile
-              key={section.id}
-              section={section}
-              citySlug={citySlug}
-              count={resolveCount(section, portalData)}
-            />
-          ))}
-        </div>
-        {/* Inner directory + content grid */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {center.map((section) => (
-            <PortalTile
-              key={section.id}
-              section={section}
-              citySlug={citySlug}
-              count={resolveCount(section, portalData)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* RIGHT COLUMN */}
-      <div className="flex flex-col gap-3">
-        {right.map((section) => (
-          <PortalTile
-            key={section.id}
-            section={section}
-            citySlug={citySlug}
-            count={resolveCount(section, portalData)}
-          />
-        ))}
-      </div>
+        );
+      })}
     </section>
   );
 }

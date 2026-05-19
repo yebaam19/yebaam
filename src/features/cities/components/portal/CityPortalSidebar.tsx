@@ -10,7 +10,7 @@ interface CityPortalSidebarProps {
 /**
  * Right rail of the city detail page. Stacks the "Conoce <city>" facts card
  * and the "En tendencia" list. Streams in under a Suspense boundary at the
- * page level, so the cover and the discovery grid don't block on its query.
+ * page level, so the cover and the portal grid don't block on its query.
  */
 export async function CityPortalSidebar({ city }: CityPortalSidebarProps) {
   const trending = await getCityTrending(city.id, 3);

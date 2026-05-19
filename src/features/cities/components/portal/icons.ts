@@ -7,8 +7,9 @@
  * sensible default (a chat bubble) rather than crashing.
  *
  * The file is intentionally framework-agnostic — no `'use client'`, no
- * `'server-only'` — so both server components (PortalTile) and the client
- * island CityMenu can import it.
+ * `'server-only'` — so both server components (CityPortalGrid via
+ * DiscoveryTile's icon fallback) and the client island CityMenu can
+ * import it.
  */
 import {
   AcademicCapIcon,
