@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import {
   AcademicCapIcon,
+  BuildingOffice2Icon,
   ChatBubbleLeftIcon,
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
@@ -26,6 +27,7 @@ const NAV_LABEL_TO_KEY: Record<string, string> = {
   'Foros': 'foros',
   'Chat Público': 'chatPublico',
   'Usuarios': 'usuarios',
+  'Ciudades': 'ciudades',
   'Verificaciones': 'verifications',
   'Credenciales Profesionales': 'professionalCredentials',
   'Club de coleccionistas': 'musicClub',
@@ -41,6 +43,7 @@ const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: 
   'shield-check': ShieldCheckIcon,
   'academic-cap': AcademicCapIcon,
   'musical-note': MusicalNoteIcon,
+  'building-office-2': BuildingOffice2Icon,
 }
 
 interface Props {

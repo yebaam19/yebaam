@@ -13,6 +13,7 @@ export interface AdminNavItem {
     | 'shield-check'
     | 'academic-cap'
     | 'musical-note'
+    | 'building-office-2'
   disabled?: boolean
   matchPrefix?: string
 }
@@ -36,6 +37,12 @@ const RAW_ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/usuarios' as Route,
     iconName: 'users',
     matchPrefix: '/admin/usuarios',
+  },
+  {
+    label: 'Ciudades',
+    href: '/admin/ciudades' as Route,
+    iconName: 'building-office-2',
+    matchPrefix: '/admin/ciudades',
   },
   {
     label: 'Verificaciones',
