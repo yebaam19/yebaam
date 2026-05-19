@@ -30,8 +30,8 @@ export default function UserPets({ userId, isOwnProfile }: UserPetsProps) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    (async () => {
+    void (async () => {
+      if (!cancelled) setLoading(true);
       const res = await getPetsForProfileAction(userId);
       if (!cancelled && res.ok) setPets(res.data);
       if (!cancelled) setLoading(false);

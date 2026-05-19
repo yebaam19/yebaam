@@ -70,7 +70,6 @@ export function PetPhotoUploader({ photos, onAdd, onRemove }: PetPhotoUploaderPr
             key={ph.id}
             className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl(ph.cf_image_id, 'public')}
               alt={ph.caption ?? ''}

@@ -72,7 +72,6 @@ export function PetVideoUploader({ videos, onAdd, onRemove }: PetVideoUploaderPr
             key={v.id}
             className="group relative aspect-video overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={streamThumb(v.cf_stream_uid, { width: 480 })}
               alt={v.caption ?? ''}

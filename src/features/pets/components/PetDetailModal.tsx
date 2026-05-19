@@ -35,8 +35,8 @@ export function PetDetailModal({ petId, isOwner, onClose, onEdit, onDeleted }: P
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    (async () => {
+    void (async () => {
+      if (!cancelled) setLoading(true);
       const res = await getPetWithMediaAction(petId);
       if (!cancelled && res.ok) setPet(res.data);
       if (!cancelled) setLoading(false);
@@ -155,7 +155,6 @@ function PetDetailBody({ pet }: { pet: PetWithMedia }) {
   return (
     <div className="p-5">
       {cover && (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={cover}
           alt={pet.name}
@@ -172,7 +171,6 @@ function PetDetailBody({ pet }: { pet: PetWithMedia }) {
           </h3>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {pet.photos.map((ph) => (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={ph.id}
                 src={imageUrl(ph.cf_image_id, 'public')}

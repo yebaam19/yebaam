@@ -42,7 +42,6 @@ export function PetMiniCard({ pet, isOwner, onOpen, onEdit }: PetMiniCardProps) 
         aria-label={pet.name}
       >
         {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={cover} alt="" aria-hidden className="h-full w-full object-cover" />
         ) : (
           <PawIcon className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
