@@ -65,7 +65,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'left',
     icon: 'ChatBubbleBottomCenterTextIcon',
     hrefTemplate: '/cities/:slug/forums',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'forumCount',
   },
   {

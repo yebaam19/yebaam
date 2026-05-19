@@ -49,9 +49,11 @@ function toDto(r: Row): CityComplaint {
 }
 
 /**
- * Public list — hides `rejected` complaints so the page doesn't become a wall
- * of moderated content. New/seen/resolved are visible so the community sees
- * what's been reported and what's been addressed.
+ * Public list — only `seen` and `resolved` complaints. Aligns with the RLS
+ * policy `city_complaints_public_read_acknowledged`: citizens see what the
+ * administration has acknowledged or actioned, never raw new submissions
+ * (those stay in the admin moderation queue + visible to the reporter).
+ * `rejected` is admin-only and never surfaces here.
  */
 export async function fetchVisibleComplaints(
   client: SupabaseClient,
@@ -63,7 +65,7 @@ export async function fetchVisibleComplaints(
     .from('city_complaints')
     .select(SELECT)
     .eq('city_id', cityId)
-    .neq('status', 'rejected')
+    .in('status', ['seen', 'resolved'])
     .order('created_at', { ascending: false })
     .limit(limit)
   if (error) {

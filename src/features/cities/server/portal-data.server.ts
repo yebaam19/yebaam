@@ -49,6 +49,27 @@ async function safeCount(task: () => CountThenable): Promise<number> {
  * count queries the portal-data fetcher used to inline. `head: true` skips
  * row hydration — we only need the count.
  */
+/**
+ * Forums aren't anchored by `city_id` — they hang off `forum_categories`,
+ * which hangs off the city's `forum_spaces` row (owner_type='city',
+ * owner_id=cityId). This helper walks that join.
+ */
+async function countCityForums(
+  client: SupabaseClient,
+  cityId: string,
+): Promise<number> {
+  return safeCount(() =>
+    client
+      .from('forums')
+      .select('id, forum_categories!inner(space_id, forum_spaces!inner(owner_type, owner_id))', {
+        count: 'exact',
+        head: true,
+      })
+      .eq('forum_categories.forum_spaces.owner_type', 'city')
+      .eq('forum_categories.forum_spaces.owner_id', cityId),
+  )
+}
+
 async function countCityRows(
   client: SupabaseClient,
   table: string,
@@ -89,7 +110,7 @@ export async function fetchCityPortalData(
     countCityRows(client, 'communities', cityId),
     countCityRows(client, 'clubs', cityId),
     countCityRows(client, 'blogs', cityId),
-    countCityRows(client, 'forums', cityId),
+    countCityForums(client, cityId),
   ]);
 
   return {

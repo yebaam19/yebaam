@@ -82,9 +82,44 @@ export async function createCity(
   if (error) return { ok: false, error: error.message }
   if (!data) return { ok: false, error: 'insert_returned_no_row' }
 
+  // Auto-provision the city's forum_space + four default categories
+  // (General / Política / Deportes / Sociales — matches the PDF item 8).
+  // Failure here is logged but doesn't roll the city back; admins can
+  // re-create the space manually if needed.
+  const cityId = data.id as string
+  const citySlug = data.slug as string
+  const spaceSlug = `city-${citySlug}`
+  const { data: spaceRow, error: spaceErr } = await client
+    .from('forum_spaces')
+    .insert({
+      owner_type: 'city',
+      owner_id: cityId,
+      slug: spaceSlug,
+      name,
+      description: `Foros públicos de ${name}`,
+      visibility: 'public',
+      enabled: true,
+    })
+    .select('id')
+    .maybeSingle()
+  if (spaceErr) {
+    console.error('[createCity] could not create forum_space:', spaceErr)
+  } else if (spaceRow) {
+    const spaceId = (spaceRow as { id: string }).id
+    const { error: catErr } = await client.from('forum_categories').insert(
+      [
+        { name: 'General', slug: `${spaceSlug}-general`, position: 1 },
+        { name: 'Política', slug: `${spaceSlug}-politica`, position: 2 },
+        { name: 'Deportes', slug: `${spaceSlug}-deportes`, position: 3 },
+        { name: 'Sociales', slug: `${spaceSlug}-sociales`, position: 4 },
+      ].map((c) => ({ ...c, space_id: spaceId })),
+    )
+    if (catErr) console.error('[createCity] could not seed categories:', catErr)
+  }
+
   revalidatePath('/admin/ciudades')
   revalidatePath('/cities')
-  return { ok: true, data: { id: data.id as string, slug: data.slug as string } }
+  return { ok: true, data: { id: cityId, slug: citySlug } }
 }
 
 export interface UpdateCityMetadataInput {
