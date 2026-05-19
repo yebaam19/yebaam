@@ -8,6 +8,7 @@
 
 import CreatePostCard from '@/components/CreatePostCard/CreatePostCard';
 import { DocumentTextIcon, HomeIcon, InformationCircleIcon, PhotoIcon, UsersIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
+import { PawIcon } from '@/components/icons/PawIcon';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { CreatePostModal, EditPostModal, usePostStore } from '@/features/post';
@@ -17,6 +18,7 @@ import {
   ProfileSidebar,
   UserFamilies,
   UserFriends,
+  UserPets,
   UserPhotos,
   UserPosts,
   UserProfileComponent,
@@ -34,6 +36,7 @@ type TabType =
   | 'acerca-de'
   | 'amigos'
   | 'familias'
+  | 'mascotas'
   | 'fotos'
   | 'videos';
 
@@ -42,6 +45,7 @@ const TABS: ReadonlyArray<{ id: TabType; labelKey: string; icon: typeof Document
   { id: 'acerca-de', labelKey: 'acercaDe', icon: InformationCircleIcon },
   { id: 'amigos', labelKey: 'amigos', icon: UsersIcon },
   { id: 'familias', labelKey: 'familias', icon: HomeIcon },
+  { id: 'mascotas', labelKey: 'mascotas', icon: PawIcon as typeof DocumentTextIcon },
   { id: 'fotos', labelKey: 'fotos', icon: PhotoIcon },
   { id: 'videos', labelKey: 'videos', icon: VideoCameraIcon },
 ];
@@ -232,6 +236,14 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
 
               {activeTab === 'familias' && (
                 <UserFamilies userId={user.userId} isOwnProfile={isOwnProfile} />
+              )}
+
+              {activeTab === 'mascotas' && (
+                <Suspense
+                  fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-emerald-600"></div>}
+                >
+                  <UserPets userId={user.userId} isOwnProfile={isOwnProfile} />
+                </Suspense>
               )}
 
               {activeTab === 'fotos' && (

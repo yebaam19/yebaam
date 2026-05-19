@@ -4,6 +4,7 @@
     "acercaDe": "About",
     "amigos": "Friends",
     "familias": "Families",
+    "mascotas": "Pets",
     "fotos": "Photos",
     "videos": "Videos"
   },
@@ -103,6 +104,83 @@
     "memberCount": "{count, plural, =1 {# member} other {# members}}",
     "personCount": "{count, plural, =1 {# person} other {# people}}",
     "stats": "{members} · {persons}"
+  },
+  "pets": {
+    "emptyOwnTitle": "You haven't added any pets yet",
+    "emptyOwnSubtitle": "Add your pet and share photos, videos, and details with your friends.",
+    "emptyOtherTitle": "This user has no visible pets",
+    "emptyOtherSubtitle": "When they share a pet publicly or with you, it will appear here.",
+    "addPet": "Add pet",
+    "addPhotos": "Add photos",
+    "addVideo": "Add video",
+    "removePhoto": "Remove photo",
+    "removeVideo": "Remove video",
+    "newTitle": "New pet",
+    "editTitle": "Edit pet",
+    "detailTitle": "Pet",
+    "dataSheet": "Data sheet",
+    "photosHeading": "Photos ({count})",
+    "videosHeading": "Videos ({count})",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "notFound": "Pet not found.",
+    "confirmDeleteTitle": "Delete pet?",
+    "confirmDeleteBody": "\"{name}\" will be removed along with its photos and videos. This cannot be undone.",
+    "coverEmpty": "No cover yet",
+    "coverUpload": "Upload cover",
+    "coverChange": "Change cover",
+    "coverRemove": "Remove cover",
+    "uploading": "Uploading… {progress}%",
+    "videoTranscoding": "Processing video…",
+    "fields": {
+      "name": "Name",
+      "species": "Species",
+      "breed": "Breed",
+      "sex": "Sex",
+      "dateOfBirth": "Date of birth",
+      "color": "Color",
+      "weightKg": "Weight (kg)",
+      "microchipId": "Microchip",
+      "vetContact": "Vet contact",
+      "allergies": "Allergies",
+      "about": "About",
+      "cover": "Cover",
+      "privacy": "Privacy"
+    },
+    "placeholders": {
+      "species": "Dog, Cat, Rabbit…",
+      "vetContact": "Vet name and phone",
+      "about": "Personality, habits, anecdotes, special care…"
+    },
+    "sex": {
+      "male": "Male",
+      "female": "Female",
+      "unknown": "Unspecified"
+    },
+    "badges": {
+      "vaccinated": "Vaccinated",
+      "sterilized": "Sterilized"
+    },
+    "privacy": {
+      "public": "Public",
+      "friends": "Friends",
+      "private": "Private"
+    },
+    "privacyHints": {
+      "public": "Anyone can see this pet",
+      "friends": "Only your friends can see it",
+      "private": "Only you can see it"
+    },
+    "errors": {
+      "nameRequired": "Name is required.",
+      "speciesRequired": "Species is required.",
+      "uploadFailed": "Upload failed."
+    }
   },
   "sidebar": {
     "details": "Details",

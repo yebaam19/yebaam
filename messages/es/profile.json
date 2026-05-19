@@ -4,6 +4,7 @@
     "acercaDe": "Acerca de",
     "amigos": "Amigos",
     "familias": "Familias",
+    "mascotas": "Mascotas",
     "fotos": "Fotos",
     "videos": "Videos"
   },
@@ -103,6 +104,83 @@
     "memberCount": "{count, plural, =1 {# miembro} other {# miembros}}",
     "personCount": "{count, plural, =1 {# persona} other {# personas}}",
     "stats": "{members} · {persons}"
+  },
+  "pets": {
+    "emptyOwnTitle": "Aún no has agregado mascotas",
+    "emptyOwnSubtitle": "Agrega a tu mascota y comparte sus fotos, videos y datos con tus amigos.",
+    "emptyOtherTitle": "Este usuario no tiene mascotas visibles",
+    "emptyOtherSubtitle": "Cuando comparta una mascota públicamente o contigo, aparecerá aquí.",
+    "addPet": "Agregar mascota",
+    "addPhotos": "Agregar fotos",
+    "addVideo": "Agregar video",
+    "removePhoto": "Quitar foto",
+    "removeVideo": "Quitar video",
+    "newTitle": "Nueva mascota",
+    "editTitle": "Editar mascota",
+    "detailTitle": "Mascota",
+    "dataSheet": "Ficha técnica",
+    "photosHeading": "Fotos ({count})",
+    "videosHeading": "Videos ({count})",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando…",
+    "notFound": "Mascota no encontrada.",
+    "confirmDeleteTitle": "¿Eliminar mascota?",
+    "confirmDeleteBody": "Se eliminará \"{name}\" junto con sus fotos y videos. Esta acción no se puede deshacer.",
+    "coverEmpty": "Sin portada",
+    "coverUpload": "Subir portada",
+    "coverChange": "Cambiar portada",
+    "coverRemove": "Quitar portada",
+    "uploading": "Subiendo… {progress}%",
+    "videoTranscoding": "Procesando video…",
+    "fields": {
+      "name": "Nombre",
+      "species": "Especie",
+      "breed": "Raza",
+      "sex": "Sexo",
+      "dateOfBirth": "Fecha de nacimiento",
+      "color": "Color",
+      "weightKg": "Peso (kg)",
+      "microchipId": "Microchip",
+      "vetContact": "Contacto del veterinario",
+      "allergies": "Alergias",
+      "about": "Sobre la mascota",
+      "cover": "Portada",
+      "privacy": "Privacidad"
+    },
+    "placeholders": {
+      "species": "Perro, Gato, Conejo…",
+      "vetContact": "Nombre y teléfono del veterinario",
+      "about": "Carácter, hábitos, anécdotas, cuidados especiales…"
+    },
+    "sex": {
+      "male": "Macho",
+      "female": "Hembra",
+      "unknown": "Sin especificar"
+    },
+    "badges": {
+      "vaccinated": "Vacunado",
+      "sterilized": "Esterilizado"
+    },
+    "privacy": {
+      "public": "Público",
+      "friends": "Amigos",
+      "private": "Privado"
+    },
+    "privacyHints": {
+      "public": "Todos pueden ver esta mascota",
+      "friends": "Solo tus amigos pueden verla",
+      "private": "Solo tú puedes verla"
+    },
+    "errors": {
+      "nameRequired": "El nombre es obligatorio.",
+      "speciesRequired": "La especie es obligatoria.",
+      "uploadFailed": "No se pudo subir el archivo."
+    }
   },
   "sidebar": {
     "details": "Detalles",
