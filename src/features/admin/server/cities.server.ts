@@ -579,6 +579,345 @@ export const listCityContactMessagesForAdmin = cache(async function listCityCont
   return { items, total: count ?? 0, page, pageSize }
 })
 
+// ---------- Per-city places (admin view, unfiltered by status) ----------
+
+export interface AdminPlaceRow {
+  id: string
+  name: string
+  description: string | null
+  cfImageId: string | null
+  imageUrl?: string
+  category: string | null
+  latitude: number | null
+  longitude: number | null
+  address: string | null
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: string
+}
+
+export const listCityPlacesForAdmin = cache(async function listCityPlacesForAdmin(
+  cityId: string,
+  params: { status?: 'pending' | 'approved' | 'rejected'; page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminPlaceRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 50))
+  let q = client
+    .from('city_places')
+    .select(
+      'id, name, description, cf_image_id, category, latitude, longitude, address, status, created_at',
+      { count: 'exact' },
+    )
+    .eq('city_id', cityId)
+    .order('created_at', { ascending: false })
+  if (params.status) q = q.eq('status', params.status)
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await q.range(from, to)
+  if (error) {
+    console.error('[listCityPlacesForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = {
+    id: string
+    name: string
+    description: string | null
+    cf_image_id: string | null
+    category: string | null
+    latitude: number | null
+    longitude: number | null
+    address: string | null
+    status: 'pending' | 'approved' | 'rejected'
+    created_at: string
+  }
+  const items = ((data ?? []) as Row[]).map((r) => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    cfImageId: r.cf_image_id,
+    imageUrl: cfImageUrl(r.cf_image_id),
+    category: r.category,
+    latitude: r.latitude,
+    longitude: r.longitude,
+    address: r.address,
+    status: r.status,
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
+// ---------- City media (photos / videos / publications) ----------
+
+export interface AdminPhotoRow {
+  id: string
+  cfImageId: string
+  imageUrl?: string
+  caption: string | null
+  createdAt: string
+}
+
+export interface AdminVideoRow {
+  id: string
+  cfVideoUid: string
+  cfThumbnailId: string | null
+  thumbnailUrl?: string
+  caption: string | null
+  createdAt: string
+}
+
+export interface AdminPublicationRow {
+  id: string
+  body: string
+  cfMedia: unknown
+  isPinned: boolean
+  createdAt: string
+}
+
+const CF_STREAM_CUSTOMER = process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_CUSTOMER_CODE ?? ''
+
+export function cfStreamThumbUrl(uid: string): string | undefined {
+  if (!uid || !CF_STREAM_CUSTOMER) return undefined
+  return `https://customer-${CF_STREAM_CUSTOMER}.cloudflarestream.com/${uid}/thumbnails/thumbnail.jpg`
+}
+
+export function cfStreamEmbedUrl(uid: string): string | undefined {
+  if (!uid || !CF_STREAM_CUSTOMER) return undefined
+  return `https://customer-${CF_STREAM_CUSTOMER}.cloudflarestream.com/${uid}/iframe`
+}
+
+export const listCityPhotosForAdmin = cache(async function listCityPhotosForAdmin(
+  cityId: string,
+  params: { page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminPhotoRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(60, Math.max(1, params.pageSize ?? 24))
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await client
+    .from('city_photos')
+    .select('id, cf_image_id, caption, created_at', { count: 'exact' })
+    .eq('city_id', cityId)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+  if (error) {
+    console.error('[listCityPhotosForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = { id: string; cf_image_id: string; caption: string | null; created_at: string }
+  const items = ((data ?? []) as Row[]).map((r) => ({
+    id: r.id,
+    cfImageId: r.cf_image_id,
+    imageUrl: cfImageUrl(r.cf_image_id),
+    caption: r.caption,
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
+export const listCityVideosForAdmin = cache(async function listCityVideosForAdmin(
+  cityId: string,
+  params: { page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminVideoRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20))
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await client
+    .from('city_videos')
+    .select('id, cf_video_uid, cf_thumbnail_id, caption, created_at', { count: 'exact' })
+    .eq('city_id', cityId)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+  if (error) {
+    console.error('[listCityVideosForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = {
+    id: string
+    cf_video_uid: string
+    cf_thumbnail_id: string | null
+    caption: string | null
+    created_at: string
+  }
+  const items = ((data ?? []) as Row[]).map((r) => ({
+    id: r.id,
+    cfVideoUid: r.cf_video_uid,
+    cfThumbnailId: r.cf_thumbnail_id,
+    thumbnailUrl: r.cf_thumbnail_id
+      ? cfImageUrl(r.cf_thumbnail_id)
+      : cfStreamThumbUrl(r.cf_video_uid),
+    caption: r.caption,
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
+export const listCityPublicationsForAdmin = cache(async function listCityPublicationsForAdmin(
+  cityId: string,
+  params: { page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminPublicationRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20))
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await client
+    .from('city_publications')
+    .select('id, body, cf_media, is_pinned, created_at', { count: 'exact' })
+    .eq('city_id', cityId)
+    .order('is_pinned', { ascending: false })
+    .order('created_at', { ascending: false })
+    .range(from, to)
+  if (error) {
+    console.error('[listCityPublicationsForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = {
+    id: string
+    body: string
+    cf_media: unknown
+    is_pinned: boolean
+    created_at: string
+  }
+  const items = ((data ?? []) as Row[]).map((r) => ({
+    id: r.id,
+    body: r.body,
+    cfMedia: r.cf_media,
+    isPinned: r.is_pinned,
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
+// ---------- City promotions (admin moderation list) ----------
+
+export interface AdminPromotionRow {
+  id: string
+  title: string
+  body: string | null
+  coverImageUrl?: string
+  duration: '1d' | '2d' | '3d' | '1w' | '2w' | '1m'
+  startsAt: string
+  expiresAt: string
+  status: 'active' | 'expired' | 'removed'
+  createdAt: string
+}
+
+export const listCityPromotionsForAdmin = cache(async function listCityPromotionsForAdmin(
+  cityId: string,
+  params: { status?: 'active' | 'expired' | 'removed'; page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminPromotionRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20))
+  let q = client
+    .from('city_promotions')
+    .select(
+      'id, title, body, cover_cf_image_id, duration, starts_at, expires_at, status, created_at',
+      { count: 'exact' },
+    )
+    .eq('city_id', cityId)
+    .order('created_at', { ascending: false })
+  if (params.status) q = q.eq('status', params.status)
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await q.range(from, to)
+  if (error) {
+    console.error('[listCityPromotionsForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = {
+    id: string
+    title: string
+    body: string | null
+    cover_cf_image_id: string | null
+    duration: AdminPromotionRow['duration']
+    starts_at: string
+    expires_at: string
+    status: AdminPromotionRow['status']
+    created_at: string
+  }
+  const items = ((data ?? []) as Row[]).map((r) => ({
+    id: r.id,
+    title: r.title,
+    body: r.body,
+    coverImageUrl: cfImageUrl(r.cover_cf_image_id),
+    duration: r.duration,
+    startsAt: r.starts_at,
+    expiresAt: r.expires_at,
+    status: r.status,
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
+// ---------- City complaints (admin moderation) ----------
+
+export interface AdminComplaintRow {
+  id: string
+  title: string
+  description: string | null
+  category: string | null
+  imageUrls: string[]
+  status: 'new' | 'seen' | 'resolved' | 'rejected'
+  reporterId: string | null
+  reporterName: string | null
+  createdAt: string
+}
+
+export const listCityComplaintsForAdmin = cache(async function listCityComplaintsForAdmin(
+  cityId: string,
+  params: { status?: 'new' | 'seen' | 'resolved' | 'rejected'; page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminComplaintRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20))
+  let q = client
+    .from('city_complaints')
+    .select(
+      'id, title, description, category, cf_image_ids, status, reporter_id, created_at',
+      { count: 'exact' },
+    )
+    .eq('city_id', cityId)
+    .order('created_at', { ascending: false })
+  if (params.status) q = q.eq('status', params.status)
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await q.range(from, to)
+  if (error) {
+    console.error('[listCityComplaintsForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = {
+    id: string
+    title: string
+    description: string | null
+    category: string | null
+    cf_image_ids: string[]
+    status: AdminComplaintRow['status']
+    reporter_id: string | null
+    created_at: string
+  }
+  const rows = (data ?? []) as Row[]
+  const profiles = await fetchProfilesByIds(rows.map((r) => r.reporter_id))
+  const items = rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    category: r.category,
+    imageUrls: (r.cf_image_ids ?? [])
+      .map((id) => cfImageUrl(id))
+      .filter((url): url is string => Boolean(url)),
+    status: r.status,
+    reporterId: r.reporter_id,
+    reporterName: profileToDisplay(r.reporter_id ? profiles.get(r.reporter_id) : null),
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
 // ---------- States by country (for create form) ----------
 
 export interface StateOption {

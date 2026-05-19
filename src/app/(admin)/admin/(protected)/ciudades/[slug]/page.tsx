@@ -11,16 +11,31 @@ import { CityEditView } from '@/features/admin/components/cities/CityEditView'
 
 export const metadata = { title: 'Admin · Editar ciudad' }
 
-type TabId = 'metadata' | 'images' | 'admins' | 'features' | 'news' | 'classifieds' | 'contact'
+type TabId =
+  | 'metadata'
+  | 'images'
+  | 'admins'
+  | 'features'
+  | 'places'
+  | 'media'
+  | 'promotions'
+  | 'news'
+  | 'classifieds'
+  | 'contact'
+  | 'complaints'
 
 const TABS = new Set<TabId>([
   'metadata',
   'images',
   'admins',
   'features',
+  'places',
+  'media',
+  'promotions',
   'news',
   'classifieds',
   'contact',
+  'complaints',
 ])
 
 interface PageProps {

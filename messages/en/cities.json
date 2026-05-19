@@ -95,6 +95,58 @@
       "you": "You"
     }
   },
+  "photos": {
+    "title": "Photos",
+    "subtitle": "Photos of {city}.",
+    "empty": "No photos yet."
+  },
+  "videos": {
+    "title": "Videos",
+    "subtitle": "Videos about {city}.",
+    "empty": "No videos yet."
+  },
+  "publications": {
+    "title": "Publications",
+    "subtitle": "Announcements from the {city} portal.",
+    "empty": "No publications yet.",
+    "pinned": "Pinned"
+  },
+  "complaints": {
+    "title": "Citizen Complaints",
+    "subtitle": "Report issues in {city} so the administration can address them.",
+    "empty": "No public complaints yet.",
+    "signInToReport": "Sign in to file a complaint.",
+    "submitHeading": "File a complaint",
+    "titlePlaceholder": "Short summary (e.g., 'pothole on Calle 5')",
+    "categoryPlaceholder": "Category (street, lighting, waste…)",
+    "descriptionPlaceholder": "What's happening? Where exactly?",
+    "addPhotos": "Add photos",
+    "photosHint": "Up to {max} images",
+    "removeImage": "Remove image",
+    "submit": "Submit complaint",
+    "submitting": "Submitting…",
+    "submitError": "Could not submit. Please try again.",
+    "submitSuccess": "Thanks — your complaint was submitted.",
+    "signInRequired": "Please sign in first.",
+    "uploadError": "Upload failed.",
+    "status_new": "New",
+    "status_seen": "Seen",
+    "status_resolved": "Resolved",
+    "status_rejected": "Rejected"
+  },
+  "promotions": {
+    "title": "Promotions",
+    "subtitle": "Active offers from local businesses in {city}.",
+    "empty": "No active promotions right now.",
+    "expiresOn": "Expires {date}"
+  },
+  "places": {
+    "title": "Places of Interest",
+    "subtitle": "Iconic and touristic spots in {city}.",
+    "empty": "No places of interest yet.",
+    "backToList": "Back to places",
+    "openInMap": "Open in map"
+  },
   "portal": {
     "follow": "Follow",
     "following": "Following",

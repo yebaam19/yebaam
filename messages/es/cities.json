@@ -95,6 +95,58 @@
       "you": "Tú"
     }
   },
+  "photos": {
+    "title": "Fotos",
+    "subtitle": "Fotos de {city}.",
+    "empty": "Sin fotos todavía."
+  },
+  "videos": {
+    "title": "Videos",
+    "subtitle": "Videos sobre {city}.",
+    "empty": "Sin videos todavía."
+  },
+  "publications": {
+    "title": "Publicaciones",
+    "subtitle": "Anuncios desde el portal de {city}.",
+    "empty": "Sin publicaciones todavía.",
+    "pinned": "Fijada"
+  },
+  "complaints": {
+    "title": "Portal de Denuncias",
+    "subtitle": "Reporta problemas de {city} para que la administración pueda atenderlos.",
+    "empty": "Sin denuncias públicas todavía.",
+    "signInToReport": "Inicia sesión para enviar una denuncia.",
+    "submitHeading": "Enviar una denuncia",
+    "titlePlaceholder": "Resumen breve (ej. 'hueco en la calle 5')",
+    "categoryPlaceholder": "Categoría (calle, alumbrado, basura…)",
+    "descriptionPlaceholder": "¿Qué está pasando? ¿Dónde exactamente?",
+    "addPhotos": "Agregar fotos",
+    "photosHint": "Hasta {max} imágenes",
+    "removeImage": "Eliminar imagen",
+    "submit": "Enviar denuncia",
+    "submitting": "Enviando…",
+    "submitError": "No se pudo enviar. Intenta otra vez.",
+    "submitSuccess": "Gracias — tu denuncia fue enviada.",
+    "signInRequired": "Inicia sesión primero.",
+    "uploadError": "La subida falló.",
+    "status_new": "Nueva",
+    "status_seen": "Vista",
+    "status_resolved": "Resuelta",
+    "status_rejected": "Rechazada"
+  },
+  "promotions": {
+    "title": "Promociones",
+    "subtitle": "Ofertas activas de negocios locales en {city}.",
+    "empty": "Sin promociones activas en este momento.",
+    "expiresOn": "Expira {date}"
+  },
+  "places": {
+    "title": "Sitios de Interés",
+    "subtitle": "Sitios icónicos y turísticos de {city}.",
+    "empty": "Sin sitios de interés todavía.",
+    "backToList": "Volver a sitios",
+    "openInMap": "Abrir en mapa"
+  },
   "portal": {
     "follow": "Seguir",
     "following": "Siguiendo",

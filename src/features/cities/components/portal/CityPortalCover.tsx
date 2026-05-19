@@ -67,6 +67,14 @@ export async function CityPortalCover({ city, isFollowing }: CityPortalCoverProp
         <h1 className="text-3xl font-extrabold leading-[1.05] tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] sm:text-4xl lg:text-5xl">
           {city.name}
         </h1>
+        {/* PDF item 2 — display order is City / Department / Country. The city
+            is the H1 above; here we render department + country as a single
+            subtitle line. */}
+        <p className="mt-1 text-sm font-medium text-white/90 drop-shadow-sm sm:text-base">
+          {[city.state?.name ?? city.facts.department, city.country.name]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
         {city.description && (
           <p className="mt-2 max-w-xl text-sm leading-snug text-white/85 drop-shadow-sm sm:text-base">
             {city.description}

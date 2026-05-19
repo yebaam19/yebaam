@@ -12,15 +12,23 @@ import { CityFeatureLinks } from './editor/CityFeatureLinks'
 import { CityNewsModerationTab } from './editor/CityNewsModerationTab'
 import { CityClassifiedsModerationTab } from './editor/CityClassifiedsModerationTab'
 import { CityContactInboxTab } from './editor/CityContactInboxTab'
+import { CityPlacesTab } from './editor/CityPlacesTab'
+import { CityMultimediaTab } from './editor/CityMultimediaTab'
+import { CityPromotionsTab } from './editor/CityPromotionsTab'
+import { CityComplaintsTab } from './editor/CityComplaintsTab'
 
 type TabId =
   | 'metadata'
   | 'images'
   | 'admins'
   | 'features'
+  | 'places'
+  | 'media'
+  | 'promotions'
   | 'news'
   | 'classifieds'
   | 'contact'
+  | 'complaints'
 
 interface Props {
   city: AdminCityDetail
@@ -35,9 +43,13 @@ const TAB_KEYS: { id: TabId; labelKey: string }[] = [
   { id: 'images', labelKey: 'tabImages' },
   { id: 'admins', labelKey: 'tabAdmins' },
   { id: 'features', labelKey: 'tabFeatures' },
+  { id: 'places', labelKey: 'tabPlaces' },
+  { id: 'media', labelKey: 'tabMedia' },
+  { id: 'promotions', labelKey: 'tabPromotions' },
   { id: 'news', labelKey: 'tabNews' },
   { id: 'classifieds', labelKey: 'tabClassifieds' },
   { id: 'contact', labelKey: 'tabContact' },
+  { id: 'complaints', labelKey: 'tabComplaints' },
 ]
 
 export async function CityEditView({ city, admins, activeTab, statusFilter, page }: Props) {
@@ -72,6 +84,13 @@ export async function CityEditView({ city, admins, activeTab, statusFilter, page
       {activeTab === 'images' && <CityImagesTab city={city} />}
       {activeTab === 'admins' && <CityAdminsList city={city} admins={admins} />}
       {activeTab === 'features' && <CityFeatureLinks city={city} />}
+      {activeTab === 'places' && (
+        <CityPlacesTab city={city} statusFilter={statusFilter} page={page} />
+      )}
+      {activeTab === 'media' && <CityMultimediaTab city={city} />}
+      {activeTab === 'promotions' && (
+        <CityPromotionsTab city={city} statusFilter={statusFilter} page={page} />
+      )}
       {activeTab === 'news' && (
         <CityNewsModerationTab city={city} statusFilter={statusFilter} page={page} />
       )}
@@ -80,6 +99,9 @@ export async function CityEditView({ city, admins, activeTab, statusFilter, page
       )}
       {activeTab === 'contact' && (
         <CityContactInboxTab city={city} statusFilter={statusFilter} page={page} />
+      )}
+      {activeTab === 'complaints' && (
+        <CityComplaintsTab city={city} statusFilter={statusFilter} page={page} />
       )}
     </div>
   )

@@ -73,7 +73,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'left',
     icon: 'TagIcon',
     hrefTemplate: '/cities/:slug/promotions',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'promotionCount',
   },
   {
@@ -81,7 +81,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'left',
     icon: 'NewspaperIcon',
     hrefTemplate: '/cities/:slug/news',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'newsCount',
   },
   {
@@ -114,21 +114,21 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'center-top',
     icon: 'PhotoIcon',
     hrefTemplate: '/cities/:slug/photos',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'videos',
     column: 'center-top',
     icon: 'VideoCameraIcon',
     hrefTemplate: '/cities/:slug/videos',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'publications',
     column: 'center-top',
     icon: 'DocumentTextIcon',
     hrefTemplate: '/cities/:slug/publications',
-    comingSoon: true,
+    comingSoon: false,
   },
 
   // ---------- CENTER GRID ----------
@@ -137,14 +137,14 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'center',
     icon: 'BuildingLibraryIcon',
     hrefTemplate: '/cities/:slug/history',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'places',
     column: 'center',
     icon: 'MapPinIcon',
     hrefTemplate: '/cities/:slug/places',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'placeCount',
   },
   {
@@ -224,7 +224,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'right',
     icon: 'UserGroupIcon',
     hrefTemplate: '/cities/:slug/clubs',
-    comingSoon: true,
+    comingSoon: false,
     countKey: 'communityCount',
   },
   {
@@ -247,7 +247,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'right',
     icon: 'ExclamationTriangleIcon',
     hrefTemplate: '/cities/:slug/complaints',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'rural',
