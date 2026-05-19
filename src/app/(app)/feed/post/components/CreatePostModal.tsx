@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
@@ -18,13 +19,14 @@ export default function CreatePostModal() {
   const t = useTranslations('feed')
   const { user } = useAuth()
 
-  const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId } = usePostStore()
+  const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId, pendingPostContent, setPendingPostContent } = usePostStore()
 
   const {
     register,
     handleSubmit,
     errors,
     reset: resetForm,
+    setValue,
     selectedFiles,
     previewUrls,
     fileInputRef,
@@ -48,6 +50,15 @@ export default function CreatePostModal() {
     uploadFiles,
     hasContent,
   } = useCreatePostForm()
+
+  // Seed the textarea when the modal opens with pending content (e.g. share-pet flow).
+  // We consume the pending content immediately so it can't repopulate on re-renders.
+  useEffect(() => {
+    if (isCreateModalOpen && pendingPostContent) {
+      setValue('content', pendingPostContent)
+      setPendingPostContent(undefined)
+    }
+  }, [isCreateModalOpen, pendingPostContent, setValue, setPendingPostContent])
 
   const handleClose = () => {
     if (isCreating || isUploading) return

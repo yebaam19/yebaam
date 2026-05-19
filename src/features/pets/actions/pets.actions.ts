@@ -251,3 +251,57 @@ export async function getPetWithMediaAction(petId: string): Promise<ActionResult
   const data = await getPetWithMedia(petId);
   return { ok: true, data };
 }
+
+export interface PetLinkPreview {
+  href: string;
+  ownerUsername: string;
+  petName: string;
+  species: string;
+  breed: string | null;
+  coverCfImageId: string | null;
+}
+
+// Lightweight preview lookup for posts that embed a pet link.
+// Returns null when the viewer cannot see the pet (RLS) — caller falls back
+// to a plain styled link, matching the article-preview pattern.
+export async function getPetPreviewByUsernameAndSlug(
+  username: string,
+  slug: string,
+): Promise<PetLinkPreview | null> {
+  const cleanUsername = username.toLowerCase();
+  const cleanSlug = slug.toLowerCase();
+  const client = await getServerClient();
+
+  const { data: profile } = await client
+    .from('profiles')
+    .select('id, username')
+    .eq('username', cleanUsername)
+    .maybeSingle();
+  const ownerId = (profile as { id: string; username: string } | null)?.id;
+  if (!ownerId) return null;
+
+  const { data: pet } = await client
+    .from('pets')
+    .select('name, species, breed, cover_cf_image_id, slug')
+    .eq('owner_id', ownerId)
+    .eq('slug', cleanSlug)
+    .maybeSingle();
+  if (!pet) return null;
+
+  const row = pet as {
+    name: string;
+    species: string;
+    breed: string | null;
+    cover_cf_image_id: string | null;
+    slug: string;
+  };
+
+  return {
+    href: `/${cleanUsername}?tab=mascotas&pet=${row.slug}`,
+    ownerUsername: cleanUsername,
+    petName: row.name,
+    species: row.species,
+    breed: row.breed,
+    coverCfImageId: row.cover_cf_image_id,
+  };
+}

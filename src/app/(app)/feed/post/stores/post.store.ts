@@ -38,7 +38,12 @@ interface PostState {
   // Context for creating posts in blogs/pages
   contextBlogId?: string;
   contextPageId?: string;
-  
+
+  // Pending content used to seed CreatePostModal (e.g. when sharing a pet to feed).
+  // Consumed and cleared by the modal on open.
+  pendingPostContent?: string;
+
+
   // Acciones - API calls
   fetchTimeline: (filters?: GetPostsFilters) => Promise<void>;
   fetchUserPosts: (userId: string, filters?: GetPostsFilters) => Promise<void>;
@@ -68,6 +73,7 @@ interface PostState {
   closeCreateModal: () => void;
   openEditModal: (post: Post) => void;
   closeEditModal: () => void;
+  setPendingPostContent: (content: string | undefined) => void;
   
   // Utilidades
   clearError: () => void;
@@ -89,6 +95,7 @@ export const usePostStore = create<PostState>((set, get) => ({
   postToEdit: null,
   contextBlogId: undefined,
   contextPageId: undefined,
+  pendingPostContent: undefined,
 
   // ============================================
   // Acciones - API calls
@@ -469,7 +476,12 @@ export const usePostStore = create<PostState>((set, get) => ({
       error: null,
       contextBlogId: undefined,
       contextPageId: undefined,
+      pendingPostContent: undefined,
     });
+  },
+
+  setPendingPostContent: (content: string | undefined) => {
+    set({ pendingPostContent: content });
   },
 
   openEditModal: (post: Post) => {
@@ -565,6 +577,7 @@ export const usePostStore = create<PostState>((set, get) => ({
       isCreating: false,
       isEditModalOpen: false,
       postToEdit: null,
+      pendingPostContent: undefined,
     });
 
   },

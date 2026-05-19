@@ -1,14 +1,16 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { GlobeAltIcon, LockClosedIcon, PencilIcon, UsersIcon } from '@/components/icons/heroicons-shim';
+import { GlobeAltIcon, LockClosedIcon, PencilIcon, ShareIcon, UsersIcon } from '@/components/icons/heroicons-shim';
 import { PawIcon } from '@/components/icons/PawIcon';
 import { imageUrl } from '@/lib/media/urls';
 import type { PetPrivacy, PetRow } from '@/features/pets/types/pet.types';
+import { sharePetToFeed } from './share';
 
 interface PetMiniCardProps {
   pet: PetRow;
   isOwner: boolean;
+  ownerUsername: string;
   onOpen: () => void;
   onEdit: () => void;
 }
@@ -30,7 +32,8 @@ function PrivacyBadge({ privacy }: { privacy: PetPrivacy }) {
   );
 }
 
-export function PetMiniCard({ pet, isOwner, onOpen, onEdit }: PetMiniCardProps) {
+export function PetMiniCard({ pet, isOwner, ownerUsername, onOpen, onEdit }: PetMiniCardProps) {
+  const t = useTranslations('profile.pets');
   const cover = pet.cover_cf_image_id ? imageUrl(pet.cover_cf_image_id, 'public') : null;
 
   return (
@@ -38,7 +41,7 @@ export function PetMiniCard({ pet, isOwner, onOpen, onEdit }: PetMiniCardProps) 
       <button
         type="button"
         onClick={onOpen}
-        className="flex h-28 w-28 flex-shrink-0 items-center justify-center bg-emerald-50 hover:cursor-pointer dark:bg-emerald-900/20"
+        className="flex h-28 w-28 shrink-0 items-center justify-center bg-emerald-50 hover:cursor-pointer dark:bg-emerald-900/20"
         aria-label={pet.name}
       >
         {cover ? (
@@ -67,14 +70,25 @@ export function PetMiniCard({ pet, isOwner, onOpen, onEdit }: PetMiniCardProps) 
         )}
       </div>
       {isOwner && (
-        <button
-          type="button"
-          onClick={onEdit}
-          className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-zinc-600 shadow opacity-0 transition group-hover:opacity-100 hover:cursor-pointer hover:text-emerald-700 focus:opacity-100 dark:bg-zinc-800/90 dark:text-zinc-300"
-          aria-label="Editar"
-        >
-          <PencilIcon className="h-3.5 w-3.5" />
-        </button>
+        <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
+          <button
+            type="button"
+            onClick={() => sharePetToFeed(pet, ownerUsername, t('shareDefault', { name: pet.name }))}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-zinc-600 shadow hover:cursor-pointer hover:text-emerald-700 dark:bg-zinc-800/90 dark:text-zinc-300"
+            aria-label={t('shareTooltip')}
+            title={t('shareTooltip')}
+          >
+            <ShareIcon className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-zinc-600 shadow hover:cursor-pointer hover:text-emerald-700 dark:bg-zinc-800/90 dark:text-zinc-300"
+            aria-label={t('edit')}
+          >
+            <PencilIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
     </article>
   );

@@ -242,7 +242,7 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                 <Suspense
                   fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-emerald-600"></div>}
                 >
-                  <UserPets userId={user.userId} isOwnProfile={isOwnProfile} />
+                  <UserPets userId={user.userId} ownerUsername={user.username} isOwnProfile={isOwnProfile} />
                 </Suspense>
               )}
 

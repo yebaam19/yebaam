@@ -8,6 +8,7 @@ import {
   PostArticleLinkPreview,
   parseFirstArticleLink,
 } from '../PostArticleLinkPreview'
+import { PostPetLinkPreview, parseFirstPetLink } from '../PostPetLinkPreview'
 
 interface Props {
   post: Post
@@ -91,10 +92,11 @@ const LIGHT_BG_COLORS = new Set(['#ffffff', '#FFFFFF', '#f1c40f', '#32CD32'])
 
 function PostBody({ post }: { post: Post }) {
   const articleLink = parseFirstArticleLink(post.content)
-  // When the only thing in the post is an article URL, hide the raw text so
-  // the preview card stands on its own.
-  const visibleContent = articleLink
-    ? post.content?.replace(articleLink.matchedUrl, '').trim() ?? ''
+  // Article preview takes precedence; pet preview is checked only if no article match.
+  const petLink = articleLink ? null : parseFirstPetLink(post.content)
+  const matchedUrl = articleLink?.matchedUrl ?? petLink?.matchedUrl ?? null
+  const visibleContent = matchedUrl
+    ? post.content?.replace(matchedUrl, '').trim() ?? ''
     : post.content ?? ''
   const hasVisibleText = visibleContent.length > 0
 
@@ -141,6 +143,9 @@ function PostBody({ post }: { post: Post }) {
           communitySlug={articleLink.communitySlug}
           articleSlug={articleLink.articleSlug}
         />
+      )}
+      {petLink && (
+        <PostPetLinkPreview username={petLink.username} slug={petLink.slug} />
       )}
     </>
   )

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import {
   ArrowPathIcon,
   PencilIcon,
+  ShareIcon,
   TrashIcon,
   XMarkIcon,
 } from '@/components/icons/heroicons-shim';
@@ -17,16 +18,18 @@ import {
 } from '@/features/pets/actions/pets.actions';
 import type { PetRow, PetWithMedia } from '@/features/pets/types/pet.types';
 import { PetDetailSheet } from './PetDetailSheet';
+import { sharePetToFeed } from './share';
 
 interface PetDetailModalProps {
   petId: string;
   isOwner: boolean;
+  ownerUsername: string;
   onClose: () => void;
   onEdit: (pet: PetRow) => void;
   onDeleted: () => void;
 }
 
-export function PetDetailModal({ petId, isOwner, onClose, onEdit, onDeleted }: PetDetailModalProps) {
+export function PetDetailModal({ petId, isOwner, ownerUsername, onClose, onEdit, onDeleted }: PetDetailModalProps) {
   const t = useTranslations('profile.pets');
   const [pet, setPet] = useState<PetWithMedia | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,6 +76,15 @@ export function PetDetailModal({ petId, isOwner, onClose, onEdit, onDeleted }: P
           <div className="flex items-center gap-1">
             {isOwner && pet && (
               <>
+                <button
+                  type="button"
+                  onClick={() => sharePetToFeed(pet, ownerUsername, t('shareDefault', { name: pet.name }))}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-100 hover:cursor-pointer dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  aria-label={t('shareTooltip')}
+                  title={t('shareTooltip')}
+                >
+                  <ShareIcon className="h-4 w-4" />
+                </button>
                 <button
                   type="button"
                   onClick={() => onEdit(pet)}

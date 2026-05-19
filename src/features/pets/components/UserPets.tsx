@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ArrowPathIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import { PawIcon } from '@/components/icons/PawIcon';
@@ -12,16 +13,29 @@ import { PetEditorModal } from './editor/PetEditorModal';
 
 interface UserPetsProps {
   userId: string;
+  ownerUsername: string;
   isOwnProfile: boolean;
 }
 
-export default function UserPets({ userId, isOwnProfile }: UserPetsProps) {
+export default function UserPets({ userId, ownerUsername, isOwnProfile }: UserPetsProps) {
   const t = useTranslations('profile.pets');
+  const searchParams = useSearchParams();
   const [pets, setPets] = useState<PetRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
   const [editingPet, setEditingPet] = useState<PetRow | null>(null);
   const [creating, setCreating] = useState(false);
+
+  // Auto-open the detail modal when navigated to with `?pet=<slug>` (shared link).
+  useEffect(() => {
+    const slug = searchParams?.get('pet');
+    if (!slug || pets.length === 0) return;
+    const match = pets.find((p) => p.slug === slug);
+    if (match && match.id !== selectedPetId) {
+      setSelectedPetId(match.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, pets]);
 
   const refresh = useCallback(async () => {
     const res = await getPetsForProfileAction(userId);
@@ -114,6 +128,7 @@ export default function UserPets({ userId, isOwnProfile }: UserPetsProps) {
             key={p.id}
             pet={p}
             isOwner={isOwnProfile}
+            ownerUsername={ownerUsername}
             onOpen={() => setSelectedPetId(p.id)}
             onEdit={() => setEditingPet(p)}
           />
@@ -124,6 +139,7 @@ export default function UserPets({ userId, isOwnProfile }: UserPetsProps) {
         <PetDetailModal
           petId={selectedPetId}
           isOwner={isOwnProfile}
+          ownerUsername={ownerUsername}
           onClose={() => setSelectedPetId(null)}
           onEdit={(pet) => {
             setSelectedPetId(null);

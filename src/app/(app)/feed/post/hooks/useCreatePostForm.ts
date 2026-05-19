@@ -18,6 +18,7 @@ export const useCreatePostForm = () => {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm<CreatePostInput>({
     resolver: zodResolver(createPostSchema),
     defaultValues: {
@@ -153,6 +154,7 @@ export const useCreatePostForm = () => {
     handleSubmit,
     errors,
     reset: resetForm,
+    setValue,
     content,
 
     // Files
