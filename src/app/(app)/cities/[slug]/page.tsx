@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
+import { CityAboutCard } from '@/features/cities/components/portal/CityAboutCard'
 import { CityPortalCover } from '@/features/cities/components/portal/CityPortalCover'
 import { CityPortalGrid } from '@/features/cities/components/portal/CityPortalGrid'
 import { CityPortalGridSkeleton } from '@/features/cities/components/portal/CityPortalGridSkeleton'
@@ -65,6 +66,8 @@ export default async function CityPortalPage({ params }: Props) {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <section className="space-y-4 lg:col-span-2">
+          <CityAboutCard cityName={city.name} description={city.description} />
+
           <header className="flex items-baseline justify-between gap-3">
             <h2 className="text-xl font-bold text-neutral-900 sm:text-2xl dark:text-neutral-100">
               {t('discoverHeading', { city: city.name })}

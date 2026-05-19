@@ -166,6 +166,9 @@
       "commerce": { "label": "Commerce & Services" },
       "history": { "label": "History & Culture" }
     },
+    "about": {
+      "heading": "About {city}"
+    },
     "knowCity": {
       "heading": "Know {city}",
       "population": "Population",

@@ -75,11 +75,6 @@ export async function CityPortalCover({ city, isFollowing }: CityPortalCoverProp
             .filter(Boolean)
             .join(' · ')}
         </p>
-        {city.description && (
-          <p className="mt-2 max-w-xl text-sm leading-snug text-white/85 drop-shadow-sm sm:text-base">
-            {city.description}
-          </p>
-        )}
         {city.stats.followerCount > 0 && (
           <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-md ring-1 ring-white/15 sm:text-sm">
             <UserGroupIcon className="h-3.5 w-3.5" aria-hidden="true" />
