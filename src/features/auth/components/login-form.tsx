@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { useAuthStore } from '../store/auth.store'
+import { isEmailNotConfirmedError } from '../utils/auth-errors'
 
 interface LoginFormProps {
   showForgotPassword?: boolean
@@ -69,8 +70,17 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
 
       toast.success(t('login.welcomeBack'))
       router.push(redirectTo as unknown as Parameters<typeof router.push>[0])
-    } catch (err: any) {
-      toast.error(err.message || t('login.genericError'))
+    } catch (err: unknown) {
+      // Half-registered account: the email was never confirmed. Instead of a
+      // dead-end error, route the user back into the verification flow where
+      // they can resend a fresh code and finish signing up.
+      if (isEmailNotConfirmedError(err)) {
+        toast.info(t('login.needsVerificationToast'))
+        router.push(`/verify-email?email=${encodeURIComponent(identifier)}`)
+        return
+      }
+      const message = err instanceof Error ? err.message : ''
+      toast.error(message || t('login.genericError'))
       // Turnstile tokens are single-use — refresh the widget so the user can retry.
       setCaptchaToken(null)
       turnstileRef.current?.reset()
