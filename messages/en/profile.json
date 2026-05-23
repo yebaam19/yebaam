@@ -146,6 +146,12 @@
       "breed": "Breed",
       "sex": "Sex",
       "dateOfBirth": "Date of birth",
+      "age": "Age",
+      "ageYears": "{years, plural, =1 {# year} other {# years}}",
+      "ageMonths": "{months, plural, =1 {# month} other {# months}}",
+      "vaccinated": "Vaccinated",
+      "yes": "Yes",
+      "no": "No",
       "color": "Color",
       "weightKg": "Weight (kg)",
       "microchipId": "Microchip",
@@ -154,6 +160,21 @@
       "about": "About",
       "cover": "Cover",
       "privacy": "Privacy"
+    },
+    "actions": {
+      "viewProfile": "View profile",
+      "editProfile": "Edit Profile",
+      "share": "Share"
+    },
+    "status": {
+      "title": "Profile Status",
+      "percentComplete": "{percent}% Complete",
+      "readyToContact": "Ready to contact!",
+      "sections": {
+        "basicInfo": "Basic Info",
+        "health": "Health",
+        "gallery": "Gallery"
+      }
     },
     "placeholders": {
       "species": "Dog, Cat, Rabbit…",

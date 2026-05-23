@@ -4,15 +4,20 @@ import Image from 'next/image'
 import type { CSSProperties, ReactNode } from 'react'
 
 /**
- * Visual primitive shared by `InsigniaList`, `BadgeStrip`, and the public
- * catalog. One source of truth for the look: per-category gradient palettes,
- * tier-driven metallic ring colors, a glossy top-left highlight, drop shadow,
- * and a center icon (uploaded Cloudflare image, custom SVG for the seeded
- * system badges, or category-default heroicon).
+ * Visual primitive shared by `InsigniaList`, `BadgeStrip`, the public catalog
+ * grid, and the catalog detail hero.
  *
- * Design intent: feel like a polished gym/medal badge (think Pokemon league
- * badges rendered in the Yebaam visual language) — bold, glossy, instantly
- * recognizable per category, with subtle prestige cues for tier.
+ * Design system — "engineer aesthetic":
+ *   - Hexagonal frame (clip-path) — the signature shape of dev achievements
+ *     (think GitHub badges, Stack Overflow ribbons, CI status chips).
+ *   - Dark slate body (`#0b1220` / `slate-950`) with subtle inner sheen.
+ *   - Category-coded glow + thin accent ring.
+ *   - Mono-style tier label below the hex (WORLD, PHD, L4, …) when relevant.
+ *   - Default icon set is a curated SVG per category — verification gets a
+ *     check, study a graduation cap, sports a trophy, recognition a sparkle,
+ *     pioneer a star, authentication a shield, fallback a stylized `</>`.
+ *
+ * Tasteful, precise, and instantly readable as "this user has shipped".
  */
 
 type Category = string
@@ -20,129 +25,64 @@ type Tier = string | null
 type Size = 'insignia' | 'badge' | 'catalog' | 'detail'
 
 interface Palette {
-  /** Outer metallic ring gradient (the bezel). */
-  ring: string
-  /** Main body gradient (the gem face). */
-  body: string
-  /** Default icon color when uploaded icon is absent. */
+  /** Outer accent ring (CSS color) — also used for the soft glow. */
+  accent: string
+  /** Icon color on the dark slate body. */
   iconColor: string
-  /** Drop-shadow tint that gives the badge its lit-from-above feel. */
-  shadow: string
 }
 
-const PALETTES: Record<string, Palette> = {
-  verification: {
-    ring: 'from-emerald-200 via-emerald-100 to-emerald-300',
-    body: 'from-emerald-500 via-emerald-400 to-emerald-600',
-    iconColor: 'text-white',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(16,185,129,0.55)]',
-  },
-  study: {
-    ring: 'from-indigo-200 via-blue-100 to-indigo-300',
-    body: 'from-indigo-500 via-blue-500 to-indigo-700',
-    iconColor: 'text-white',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(79,70,229,0.55)]',
-  },
-  sports: {
-    ring: 'from-red-200 via-orange-100 to-red-300',
-    body: 'from-red-500 via-orange-500 to-rose-600',
-    iconColor: 'text-white',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(239,68,68,0.55)]',
-  },
-  recognition: {
-    ring: 'from-amber-200 via-yellow-100 to-amber-300',
-    body: 'from-amber-400 via-yellow-500 to-amber-600',
-    iconColor: 'text-amber-950',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(245,158,11,0.55)]',
-  },
-  pioneer: {
-    ring: 'from-amber-300 via-yellow-200 to-orange-400',
-    body: 'from-amber-400 via-yellow-500 to-orange-500',
-    iconColor: 'text-amber-950',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(251,146,60,0.6)]',
-  },
-  authentication: {
-    ring: 'from-violet-200 via-fuchsia-100 to-violet-300',
-    body: 'from-violet-500 via-fuchsia-500 to-violet-700',
-    iconColor: 'text-white',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(139,92,246,0.55)]',
-  },
-  other: {
-    ring: 'from-slate-200 via-zinc-100 to-slate-300',
-    body: 'from-slate-500 via-zinc-500 to-slate-700',
-    iconColor: 'text-white',
-    shadow: 'shadow-[0_4px_16px_-4px_rgba(100,116,139,0.5)]',
-  },
+// Tailwind class tokens. Picked so we have one foreground color per category
+// that pops nicely against `bg-slate-950`. Hex colors mirrored for the inline
+// style (the glow and ring need a real CSS color, not a class).
+const PALETTES: Record<string, Palette & { rgb: string }> = {
+  verification:   { accent: 'border-emerald-400',  iconColor: 'text-emerald-400',  rgb: '52, 211, 153' },  // emerald-400
+  study:          { accent: 'border-sky-400',      iconColor: 'text-sky-300',      rgb: '56, 189, 248' },  // sky-400
+  sports:         { accent: 'border-rose-400',     iconColor: 'text-rose-300',     rgb: '251, 113, 133' }, // rose-400
+  recognition:    { accent: 'border-amber-400',    iconColor: 'text-amber-300',    rgb: '251, 191, 36' },  // amber-400
+  pioneer:        { accent: 'border-amber-400',    iconColor: 'text-amber-300',    rgb: '251, 191, 36' },
+  authentication: { accent: 'border-violet-400',   iconColor: 'text-violet-300',   rgb: '167, 139, 250' }, // violet-400
+  other:          { accent: 'border-slate-400',    iconColor: 'text-slate-300',    rgb: '148, 163, 184' }, // slate-400
 }
 
-function paletteFor(category: Category): Palette {
+function paletteFor(category: Category) {
   return PALETTES[category] ?? PALETTES.other
 }
 
-/** Tier → outer ring accent. Higher tiers earn richer metals. */
-const TIER_RING: Record<string, string> = {
-  // Sports
-  world: 'ring-amber-300/80',
-  mundial: 'ring-amber-300/80',
-  regional: 'ring-zinc-300/80',
-  national: 'ring-amber-700/70',
-  nacional: 'ring-amber-700/70',
-  local: 'ring-zinc-500/60',
-  // Study
-  phd: 'ring-amber-300/80',
-  doctorado: 'ring-amber-300/80',
-  msc: 'ring-zinc-300/80',
-  maestria: 'ring-zinc-300/80',
-  bsc: 'ring-amber-700/70',
-  licenciatura: 'ring-amber-700/70',
+/** Mono-style code shown in the tier slot. World/PhD get the "S-tier" feel. */
+const TIER_CODE: Record<string, string> = {
+  world: 'S',         mundial: 'S',
+  regional: 'A',
+  national: 'B',      nacional: 'B',
+  local: 'C',
+  phd: 'PHD',         doctorado: 'PHD',
+  msc: 'MSC',         maestria: 'MSC',
+  bsc: 'BSC',         licenciatura: 'BSC',
 }
 
-function tierRing(tier: Tier): string {
-  if (!tier) return 'ring-white/70 dark:ring-gray-800/70'
+function tierCode(tier: Tier): string | null {
+  if (!tier) return null
   const key = tier.toLowerCase().trim()
-  return TIER_RING[key] ?? 'ring-white/70 dark:ring-gray-800/70'
+  return TIER_CODE[key] ?? tier.toUpperCase().slice(0, 4)
 }
 
-const SIZE_TOKENS: Record<Size, {
-  outer: string
-  inner: string
-  iconSize: string
-  ringWidth: string
-  highlight: string
-}> = {
-  // Inline next to the display name
-  insignia: {
-    outer: 'h-7 w-7 lg:h-8 lg:w-8',
-    inner: 'h-[22px] w-[22px] lg:h-[26px] lg:w-[26px]',
-    iconSize: 'h-3.5 w-3.5 lg:h-4 lg:w-4',
-    ringWidth: 'ring-2',
-    highlight: 'after:h-1/2',
-  },
-  // In the strip below the cover photo
-  badge: {
-    outer: 'h-12 w-12 sm:h-14 sm:w-14',
-    inner: 'h-[38px] w-[38px] sm:h-[46px] sm:w-[46px]',
-    iconSize: 'h-6 w-6 sm:h-7 sm:w-7',
-    ringWidth: 'ring-2',
-    highlight: 'after:h-2/5',
-  },
-  // Catalog grid card
-  catalog: {
-    outer: 'h-14 w-14 sm:h-16 sm:w-16',
-    inner: 'h-[46px] w-[46px] sm:h-[54px] sm:w-[54px]',
-    iconSize: 'h-7 w-7 sm:h-8 sm:w-8',
-    ringWidth: 'ring-2',
-    highlight: 'after:h-2/5',
-  },
-  // Catalog detail hero
-  detail: {
-    outer: 'h-24 w-24',
-    inner: 'h-[80px] w-[80px]',
-    iconSize: 'h-12 w-12',
-    ringWidth: 'ring-4',
-    highlight: 'after:h-2/5',
-  },
+const SIZE_TOKENS: Record<
+  Size,
+  {
+    box: string         // overall span (hex + label)
+    hexSize: string     // hex dimensions (square, gets clip-pathed)
+    borderWidth: string // accent ring thickness
+    iconSize: string    // SVG dimensions
+    labelText: string   // tier-code typography
+    showLabel: boolean
+  }
+> = {
+  insignia: { box: 'h-7 w-7 lg:h-8 lg:w-8',   hexSize: 'h-7 w-7 lg:h-8 lg:w-8',   borderWidth: 'border-[1.5px]', iconSize: 'h-3.5 w-3.5 lg:h-4 lg:w-4', labelText: 'text-[8px]',  showLabel: false },
+  badge:    { box: 'h-14 w-12 sm:h-16 sm:w-14', hexSize: 'h-12 w-12 sm:h-14 sm:w-14', borderWidth: 'border-2',     iconSize: 'h-6 w-6 sm:h-7 sm:w-7',    labelText: 'text-[9px]',  showLabel: true },
+  catalog:  { box: 'h-16 w-14 sm:h-18 sm:w-16', hexSize: 'h-14 w-14 sm:h-16 sm:w-16', borderWidth: 'border-2',     iconSize: 'h-7 w-7 sm:h-8 sm:w-8',    labelText: 'text-[9px]',  showLabel: true },
+  detail:   { box: 'h-28 w-24',                hexSize: 'h-24 w-24',                borderWidth: 'border-[3px]', iconSize: 'h-12 w-12',                 labelText: 'text-[11px]', showLabel: true },
 }
+
+const HEX_CLIP = 'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)'
 
 interface Props {
   category: Category
@@ -150,27 +90,15 @@ interface Props {
   iconUrl?: string | null
   /** Catalog slug — used to pick the SVG for seeded system badges. */
   slug?: string
-  /** Alt text for accessibility */
   alt?: string
   size?: Size
-  /** Optional override for the inner SVG (lets callers force a specific icon). */
   children?: ReactNode
-  /** Tiny extra glyph above the badge — e.g. a tiny pioneer number. */
+  /** Tiny override badge (e.g. pioneer "#42"). */
   cornerBadge?: string | null
   className?: string
   style?: CSSProperties
 }
 
-/**
- * Polished circular badge.
- *
- * Structure:
- *   .outer       ← bezel: metallic gradient ring + tier accent
- *     .inner     ← gem face: category gradient
- *       icon     ← Cloudflare image OR category SVG
- *       .after   ← top-half soft highlight (glossy effect)
- *   .cornerBadge ← optional tiny pill (e.g. "#42")
- */
 export function BadgeArt({
   category,
   tier = null,
@@ -185,28 +113,42 @@ export function BadgeArt({
 }: Props) {
   const palette = paletteFor(category)
   const tokens = SIZE_TOKENS[size]
-  const ringAccent = tierRing(tier)
+  const code = tierCode(tier)
 
   return (
     <span
-      className={`relative inline-flex shrink-0 items-center justify-center ${className}`}
+      className={`relative inline-flex shrink-0 flex-col items-center justify-start ${tokens.box} ${className}`}
       style={style}
     >
-      {/* Outer bezel — metallic ring with tier accent */}
+      {/* Soft category glow behind the hex */}
       <span
-        className={`${tokens.outer} ${tokens.ringWidth} ${ringAccent} ${palette.shadow}
-          inline-flex items-center justify-center rounded-full
-          bg-gradient-to-br ${palette.ring}`}
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 blur-md"
+        style={{
+          width: '85%',
+          height: size === 'insignia' ? '85%' : '70%',
+          background: `radial-gradient(circle, rgba(${palette.rgb}, 0.55) 0%, rgba(${palette.rgb}, 0) 70%)`,
+        }}
+      />
+
+      {/* Hex frame — accent-colored ring */}
+      <span
+        className={`relative ${tokens.hexSize} ${tokens.borderWidth} ${palette.accent} bg-slate-950`}
+        style={{ clipPath: HEX_CLIP }}
       >
-        {/* Inner gem — colored body + glossy highlight via ::after */}
+        {/* Inner hex sheen — subtle gradient + grid texture for the dev feel */}
         <span
-          className={`${tokens.inner} relative inline-flex items-center justify-center overflow-hidden rounded-full
-            bg-gradient-to-br ${palette.body}
-            after:absolute after:inset-x-0 after:top-0 ${tokens.highlight}
-            after:rounded-t-full after:bg-gradient-to-b after:from-white/35 after:to-transparent after:content-['']`}
-        >
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `linear-gradient(155deg, rgba(${palette.rgb}, 0.18) 0%, rgba(255,255,255,0) 45%), repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 4px), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 4px)`,
+          }}
+        />
+
+        {/* Center icon */}
+        <span className="absolute inset-0 flex items-center justify-center">
           {children ? (
-            <span className={`${palette.iconColor} relative z-10 ${tokens.iconSize}`}>{children}</span>
+            <span className={`${palette.iconColor} ${tokens.iconSize}`}>{children}</span>
           ) : iconUrl ? (
             <Image
               src={iconUrl}
@@ -214,22 +156,32 @@ export function BadgeArt({
               width={64}
               height={64}
               unoptimized
-              className={`${tokens.inner} relative z-10 object-cover`}
+              className={`${tokens.iconSize} object-contain`}
             />
           ) : (
             <DefaultIcon
               slug={slug}
               category={category}
-              className={`${palette.iconColor} relative z-10 ${tokens.iconSize}`}
+              className={`${palette.iconColor} ${tokens.iconSize}`}
             />
           )}
         </span>
       </span>
 
+      {/* Mono tier code beneath the hex */}
+      {tokens.showLabel && code && (
+        <span
+          className={`mt-1 inline-flex items-center rounded-sm border ${palette.accent} bg-slate-950 px-1 py-px font-mono font-bold uppercase leading-none tracking-wider ${palette.iconColor} ${tokens.labelText}`}
+        >
+          {code}
+        </span>
+      )}
+
+      {/* Corner pill (Pioneer #N) — only used by the insignia row */}
       {cornerBadge && (
         <span
           aria-hidden="true"
-          className="absolute -right-1 -top-1 rounded-full bg-white px-1 text-[9px] font-extrabold leading-tight text-amber-900 shadow-sm ring-1 ring-amber-300/70 dark:bg-gray-900 dark:text-amber-200"
+          className="absolute -right-1 -top-1 rounded-full bg-slate-950 px-1 font-mono text-[8px] font-bold leading-tight text-amber-300 shadow ring-1 ring-amber-400/70"
         >
           {cornerBadge}
         </span>
@@ -238,10 +190,7 @@ export function BadgeArt({
   )
 }
 
-/**
- * Default icon set, picked by slug (for seeded system badges) or category.
- * Inline SVGs so we don't pay a per-badge bundle hit on heroicons imports.
- */
+/** Default icon set — picked by slug (seeded badges) or category. */
 function DefaultIcon({
   slug,
   category,
@@ -251,7 +200,6 @@ function DefaultIcon({
   category: Category
   className: string
 }) {
-  // Seeded system badges get their canonical pictogram.
   if (slug === 'verificado' || category === 'verification') {
     return (
       <svg viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
@@ -302,10 +250,10 @@ function DefaultIcon({
       </svg>
     )
   }
-  // Fallback: small generic spark
+  // Engineer-y fallback: stylized angle brackets `</>`
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .32-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className={className} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m6.75 7.5-4 4.5 4 4.5M17.25 7.5l4 4.5-4 4.5M14 4 10 20" />
     </svg>
   )
 }

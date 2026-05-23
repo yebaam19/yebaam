@@ -7,37 +7,44 @@ import { BadgeArt } from '@/features/badges/components/BadgeArt'
 
 /**
  * Insignias rendered inline next to the display name in `UserProfile.tsx`.
- * Uses the shared `<BadgeArt/>` primitive at `size="insignia"` so the styling
- * stays consistent with the badge strip and the public catalog.
  *
- * - Verificado and Pionero (seeded `is_system=true`) keep their historical
- *   pictograms via the slug-based default-icon lookup inside BadgeArt.
- * - Pionero shows the user's number as a corner pill (extracted from
- *   `user_badges.reason`, e.g. "Pionero #42") — keeps the legacy UX.
- * - Generic insignias (Doctorado, etc.) get a category-driven gradient + icon.
+ * - Pioneer entries are filtered out — they are shown by `AvatarMedallion`
+ *   directly on the avatar to match the reference design (single point of
+ *   prestige cue per user, instead of two).
+ * - All other accepted insignias render at `size="insignia"` via the shared
+ *   `BadgeArt` primitive (engineer/hex aesthetic).
  */
 export function InsigniaList({ items }: { items: ProfileBadge[] }) {
-  if (!items || items.length === 0) return null
+  const inline = (items ?? []).filter((b) => b.category !== 'pioneer')
+  if (inline.length === 0) return null
   return (
     <>
-      {items.map((b) => (
+      {inline.map((b) => (
         <InsigniaChip key={b.grantId} badge={b} />
       ))}
     </>
   )
 }
 
+/**
+ * Returns the user's pioneer insignia (if any) so the avatar medallion can
+ * render it without re-implementing the lookup at every call site.
+ */
+export function findPioneerInsignia(items: ProfileBadge[] | undefined): ProfileBadge | null {
+  if (!items || items.length === 0) return null
+  return items.find((b) => b.category === 'pioneer') ?? null
+}
+
 function InsigniaChip({ badge }: { badge: ProfileBadge }) {
   const href = `/insignias/${badge.slug}` as Route
   const title = badge.description ? `${badge.name}: ${badge.description}` : badge.name
-  const pioneerNumber = extractPioneerNumber(badge.label)
 
   return (
     <Link
       href={href}
       title={title}
       aria-label={badge.label ?? badge.name}
-      className="inline-flex items-center transition-transform duration-150 hover:-translate-y-0.5 hover:rotate-[-3deg]"
+      className="inline-flex items-center transition-transform duration-150 hover:-translate-y-0.5"
     >
       <BadgeArt
         size="insignia"
@@ -46,14 +53,7 @@ function InsigniaChip({ badge }: { badge: ProfileBadge }) {
         slug={badge.slug}
         iconUrl={badge.iconUrl}
         alt={badge.name}
-        cornerBadge={pioneerNumber ? `#${pioneerNumber}` : null}
       />
     </Link>
   )
-}
-
-function extractPioneerNumber(label: string | null): string | null {
-  if (!label) return null
-  const m = /^Pionero #(\d+)$/.exec(label)
-  return m ? m[1] : null
 }

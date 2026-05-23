@@ -16,8 +16,8 @@ import ProfileActionsMenu from './ProfileActionsMenu';
 import ProfileSocialLinks from './ProfileSocialLinks';
 import { coverTransformStyle } from '../../utils/coverTransform';
 import { AcademicCapIcon, BriefcaseIcon } from '@/components/icons/heroicons-shim';
-import { InsigniaList } from './InsigniaList';
-import { BadgeStrip } from './BadgeStrip';
+import { InsigniaList, findPioneerInsignia } from './InsigniaList';
+import { AvatarMedallion } from './AvatarMedallion';
 import { PendingBadgeBanner } from './PendingBadgeBanner';
 
 interface UserProfileProps {
@@ -94,16 +94,15 @@ export default function UserProfile({
         </div>
       </div>
 
-      {/* Badges strip — sits between the cover and the avatar/info block per spec. */}
-      <BadgeStrip badges={user.badges ?? []} />
-
       {/* Profile Info Section - Constrained Width */}
       <div>
         <div className="mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
           <div className="relative -mt-14 flex w-full min-w-0 flex-col items-center gap-3 pb-4 sm:-mt-16 lg:-mt-20 lg:flex-row lg:items-start lg:gap-5">
             {/* Avatar peeks over the cover. Info column below uses lg:pt-20 so the
-                heading sits below the cover instead of overlapping it. */}
-            <div className="shrink-0 lg:ml-6">
+                heading sits below the cover instead of overlapping it.
+                The relative container lets <AvatarMedallion/> overlay the
+                bottom-left of the avatar (pioneer year/number) per the design. */}
+            <div className="relative shrink-0 lg:ml-6">
               <Avatar
                 src={user.avatarUrl}
                 alt={fullName}
@@ -115,6 +114,7 @@ export default function UserProfile({
                   .toUpperCase()}
                 className="size-28 min-h-28 min-w-28 border-4 border-white bg-white outline-white sm:size-36 sm:min-h-36 sm:min-w-36 md:size-40 md:min-h-40 md:min-w-40 lg:size-[150px] lg:min-h-[150px] lg:min-w-[150px] dark:border-gray-800 dark:bg-gray-800 dark:outline-gray-800"
               />
+              <AvatarMedallion badge={findPioneerInsignia(user.insignias)} />
             </div>
 
             {/* Info and Actions — on lg the row is pulled up by `-mt-20` above

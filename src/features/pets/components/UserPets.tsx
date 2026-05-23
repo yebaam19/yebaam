@@ -7,7 +7,7 @@ import { ArrowPathIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import { PawIcon } from '@/components/icons/PawIcon';
 import { getPetsForProfileAction } from '@/features/pets/actions/pets.actions';
 import type { PetRow } from '@/features/pets/types/pet.types';
-import { PetMiniCard } from './PetMiniCard';
+import { PetProfileCard } from './PetProfileCard';
 import { PetDetailModal } from './PetDetailModal';
 import { PetEditorModal } from './editor/PetEditorModal';
 
@@ -122,9 +122,9 @@ export default function UserPets({ userId, ownerUsername, isOwnProfile }: UserPe
           </button>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="space-y-4">
         {pets.map((p) => (
-          <PetMiniCard
+          <PetProfileCard
             key={p.id}
             pet={p}
             isOwner={isOwnProfile}

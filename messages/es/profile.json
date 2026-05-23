@@ -146,6 +146,12 @@
       "breed": "Raza",
       "sex": "Sexo",
       "dateOfBirth": "Fecha de nacimiento",
+      "age": "Edad",
+      "ageYears": "{years, plural, =1 {# año} other {# años}}",
+      "ageMonths": "{months, plural, =1 {# mes} other {# meses}}",
+      "vaccinated": "Vacunada",
+      "yes": "Sí",
+      "no": "No",
       "color": "Color",
       "weightKg": "Peso (kg)",
       "microchipId": "Microchip",
@@ -154,6 +160,21 @@
       "about": "Sobre la mascota",
       "cover": "Portada",
       "privacy": "Privacidad"
+    },
+    "actions": {
+      "viewProfile": "Ver perfil",
+      "editProfile": "Editar Perfil",
+      "share": "Compartir"
+    },
+    "status": {
+      "title": "Profile Status",
+      "percentComplete": "{percent}% Completo",
+      "readyToContact": "¡Listo para contactar!",
+      "sections": {
+        "basicInfo": "Información Básica",
+        "health": "Salud",
+        "gallery": "Galería"
+      }
     },
     "placeholders": {
       "species": "Perro, Gato, Conejo…",

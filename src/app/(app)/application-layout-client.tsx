@@ -92,6 +92,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   const hasOwnChrome =
     firstSegment === 'feed' ||
     firstSegment === 'cities' ||
+    firstSegment === 'insignias' ||
     (segments.length === 1 && !!firstSegment && !RESERVED_TOP_LEVEL.has(firstSegment))
 
   if (hasOwnChrome) {
