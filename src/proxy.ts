@@ -27,6 +27,10 @@ const PUBLIC_ROUTES = [
   // Writes (follow, post, complaint) gate at the server-action layer via
   // requireUserId(); guests can browse the portal without an account.
   '/cities',
+  // Badges catalog: public by design (PDF spec, badges-e-insignias). Anyone
+  // can see what recognitions exist. Requesting requires auth, gated at the
+  // server-action layer (requestBadge).
+  '/insignias',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
@@ -36,6 +40,7 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/verification/certificate',
   '/musica',
   '/cities',
+  '/insignias',
 ];
 
 export async function proxy(request: NextRequest) {

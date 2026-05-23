@@ -16,6 +16,9 @@ import ProfileActionsMenu from './ProfileActionsMenu';
 import ProfileSocialLinks from './ProfileSocialLinks';
 import { coverTransformStyle } from '../../utils/coverTransform';
 import { AcademicCapIcon, BriefcaseIcon } from '@/components/icons/heroicons-shim';
+import { InsigniaList } from './InsigniaList';
+import { BadgeStrip } from './BadgeStrip';
+import { PendingBadgeBanner } from './PendingBadgeBanner';
 
 interface UserProfileProps {
   user: UserProfileType;
@@ -64,6 +67,8 @@ export default function UserProfile({
 
   return (
     <div className="w-full bg-white dark:bg-gray-800">
+      {isOwnProfile && <PendingBadgeBanner pending={user.pendingBadges ?? []} />}
+
       {/* Cover Photo - Constrained Width with margins */}
       <div className="mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-lg">
@@ -88,6 +93,9 @@ export default function UserProfile({
           </div>
         </div>
       </div>
+
+      {/* Badges strip — sits between the cover and the avatar/info block per spec. */}
+      <BadgeStrip badges={user.badges ?? []} />
 
       {/* Profile Info Section - Constrained Width */}
       <div>
@@ -119,45 +127,7 @@ export default function UserProfile({
                   <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-2 lg:justify-start">
                     <h1 className="flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 text-center text-2xl leading-tight font-bold wrap-break-word text-gray-900 sm:text-3xl lg:justify-start lg:text-left dark:text-white">
                       <span className="min-w-0 max-w-full wrap-anywhere">{fullName || user.username}</span>
-                      {user.documentStatus === 'ACCEPTED' && (
-                        <span
-                          title={t('verifiedBadge')}
-                          aria-label={t('verifiedBadge')}
-                          className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm ring-2 ring-white lg:h-7 lg:w-7 dark:ring-gray-800"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            className="h-4 w-4 lg:h-5 lg:w-5"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.5 7.6a1 1 0 0 1-1.42.005l-3.5-3.5a1 1 0 1 1 1.414-1.414l2.79 2.79 6.795-6.889a1 1 0 0 1 1.415-.006Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      )}
-                      {user.pioneerNumber != null && (
-                        <span
-                          title={t('pioneerTooltip', { n: user.pioneerNumber })}
-                          aria-label={t('pioneerAria', { n: user.pioneerNumber })}
-                          className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide text-amber-950 shadow-sm ring-1 ring-amber-300/60"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="h-3 w-3"
-                            aria-hidden="true"
-                          >
-                            <path d="M12 2.75 14.39 8 20 8.81l-4 3.92.94 5.49L12 15.77l-4.94 2.45L8 12.73l-4-3.92L9.61 8 12 2.75Z" />
-                          </svg>
-                          {t('pioneerBadge', { n: user.pioneerNumber })}
-                        </span>
-                      )}
+                      <InsigniaList items={user.insignias ?? []} />
                     </h1>
                   </div>
                 </div>

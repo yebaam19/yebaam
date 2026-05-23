@@ -11,6 +11,107 @@ import type {
   UploadImageResponse,
   UserProfile,
 } from '../interfaces/profile.interfaces';
+import type { ProfileBadge } from '@/features/badges/types/badges.types';
+
+const CF_ACCOUNT_HASH = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? '';
+
+function cfImageUrl(id: string | null | undefined): string | null {
+  if (!id || !CF_ACCOUNT_HASH) return null;
+  return `https://imagedelivery.net/${CF_ACCOUNT_HASH}/${id}/public`;
+}
+
+type UserBadgeJoinedRow = {
+  id: string;
+  awarded_at: string;
+  reason: string | null;
+  acceptance_status: 'pending' | 'accepted' | 'declined';
+  is_hidden: boolean;
+  badge: {
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    icon_cf_image_id: string | null;
+    category: string;
+    slot: 'insignia' | 'badge';
+    tier: string | null;
+    is_system: boolean;
+    visibility: 'public' | 'private';
+    deleted_at: string | null;
+  } | null;
+};
+
+function mapBadge(r: UserBadgeJoinedRow): ProfileBadge | null {
+  if (!r.badge) return null;
+  return {
+    grantId: r.id,
+    badgeId: r.badge.id,
+    slug: r.badge.slug,
+    name: r.badge.name,
+    description: r.badge.description,
+    iconUrl: cfImageUrl(r.badge.icon_cf_image_id),
+    category: r.badge.category,
+    slot: r.badge.slot,
+    tier: r.badge.tier,
+    label: r.reason && /^Pionero #\d+$/.test(r.reason) ? r.reason : null,
+    awardedAt: r.awarded_at,
+    acceptanceStatus: r.acceptance_status,
+    isSystem: Boolean(r.badge.is_system),
+  };
+}
+
+/**
+ * Fetches all badge grants for a user and splits them by slot + acceptance.
+ * RLS already filters to public+accepted rows for non-owner viewers; if the
+ * caller IS the owner, additional pending rows come back via the
+ * `user_badges_select_self` policy.
+ */
+async function fetchProfileBadges(userId: string): Promise<{
+  insignias: ProfileBadge[];
+  badges: ProfileBadge[];
+  pendingBadges: ProfileBadge[];
+}> {
+  const { data, error } = await supabase
+    .from('user_badges')
+    .select(
+      `id, awarded_at, reason, acceptance_status, is_hidden,
+       badge:badges!user_badges_badge_id_fkey(
+         id, slug, name, description, icon_cf_image_id, category, slot, tier,
+         is_system, visibility, deleted_at
+       )`,
+    )
+    .eq('user_id', userId)
+    .is('revoked_at', null)
+    .order('awarded_at', { ascending: true });
+
+  if (error) {
+    console.error('[fetchProfileBadges]', error);
+    return { insignias: [], badges: [], pendingBadges: [] };
+  }
+
+  const rows = (data ?? []) as unknown as UserBadgeJoinedRow[];
+  const insignias: ProfileBadge[] = [];
+  const badges: ProfileBadge[] = [];
+  const pendingBadges: ProfileBadge[] = [];
+
+  for (const r of rows) {
+    const mapped = mapBadge(r);
+    if (!mapped) continue;
+    // Skip soft-deleted or private badges (RLS may still surface them to admin viewers).
+    if (r.badge?.deleted_at) continue;
+    if (r.badge?.visibility !== 'public') continue;
+
+    if (mapped.acceptanceStatus === 'pending') {
+      pendingBadges.push(mapped);
+      continue;
+    }
+    if (mapped.acceptanceStatus !== 'accepted' || r.is_hidden) continue;
+    if (mapped.slot === 'insignia') insignias.push(mapped);
+    else badges.push(mapped);
+  }
+
+  return { insignias, badges, pendingBadges };
+}
 
 type DbProfile = {
   id: string;
@@ -68,7 +169,11 @@ type DbProfile = {
   updated_at: string;
 };
 
-function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
+function mapDbToProfile(
+  row: DbProfile,
+  email?: string,
+  badges?: { insignias: ProfileBadge[]; badges: ProfileBadge[]; pendingBadges: ProfileBadge[] },
+): UserProfile {
   const displayName =
     row.display_name ?? [row.first_name, row.last_name].filter(Boolean).join(' ') ?? row.username ?? '';
   return {
@@ -137,6 +242,9 @@ function mapDbToProfile(row: DbProfile, email?: string): UserProfile {
       sentFriendRequests: 0,
       receivedFriendRequests: 0,
     },
+    insignias: badges?.insignias ?? [],
+    badges: badges?.badges ?? [],
+    pendingBadges: badges?.pendingBadges ?? [],
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -204,7 +312,9 @@ class ProfileService {
       .maybeSingle();
     if (error) throw new Error(error.message || 'Error al cargar perfil');
     if (!data) return null;
-    return mapDbToProfile(data as DbProfile);
+    const profileRow = data as DbProfile;
+    const badges = await fetchProfileBadges(profileRow.id);
+    return mapDbToProfile(profileRow, undefined, badges);
   }
 
   async getMyProfile(): Promise<UserProfile> {
@@ -212,13 +322,14 @@ class ProfileService {
     const user = sessionData.session?.user;
     if (!user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    if (error || !data) throw new Error(error?.message || 'Perfil no encontrado');
-    return mapDbToProfile(data as DbProfile, user.email ?? undefined);
+    const [profileRes, badges] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', user.id).single(),
+      fetchProfileBadges(user.id),
+    ]);
+    if (profileRes.error || !profileRes.data) {
+      throw new Error(profileRes.error?.message || 'Perfil no encontrado');
+    }
+    return mapDbToProfile(profileRes.data as DbProfile, user.email ?? undefined, badges);
   }
 
   async updateProfile(data: UpdateProfileDTO): Promise<UserProfile> {

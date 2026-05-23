@@ -14,6 +14,8 @@ export interface AdminNavItem {
     | 'academic-cap'
     | 'musical-note'
     | 'building-office-2'
+    | 'trophy'
+    | 'inbox'
   disabled?: boolean
   matchPrefix?: string
 }
@@ -49,6 +51,18 @@ const RAW_ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/verifications' as Route,
     iconName: 'shield-check',
     matchPrefix: '/admin/verifications',
+  },
+  {
+    label: 'Insignias',
+    href: '/admin/badges' as Route,
+    iconName: 'trophy',
+    matchPrefix: '/admin/badges',
+  },
+  {
+    label: 'Solicitudes de insignias',
+    href: '/admin/badges/requests' as Route,
+    iconName: 'inbox',
+    matchPrefix: '/admin/badges/requests',
   },
   {
     label: 'Credenciales Profesionales',

@@ -10,9 +10,11 @@ import {
   ChatBubbleLeftIcon,
   ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
+  InboxArrowDownIcon,
   MusicalNoteIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
+  TrophyIcon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
 import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
@@ -30,6 +32,8 @@ const NAV_LABEL_TO_KEY: Record<string, string> = {
   'Ciudades': 'ciudades',
   'Verificaciones': 'verifications',
   'Credenciales Profesionales': 'professionalCredentials',
+  'Insignias': 'insignias',
+  'Solicitudes de insignias': 'badgeRequests',
   'Club de coleccionistas': 'musicClub',
   'Ajustes': 'ajustes',
 }
@@ -44,6 +48,8 @@ const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: 
   'academic-cap': AcademicCapIcon,
   'musical-note': MusicalNoteIcon,
   'building-office-2': BuildingOffice2Icon,
+  trophy: TrophyIcon,
+  inbox: InboxArrowDownIcon,
 }
 
 interface Props {

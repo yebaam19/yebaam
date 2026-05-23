@@ -1,4 +1,6 @@
 
+import type { ProfileBadge } from '@/features/badges/types/badges.types'
+
 export interface UserProfile {
   id: string
   userId: string
@@ -76,6 +78,13 @@ export interface UserProfile {
     sentFriendRequests: number
     receivedFriendRequests: number
   }
+
+  /** Insignias rendered inline next to the display name (verified, pioneer, study level, ...). */
+  insignias?: ProfileBadge[]
+  /** Specific awards rendered in the horizontal strip below the cover photo. */
+  badges?: ProfileBadge[]
+  /** Grants the user has not yet accepted/declined. Only populated for own profile. */
+  pendingBadges?: ProfileBadge[]
 
   // Dates
   createdAt: Date
