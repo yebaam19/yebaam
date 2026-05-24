@@ -37,6 +37,7 @@ type BadgeListRow = {
   is_system: boolean
   deleted_at: string | null
   created_at: string
+  requirements_md: string
 }
 
 export interface ListAdminBadgesResult {
@@ -62,7 +63,7 @@ export const listAdminBadges = cache(async function listAdminBadges(params: {
   let q = client
     .from('badges')
     .select(
-      'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at',
+      'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at, requirements_md',
       { count: 'exact' },
     )
     .order('is_system', { ascending: false })
@@ -107,6 +108,7 @@ export const listAdminBadges = cache(async function listAdminBadges(params: {
     grantCount: counts[r.id]?.grants ?? 0,
     pendingRequestCount: counts[r.id]?.requests ?? 0,
     createdAt: r.created_at,
+    requirementsMd: r.requirements_md ?? '',
   }))
 
   return { items, total: count ?? 0, page, pageSize }
@@ -142,7 +144,7 @@ export const getAdminBadgeBySlug = cache(async function getAdminBadgeBySlug(
   const { data, error } = await client
     .from('badges')
     .select(
-      'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at',
+      'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at, requirements_md',
     )
     .eq('slug', slug)
     .maybeSingle()
@@ -171,6 +173,7 @@ export const getAdminBadgeBySlug = cache(async function getAdminBadgeBySlug(
     grantCount: counts[row.id]?.grants ?? 0,
     pendingRequestCount: counts[row.id]?.requests ?? 0,
     createdAt: row.created_at,
+    requirementsMd: row.requirements_md ?? '',
   }
 })
 

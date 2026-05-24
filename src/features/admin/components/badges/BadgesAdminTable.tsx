@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import Image from 'next/image'
 import type { AdminBadgeRow } from '@/features/admin/types/badges.types'
+import { badgeCategoryLabel, formatBadgeTier } from '@/features/badges/lib/badgeTaxonomy'
 
 interface Props {
   items: AdminBadgeRow[]
@@ -72,8 +73,8 @@ export function BadgesAdminTable({ items, page, totalPages, buildHref }: Props) 
                 </span>
               </td>
               <td className="px-3 py-2 text-xs text-neutral-600 dark:text-neutral-400">
-                {b.category}
-                {b.tier ? ` · ${b.tier}` : ''}
+                {badgeCategoryLabel(b.category)}
+                {formatBadgeTier(b.tier) ? ` · ${formatBadgeTier(b.tier)}` : ''}
               </td>
               <td className="px-3 py-2 text-xs text-neutral-600 dark:text-neutral-400">
                 {b.visibility === 'public' ? 'Pública' : 'Privada'}

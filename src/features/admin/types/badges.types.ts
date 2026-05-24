@@ -25,6 +25,7 @@ export interface AdminBadgeRow {
   grantCount: number
   pendingRequestCount: number
   createdAt: string
+  requirementsMd: string
 }
 
 /** Payload for createBadge / updateBadge server actions. */

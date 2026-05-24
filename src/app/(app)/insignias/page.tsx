@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { listPublicBadgeCatalog } from '@/features/badges/server/catalog.server'
 import { CatalogGrid } from '@/features/badges/components/CatalogGrid'
+import { BADGE_CATEGORY_OPTIONS } from '@/features/badges/lib/badgeTaxonomy'
 
 // The catalog read calls getServerClient() which uses cookies(); force-dynamic
 // prevents Turbopack from attempting static path generation.
@@ -32,7 +33,7 @@ export default async function InsigniasCatalogPage({ searchParams }: PageProps) 
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">Reconocimientos</h1>
         <p className="mt-1 max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
           Las <strong>insignias</strong> aparecen junto al nombre del usuario y representan el nivel máximo de un
-          reconocimiento (verificación, nivel de estudio, logros deportivos, etc.). Los <strong>badges</strong>{' '}
+          reconocimiento (verificación, ingeniería de software, nivel de estudio, etc.). Los <strong>badges</strong>{' '}
           aparecen en la franja debajo de la foto de portada y reconocen logros específicos.
         </p>
       </header>
@@ -42,18 +43,12 @@ export default async function InsigniasCatalogPage({ searchParams }: PageProps) 
         <FilterChip href="/insignias?slot=insignia" active={slot === 'insignia' && !category} label="Insignias" />
         <FilterChip href="/insignias?slot=badge" active={slot === 'badge' && !category} label="Badges" />
         <span className="mx-2 text-neutral-300">·</span>
-        {[
-          { v: 'verification', l: 'Verificación' },
-          { v: 'study', l: 'Estudio' },
-          { v: 'sports', l: 'Deportes' },
-          { v: 'recognition', l: 'Reconocimientos' },
-          { v: 'pioneer', l: 'Pionero' },
-        ].map((c) => (
+        {BADGE_CATEGORY_OPTIONS.filter((c) => c.value !== 'other' && c.value !== 'authentication').map((c) => (
           <FilterChip
-            key={c.v}
-            href={`/insignias?category=${c.v}`}
-            active={category === c.v}
-            label={c.l}
+            key={c.value}
+            href={`/insignias?category=${c.value}`}
+            active={category === c.value}
+            label={c.label}
           />
         ))}
       </nav>

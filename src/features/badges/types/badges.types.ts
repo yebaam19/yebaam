@@ -18,6 +18,7 @@ export type BadgeRequestStatus = 'pending' | 'approved' | 'rejected' | 'withdraw
  * to a generic chip. */
 export type BadgeCategory =
   | 'verification'
+  | 'engineering'
   | 'study'
   | 'sports'
   | 'recognition'

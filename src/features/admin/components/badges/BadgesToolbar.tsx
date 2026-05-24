@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { Route } from 'next'
 import { useTransition } from 'react'
+import { BADGE_CATEGORY_OPTIONS } from '@/features/badges/lib/badgeTaxonomy'
 
 interface Props {
   search: string
@@ -19,13 +20,7 @@ const SLOT_OPTIONS: Array<{ value: '' | 'insignia' | 'badge'; label: string }> =
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'Categoría' },
-  { value: 'verification', label: 'Verificación' },
-  { value: 'study', label: 'Estudio' },
-  { value: 'sports', label: 'Deportes' },
-  { value: 'recognition', label: 'Reconocimientos' },
-  { value: 'pioneer', label: 'Pionero' },
-  { value: 'authentication', label: 'Autenticación' },
-  { value: 'other', label: 'Otra' },
+  ...BADGE_CATEGORY_OPTIONS,
 ]
 
 export function BadgesToolbar({ search, slot, category, includeDeleted }: Props) {

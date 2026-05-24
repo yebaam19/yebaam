@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { 
-  friendRequestService, 
+import {
+  friendRequestService,
   type FriendSuggestion,
   type FriendRequest,
-  type GetFriendRequestsResponse 
+  type GetFriendRequestsResponse
 } from '../services/friend-request.service';
+import { FriendRequestBlockedError } from '@/features/friendships/services/friendships.service';
 import { toast } from 'sonner';
 import { useSocket } from '@/providers/socket-provider';
 
@@ -86,14 +87,33 @@ export function useFriendRequests() {
       // RETORNAR la respuesta con requestId
       return response;
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al enviar solicitud';
-      toast.error(message);
-      
+      if (error instanceof FriendRequestBlockedError) {
+        const isQuota =
+          error.reason === 'hourly_limit' ||
+          error.reason === 'daily_limit' ||
+          error.reason === 'weekly_limit' ||
+          error.reason === 'new_account_daily_limit';
+        if (isQuota) {
+          toast.warning(error.message, { duration: 6000 });
+        } else if (error.reason === 'frozen') {
+          toast.error(error.message, { duration: 8000 });
+        } else if (error.reason === 'already_pending') {
+          toast.warning('Ya enviaste una solicitud a este usuario');
+        } else if (error.reason === 'already_friends') {
+          toast.info('Ya son amigos');
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        const message = error?.message || error?.response?.data?.message || 'Error al enviar solicitud';
+        toast.error(message);
+      }
+
       //  Si falla, recargar sugerencias para restaurar el estado
       await friendRequestService.getFriendSuggestions(4).then(data => {
         setSuggestions(Array.isArray(data) ? data : []);
       });
-      
+
       throw error;
     } finally {
       setIsSending(false);

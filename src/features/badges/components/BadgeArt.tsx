@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import type { CSSProperties, ReactNode } from 'react'
+import { badgeTierCode } from '@/features/badges/lib/badgeTaxonomy'
 
 /**
  * Visual primitive shared by `InsigniaList`, `BadgeStrip`, the public catalog
@@ -36,6 +37,7 @@ interface Palette {
 // style (the glow and ring need a real CSS color, not a class).
 const PALETTES: Record<string, Palette & { rgb: string }> = {
   verification:   { accent: 'border-emerald-400',  iconColor: 'text-emerald-400',  rgb: '52, 211, 153' },  // emerald-400
+  engineering:    { accent: 'border-cyan-400',     iconColor: 'text-cyan-300',     rgb: '34, 211, 238' },  // cyan-400
   study:          { accent: 'border-sky-400',      iconColor: 'text-sky-300',      rgb: '56, 189, 248' },  // sky-400
   sports:         { accent: 'border-rose-400',     iconColor: 'text-rose-300',     rgb: '251, 113, 133' }, // rose-400
   recognition:    { accent: 'border-amber-400',    iconColor: 'text-amber-300',    rgb: '251, 191, 36' },  // amber-400
@@ -49,20 +51,8 @@ function paletteFor(category: Category) {
 }
 
 /** Mono-style code shown in the tier slot. World/PhD get the "S-tier" feel. */
-const TIER_CODE: Record<string, string> = {
-  world: 'S',         mundial: 'S',
-  regional: 'A',
-  national: 'B',      nacional: 'B',
-  local: 'C',
-  phd: 'PHD',         doctorado: 'PHD',
-  msc: 'MSC',         maestria: 'MSC',
-  bsc: 'BSC',         licenciatura: 'BSC',
-}
-
 function tierCode(tier: Tier): string | null {
-  if (!tier) return null
-  const key = tier.toLowerCase().trim()
-  return TIER_CODE[key] ?? tier.toUpperCase().slice(0, 4)
+  return badgeTierCode(tier)
 }
 
 const SIZE_TOKENS: Record<
@@ -215,6 +205,13 @@ function DefaultIcon({
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
         <path d="M12 2.75 14.39 8 20 8.81l-4 3.92.94 5.49L12 15.77l-4.94 2.45L8 12.73l-4-3.92L9.61 8 12 2.75Z" />
+      </svg>
+    )
+  }
+  if (category === 'engineering') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className={className} aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="m6.75 7.5-4 4.5 4 4.5M17.25 7.5l4 4.5-4 4.5M14 4 10 20" />
       </svg>
     )
   }

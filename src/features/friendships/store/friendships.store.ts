@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { 
-  friendshipsService, 
-  type Friend, 
+import {
+  friendshipsService,
+  FriendRequestBlockedError,
+  type Friend,
   type FriendRequest,
   type FriendSuggestion,
   type SendFriendRequestDto,
@@ -214,16 +215,38 @@ export const useFriendshipsStore = create<FriendshipsState>()(
         } catch (error: any) {
           const errorMsg = error?.message || 'Error al enviar solicitud';
           set({ error: errorMsg, isLoading: false });
-          
-          // Diferentes mensajes según el tipo de error
-          if (errorMsg.includes('Ya existe una solicitud pendiente')) {
+
+          if (error instanceof FriendRequestBlockedError) {
+            switch (error.reason) {
+              case 'hourly_limit':
+              case 'daily_limit':
+              case 'weekly_limit':
+              case 'new_account_daily_limit':
+                toast.warning(error.message, { duration: 6000 });
+                break;
+              case 'frozen':
+                toast.error(error.message, { duration: 8000 });
+                break;
+              case 'already_pending':
+                toast.warning('Ya enviaste una solicitud a este usuario');
+                break;
+              case 'already_friends':
+                toast.info('Ya son amigos');
+                break;
+              case 'blocked':
+              case 'invalid_addressee':
+              case 'unauthenticated':
+              default:
+                toast.error(error.message);
+            }
+          } else if (errorMsg.includes('Ya existe una solicitud pendiente')) {
             toast.warning('Ya enviaste una solicitud a este usuario');
           } else if (errorMsg.includes('Ya son amigos')) {
             toast.info('Ya son amigos');
           } else {
             toast.error(errorMsg);
           }
-          
+
           throw error;
         }
       },

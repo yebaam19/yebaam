@@ -2,36 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import type { CatalogBadge } from '@/features/badges/types/badges.types'
 import { BadgeArt } from '@/features/badges/components/BadgeArt'
-
-const CATEGORY_LABEL: Record<string, string> = {
-  verification: 'Verificación',
-  study: 'Estudio',
-  sports: 'Deportes',
-  recognition: 'Reconocimientos',
-  pioneer: 'Pionero',
-  authentication: 'Autenticación',
-  other: 'Otra',
-}
-
-const TIER_LABEL: Record<string, string> = {
-  world: 'Mundial',
-  mundial: 'Mundial',
-  regional: 'Regional',
-  national: 'Nacional',
-  nacional: 'Nacional',
-  local: 'Local',
-  phd: 'Doctorado',
-  doctorado: 'Doctorado',
-  msc: 'Maestría',
-  maestria: 'Maestría',
-  bsc: 'Licenciatura',
-  licenciatura: 'Licenciatura',
-}
-
-function formatTier(tier: string | null): string | null {
-  if (!tier) return null
-  return TIER_LABEL[tier.toLowerCase().trim()] ?? tier
-}
+import { badgeCategoryLabel, formatBadgeTier } from '@/features/badges/lib/badgeTaxonomy'
 
 export function CatalogGrid({ items }: { items: CatalogBadge[] }) {
   if (items.length === 0) {
@@ -64,8 +35,8 @@ export function CatalogGrid({ items }: { items: CatalogBadge[] }) {
                   {b.name}
                 </h3>
                 <p className="text-[11px] text-neutral-500">
-                  {CATEGORY_LABEL[b.category] ?? b.category}
-                  {formatTier(b.tier) ? ` · ${formatTier(b.tier)}` : ''}
+                  {badgeCategoryLabel(b.category)}
+                  {formatBadgeTier(b.tier) ? ` · ${formatBadgeTier(b.tier)}` : ''}
                 </p>
               </div>
             </div>

@@ -1,5 +1,10 @@
 // Services
 export * from './services/friendships.service';
+export { FriendRequestBlockedError } from './services/friendships.service';
+export type {
+  FriendRequestBlockReason,
+  FriendRequestQuota,
+} from './services/friendships.service';
 
 // Store
 export * from './store/friendships.store';

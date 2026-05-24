@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import type { ProfileBadge } from '@/features/badges/types/badges.types'
 import { BadgeArt } from '@/features/badges/components/BadgeArt'
+import { formatBadgeTier } from '@/features/badges/lib/badgeTaxonomy'
 
 /**
  * Horizontal strip of badges rendered immediately below the cover photo.
@@ -27,7 +28,7 @@ export function BadgeStrip({ badges }: { badges: ProfileBadge[] }) {
 
 function BadgeCard({ badge }: { badge: ProfileBadge }) {
   const tooltip = badge.description ? `${badge.name}: ${badge.description}` : badge.name
-  const tierLabel = formatTier(badge.tier)
+  const tierLabel = formatBadgeTier(badge.tier)
 
   return (
     <Link
@@ -56,24 +57,4 @@ function BadgeCard({ badge }: { badge: ProfileBadge }) {
       </span>
     </Link>
   )
-}
-
-const TIER_LABEL: Record<string, string> = {
-  world: 'Mundial',
-  mundial: 'Mundial',
-  regional: 'Regional',
-  national: 'Nacional',
-  nacional: 'Nacional',
-  local: 'Local',
-  phd: 'Doctorado',
-  doctorado: 'Doctorado',
-  msc: 'Maestría',
-  maestria: 'Maestría',
-  bsc: 'Licenciatura',
-  licenciatura: 'Licenciatura',
-}
-
-function formatTier(tier: string | null): string | null {
-  if (!tier) return null
-  return TIER_LABEL[tier.toLowerCase().trim()] ?? tier
 }

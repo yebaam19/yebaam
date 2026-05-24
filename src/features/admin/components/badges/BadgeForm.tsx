@@ -11,6 +11,11 @@ import {
   restoreBadge,
 } from '@/features/admin/actions/badges.actions'
 import type { AdminBadgeRow, BadgeFormInput } from '@/features/admin/types/badges.types'
+import {
+  BADGE_CATEGORY_OPTIONS,
+  BADGE_REQUIREMENTS_PLACEHOLDER,
+  BADGE_TIER_PLACEHOLDER,
+} from '@/features/badges/lib/badgeTaxonomy'
 
 interface Props {
   mode: 'create' | 'edit'
@@ -35,14 +40,14 @@ export function BadgeForm({ mode, initial }: Props) {
   const [slug, setSlug] = useState(initial?.slug ?? '')
   const [slugTouched, setSlugTouched] = useState(mode === 'edit')
   const [description, setDescription] = useState(initial?.description ?? '')
-  const [category, setCategory] = useState(initial?.category ?? 'other')
+  const [category, setCategory] = useState(initial?.category ?? 'engineering')
   const [slot, setSlot] = useState<'insignia' | 'badge'>(initial?.slot ?? 'insignia')
   const [visibility, setVisibility] = useState<'public' | 'private'>(initial?.visibility ?? 'public')
   const [tier, setTier] = useState(initial?.tier ?? '')
   const [isUnique, setIsUnique] = useState(initial?.isUnique ?? false)
   const [requestable, setRequestable] = useState(initial?.requestable ?? false)
   const [autoAccept, setAutoAccept] = useState(initial?.autoAccept ?? false)
-  const [requirementsMd, setRequirementsMd] = useState('')
+  const [requirementsMd, setRequirementsMd] = useState(initial?.requirementsMd ?? '')
   const [icon, setIcon] = useState<{ cfImageId: string | null; url: string | null }>({
     cfImageId: null,
     url: initial?.iconUrl ?? null,
@@ -125,6 +130,7 @@ export function BadgeForm({ mode, initial }: Props) {
             onChange={(e) => handleNameChange(e.target.value)}
             required
             disabled={isSystem}
+            placeholder={mode === 'create' ? 'Ingeniero de software' : undefined}
             className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
           />
         </div>
@@ -149,6 +155,7 @@ export function BadgeForm({ mode, initial }: Props) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
+          placeholder="Perfil técnico verificado con experiencia demostrable en desarrollo de software."
           className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
       </div>
@@ -178,13 +185,11 @@ export function BadgeForm({ mode, initial }: Props) {
             onChange={(e) => setCategory(e.target.value)}
             className="rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
           >
-            <option value="verification">Verificación</option>
-            <option value="study">Estudio</option>
-            <option value="sports">Deportes</option>
-            <option value="recognition">Reconocimientos</option>
-            <option value="pioneer">Pionero</option>
-            <option value="authentication">Autenticación</option>
-            <option value="other">Otra</option>
+            {BADGE_CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex flex-col gap-1">
@@ -192,7 +197,7 @@ export function BadgeForm({ mode, initial }: Props) {
           <input
             value={tier}
             onChange={(e) => setTier(e.target.value)}
-            placeholder="local · nacional · mundial · bsc · msc · phd …"
+            placeholder={BADGE_TIER_PLACEHOLDER}
             className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-950"
           />
         </div>
@@ -223,7 +228,7 @@ export function BadgeForm({ mode, initial }: Props) {
           value={requirementsMd}
           onChange={(e) => setRequirementsMd(e.target.value)}
           rows={4}
-          placeholder="Documentación oficial, certificados, etc."
+          placeholder={BADGE_REQUIREMENTS_PLACEHOLDER}
           className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-mono text-xs dark:border-neutral-700 dark:bg-neutral-950"
         />
       </div>
