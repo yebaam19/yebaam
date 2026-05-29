@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import ThemeSettings from '@/features/admin/components/ThemeSettings'
 import LanguageSwitch from '@/components/settings/LanguageSwitch'
+import AnonymousChatSetting from '@/components/settings/AnonymousChatSetting'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('settings')
@@ -38,6 +39,8 @@ export default async function AjustesPage() {
             <LanguageSwitch />
           </header>
         </section>
+
+        <AnonymousChatSetting />
       </div>
     </div>
   )

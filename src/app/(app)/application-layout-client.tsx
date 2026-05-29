@@ -2,6 +2,7 @@
 
 import Aside from '@/components/aside'
 import ChatBubbleTray from '@/components/chat/ChatBubbleTray'
+import AnonymousChatRoot from '@/features/anonymous-chat/components/AnonymousChatRoot'
 import SocialHeader from '@/components/Header/SocialHeader'
 
 import { CurrentUserProvider } from '@/features/auth/context/current-user.context'
@@ -52,6 +53,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
             <main className="min-h-0 min-w-0 w-full max-w-full pb-0 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
               <div className="mx-auto min-h-0 w-full max-w-none">{children}</div>
             </main>
+            <AnonymousChatRoot />
             <UploadProgress />
           </Aside.Provider>
         </ChatNotificationProvider>
@@ -62,7 +64,10 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   if (isMessengerRoute) {
     return (
       <CurrentUserProvider user={user}>
-        <ChatNotificationProvider>{children}</ChatNotificationProvider>
+        <ChatNotificationProvider>
+          {children}
+          <AnonymousChatRoot />
+        </ChatNotificationProvider>
       </CurrentUserProvider>
     )
   }
@@ -102,6 +107,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
           <Aside.Provider>
             {children}
             <ChatBubbleTray />
+            <AnonymousChatRoot />
             <UploadProgress />
           </Aside.Provider>
         </ChatNotificationProvider>
@@ -133,6 +139,9 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
 
           {/* Chat bubbles (global overlay) */}
           <ChatBubbleTray />
+
+          {/* Anonymous (ephemeral) chat overlay: invite prompt + bubbles */}
+          <AnonymousChatRoot />
 
           {/* Upload Progress Indicator (global) */}
           <UploadProgress />

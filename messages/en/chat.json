@@ -178,5 +178,96 @@
     "processing": "Processing...",
     "disable": "Disable",
     "encrypt": "Encrypt"
+  },
+  "camera": {
+    "open": "Camera",
+    "title": "Take a photo",
+    "close": "Close",
+    "capture": "Capture",
+    "sending": "Sending…",
+    "denied": "Couldn't access the camera.",
+    "unsupported": "Your device can't use the camera here.",
+    "captureFailed": "Couldn't capture the photo."
+  },
+  "voice": {
+    "hold": "Hold to record",
+    "denied": "Couldn't access the microphone.",
+    "tooShort": "Hold to record a voice note.",
+    "failed": "Couldn't send the voice note."
+  },
+  "anonymous": {
+    "menuItem": "Anonymous conversation",
+    "options": "Options",
+    "badge": "Anonymous",
+    "invite": {
+      "title": "Anonymous conversation",
+      "description": "Choose a nickname. The other person will get an invitation and, if they accept, will also choose a nickname. The conversation is ephemeral and leaves no record.",
+      "nickLabel": "Your nickname",
+      "nickPlaceholder": "e.g. Anon123",
+      "send": "Send invitation",
+      "sending": "Sending…",
+      "waitingTitle": "Waiting for a response…",
+      "waitingDescription": "{nick} will see your invitation. We'll let you know when they respond.",
+      "rejectedTitle": "Invitation rejected",
+      "rejectedDescription": "The person rejected the anonymous conversation.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "errors": {
+        "nickRequired": "Enter a nickname.",
+        "nickTooLong": "Nickname is too long (max 24)."
+      }
+    },
+    "prompt": {
+      "title": "Anonymous conversation invite",
+      "description": "{nick} wants to start an anonymous conversation with you.",
+      "ephemeralNote": "The conversation is ephemeral: it disappears when closed and is never saved.",
+      "accept": "Accept",
+      "reject": "Reject",
+      "nickLabel": "Your nickname",
+      "nickPlaceholder": "e.g. Anon456",
+      "start": "Start conversation",
+      "starting": "Starting…",
+      "expired": "The invitation expired."
+    },
+    "window": {
+      "title": "Anonymous conversation",
+      "ephemeralNotice": "Ephemeral · not saved",
+      "placeholder": "Ephemeral message…",
+      "emptyTitle": "Anonymous conversation",
+      "emptySubtitle": "Messages vanish when you close. Nothing is saved.",
+      "attachImage": "Send photo (deleted after 5 min)",
+      "invalidImage": "Choose an image.",
+      "imageTooLarge": "Image cannot exceed 10MB.",
+      "uploadFailed": "Could not send the image."
+    },
+    "media": {
+      "expired": "Content expired",
+      "noDownload": "Cannot be downloaded",
+      "expiresIn": "Disappears in {seconds}s"
+    },
+    "camera": {
+      "open": "Camera",
+      "title": "Take a photo",
+      "close": "Close",
+      "capture": "Capture",
+      "sending": "Sending…",
+      "denied": "Couldn't access the camera.",
+      "unsupported": "Your device can't use the camera here.",
+      "captureFailed": "Couldn't capture the photo."
+    },
+    "toasts": {
+      "rejected": "{nick} rejected the anonymous conversation.",
+      "accepted": "{nick} accepted. Conversation started!",
+      "peerLeft": "The other person left. The conversation was closed.",
+      "sendFailed": "Could not send the invitation."
+    },
+    "settings": {
+      "label": "Allow anonymous conversations",
+      "description": "Other people will be able to invite you to ephemeral anonymous chats.",
+      "lockedMinor": "Locked for users under 13. You can unlock it if you want to use it.",
+      "unlock": "Unlock",
+      "saved": "Preference updated",
+      "saveFailed": "Could not update preference"
+    }
   }
 }

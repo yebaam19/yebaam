@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import MessageImage from '../MessageImage';
 import ImageModal from '../ImageModal';
+import AudioMessage from '../AudioMessage';
 import type { MessageMedia } from '@/features/chat/types';
 
 export interface ChatBubbleMessagesProps {
@@ -177,6 +178,8 @@ export function ChatBubbleMessages({
                 {(() => {
                   const hasImage =
                     msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);
+                  const hasAudio =
+                    msg.media?.type === 'audio' && Boolean(msg.media?.r2_key);
                   const contentText = getContentText(msg.content);
                   return (
                     <div
@@ -192,6 +195,12 @@ export function ChatBubbleMessages({
                         <MessageImage
                           media={msg.media as MessageMedia}
                           onClick={() => setZoomMedia(msg.media as MessageMedia)}
+                        />
+                      )}
+                      {hasAudio && (
+                        <AudioMessage
+                          media={msg.media as MessageMedia}
+                          conversationId={msg.conversationId}
                         />
                       )}
                       <div className="px-3 py-2">

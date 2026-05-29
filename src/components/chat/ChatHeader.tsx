@@ -7,12 +7,15 @@ import {
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import EncryptionButton from './EncryptionButton';
+import ChatOptionsMenu from './ChatOptionsMenu';
 
 interface ChatHeaderProps {
   contactName: string;
   contactAvatar: string;
   isOnline: boolean;
   conversationId?: string;
+  /** Real user id of the peer — enables the anonymous-conversation option. */
+  peerUserId?: string;
   isEncrypted?: boolean;
   onRefreshConversation?: () => void;
   onClose?: () => void;
@@ -23,6 +26,7 @@ export default function ChatHeader({
   contactAvatar,
   isOnline,
   conversationId,
+  peerUserId,
   isEncrypted = false,
   onClose,
 }: ChatHeaderProps) {
@@ -62,6 +66,7 @@ export default function ChatHeader({
             isEncrypted={isEncrypted}
           />
         )}
+        {peerUserId && <ChatOptionsMenu recipientId={peerUserId} />}
         {onClose ? (
           <button
             type="button"

@@ -69,6 +69,7 @@ export default function ChatBubble({
         contactName={contactName}
         contactAvatar={contactAvatar}
         isOnline={isOnline || initialIsOnline}
+        contactId={contactId}
         isChatConnected={isChatConnected}
         isMinimized={isMinimized}
         onToggleMinimize={() => setIsMinimized(!isMinimized)}

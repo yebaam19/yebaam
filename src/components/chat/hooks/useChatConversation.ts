@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
+import { conversationCache } from '@/features/chat/lib/conversation-cache';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 
 interface UseChatConversationProps {
@@ -36,37 +37,67 @@ function rowToMessage(row: DbMessageRow) {
   };
 }
 
+const byCreatedAt = (a: any, b: any) =>
+  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+
+/** Merge two message lists by id (dedup), keeping chronological order. */
+function mergeMessages(prev: any[], incoming: any[]): any[] {
+  if (prev.length === 0) return [...incoming].sort(byCreatedAt);
+  const seen = new Set(prev.map((m) => m.id));
+  const merged = [...prev];
+  for (const m of incoming) if (!seen.has(m.id)) merged.push(m);
+  return merged.sort(byCreatedAt);
+}
+
+/**
+ * Loads + lives an open chat conversation. Messenger-style fast path: if we've
+ * already opened this thread this session, render the cached conversation id +
+ * messages instantly (no spinner) and revalidate in the background. Cold opens
+ * still resolve + fetch, but the conversation-id cache (primed from the loaded
+ * conversation list) usually lets us skip the resolve round-trips.
+ */
 export function useChatConversation({ contactId }: UseChatConversationProps) {
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const cachedConvId = conversationCache.getConvId(contactId);
+  const cachedMessages = cachedConvId ? conversationCache.getMessages(cachedConvId) : null;
+
+  const [conversationId, setConversationId] = useState<string | null>(cachedConvId);
+  const [messages, setMessages] = useState<any[]>(cachedMessages ?? []);
+  // Only show the spinner when we have nothing to paint yet.
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(
+    !(cachedMessages && cachedMessages.length > 0),
+  );
 
   const user = useAuthStore((state) => state.user);
   const { markConversationAsOpen, markConversationAsClosed } = useChatNotifications();
 
   useEffect(() => {
+    if (!contactId || !user?.id) return;
     let isMounted = true;
     let channel: ReturnType<typeof subscribeToTable> | null = null;
+    let openedConvId: string | null = null;
 
-    const initializeConversation = async () => {
+    const run = async () => {
       try {
-        setIsLoadingMessages(true);
-
-        // Step A: resolve the conversation id with a single targeted query.
-        let conversation = await chatService.findConversationByParticipant(contactId);
-        if (!conversation) {
-          conversation = await chatService.createOrGetConversation(contactId);
+        // Step A: resolve the conversation id — from cache if we can, else over
+        // the network. The cache is primed from the conversation list, so this
+        // usually costs zero round-trips.
+        let convId = conversationCache.getConvId(contactId);
+        if (!convId) {
+          let conversation = await chatService.findConversationByParticipant(contactId);
+          if (!conversation) {
+            conversation = await chatService.createOrGetConversation(contactId);
+          }
+          if (!isMounted) return;
+          convId = conversation.id;
+          conversationCache.setConvId(contactId, convId);
         }
         if (!isMounted) return;
 
-        const convId = conversation.id;
+        openedConvId = convId;
         setConversationId(convId);
         markConversationAsOpen(convId);
 
-        // Subscribe to postgres_changes on the messages table, filtered to
-        // this conversation. Supabase delivers INSERTs from other users AND
-        // from ourselves — we dedup by id client-side. Kick this off BEFORE
-        // fetching history so nothing that lands mid-fetch is lost.
+        // Subscribe BEFORE fetching so nothing that lands mid-fetch is lost.
         channel = subscribeToTable<DbMessageRow>({
           channel: `chat:conv:${convId}`,
           table: 'messages',
@@ -77,40 +108,22 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
             const row = payload.new as DbMessageRow;
             if (!row?.id) return;
             const incoming = rowToMessage(row);
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === incoming.id)) return prev;
-              return [...prev, incoming].sort(
-                (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-              );
-            });
+            setMessages((prev) =>
+              prev.some((m) => m.id === incoming.id) ? prev : mergeMessages(prev, [incoming]),
+            );
           },
         });
 
-        // Step B: fetch initial messages.
+        // Step B: revalidate history. If we already painted cached messages,
+        // this happens silently behind them (stale-while-revalidate).
         const result = await chatService.getConversationMessages(convId, 50, 0);
         if (!isMounted) return;
-        const sorted = result.messages.sort(
-          (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        );
-
-        // Merge with anything realtime already delivered, preserving dedup.
-        setMessages((prev) => {
-          if (prev.length === 0) return sorted;
-          const seen = new Set(prev.map((m) => m.id));
-          const merged = [...prev];
-          for (const m of sorted) if (!seen.has(m.id)) merged.push(m);
-          return merged.sort(
-            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-          );
-        });
+        setMessages((prev) => mergeMessages(prev, result.messages));
         setIsLoadingMessages(false);
 
-        // Mark unread inbound messages as read (best-effort, non-blocking).
-        // The /read endpoint updates conversation_participants.last_read_at,
-        // which flows to the other participant via postgres_changes on that
-        // table. No manual broadcast needed.
+        // Mark unread inbound as read (best-effort, non-blocking).
         if (user?.id) {
-          const hasUnread = sorted.some(
+          const hasUnread = result.messages.some(
             (msg: any) => msg.senderId !== user.id && msg.status !== 'read',
           );
           if (hasUnread) {
@@ -126,19 +139,23 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
       }
     };
 
-    if (contactId && !conversationId && user?.id) {
-      initializeConversation();
-    }
+    run();
 
     return () => {
       isMounted = false;
       unsubscribe(channel);
-      if (conversationId) {
-        markConversationAsClosed(conversationId);
-      }
+      if (openedConvId) markConversationAsClosed(openedConvId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactId, user?.id]);
+
+  // Keep the cache warm with the latest rendered thread so the next open of
+  // this conversation paints instantly.
+  useEffect(() => {
+    if (conversationId && messages.length > 0) {
+      conversationCache.setMessages(conversationId, messages);
+    }
+  }, [conversationId, messages]);
 
   return {
     conversationId,

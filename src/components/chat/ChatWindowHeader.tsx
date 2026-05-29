@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { XMarkIcon, MinusIcon, PhoneIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
+import ChatOptionsMenu from './ChatOptionsMenu';
 
 interface ChatWindowHeaderProps {
   contactId: string;
@@ -50,6 +51,7 @@ export default function ChatWindowHeader({
       </div>
 
       <div className="flex items-center gap-1">
+        {contactId && <ChatOptionsMenu recipientId={contactId} />}
         <button
           onClick={() => {}}
           className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"

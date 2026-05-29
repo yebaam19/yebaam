@@ -17,6 +17,12 @@ export interface MessageMedia {
   type: MediaType;
   cf_image_id?: string;
   cf_stream_uid?: string;
+  /** Cloudflare R2 object key for audio (voice notes / audio files). */
+  r2_key?: string;
+  /** Audio duration in seconds. */
+  duration?: number;
+  /** Base MIME type of the audio (e.g. audio/webm), for playback hints. */
+  mime?: string;
   size?: number;
   filename?: string;
 }

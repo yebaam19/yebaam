@@ -17,6 +17,8 @@ import { useTranslations } from 'next-intl';
 import ChatEmojiPopover from '../ChatEmojiPopover';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';
+import CameraCaptureModal from '../CameraCaptureModal';
+import VoiceRecorderButton from '../VoiceRecorderButton';
 
 interface ChatBubbleInputProps {
   onSendMessage: (content?: string, media?: MessageMedia) => Promise<boolean>;
@@ -48,6 +50,7 @@ export function ChatBubbleInput({
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -153,6 +156,22 @@ export function ChatBubbleInput({
 
   const stubSoon = useCallback(() => toast.info(t('toasts.soon')), [t]);
 
+  // Camera capture → upload (same path as the photo attach) → send.
+  const handleCameraCapture = async (file: File) => {
+    const result = await uploadMedia({ file, mediaType: MediaType.IMAGE });
+    if (!result) {
+      toast.error(t('errors.uploadFailed'));
+      return;
+    }
+    setCameraOpen(false);
+    await onSendMessage(undefined, {
+      type: result.type,
+      cf_image_id: result.s3Key,
+      size: result.size,
+      filename: result.filename,
+    });
+  };
+
   const trimmedEmpty = message.trim() === '';
 
   const handleThumb = async () => {
@@ -209,8 +228,9 @@ export function ChatBubbleInput({
           </button>
           <button
             type="button"
-            onClick={stubSoon}
-            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
+            onClick={() => setCameraOpen(true)}
+            disabled={isUploading || isSending}
+            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-white/10"
             title={t('cameraPhoto')}
           >
             <CameraIcon className="h-6 w-6" aria-hidden />
@@ -267,15 +287,23 @@ export function ChatBubbleInput({
           </div>
 
           {trimmedEmpty && !selectedFile ? (
-            <button
-              type="button"
-              onClick={() => void handleThumb()}
-              disabled={isSending}
-              className="rounded-full p-2 transition-colors hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
-              title={t('sendLike')}
-            >
-              <HandThumbUpIcon className="h-7 w-7 text-[#0084ff] dark:text-blue-400" aria-hidden />
-            </button>
+            <>
+              <VoiceRecorderButton
+                onSend={async (media) => {
+                  await onSendMessage(undefined, media);
+                }}
+                disabled={isSending || isUploading}
+              />
+              <button
+                type="button"
+                onClick={() => void handleThumb()}
+                disabled={isSending}
+                className="rounded-full p-2 transition-colors hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
+                title={t('sendLike')}
+              >
+                <HandThumbUpIcon className="h-7 w-7 text-[#0084ff] dark:text-blue-400" aria-hidden />
+              </button>
+            </>
           ) : (
             <button
               type="submit"
@@ -288,6 +316,13 @@ export function ChatBubbleInput({
           )}
         </div>
       </div>
+
+      <CameraCaptureModal
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCapture={handleCameraCapture}
+        sending={isUploading}
+      />
     </form>
   );
 }

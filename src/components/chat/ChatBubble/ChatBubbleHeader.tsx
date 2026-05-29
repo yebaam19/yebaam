@@ -3,11 +3,14 @@
 import { useTranslations } from 'next-intl';
 import { MinusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
+import ChatOptionsMenu from '../ChatOptionsMenu';
 
 interface ChatBubbleHeaderProps {
   contactName: string;
   contactAvatar: string;
   isOnline: boolean;
+  /** Peer user id — powers the anonymous-conversation option. */
+  contactId?: string;
   /** Kept so callers do not churn; estado de capa realtime no replica el copy de Messenger. */
   isChatConnected: boolean;
   isMinimized: boolean;
@@ -19,6 +22,7 @@ export function ChatBubbleHeader({
   contactName,
   contactAvatar,
   isOnline,
+  contactId,
   isChatConnected,
   isMinimized,
   onToggleMinimize,
@@ -57,6 +61,7 @@ export function ChatBubbleHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">
+        {contactId && <ChatOptionsMenu recipientId={contactId} />}
         <button
           type="button"
           onClick={onToggleMinimize}

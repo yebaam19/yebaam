@@ -178,5 +178,96 @@
     "processing": "Procesando...",
     "disable": "Deshabilitar",
     "encrypt": "Encriptar"
+  },
+  "camera": {
+    "open": "Cámara",
+    "title": "Tomar foto",
+    "close": "Cerrar",
+    "capture": "Capturar",
+    "sending": "Enviando…",
+    "denied": "No se pudo acceder a la cámara.",
+    "unsupported": "Tu dispositivo no permite usar la cámara aquí.",
+    "captureFailed": "No se pudo capturar la foto."
+  },
+  "voice": {
+    "hold": "Mantén pulsado para grabar",
+    "denied": "No se pudo acceder al micrófono.",
+    "tooShort": "Mantén pulsado para grabar una nota de voz.",
+    "failed": "No se pudo enviar la nota de voz."
+  },
+  "anonymous": {
+    "menuItem": "Conversación anónima",
+    "options": "Opciones",
+    "badge": "Anónima",
+    "invite": {
+      "title": "Conversación anónima",
+      "description": "Elige un apodo. La otra persona recibirá una invitación y, si acepta, también elegirá un apodo. La conversación es efímera y no deja registro.",
+      "nickLabel": "Tu apodo",
+      "nickPlaceholder": "p. ej. Anónimo123",
+      "send": "Enviar invitación",
+      "sending": "Enviando…",
+      "waitingTitle": "Esperando respuesta…",
+      "waitingDescription": "{nick} verá tu invitación. Te avisaremos cuando responda.",
+      "rejectedTitle": "Invitación rechazada",
+      "rejectedDescription": "La persona rechazó la conversación anónima.",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "errors": {
+        "nickRequired": "Escribe un apodo.",
+        "nickTooLong": "El apodo es demasiado largo (máx. 24)."
+      }
+    },
+    "prompt": {
+      "title": "Invitación a conversación anónima",
+      "description": "{nick} quiere iniciar una conversación anónima contigo.",
+      "ephemeralNote": "La conversación es efímera: desaparece al cerrarla y no se guarda.",
+      "accept": "Aceptar",
+      "reject": "Rechazar",
+      "nickLabel": "Tu apodo",
+      "nickPlaceholder": "p. ej. Anónimo456",
+      "start": "Iniciar conversación",
+      "starting": "Iniciando…",
+      "expired": "La invitación expiró."
+    },
+    "window": {
+      "title": "Conversación anónima",
+      "ephemeralNotice": "Efímera · no se guarda",
+      "placeholder": "Mensaje efímero…",
+      "emptyTitle": "Conversación anónima",
+      "emptySubtitle": "Los mensajes desaparecen al cerrar. Nada se guarda.",
+      "attachImage": "Enviar foto (se borra a los 5 min)",
+      "invalidImage": "Selecciona una imagen.",
+      "imageTooLarge": "La imagen no puede superar 10MB.",
+      "uploadFailed": "No se pudo enviar la imagen."
+    },
+    "media": {
+      "expired": "El contenido expiró",
+      "noDownload": "No se puede descargar",
+      "expiresIn": "Desaparece en {seconds}s"
+    },
+    "camera": {
+      "open": "Cámara",
+      "title": "Tomar foto",
+      "close": "Cerrar",
+      "capture": "Capturar",
+      "sending": "Enviando…",
+      "denied": "No se pudo acceder a la cámara.",
+      "unsupported": "Tu dispositivo no permite usar la cámara aquí.",
+      "captureFailed": "No se pudo capturar la foto."
+    },
+    "toasts": {
+      "rejected": "{nick} rechazó la conversación anónima.",
+      "accepted": "{nick} aceptó. ¡Conversación iniciada!",
+      "peerLeft": "La otra persona salió. La conversación se cerró.",
+      "sendFailed": "No se pudo enviar la invitación."
+    },
+    "settings": {
+      "label": "Permitir conversaciones anónimas",
+      "description": "Otras personas podrán invitarte a chats anónimos efímeros.",
+      "lockedMinor": "Bloqueado para menores de 13 años. Puedes desbloquearlo si deseas usarlo.",
+      "unlock": "Desbloquear",
+      "saved": "Preferencia actualizada",
+      "saveFailed": "No se pudo actualizar la preferencia"
+    }
   }
 }

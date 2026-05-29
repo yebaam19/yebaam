@@ -105,6 +105,7 @@ const MAP = {
   MagnifyingGlassPlusIcon: 'zoom-in',
   MapIcon: 'map',
   MapPinIcon: 'map-pin',
+  MicrophoneIcon: 'mic',
   MinusIcon: 'minus',
   MoonIcon: 'moon',
   MusicalNoteIcon: 'music',
@@ -249,6 +250,7 @@ export const MagnifyingGlassMinusIcon = make(MAP.MagnifyingGlassMinusIcon)
 export const MagnifyingGlassPlusIcon = make(MAP.MagnifyingGlassPlusIcon)
 export const MapIcon = make(MAP.MapIcon)
 export const MapPinIcon = make(MAP.MapPinIcon)
+export const MicrophoneIcon = make(MAP.MicrophoneIcon)
 export const MinusIcon = make(MAP.MinusIcon)
 export const MoonIcon = make(MAP.MoonIcon)
 export const MusicalNoteIcon = make(MAP.MusicalNoteIcon)

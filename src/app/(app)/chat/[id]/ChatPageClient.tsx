@@ -24,7 +24,7 @@ async function applyPeerContactDisplay(
   resolvedConversationId: string,
   meId: string,
   conversationSnapshot: Conversation | null,
-): Promise<{ name: string; avatar: string; isOnline: boolean; isEncrypted: boolean }> {
+): Promise<{ name: string; avatar: string; isOnline: boolean; isEncrypted: boolean; peerUserId: string | null }> {
   const fallbackGroup = {
     name: conversationSnapshot?.name?.trim() || 'Chat',
     avatar: conversationSnapshot?.avatar ?? '',
@@ -48,7 +48,7 @@ async function applyPeerContactDisplay(
 
   if (partErr) {
     console.warn('[ChatPageClient] conversation_participants:', partErr.message);
-    return fallbackGroup;
+    return { ...fallbackGroup, peerUserId };
   }
 
   const participantIds = ((partRows ?? []) as { user_id: string }[])
@@ -67,6 +67,7 @@ async function applyPeerContactDisplay(
       avatar: row?.avatar || conversationSnapshot?.avatar || '',
       isOnline: false,
       isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
+      peerUserId: null,
     };
   }
 
@@ -84,6 +85,7 @@ async function applyPeerContactDisplay(
       avatar: fallbackGroup.avatar,
       isOnline: false,
       isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
+      peerUserId: null,
     };
   }
 
@@ -100,6 +102,7 @@ async function applyPeerContactDisplay(
       avatar: '',
       isOnline: false,
       isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
+      peerUserId,
     };
   }
 
@@ -117,6 +120,7 @@ async function applyPeerContactDisplay(
     avatar: row.avatar_url ?? '',
     isOnline: false,
     isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
+    peerUserId,
   };
 }
 
@@ -131,6 +135,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [headerEncrypted, setHeaderEncrypted] = useState(false);
+  const [peerUserId, setPeerUserId] = useState<string | null>(null);
   const [inboxDrawerOpen, setInboxDrawerOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({
     name: t('conversation.fallbackName'),
@@ -154,6 +159,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
         setIsLoading(true);
         setContactInfo({ name: t('conversation.fallbackName'), avatar: '', isOnline: false });
         setHeaderEncrypted(false);
+        setPeerUserId(null);
 
         let resolvedConversationId: string;
         let conversationSnapshot: Conversation | null = null;
@@ -185,6 +191,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
           isOnline: display.isOnline,
         });
         setHeaderEncrypted(display.isEncrypted);
+        setPeerUserId(display.peerUserId);
 
         const sortedMessages = [...result.messages].sort(
           (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -326,6 +333,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
             contactAvatar={contactInfo.avatar}
             isOnline={contactInfo.isOnline}
             conversationId={conversationId ?? undefined}
+            peerUserId={peerUserId ?? undefined}
             isEncrypted={headerEncrypted}
             onClose={() => router.back()}
           />

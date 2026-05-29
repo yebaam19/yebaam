@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Conversation } from '../types';
+import { Conversation, ConversationType } from '../types';
 import { chatService } from '../services/chat.service';
+import { conversationCache } from '../lib/conversation-cache';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface OpenBubble {
   contactId: string;
@@ -41,13 +43,24 @@ export const useChatStore = create<ChatState>()(
         set({ isLoadingConversations: true });
         try {
           const conversations = await chatService.getConversations();
-  
-          
+
+          // Prime the conversation-id cache: opening a chat for a known peer can
+          // then skip the resolve round-trips and go straight to fetching/showing
+          // messages (Messenger-style fast open).
+          const meId = useAuthStore.getState().user?.id;
+          if (meId) {
+            for (const conv of conversations) {
+              if (conv.type !== ConversationType.DIRECT) continue;
+              const peerId = conv.participantIds?.find((id) => id !== meId);
+              if (peerId) conversationCache.setConvId(peerId, conv.id);
+            }
+          }
+
           // Ordenar por última actividad
-          conversations.sort((a, b) => 
+          conversations.sort((a, b) =>
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           );
-         
+
           set({ conversations, isLoadingConversations: false });
         } catch (error) {
           console.error(' [CHAT STORE] Error loading conversations:', error);
