@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { fetchGroupParticipants, type GroupParticipant } from '@/features/chat/lib/groupParticipants';
 import { useChatConversation } from './hooks/useChatConversation';
 import { useChatMessages } from './hooks/useChatMessages';
 import { useTypingIndicator } from './hooks/useTypingIndicator';
 import { ChatBubbleHeader } from './ChatBubble/ChatBubbleHeader';
 import { ChatBubbleMessages } from './ChatBubble/ChatBubbleMessages';
 import { ChatBubbleInput } from './ChatBubble/ChatBubbleInput';
+import NewMessageDialog from './NewMessageDialog';
 
 interface ChatBubbleProps {
   contactId: string;
@@ -18,6 +21,9 @@ interface ChatBubbleProps {
   onClose: () => void;
   position: number;
   baseOffset?: number;
+  /** For group bubbles: the conversation id + group flag (no single peer to resolve). */
+  conversationId?: string;
+  isGroup?: boolean;
 }
 
 export default function ChatBubble({
@@ -28,8 +34,13 @@ export default function ChatBubble({
   onClose,
   position = 0,
   baseOffset = 320,
+  conversationId: groupConversationId,
+  isGroup = false,
 }: ChatBubbleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [groupComposerOpen, setGroupComposerOpen] = useState(false);
+  const meId = useAuthStore((state) => state.user?.id);
+  const [participants, setParticipants] = useState<GroupParticipant[]>([]);
   // Supabase channels connect lazily per subscription and stay up as long
   // as any channel is active. Treat the bubble as connected for UI purposes;
   // if a channel fails, useChatConversation will surface that through its
@@ -40,7 +51,22 @@ export default function ChatBubble({
 
   const { conversationId, messages, setMessages, isLoading } = useChatConversation({
     contactId,
+    conversationId: groupConversationId,
   });
+
+  // Group bubbles: resolve member name/avatar so incoming messages can be labelled.
+  useEffect(() => {
+    if (!isGroup || !conversationId || !meId) return;
+    let active = true;
+    fetchGroupParticipants(conversationId, meId)
+      .then(({ participants: p }) => {
+        if (active) setParticipants(p);
+      })
+      .catch((err) => console.warn('[ChatBubble] participants load failed', err));
+    return () => {
+      active = false;
+    };
+  }, [isGroup, conversationId, meId]);
 
   const { sendMessage, messagesEndRef } = useChatMessages({
     conversationId,
@@ -68,12 +94,13 @@ export default function ChatBubble({
       <ChatBubbleHeader
         contactName={contactName}
         contactAvatar={contactAvatar}
-        isOnline={isOnline || initialIsOnline}
-        contactId={contactId}
+        isOnline={!isGroup && (isOnline || initialIsOnline)}
+        contactId={isGroup ? undefined : contactId}
         isChatConnected={isChatConnected}
         isMinimized={isMinimized}
         onToggleMinimize={() => setIsMinimized(!isMinimized)}
         onClose={onClose}
+        onCreateGroup={isGroup ? undefined : () => setGroupComposerOpen(true)}
       />
 
       {!isMinimized && (
@@ -85,6 +112,8 @@ export default function ChatBubble({
             messagesEndRef={messagesEndRef}
             contactAvatar={contactAvatar}
             contactName={contactName}
+            isGroup={isGroup}
+            participants={participants}
           />
 
           <ChatBubbleInput
@@ -93,6 +122,15 @@ export default function ChatBubble({
             onStopTyping={stopTyping}
           />
         </>
+      )}
+
+      {!isGroup && (
+        <NewMessageDialog
+          open={groupComposerOpen}
+          onClose={() => setGroupComposerOpen(false)}
+          openInBubble
+          initialPeer={{ id: contactId, name: contactName, avatar: contactAvatar }}
+        />
       )}
     </div>
   );

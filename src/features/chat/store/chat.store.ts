@@ -6,10 +6,15 @@ import { conversationCache } from '../lib/conversation-cache';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface OpenBubble {
+  /** Unique tray key. For direct chats it's the peer user id; for groups it's the conversation id. */
   contactId: string;
   contactName: string;
   contactAvatar: string;
   isOnline: boolean;
+  /** Explicit conversation id — set for group bubbles (no single peer to resolve from). */
+  conversationId?: string;
+  /** Defaults to direct when omitted. */
+  type?: ConversationType;
 }
 
 const MAX_OPEN_BUBBLES = 3;

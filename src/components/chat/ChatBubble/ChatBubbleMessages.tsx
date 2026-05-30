@@ -17,6 +17,9 @@ export interface ChatBubbleMessagesProps {
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   contactAvatar: string;
   contactName: string;
+  /** Group threads: show each incoming sender's own avatar + a name label. */
+  isGroup?: boolean;
+  participants?: { userId: string; name: string; avatar: string }[];
 }
 
 function getContentText(content: unknown): string {
@@ -52,11 +55,22 @@ export function ChatBubbleMessages({
   messagesEndRef,
   contactAvatar,
   contactName,
+  isGroup = false,
+  participants = [],
 }: ChatBubbleMessagesProps) {
   const user = useAuthStore((state) => state.user);
   const [zoomMedia, setZoomMedia] = useState<MessageMedia | null>(null);
   const t = useTranslations('chat.bubble.messages');
   const locale = useLocale();
+
+  const participantsById = new Map(participants.map((p) => [p.userId, p]));
+  const initialsOf = (name: string) =>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .filter(Boolean)
+      .join('')
+      .slice(0, 2);
 
   const formatTime = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -139,6 +153,13 @@ export function ChatBubbleMessages({
           const showPeerAvatar =
             !isOwn && (!prev || prev.senderId !== msg.senderId);
 
+          // In groups, label each incoming message with its actual sender.
+          const senderInfo = !isOwn && isGroup ? participantsById.get(msg.senderId) : undefined;
+          const senderAvatar = senderInfo?.avatar || contactAvatar;
+          const senderName = senderInfo?.name || contactName;
+          const senderInitials = isGroup ? initialsOf(senderName) : initials;
+          const showSenderLabel = isGroup && !isOwn && showPeerAvatar;
+
           const bubbleRadii = isOwn
             ? outgoingBubbleRadii(sameSenderAsPrev, sameSenderAsNext)
             : incomingBubbleRadii(sameSenderAsPrev, sameSenderAsNext);
@@ -154,27 +175,24 @@ export function ChatBubbleMessages({
             >
               {!isOwn && (
                 <div className="flex w-7 shrink-0 flex-col justify-end pb-5">
-                  {contactAvatar ? (
-                    showPeerAvatar ? (
-                      <Avatar
-                        src={contactAvatar}
-                        initials={initials}
-                        alt={contactName}
-                        className="size-7"
-                      />
-                    ) : (
-                      <span className="block size-7 shrink-0" aria-hidden />
-                    )
+                  {showPeerAvatar ? (
+                    <Avatar
+                      src={senderAvatar || null}
+                      initials={senderInitials}
+                      alt={senderName}
+                      className="size-7"
+                    />
                   ) : (
-                    showPeerAvatar ? (
-                      <Avatar initials={initials} alt={contactName} className="size-7" />
-                    ) : (
-                      <span className="block size-7 shrink-0" aria-hidden />
-                    )
+                    <span className="block size-7 shrink-0" aria-hidden />
                   )}
                 </div>
               )}
               <div className={cn('max-w-[min(75%,240px)]', isOwn && 'flex flex-col items-end')}>
+                {showSenderLabel && (
+                  <span className="mb-0.5 ml-1 block text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    {senderName}
+                  </span>
+                )}
                 {(() => {
                   const hasImage =
                     msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);

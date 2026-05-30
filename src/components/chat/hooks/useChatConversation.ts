@@ -7,6 +7,11 @@ import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 
 interface UseChatConversationProps {
   contactId: string;
+  /**
+   * Explicit conversation id. Set for group bubbles (no single peer to resolve);
+   * when provided we skip the peer-id → conversation resolution entirely.
+   */
+  conversationId?: string;
 }
 
 type DbMessageRow = {
@@ -56,8 +61,8 @@ function mergeMessages(prev: any[], incoming: any[]): any[] {
  * still resolve + fetch, but the conversation-id cache (primed from the loaded
  * conversation list) usually lets us skip the resolve round-trips.
  */
-export function useChatConversation({ contactId }: UseChatConversationProps) {
-  const cachedConvId = conversationCache.getConvId(contactId);
+export function useChatConversation({ contactId, conversationId: explicitConvId }: UseChatConversationProps) {
+  const cachedConvId = explicitConvId ?? conversationCache.getConvId(contactId);
   const cachedMessages = cachedConvId ? conversationCache.getMessages(cachedConvId) : null;
 
   const [conversationId, setConversationId] = useState<string | null>(cachedConvId);
@@ -78,10 +83,10 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
 
     const run = async () => {
       try {
-        // Step A: resolve the conversation id — from cache if we can, else over
-        // the network. The cache is primed from the conversation list, so this
-        // usually costs zero round-trips.
-        let convId = conversationCache.getConvId(contactId);
+        // Step A: resolve the conversation id. Group bubbles pass it explicitly;
+        // direct bubbles resolve it from cache, else over the network (the cache
+        // is primed from the conversation list, so this usually costs zero trips).
+        let convId = explicitConvId ?? conversationCache.getConvId(contactId);
         if (!convId) {
           let conversation = await chatService.findConversationByParticipant(contactId);
           if (!conversation) {
@@ -147,7 +152,7 @@ export function useChatConversation({ contactId }: UseChatConversationProps) {
       if (openedConvId) markConversationAsClosed(openedConvId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId, user?.id]);
+  }, [contactId, explicitConvId, user?.id]);
 
   // Keep the cache warm with the latest rendered thread so the next open of
   // this conversation paints instantly.

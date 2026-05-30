@@ -12,6 +12,8 @@ interface GroupComposerProps {
   onNameChange: (value: string) => void;
   photoPreview: string | null;
   isUploading: boolean;
+  /** Need ≥2 members before a group can be created. */
+  canCreate: boolean;
   onPickPhoto: (file: File) => void;
   onRemovePhoto: () => void;
   isSubmitting: boolean;
@@ -25,6 +27,7 @@ export default function GroupComposer({
   onNameChange,
   photoPreview,
   isUploading,
+  canCreate,
   onPickPhoto,
   onRemovePhoto,
   isSubmitting,
@@ -108,10 +111,14 @@ export default function GroupComposer({
         })}
       </div>
 
+      {!canCreate && (
+        <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">{t('needMoreMembers')}</p>
+      )}
+
       <button
         type="button"
         onClick={onCreate}
-        disabled={isSubmitting || isUploading}
+        disabled={isSubmitting || isUploading || !canCreate}
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
       >
         <UserGroupIcon className="h-5 w-5" />

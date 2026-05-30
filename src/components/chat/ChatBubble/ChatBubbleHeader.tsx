@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { MinusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
+import { MinusIcon, XMarkIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import ChatOptionsMenu from '../ChatOptionsMenu';
 
@@ -16,6 +16,8 @@ interface ChatBubbleHeaderProps {
   isMinimized: boolean;
   onToggleMinimize: () => void;
   onClose: () => void;
+  /** When set (1:1 bubbles), shows a "create group" button that starts a salita with this person. */
+  onCreateGroup?: () => void;
 }
 
 export function ChatBubbleHeader({
@@ -27,6 +29,7 @@ export function ChatBubbleHeader({
   isMinimized,
   onToggleMinimize,
   onClose,
+  onCreateGroup,
 }: ChatBubbleHeaderProps) {
   void isChatConnected;
   const t = useTranslations('chat.bubble.header');
@@ -61,6 +64,17 @@ export function ChatBubbleHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">
+        {onCreateGroup && (
+          <button
+            type="button"
+            onClick={onCreateGroup}
+            className="rounded-full p-1.5 text-neutral-600 transition-colors hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10"
+            title={t('createGroup')}
+            aria-label={t('createGroup')}
+          >
+            <UserGroupIcon className="h-5 w-5" aria-hidden />
+          </button>
+        )}
         {contactId && <ChatOptionsMenu recipientId={contactId} />}
         <button
           type="button"

@@ -27,7 +27,8 @@
       "activeNow": "Active now",
       "expand": "Expand",
       "minimize": "Minimize",
-      "close": "Close"
+      "close": "Close",
+      "createGroup": "Create group"
     },
     "input": {
       "placeholder": "Aa",
@@ -73,6 +74,7 @@
     "title": "New message",
     "closeAriaLabel": "Close",
     "searchPlaceholder": "Search friends or people",
+    "composeHint": "Pick one person to chat, or select 2+ to create a group room.",
     "friends": "Friends",
     "otherPeople": "Other people",
     "searching": "Searching…",
@@ -86,6 +88,7 @@
     "removePhoto": "Remove",
     "createGroup": "Create group",
     "creatingGroup": "Creating…",
+    "needMoreMembers": "Add at least one more person to create the group.",
     "errors": {
       "openConversation": "Could not start the conversation",
       "createGroup": "Could not create the group",

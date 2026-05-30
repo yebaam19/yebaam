@@ -1,14 +1,10 @@
 import { supabase } from '@/utils/supabase/client';
 import { ConversationType, type Conversation } from '@/features/chat/types';
 import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
-import { groupAutoName } from '@/features/chat/lib/groupName';
+import { fetchGroupParticipants, type GroupParticipant } from '@/features/chat/lib/groupParticipants';
 import { imageUrl } from '@/lib/media/urls';
 
-export interface ParticipantDisplay {
-  userId: string;
-  name: string;
-  avatar: string;
-}
+export type ParticipantDisplay = GroupParticipant;
 
 export interface ConversationDisplay {
   name: string;
@@ -61,20 +57,11 @@ export async function loadConversationDisplay(
       | { name: string | null; avatar: string | null; metadata: Record<string, unknown> | null }
       | null;
 
-    const { data: profileRows } = await supabase
-      .from('profiles')
-      .select('id, username, first_name, last_name, avatar_url')
-      .in('id', participantIds);
-    const profiles = new Map<string, PeerProfileRow>();
-    for (const p of (profileRows ?? []) as PeerProfileRow[]) profiles.set(p.id, p);
-
-    const participants: ParticipantDisplay[] = participantIds.map((id) => {
-      const d = resolvePeerDisplay(profiles.get(id) ?? null, id);
-      return { userId: id, name: d.name, avatar: d.avatar ?? '' };
-    });
-
-    const others = participantIds.filter((id) => id !== meId);
-    const autoName = groupAutoName(others.map((id) => profiles.get(id)?.first_name ?? ''));
+    const { participants, autoName } = await fetchGroupParticipants(
+      resolvedConversationId,
+      meId,
+      participantIds,
+    );
     const cfImageId = (row?.metadata as { avatar_cf_image_id?: string } | null)?.avatar_cf_image_id;
 
     return {

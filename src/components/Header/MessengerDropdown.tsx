@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Popover } from '@headlessui/react';
-import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim';
+import { ChatBubbleLeftRightIcon, PencilSquareIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
+import NewMessageDialog from '@/components/chat/NewMessageDialog';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChat } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chat.store';
@@ -60,6 +61,7 @@ export default function MessengerDropdown() {
   const openBubble = useChatStore((s) => s.openBubble);
   const onlineUserIds = usePresenceStore((s) => s.onlineUserIds);
   const isXl = useIsXl();
+  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
 
   const sorted = useMemo(() => {
     return [...conversations].sort((a, b) => {
@@ -72,10 +74,22 @@ export default function MessengerDropdown() {
   const handleRowClick = (conv: Conversation, close: () => void) => {
     if (!user) return;
 
-    // Group conversations always navigate to the full page (v1 limitation —
-    // group bubbles need a different ChatBubble variant keyed by conversationId).
+    // Group conversations open as a floating bubble on desktop (keyed by the
+    // conversation id); mobile (< xl, no tray) falls back to the full page.
     if (conv.type === ConversationType.GROUP) {
-      router.push(chatHrefForConversation(conv, user.id) as Route);
+      if (!isXl) {
+        router.push(chatHrefForConversation(conv, user.id) as Route);
+        close();
+        return;
+      }
+      openBubble({
+        contactId: conv.id,
+        conversationId: conv.id,
+        type: ConversationType.GROUP,
+        contactName: conv.name ?? t('conversation'),
+        contactAvatar: conv.avatar ?? '',
+        isOnline: false,
+      });
       close();
       return;
     }
@@ -104,6 +118,7 @@ export default function MessengerDropdown() {
   };
 
   return (
+    <>
     <Popover className="relative">
       {() => (
         <>
@@ -134,13 +149,27 @@ export default function MessengerDropdown() {
                     <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                       {t('messages')}
                     </h2>
-                    <Link
-                      href={'/chat' as Route}
-                      onClick={() => close()}
-                      className="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                      {t('viewAll')}
-                    </Link>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsNewMessageOpen(true);
+                          close();
+                        }}
+                        title={t('newMessage')}
+                        aria-label={t('newMessage')}
+                        className="rounded-full p-1.5 text-primary-600 transition-colors hover:bg-neutral-100 dark:text-primary-400 dark:hover:bg-neutral-800"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                      </button>
+                      <Link
+                        href={'/chat' as Route}
+                        onClick={() => close()}
+                        className="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
+                      >
+                        {t('viewAll')}
+                      </Link>
+                    </div>
                   </div>
 
                   <div className="max-h-[60vh] overflow-y-auto">
@@ -241,5 +270,8 @@ export default function MessengerDropdown() {
         </>
       )}
     </Popover>
+
+    <NewMessageDialog open={isNewMessageOpen} onClose={() => setIsNewMessageOpen(false)} openInBubble />
+    </>
   );
 }

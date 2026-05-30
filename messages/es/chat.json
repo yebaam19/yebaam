@@ -27,7 +27,8 @@
       "activeNow": "Activo ahora",
       "expand": "Expandir",
       "minimize": "Minimizar",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "createGroup": "Crear grupo"
     },
     "input": {
       "placeholder": "Aa",
@@ -73,6 +74,7 @@
     "title": "Nuevo mensaje",
     "closeAriaLabel": "Cerrar",
     "searchPlaceholder": "Buscar amigos o personas",
+    "composeHint": "Elige a una persona para chatear, o selecciona 2 o más para crear una salita de grupo.",
     "friends": "Amigos",
     "otherPeople": "Otras personas",
     "searching": "Buscando...",
@@ -86,6 +88,7 @@
     "removePhoto": "Quitar",
     "createGroup": "Crear grupo",
     "creatingGroup": "Creando…",
+    "needMoreMembers": "Agrega al menos una persona más para crear el grupo.",
     "errors": {
       "openConversation": "No se pudo iniciar la conversación",
       "createGroup": "No se pudo crear el grupo",

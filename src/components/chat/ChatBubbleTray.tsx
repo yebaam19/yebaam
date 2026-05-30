@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useChatStore } from '@/features/chat/store/chat.store';
+import { ConversationType } from '@/features/chat/types';
 import ChatBubble from './ChatBubble';
 
 const RESERVED_TOP_LEVEL = new Set([
@@ -47,6 +48,8 @@ export default function ChatBubbleTray() {
           contactName={b.contactName}
           contactAvatar={b.contactAvatar}
           isOnline={b.isOnline}
+          conversationId={b.conversationId}
+          isGroup={b.type === ConversationType.GROUP}
           position={i}
           baseOffset={baseOffset}
           onClose={() => closeBubble(b.contactId)}
