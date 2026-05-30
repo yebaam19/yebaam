@@ -9,15 +9,20 @@ interface MessagesListProps {
   currentUserId?: string;
   contactAvatar: string;
   contactName: string;
+  /** True for multi-person group threads — shows per-sender name + avatar. */
+  isGroup?: boolean;
+  participants?: { userId: string; name: string; avatar: string }[];
 }
 
-export default function MessagesList({ 
-  messages, 
+export default function MessagesList({
+  messages,
   isLoading,
   isTyping = false,
   currentUserId,
   contactAvatar,
-  contactName 
+  contactName,
+  isGroup = false,
+  participants = [],
 }: MessagesListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,14 +51,17 @@ export default function MessagesList({
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-4">
       {messages.map((msg, index) => {
         const isOwn = msg.senderId === currentUserId;
-        
+        // In groups, label each incoming bubble with its actual sender.
+        const sender = isGroup && !isOwn ? participants.find((p) => p.userId === msg.senderId) : undefined;
+
         return (
           <MessageBubble
             key={msg.id || `msg-${index}`}
             message={msg}
             isOwn={isOwn}
-            contactAvatar={contactAvatar}
-            contactName={contactName}
+            contactAvatar={sender ? sender.avatar : contactAvatar}
+            contactName={sender ? sender.name : contactName}
+            senderName={isGroup && !isOwn ? sender?.name ?? contactName : undefined}
           />
         );
       })}

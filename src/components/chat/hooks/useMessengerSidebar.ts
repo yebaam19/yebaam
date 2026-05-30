@@ -164,13 +164,21 @@ export function useMessengerSidebar() {
     const processed = conversations
       .filter((conv) => Boolean(conv && conv.participantIds && Array.isArray(conv.participantIds)))
       .map(conv => {
-        const otherParticipantId = getOtherParticipantId(conv.participantIds);
-        
-        // Usar datos reales del usuario si están disponibles
-        const displayName = conv.name || getUserDisplayName(otherParticipantId);
-        const displayAvatar = conv.avatar || getUserAvatar(otherParticipantId, displayName);
-        const isOnline = isUserOnline(otherParticipantId);
-        
+        const isGroup = conv.type === ConversationType.GROUP;
+        // Groups have no single "other" peer — leave it undefined so row clicks
+        // open the conversation by its id (full page) instead of a member's id.
+        const otherParticipantId = isGroup ? undefined : getOtherParticipantId(conv.participantIds);
+
+        // Usar datos reales del usuario si están disponibles. Groups carry their
+        // own name/photo from the API; never fall back to a single member's avatar.
+        const displayName = conv.name || (isGroup ? 'Grupo' : getUserDisplayName(otherParticipantId));
+        const displayAvatar =
+          conv.avatar ||
+          (isGroup
+            ? `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`
+            : getUserAvatar(otherParticipantId, displayName));
+        const isOnline = isGroup ? false : isUserOnline(otherParticipantId);
+
         return {
           ...conv,
           otherParticipantId,
@@ -184,12 +192,15 @@ export function useMessengerSidebar() {
     return processed;
   }, [conversations, currentUser?.id, usersMap, isUserOnlineStore]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Filtrar por tab (Bandejas = directos; Comunidades = grupos)
+  // Filtrar por tab. Facebook-style split:
+  //  - Bandejas (inbox): chats directos + grupos creados por el usuario (sin club).
+  //  - Comunidades (community): solo chats de grupo ligados a un club/sistema (club_id presente).
   const tabFilteredConversations = useMemo(() => {
     return processedConversations.filter((conv) => {
       const type = (conv as { type?: ConversationType }).type;
-      const isGroup = type === ConversationType.GROUP;
-      return activeTab === 'community' ? isGroup : !isGroup;
+      const clubId = (conv as { clubId?: string | null }).clubId ?? null;
+      const isClubGroup = type === ConversationType.GROUP && !!clubId;
+      return activeTab === 'community' ? isClubGroup : !isClubGroup;
     });
   }, [processedConversations, activeTab]);
 

@@ -77,7 +77,6 @@ export default function MessengerPanel({ isOpen, onClose }: MessengerPanelProps)
       <NewMessageDialog
         open={isNewMessageOpen}
         onClose={() => setIsNewMessageOpen(false)}
-        onConversationOpened={(chat) => setActiveChat(chat)}
       />
     </>
   );

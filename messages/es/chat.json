@@ -80,8 +80,16 @@
     "noFriendsYet": "Aún no tienes amigos. Busca a alguien por nombre o usuario.",
     "opening": "Abriendo...",
     "userFallback": "Usuario",
+    "sendMessageTo": "Enviar mensaje a {name}",
+    "groupNamePlaceholder": "Nombre del grupo (opcional)",
+    "groupPhoto": "Foto del grupo",
+    "removePhoto": "Quitar",
+    "createGroup": "Crear grupo",
+    "creatingGroup": "Creando…",
     "errors": {
-      "openConversation": "No se pudo iniciar la conversación"
+      "openConversation": "No se pudo iniciar la conversación",
+      "createGroup": "No se pudo crear el grupo",
+      "photoUpload": "No se pudo subir la foto"
     }
   },
   "public": {

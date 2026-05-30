@@ -59,6 +59,12 @@ export interface Conversation {
   participantIds: string[];
   name: string | null;
   avatar: string | null;
+  /**
+   * Owning club for club/system group chats. `null` for user-created groups
+   * and direct chats. Drives the Messenger sidebar tab split: user groups land
+   * in Bandejas, club groups in Comunidades.
+   */
+  clubId?: string | null;
   lastMessage: LastMessage | null;
   unreadCount: number;
   lastReadAt: Date | null;
@@ -90,6 +96,15 @@ export interface EncryptionResult {
 // DTOs para requests
 export interface CreateConversationDto {
   participantId: string;
+}
+
+export interface CreateGroupConversationDto {
+  /** Other members (the caller is added automatically). Must be ≥2 friends. */
+  participantIds: string[];
+  /** Optional custom name. When omitted, a per-viewer name is derived at read time. */
+  name?: string;
+  /** Cloudflare Images id (not the URL) for the group photo. */
+  avatarCfImageId?: string;
 }
 
 export interface CreateMessageDto {

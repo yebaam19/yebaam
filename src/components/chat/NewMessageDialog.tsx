@@ -2,47 +2,41 @@
 
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
-import Avatar from '@/ui/Avatar';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { useChatStore } from '@/features/chat/store/chat.store';
+import { chatHrefForConversation } from '@/features/chat/lib/chatHrefForConversation';
+import { uploadService } from '@/lib/service/upload.service';
 import { supabase } from '@/utils/supabase/client';
-
-interface ActiveChat {
-  id: string;
-  name: string;
-  avatar: string;
-  isOnline: boolean;
-}
+import UserRow, { displayNameFor, type SearchResult } from './NewMessageDialog/UserRow';
+import GroupComposer from './NewMessageDialog/GroupComposer';
 
 interface NewMessageDialogProps {
   open: boolean;
   onClose: () => void;
-  onConversationOpened: (chat: ActiveChat) => void;
-}
-
-interface SearchResult {
-  id: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  avatar?: string;
-  isFriend: boolean;
 }
 
 const SEARCH_DEBOUNCE_MS = 250;
 
-export default function NewMessageDialog({ open, onClose, onConversationOpened }: NewMessageDialogProps) {
+export default function NewMessageDialog({ open, onClose }: NewMessageDialogProps) {
   const t = useTranslations('chat.newMessage');
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [remoteResults, setRemoteResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Map<string, SearchResult>>(new Map());
+  const [groupName, setGroupName] = useState('');
+  const [photo, setPhoto] = useState<{ id: string; url: string } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   const friends = useFriendshipsStore((state) => state.friends);
@@ -50,9 +44,7 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
   const addConversation = useChatStore((state) => state.addConversation);
 
   useEffect(() => {
-    if (open) {
-      void fetchFriends();
-    }
+    if (open) void fetchFriends();
   }, [open, fetchFriends]);
 
   useEffect(() => {
@@ -60,6 +52,11 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
       setQuery('');
       setRemoteResults([]);
       setPendingId(null);
+      setSelected(new Map());
+      setGroupName('');
+      setPhoto(null);
+      setIsUploading(false);
+      setIsSubmitting(false);
     }
   }, [open]);
 
@@ -68,16 +65,18 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
     return () => clearTimeout(handle);
   }, [query]);
 
-  const friendResults = useMemo<SearchResult[]>(() => {
-    return friends.map((f) => ({
-      id: f.friendId,
-      username: f.username ?? '',
-      firstName: f.firstName ?? '',
-      lastName: f.lastName ?? '',
-      avatar: f.avatar,
-      isFriend: true,
-    }));
-  }, [friends]);
+  const friendResults = useMemo<SearchResult[]>(
+    () =>
+      friends.map((f) => ({
+        id: f.friendId,
+        username: f.username ?? '',
+        firstName: f.firstName ?? '',
+        lastName: f.lastName ?? '',
+        avatar: f.avatar,
+        isFriend: true,
+      })),
+    [friends],
+  );
 
   const filteredFriends = useMemo<SearchResult[]>(() => {
     if (!debouncedQuery) return friendResults;
@@ -107,25 +106,18 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
         console.warn('[NewMessageDialog] profile search failed', error);
         setRemoteResults([]);
       } else {
-        type ProfileRow = {
-          id: string;
-          username: string | null;
-          first_name: string | null;
-          last_name: string | null;
-          avatar_url: string | null;
-        };
-        const rows = ((data ?? []) as ProfileRow[]).filter(
-          (row) => row.id !== currentUserId && !friendIds.has(row.id),
+        type ProfileRow = { id: string; username: string | null; first_name: string | null; last_name: string | null; avatar_url: string | null };
+        const rows = ((data ?? []) as ProfileRow[]).filter((row) => row.id !== currentUserId && !friendIds.has(row.id));
+        setRemoteResults(
+          rows.map((row) => ({
+            id: row.id,
+            username: row.username ?? '',
+            firstName: row.first_name ?? '',
+            lastName: row.last_name ?? '',
+            avatar: row.avatar_url ?? undefined,
+            isFriend: false,
+          })),
         );
-        const results: SearchResult[] = rows.map((row) => ({
-          id: row.id,
-          username: row.username ?? '',
-          firstName: row.first_name ?? '',
-          lastName: row.last_name ?? '',
-          avatar: row.avatar_url ?? undefined,
-          isFriend: false,
-        }));
-        setRemoteResults(results);
       }
       setIsSearching(false);
     })();
@@ -134,75 +126,93 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
     };
   }, [debouncedQuery, currentUserId, friendResults]);
 
-  const handleSelect = async (user: SearchResult) => {
-    if (pendingId) return;
+  const toggleFriend = (user: SearchResult) => {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      if (next.has(user.id)) next.delete(user.id);
+      else next.set(user.id, user);
+      return next;
+    });
+  };
+
+  const openConversation = (conv: Awaited<ReturnType<typeof chatService.createOrGetConversation>>) => {
+    addConversation(conv);
+    if (currentUserId) router.push(chatHrefForConversation(conv, currentUserId) as Route);
+    onClose();
+  };
+
+  // Non-friends can only start a direct chat (groups are friends-only, server-enforced).
+  const openDirect = async (user: SearchResult) => {
+    if (pendingId || isSubmitting) return;
     setPendingId(user.id);
     try {
-      const conversation = await chatService.createOrGetConversation(user.id);
-      addConversation(conversation);
-      const displayName = user.firstName
-        ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`.trim()
-        : user.username || t('userFallback');
-      const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`;
-      onConversationOpened({
-        id: user.id,
-        name: displayName,
-        avatar: user.avatar || fallbackAvatar,
-        isOnline: false,
-      });
-      onClose();
+      openConversation(await chatService.createOrGetConversation(user.id));
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('errors.openConversation');
-      toast.error(message);
+      toast.error(error instanceof Error ? error.message : t('errors.openConversation'));
     } finally {
       setPendingId(null);
+    }
+  };
+
+  const handlePickPhoto = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('errors.photoUpload'));
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const { id, url } = await uploadService.uploadImage(file);
+      setPhoto({ id, url });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('errors.photoUpload'));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const selectedList = useMemo(() => Array.from(selected.values()), [selected]);
+
+  const createGroup = async () => {
+    if (isSubmitting || isUploading || selectedList.length < 2) return;
+    setIsSubmitting(true);
+    try {
+      const conv = await chatService.createGroupConversation(
+        selectedList.map((u) => u.id),
+        groupName.trim() || undefined,
+        photo?.id,
+      );
+      openConversation(conv);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('errors.createGroup'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const showRemote = debouncedQuery.length >= 2 && remoteResults.length > 0;
   const nothingFound =
     debouncedQuery.length >= 2 && !isSearching && filteredFriends.length === 0 && remoteResults.length === 0;
+  const onlySelected = selectedList.length === 1 ? selectedList[0] : null;
 
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog as="div" className="relative z-60" onClose={onClose}>
-        <TransitionChild
-          as={Fragment}
-          enter="ease-out duration-150"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+        <TransitionChild as={Fragment} enter="ease-out duration-150" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
           <div className="fixed inset-0 bg-black/40" />
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <TransitionChild
-              as={Fragment}
-              enter="ease-out duration-150"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-100"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <DialogPanel className="w-full max-w-md rounded-xl bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
+            <TransitionChild as={Fragment} enter="ease-out duration-150" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-100" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+              <DialogPanel className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-neutral-900">
+                <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
                   <h2 className="text-base font-semibold text-neutral-900 dark:text-white">{t('title')}</h2>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                    aria-label={t('closeAriaLabel')}
-                  >
+                  <button type="button" onClick={onClose} className="rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800" aria-label={t('closeAriaLabel')}>
                     <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
                   </button>
                 </div>
 
-                <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
                   <div className="relative">
                     <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                     <input
@@ -211,42 +221,26 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder={t('searchPlaceholder')}
-                      className="w-full rounded-full bg-neutral-100 dark:bg-neutral-800 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                      className="w-full rounded-full bg-neutral-100 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:bg-neutral-800"
                     />
                   </div>
                 </div>
 
-                <div className="max-h-[60vh] overflow-y-auto">
+                <div className="max-h-[50vh] overflow-y-auto">
                   {filteredFriends.length > 0 && (
                     <div>
-                      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        {t('friends')}
-                      </div>
+                      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{t('friends')}</div>
                       {filteredFriends.map((user) => (
-                        <UserRow
-                          key={user.id}
-                          user={user}
-                          pending={pendingId === user.id}
-                          disabled={!!pendingId}
-                          onSelect={() => handleSelect(user)}
-                        />
+                        <UserRow key={user.id} user={user} selectable selected={selected.has(user.id)} disabled={isSubmitting} onClick={() => toggleFriend(user)} />
                       ))}
                     </div>
                   )}
 
                   {showRemote && (
                     <div>
-                      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        {t('otherPeople')}
-                      </div>
+                      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{t('otherPeople')}</div>
                       {remoteResults.map((user) => (
-                        <UserRow
-                          key={user.id}
-                          user={user}
-                          pending={pendingId === user.id}
-                          disabled={!!pendingId}
-                          onSelect={() => handleSelect(user)}
-                        />
+                        <UserRow key={user.id} user={user} selectable={false} pending={pendingId === user.id} disabled={!!pendingId || isSubmitting} onClick={() => openDirect(user)} />
                       ))}
                     </div>
                   )}
@@ -254,62 +248,50 @@ export default function NewMessageDialog({ open, onClose, onConversationOpened }
                   {isSearching && debouncedQuery.length >= 2 && (
                     <div className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">{t('searching')}</div>
                   )}
-
                   {nothingFound && (
-                    <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('noResults', { query: debouncedQuery })}
-                    </div>
+                    <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t('noResults', { query: debouncedQuery })}</div>
                   )}
-
                   {!debouncedQuery && filteredFriends.length === 0 && (
-                    <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('noFriendsYet')}
-                    </div>
+                    <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t('noFriendsYet')}</div>
                   )}
                 </div>
+
+                {onlySelected && (
+                  <div className="border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
+                    <button
+                      type="button"
+                      onClick={() => openDirect(onlySelected)}
+                      disabled={!!pendingId}
+                      className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
+                    >
+                      {pendingId ? t('opening') : t('sendMessageTo', { name: displayNameFor(onlySelected, t('userFallback')) })}
+                    </button>
+                  </div>
+                )}
+
+                {selectedList.length >= 2 && (
+                  <GroupComposer
+                    selected={selectedList}
+                    name={groupName}
+                    onNameChange={setGroupName}
+                    photoPreview={photo?.url ?? null}
+                    isUploading={isUploading}
+                    onPickPhoto={handlePickPhoto}
+                    onRemovePhoto={() => setPhoto(null)}
+                    isSubmitting={isSubmitting}
+                    onCreate={createGroup}
+                    onRemoveMember={(id) => setSelected((prev) => {
+                      const next = new Map(prev);
+                      next.delete(id);
+                      return next;
+                    })}
+                  />
+                )}
               </DialogPanel>
             </TransitionChild>
           </div>
         </div>
       </Dialog>
     </Transition>
-  );
-}
-
-interface UserRowProps {
-  user: SearchResult;
-  pending: boolean;
-  disabled: boolean;
-  onSelect: () => void;
-}
-
-function UserRow({ user, pending, disabled, onSelect }: UserRowProps) {
-  const t = useTranslations('chat.newMessage');
-  const displayName = user.firstName
-    ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`.trim()
-    : user.username || t('userFallback');
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .filter(Boolean)
-    .join('')
-    .slice(0, 2);
-
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      disabled={disabled}
-      className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-    >
-      <Avatar src={user.avatar ?? null} alt={displayName} initials={initials} className="h-10 w-10" />
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{displayName}</div>
-        {user.username && (
-          <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">@{user.username}</div>
-        )}
-      </div>
-      {pending && <span className="text-xs text-neutral-500">{t('opening')}</span>}
-    </button>
   );
 }

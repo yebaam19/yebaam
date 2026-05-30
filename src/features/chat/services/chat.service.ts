@@ -114,6 +114,25 @@ class ChatService {
     };
   }
 
+  async createGroupConversation(
+    participantIds: string[],
+    name?: string,
+    avatarCfImageId?: string,
+  ): Promise<Conversation> {
+    const payload = await jsonFetch<{ data: Conversation }>(`${this.baseUrl}/group`, {
+      method: 'POST',
+      body: JSON.stringify({ participantIds, name, avatarCfImageId }),
+    });
+    if (!payload?.data?.id) {
+      throw new Error('Invalid group response from server');
+    }
+    return {
+      ...payload.data,
+      createdAt: new Date(payload.data.createdAt as unknown as string),
+      updatedAt: new Date(payload.data.updatedAt as unknown as string),
+    };
+  }
+
   async getConversations(): Promise<Conversation[]> {
     const payload = await jsonFetch<{ data: Conversation[] }>(this.baseUrl, {
       method: 'GET',

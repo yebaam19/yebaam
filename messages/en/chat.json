@@ -80,8 +80,16 @@
     "noFriendsYet": "You don't have any friends yet. Search for someone by name or username.",
     "opening": "Opening…",
     "userFallback": "User",
+    "sendMessageTo": "Message {name}",
+    "groupNamePlaceholder": "Group name (optional)",
+    "groupPhoto": "Group photo",
+    "removePhoto": "Remove",
+    "createGroup": "Create group",
+    "creatingGroup": "Creating…",
     "errors": {
-      "openConversation": "Could not start the conversation"
+      "openConversation": "Could not start the conversation",
+      "createGroup": "Could not create the group",
+      "photoUpload": "Could not upload the photo"
     }
   },
   "public": {

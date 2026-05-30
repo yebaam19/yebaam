@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken, getServiceClient } from '@/utils/supabase/server';
 import { withRetry } from '@/utils/supabase/with-retry';
 import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
+import { groupAutoName } from '@/features/chat/lib/groupName';
+import { imageUrl } from '@/lib/media/urls';
 
 type ParticipantRow = {
   conversation_id: string;
@@ -15,6 +17,7 @@ type ConversationRow = {
   name: string | null;
   avatar: string | null;
   created_by: string | null;
+  club_id: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
@@ -115,15 +118,28 @@ export async function GET() {
 
   // For DIRECT chats, `conversations.name`/`avatar` are NULL — populate them
   // from the peer's profile so consumers (header dropdown, etc.) can render
-  // the row without re-fetching.
+  // the row without re-fetching. For auto-named GROUP chats we likewise need
+  // the other members' first names to build the per-viewer display name.
   const peerByConv = new Map<string, string>();
   const peerIds = new Set<string>();
+  // Group conv id -> ordered list of the *other* members' user ids.
+  const groupOthersByConv = new Map<string, string[]>();
   for (const c of (convs ?? []) as ConversationRow[]) {
-    if (c.type !== 'direct') continue;
-    const peer = (partsByConv.get(c.id) ?? []).find((p) => p.user_id !== userId);
-    if (peer) {
-      peerByConv.set(c.id, peer.user_id);
-      peerIds.add(peer.user_id);
+    if (c.type === 'direct') {
+      const peer = (partsByConv.get(c.id) ?? []).find((p) => p.user_id !== userId);
+      if (peer) {
+        peerByConv.set(c.id, peer.user_id);
+        peerIds.add(peer.user_id);
+      }
+      continue;
+    }
+    // Group: only fetch member names when we'll need to auto-name it.
+    if (!c.name) {
+      const others = (partsByConv.get(c.id) ?? [])
+        .map((p) => p.user_id)
+        .filter((id) => id !== userId);
+      groupOthersByConv.set(c.id, others);
+      for (const id of others) peerIds.add(id);
     }
   }
 
@@ -155,6 +171,15 @@ export async function GET() {
         name = name ?? display.name;
         avatar = avatar ?? display.avatar;
       }
+    } else {
+      // GROUP: resolve the Cloudflare photo (we store only the id), and build a
+      // per-viewer display name from the other members when unnamed.
+      const cfImageId = (meta as { avatar_cf_image_id?: string }).avatar_cf_image_id;
+      avatar = avatar ?? (cfImageId ? imageUrl(cfImageId) : null);
+      if (!name) {
+        const others = groupOthersByConv.get(c.id) ?? [];
+        name = groupAutoName(others.map((id) => profileById.get(id)?.first_name ?? ''));
+      }
     }
 
     return {
@@ -162,6 +187,7 @@ export async function GET() {
       type: c.type,
       name,
       avatar,
+      clubId: c.club_id ?? null,
       participantIds: participants.map((p) => p.user_id),
       lastMessage: last
         ? {

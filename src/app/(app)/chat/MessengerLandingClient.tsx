@@ -1,21 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import { ChatBubbleLeftRightIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import MessengerSidebar from '@/components/chat/MessengerSidebar';
+import NewMessageDialog from '@/components/chat/NewMessageDialog';
 
 export default function MessengerLandingClient() {
   const router = useRouter();
   const t = useTranslations('chat');
+  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
 
   const handleSelectConversation = (chat: { id: string }) => {
     router.push(`/chat/${chat.id}` as Route);
   };
 
   const handleNewMessage = () => {
-    router.push('/feed/friends' as Route);
+    setIsNewMessageOpen(true);
   };
 
   const handleCloseMessenger = () => {
@@ -55,6 +58,8 @@ export default function MessengerLandingClient() {
           </p>
         </div>
       </div>
+
+      <NewMessageDialog open={isNewMessageOpen} onClose={() => setIsNewMessageOpen(false)} />
     </div>
   );
 }

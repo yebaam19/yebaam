@@ -11,13 +11,16 @@ interface MessageBubbleProps {
   isOwn: boolean;
   contactAvatar?: string;
   contactName?: string;
+  /** When set (group threads, incoming), shows the sender's name above the bubble. */
+  senderName?: string;
 }
 
 export default function MessageBubble({
   message,
   isOwn,
   contactAvatar,
-  contactName
+  contactName,
+  senderName,
 }: MessageBubbleProps) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
@@ -47,7 +50,12 @@ export default function MessageBubble({
         />
       )}
       
-      <div className="flex flex-col items-end gap-0.5">
+      <div className={cn('flex flex-col gap-0.5', isOwn ? 'items-end' : 'items-start')}>
+        {senderName && (
+          <span className="px-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            {senderName}
+          </span>
+        )}
         <MessageContent
           content={contentText}
           media={message.media}

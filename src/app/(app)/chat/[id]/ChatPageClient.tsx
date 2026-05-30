@@ -6,137 +6,77 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import MessengerSidebar from '@/components/chat/MessengerSidebar';
+import NewMessageDialog from '@/components/chat/NewMessageDialog';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
-import { ConversationType, type Conversation, type MessageMedia } from '@/features/chat/types';
-import { useSocket } from '@/providers/socket-provider';
+import { type Conversation, type MessageMedia } from '@/features/chat/types';
 import ChatHeader from '@/components/chat/ChatHeader';
 import MessagesList from '@/components/chat/MessagesList';
 import ChatInput from '@/components/chat/ChatInput';
-import { supabase } from '@/utils/supabase/client';
+import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
+import { loadConversationDisplay, type ParticipantDisplay } from './conversationDisplay';
 import { cn } from '@/lib/utils';
 
 interface ChatPageClientProps {
   contactId: string;
 }
 
-async function applyPeerContactDisplay(
-  resolvedConversationId: string,
-  meId: string,
-  conversationSnapshot: Conversation | null,
-): Promise<{ name: string; avatar: string; isOnline: boolean; isEncrypted: boolean; peerUserId: string | null }> {
-  const fallbackGroup = {
-    name: conversationSnapshot?.name?.trim() || 'Chat',
-    avatar: conversationSnapshot?.avatar ?? '',
-    isOnline: false,
-    isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
-  };
+type DbMessageRow = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  media: unknown;
+  status: string;
+  reply_to_id: string | null;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+};
 
-  let peerUserId: string | null = null;
-
-  if (
-    conversationSnapshot?.type === ConversationType.DIRECT &&
-    conversationSnapshot.participantIds.length >= 2
-  ) {
-    peerUserId = conversationSnapshot.participantIds.find((id) => id !== meId) ?? null;
-  }
-
-  const { data: partRows, error: partErr } = await supabase
-    .from('conversation_participants')
-    .select('user_id')
-    .eq('conversation_id', resolvedConversationId);
-
-  if (partErr) {
-    console.warn('[ChatPageClient] conversation_participants:', partErr.message);
-    return { ...fallbackGroup, peerUserId };
-  }
-
-  const participantIds = ((partRows ?? []) as { user_id: string }[])
-    .map((r) => r.user_id)
-    .filter(Boolean);
-
-  if (participantIds.length > 2) {
-    const { data: crow } = await supabase
-      .from('conversations')
-      .select('name, avatar')
-      .eq('id', resolvedConversationId)
-      .maybeSingle();
-    const row = crow as { name: string | null; avatar: string | null } | null;
-    return {
-      name: row?.name?.trim() || conversationSnapshot?.name?.trim() || 'Chat',
-      avatar: row?.avatar || conversationSnapshot?.avatar || '',
-      isOnline: false,
-      isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
-      peerUserId: null,
-    };
-  }
-
-  if (!peerUserId && participantIds.length === 2) {
-    peerUserId = participantIds.find((id) => id !== meId) ?? null;
-  }
-
-  if (!peerUserId && participantIds.length === 1 && participantIds[0] !== meId) {
-    peerUserId = participantIds[0] ?? null;
-  }
-
-  if (!peerUserId) {
-    return {
-      name: fallbackGroup.name,
-      avatar: fallbackGroup.avatar,
-      isOnline: false,
-      isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
-      peerUserId: null,
-    };
-  }
-
-  const { data: profile, error: profErr } = await supabase
-    .from('profiles')
-    .select('username, first_name, last_name, avatar_url')
-    .eq('id', peerUserId)
-    .maybeSingle();
-
-  if (profErr || !profile) {
-    const short = peerUserId.slice(0, 8);
-    return {
-      name: short,
-      avatar: '',
-      isOnline: false,
-      isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
-      peerUserId,
-    };
-  }
-
-  const row = profile as {
-    username: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    avatar_url: string | null;
-  };
-  const full = [row.first_name, row.last_name].filter(Boolean).join(' ').trim();
-  const displayName = full || (row.username ? `@${row.username}` : peerUserId.slice(0, 8));
-
+function rowToMessage(row: DbMessageRow) {
   return {
-    name: displayName,
-    avatar: row.avatar_url ?? '',
-    isOnline: false,
-    isEncrypted: Boolean(conversationSnapshot?.isEncrypted),
-    peerUserId,
+    id: row.id,
+    conversationId: row.conversation_id,
+    senderId: row.sender_id,
+    content: row.content,
+    media: row.media ?? null,
+    status: row.status ?? 'sent',
+    replyToId: row.reply_to_id,
+    isDeleted: Boolean(row.is_deleted),
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at ?? row.created_at),
   };
 }
+
+const byCreatedAt = (a: { createdAt: Date | string }, b: { createdAt: Date | string }) =>
+  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+
+/** Merge two message lists by id (dedup), keeping chronological order. */
+function mergeMessages(prev: any[], incoming: any[]): any[] {
+  if (prev.length === 0) return [...incoming].sort(byCreatedAt);
+  const seen = new Set(prev.map((m) => m.id));
+  const merged = [...prev];
+  for (const m of incoming) if (!seen.has(m.id)) merged.push(m);
+  return merged.sort(byCreatedAt);
+}
+
+const noop = () => {};
 
 export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const router = useRouter();
   const t = useTranslations('chat');
   const user = useAuthStore((state) => state.user);
-  const { chatSocket } = useSocket();
 
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
   const [headerEncrypted, setHeaderEncrypted] = useState(false);
   const [peerUserId, setPeerUserId] = useState<string | null>(null);
+  const [isGroup, setIsGroup] = useState(false);
+  const [participants, setParticipants] = useState<ParticipantDisplay[]>([]);
   const [inboxDrawerOpen, setInboxDrawerOpen] = useState(false);
+  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({
     name: t('conversation.fallbackName'),
     avatar: '',
@@ -154,12 +94,17 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   useEffect(() => {
     if (!contactId || !user) return;
 
+    let isMounted = true;
+    let channel: ReturnType<typeof subscribeToTable> | null = null;
+
     const loadConversation = async () => {
       try {
         setIsLoading(true);
         setContactInfo({ name: t('conversation.fallbackName'), avatar: '', isOnline: false });
         setHeaderEncrypted(false);
         setPeerUserId(null);
+        setIsGroup(false);
+        setParticipants([]);
 
         let resolvedConversationId: string;
         let conversationSnapshot: Conversation | null = null;
@@ -182,67 +127,57 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
           }
         }
 
+        if (!isMounted) return;
         setConversationId(resolvedConversationId);
 
-        const display = await applyPeerContactDisplay(resolvedConversationId, user.id, conversationSnapshot);
-        setContactInfo({
-          name: display.name,
-          avatar: display.avatar,
-          isOnline: display.isOnline,
+        // Subscribe BEFORE painting so a message landing mid-load isn't lost.
+        // (Replaces the old socket.io path — `chatSocket` is dead, so the full
+        // page had no live delivery; group threads depend on this.)
+        channel = subscribeToTable<DbMessageRow>({
+          channel: `chat:conv:${resolvedConversationId}`,
+          table: 'messages',
+          filter: `conversation_id=eq.${resolvedConversationId}`,
+          events: ['INSERT'],
+          onChange: (payload) => {
+            if (!isMounted) return;
+            const row = payload.new as DbMessageRow;
+            if (!row?.id) return;
+            const incoming = rowToMessage(row);
+            setMessages((prev) =>
+              prev.some((m) => m.id === incoming.id) ? prev : mergeMessages(prev, [incoming]),
+            );
+          },
         });
+
+        const display = await loadConversationDisplay(resolvedConversationId, user.id, conversationSnapshot);
+        if (!isMounted) return;
+        setContactInfo({ name: display.name, avatar: display.avatar, isOnline: display.isOnline });
         setHeaderEncrypted(display.isEncrypted);
         setPeerUserId(display.peerUserId);
+        setIsGroup(display.isGroup);
+        setParticipants(display.participants);
 
-        const sortedMessages = [...result.messages].sort(
-          (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        );
-        setMessages(sortedMessages);
+        setMessages((prev) => mergeMessages(prev, result.messages));
 
-        if (chatSocket) {
-          chatSocket.emit('join_conversation', { conversationId: resolvedConversationId });
-        }
+        // Best-effort mark-as-read (non-blocking).
+        void fetch(`/api/conversations/${resolvedConversationId}/read`, {
+          method: 'POST',
+          credentials: 'same-origin',
+        }).catch(() => {});
       } catch (error) {
         console.error('[CHAT PAGE] Error loading conversation:', error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     loadConversation();
-  }, [contactId, user, chatSocket, t]);
-
-  useEffect(() => {
-    if (!chatSocket || !conversationId) return;
-
-    const handleNewMessage = (data: any) => {
-      if (data.conversationId !== conversationId) return;
-      const msg = data.message;
-      if (!msg?.id) return;
-      setMessages((prev) => (prev.some((m: any) => m?.id === msg.id) ? prev : [...prev, msg]));
-    };
-
-    const handleTypingStart = (data: any) => {
-      if (data.conversationId === conversationId && data.userId !== user?.id) {
-        setIsTyping(true);
-      }
-    };
-
-    const handleTypingStop = (data: any) => {
-      if (data.conversationId === conversationId) {
-        setIsTyping(false);
-      }
-    };
-
-    chatSocket.on('new_message', handleNewMessage);
-    chatSocket.on('typing_start', handleTypingStart);
-    chatSocket.on('typing_stop', handleTypingStop);
 
     return () => {
-      chatSocket.off('new_message', handleNewMessage);
-      chatSocket.off('typing_start', handleTypingStart);
-      chatSocket.off('typing_stop', handleTypingStop);
+      isMounted = false;
+      unsubscribe(channel);
     };
-  }, [chatSocket, conversationId, user?.id]);
+  }, [contactId, user, t]);
 
   const handleSendMessage = async (content?: string, media?: MessageMedia): Promise<boolean> => {
     if (!conversationId) return false;
@@ -251,32 +186,11 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
 
     try {
       const sent = await chatService.sendMessage(conversationId, trimmed ?? '', undefined, media);
-      setMessages((prev) => (prev.some((m: any) => m?.id === sent.id) ? prev : [...prev, sent]));
-      if (chatSocket) {
-        try {
-          chatSocket.emit('send_message', {
-            conversationId,
-            content: trimmed || undefined,
-            media: media || undefined,
-          });
-        } catch {}
-      }
+      setMessages((prev) => (prev.some((m: any) => m?.id === sent.id) ? prev : mergeMessages(prev, [sent])));
       return true;
     } catch (error) {
       console.error('Error sending message:', error);
       return false;
-    }
-  };
-
-  const handleTypingStartWs = () => {
-    if (chatSocket && conversationId) {
-      chatSocket.emit('typing_start', { conversationId });
-    }
-  };
-
-  const handleTypingStopWs = () => {
-    if (chatSocket && conversationId) {
-      chatSocket.emit('typing_stop', { conversationId });
     }
   };
 
@@ -311,7 +225,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
           onSelectChat={handleSelectConversation}
           onNewMessage={() => {
             setInboxDrawerOpen(false);
-            router.push('/feed/friends' as Route);
+            setIsNewMessageOpen(true);
           }}
         />
       </div>
@@ -341,20 +255,24 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
           <MessagesList
             messages={messages}
             isLoading={isLoading}
-            isTyping={isTyping}
+            isTyping={false}
             currentUserId={user?.id}
             contactAvatar={contactInfo.avatar}
             contactName={contactInfo.name}
+            isGroup={isGroup}
+            participants={participants}
           />
 
           <ChatInput
             onSendMessage={handleSendMessage}
-            onTypingStart={handleTypingStartWs}
-            onTypingStop={handleTypingStopWs}
+            onTypingStart={noop}
+            onTypingStop={noop}
             typingTimeoutRef={{ current: null }}
           />
         </div>
       </div>
+
+      <NewMessageDialog open={isNewMessageOpen} onClose={() => setIsNewMessageOpen(false)} />
     </div>
   );
 }
