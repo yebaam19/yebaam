@@ -36,6 +36,8 @@ export interface Message {
   status: MessageStatus;
   replyToId: string | null;
   isDeleted: boolean;
+  /** Set when the text was edited — powers the "editado" label. */
+  editedAt?: string | Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

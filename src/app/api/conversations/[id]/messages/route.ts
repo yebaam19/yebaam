@@ -10,6 +10,7 @@ type MessageRow = {
   status: string;
   reply_to_id: string | null;
   is_deleted: boolean;
+  edited_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -24,6 +25,7 @@ function mapMessage(row: MessageRow) {
     status: row.status,
     replyToId: row.reply_to_id,
     isDeleted: row.is_deleted,
+    editedAt: row.edited_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -74,11 +76,12 @@ export async function GET(
     );
   }
 
+  // Deleted messages are kept (is_deleted=true) and returned so the UI can show
+  // a "Mensaje eliminado" tombstone (Facebook-style) that survives reloads.
   const { data, error, count } = await client
     .from('messages')
     .select('*', { count: 'exact' })
     .eq('conversation_id', conversationId)
-    .eq('is_deleted', false)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 

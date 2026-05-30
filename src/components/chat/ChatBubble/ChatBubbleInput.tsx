@@ -59,9 +59,7 @@ export function ChatBubbleInput({
 
   const { uploadMedia, isUploading, uploadProgress } = useUploadChatMedia();
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const applyImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error(t('errors.invalidImage'));
       return;
@@ -74,6 +72,32 @@ export function ChatBubbleInput({
     const reader = new FileReader();
     reader.onloadend = () => setPreviewUrl(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) applyImageFile(file);
+  };
+
+  // Paste a screenshot (or any copied image) straight into the message box —
+  // clipboard images usually have no filename, so we give them one.
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          const named = file.name?.trim()
+            ? file
+            : new File([file], `screenshot.${(file.type.split('/')[1] || 'png').split('+')[0]}`, { type: file.type });
+          applyImageFile(named);
+        }
+        return;
+      }
+    }
   };
 
   const handleRemoveFile = () => {
@@ -261,6 +285,7 @@ export function ChatBubbleInput({
             rows={1}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder={t('placeholder')}
             disabled={isSending || isUploading}
             aria-label={t('ariaLabel')}

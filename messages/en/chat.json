@@ -95,6 +95,18 @@
       "photoUpload": "Could not upload the photo"
     }
   },
+  "message": {
+    "actions": "Message options",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleted": "Message deleted",
+    "edited": "edited",
+    "save": "Save",
+    "cancel": "Cancel",
+    "editAria": "Edit message",
+    "deleteFailed": "Could not delete the message",
+    "editFailed": "Could not edit the message"
+  },
   "public": {
     "roomsSidebar": {
       "ariaLabel": "Rooms list"

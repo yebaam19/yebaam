@@ -23,6 +23,7 @@ type DbMessageRow = {
   status: string;
   reply_to_id: string | null;
   is_deleted: boolean;
+  edited_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +38,7 @@ function rowToMessage(row: DbMessageRow) {
     status: row.status ?? 'sent',
     replyToId: row.reply_to_id,
     isDeleted: Boolean(row.is_deleted),
+    editedAt: row.edited_at ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at ?? row.created_at),
   };
@@ -107,15 +109,22 @@ export function useChatConversation({ contactId, conversationId: explicitConvId 
           channel: `chat:conv:${convId}`,
           table: 'messages',
           filter: `conversation_id=eq.${convId}`,
-          events: ['INSERT'],
+          events: ['INSERT', 'UPDATE'],
           onChange: (payload) => {
             if (!isMounted) return;
             const row = payload.new as DbMessageRow;
             if (!row?.id) return;
             const incoming = rowToMessage(row);
-            setMessages((prev) =>
-              prev.some((m) => m.id === incoming.id) ? prev : mergeMessages(prev, [incoming]),
-            );
+            // UPDATE (edit / soft-delete) → replace in place; INSERT → append.
+            setMessages((prev) => {
+              const idx = prev.findIndex((m) => m.id === incoming.id);
+              if (idx !== -1) {
+                const next = [...prev];
+                next[idx] = incoming;
+                return next;
+              }
+              return mergeMessages(prev, [incoming]);
+            });
           },
         });
 

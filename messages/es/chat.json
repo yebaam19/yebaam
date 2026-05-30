@@ -95,6 +95,18 @@
       "photoUpload": "No se pudo subir la foto"
     }
   },
+  "message": {
+    "actions": "Opciones del mensaje",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleted": "Mensaje eliminado",
+    "edited": "editado",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "editAria": "Editar mensaje",
+    "deleteFailed": "No se pudo eliminar el mensaje",
+    "editFailed": "No se pudo editar el mensaje"
+  },
   "public": {
     "roomsSidebar": {
       "ariaLabel": "Lista de salas"

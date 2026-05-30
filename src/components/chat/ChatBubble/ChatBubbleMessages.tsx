@@ -9,6 +9,8 @@ import MessageImage from '../MessageImage';
 import ImageModal from '../ImageModal';
 import AudioMessage from '../AudioMessage';
 import type { MessageMedia } from '@/features/chat/types';
+import { CheckIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
+import { MessageActionsMenu } from './MessageActionsMenu';
 
 export interface ChatBubbleMessagesProps {
   messages: any[];
@@ -20,6 +22,9 @@ export interface ChatBubbleMessagesProps {
   /** Group threads: show each incoming sender's own avatar + a name label. */
   isGroup?: boolean;
   participants?: { userId: string; name: string; avatar: string }[];
+  /** Edit/remove your own messages (Facebook-style). */
+  onEditMessage?: (messageId: string, content: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
 }
 
 function getContentText(content: unknown): string {
@@ -57,11 +62,22 @@ export function ChatBubbleMessages({
   contactName,
   isGroup = false,
   participants = [],
+  onEditMessage,
+  onDeleteMessage,
 }: ChatBubbleMessagesProps) {
   const user = useAuthStore((state) => state.user);
   const [zoomMedia, setZoomMedia] = useState<MessageMedia | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
   const t = useTranslations('chat.bubble.messages');
+  const tMsg = useTranslations('chat.message');
   const locale = useLocale();
+
+  const submitEdit = (messageId: string) => {
+    const next = editValue.trim();
+    setEditingId(null);
+    if (next && onEditMessage) onEditMessage(messageId, next);
+  };
 
   const participantsById = new Map(participants.map((p) => [p.userId, p]));
   const initialsOf = (name: string) =>
@@ -164,11 +180,30 @@ export function ChatBubbleMessages({
             ? outgoingBubbleRadii(sameSenderAsPrev, sameSenderAsNext)
             : incomingBubbleRadii(sameSenderAsPrev, sameSenderAsNext);
 
+          // Removed message → "Mensaje eliminado" tombstone (no content/actions).
+          if (msg.isDeleted) {
+            return (
+              <div
+                key={msg.id || `msg-${index}`}
+                className={cn('flex w-full items-end gap-2', isOwn ? 'justify-end' : 'justify-start', sameSenderAsPrev ? 'mt-0.5' : 'mt-3')}
+              >
+                {!isOwn && <span className="block size-7 shrink-0" aria-hidden />}
+                <div className="max-w-[min(75%,240px)] rounded-2xl border border-dashed border-neutral-300 px-3 py-2 dark:border-neutral-600">
+                  <p className="text-xs italic text-neutral-400 dark:text-neutral-500">{tMsg('deleted')}</p>
+                </div>
+              </div>
+            );
+          }
+
+          const isEditing = editingId === msg.id;
+          const contentText = getContentText(msg.content);
+          const canEdit = Boolean(onEditMessage) && Boolean(contentText) && !msg.media;
+
           return (
             <div
               key={msg.id || `msg-${index}`}
               className={cn(
-                'flex w-full items-end gap-2',
+                'group flex w-full items-end gap-2',
                 isOwn ? 'justify-end' : 'justify-start',
                 sameSenderAsPrev ? 'mt-0.5' : 'mt-3',
               )}
@@ -187,66 +222,127 @@ export function ChatBubbleMessages({
                   )}
                 </div>
               )}
+
+              {isOwn && !isEditing && (onEditMessage || onDeleteMessage) && (
+                <MessageActionsMenu
+                  canEdit={canEdit}
+                  onEdit={() => {
+                    setEditingId(msg.id);
+                    setEditValue(contentText);
+                  }}
+                  onDelete={() => onDeleteMessage?.(msg.id)}
+                />
+              )}
+
               <div className={cn('max-w-[min(75%,240px)]', isOwn && 'flex flex-col items-end')}>
                 {showSenderLabel && (
                   <span className="mb-0.5 ml-1 block text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                     {senderName}
                   </span>
                 )}
-                {(() => {
-                  const hasImage =
-                    msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);
-                  const hasAudio =
-                    msg.media?.type === 'audio' && Boolean(msg.media?.r2_key);
-                  const contentText = getContentText(msg.content);
-                  return (
-                    <div
-                      className={cn(
-                        'overflow-hidden',
-                        bubbleRadii,
-                        isOwn
-                          ? 'bg-linear-to-br from-[#0084ff] to-[#5a67d8] text-white shadow-sm dark:from-[#2374e8] dark:to-[#4f5fcf]'
-                          : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white',
-                      )}
-                    >
-                      {hasImage && (
-                        <MessageImage
-                          media={msg.media as MessageMedia}
-                          onClick={() => setZoomMedia(msg.media as MessageMedia)}
-                        />
-                      )}
-                      {hasAudio && (
-                        <AudioMessage
-                          media={msg.media as MessageMedia}
-                          conversationId={msg.conversationId}
-                        />
-                      )}
-                      <div className="px-3 py-2">
-                        {contentText && (
-                          <p className="wrap-break-word text-sm whitespace-pre-wrap">
-                            {contentText}
-                          </p>
+                {isEditing ? (
+                  <div className="flex w-[220px] flex-col gap-1 rounded-2xl bg-neutral-100 p-2 dark:bg-neutral-800">
+                    <textarea
+                      autoFocus
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          submitEdit(msg.id);
+                        }
+                        if (e.key === 'Escape') {
+                          e.preventDefault();
+                          setEditingId(null);
+                        }
+                      }}
+                      aria-label={tMsg('editAria')}
+                      className="max-h-28 w-full resize-none rounded-lg border-0 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 dark:bg-neutral-900 dark:text-white"
+                    />
+                    <div className="flex justify-end gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                        title={tMsg('cancel')}
+                        className="rounded-md p-1 text-neutral-500 hover:bg-black/5 dark:hover:bg-white/10"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => submitEdit(msg.id)}
+                        title={tMsg('save')}
+                        className="rounded-md bg-[#0084ff] p-1 text-white hover:bg-[#1877f2]"
+                      >
+                        <CheckIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  (() => {
+                    const hasImage =
+                      msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);
+                    const hasAudio =
+                      msg.media?.type === 'audio' && Boolean(msg.media?.r2_key);
+                    return (
+                      <div
+                        className={cn(
+                          'overflow-hidden',
+                          bubbleRadii,
+                          isOwn
+                            ? 'bg-linear-to-br from-[#0084ff] to-[#5a67d8] text-white shadow-sm dark:from-[#2374e8] dark:to-[#4f5fcf]'
+                            : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white',
                         )}
-                        <div
-                          className={cn(
-                            'flex items-center gap-1',
-                            contentText && 'mt-1',
+                      >
+                        {hasImage && (
+                          <MessageImage
+                            media={msg.media as MessageMedia}
+                            onClick={() => setZoomMedia(msg.media as MessageMedia)}
+                          />
+                        )}
+                        {hasAudio && (
+                          <AudioMessage
+                            media={msg.media as MessageMedia}
+                            conversationId={msg.conversationId}
+                          />
+                        )}
+                        <div className="px-3 py-2">
+                          {contentText && (
+                            <p className="wrap-break-word text-sm whitespace-pre-wrap">
+                              {contentText}
+                            </p>
                           )}
-                        >
-                          <p
+                          <div
                             className={cn(
-                              'text-xs',
-                              isOwn ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400',
+                              'flex items-center gap-1',
+                              contentText && 'mt-1',
                             )}
                           >
-                            {formatTime(msg.createdAt)}
-                          </p>
-                          {isOwn && getMessageStatusIcon(msg.status)}
+                            <p
+                              className={cn(
+                                'text-xs',
+                                isOwn ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400',
+                              )}
+                            >
+                              {formatTime(msg.createdAt)}
+                            </p>
+                            {msg.editedAt && (
+                              <span
+                                className={cn(
+                                  'text-[10px]',
+                                  isOwn ? 'text-white/70' : 'text-neutral-400 dark:text-neutral-500',
+                                )}
+                              >
+                                · {tMsg('edited')}
+                              </span>
+                            )}
+                            {isOwn && getMessageStatusIcon(msg.status)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()
+                )}
               </div>
             </div>
           );

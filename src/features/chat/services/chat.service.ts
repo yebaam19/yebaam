@@ -195,6 +195,27 @@ class ChatService {
     return { ...payload.data, conversationId } as Message;
   }
 
+  async editMessage(
+    conversationId: string,
+    messageId: string,
+    content: string,
+  ): Promise<Message> {
+    const payload = await jsonFetch<{ data: Message }>(
+      `${this.baseUrl}/${conversationId}/messages/${messageId}`,
+      { method: 'PATCH', body: JSON.stringify({ content }) },
+    );
+    if (!payload?.data?.id) {
+      throw new Error('Invalid message response from server');
+    }
+    return payload.data;
+  }
+
+  async deleteMessage(conversationId: string, messageId: string): Promise<void> {
+    await jsonFetch(`${this.baseUrl}/${conversationId}/messages/${messageId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async findConversationByParticipant(
     participantId: string,
   ): Promise<Conversation | null> {

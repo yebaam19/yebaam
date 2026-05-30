@@ -12,6 +12,9 @@ interface MessagesListProps {
   /** True for multi-person group threads — shows per-sender name + avatar. */
   isGroup?: boolean;
   participants?: { userId: string; name: string; avatar: string }[];
+  /** Edit/remove your own messages (Facebook-style). */
+  onEditMessage?: (messageId: string, content: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
 }
 
 export default function MessagesList({
@@ -23,6 +26,8 @@ export default function MessagesList({
   contactName,
   isGroup = false,
   participants = [],
+  onEditMessage,
+  onDeleteMessage,
 }: MessagesListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +67,8 @@ export default function MessagesList({
             contactAvatar={sender ? sender.avatar : contactAvatar}
             contactName={sender ? sender.name : contactName}
             senderName={isGroup && !isOwn ? sender?.name ?? contactName : undefined}
+            onEdit={isOwn && onEditMessage ? (content) => onEditMessage(msg.id, content) : undefined}
+            onDelete={isOwn && onDeleteMessage ? () => onDeleteMessage(msg.id) : undefined}
           />
         );
       })}

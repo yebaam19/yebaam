@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { chatService } from '@/features/chat/services/chat.service';
 import { fetchGroupParticipants, type GroupParticipant } from '@/features/chat/lib/groupParticipants';
 import { useChatConversation } from './hooks/useChatConversation';
 import { useChatMessages } from './hooks/useChatMessages';
@@ -78,6 +81,34 @@ export default function ChatBubble({
     conversationId,
   });
 
+  const tMsg = useTranslations('chat.message');
+
+  // Edit / delete own messages (optimistic; Realtime UPDATE syncs the peers).
+  const handleEditMessage = async (messageId: string, content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed || !conversationId) return;
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, content: trimmed, editedAt: new Date().toISOString() } : m)),
+    );
+    try {
+      await chatService.editMessage(conversationId, messageId, trimmed);
+    } catch {
+      toast.error(tMsg('editFailed'));
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!conversationId) return;
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, isDeleted: true, content: '', media: null } : m)),
+    );
+    try {
+      await chatService.deleteMessage(conversationId, messageId);
+    } catch {
+      toast.error(tMsg('deleteFailed'));
+    }
+  };
+
   const bubbleWidthPx = 328;
   /** ~12px gutter between stacked docked chats (same footprint as antes con w-80). */
   const stackStepPx = bubbleWidthPx + 12;
@@ -114,6 +145,8 @@ export default function ChatBubble({
             contactName={contactName}
             isGroup={isGroup}
             participants={participants}
+            onEditMessage={handleEditMessage}
+            onDeleteMessage={handleDeleteMessage}
           />
 
           <ChatBubbleInput

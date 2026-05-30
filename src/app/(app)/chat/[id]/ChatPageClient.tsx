@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
 import MessengerSidebar from '@/components/chat/MessengerSidebar';
@@ -30,6 +31,7 @@ type DbMessageRow = {
   status: string;
   reply_to_id: string | null;
   is_deleted: boolean;
+  edited_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -44,6 +46,7 @@ function rowToMessage(row: DbMessageRow) {
     status: row.status ?? 'sent',
     replyToId: row.reply_to_id,
     isDeleted: Boolean(row.is_deleted),
+    editedAt: row.edited_at ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at ?? row.created_at),
   };
@@ -137,15 +140,22 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
           channel: `chat:conv:${resolvedConversationId}`,
           table: 'messages',
           filter: `conversation_id=eq.${resolvedConversationId}`,
-          events: ['INSERT'],
+          events: ['INSERT', 'UPDATE'],
           onChange: (payload) => {
             if (!isMounted) return;
             const row = payload.new as DbMessageRow;
             if (!row?.id) return;
             const incoming = rowToMessage(row);
-            setMessages((prev) =>
-              prev.some((m) => m.id === incoming.id) ? prev : mergeMessages(prev, [incoming]),
-            );
+            // UPDATE (edit / soft-delete) → replace in place; INSERT → append.
+            setMessages((prev) => {
+              const idx = prev.findIndex((m) => m.id === incoming.id);
+              if (idx !== -1) {
+                const next = [...prev];
+                next[idx] = incoming;
+                return next;
+              }
+              return mergeMessages(prev, [incoming]);
+            });
           },
         });
 
@@ -191,6 +201,31 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
     } catch (error) {
       console.error('Error sending message:', error);
       return false;
+    }
+  };
+
+  const handleEditMessage = async (messageId: string, content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed || !conversationId) return;
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, content: trimmed, editedAt: new Date().toISOString() } : m)),
+    );
+    try {
+      await chatService.editMessage(conversationId, messageId, trimmed);
+    } catch {
+      toast.error(t('message.editFailed'));
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!conversationId) return;
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, isDeleted: true, content: '', media: null } : m)),
+    );
+    try {
+      await chatService.deleteMessage(conversationId, messageId);
+    } catch {
+      toast.error(t('message.deleteFailed'));
     }
   };
 
@@ -261,6 +296,8 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
             contactName={contactInfo.name}
             isGroup={isGroup}
             participants={participants}
+            onEditMessage={handleEditMessage}
+            onDeleteMessage={handleDeleteMessage}
           />
 
           <ChatInput
