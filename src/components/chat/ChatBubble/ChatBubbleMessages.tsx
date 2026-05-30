@@ -225,6 +225,7 @@ export function ChatBubbleMessages({
 
               {isOwn && !isEditing && (onEditMessage || onDeleteMessage) && (
                 <MessageActionsMenu
+                  align="left"
                   canEdit={canEdit}
                   onEdit={() => {
                     setEditingId(msg.id);
