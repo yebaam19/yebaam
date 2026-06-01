@@ -35,16 +35,13 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
     <div className="py-6">
       {/* Grilla de 2 filas: fila 1 = portada (alineada a la columna central),
           fila 2 = cuerpo de 3 columnas (riel | centro | derecha). Cada columna
-          del cuerpo es una pila independiente, así se alinean de forma limpia y
-          sin huecos. En móvil colapsa a una sola columna. */}
-      {/* La grilla de 3 columnas se activa en `xl` (no `lg`): el shell ya resta
-          256px de sidebar izquierdo, así que en `lg` las dos columnas fijas
-          aplastarían la columna principal (Foto o Reel + Posts). En `xl` las
-          columnas laterales son angostas (11rem / 16rem) y la principal queda
-          como la más ancha, igual que el mockup. */}
-      <div className="grid grid-cols-1 items-start gap-x-6 gap-y-6 xl:grid-cols-[11rem_16rem_minmax(0,1fr)]">
+          del cuerpo es una pila independiente. Se activa en `lg` con columnas
+          laterales angostas (9rem/13rem) que crecen en `xl` (11rem/16rem) — la
+          columna principal (Foto o Reel + Posts) siempre es la más ancha, igual
+          que el mockup. En móvil colapsa a una sola columna. */}
+      <div className="grid grid-cols-1 items-start gap-x-6 gap-y-6 lg:grid-cols-[9rem_13rem_minmax(0,1fr)] xl:grid-cols-[11rem_16rem_minmax(0,1fr)]">
         {/* Foto de Portada — fila 1, columnas 2+3 (su borde izq. alinea con la Foto de Perfil) */}
-        <div className="order-1 overflow-hidden rounded-2xl shadow-sm xl:col-start-2 xl:col-span-2 xl:row-start-1">
+        <div className="order-1 overflow-hidden rounded-2xl shadow-sm lg:col-start-2 lg:col-span-2 lg:row-start-1">
           <ServiceCoverImage
             coverUrl={service.coverImage ?? service.coverUrl}
             serviceName={service.name}
@@ -55,14 +52,15 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
         </div>
 
         {/* Columna central — Foto de Perfil + Detalles. En móvil va 2º (la
-            identidad justo bajo la portada). */}
-        <div className="order-2 space-y-6 xl:col-start-2 xl:row-start-2 xl:order-0">
+            identidad justo bajo la portada). En desktop se fija (sticky) para
+            que acompañe el scroll del feed y no deje un gran vacío. */}
+        <div className="order-2 space-y-6 lg:sticky lg:top-20 lg:col-start-2 lg:row-start-2 lg:self-start lg:order-0">
           <ProfilePhotoCard logoUrl={service.logoUrl} serviceName={service.name} />
           <DetailsCard service={service} />
         </div>
 
         {/* Columna derecha — Nombre/Badges, pestañas, Foto o Reel, Posts y Consulta. 3º en móvil. */}
-        <div className="order-3 space-y-6 xl:col-start-3 xl:row-start-2 xl:order-0">
+        <div className="order-3 space-y-6 lg:col-start-3 lg:row-start-2 lg:order-0">
           <ProfileNameHeader service={service} />
           <SectionTabs service={service} />
           <FeaturedReel media={service.media} serviceName={service.name} />
@@ -70,8 +68,9 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
           <ContactCard service={service} inline />
         </div>
 
-        {/* Riel de acciones — columna 1, fila 2 (empieza al nivel de la Foto de Perfil). Último en móvil. */}
-        <div className="order-4 xl:col-start-1 xl:row-start-2 xl:order-0">
+        {/* Riel de acciones — columna 1, fila 2 (empieza al nivel de la Foto de
+            Perfil). Sticky en desktop. Último en móvil. */}
+        <div className="order-4 lg:sticky lg:top-20 lg:col-start-1 lg:row-start-2 lg:self-start lg:order-0">
           <LeftActionRail />
         </div>
       </div>
