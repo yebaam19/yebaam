@@ -16,7 +16,13 @@ import { useTranslations } from 'next-intl'
 
 type TabType = 'siguiendo' | 'mis-blogs' | 'descubrir'
 
-export function BlogsPageContainer() {
+interface BlogsPageContainerProps {
+  /** Detail-link prefix forwarded to the grid/cards. Defaults to the feed
+   *  mount; `/musica/blog` keeps navigation inside the music shell. */
+  basePath?: string
+}
+
+export function BlogsPageContainer({ basePath }: BlogsPageContainerProps = {}) {
   const t = useTranslations('blogs.list')
   const [activeTab, setActiveTab] = useState<TabType>('siguiendo')
   const [loadingBlogId, setLoadingBlogId] = useState<string | null>(null)
@@ -207,6 +213,7 @@ export function BlogsPageContainer() {
               onUnfollow={handleUnfollow}
               loadingBlogId={loadingBlogId}
               emptyMessage={getEmptyMessage()}
+              basePath={basePath}
             />
           )}
         </section>

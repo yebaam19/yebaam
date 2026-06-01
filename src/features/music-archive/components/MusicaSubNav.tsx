@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 
 interface Tab {
   /** Translation key suffix under `musica.nav.*` */
-  key: 'explore' | 'clubs' | 'upload' | 'about';
+  key: 'explore' | 'clubs' | 'blog' | 'upload' | 'about';
   href: Route;
   match: (pathname: string) => boolean;
 }
@@ -26,6 +26,11 @@ const TABS: Tab[] = [
     key: 'clubs',
     href: '/musica/clubes' as Route,
     match: (p) => p.startsWith('/musica/clubes'),
+  },
+  {
+    key: 'blog',
+    href: '/musica/blog' as Route,
+    match: (p) => p.startsWith('/musica/blog'),
   },
   {
     key: 'upload',

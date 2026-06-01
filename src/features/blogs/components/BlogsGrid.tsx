@@ -11,6 +11,8 @@ interface BlogsGridProps {
   onUnfollow?: (blogId: string) => void
   loadingBlogId?: string | null
   emptyMessage?: string
+  /** Forwarded to each BlogCard so detail links resolve under the right mount. */
+  basePath?: string
 }
 
 export const BlogsGrid: FC<BlogsGridProps> = ({
@@ -19,6 +21,7 @@ export const BlogsGrid: FC<BlogsGridProps> = ({
   onUnfollow,
   loadingBlogId,
   emptyMessage,
+  basePath,
 }) => {
   const t = useTranslations('blogs.grid')
   const resolvedEmpty = emptyMessage ?? t('emptyDefault')
@@ -54,6 +57,7 @@ export const BlogsGrid: FC<BlogsGridProps> = ({
           onFollow={onFollow}
           onUnfollow={onUnfollow}
           isLoading={loadingBlogId === blog.id}
+          basePath={basePath}
         />
       ))}
     </div>

@@ -33,9 +33,18 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
 
   return (
     <div className="py-6">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[14rem_18rem_minmax(0,1fr)]">
-        {/* Foto de Portada — fila 1, columnas 2+3 en desktop; full-width arriba en mobile */}
-        <div className="order-1 overflow-hidden rounded-2xl lg:col-start-2 lg:col-span-2 lg:row-start-1">
+      {/* Grilla de 2 filas: fila 1 = portada (alineada a la columna central),
+          fila 2 = cuerpo de 3 columnas (riel | centro | derecha). Cada columna
+          del cuerpo es una pila independiente, así se alinean de forma limpia y
+          sin huecos. En móvil colapsa a una sola columna. */}
+      {/* La grilla de 3 columnas se activa en `xl` (no `lg`): el shell ya resta
+          256px de sidebar izquierdo, así que en `lg` las dos columnas fijas
+          aplastarían la columna principal (Foto o Reel + Posts). En `xl` las
+          columnas laterales son angostas (11rem / 16rem) y la principal queda
+          como la más ancha, igual que el mockup. */}
+      <div className="grid grid-cols-1 items-start gap-x-6 gap-y-6 xl:grid-cols-[11rem_16rem_minmax(0,1fr)]">
+        {/* Foto de Portada — fila 1, columnas 2+3 (su borde izq. alinea con la Foto de Perfil) */}
+        <div className="order-1 overflow-hidden rounded-2xl shadow-sm xl:col-start-2 xl:col-span-2 xl:row-start-1">
           <ServiceCoverImage
             coverUrl={service.coverImage ?? service.coverUrl}
             serviceName={service.name}
@@ -45,32 +54,25 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
           />
         </div>
 
-        {/* Nombre + Badges — fila 2, columna 3 (debajo de la portada); 2º en mobile */}
-        <div className="order-2 lg:col-start-3 lg:row-start-2 lg:order-0">
-          <ProfileNameHeader service={service} />
-        </div>
-
-        {/* Riel de acciones — columna 1 (canalón), abarca todas las filas; 3º en mobile */}
-        <div className="order-3 lg:col-start-1 lg:row-start-1 lg:row-span-4 lg:order-0">
-          <LeftActionRail />
-        </div>
-
-        {/* Columna central: Foto de Perfil + Detalles — abarca filas 2–4 */}
-        <div className="order-4 space-y-6 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:order-0">
+        {/* Columna central — Foto de Perfil + Detalles. En móvil va 2º (la
+            identidad justo bajo la portada). */}
+        <div className="order-2 space-y-6 xl:col-start-2 xl:row-start-2 xl:order-0">
           <ProfilePhotoCard logoUrl={service.logoUrl} serviceName={service.name} />
           <DetailsCard service={service} />
         </div>
 
-        {/* Columna derecha: pestañas + feed persistente (Foto o Reel + Posts) — fila 3 */}
-        <div className="order-5 space-y-6 lg:col-start-3 lg:row-start-3 lg:order-0">
+        {/* Columna derecha — Nombre/Badges, pestañas, Foto o Reel, Posts y Consulta. 3º en móvil. */}
+        <div className="order-3 space-y-6 xl:col-start-3 xl:row-start-2 xl:order-0">
+          <ProfileNameHeader service={service} />
           <SectionTabs service={service} />
           <FeaturedReel media={service.media} serviceName={service.name} />
           <PostsFeed />
+          <ContactCard service={service} inline />
         </div>
 
-        {/* Tarjeta de contacto / Consulta — fila 4; anclada por #consulta */}
-        <div className="order-6 lg:col-start-3 lg:row-start-4 lg:order-0">
-          <ContactCard service={service} inline />
+        {/* Riel de acciones — columna 1, fila 2 (empieza al nivel de la Foto de Perfil). Último en móvil. */}
+        <div className="order-4 xl:col-start-1 xl:row-start-2 xl:order-0">
+          <LeftActionRail />
         </div>
       </div>
 

@@ -76,6 +76,17 @@ export interface BlogAuthor {
   isVerified?: boolean;
 }
 
+/** A badge granted to a blog, drawn from the shared `badges` catalog. */
+export interface BlogBadge {
+  slug: string;
+  name: string;
+  category: string;
+  iconCfImageId?: string | null;
+}
+
+/** PDF circle #2: artist distinction level (admin-set). */
+export type BlogDistinction = 'local' | 'national' | 'international';
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -98,6 +109,10 @@ export interface BlogStats {
   followersCount: number;
   totalViews: number;
   totalLikes: number;
+  /** Blog-level "me gusta" count (blog_reactions kind='like'). */
+  likesCount?: number;
+  /** Blog-level recommendation count (blog_reactions kind='recommend'). */
+  recommendCount?: number;
   averageReadTime?: number;
   publishFrequency?: string; // "Semanal", "Mensual", etc.
 }
@@ -126,6 +141,9 @@ export interface Blog {
   isFollowing: boolean;
   isOwner?: boolean;
   isAuthor?: boolean;
+  /** Whether the current viewer has liked / recommended this blog. */
+  viewerLiked?: boolean;
+  viewerRecommended?: boolean;
   
   // Dates
   createdAt: Date;
@@ -133,6 +151,13 @@ export interface Blog {
   
   // Verification
   isVerified: boolean;
+  /** Circle #2: artist distinction level (admin-set), or null. */
+  distinction?: BlogDistinction | null;
+  /** Franja de badges: admin-granted achievements. */
+  badges?: BlogBadge[];
+  /** "Mi Música" link to a catalog artist (PDF #10). */
+  musicArtistId?: string | null;
+  musicArtist?: { id: string; name: string } | null;
   
   // Additional info
   website?: string;

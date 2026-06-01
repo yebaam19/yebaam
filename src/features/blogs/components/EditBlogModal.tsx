@@ -8,7 +8,8 @@ import { Fragment, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { useDeleteBlog, useUpdateBlog } from '../hooks/useBlogs'
-import { blogsService } from '../services/blogs.service'
+import { uploadService } from '@/lib/service/upload.service'
+import { ArtistAutocomplete, type ArtistSelection } from '@/features/music-archive/components/upload/ArtistAutocomplete'
 import type { Blog } from '../types/blog.types'
 import { BlogFormFields, type BlogFormData } from './BlogFormFields'
 import { BlogImageUploader } from './BlogImageUploader'
@@ -33,6 +34,10 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [confirmDeleteText, setConfirmDeleteText] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [artist, setArtist] = useState<ArtistSelection>({
+    existingId: blog.musicArtistId ?? null,
+    name: blog.musicArtist?.name ?? '',
+  })
   const [formData, setFormData] = useState<BlogFormData>({
     name: blog.name,
     description: blog.description,
@@ -40,6 +45,10 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
     subcategory: blog.subcategory || '',
     website: blog.website || '',
     tags: blog.tags?.join(', ') || '',
+    instagram: blog.social?.instagram || '',
+    youtube: blog.social?.youtube || '',
+    facebook: blog.social?.facebook || '',
+    twitter: blog.social?.twitter || '',
   })
 
   // Actualizar form cuando cambie el blog
@@ -51,9 +60,14 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
       subcategory: blog.subcategory || '',
       website: blog.website || '',
       tags: blog.tags?.join(', ') || '',
+      instagram: blog.social?.instagram || '',
+      youtube: blog.social?.youtube || '',
+      facebook: blog.social?.facebook || '',
+      twitter: blog.social?.twitter || '',
     })
     setAvatarPreview(blog.profileImageUrl || null)
     setCoverPreview(blog.coverImageUrl || null)
+    setArtist({ existingId: blog.musicArtistId ?? null, name: blog.musicArtist?.name ?? '' })
   }, [blog])
 
   const handleAvatarChange = (file: File | null) => {
@@ -92,28 +106,14 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
     const urls: { profileImageUrl?: string; coverImageUrl?: string } = {}
 
     try {
-      // Subir avatar solo si hay un archivo nuevo
+      // Upload to Cloudflare Images (every image in the app goes to Cloudflare).
       if (avatarFile) {
         setUploadingImages(true)
-        const { uploadUrl, cloudFrontUrl } = await blogsService.generateProfileImageUrl(
-          avatarFile.name,
-          avatarFile.type,
-          avatarFile.size
-        )
-        await blogsService.uploadImageToS3(uploadUrl, avatarFile)
-        urls.profileImageUrl = cloudFrontUrl
+        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).url
       }
-
-      // Subir cover solo si hay un archivo nuevo
       if (coverFile) {
         setUploadingImages(true)
-        const { uploadUrl, cloudFrontUrl } = await blogsService.generateCoverImageUrl(
-          coverFile.name,
-          coverFile.type,
-          coverFile.size
-        )
-        await blogsService.uploadImageToS3(uploadUrl, coverFile)
-        urls.coverImageUrl = cloudFrontUrl
+        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).url
       }
     } finally {
       setUploadingImages(false)
@@ -142,12 +142,20 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
           category: formData.category,
           subcategory: formData.subcategory || undefined,
           website: formData.website || undefined,
+          social: {
+            instagram: formData.instagram?.trim() || undefined,
+            youtube: formData.youtube?.trim() || undefined,
+            facebook: formData.facebook?.trim() || undefined,
+            twitter: formData.twitter?.trim() || undefined,
+          },
           tags: formData.tags
             ? formData.tags
                 .split(',')
                 .map((t) => t.trim())
                 .filter(Boolean)
             : undefined,
+          // "Mi Música" link: the picked artist id, or null to unlink.
+          musicArtistId: artist.existingId,
           ...imageUrls, // Solo incluye URLs si se subieron nuevas imágenes
         },
       })
@@ -155,9 +163,9 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
       toast.success(t('successUpdated'))
       onSuccess?.()
       handleClose()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating blog:', error)
-      toast.error(error?.response?.data?.message || t('errorUpdating'))
+      toast.error(error instanceof Error ? error.message : t('errorUpdating'))
     }
   }
 
@@ -179,9 +187,9 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
       toast.success(t('successDeleted'))
       onClose()
       router.push('/feed/blogs' as Route)
-    } catch (error: any) {
+    } catch (error) {
       console.error('[EditBlogModal] delete error:', error)
-      toast.error(error?.message || t('errorDeleting'))
+      toast.error(error instanceof Error ? error.message : t('errorDeleting'))
     }
   }
 
@@ -243,6 +251,22 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                     onChange={(data) => setFormData({ ...formData, ...data })}
                     disabled={updateBlogMutation.isPending || uploadingImages}
                   />
+
+                  {/* Mi Música — link a catalog artist (PDF #10) */}
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Mi Música — artista del archivo musical
+                    </label>
+                    <ArtistAutocomplete
+                      value={artist}
+                      onChange={setArtist}
+                      placeholder="Busca tu nombre de artista…"
+                    />
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                      Enlaza tu perfil de artista para mostrar tus álbumes y canciones (reproducibles) en la pestaña «Mi
+                      Música». Déjalo vacío para desvincular.
+                    </p>
+                  </div>
 
                   {/* Imágenes */}
                   <div className="grid grid-cols-2 gap-4">

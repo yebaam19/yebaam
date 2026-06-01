@@ -21,7 +21,7 @@ export function FeaturedReel({ media, serviceName }: FeaturedReelProps) {
 
   if (!featured) {
     return (
-      <div className="flex aspect-video w-full items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-white text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+      <div className="flex aspect-16/9 w-full items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-white text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
         Sin contenido destacado todavía.
       </div>
     )
@@ -34,7 +34,7 @@ export function FeaturedReel({ media, serviceName }: FeaturedReelProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative block aspect-video w-full overflow-hidden rounded-2xl bg-neutral-200 shadow-sm dark:bg-neutral-700"
+        className="group relative block aspect-16/9 w-full overflow-hidden rounded-2xl bg-neutral-200 shadow-sm dark:bg-neutral-700"
       >
         <Image
           src={featured.url}

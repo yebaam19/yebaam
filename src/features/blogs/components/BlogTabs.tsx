@@ -1,9 +1,9 @@
 'use client'
 
-import { ChatBubbleLeftRightIcon, DocumentTextIcon, InformationCircleIcon, PhotoIcon, QuestionMarkCircleIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
+import { ChatBubbleLeftRightIcon, DocumentTextIcon, InformationCircleIcon, MusicalNoteIcon, NewspaperIcon, PhotoIcon, QuestionMarkCircleIcon, VideoCameraIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 
-export type TabType = 'posts' | 'fotos' | 'videos' | 'acerca-de' | 'foro' | 'askme'
+export type TabType = 'acerca-de' | 'fotos' | 'videos' | 'mi-musica' | 'articulos' | 'posts' | 'foro' | 'askme'
 
 interface Tab {
   id: TabType
@@ -25,6 +25,8 @@ export const BlogTabs = ({ activeTab, onTabChange, photosCount = 0, videosCount 
     { id: 'acerca-de', label: t('about'), icon: InformationCircleIcon },
     { id: 'fotos', label: t('photos'), icon: PhotoIcon },
     { id: 'videos', label: t('videos'), icon: VideoCameraIcon },
+    { id: 'mi-musica', label: t('miMusica'), icon: MusicalNoteIcon },
+    { id: 'articulos', label: t('articulos'), icon: NewspaperIcon },
     { id: 'posts', label: t('posts'), icon: DocumentTextIcon },
     { id: 'foro', label: t('forum'), icon: ChatBubbleLeftRightIcon },
     { id: 'askme', label: t('askme'), icon: QuestionMarkCircleIcon },

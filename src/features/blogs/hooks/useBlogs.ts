@@ -110,7 +110,7 @@ export function useFollowBlog() {
         invalidate('blogs::suggested');
         invalidate('blogs::search');
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         console.error('[useFollowBlog] Mutation error:', error);
       },
     }
@@ -133,7 +133,7 @@ export function useUnfollowBlog() {
         invalidate('blogs::suggested');
         invalidate('blogs::search');
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         console.error('[useUnfollowBlog] Mutation error:', error);
       },
     }

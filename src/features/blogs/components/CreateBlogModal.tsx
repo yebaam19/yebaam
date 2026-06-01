@@ -7,7 +7,7 @@ import { Fragment, useState } from 'react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { useCreateBlog } from '../hooks/useBlogs'
-import { blogsService } from '../services/blogs.service'
+import { uploadService } from '@/lib/service/upload.service'
 import { BlogFormFields, type BlogFormData } from './BlogFormFields'
 import { BlogImageUploader } from './BlogImageUploader'
 
@@ -70,28 +70,14 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
     const urls: { profileImageUrl?: string; coverImageUrl?: string } = {}
 
     try {
-      // Subir avatar
+      // Upload to Cloudflare Images (every image in the app goes to Cloudflare).
       if (avatarFile) {
         setUploadingImages(true)
-        const { uploadUrl, cloudFrontUrl } = await blogsService.generateProfileImageUrl(
-          avatarFile.name,
-          avatarFile.type,
-          avatarFile.size
-        )
-        await blogsService.uploadImageToS3(uploadUrl, avatarFile)
-        urls.profileImageUrl = cloudFrontUrl
+        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).url
       }
-
-      // Subir cover
       if (coverFile) {
         setUploadingImages(true)
-        const { uploadUrl, cloudFrontUrl } = await blogsService.generateCoverImageUrl(
-          coverFile.name,
-          coverFile.type,
-          coverFile.size
-        )
-        await blogsService.uploadImageToS3(uploadUrl, coverFile)
-        urls.coverImageUrl = cloudFrontUrl
+        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).url
       }
     } finally {
       setUploadingImages(false)
@@ -118,6 +104,12 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
         category: formData.category,
         subcategory: formData.subcategory || undefined,
         website: formData.website || undefined,
+        social: {
+          instagram: formData.instagram?.trim() || undefined,
+          youtube: formData.youtube?.trim() || undefined,
+          facebook: formData.facebook?.trim() || undefined,
+          twitter: formData.twitter?.trim() || undefined,
+        },
         tags: formData.tags
           ? formData.tags
               .split(',')
@@ -130,9 +122,9 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
       toast.success(t('create.success'))
       handleClose()
       router.push(`/feed/blogs/${blog.slug}`)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating blog:', error)
-      toast.error(error?.response?.data?.message || t('create.errorCreating'))
+      toast.error(error instanceof Error ? error.message : t('create.errorCreating'))
     }
   }
 

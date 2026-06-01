@@ -3,6 +3,7 @@
 import { CheckBadgeIcon, DocumentTextIcon, EyeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { FC } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Blog } from '../types/blog.types'
@@ -13,9 +14,12 @@ interface BlogCardProps {
   onFollow?: (blogId: string) => void
   onUnfollow?: (blogId: string) => void
   isLoading?: boolean
+  /** Route prefix for the blog detail link. Defaults to the feed mount; pass
+   *  `/musica/blog` when rendered inside the music shell. */
+  basePath?: string
 }
 
-export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoading = false }) => {
+export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoading = false, basePath = '/feed/blogs' }) => {
   const t = useTranslations('blogs.card')
   const handleFollowClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -31,7 +35,7 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
   }
 
   return (
-    <Link href={`/feed/blogs/${blog.slug}`} className="group block h-full">
+    <Link href={`${basePath}/${blog.slug}` as Route} className="group block h-full">
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
         {/* Cover */}
         <div className="relative h-32 overflow-hidden bg-linear-to-br from-secondary-600 via-secondary-700 to-secondary-900">

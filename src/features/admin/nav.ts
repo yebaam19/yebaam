@@ -65,6 +65,12 @@ const RAW_ADMIN_NAV_ITEMS: AdminNavItem[] = [
     matchPrefix: '/admin/badges/requests',
   },
   {
+    label: 'Blog del Músico',
+    href: '/admin/blogs' as Route,
+    iconName: 'musical-note',
+    matchPrefix: '/admin/blogs',
+  },
+  {
     label: 'Credenciales Profesionales',
     href: '/admin/professional-credentials' as Route,
     iconName: 'academic-cap',

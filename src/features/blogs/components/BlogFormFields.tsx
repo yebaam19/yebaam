@@ -13,6 +13,11 @@ export interface BlogFormData {
   subcategory: string
   website: string
   tags: string
+  // Otras redes sociales (PDF: "espacio para otras redes sociales").
+  instagram?: string
+  youtube?: string
+  facebook?: string
+  twitter?: string
 }
 
 interface BlogFormFieldsProps {
@@ -123,6 +128,33 @@ export const BlogFormFields = ({ formData, onChange, disabled = false }: BlogFor
           className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
         />
         <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{t('tagsHint')}</p>
+      </div>
+
+      {/* Otras redes sociales */}
+      <div>
+        <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Redes sociales
+        </label>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {(
+            [
+              ['instagram', 'Instagram (URL o usuario)'],
+              ['youtube', 'YouTube (URL o canal)'],
+              ['facebook', 'Facebook (URL)'],
+              ['twitter', 'X / Twitter (URL o usuario)'],
+            ] as const
+          ).map(([key, placeholder]) => (
+            <input
+              key={key}
+              type="text"
+              value={formData[key] || ''}
+              onChange={(e) => onChange({ [key]: e.target.value })}
+              placeholder={placeholder}
+              disabled={disabled}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

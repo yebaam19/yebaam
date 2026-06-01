@@ -9,6 +9,8 @@ import {
   StarIcon,
   StarSolidIcon,
 } from '@/components/icons/heroicons-shim'
+import { blogsService } from '@/features/blogs/services/blogs.service'
+import { formatFollowersCount } from '@/features/blogs/utils/blogHelpers'
 import Image from 'next/image'
 import { useState } from 'react'
 import type { Blog } from '../../types/blog.types'
@@ -21,9 +23,35 @@ interface BlogCoverBarProps {
 }
 
 export const BlogCoverBar = ({ blog, stars, onFollowToggle, isFollowLoading }: BlogCoverBarProps) => {
-  // TODO(blog-reactions): wire to blog_reactions table once created
-  const [liked, setLiked] = useState(false)
-  const [recommended, setRecommended] = useState(false)
+  // Blog-level reactions persist to blog_reactions; seed from the server-mapped
+  // viewer flags + counts and update optimistically (PDF #2: all counted).
+  const [liked, setLiked] = useState(blog.viewerLiked ?? false)
+  const [recommended, setRecommended] = useState(blog.viewerRecommended ?? false)
+  const [likeCount, setLikeCount] = useState(blog.stats?.likesCount ?? 0)
+  const [recommendCount, setRecommendCount] = useState(blog.stats?.recommendCount ?? 0)
+  const [pendingKind, setPendingKind] = useState<'like' | 'recommend' | null>(null)
+
+  const toggleReaction = async (kind: 'like' | 'recommend') => {
+    if (pendingKind) return
+    const isActive = kind === 'like' ? liked : recommended
+    const setActive = kind === 'like' ? setLiked : setRecommended
+    const setCount = kind === 'like' ? setLikeCount : setRecommendCount
+    const next = !isActive
+    setActive(next)
+    setCount((c) => Math.max(0, c + (next ? 1 : -1)))
+    setPendingKind(kind)
+    try {
+      if (next) await blogsService.reactBlog(blog.id, kind)
+      else await blogsService.unreactBlog(blog.id, kind)
+    } catch (err) {
+      // Roll back optimistic update on failure.
+      setActive(isActive)
+      setCount((c) => Math.max(0, c + (next ? -1 : 1)))
+      console.error('[BlogCoverBar] reaction toggle error:', err)
+    } finally {
+      setPendingKind(null)
+    }
+  }
 
   return (
     <div className="relative h-48 overflow-hidden rounded-b-2xl bg-linear-to-r from-secondary-700 via-secondary-800 to-secondary-900 sm:h-64 md:h-80">
@@ -50,9 +78,10 @@ export const BlogCoverBar = ({ blog, stars, onFollowToggle, isFollowLoading }: B
       <div className="absolute top-3 right-3 flex max-w-[calc(100%-6rem)] flex-row flex-wrap justify-end gap-1.5 sm:top-4 sm:right-4 sm:flex-col sm:gap-2">
         <button
           type="button"
-          onClick={() => setRecommended((v) => !v)}
+          onClick={() => toggleReaction('recommend')}
+          disabled={pendingKind === 'recommend'}
           title="Recomendar (R+)"
-          className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold shadow backdrop-blur-sm transition-colors sm:px-3 sm:py-1.5 sm:text-xs ${
+          className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold shadow backdrop-blur-sm transition-colors disabled:opacity-60 sm:px-3 sm:py-1.5 sm:text-xs ${
             recommended
               ? 'bg-primary-600 text-white hover:bg-primary-700'
               : 'bg-white/90 text-neutral-800 hover:bg-white'
@@ -60,13 +89,15 @@ export const BlogCoverBar = ({ blog, stars, onFollowToggle, isFollowLoading }: B
         >
           <PlusIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           R+
+          {recommendCount > 0 && <span>{formatFollowersCount(recommendCount)}</span>}
         </button>
 
         <button
           type="button"
-          onClick={() => setLiked((v) => !v)}
+          onClick={() => toggleReaction('like')}
+          disabled={pendingKind === 'like'}
           title="Me gusta"
-          className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold shadow backdrop-blur-sm transition-colors sm:px-3 sm:py-1.5 sm:text-xs ${
+          className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold shadow backdrop-blur-sm transition-colors disabled:opacity-60 sm:px-3 sm:py-1.5 sm:text-xs ${
             liked ? 'bg-rose-500 text-white hover:bg-rose-600' : 'bg-white/90 text-neutral-800 hover:bg-white'
           }`}
         >
@@ -76,6 +107,7 @@ export const BlogCoverBar = ({ blog, stars, onFollowToggle, isFollowLoading }: B
             <HeartIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           )}
           <span>Me gusta</span>
+          {likeCount > 0 && <span>{formatFollowersCount(likeCount)}</span>}
         </button>
 
         <button

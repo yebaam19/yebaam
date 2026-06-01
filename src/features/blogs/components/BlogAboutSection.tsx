@@ -5,11 +5,39 @@ interface BlogAboutSectionProps {
   blog: Blog
 }
 
+const SOCIAL_LABELS: Record<string, string> = {
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  facebook: 'Facebook',
+  twitter: 'X / Twitter',
+}
+
+const SOCIAL_BASE: Record<string, string> = {
+  instagram: 'https://instagram.com/',
+  twitter: 'https://x.com/',
+  youtube: 'https://youtube.com/@',
+  facebook: 'https://facebook.com/',
+}
+
+/** Build a link from either a full URL or a handle, per platform. */
+function toHref(key: string, value: string): string {
+  if (value.startsWith('http')) return value
+  const handle = value.replace(/^@/, '')
+  const base = SOCIAL_BASE[key]
+  return base ? base + handle : `https://${handle}`
+}
+
 export const BlogAboutSection = ({ blog }: BlogAboutSectionProps) => {
+  const socialEntries = Object.entries((blog.social ?? {}) as Record<string, string>).filter(
+    ([, v]) => typeof v === 'string' && v.trim().length > 0
+  )
+
   return (
     <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-800">
       <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-white">Acerca de este blog</h2>
-      <p className="mb-6 leading-relaxed text-neutral-600 dark:text-neutral-400">{blog.description}</p>
+      <p className="mb-6 whitespace-pre-wrap leading-relaxed text-neutral-600 dark:text-neutral-400">
+        {blog.description}
+      </p>
 
       {blog.stats.publishFrequency && (
         <div className="mb-4">
@@ -30,6 +58,25 @@ export const BlogAboutSection = ({ blog }: BlogAboutSectionProps) => {
             <GlobeAltIcon className="h-4 w-4" />
             {blog.website}
           </a>
+        </div>
+      )}
+
+      {socialEntries.length > 0 && (
+        <div className="mb-4">
+          <h3 className="mb-2 text-sm font-medium text-neutral-500 dark:text-neutral-400">Redes Sociales</h3>
+          <div className="flex flex-wrap gap-2">
+            {socialEntries.map(([key, value]) => (
+              <a
+                key={key}
+                href={toHref(key, value)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-neutral-200 px-3 py-1 text-sm font-medium text-primary-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-primary-400 dark:hover:bg-neutral-700/50"
+              >
+                {SOCIAL_LABELS[key] ?? key}
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

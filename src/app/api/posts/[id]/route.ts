@@ -94,11 +94,13 @@ export async function DELETE(
   const { client, userId } = await getUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Authorization is enforced by RLS, which allows a delete when the caller is
+  // the post author (posts_delete_own) OR the owner of the post's blog wall
+  // (posts_delete_blog_owner). A 0-row result means neither applied.
   const { data, error } = await client
     .from('posts')
     .delete()
     .eq('id', id)
-    .eq('author_id', userId)
     .select('id')
     .maybeSingle();
 
@@ -108,7 +110,7 @@ export async function DELETE(
   }
   if (!data) {
     return NextResponse.json(
-      { error: 'Post not found or you are not the author' },
+      { error: 'Post not found or you are not allowed to delete it' },
       { status: 404 }
     );
   }

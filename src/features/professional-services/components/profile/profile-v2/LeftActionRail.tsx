@@ -52,9 +52,9 @@ function RailButton({ icon: Icon, label, comingSoon }: RailButtonProps) {
     >
       <Icon className="h-5 w-5 shrink-0 text-neutral-500 dark:text-neutral-400" />
       <span className="min-w-0">
-        <span className="block truncate">{label}</span>
+        <span className="block leading-tight">{label}</span>
         {comingSoon && (
-          <span className="block text-[10px] font-medium tracking-wide text-neutral-400 uppercase">
+          <span className="mt-0.5 block text-[10px] font-medium tracking-wide text-neutral-400 uppercase">
             Próximamente
           </span>
         )}

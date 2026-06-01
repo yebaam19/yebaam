@@ -13,7 +13,7 @@ interface ProfilePhotoCardProps {
 export function ProfilePhotoCard({ logoUrl, serviceName }: ProfilePhotoCardProps) {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-neutral-800">
-      <div className="relative aspect-square w-full bg-neutral-100 dark:bg-neutral-700">
+      <div className="relative aspect-4/5 w-full bg-neutral-100 dark:bg-neutral-700">
         {logoUrl ? (
           <Image
             src={logoUrl}

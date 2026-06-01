@@ -68,6 +68,18 @@ class BlogsService {
     await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}/unfollow`, { method: 'DELETE' });
   }
 
+  async reactBlog(blogId: string, kind: 'like' | 'recommend'): Promise<void> {
+    await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}/reactions?kind=${kind}`, {
+      method: 'POST',
+    });
+  }
+
+  async unreactBlog(blogId: string, kind: 'like' | 'recommend'): Promise<void> {
+    await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}/reactions?kind=${kind}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getTrendingBlogs(limit: number = 10): Promise<Blog[]> {
     return this.getPopularBlogs(limit);
   }
@@ -80,8 +92,16 @@ class BlogsService {
     return response.blogs ?? [];
   }
 
-  async getBlogPosts(_blogId: string, _page: number = 1, _limit: number = 10): Promise<Post[]> {
-    return [];
+  async getBlogPosts(blogId: string, page: number = 1, limit: number = 20): Promise<Post[]> {
+    if (!blogId) return [];
+    const params = new URLSearchParams({
+      scope: 'blog',
+      blogId,
+      page: String(page),
+      limit: String(limit),
+    });
+    const payload = await jsonFetch<{ data: Post[] }>(`/api/posts?${params.toString()}`);
+    return Array.isArray(payload.data) ? payload.data : [];
   }
 
   async getPostBySlug(_blogSlug: string, _postSlug: string): Promise<BlogPost> {
@@ -117,6 +137,7 @@ class BlogsService {
       website?: string;
       social?: Record<string, string | undefined>;
       tags?: string[];
+      musicArtistId?: string | null;
     },
   ): Promise<Blog> {
     return jsonFetch<Blog>(`${API_BASE}/${blogId}`, {
@@ -129,31 +150,6 @@ class BlogsService {
     await jsonFetch<{ success: true }>(`${API_BASE}/${blogId}`, { method: 'DELETE' });
   }
 
-  async generateProfileImageUrl(
-    _fileName: string,
-    _fileType: string,
-    _fileSize: number,
-  ): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    throw new Error(
-      'Presigned blog image uploads are no longer supported. Post the file to /api/upload with bucket=avatars or covers.',
-    );
-  }
-
-  async generateCoverImageUrl(
-    _fileName: string,
-    _fileType: string,
-    _fileSize: number,
-  ): Promise<{ uploadUrl: string; cloudFrontUrl: string; s3Key: string }> {
-    throw new Error(
-      'Presigned blog image uploads are no longer supported. Post the file to /api/upload with bucket=avatars or covers.',
-    );
-  }
-
-  async uploadImageToS3(_uploadUrl: string, _file: File): Promise<void> {
-    throw new Error(
-      'Direct S3 PUT is no longer supported. Post the file to /api/upload.',
-    );
-  }
 }
 
 export const blogsService = new BlogsService();

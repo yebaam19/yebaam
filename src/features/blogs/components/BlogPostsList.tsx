@@ -3,20 +3,40 @@
 import CreatePostModal from '@/app/(app)/feed/post/components/CreatePostModal'
 import PostCard from '@/app/(app)/feed/post/components/PostCard'
 import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
+import { postService } from '@/app/(app)/feed/post/services/post.service'
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store'
-import { PlusIcon } from '@/components/icons/heroicons-shim'
+import { PlusIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { invalidate } from '@/lib/hooks/cacheStore'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 
 interface BlogPostsListProps {
   posts: Post[]
   isLoading?: boolean
   blogId?: string
+  /** Viewer owns the blog → can moderate (delete) any wall post. */
   isOwner?: boolean
+  /** Viewer is signed in → can post on the wall (PDF #1: others can post). */
+  canPost?: boolean
 }
 
-export const BlogPostsList = ({ posts, isLoading, blogId, isOwner }: BlogPostsListProps) => {
+export const BlogPostsList = ({ posts, isLoading, blogId, isOwner, canPost }: BlogPostsListProps) => {
   const t = useTranslations('blogs.posts')
   const { openCreateModal } = usePostStore()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleModerate = async (postId: string) => {
+    if (!blogId || deletingId) return
+    setDeletingId(postId)
+    try {
+      await postService.delete(postId)
+      invalidate(`blogs::${blogId}::posts`)
+    } catch (err) {
+      console.error('[BlogPostsList] moderate delete error:', err)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -37,7 +57,7 @@ export const BlogPostsList = ({ posts, isLoading, blogId, isOwner }: BlogPostsLi
       <>
         <div className="rounded-lg bg-white p-12 text-center shadow-sm dark:bg-neutral-800">
           <p className="mb-4 text-neutral-600 dark:text-neutral-400">{t('empty')}</p>
-          {isOwner && blogId && (
+          {canPost && blogId && (
             <button
               onClick={() => openCreateModal(blogId)}
               className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 font-medium text-white transition-colors hover:bg-primary-700"
@@ -55,7 +75,7 @@ export const BlogPostsList = ({ posts, isLoading, blogId, isOwner }: BlogPostsLi
 
   return (
     <>
-      {isOwner && blogId && (
+      {canPost && blogId && (
         <div className="mb-6">
           <button
             onClick={() => openCreateModal(blogId)}
@@ -69,7 +89,22 @@ export const BlogPostsList = ({ posts, isLoading, blogId, isOwner }: BlogPostsLi
 
       <div className="space-y-6">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <div key={post.id} className="relative">
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => handleModerate(post.id)}
+                disabled={deletingId === post.id}
+                title={t('moderateDelete')}
+                aria-label={t('moderateDelete')}
+                className="absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-rose-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-900/90 dark:text-rose-400 dark:hover:bg-neutral-800"
+              >
+                <TrashIcon className="h-3.5 w-3.5" />
+                {deletingId === post.id ? '…' : t('moderateDelete')}
+              </button>
+            )}
+            <PostCard post={post} />
+          </div>
         ))}
       </div>
 
