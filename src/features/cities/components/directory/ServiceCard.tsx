@@ -1,6 +1,7 @@
 import { ClockIcon, CurrencyDollarIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { professionalServicePath } from '@/features/professional-services/constants/routes'
 import { ProfessionalServiceBasic } from '../../interfaces/directory.interfaces'
 
 interface ServiceCardProps {
@@ -64,7 +65,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
 
   return (
     <Link
-      href={`/feed/professional-services/${service.slug || service.id}`}
+      href={professionalServicePath(service.slug || service.id)}
       className="group relative block h-72 cursor-pointer overflow-hidden rounded-xl bg-neutral-200 shadow-sm transition-shadow hover:shadow-lg dark:bg-neutral-700"
     >
       {/* Imagen de fondo */}

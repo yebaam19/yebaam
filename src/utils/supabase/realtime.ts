@@ -105,6 +105,61 @@ export function subscribeToBroadcast<T = Record<string, unknown>>(
   return channel;
 }
 
+export interface BroadcastChannelHandle {
+  channel: RealtimeChannel;
+  /** Resolves once the channel has actually joined (SUBSCRIBED). */
+  ready: Promise<void>;
+  /** Send a broadcast event; waits for the join so early sends aren't dropped. */
+  send: (event: string, payload: Record<string, unknown>) => Promise<void>;
+  /** Tear down the channel. */
+  close: () => void;
+}
+
+/**
+ * Open a single broadcast channel used for BOTH receiving and sending (unlike
+ * `subscribeToBroadcast` + `publishBroadcast`, which use separate channels and
+ * a fresh channel per publish). Needed for WebRTC signaling where one peer both
+ * listens for and trickles many SDP/ICE messages over the same `call:<id>`
+ * channel, and must not send before the join completes.
+ */
+export function openBroadcastChannel(
+  channelName: string,
+  onMessage: (event: string, payload: unknown) => void,
+  events: string[],
+): BroadcastChannelHandle {
+  const client = getClient();
+  const channel = client.channel(channelName, {
+    config: { broadcast: { self: false, ack: false } },
+  });
+  for (const ev of events) {
+    channel.on('broadcast', { event: ev }, (msg: { payload: unknown }) =>
+      onMessage(ev, msg.payload),
+    );
+  }
+
+  let resolveReady!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    resolveReady = resolve;
+  });
+  channel.subscribe((status: string) => {
+    if (status === 'SUBSCRIBED') resolveReady();
+  });
+
+  const send = async (event: string, payload: Record<string, unknown>) => {
+    await ready;
+    await channel.send({ type: 'broadcast', event, payload });
+  };
+  const close = () => {
+    try {
+      void client.removeChannel(channel);
+    } catch {
+      // ignore
+    }
+  };
+
+  return { channel, ready, send, close };
+}
+
 /**
  * Publish an ephemeral broadcast message to a channel.
  */

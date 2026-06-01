@@ -153,6 +153,20 @@ export default async function ProfessionalServicePage({ params }: ProfessionalSe
               </p>
             )}
           </div>
+
+          {/* Tarjeta de presentación virtual (PDF, nice-to-have). Próximamente:
+              el profesional sube su arte y los usuarios podrán descargarla. */}
+          <div className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center dark:border-neutral-700">
+            <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
+              Próximamente
+            </p>
+            <h3 className="mt-1 font-semibold text-neutral-900 dark:text-neutral-100">
+              Tarjeta de presentación virtual
+            </h3>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+              Pronto podrás descargar la tarjeta de presentación de este profesional.
+            </p>
+          </div>
         </div>
       </div>
     </div>

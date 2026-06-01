@@ -42,6 +42,19 @@ export {
   getMockServicesByState,
 } from './data/mock-professional-services'
 
+export {
+  PROFESSIONAL_SERVICES_PATH,
+  professionalServicePath,
+  professionalServicesCityPath,
+} from './constants/routes'
+export {
+  SERVICE_CATEGORY_TAXONOMY,
+  findCategoryById,
+  findSubcategoryById,
+  getSubcategoriesForCategory,
+} from './data/service-categories-taxonomy'
+export type { ProfessionalServiceSubcategory } from './interfaces/professional-service.interfaces'
+
 export { professionalServiceService } from './services/professional-service.service'
 
 export { useProfessionalServicesUIStore } from './store/professionalServicesUI.store'

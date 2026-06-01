@@ -34,6 +34,8 @@ interface ProfessionalServicesListingContainerProps {
   states: State[]
   cities: City[]
   categories: ProfessionalServiceCategory[]
+  /** Ciudad pre-seleccionada cuando se llega desde el portal (`?city=slug`). */
+  initialCityId?: string
 }
 
 // ============================================================================
@@ -139,10 +141,21 @@ export function ProfessionalServicesListingContainer({
   states,
   cities,
   categories,
+  initialCityId,
 }: ProfessionalServicesListingContainerProps) {
   // UI Store
   const { activeTab, setActiveTab, searchQuery, isSearching, setIsSearching, filters, setFilters, openCreateModal } =
     useProfessionalServicesUIStore()
+
+  // Pre-filtra por ciudad al llegar desde el portal de la ciudad (?city=slug → cityId).
+  useEffect(() => {
+    if (initialCityId) {
+      setFilters({ cityId: initialCityId })
+      setIsSearching(true)
+    }
+    // Solo al montar / cuando cambia la ciudad inicial.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCityId])
 
   // Real API Queries
   // TODO: Implementar "mis servicios" cuando tengamos autenticación

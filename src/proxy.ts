@@ -31,6 +31,10 @@ const PUBLIC_ROUTES = [
   // can see what recognitions exist. Requesting requires auth, gated at the
   // server-action layer (requestBadge).
   '/insignias',
+  // Professional services directory: public read by design (PDF spec — the
+  // discovery flow starts in the public city portal directory). Creating a
+  // service requires a verified professional profile, gated in the UI.
+  '/professional-services',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
@@ -41,6 +45,7 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/musica',
   '/cities',
   '/insignias',
+  '/professional-services',
 ];
 
 export async function proxy(request: NextRequest) {

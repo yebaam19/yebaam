@@ -3,6 +3,8 @@
 import { ArrowLeftIcon, ShareIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
+import { PROFESSIONAL_SERVICES_PATH } from '../constants/routes'
+
 interface ServiceBreadcrumbProps {
   cityName: string
   citySlug: string
@@ -18,7 +20,7 @@ export function ServiceBreadcrumb({ cityName, citySlug, serviceName }: ServiceBr
       <ol className="flex flex-wrap items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
         <li>
           <Link
-            href="/feed/professional-services"
+            href={PROFESSIONAL_SERVICES_PATH}
             className="flex items-center gap-1 transition-colors hover:text-primary-600 dark:hover:text-primary-400"
           >
             <ArrowLeftIcon className="h-4 w-4" />

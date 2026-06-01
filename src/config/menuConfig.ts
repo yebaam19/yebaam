@@ -77,9 +77,7 @@ export const menuConfig: Record<string, any[]> = {
         {
           icon: BriefcaseIcon,
           labelKey: 'items.professionalServices',
-          href: '{basePath}/professional-services',
-          badgeKey: 'badges.pronto',
-          badgeHideOnMobile: true,
+          href: '/professional-services',
           featureFlag: 'SERVICIOS_PROFESIONALES_ENABLED' as FeatureFlag,
         },
         {

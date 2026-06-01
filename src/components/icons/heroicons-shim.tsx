@@ -175,6 +175,9 @@ const MAP = {
   TicketIcon: 'ticket',
   TvIcon: 'tv',
   WrenchScrewdriverIcon: 'wrench',
+  PhoneXMarkIcon: 'phone-off',
+  MicrophoneSlashIcon: 'mic-off',
+  VideoCameraSlashIcon: 'video-off',
 } as const
 
 export const AcademicCapIcon = make(MAP.AcademicCapIcon)
@@ -320,3 +323,6 @@ export const StopIcon = make(MAP.StopIcon)
 export const TicketIcon = make(MAP.TicketIcon)
 export const TvIcon = make(MAP.TvIcon)
 export const WrenchScrewdriverIcon = make(MAP.WrenchScrewdriverIcon)
+export const PhoneXMarkIcon = make(MAP.PhoneXMarkIcon)
+export const MicrophoneSlashIcon = make(MAP.MicrophoneSlashIcon)
+export const VideoCameraSlashIcon = make(MAP.VideoCameraSlashIcon)

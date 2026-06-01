@@ -15,7 +15,7 @@ import ChatHeader from '@/components/chat/ChatHeader';
 import MessagesList from '@/components/chat/MessagesList';
 import ChatInput from '@/components/chat/ChatInput';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
-import { loadConversationDisplay, type ParticipantDisplay } from './conversationDisplay';
+import { loadConversationDisplay, type ParticipantDisplay } from '@/features/chat/lib/conversationDisplay';
 import { cn } from '@/lib/utils';
 
 interface ChatPageClientProps {
@@ -283,6 +283,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
             isOnline={contactInfo.isOnline}
             conversationId={conversationId ?? undefined}
             peerUserId={peerUserId ?? undefined}
+            isGroup={isGroup}
             isEncrypted={headerEncrypted}
             onClose={() => router.back()}
           />

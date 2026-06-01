@@ -11,7 +11,6 @@ import {
   BoltIcon,
   BriefcaseIcon,
   BuildingOfficeIcon,
-  CameraIcon,
   ChevronRightIcon,
   CodeBracketIcon,
   HeartIcon,
@@ -23,6 +22,7 @@ import { ComponentType, SVGProps } from 'react'
 
 import { cn } from '@/lib/utils'
 
+import { PROFESSIONAL_SERVICES_PATH } from '../../constants/routes'
 import { ProfessionalServiceCategory } from '../../interfaces/professional-service.interfaces'
 
 // ============================================================================
@@ -41,17 +41,17 @@ interface CategoriesSectionProps {
 // ICON MAP
 // ============================================================================
 
+// Iconos por id de categoría de la taxonomía (service-categories-taxonomy).
+// Las categorías sin entrada usan DEFAULT_ICON.
 const CATEGORY_ICONS: Record<string, HeroIcon> = {
-  'scat-1': ScaleIcon, // Abogados
-  'scat-2': BriefcaseIcon, // Contadores
-  'scat-3': BuildingOfficeIcon, // Arquitectos
-  'scat-4': HeartIcon, // Médicos
-  'scat-5': CodeBracketIcon, // Desarrolladores
-  'scat-6': PaintBrushIcon, // Diseñadores
-  'scat-7': CameraIcon, // Fotógrafos
-  'scat-8': BoltIcon, // Electricistas
-  'scat-9': AcademicCapIcon, // Psicólogos
-  'scat-10': HeartIcon, // Veterinarios
+  'cat-servicios-legales': ScaleIcon,
+  'cat-finanzas-y-contabilidad': BriefcaseIcon,
+  'cat-arquitectura-y-construccion': BuildingOfficeIcon,
+  'cat-salud': HeartIcon,
+  'cat-tecnologia-e-informatica': CodeBracketIcon,
+  'cat-diseno-y-creatividad': PaintBrushIcon,
+  'cat-ingenieria': BoltIcon,
+  'cat-educacion-y-formacion': AcademicCapIcon,
 }
 
 const DEFAULT_ICON: HeroIcon = BriefcaseIcon
@@ -71,7 +71,7 @@ export function CategoriesSection({ categories, onCategorySelect, className }: C
           </p>
         </div>
         <Link
-          href="/feed/professional-services"
+          href={PROFESSIONAL_SERVICES_PATH}
           className="hidden items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700 sm:flex dark:text-primary-400 dark:hover:text-primary-300"
         >
           Ver todos

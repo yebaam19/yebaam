@@ -2,7 +2,7 @@ import { ServiceCardSkeleton, Skeleton, SkeletonButton } from '@/components/skel
 
 export default function ProfessionalServicesLoading() {
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-2xl bg-feature-services px-6 py-12 md:px-12 md:py-16">
         <div className="absolute inset-0 opacity-10" />
         <div className="relative z-10">
@@ -25,7 +25,7 @@ export default function ProfessionalServicesLoading() {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mt-8">
         <div className="mb-6 border-b border-neutral-200 dark:border-neutral-700">
           <nav className="-mb-px flex space-x-8">
             {[1, 2, 3].map((i) => (

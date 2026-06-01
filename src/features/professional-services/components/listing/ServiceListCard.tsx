@@ -11,6 +11,7 @@ import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
 
+import { professionalServicePath } from '../../constants/routes'
 import { ProfessionalServiceBasic } from '../../interfaces/professional-service.interfaces'
 
 // ============================================================================
@@ -56,7 +57,7 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
 
   return (
     <Link
-      href={`/feed/professional-services/${slug}`}
+      href={professionalServicePath(slug)}
       className={cn(
         'group block overflow-hidden rounded-xl border border-neutral-200 bg-white transition-all hover:border-neutral-300 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700',
         className

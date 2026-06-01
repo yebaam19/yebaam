@@ -8,6 +8,7 @@ import {
 import Avatar from '@/ui/Avatar';
 import EncryptionButton from './EncryptionButton';
 import ChatOptionsMenu from './ChatOptionsMenu';
+import CallHeaderButtons from '@/features/chat/calls/components/CallHeaderButtons';
 
 interface ChatHeaderProps {
   contactName: string;
@@ -16,6 +17,8 @@ interface ChatHeaderProps {
   conversationId?: string;
   /** Real user id of the peer — enables the anonymous-conversation option. */
   peerUserId?: string;
+  /** Group threads hide the 1:1 call buttons. */
+  isGroup?: boolean;
   isEncrypted?: boolean;
   onRefreshConversation?: () => void;
   onClose?: () => void;
@@ -27,6 +30,7 @@ export default function ChatHeader({
   isOnline,
   conversationId,
   peerUserId,
+  isGroup = false,
   isEncrypted = false,
   onClose,
 }: ChatHeaderProps) {
@@ -60,6 +64,12 @@ export default function ChatHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {!isGroup && (
+          <CallHeaderButtons
+            conversationId={conversationId}
+            peer={peerUserId ? { id: peerUserId, name: contactName, avatar: contactAvatar } : null}
+          />
+        )}
         {conversationId && (
           <EncryptionButton
             conversationId={conversationId}

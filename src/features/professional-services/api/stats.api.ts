@@ -26,7 +26,7 @@ interface ServiceStatsResponse {
 class StatsApiClient {
   private readonly axios = getAxiosInstance()
   private readonly baseUrl = '/api/professional-services'
-  private readonly USE_MOCK = false //  Cambiado a false - backend está listo
+  private readonly USE_MOCK = true // Mock backend en dev; backend Supabase pendiente
 
   /**
    * Obtiene estadísticas de un servicio

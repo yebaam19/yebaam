@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { MinusIcon, XMarkIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import ChatOptionsMenu from '../ChatOptionsMenu';
+import CallHeaderButtons from '@/features/chat/calls/components/CallHeaderButtons';
 
 interface ChatBubbleHeaderProps {
   contactName: string;
@@ -11,6 +12,8 @@ interface ChatBubbleHeaderProps {
   isOnline: boolean;
   /** Peer user id — powers the anonymous-conversation option. */
   contactId?: string;
+  /** Resolved conversation id — enables the 1:1 call buttons (1:1 bubbles only). */
+  conversationId?: string;
   /** Kept so callers do not churn; estado de capa realtime no replica el copy de Messenger. */
   isChatConnected: boolean;
   isMinimized: boolean;
@@ -25,6 +28,7 @@ export function ChatBubbleHeader({
   contactAvatar,
   isOnline,
   contactId,
+  conversationId,
   isChatConnected,
   isMinimized,
   onToggleMinimize,
@@ -64,6 +68,11 @@ export function ChatBubbleHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">
+        <CallHeaderButtons
+          conversationId={conversationId}
+          peer={contactId ? { id: contactId, name: contactName, avatar: contactAvatar } : null}
+          buttonClassName="rounded-full p-1.5 text-neutral-600 transition-colors hover:bg-black/5 disabled:opacity-40 dark:text-neutral-300 dark:hover:bg-white/10"
+        />
         {onCreateGroup && (
           <button
             type="button"

@@ -16,12 +16,29 @@ export enum ServiceMediaType {
   VIDEO = 'VIDEO',
 }
 
+/**
+ * Subcategoría de un servicio profesional (taxonomía del PDF).
+ * El usuario elige una categoría y luego una o varias subcategorías.
+ */
+export interface ProfessionalServiceSubcategory {
+  id: string
+  name: string
+  slug: string
+  parentId?: string
+}
+
 export interface ProfessionalServiceCategory {
   id: string
   name: string
   description?: string
   iconUrl?: string
   createdAt: string
+  /** Slug URL-safe derivado del nombre (taxonomía). */
+  slug?: string
+  /** Para subcategorías presentadas como categoría; vacío en padres. */
+  parentId?: string
+  /** Subcategorías de esta categoría padre (taxonomía del PDF). */
+  subcategories?: ProfessionalServiceSubcategory[]
 }
 
 // ============================================================================
@@ -270,6 +287,9 @@ export interface CreateProfessionalServiceDTO {
   workType?: string[]
   cityId: string
   categoryId?: string
+  /** Una o varias subcategorías de la taxonomía (PDF). */
+  subcategoryIds?: string[]
+  /** Hashtags para descubrimiento alterno en el directorio (PDF). */
   tags?: string[]
 }
 
@@ -299,6 +319,7 @@ export interface CreateServiceReviewDTO {
 export interface ProfessionalServiceFilters {
   search?: string
   categoryId?: string
+  subcategoryId?: string
   cityId?: string
   stateId?: string
   minRating?: number

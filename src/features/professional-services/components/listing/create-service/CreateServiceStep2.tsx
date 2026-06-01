@@ -33,15 +33,32 @@ export function CreateServiceStep2({ data, onUpdate, onNext, onBack }: CreateSer
   const cities = citiesRaw ?? []
 
   const [categoryId, setCategoryId] = useState(data.categoryId || '')
+  const [subcategoryIds, setSubcategoryIds] = useState<string[]>(data.subcategoryIds ?? [])
   const [selectedStateId, setSelectedStateId] = useState('')
   const [cityId, setCityId] = useState(data.cityId || '')
+  const [tagsText, setTagsText] = useState((data.tags ?? []).join(', '))
 
   // Filtrar ciudades por estado seleccionado
   const filteredCities = selectedStateId ? cities.filter((city) => city.stateId === selectedStateId) : cities
 
+  // Subcategorías de la categoría seleccionada (taxonomía del PDF)
+  const selectedCategory = categories.find((c) => c.id === categoryId)
+  const subcategories = selectedCategory?.subcategories ?? []
+
   const isLoading = isLoadingCategories || isLoadingStates || isLoadingCities
 
-  const canProceed = categoryId && cityId
+  // Si la categoría tiene subcategorías, exige al menos una
+  // (PDF: "el usuario coloca categoría y después la o las subcategoría(s)").
+  const canProceed = Boolean(categoryId && cityId && (subcategories.length === 0 || subcategoryIds.length > 0))
+
+  const handleCategoryChange = (newCategoryId: string) => {
+    setCategoryId(newCategoryId)
+    setSubcategoryIds([]) // Reset subcategorías al cambiar de categoría
+  }
+
+  const toggleSubcategory = (id: string) => {
+    setSubcategoryIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]))
+  }
 
   const handleStateChange = (stateId: string) => {
     setSelectedStateId(stateId)
@@ -53,7 +70,12 @@ export function CreateServiceStep2({ data, onUpdate, onNext, onBack }: CreateSer
 
     onUpdate({
       categoryId,
+      subcategoryIds,
       cityId,
+      tags: tagsText
+        .split(',')
+        .map((t) => t.trim().replace(/^#+/, ''))
+        .filter(Boolean),
     })
     onNext()
   }
@@ -85,7 +107,7 @@ export function CreateServiceStep2({ data, onUpdate, onNext, onBack }: CreateSer
               <select
                 id="service-category"
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="block w-full appearance-none rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-10 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
               >
                 <option value="">Seleccionar categoría...</option>
@@ -103,6 +125,41 @@ export function CreateServiceStep2({ data, onUpdate, onNext, onBack }: CreateSer
           </p>
         )}
       </div>
+
+      {/* Subcategorías (taxonomía del PDF) */}
+      {categoryId && subcategories.length > 0 && (
+        <div>
+          <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Subcategorías <span className="text-red-500">*</span>
+            <span className="ml-1 text-xs font-normal text-neutral-400">(elige una o varias)</span>
+          </label>
+          <div className="flex max-h-44 flex-wrap gap-2 overflow-y-auto rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
+            {subcategories.map((sub) => {
+              const active = subcategoryIds.includes(sub.id)
+              return (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => toggleSubcategory(sub.id)}
+                  aria-pressed={active}
+                  className={
+                    active
+                      ? 'rounded-full border border-primary-500 bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:border-primary-400 dark:bg-primary-900/30 dark:text-primary-300'
+                      : 'rounded-full border border-neutral-300 px-3 py-1 text-sm text-neutral-600 transition-colors hover:border-primary-300 hover:text-primary-600 dark:border-neutral-600 dark:text-neutral-300'
+                  }
+                >
+                  {sub.name}
+                </button>
+              )
+            })}
+          </div>
+          {subcategoryIds.length > 0 && (
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              {subcategoryIds.length} seleccionada{subcategoryIds.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Estado/Departamento */}
       <div>
@@ -151,6 +208,27 @@ export function CreateServiceStep2({ data, onUpdate, onNext, onBack }: CreateSer
           </select>
           <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-neutral-400" />
         </div>
+      </div>
+
+      {/* Hashtags — descubrimiento alterno en el directorio (PDF) */}
+      <div>
+        <label
+          htmlFor="service-tags"
+          className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+        >
+          Hashtags <span className="text-xs text-neutral-400">(opcional, separa con comas)</span>
+        </label>
+        <input
+          id="service-tags"
+          type="text"
+          value={tagsText}
+          onChange={(e) => setTagsText(e.target.value)}
+          placeholder="contratos, derecho laboral, asesoría"
+          className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
+        />
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+          Ayudan a que tu servicio aparezca en búsquedas alternas del directorio.
+        </p>
       </div>
 
       {/* Botones */}

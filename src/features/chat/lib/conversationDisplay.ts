@@ -25,6 +25,9 @@ export interface ConversationDisplay {
  * stale) and the participant→profile map the message list needs to label
  * incoming bubbles. Group photo is stored as a Cloudflare id in metadata and
  * resolved to a URL here.
+ *
+ * Lives in the chat feature lib (not a route folder) because both the full-page
+ * chat and the global CallProvider (incoming-call peer card) consume it.
  */
 export async function loadConversationDisplay(
   resolvedConversationId: string,

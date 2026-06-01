@@ -12,6 +12,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import type { Route } from 'next'
+import { professionalServicesCityPath } from '@/features/professional-services/constants/routes'
 import { DirectoryCategory, DirectoryCategoryType } from '../../interfaces/directory.interfaces'
 
 interface DirectoryCategoryCardProps {
@@ -45,7 +46,7 @@ export function DirectoryCategoryCard({ category, citySlug }: DirectoryCategoryC
     if (category.type === DirectoryCategoryType.BUSINESS) {
       return `/feed/businesses?city=${citySlug}`
     } else if (category.type === DirectoryCategoryType.SERVICE) {
-      return `/feed/professional-services?city=${citySlug}`
+      return professionalServicesCityPath(citySlug)
     }
     return `/cities/${citySlug}/directory`
   }

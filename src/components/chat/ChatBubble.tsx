@@ -127,6 +127,7 @@ export default function ChatBubble({
         contactAvatar={contactAvatar}
         isOnline={!isGroup && (isOnline || initialIsOnline)}
         contactId={isGroup ? undefined : contactId}
+        conversationId={isGroup ? undefined : conversationId ?? undefined}
         isChatConnected={isChatConnected}
         isMinimized={isMinimized}
         onToggleMinimize={() => setIsMinimized(!isMinimized)}

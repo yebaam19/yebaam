@@ -17,7 +17,7 @@ const simulateDelay = (ms: number = 100) => new Promise((resolve) => setTimeout(
 class CategoriesApiClient {
   private readonly axios = getAxiosInstance()
   private readonly baseUrl = '/api/professional-services/categories'
-  private readonly USE_MOCK = false //  Cambiado a false - backend está listo
+  private readonly USE_MOCK = true // Mock backend en dev (taxonomía del PDF); backend Supabase pendiente
 
   /**
    * Obtiene todas las categorías

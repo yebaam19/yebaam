@@ -9,6 +9,7 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Fragment, useState } from 'react'
 
@@ -18,6 +19,7 @@ import { CreateServiceStep1, CreateServiceStep2, CreateServiceStep3, CreateServi
 import { useCreateService } from '../../hooks/useServices'
 import { uploadService } from '@/lib/service/upload.service'
 import { mediaApiClient } from '../../api/media.api'
+import { professionalServicePath } from '../../constants/routes'
 
 export function CreateServiceModal() {
   const router = useRouter()
@@ -104,7 +106,7 @@ export function CreateServiceModal() {
       // 3. Cerrar modal y navegar
       closeCreateModal()
       resetModal()
-      router.push(`/feed/professional-services/${response.service.slug}`)
+      router.push(professionalServicePath(response.service.slug))
     } catch (error) {
       console.error('Error creating service:', error)
     }
@@ -199,6 +201,26 @@ export function CreateServiceModal() {
 
                 {/* Content */}
                 <div className="max-h-[60vh] overflow-y-auto px-6 py-6">
+                  {/* Requisito del PDF: solo perfiles profesionales verificados pueden publicar.
+                      La verificación de títulos tiene un costo; abrir el perfil no. La validación
+                      real queda pendiente del backend de servicios (hoy mock) — ver routes/README. */}
+                  {currentStep === 1 && (
+                    <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/60 dark:bg-amber-900/20">
+                      <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                        Solo para perfiles profesionales verificados
+                      </p>
+                      <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-300/90">
+                        Para publicar un servicio necesitas un perfil profesional con títulos verificados por la
+                        plataforma.{' '}
+                        <Link
+                          href="/feed/professional-profile"
+                          className="font-medium underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100"
+                        >
+                          Verificar mi perfil profesional
+                        </Link>
+                      </p>
+                    </div>
+                  )}
                   {currentStep === 1 && (
                     <CreateServiceStep1 data={formData} onUpdate={handleUpdateData} onNext={handleNext} />
                   )}

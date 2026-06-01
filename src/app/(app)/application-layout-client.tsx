@@ -7,6 +7,7 @@ import SocialHeader from '@/components/Header/SocialHeader'
 
 import { CurrentUserProvider } from '@/features/auth/context/current-user.context'
 import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
+import { CallProvider } from '@/features/chat/calls/CallProvider'
 import { useNotificationSync } from '@/features/notification/hooks/useNotificationSync'
 import { usePresenceSync } from '@/features/presence/hooks/usePresenceSync'
 import UploadProgress from '@/features/profile/components/media/UploadProgress'
@@ -48,14 +49,16 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
     return (
       <CurrentUserProvider user={user}>
         <ChatNotificationProvider>
-          <Aside.Provider>
-            <SocialHeader isPlatformAdmin={isPlatformAdmin} />
-            <main className="min-h-0 min-w-0 w-full max-w-full pb-0 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
-              <div className="mx-auto min-h-0 w-full max-w-none">{children}</div>
-            </main>
-            <AnonymousChatRoot />
-            <UploadProgress />
-          </Aside.Provider>
+          <CallProvider>
+            <Aside.Provider>
+              <SocialHeader isPlatformAdmin={isPlatformAdmin} />
+              <main className="min-h-0 min-w-0 w-full max-w-full pb-0 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
+                <div className="mx-auto min-h-0 w-full max-w-none">{children}</div>
+              </main>
+              <AnonymousChatRoot />
+              <UploadProgress />
+            </Aside.Provider>
+          </CallProvider>
         </ChatNotificationProvider>
       </CurrentUserProvider>
     )
@@ -65,8 +68,10 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
     return (
       <CurrentUserProvider user={user}>
         <ChatNotificationProvider>
-          {children}
-          <AnonymousChatRoot />
+          <CallProvider>
+            {children}
+            <AnonymousChatRoot />
+          </CallProvider>
         </ChatNotificationProvider>
       </CurrentUserProvider>
     )
@@ -98,18 +103,21 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
     firstSegment === 'feed' ||
     firstSegment === 'cities' ||
     firstSegment === 'insignias' ||
+    firstSegment === 'professional-services' ||
     (segments.length === 1 && !!firstSegment && !RESERVED_TOP_LEVEL.has(firstSegment))
 
   if (hasOwnChrome) {
     return (
       <CurrentUserProvider user={user}>
         <ChatNotificationProvider>
-          <Aside.Provider>
-            {children}
-            <ChatBubbleTray />
-            <AnonymousChatRoot />
-            <UploadProgress />
-          </Aside.Provider>
+          <CallProvider>
+            <Aside.Provider>
+              {children}
+              <ChatBubbleTray />
+              <AnonymousChatRoot />
+              <UploadProgress />
+            </Aside.Provider>
+          </CallProvider>
         </ChatNotificationProvider>
       </CurrentUserProvider>
     )
@@ -118,34 +126,36 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   return (
     <CurrentUserProvider user={user}>
       <ChatNotificationProvider>
-        <Aside.Provider>
-          {/* Banner de ambiente (solo en dev/staging) */}
+        <CallProvider>
+          <Aside.Provider>
+            {/* Banner de ambiente (solo en dev/staging) */}
 
-          {/* Header de navegación social */}
-          <SocialHeader isPlatformAdmin={isPlatformAdmin} />
+            {/* Header de navegación social */}
+            <SocialHeader isPlatformAdmin={isPlatformAdmin} />
 
-          <main className="min-w-0 w-full max-w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-8">
-            <div className="mx-auto w-full max-w-[100vw] px-4 sm:px-6">{children}</div>
-          </main>
+            <main className="min-w-0 w-full max-w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-8">
+              <div className="mx-auto w-full max-w-[100vw] px-4 sm:px-6">{children}</div>
+            </main>
 
-          {/* Footer */}
-          <footer className="border-t border-neutral-200 bg-white py-8 dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="container mx-auto px-4">
-              <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
-                {t('copyrightFooter', { year: new Date().getFullYear() })}
-              </p>
-            </div>
-          </footer>
+            {/* Footer */}
+            <footer className="border-t border-neutral-200 bg-white py-8 dark:border-neutral-800 dark:bg-neutral-900">
+              <div className="container mx-auto px-4">
+                <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+                  {t('copyrightFooter', { year: new Date().getFullYear() })}
+                </p>
+              </div>
+            </footer>
 
-          {/* Chat bubbles (global overlay) */}
-          <ChatBubbleTray />
+            {/* Chat bubbles (global overlay) */}
+            <ChatBubbleTray />
 
-          {/* Anonymous (ephemeral) chat overlay: invite prompt + bubbles */}
-          <AnonymousChatRoot />
+            {/* Anonymous (ephemeral) chat overlay: invite prompt + bubbles */}
+            <AnonymousChatRoot />
 
-          {/* Upload Progress Indicator (global) */}
-          <UploadProgress />
-        </Aside.Provider>
+            {/* Upload Progress Indicator (global) */}
+            <UploadProgress />
+          </Aside.Provider>
+        </CallProvider>
       </ChatNotificationProvider>
     </CurrentUserProvider>
   )

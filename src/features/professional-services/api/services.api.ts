@@ -27,7 +27,7 @@ const simulateDelay = (ms: number = 300) => new Promise((resolve) => setTimeout(
 class ServicesApiClient {
   private readonly axios = getAxiosInstance()
   private readonly baseUrl = '/api/professional-services'
-  private readonly USE_MOCK = false 
+  private readonly USE_MOCK = true // Mock backend en dev; el backend Supabase aún no está migrado
 
   /**
    * Obtiene un servicio por ID

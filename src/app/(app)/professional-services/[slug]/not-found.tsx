@@ -7,6 +7,8 @@
 import { BriefcaseIcon, HomeIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
+import { PROFESSIONAL_SERVICES_PATH } from '@/features/professional-services/constants/routes'
+
 export default function ServiceNotFound() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-16">
@@ -30,7 +32,7 @@ export default function ServiceNotFound() {
         {/* Actions */}
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/feed/professional-services"
+            href={PROFESSIONAL_SERVICES_PATH}
             className="flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 font-medium text-white transition-colors hover:bg-primary-700"
           >
             <MagnifyingGlassIcon className="h-5 w-5" />

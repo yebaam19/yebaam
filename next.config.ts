@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
       { source: '/messages', destination: '/feed', permanent: true },
       { source: '/feed/cities', destination: '/cities', permanent: true },
       { source: '/feed/cities/:path*', destination: '/cities/:path*', permanent: true },
+      { source: '/feed/professional-services', destination: '/professional-services', permanent: true },
+      {
+        source: '/feed/professional-services/:path*',
+        destination: '/professional-services/:path*',
+        permanent: true,
+      },
     ]
   },
   typescript: {
