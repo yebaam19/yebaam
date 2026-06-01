@@ -29,10 +29,15 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
   };
 
   const calleeId = typeof body.calleeId === 'string' ? body.calleeId : '';
-  const callType: CallType = body.callType === 'audio' ? 'audio' : 'video';
   if (!calleeId || calleeId === userId) {
     return NextResponse.json({ error: 'A valid calleeId is required' }, { status: 400 });
   }
+  // callType may be omitted (defaults to video) but a *present* value must be a
+  // valid enum — don't silently coerce a typo'd 'voice' into a video call.
+  if (body.callType !== undefined && body.callType !== 'audio' && body.callType !== 'video') {
+    return NextResponse.json({ error: 'Invalid callType' }, { status: 400 });
+  }
+  const callType: CallType = body.callType === 'audio' ? 'audio' : 'video';
 
   const db = getServiceClient();
 

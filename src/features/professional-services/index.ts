@@ -65,6 +65,9 @@ export { ServiceHeaderWrapper } from './components/profile/ServiceHeaderWrapper'
 export { ServiceHeader } from './components/ServiceHeader'
 export { ServiceActions, ServiceBreadcrumb } from './components/ServiceNavigation'
 
+// Profile layout (mockup pág. 9 — distribución de 3 columnas)
+export { ProfileLayoutWrapper } from './components/profile/ProfileLayoutWrapper'
+
 // Profile Components
 export { AboutService } from './components/profile/AboutService'
 export { EditServiceModal } from './components/profile/EditServiceModal'
