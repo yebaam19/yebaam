@@ -41,6 +41,7 @@ export class CallEngine {
   private remoteSet = false;
   private offerSent = false;
   private closed = false;
+  private readyTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly opts: CallEngineOptions) {}
 
@@ -108,9 +109,35 @@ export class CallEngine {
     await this.chan.ready;
     if (this.closed) return;
 
-    // 4. Handshake: callee says it's ready; caller offers on hearing that.
-    if (this.opts.role === 'callee') {
-      await this.signal({ kind: 'ready', from: this.opts.selfId });
+    // 4. Handshake: the callee announces `ready`; the caller offers on hearing
+    //    it. Broadcast has no replay, so if the caller hasn't joined the channel
+    //    yet (e.g. still sitting on its getUserMedia permission prompt) the
+    //    first `ready` is lost and the call would hang in "connecting" forever.
+    //    The callee therefore re-announces until the offer lands (or it gives up).
+    if (this.opts.role === 'callee') this.announceReady();
+  }
+
+  /** Callee only: re-emit `ready` until the caller's offer arrives, capped. */
+  private announceReady(): void {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 6; // ~9s of coverage at 1.5s spacing
+    const ping = () => {
+      if (this.closed || this.remoteSet) {
+        this.clearReadyTimer();
+        return;
+      }
+      void this.signal({ kind: 'ready', from: this.opts.selfId });
+      attempts += 1;
+      if (attempts >= MAX_ATTEMPTS) this.clearReadyTimer();
+    };
+    ping(); // fire immediately, then retry on the interval
+    this.readyTimer = setInterval(ping, 1500);
+  }
+
+  private clearReadyTimer(): void {
+    if (this.readyTimer) {
+      clearInterval(this.readyTimer);
+      this.readyTimer = null;
     }
   }
 
@@ -133,6 +160,7 @@ export class CallEngine {
         await pc.setLocalDescription(offer);
         await this.signal({ kind: 'offer', from: this.opts.selfId, sdp: offer });
       } else if (sig.kind === 'offer' && this.opts.role === 'callee') {
+        this.clearReadyTimer(); // offer landed — stop re-announcing
         await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
         this.remoteSet = true;
         await this.flushIce();
@@ -185,6 +213,7 @@ export class CallEngine {
   async close(sendBye = true): Promise<void> {
     if (this.closed) return;
     this.closed = true;
+    this.clearReadyTimer();
     if (sendBye) await this.signal({ kind: 'bye', from: this.opts.selfId });
     try {
       this.pc?.getSenders().forEach((s) => s.track?.stop());
