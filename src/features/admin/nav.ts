@@ -71,6 +71,12 @@ const RAW_ADMIN_NAV_ITEMS: AdminNavItem[] = [
     matchPrefix: '/admin/blogs',
   },
   {
+    label: 'Servicios Profesionales',
+    href: '/admin/professional-services' as Route,
+    iconName: 'building-office-2',
+    matchPrefix: '/admin/professional-services',
+  },
+  {
     label: 'Credenciales Profesionales',
     href: '/admin/professional-credentials' as Route,
     iconName: 'academic-cap',

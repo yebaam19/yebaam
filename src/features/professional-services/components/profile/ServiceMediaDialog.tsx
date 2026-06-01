@@ -10,28 +10,29 @@ interface ServiceMediaDialogProps {
   selectedIndex: number | null
   onClose: () => void
   serviceName: string
+  /** Cambia el índice mostrado (anterior/siguiente). Sin esto, las flechas no navegan. */
+  onNavigate?: (index: number) => void
 }
 
 /**
  * Dialog para visualizar media del servicio en tamaño completo
  */
-export function ServiceMediaDialog({ media, selectedIndex, onClose, serviceName }: ServiceMediaDialogProps) {
+export function ServiceMediaDialog({ media, selectedIndex, onClose, serviceName, onNavigate }: ServiceMediaDialogProps) {
   const isOpen = selectedIndex !== null
   const currentMedia = selectedIndex !== null ? media[selectedIndex] : null
 
   // Navegación
   const goToPrevious = useCallback(() => {
     if (selectedIndex !== null && selectedIndex > 0) {
-      // Este callback debería actualizar el índice, pero como no tenemos setSelectedIndex
-      // aquí, necesitamos manejarlo de otra manera
+      onNavigate?.(selectedIndex - 1)
     }
-  }, [selectedIndex])
+  }, [selectedIndex, onNavigate])
 
   const goToNext = useCallback(() => {
     if (selectedIndex !== null && selectedIndex < media.length - 1) {
-      // Similar al anterior
+      onNavigate?.(selectedIndex + 1)
     }
-  }, [selectedIndex, media.length])
+  }, [selectedIndex, media.length, onNavigate])
 
   // Keyboard navigation
   useEffect(() => {
@@ -40,6 +41,10 @@ export function ServiceMediaDialog({ media, selectedIndex, onClose, serviceName 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
+      } else if (e.key === 'ArrowLeft') {
+        goToPrevious()
+      } else if (e.key === 'ArrowRight') {
+        goToNext()
       }
     }
 
@@ -50,7 +55,7 @@ export function ServiceMediaDialog({ media, selectedIndex, onClose, serviceName 
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, goToPrevious, goToNext])
 
   if (!isOpen || !currentMedia) return null
 

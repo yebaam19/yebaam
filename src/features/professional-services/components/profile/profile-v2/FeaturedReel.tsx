@@ -16,7 +16,7 @@ interface FeaturedReelProps {
  * abre el lightbox (`ServiceMediaDialog`) con toda la galería.
  */
 export function FeaturedReel({ media, serviceName }: FeaturedReelProps) {
-  const [open, setOpen] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const featured = media[0]
 
   if (!featured) {
@@ -33,7 +33,7 @@ export function FeaturedReel({ media, serviceName }: FeaturedReelProps) {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => setSelectedIndex(0)}
         className="group relative block aspect-16/9 w-full overflow-hidden rounded-2xl bg-neutral-200 shadow-sm dark:bg-neutral-700"
       >
         <Image
@@ -58,8 +58,9 @@ export function FeaturedReel({ media, serviceName }: FeaturedReelProps) {
 
       <ServiceMediaDialog
         media={media}
-        selectedIndex={open ? 0 : null}
-        onClose={() => setOpen(false)}
+        selectedIndex={selectedIndex}
+        onClose={() => setSelectedIndex(null)}
+        onNavigate={setSelectedIndex}
         serviceName={serviceName}
       />
     </>

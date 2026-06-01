@@ -83,6 +83,7 @@ export function ServiceMediaGallery({ media, serviceName }: ServiceMediaGalleryP
         media={media}
         selectedIndex={selectedIndex}
         onClose={() => setSelectedIndex(null)}
+        onNavigate={setSelectedIndex}
         serviceName={serviceName}
       />
     </>
