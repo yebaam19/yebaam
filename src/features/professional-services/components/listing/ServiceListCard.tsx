@@ -64,7 +64,7 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
       )}
     >
       {/* Cover Image */}
-      <div className="aspect-video relative overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+      <div className="aspect-16/9 relative overflow-hidden bg-neutral-100 dark:bg-neutral-800">
         {adImageUrl || logoUrl ? (
           <Image
             src={adImageUrl || logoUrl || ''}

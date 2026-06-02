@@ -51,7 +51,7 @@ export function ServiceBusinessCard({ service, isOwner }: ServiceBusinessCardPro
   }
 
   const handleDownloadVCard = () => {
-    const esc = (v: string) => v.replace(/[,;\\]/g, (m) => `\\${m}`)
+    const esc = (v: string) => v.replace(/[,;\\]/g, (m) => `\\${m}`).replace(/\r?\n/g, '\\n')
     const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${esc(service.name)}`, `N:${esc(service.name)};;;;`]
     if (service.category?.name) lines.push(`TITLE:${esc(service.category.name)}`)
     if (service.phone) lines.push(`TEL;TYPE=CELL:${esc(service.phone)}`)

@@ -56,7 +56,7 @@ function ServicesGridSkeleton({ className }: { className?: string }) {
           className="animate-pulse overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
         >
           {/* Image skeleton */}
-          <div className="aspect-video bg-neutral-200 dark:bg-neutral-800" />
+          <div className="aspect-16/9 bg-neutral-200 dark:bg-neutral-800" />
 
           {/* Content skeleton */}
           <div className="space-y-3 p-4">

@@ -81,6 +81,8 @@ export function ImageUploader({
     if (inputRef.current) {
       inputRef.current.value = ''
     }
+    // Notify the parent the image was cleared so the form persists the removal.
+    onUrlChange?.('')
   }
 
   const handleUrlSubmit = () => {
@@ -97,7 +99,7 @@ export function ImageUploader({
   }
 
   const heightClass = aspectRatio === 'cover' ? 'h-40' : 'h-64'
-  const aspectClass = aspectRatio === 'cover' ? 'aspect-video' : 'aspect-square'
+  const aspectClass = aspectRatio === 'cover' ? 'aspect-16/9' : 'aspect-square'
 
   return (
     <div className="space-y-2">

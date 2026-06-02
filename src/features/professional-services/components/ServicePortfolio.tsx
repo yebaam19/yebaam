@@ -39,7 +39,7 @@ export function ServicePortfolio({ projects, serviceName }: ServicePortfolioProp
           >
             {/* Imagen del proyecto */}
             {project.imageUrl ? (
-              <div className="aspect-video w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+              <div className="aspect-16/9 w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
                 <img
                   src={project.imageUrl}
                   alt={project.title}
@@ -47,7 +47,7 @@ export function ServicePortfolio({ projects, serviceName }: ServicePortfolioProp
                 />
               </div>
             ) : (
-              <div className="aspect-video flex w-full items-center justify-center bg-linear-to-br from-primary-100 to-primary-200 dark:from-primary-900/20 dark:to-primary-800/20">
+              <div className="aspect-16/9 flex w-full items-center justify-center bg-linear-to-br from-primary-100 to-primary-200 dark:from-primary-900/20 dark:to-primary-800/20">
                 <PhotoIcon className="h-16 w-16 text-primary-400 dark:text-primary-600" />
               </div>
             )}

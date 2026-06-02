@@ -240,12 +240,14 @@ export function useEditServiceForm(
         availableForHire,
         workType,
         tags: tags ? tags.split(',').map((tt) => tt.trim()) : undefined,
-        logoUrl: uploadedLogoUrl || undefined,
-        coverUrl: uploadedCoverUrl || undefined,
+        // `?? undefined` (not `||`) so a cleared field ('') is sent through and
+        // persisted as a removal; updateServiceAction maps '' → null.
+        logoUrl: uploadedLogoUrl ?? undefined,
+        coverUrl: uploadedCoverUrl ?? undefined,
       };
 
       if (FEATURE_FLAGS.SERVICES_CV_UPLOAD) {
-        updateData.cvUrl = uploadedCvUrl || undefined;
+        updateData.cvUrl = uploadedCvUrl ?? undefined;
       }
       if (FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO) {
         updateData.portfolioProjects =

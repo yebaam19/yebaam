@@ -41,21 +41,23 @@ export function DetailsCard({ service }: DetailsCardProps) {
           />
         )}
 
-        <DetailRow
-          term="Ciudad de Trabajo"
-          value={
-            <Link
-              href={`/cities/${city.slug}`}
-              className="inline-flex items-center gap-1.5 text-neutral-700 transition-colors hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
-            >
-              <BriefcaseIcon className="h-4 w-4 shrink-0" />
-              <span>
-                {city.name}
-                {city.state?.name && `, ${city.state.name}`}
-              </span>
-            </Link>
-          }
-        />
+        {city?.name && (
+          <DetailRow
+            term="Ciudad de Trabajo"
+            value={
+              <Link
+                href={`/cities/${city.slug}`}
+                className="inline-flex items-center gap-1.5 text-neutral-700 transition-colors hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
+              >
+                <BriefcaseIcon className="h-4 w-4 shrink-0" />
+                <span>
+                  {city.name}
+                  {city.state?.name && `, ${city.state.name}`}
+                </span>
+              </Link>
+            }
+          />
+        )}
       </dl>
 
       {/* Especialidades — subcategorías elegidas de la taxonomía (PDF) */}
