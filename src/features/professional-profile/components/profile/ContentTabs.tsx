@@ -33,6 +33,7 @@ import {
   TitlesSection,
 } from '../sections'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
+import { UserServicesPanel } from '@/features/professional-services/components/profile/UserServicesPanel'
 
 interface ContentTabsProps {
   profile: ProfessionalProfile
@@ -52,6 +53,7 @@ export function ContentTabs({ profile, isOwner, isRefetching = false }: ContentT
     { key: 'languages', name: t('profile.tabs.languages'), icon: LanguageIcon },
     { key: 'licenses', name: t('profile.tabs.licenses'), icon: DocumentTextIcon },
     { key: 'memberships', name: t('profile.tabs.memberships'), icon: UserGroupIcon },
+    { key: 'services', name: 'Servicios', icon: BriefcaseIcon },
   ]
 
   // Si está refetching (re-cargando datos), mostrar skeleton
@@ -105,6 +107,10 @@ export function ContentTabs({ profile, isOwner, isRefetching = false }: ContentT
       
       <TabsContent>
         <AssociationsSection profileId={profile.id} isOwner={isOwner} items={profile.associations} />
+      </TabsContent>
+
+      <TabsContent>
+        <UserServicesPanel userId={profile.userId} isOwner={isOwner} />
       </TabsContent>
     </Tabs>
   )

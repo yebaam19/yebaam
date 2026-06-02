@@ -13,7 +13,7 @@ interface DetailsCardProps {
  * Sociales. Los campos sin dato en el modelo (Especialización) se omiten.
  */
 export function DetailsCard({ service }: DetailsCardProps) {
-  const { category, address, city, workType } = service
+  const { category, address, city, workType, subcategories } = service
   const specialization = workType && workType.length > 0 ? workType.map(workTypeLabel).join(', ') : undefined
 
   return (
@@ -57,6 +57,25 @@ export function DetailsCard({ service }: DetailsCardProps) {
           }
         />
       </dl>
+
+      {/* Especialidades — subcategorías elegidas de la taxonomía (PDF) */}
+      {subcategories && subcategories.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
+            Especialidades
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {subcategories.map((sub) => (
+              <span
+                key={sub.id}
+                className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300"
+              >
+                {sub.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Redes Sociales */}
       <div className="mt-2">

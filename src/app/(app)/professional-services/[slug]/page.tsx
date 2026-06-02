@@ -2,11 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import {
-  professionalServiceService,
   ProfileLayoutWrapper,
   ServiceActions,
   ServiceBreadcrumb,
 } from '@/features/professional-services'
+import { getServiceById, getServiceBySlug } from '@/features/professional-services/server/services.server'
 
 interface ProfessionalServicePageProps {
   params: Promise<{ slug: string }>
@@ -14,10 +14,10 @@ interface ProfessionalServicePageProps {
 
 export async function generateMetadata({ params }: ProfessionalServicePageProps): Promise<Metadata> {
   const { slug } = await params
-  let response = await professionalServiceService.getServiceBySlug(slug)
+  let response = await getServiceBySlug(slug)
 
   if (!response) {
-    response = await professionalServiceService.getServiceById(slug)
+    response = await getServiceById(slug)
   }
 
   if (!response) {
@@ -46,10 +46,10 @@ export default async function ProfessionalServicePage({ params }: ProfessionalSe
   const { slug } = await params
 
   // Intentar buscar por slug primero, luego por ID
-  let response = await professionalServiceService.getServiceBySlug(slug)
+  let response = await getServiceBySlug(slug)
 
   if (!response) {
-    response = await professionalServiceService.getServiceById(slug)
+    response = await getServiceById(slug)
   }
 
   if (!response) {

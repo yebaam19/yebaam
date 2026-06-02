@@ -49,7 +49,10 @@ export interface ProfessionalServiceMedia {
   id: string
   serviceId: string
   type: ServiceMediaType
+  /** Poster/preview URL — an image for photos, a Stream thumbnail for videos. */
   url: string
+  /** Playable source for VIDEO items (Cloudflare Stream HLS); absent for images. */
+  playbackUrl?: string
   caption?: string
   order: number
   createdAt: string
@@ -144,6 +147,8 @@ export interface ProfessionalService {
   coverUrl?: string
   coverImage?: string // Cover del servicio (backend usa este nombre)
   adImageUrl?: string
+  /** Downloadable virtual business card art (PDF "tarjeta de negocios virtual"). */
+  businessCardUrl?: string
   email?: string
   phone?: string
   website?: string
@@ -185,6 +190,8 @@ export interface ProfessionalService {
   user?: ServiceOwner
   city: ServiceCity
   category?: ProfessionalServiceCategory
+  /** Subcategorías elegidas de la taxonomía (PDF). */
+  subcategories?: ProfessionalServiceSubcategory[]
 
   // Media y reviews
   media: ProfessionalServiceMedia[]

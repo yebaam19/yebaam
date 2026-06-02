@@ -1,10 +1,15 @@
 /**
- * Media API Client
- *
- * Cliente para operaciones de medios (imágenes/videos) de servicios profesionales
+ * Media API Client — thin facade over the Server Actions. Media is Cloudflare
+ * only: callers pass the delivery URL (or bare id/uid) and the action stores
+ * just the Cloudflare id / Stream uid.
  */
 
-import { getAxiosInstance } from '@/lib/http/legacy-client'
+import {
+  addServiceMediaAction,
+  removeServiceMediaAction,
+  reorderServiceMediaAction,
+  updateServiceMediaAction,
+} from '../actions/services.actions'
 
 export interface AddMediaDto {
   type: 'image' | 'video'
@@ -24,52 +29,28 @@ export interface MediaResponse {
 }
 
 class MediaApiClient {
-  private readonly axios = getAxiosInstance()
-  private readonly baseUrl = '/api/professional-services'
-
-  /**
-   * Agregar media a un servicio
-   */
-  async addMedia(serviceId: string, data: AddMediaDto): Promise<MediaResponse> {
-    const response = await this.axios.post<{ media: MediaResponse }>(
-      `${this.baseUrl}/${serviceId}/media`,
-      data
-    )
-    return response.data.media
+  addMedia(serviceId: string, data: AddMediaDto): Promise<MediaResponse> {
+    return addServiceMediaAction(serviceId, data)
   }
 
-  /**
-   * Eliminar media de un servicio
-   */
   async removeMedia(serviceId: string, mediaId: string): Promise<void> {
-    await this.axios.delete(`${this.baseUrl}/${serviceId}/media/${mediaId}`)
+    await removeServiceMediaAction(serviceId, mediaId)
   }
 
-  /**
-   * Actualizar orden de medios
-   */
   async updateMediaOrder(
     serviceId: string,
-    mediaOrder: Array<{ mediaId: string; order: number }>
+    mediaOrder: Array<{ mediaId: string; order: number }>,
   ): Promise<void> {
-    await this.axios.patch(`${this.baseUrl}/${serviceId}/media/order`, {
-      mediaOrder,
-    })
+    await reorderServiceMediaAction(serviceId, mediaOrder)
   }
 
-  /**
-   * Actualizar información de un media
-   */
   async updateMedia(
     serviceId: string,
     mediaId: string,
-    updates: { caption?: string; order?: number }
+    updates: { caption?: string; order?: number },
   ): Promise<MediaResponse> {
-    const response = await this.axios.patch<{ media: MediaResponse }>(
-      `${this.baseUrl}/${serviceId}/media/${mediaId}`,
-      updates
-    )
-    return response.data.media
+    await updateServiceMediaAction(serviceId, mediaId, updates)
+    return { id: mediaId, type: 'image', url: '', caption: updates.caption, order: updates.order ?? 0 }
   }
 }
 

@@ -1,4 +1,6 @@
 import { BriefcaseIcon, ClockIcon, CurrencyDollarIcon, TagIcon } from '@/components/icons/heroicons-shim'
+import Link from 'next/link'
+import type { Route } from 'next'
 import { ProfessionalService } from '../../interfaces/professional-service.interfaces'
 
 interface AboutServiceProps {
@@ -155,12 +157,13 @@ export function AboutService({ service }: AboutServiceProps) {
 
           <div className="flex flex-wrap gap-2">
             {service.tags.map((tag) => (
-              <span
+              <Link
                 key={tag}
-                className="rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800 dark:bg-primary-900/30 dark:text-primary-300"
+                href={`/professional-services?q=${encodeURIComponent(tag)}` as Route}
+                className="rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800 transition-colors hover:bg-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50"
               >
                 #{tag}
-              </span>
+              </Link>
             ))}
           </div>
         </div>

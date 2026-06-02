@@ -9,17 +9,19 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 import { CreateProfessionalServiceDTO } from '../../interfaces/professional-service.interfaces'
 import { useProfessionalServicesUIStore } from '../../store/professionalServicesUI.store'
 import { CreateServiceStep1, CreateServiceStep2, CreateServiceStep3, CreateServiceStep4, CreateServiceStep5 } from './create-service'
+import { CreateServiceGate } from './create-service/CreateServiceGate'
+import { uploadPendingMedia } from './create-service/uploadPendingMedia'
 import { useCreateService } from '../../hooks/useServices'
-import { uploadService } from '@/lib/service/upload.service'
-import { mediaApiClient } from '../../api/media.api'
+import { myEligibilityAction } from '../../actions/services.actions'
 import { professionalServicePath } from '../../constants/routes'
+
+type Eligibility = Awaited<ReturnType<typeof myEligibilityAction>>
 
 export function CreateServiceModal() {
   const router = useRouter()
@@ -31,6 +33,24 @@ export function CreateServiceModal() {
     currency: 'COP',
     availableForHire: true,
   })
+
+  // PDF eligibility rule: only a verified professional profile may publish.
+  // Checked on open; the Server Action + RLS enforce it again on submit.
+  const [eligibility, setEligibility] = useState<Eligibility | null>(null)
+  useEffect(() => {
+    if (!isCreateModalOpen) return
+    let cancelled = false
+    myEligibilityAction()
+      .then((e) => {
+        if (!cancelled) setEligibility(e)
+      })
+      .catch(() => {
+        if (!cancelled) setEligibility({ eligible: false, hasProfile: false, professionalProfileId: null })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isCreateModalOpen])
 
   const totalSteps = 5
 
@@ -52,58 +72,11 @@ export function CreateServiceModal() {
 
   const handleSubmit = async () => {
     try {
-      // 1. Crear el servicio primero
-      const response = await createMutation.mutateAsync(formData as any)
-      const serviceId = response.service.id
+      // 1. Crear el servicio. 2. Subir los medios pendientes (galería del paso 5).
+      const response = await createMutation.mutateAsync(formData as CreateProfessionalServiceDTO)
+      await uploadPendingMedia(response.service.id)
 
-      // 2. Subir medios pendientes si existen
-      const pendingMediaJson = sessionStorage.getItem('pendingMediaItems')
-      if (pendingMediaJson) {
-        const pendingMedia = JSON.parse(pendingMediaJson)
-        
-        if (pendingMedia.length > 0) {
-          console.log(`Subiendo ${pendingMedia.length} medios al servicio ${serviceId}...`)
-
-          // Subir cada media
-          for (const media of pendingMedia) {
-            try {
-              let finalUrl = media.url
-              let thumbnailUrl: string | undefined = undefined
-
-              if (media.file) {
-                if (media.type === 'video') {
-                  const result = await uploadService.uploadVideo(media.file)
-                  finalUrl = `https://iframe.videodelivery.net/${result.uid}`
-                  thumbnailUrl = result.thumbnail
-                } else {
-                  const result = await uploadService.uploadImage(media.file)
-                  finalUrl = result.url
-                }
-              }
-
-              // Agregar media al servicio en el backend
-              await mediaApiClient.addMedia(serviceId, {
-                type: media.type,
-                url: finalUrl,
-                thumbnailUrl,
-                caption: media.caption || undefined,
-                order: media.order,
-              })
-
-              console.log(`Media subido exitosamente: ${media.type}`)
-            } catch (mediaError) {
-              console.error('Error subiendo media:', mediaError)
-              // Continuar con los demás medios aunque uno falle
-            }
-          }
-
-          // Limpiar sessionStorage
-          sessionStorage.removeItem('pendingMediaItems')
-          console.log('Todos los medios subidos exitosamente')
-        }
-      }
-
-      // 3. Cerrar modal y navegar
+      // 3. Cerrar modal y navegar al perfil del servicio.
       closeCreateModal()
       resetModal()
       router.push(professionalServicePath(response.service.slug))
@@ -115,6 +88,8 @@ export function CreateServiceModal() {
   const resetModal = () => {
     setCurrentStep(1)
     setFormData({ currency: 'COP', availableForHire: true })
+    // Reset eligibility so the next open re-checks and shows the loading state.
+    setEligibility(null)
   }
 
   const handleClose = () => {
@@ -199,63 +174,49 @@ export function CreateServiceModal() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content — eligibility gate (PDF rule) wraps the create steps. */}
                 <div className="max-h-[60vh] overflow-y-auto px-6 py-6">
-                  {/* Requisito del PDF: solo perfiles profesionales verificados pueden publicar.
-                      La verificación de títulos tiene un costo; abrir el perfil no. La validación
-                      real queda pendiente del backend de servicios (hoy mock) — ver routes/README. */}
-                  {currentStep === 1 && (
-                    <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/60 dark:bg-amber-900/20">
-                      <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
-                        Solo para perfiles profesionales verificados
-                      </p>
-                      <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-300/90">
-                        Para publicar un servicio necesitas un perfil profesional con títulos verificados por la
-                        plataforma.{' '}
-                        <Link
-                          href="/feed/professional-profile"
-                          className="font-medium underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100"
-                        >
-                          Verificar mi perfil profesional
-                        </Link>
-                      </p>
-                    </div>
-                  )}
-                  {currentStep === 1 && (
-                    <CreateServiceStep1 data={formData} onUpdate={handleUpdateData} onNext={handleNext} />
-                  )}
-                  {currentStep === 2 && (
-                    <CreateServiceStep2
-                      data={formData}
-                      onUpdate={handleUpdateData}
-                      onNext={handleNext}
-                      onBack={handleBack}
-                    />
-                  )}
-                  {currentStep === 3 && (
-                    <CreateServiceStep3
-                      data={formData}
-                      onUpdate={handleUpdateData}
-                      onNext={handleNext}
-                      onBack={handleBack}
-                    />
-                  )}
-                  {currentStep === 4 && (
-                    <CreateServiceStep4
-                      data={formData}
-                      onUpdate={handleUpdateData}
-                      onBack={handleBack}
-                      onNext={handleNext}
-                    />
-                  )}
-                  {currentStep === 5 && (
-                    <CreateServiceStep5
-                      data={formData}
-                      onUpdate={handleUpdateData}
-                      onBack={handleBack}
-                      onSubmit={handleSubmit}
-                      isSubmitting={createMutation.isPending}
-                    />
+                  {eligibility?.eligible ? (
+                    <>
+                      {currentStep === 1 && (
+                        <CreateServiceStep1 data={formData} onUpdate={handleUpdateData} onNext={handleNext} />
+                      )}
+                      {currentStep === 2 && (
+                        <CreateServiceStep2
+                          data={formData}
+                          onUpdate={handleUpdateData}
+                          onNext={handleNext}
+                          onBack={handleBack}
+                        />
+                      )}
+                      {currentStep === 3 && (
+                        <CreateServiceStep3
+                          data={formData}
+                          onUpdate={handleUpdateData}
+                          onNext={handleNext}
+                          onBack={handleBack}
+                        />
+                      )}
+                      {currentStep === 4 && (
+                        <CreateServiceStep4
+                          data={formData}
+                          onUpdate={handleUpdateData}
+                          onBack={handleBack}
+                          onNext={handleNext}
+                        />
+                      )}
+                      {currentStep === 5 && (
+                        <CreateServiceStep5
+                          data={formData}
+                          onUpdate={handleUpdateData}
+                          onBack={handleBack}
+                          onSubmit={handleSubmit}
+                          isSubmitting={createMutation.isPending}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <CreateServiceGate eligibility={eligibility} />
                   )}
                 </div>
 

@@ -3,8 +3,12 @@
 import { useFetch } from '@/lib/hooks/useFetch';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { invalidate } from '@/lib/hooks/cacheStore';
-import { servicesApiClient, type CreateServiceData, type UpdateServiceData } from '../api';
-import type { ProfessionalServiceFilters } from '../interfaces/professional-service.interfaces';
+import { servicesApiClient } from '../api';
+import type {
+  CreateProfessionalServiceDTO,
+  ProfessionalServiceFilters,
+  UpdateProfessionalServiceDTO,
+} from '../interfaces/professional-service.interfaces';
 
 export const servicesKeys = {
   all: ['professional-services'] as const,
@@ -51,7 +55,7 @@ export function useSearchServices(query: string | undefined, limit: number = 10)
 
 export function useCreateService() {
   return useAsyncAction(
-    (data: CreateServiceData) => servicesApiClient.create(data),
+    (data: CreateProfessionalServiceDTO) => servicesApiClient.create(data),
     {
       onSuccess: () => {
         invalidate('professional-services::list');
@@ -62,7 +66,7 @@ export function useCreateService() {
 
 export function useUpdateService() {
   return useAsyncAction(
-    ({ id, data }: { id: string; data: UpdateServiceData }) =>
+    ({ id, data }: { id: string; data: UpdateProfessionalServiceDTO }) =>
       servicesApiClient.update(id, data),
     {
       onSuccess: (_, { id }) => {

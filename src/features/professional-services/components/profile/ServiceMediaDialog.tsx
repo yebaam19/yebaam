@@ -100,7 +100,13 @@ export function ServiceMediaDialog({ media, selectedIndex, onClose, serviceName,
           {/* Media */}
           <div className="relative h-full w-full max-w-5xl">
             {currentMedia.type === ServiceMediaType.VIDEO ? (
-              <video src={currentMedia.url} controls autoPlay className="h-full w-full object-contain" />
+              <video
+                src={currentMedia.playbackUrl ?? currentMedia.url}
+                poster={currentMedia.url}
+                controls
+                autoPlay
+                className="h-full w-full object-contain"
+              />
             ) : (
               <Image
                 src={currentMedia.url}

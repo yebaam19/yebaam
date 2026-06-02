@@ -27,27 +27,12 @@ export {
   ServiceMediaType,
 } from './interfaces/professional-service.interfaces'
 export {
-  MOCK_CITIES,
-  MOCK_PROFESSIONAL_SERVICES_BASIC,
-  MOCK_PROFESSIONAL_SERVICES_FULL,
-  MOCK_STATES,
-  SERVICE_CATEGORIES,
-  getAllCategories,
-  getAllStates,
-  getCitiesByState,
-  getMockServiceById,
-  getMockServiceBySlug,
-  getMockServicesByCategory,
-  getMockServicesByCity,
-  getMockServicesByState,
-} from './data/mock-professional-services'
-
-export {
   PROFESSIONAL_SERVICES_PATH,
   professionalServicePath,
   professionalServicesCityPath,
 } from './constants/routes'
 export {
+  SERVICE_CATEGORIES,
   SERVICE_CATEGORY_TAXONOMY,
   findCategoryById,
   findSubcategoryById,
@@ -58,7 +43,6 @@ export type { ProfessionalServiceSubcategory } from './interfaces/professional-s
 export { professionalServiceService } from './services/professional-service.service'
 
 export { useProfessionalServicesUIStore } from './store/professionalServicesUI.store'
-export { useMockProfessionalServices } from './hooks/useMockProfessionalServices'
 
 // Header & Navigation
 export { ServiceHeaderWrapper } from './components/profile/ServiceHeaderWrapper'

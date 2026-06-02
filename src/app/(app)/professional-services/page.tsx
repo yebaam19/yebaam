@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
-import { ProfessionalServicesListingContainer, professionalServiceService } from '@/features/professional-services'
+import { ProfessionalServicesListingContainer, SERVICE_CATEGORIES } from '@/features/professional-services'
+import { getAllCities, getStates, listServices } from '@/features/professional-services/server/services.server'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('professional')
@@ -29,20 +30,21 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = 'force-dynamic'
 
 interface ProfessionalServicesPageProps {
-  searchParams: Promise<{ city?: string }>
+  searchParams: Promise<{ city?: string; q?: string }>
 }
 
 export default async function ProfessionalServicesPage({ searchParams }: ProfessionalServicesPageProps) {
-  const { city: citySlug } = await searchParams
+  const { city: citySlug, q: initialQuery } = await searchParams
 
-  // Carga inicial en el servidor (datos mock en dev). El contenedor refina con
-  // React Query en el cliente; estos props alimentan los filtros y el primer render.
-  const [states, cities, categories, initial] = await Promise.all([
-    professionalServiceService.getStates(),
-    professionalServiceService.getAllCities(),
-    professionalServiceService.getCategories(),
-    professionalServiceService.getServices({ page: 1, limit: 24 }),
+  // Carga inicial en el servidor desde Supabase. El contenedor refina en el
+  // cliente; estos props alimentan los filtros y el primer render. Las
+  // categorías son la taxonomía estática del PDF (no hay tabla para ellas).
+  const [states, cities, initial] = await Promise.all([
+    getStates(),
+    getAllCities(),
+    listServices({ page: 1, limit: 24 }),
   ])
+  const categories = SERVICE_CATEGORIES
 
   // El portal de ciudad enlaza con `?city=<slug>`; lo traducimos a cityId para
   // pre-filtrar la lista (la store de filtros trabaja con ids).
@@ -57,6 +59,7 @@ export default async function ProfessionalServicesPage({ searchParams }: Profess
         cities={cities}
         categories={categories}
         initialCityId={initialCityId}
+        initialQuery={initialQuery}
       />
     </div>
   )

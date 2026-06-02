@@ -12,6 +12,7 @@ import { PostsFeed } from './profile-v2/PostsFeed'
 import { ProfileNameHeader } from './profile-v2/ProfileNameHeader'
 import { ProfilePhotoCard } from './profile-v2/ProfilePhotoCard'
 import { SectionTabs } from './profile-v2/SectionTabs'
+import { ServiceBusinessCard } from './ServiceBusinessCard'
 
 interface ProfileLayoutProps {
   service: ProfessionalService
@@ -66,6 +67,7 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
           <FeaturedReel media={service.media} serviceName={service.name} />
           <PostsFeed />
           <ContactCard service={service} inline />
+          <ServiceBusinessCard service={service} isOwner={isOwner} />
         </div>
 
         {/* Riel de acciones — columna 1, fila 2 (empieza al nivel de la Foto de

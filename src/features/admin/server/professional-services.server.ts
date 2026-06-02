@@ -17,9 +17,9 @@ export interface AdminServiceRow {
 
 /**
  * Listado de servicios profesionales para la vista de administración
- * (supervisión). Lee del servicio de servicios profesionales — hoy respaldado
- * por datos mock (`USE_MOCK`), así que es de solo lectura hasta que el backend
- * Supabase esté migrado. Devuelve filas planas listas para la tabla.
+ * (supervisión). Lee servicios reales vía `professionalServiceService`
+ * (Server Actions respaldadas por Supabase/RLS). Devuelve filas planas listas
+ * para la tabla.
  */
 export async function listAdminServices(search = ''): Promise<AdminServiceRow[]> {
   const res = await professionalServiceService.getServices({

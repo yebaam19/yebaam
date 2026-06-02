@@ -1,13 +1,14 @@
-
 'use client'
 
-import { PlusIcon } from '@/components/icons/heroicons-shim'
 import { useCallback, useEffect, useState } from 'react'
 
-import { useServices } from '../hooks/useServices'
-import { useFeaturedServices, useRecentServices } from '../hooks/useStats'
+import { useAuth } from '@/features/auth'
 import { listPublicProfilesAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
 import type { ProfessionalProfile } from '@/features/professional-profile/interfaces/professional-profile.interfaces'
+
+import { useServices } from '../hooks/useServices'
+import { useFeaturedServices } from '../hooks/useStats'
+import { servicesByUserIdAction } from '../actions/services.actions'
 import {
   City,
   ProfessionalServiceBasic,
@@ -23,10 +24,9 @@ import {
   ServicesHero,
   ServicesTabs,
 } from './listing'
-
-// ============================================================================
-// TYPES
-// ============================================================================
+import { ServicesLoadingSkeleton } from './listing/container/ServicesLoadingSkeleton'
+import { ServicesEmptyState } from './listing/container/ServicesEmptyState'
+import { SearchResultsHeader } from './listing/container/SearchResultsHeader'
 
 interface ProfessionalServicesListingContainerProps {
   initialServices: ProfessionalServiceBasic[]
@@ -36,116 +36,29 @@ interface ProfessionalServicesListingContainerProps {
   categories: ProfessionalServiceCategory[]
   /** Ciudad pre-seleccionada cuando se llega desde el portal (`?city=slug`). */
   initialCityId?: string
+  /** Búsqueda pre-aplicada al llegar desde un hashtag (`?q=etiqueta`). */
+  initialQuery?: string
 }
-
-// ============================================================================
-// LOADING SKELETON
-// ============================================================================
-
-function ServicesLoadingSkeleton() {
-  return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="animate-pulse rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800"
-        >
-          <div className="aspect-video mb-4 rounded-lg bg-neutral-200 dark:bg-neutral-700" />
-          <div className="mb-2 h-5 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-          <div className="mb-4 h-4 w-full rounded bg-neutral-200 dark:bg-neutral-700" />
-          <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// ============================================================================
-// EMPTY STATE
-// ============================================================================
-
-interface EmptyStateProps {
-  type: 'my-services' | 'suggested' | 'discover' | 'search'
-  onCreateClick: () => void
-  onClearSearch?: () => void
-  onDiscoverClick?: () => void
-}
-
-function EmptyState({ type, onCreateClick, onClearSearch, onDiscoverClick }: EmptyStateProps) {
-  const config = {
-    'my-services': {
-      title: 'No tienes servicios profesionales',
-      description: 'Crea tu primer servicio profesional y empieza a ofrecer tus servicios a la comunidad.',
-      action: 'Crear mi primer servicio',
-      onAction: onCreateClick,
-    },
-    suggested: {
-      title: 'Sin sugerencias disponibles',
-      description: 'No hay servicios sugeridos para ti en este momento. Explora la sección Descubrir.',
-      action: 'Explorar servicios',
-      onAction: onDiscoverClick,
-    },
-    discover: {
-      title: 'No hay servicios disponibles',
-      description: 'Sé el primero en crear un servicio profesional.',
-      action: 'Crear servicio',
-      onAction: onCreateClick,
-    },
-    search: {
-      title: 'Sin resultados',
-      description: 'No encontramos servicios que coincidan con tu búsqueda. Intenta con otros términos.',
-      action: 'Limpiar búsqueda',
-      onAction: onClearSearch,
-    },
-  }
-
-  const { title, description, action, onAction } = config[type]
-
-  return (
-    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 py-16 text-center dark:border-neutral-700">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-        <PlusIcon className="h-8 w-8 text-neutral-400" />
-      </div>
-      <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">{title}</h3>
-      <p className="mb-6 max-w-md text-neutral-600 dark:text-neutral-400">{description}</p>
-      {onAction && (
-        <button
-          onClick={onAction}
-          className="rounded-lg bg-primary-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-primary-700"
-        >
-          {action}
-        </button>
-      )}
-    </div>
-  )
-}
-
-// ============================================================================
-// SEARCH RESULTS HEADER
-// ============================================================================
-
-function SearchResultsHeader({ totalResults }: { totalResults: number }) {
-  return (
-    <div className="mb-6">
-      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-        {totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''}
-      </h2>
-    </div>
-  )
-}
-
 
 export function ProfessionalServicesListingContainer({
-  initialServices,
-  initialTotal,
   states,
   cities,
   categories,
   initialCityId,
+  initialQuery,
 }: ProfessionalServicesListingContainerProps) {
-  // UI Store
-  const { activeTab, setActiveTab, searchQuery, isSearching, setIsSearching, filters, setFilters, openCreateModal } =
-    useProfessionalServicesUIStore()
+  const { user } = useAuth()
+  const {
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    isSearching,
+    setIsSearching,
+    setSearchQuery,
+    filters,
+    setFilters,
+    openCreateModal,
+  } = useProfessionalServicesUIStore()
 
   // Pre-filtra por ciudad al llegar desde el portal de la ciudad (?city=slug → cityId).
   useEffect(() => {
@@ -153,25 +66,46 @@ export function ProfessionalServicesListingContainer({
       setFilters({ cityId: initialCityId })
       setIsSearching(true)
     }
-    // Solo al montar / cuando cambia la ciudad inicial.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCityId])
 
-  // Real API Queries
-  // TODO: Implementar "mis servicios" cuando tengamos autenticación
-  const { data: myServicesData, isLoading: isLoadingMy } = useServices({ /* agregar filtro por userId cuando esté disponible */ })
-  const myServices = myServicesData?.services || []
-  
-  // Servicios sugeridos = featured services
-  const { data: suggestedServicesRaw, isLoading: isLoadingSuggested } = useFeaturedServices(12)
+  // Pre-aplica la búsqueda al llegar desde un hashtag del perfil (?q=etiqueta).
+  useEffect(() => {
+    if (initialQuery) {
+      setSearchQuery(initialQuery)
+      setIsSearching(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery])
 
+  // "Mis servicios" = los servicios del usuario autenticado (no todo el directorio).
+  const [myServicesRaw, setMyServicesRaw] = useState<ProfessionalServiceBasic[] | null>(null)
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    servicesByUserIdAction(user.id)
+      .then((rows) => {
+        if (!cancelled) setMyServicesRaw(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setMyServicesRaw([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+  const myServices = myServicesRaw ?? []
+  const isLoadingMy = !!user && myServicesRaw === null
+
+  // Servicios sugeridos = featured services.
+  const { data: suggestedServicesRaw, isLoading: isLoadingSuggested } = useFeaturedServices(12)
   const suggestedServices = suggestedServicesRaw ?? []
-  
-  // Servicios para descubrir = todos los servicios (más resultados sin sección de categorías)
+
+  // Servicios para descubrir = todos los servicios.
   const { data: discoverData, isLoading: isLoadingDiscover } = useServices({ page: 1, limit: 24 })
   const discoverServices = discoverData?.services || []
 
-  // Perfiles profesionales para descubrir
+  // Perfiles profesionales para descubrir.
   const [professionalProfiles, setProfessionalProfiles] = useState<ProfessionalProfile[]>([])
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true)
   useEffect(() => {
@@ -189,10 +123,7 @@ export function ProfessionalServicesListingContainer({
     }
   }, [])
 
-  // Search query - aplicar filtros cuando hay búsqueda. The underlying
-  // `useServices` hook takes only one argument; display-gating on
-  // `shouldSearch` happens below in the render branches.
-  const shouldSearch = !!(searchQuery || filters.categoryId || filters.cityId || filters.stateId)
+  // Búsqueda — aplica filtros cuando hay término o filtros activos.
   const { data: searchResults, isLoading: isSearchLoading } = useServices({
     search: searchQuery,
     categoryId: filters.categoryId,
@@ -202,45 +133,25 @@ export function ProfessionalServicesListingContainer({
     limit: 50,
   })
 
-  // Handle filter changes from filter bar
   const handleFiltersChange = useCallback(
     (newFilters: typeof filters) => {
       setFilters(newFilters)
-      // Si hay filtros activos, activar modo búsqueda
       const hasFilters = !!(newFilters.search || newFilters.categoryId || newFilters.cityId || newFilters.stateId)
       setIsSearching(hasFilters)
     },
-    [setFilters, setIsSearching]
+    [setFilters, setIsSearching],
   )
 
-  // Handle category selection
-  const handleCategorySelect = useCallback(
-    (categoryId: string) => {
-      setFilters({ ...filters, categoryId })
-      setIsSearching(true)
-
-      // Scroll to filter section
-      document.getElementById('services-filters')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
-    },
-    [filters, setFilters, setIsSearching]
-  )
-
-  // Determine which services to display
   const getServicesToDisplay = (): ProfessionalServiceBasic[] => {
     if (isSearching && (searchQuery || filters.categoryId || filters.cityId || filters.stateId)) {
       return searchResults?.services || []
     }
-
     switch (activeTab) {
       case 'my-services':
         return myServices
       case 'suggested':
         return suggestedServices
       case 'discover':
-        return discoverServices
       default:
         return discoverServices
     }
@@ -254,35 +165,29 @@ export function ProfessionalServicesListingContainer({
     (activeTab === 'discover' && isLoadingDiscover) ||
     (isSearching && isSearchLoading)
 
-  // Determine empty state type
   const getEmptyStateType = (): 'my-services' | 'suggested' | 'discover' | 'search' => {
     if (isSearching) return 'search'
     return activeTab as 'my-services' | 'suggested' | 'discover'
   }
 
-  // Show create button only in my-services tab
   const showCreateButton = activeTab === 'my-services'
 
   return (
     <div className="space-y-8">
-      {/* Hero Section - Siempre visible como bienvenida */}
       <ServicesHero onCreateClick={() => openCreateModal()} showCreateButton={showCreateButton} />
 
-      {/* Tabs */}
       {!isSearching && (
         <ServicesTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
           myServicesCount={myServices.length}
           suggestedCount={suggestedServices.length}
-          showMyServices={true}
+          showMyServices={!!user}
         />
       )}
 
-      {/* Search Results Header */}
       {isSearching && searchResults?.services && <SearchResultsHeader totalResults={searchResults.services.length} />}
 
-      {/* Filters Section */}
       <section id="services-filters" className="scroll-mt-20">
         <ServicesFilterBar
           filters={{ ...filters, search: searchQuery }}
@@ -294,13 +199,10 @@ export function ProfessionalServicesListingContainer({
         />
       </section>
 
-      {/* Loading State */}
       {isLoading && <ServicesLoadingSkeleton />}
 
-      {/* Services Grid */}
       {!isLoading && servicesToDisplay.length > 0 && <ServicesGrid services={servicesToDisplay} isLoading={false} />}
 
-      {/* Professional Profiles Section - Only in Discover tab */}
       {activeTab === 'discover' && !isSearching && professionalProfiles.length > 0 && (
         <section className="mt-12">
           <div className="mb-6">
@@ -313,21 +215,19 @@ export function ProfessionalServicesListingContainer({
         </section>
       )}
 
-      {/* Empty States */}
       {!isLoading && servicesToDisplay.length === 0 && (
-        <EmptyState
+        <ServicesEmptyState
           type={getEmptyStateType()}
           onCreateClick={() => openCreateModal()}
           onClearSearch={() => {
             setIsSearching(false)
             setFilters({})
-            useProfessionalServicesUIStore.getState().setSearchQuery('')
+            setSearchQuery('')
           }}
           onDiscoverClick={() => setActiveTab('discover')}
         />
       )}
 
-      {/* Modal de creación */}
       <CreateServiceModal />
     </div>
   )
