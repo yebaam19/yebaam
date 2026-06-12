@@ -16,6 +16,16 @@ export interface ResendOtpRequest {
 export interface MessageResponse {
   message: string;
 }
+
+/**
+ * Resultado de las Server Actions de auth.
+ * Las actions NUNCA lanzan errores esperados: Next.js redacta los mensajes
+ * de errores lanzados dentro de Server Actions en producción, así que los
+ * fallos viajan como valor de retorno y el cliente decide cómo mostrarlos.
+ */
+export type AuthActionResult =
+  | { ok: true; message: string; pendingVerification?: boolean }
+  | { ok: false; error: string };
 export interface VerifyEmailRequest {
   email: string;
   otp: string;

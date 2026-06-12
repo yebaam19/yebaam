@@ -43,6 +43,13 @@ export function ForgotPasswordForm() {
         email: parsed.data.email,
         captchaToken: captchaToken ?? undefined,
       });
+      if (!result.ok) {
+        setError(result.error);
+        toast.error(result.error);
+        setCaptchaToken(null);
+        turnstileRef.current?.reset();
+        return;
+      }
       toast.success(result.message);
       router.push(`/reset-password?email=${encodeURIComponent(parsed.data.email)}`);
     } catch (err: any) {

@@ -110,16 +110,25 @@ export class AuthService {
     };
   }
 
-  async register(userData: RegisterDTO): Promise<MessageResponse> {
-    return signupWithOtpAction(userData);
+  // Las actions devuelven { ok: false, error } en vez de lanzar (los mensajes
+  // lanzados en Server Actions se redactan en producción). Aquí, ya en el
+  // navegador, se relanzan como Error para que store y formularios los muestren.
+  async register(userData: RegisterDTO): Promise<MessageResponse & { pendingVerification?: boolean }> {
+    const result = await signupWithOtpAction(userData);
+    if (!result.ok) throw new Error(result.error);
+    return { message: result.message, pendingVerification: result.pendingVerification };
   }
 
   async verifyEmail(verifyData: VerifyEmailRequest): Promise<MessageResponse> {
-    return verifyOtpAction(verifyData);
+    const result = await verifyOtpAction(verifyData);
+    if (!result.ok) throw new Error(result.error);
+    return { message: result.message };
   }
 
   async resendOtp(resendData: ResendOtpRequest): Promise<MessageResponse> {
-    return resendOtpAction(resendData);
+    const result = await resendOtpAction(resendData);
+    if (!result.ok) throw new Error(result.error);
+    return { message: result.message };
   }
 
   async loginWithGoogle(redirectTo?: string): Promise<void> {

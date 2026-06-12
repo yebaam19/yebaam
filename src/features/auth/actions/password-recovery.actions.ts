@@ -1,20 +1,21 @@
 'use server';
 
-import { headers } from 'next/headers';
 import { getServiceClient } from '@/utils/supabase/server';
 import { sendPasswordResetEmail } from '@/services/email/resend.service';
 import { verifyTurnstileToken } from '@/lib/turnstile';
-import { generateCode, hashCode, OTP_TTL_MINUTES, MAX_ATTEMPTS } from './_otp-shared';
+import {
+  generateCode,
+  hashCode,
+  getRemoteIp,
+  findUserByEmail,
+  OTP_TTL_MINUTES,
+  MAX_ATTEMPTS,
+} from './_otp-shared';
+import type { AuthActionResult } from '../interfaces/auth.interfaces';
 
-async function getRemoteIp(): Promise<string | null> {
-  const h = await headers();
-  return (
-    h.get('cf-connecting-ip') ||
-    h.get('x-real-ip') ||
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    null
-  );
-}
+// Igual que en otp-signup.actions.ts: los errores esperados se devuelven
+// como { ok: false, error } porque Next.js redacta los mensajes lanzados
+// en Server Actions en producción.
 
 interface RequestPasswordResetInput {
   email: string;
@@ -33,81 +34,63 @@ interface PasswordResetMetadata {
   attempts: number;
 }
 
-const LIST_USERS_PER_PAGE = 1000;
-const LIST_USERS_MAX_PAGES = 50;
-
-async function findUserByEmail(email: string) {
-  const admin = getServiceClient();
-  const target = email.toLowerCase();
-
-  for (let page = 1; page <= LIST_USERS_MAX_PAGES; page++) {
-    const { data, error } = await admin.auth.admin.listUsers({
-      page,
-      perPage: LIST_USERS_PER_PAGE,
-    });
-    if (error) {
-      console.error('[password-recovery] listUsers failed:', error.message);
-      return null;
-    }
-    const match = data.users.find((u) => (u.email ?? '').toLowerCase() === target);
-    if (match) return match;
-    if (data.users.length < LIST_USERS_PER_PAGE) return null;
-  }
-  return null;
-}
-
 export async function requestPasswordResetAction(
   input: RequestPasswordResetInput,
-): Promise<{ message: string }> {
-  const email = input.email?.trim().toLowerCase();
-  if (!email) {
-    throw new Error('El email es requerido');
+): Promise<AuthActionResult> {
+  try {
+    const email = input.email?.trim().toLowerCase();
+    if (!email) {
+      return { ok: false, error: 'El email es requerido' };
+    }
+
+    const captcha = await verifyTurnstileToken(input.captchaToken, {
+      remoteIp: await getRemoteIp(),
+      expectedAction: 'password-reset',
+    });
+    if (!captcha.ok) {
+      return { ok: false, error: captcha.reason };
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return { ok: false, error: 'No existe una cuenta con este email' };
+    }
+
+    const admin = getServiceClient();
+    const code = generateCode();
+    const codeHash = hashCode(code);
+    const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000).toISOString();
+
+    const passwordReset: PasswordResetMetadata = {
+      code_hash: codeHash,
+      expires_at: expiresAt,
+      attempts: 0,
+    };
+
+    const { error: updateError } = await admin.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        ...(user.app_metadata ?? {}),
+        password_reset: passwordReset,
+      },
+    });
+    if (updateError) {
+      console.error('[password-recovery] write metadata failed:', updateError.message);
+      return { ok: false, error: 'No se pudo generar el código de recuperación' };
+    }
+
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('first_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    await sendPasswordResetEmail({ to: email, code, firstName: profile?.first_name ?? null });
+
+    return { ok: true, message: 'Te enviamos un código a tu email.' };
+  } catch (err) {
+    console.error('[password-recovery] unexpected error:', err);
+    return { ok: false, error: 'No pudimos enviar el código. Intenta de nuevo.' };
   }
-
-  const captcha = await verifyTurnstileToken(input.captchaToken, {
-    remoteIp: await getRemoteIp(),
-    expectedAction: 'password-reset',
-  });
-  if (!captcha.ok) {
-    throw new Error(captcha.reason);
-  }
-
-  const user = await findUserByEmail(email);
-  if (!user) {
-    throw new Error('No existe una cuenta con este email');
-  }
-
-  const admin = getServiceClient();
-  const code = generateCode();
-  const codeHash = hashCode(code);
-  const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000).toISOString();
-
-  const passwordReset: PasswordResetMetadata = {
-    code_hash: codeHash,
-    expires_at: expiresAt,
-    attempts: 0,
-  };
-
-  const { error: updateError } = await admin.auth.admin.updateUserById(user.id, {
-    app_metadata: {
-      ...(user.app_metadata ?? {}),
-      password_reset: passwordReset,
-    },
-  });
-  if (updateError) {
-    console.error('[password-recovery] write metadata failed:', updateError.message);
-    throw new Error('No se pudo generar el código de recuperación');
-  }
-
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('first_name')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  await sendPasswordResetEmail({ to: email, code, firstName: profile?.first_name ?? null });
-
-  return { message: 'Te enviamos un código a tu email.' };
 }
 
 async function clearPasswordResetMetadata(userId: string, currentAppMetadata: Record<string, unknown>) {
@@ -118,57 +101,62 @@ async function clearPasswordResetMetadata(userId: string, currentAppMetadata: Re
 
 export async function resetPasswordAction(
   input: ResetPasswordInput,
-): Promise<{ message: string }> {
-  const email = input.email?.trim().toLowerCase();
-  const otp = input.otp?.trim();
-  const newPassword = input.newPassword;
+): Promise<AuthActionResult> {
+  try {
+    const email = input.email?.trim().toLowerCase();
+    const otp = input.otp?.trim();
+    const newPassword = input.newPassword;
 
-  if (!email || !otp || !newPassword) {
-    throw new Error('Email, código y nueva contraseña son requeridos');
-  }
+    if (!email || !otp || !newPassword) {
+      return { ok: false, error: 'Email, código y nueva contraseña son requeridos' };
+    }
 
-  const user = await findUserByEmail(email);
-  if (!user) {
-    throw new Error('Código inválido');
-  }
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return { ok: false, error: 'Código inválido' };
+    }
 
-  const appMetadata = (user.app_metadata ?? {}) as Record<string, unknown>;
-  const reset = appMetadata.password_reset as PasswordResetMetadata | undefined;
+    const appMetadata = (user.app_metadata ?? {}) as Record<string, unknown>;
+    const reset = appMetadata.password_reset as PasswordResetMetadata | undefined;
 
-  if (!reset) {
-    throw new Error('No hay un código pendiente para este email');
-  }
+    if (!reset) {
+      return { ok: false, error: 'No hay un código pendiente para este email' };
+    }
 
-  if (new Date(reset.expires_at).getTime() < Date.now()) {
-    await clearPasswordResetMetadata(user.id, appMetadata);
-    throw new Error('El código expiró. Solicita uno nuevo.');
-  }
+    if (new Date(reset.expires_at).getTime() < Date.now()) {
+      await clearPasswordResetMetadata(user.id, appMetadata);
+      return { ok: false, error: 'El código expiró. Solicita uno nuevo.' };
+    }
 
-  if ((reset.attempts ?? 0) >= MAX_ATTEMPTS) {
-    await clearPasswordResetMetadata(user.id, appMetadata);
-    throw new Error('Demasiados intentos. Solicita un nuevo código.');
-  }
+    if ((reset.attempts ?? 0) >= MAX_ATTEMPTS) {
+      await clearPasswordResetMetadata(user.id, appMetadata);
+      return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
+    }
 
-  const admin = getServiceClient();
+    const admin = getServiceClient();
 
-  if (reset.code_hash !== hashCode(otp)) {
-    await admin.auth.admin.updateUserById(user.id, {
-      app_metadata: {
-        ...appMetadata,
-        password_reset: { ...reset, attempts: (reset.attempts ?? 0) + 1 },
-      },
+    if (reset.code_hash !== hashCode(otp)) {
+      await admin.auth.admin.updateUserById(user.id, {
+        app_metadata: {
+          ...appMetadata,
+          password_reset: { ...reset, attempts: (reset.attempts ?? 0) + 1 },
+        },
+      });
+      return { ok: false, error: 'Código inválido' };
+    }
+
+    const { password_reset: _drop, ...restMetadata } = appMetadata;
+    const { error: updateError } = await admin.auth.admin.updateUserById(user.id, {
+      password: newPassword,
+      app_metadata: restMetadata,
     });
-    throw new Error('Código inválido');
-  }
+    if (updateError) {
+      return { ok: false, error: updateError.message || 'No se pudo actualizar la contraseña' };
+    }
 
-  const { password_reset: _drop, ...restMetadata } = appMetadata;
-  const { error: updateError } = await admin.auth.admin.updateUserById(user.id, {
-    password: newPassword,
-    app_metadata: restMetadata,
-  });
-  if (updateError) {
-    throw new Error(updateError.message || 'No se pudo actualizar la contraseña');
+    return { ok: true, message: 'Contraseña actualizada correctamente.' };
+  } catch (err) {
+    console.error('[password-recovery] unexpected error:', err);
+    return { ok: false, error: 'No pudimos actualizar la contraseña. Intenta de nuevo.' };
   }
-
-  return { message: 'Contraseña actualizada correctamente.' };
 }

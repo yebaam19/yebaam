@@ -101,9 +101,11 @@ export function RegisterForm() {
         captchaToken: captchaToken ?? undefined,
       };
 
-      await register(payload);
+      const response = await register(payload);
 
-      toast.success(t('signup.successToast'));
+      // pendingVerification: el email ya tenía un registro sin confirmar y se
+      // reemitió el código — el mensaje del servidor explica esa situación.
+      toast.success(response?.pendingVerification ? response.message : t('signup.successToast'));
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
       console.error('[RegisterForm] Error en registro:', err);

@@ -36,11 +36,16 @@ export function ResetPasswordForm() {
 
     setIsSubmitting(true);
     try {
-      await resetPasswordAction({
+      const result = await resetPasswordAction({
         email: parsed.data.email,
         otp: parsed.data.otp,
         newPassword: parsed.data.newPassword,
       });
+      if (!result.ok) {
+        setError(result.error);
+        toast.error(result.error);
+        return;
+      }
       toast.success(t('passwordReset.resetSuccessToast'));
       router.push('/login?reset=true');
     } catch (err: any) {
