@@ -1,10 +1,8 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useCallback, useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import type { Route } from 'next'
-import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import {
   deleteTopic,
@@ -17,11 +15,10 @@ import type {
   AdminForumOption,
   ForoTopicAdminRow,
 } from '@/app/(app)/foro/server/admin.server'
-import { Badge } from '@/ui/Badge'
-import { Button } from '@/ui/Button'
-import UserAvatar from '@/features/foro/components/UserAvatar'
 import ForoPagination from '@/features/foro/components/Pagination'
-import { formatRelativeDate } from '@/features/foro/utils/format'
+import TopicFilters from './TopicsAdminTable/TopicFilters'
+import BulkActionsBar from './TopicsAdminTable/BulkActionsBar'
+import TopicsTable from './TopicsAdminTable/TopicsTable'
 
 interface Props {
   initial: {
@@ -48,26 +45,14 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
 
   const topics = initial.topics
 
-  const currentSearch = searchParams?.get('q') ?? ''
-  const currentSpaceId = searchParams?.get('space') ?? ''
-  const currentForumId = searchParams?.get('forum') ?? ''
-  const currentAuthor = searchParams?.get('author') ?? ''
-  const currentPinned = searchParams?.get('pinned') ?? ''
-  const currentLocked = searchParams?.get('locked') ?? ''
-
   const [draft, setDraft] = useState({
-    q: currentSearch,
-    space: currentSpaceId,
-    forum: currentForumId,
-    author: currentAuthor,
-    pinned: currentPinned,
-    locked: currentLocked,
+    q: searchParams?.get('q') ?? '',
+    space: searchParams?.get('space') ?? '',
+    forum: searchParams?.get('forum') ?? '',
+    author: searchParams?.get('author') ?? '',
+    pinned: searchParams?.get('pinned') ?? '',
+    locked: searchParams?.get('locked') ?? '',
   })
-
-  const filteredForums = useMemo(
-    () => (draft.space ? forums.filter((f) => f.spaceId === draft.space) : forums),
-    [forums, draft.space],
-  )
 
   const submitFilters = (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,12 +84,14 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
       setSelected(next)
     }
   }
-  const toggleOne = (id: string) => {
-    const next = new Set(selected)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setSelected(next)
-  }
+  const toggleOne = useCallback((id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
 
   const runBulk = (key: ActionKey, runner: (id: string) => Promise<{ ok: boolean; error?: string }>) => {
     setPendingAction(key)
@@ -139,7 +126,6 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
     setMoveTarget('')
   }
 
-  const totalShownPage = Math.ceil(initial.total / initial.pageSize) || 1
   const buildHref = (p: number) => {
     const params = new URLSearchParams(searchParams?.toString() ?? '')
     if (p === 1) params.delete('page')
@@ -150,75 +136,14 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
 
   return (
     <div className="space-y-4">
-      <form
+      <TopicFilters
+        draft={draft}
+        spaces={spaces}
+        forums={forums}
+        onChange={setDraft}
         onSubmit={submitFilters}
-        className="flex flex-wrap items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        <input
-          type="search"
-          value={draft.q}
-          onChange={(e) => setDraft({ ...draft, q: e.target.value })}
-          placeholder={t('filters.searchPlaceholder')}
-          className="min-w-45 flex-1 basis-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        />
-        <select
-          value={draft.space}
-          onChange={(e) => setDraft({ ...draft, space: e.target.value, forum: '' })}
-          className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        >
-          <option value="">{t('filters.allSpaces')}</option>
-          {spaces.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={draft.forum}
-          onChange={(e) => setDraft({ ...draft, forum: e.target.value })}
-          className="min-w-40 flex-1 basis-40 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        >
-          <option value="">{t('filters.allForums')}</option>
-          {filteredForums.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          value={draft.author}
-          onChange={(e) => setDraft({ ...draft, author: e.target.value })}
-          placeholder={t('filters.authorPlaceholder')}
-          className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        />
-        <select
-          value={draft.pinned}
-          onChange={(e) => setDraft({ ...draft, pinned: e.target.value })}
-          className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        >
-          <option value="">{t('filters.pinnedAny')}</option>
-          <option value="true">{t('filters.pinnedOnly')}</option>
-          <option value="false">{t('filters.pinnedNone')}</option>
-        </select>
-        <select
-          value={draft.locked}
-          onChange={(e) => setDraft({ ...draft, locked: e.target.value })}
-          className="min-w-35 flex-1 basis-36 rounded-lg border border-neutral-300 bg-white px-2 py-2 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-        >
-          <option value="">{t('filters.statusAny')}</option>
-          <option value="true">{t('filters.lockedOnly')}</option>
-          <option value="false">{t('filters.openOnly')}</option>
-        </select>
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <Button type="button" plain onClick={clearFilters}>
-            {t('filters.clear')}
-          </Button>
-          <Button type="submit" color="primary">
-            {t('filters.apply')}
-          </Button>
-        </div>
-      </form>
+        onClear={clearFilters}
+      />
 
       {error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-400">
@@ -245,195 +170,27 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-primary-200 bg-primary-50/60 p-3 dark:border-primary-800 dark:bg-primary-900/20">
-          <span className="text-xs font-semibold text-primary-800 dark:text-primary-300">
-            {t('bulk.title', { count: selected.size })}
-          </span>
-          <Button
-            type="button"
-            outline
-            disabled={pendingAction !== null}
-            onClick={() => handlePin(true)}
-          >
-            {t('bulk.pin')}
-          </Button>
-          <Button
-            type="button"
-            outline
-            disabled={pendingAction !== null}
-            onClick={() => handlePin(false)}
-          >
-            {t('bulk.unpin')}
-          </Button>
-          <Button
-            type="button"
-            outline
-            disabled={pendingAction !== null}
-            onClick={() => handleLock(true)}
-          >
-            {t('bulk.lock')}
-          </Button>
-          <Button
-            type="button"
-            outline
-            disabled={pendingAction !== null}
-            onClick={() => handleLock(false)}
-          >
-            {t('bulk.unlock')}
-          </Button>
-          <div className="flex items-center gap-1">
-            <select
-              value={moveTarget}
-              onChange={(e) => setMoveTarget(e.target.value)}
-              className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-            >
-              <option value="">{t('bulk.movePlaceholder')}</option>
-              {forums.map((f) => {
-                const space = spaces.find((s) => s.id === f.spaceId)
-                return (
-                  <option key={f.id} value={f.id}>
-                    {space?.name ?? '—'} / {f.name}
-                  </option>
-                )
-              })}
-            </select>
-            <Button
-              type="button"
-              outline
-              disabled={!moveTarget || pendingAction !== null}
-              onClick={handleMove}
-            >
-              {t('bulk.move')}
-            </Button>
-          </div>
-          <Button
-            type="button"
-            color="red"
-            disabled={pendingAction !== null}
-            onClick={handleDelete}
-          >
-            {t('bulk.delete')}
-          </Button>
-        </div>
+        <BulkActionsBar
+          selectedCount={selected.size}
+          spaces={spaces}
+          forums={forums}
+          pending={pendingAction !== null}
+          moveTarget={moveTarget}
+          onMoveTargetChange={setMoveTarget}
+          onPin={handlePin}
+          onLock={handleLock}
+          onMove={handleMove}
+          onDelete={handleDelete}
+        />
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-180 divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
-          <thead className="bg-neutral-50 text-[11px] font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/60 dark:text-neutral-400">
-            <tr>
-              <th className="w-10 px-3 py-2">
-                <input
-                  type="checkbox"
-                  aria-label={t('table.selectAllAria')}
-                  checked={allOnPageSelected}
-                  onChange={toggleAll}
-                />
-              </th>
-              <th className="px-3 py-2 text-left">{t('table.topic')}</th>
-              <th className="px-3 py-2 text-left">{t('table.spaceForum')}</th>
-              <th className="px-3 py-2 text-center">{t('table.replies')}</th>
-              <th className="px-3 py-2 text-center">{t('table.views')}</th>
-              <th className="px-3 py-2 text-right">{t('table.lastPost')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-            {topics.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-sm text-neutral-500">
-                  {t('table.empty')}
-                </td>
-              </tr>
-            ) : (
-              topics.map((tp) => {
-                const replies = Math.max(tp.postCount - 1, 0)
-                const isSel = selected.has(tp.id)
-                return (
-                  <tr
-                    key={tp.id}
-                    className={clsx(
-                      'transition-colors',
-                      isSel
-                        ? 'bg-primary-50/60 dark:bg-primary-900/20'
-                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
-                    )}
-                  >
-                    <td className="px-3 py-3 align-top">
-                      <input
-                        type="checkbox"
-                        aria-label={t('table.selectAria', { title: tp.title })}
-                        checked={isSel}
-                        onChange={() => toggleOne(tp.id)}
-                      />
-                    </td>
-                    <td className="min-w-0 px-3 py-3 align-top">
-                      <div className="flex items-start gap-2">
-                        <UserAvatar author={tp.author} className="h-7 w-7 shrink-0" />
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-1">
-                            {tp.isPinned && <Badge color="amber">{t('table.pinned')}</Badge>}
-                            {tp.isLocked && <Badge color="zinc">{t('table.locked')}</Badge>}
-                            <Link
-                              href={
-                                `/foro/${tp.spaceSlug}/${tp.forumSlug}/${tp.slug}` as Route
-                              }
-                              className="truncate text-sm font-semibold text-neutral-900 hover:text-primary-700 dark:text-neutral-100 dark:hover:text-primary-400"
-                            >
-                              {tp.title}
-                            </Link>
-                          </div>
-                          <div className="mt-0.5 truncate text-xs text-neutral-500 dark:text-neutral-400">
-                            {t('table.byAuthor')}{' '}
-                            <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                              {tp.author.displayName}
-                            </span>{' '}
-                            · {formatRelativeDate(tp.createdAt)}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 align-top text-xs">
-                      <Link
-                        href={`/foro/${tp.spaceSlug}` as Route}
-                        className="block truncate font-medium text-neutral-700 hover:text-primary-700 dark:text-neutral-300 dark:hover:text-primary-400"
-                      >
-                        {tp.spaceName}
-                      </Link>
-                      <Link
-                        href={`/foro/${tp.spaceSlug}/${tp.forumSlug}` as Route}
-                        className="block truncate text-neutral-500 hover:text-primary-700 dark:text-neutral-400 dark:hover:text-primary-400"
-                      >
-                        {tp.forumName}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-3 text-center align-top text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                      {replies}
-                    </td>
-                    <td className="px-3 py-3 text-center align-top text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                      {tp.viewCount}
-                    </td>
-                    <td className="px-3 py-3 text-right align-top text-xs text-neutral-500 dark:text-neutral-400">
-                      {tp.lastPostAt ? (
-                        <>
-                          {tp.lastPostAuthor && (
-                            <div className="truncate font-medium text-neutral-700 dark:text-neutral-300">
-                              {tp.lastPostAuthor.displayName}
-                            </div>
-                          )}
-                          <div>{formatRelativeDate(tp.lastPostAt)}</div>
-                        </>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-          </table>
-        </div>
-      </div>
+      <TopicsTable
+        topics={topics}
+        selected={selected}
+        allOnPageSelected={allOnPageSelected}
+        onToggleAll={toggleAll}
+        onToggleOne={toggleOne}
+      />
 
       <div className="flex items-center justify-end">
         <ForoPagination
@@ -450,8 +207,6 @@ export default function TopicsAdminTable({ initial, spaces, forums }: Props) {
           {t('status.applying', { action: pendingAction })}
         </div>
       )}
-      {/* avoids "totalShownPage assigned but never used" if unused later */}
-      <span hidden>{totalShownPage}</span>
     </div>
   )
 }

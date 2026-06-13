@@ -4,45 +4,23 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogPanel,
-  DialogTitle,
   Transition,
   TransitionChild,
 } from '@headlessui/react';
-import {
-  XMarkIcon,
-  VideoCameraIcon,
-  UserGroupIcon,
-  GlobeAltIcon,
-  LockClosedIcon,
-  CheckCircleIcon,
-  SignalIcon,
-} from '@/components/icons/heroicons-shim';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
 import { useLiveStream } from '@/features/live-stream/hooks/useLiveStream';
-import Avatar from '@/ui/Avatar';
-import { cn } from '@/lib/utils';
-import { getUserAvatarUrl } from '@/lib/utils/avatar';
+import LiveVideoHeader from './LiveVideoModal/LiveVideoHeader';
+import LiveVideoPreview from './LiveVideoModal/LiveVideoPreview';
+import LiveVideoPreparePanel from './LiveVideoModal/LiveVideoPreparePanel';
+import LiveVideoLivePanel from './LiveVideoModal/LiveVideoLivePanel';
+import { type LiveStatus, type Privacy, formatDuration } from './LiveVideoModal/types';
 
 interface LiveVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-type LiveStatus = 'preparing' | 'countdown' | 'live' | 'ending';
-type Privacy = 'public' | 'friends' | 'private';
-
-const VISIBILITY_OPTIONS: Array<{
-  value: Privacy;
-  labelKey: 'public' | 'friends' | 'private';
-  icon: typeof GlobeAltIcon;
-  descriptionKey: 'publicDescription' | 'friendsDescription' | 'privateDescription';
-}> = [
-  { value: 'public', labelKey: 'public', icon: GlobeAltIcon, descriptionKey: 'publicDescription' },
-  { value: 'friends', labelKey: 'friends', icon: UserGroupIcon, descriptionKey: 'friendsDescription' },
-  { value: 'private', labelKey: 'private', icon: LockClosedIcon, descriptionKey: 'privateDescription' },
-];
 
 export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps) {
   const t = useTranslations('feed');
@@ -103,7 +81,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
 
   const handleStartLive = async () => {
     console.log(' [handleStartLive] Iniciando proceso de live stream', { title, description, privacy });
-    
+
     if (!title.trim()) {
       toast.error(t('liveVideo.titleRequired'));
       return;
@@ -118,7 +96,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
       count--;
       console.log(' [Countdown]', count);
       setCountdown(count);
-      
+
       if (count === 0) {
         clearInterval(countdownInterval);
         console.log('[Countdown] Finalizado, llamando a startLiveStreamBackend');
@@ -129,7 +107,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
 
   const startLiveStreamBackend = async () => {
     console.log('[startLiveStreamBackend] Llamando al backend...');
-    
+
     try {
       // Llamar al backend para crear el stream
       const stream = await startStream({
@@ -144,7 +122,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
           playbackUrl: stream.playbackUrl,
           status: stream.status,
         });
-        
+
         setLiveStatus('live');
         setIsRecording(true);
         setDuration(0);
@@ -158,7 +136,7 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
         // Timer de duración
         intervalRef.current = setInterval(() => {
           setDuration(prev => prev + 1);
-          
+
           // Simular viewers entrando/saliendo (esto vendrá del WebSocket después)
           if (Math.random() > 0.7) {
             setViewerCount(prev => Math.max(0, prev + (Math.random() > 0.5 ? 1 : -1)));
@@ -226,12 +204,6 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
     }
   };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   if (!user) return null;
 
   return (
@@ -261,196 +233,42 @@ export default function LiveVideoModal({ isOpen, onClose }: LiveVideoModalProps)
           >
             <DialogPanel className="w-full max-w-3xl rounded-xl bg-neutral-900 shadow-2xl overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-neutral-800 px-6 py-4">
-                <DialogTitle className="flex items-center gap-3 text-xl font-bold text-white">
-                  <VideoCameraIcon className="h-7 w-7 text-red-500" />
-                  {liveStatus === 'preparing' && t('liveVideo.titlePreparing')}
-                  {liveStatus === 'countdown' && t('liveVideo.titleCountdown')}
-                  {liveStatus === 'live' && (
-                    <span className="flex items-center gap-2">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                      </span>
-                      {t('liveVideo.titleLive')}
-                    </span>
-                  )}
-                  {liveStatus === 'ending' && t('liveVideo.titleEnding')}
-                </DialogTitle>
-                <button
-                  onClick={handleClose}
-                  disabled={liveStatus === 'ending'}
-                  className="rounded-full p-2 hover:bg-neutral-800 disabled:opacity-50"
-                >
-                  <XMarkIcon className="h-6 w-6 text-neutral-400" />
-                </button>
-              </div>
+              <LiveVideoHeader liveStatus={liveStatus} onClose={handleClose} t={t} />
 
               {/* Video Preview */}
-              <div className="relative aspect-video bg-black">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className="h-full w-full object-cover"
-                />
-
-                {/* Countdown Overlay */}
-                {liveStatus === 'countdown' && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <div className="text-center">
-                      <div className="text-9xl font-bold text-white animate-pulse">
-                        {countdown}
-                      </div>
-                      <p className="mt-4 text-xl text-white">{t('liveVideo.startingBroadcast')}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Live Stats Overlay */}
-                {liveStatus === 'live' && (
-                  <>
-                    <div className="absolute top-4 left-4 flex items-center gap-3">
-                      <div className="flex items-center gap-2 bg-red-600 px-3 py-1.5 rounded-full">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                        </span>
-                        <span className="text-sm font-bold text-white">{t('liveVideo.titleLive')}</span>
-                      </div>
-                      
-                      <div className="bg-black/70 px-3 py-1.5 rounded-full">
-                        <span className="text-sm font-semibold text-white">
-                          {formatDuration(duration)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="absolute top-4 right-4">
-                      <div className="flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-full">
-                        <SignalIcon className="h-4 w-4 text-green-400" />
-                        <span className="text-sm font-semibold text-white">
-                          {viewerCount} {viewerCount === 1 ? t('liveVideo.viewerSingular') : t('liveVideo.viewerPlural')}
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Ending Overlay */}
-                {liveStatus === 'ending' && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <div className="text-center">
-                      <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
-                      <p className="text-2xl font-bold text-white">{t('liveVideo.broadcastFinished')}</p>
-                      <p className="mt-2 text-neutral-300">{t('liveVideo.savingVideo')}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <LiveVideoPreview
+                videoRef={videoRef}
+                liveStatus={liveStatus}
+                countdown={countdown}
+                viewerCount={viewerCount}
+                duration={duration}
+                t={t}
+              />
 
               {/* Controls */}
               {liveStatus === 'preparing' && (
-                <div className="p-6 space-y-4">
-                  {/* User Info */}
-                  <div className="flex items-center gap-3">
-                    <Avatar src={getUserAvatarUrl(user)} className="h-12 w-12" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-white">
-                        {user.lastName || user.username}
-                      </p>
-                      {/* Privacy Selector */}
-                      <select
-                        value={privacy}
-                        onChange={(e) => setPrivacy(e.target.value as Privacy)}
-                        className="mt-1 rounded-md border-0 bg-neutral-800 px-3 py-1 text-xs font-medium text-neutral-300"
-                      >
-                        {VISIBILITY_OPTIONS.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {t(`visibilityOptions.${option.labelKey}`)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder={t('liveVideo.titlePlaceholder')}
-                    maxLength={100}
-                    className="w-full rounded-lg border-0 bg-neutral-800 px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-
-                  {/* Description */}
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder={t('liveVideo.descriptionPlaceholder')}
-                    maxLength={200}
-                    rows={3}
-                    className="w-full resize-none rounded-lg border-0 bg-neutral-800 px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                  <p className="text-xs text-neutral-500 text-right">
-                    {description.length}/200
-                  </p>
-
-                  {/* Info Cards */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <VideoCameraIcon className="h-6 w-6 text-red-500 mb-2" />
-                      <p className="text-sm font-semibold text-white">{t('liveVideo.hdQuality')}</p>
-                      <p className="text-xs text-neutral-400">{t('liveVideo.hdQualityDetail')}</p>
-                    </div>
-                    <div className="bg-neutral-800 rounded-lg p-4">
-                      <SignalIcon className="h-6 w-6 text-green-500 mb-2" />
-                      <p className="text-sm font-semibold text-white">{t('liveVideo.stableConnection')}</p>
-                      <p className="text-xs text-neutral-400">{t('liveVideo.stableConnectionDetail')}</p>
-                    </div>
-                  </div>
-
-                  {/* Start Button */}
-                  <button
-                    onClick={handleStartLive}
-                    disabled={!title.trim() || isStarting}
-                    className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-                  >
-                    {isStarting ? t('liveVideo.starting') : t('liveVideo.startButton')}
-                  </button>
-
-                  {/* Note */}
-                  <p className="text-xs text-center text-neutral-500">
-                     {t('liveVideo.autoSaveNote')}
-                  </p>
-                </div>
+                <LiveVideoPreparePanel
+                  user={user}
+                  privacy={privacy}
+                  title={title}
+                  description={description}
+                  isStarting={isStarting}
+                  onPrivacyChange={setPrivacy}
+                  onTitleChange={setTitle}
+                  onDescriptionChange={setDescription}
+                  onStart={handleStartLive}
+                  t={t}
+                />
               )}
 
               {liveStatus === 'live' && (
-                <div className="p-6 space-y-4">
-                  {/* Stream Info */}
-                  {currentStream && (
-                    <div className="bg-neutral-800 rounded-lg p-4 space-y-2">
-                      <h3 className="font-semibold text-white text-sm">{t('liveVideo.streamInfo')}</h3>
-                      <div className="space-y-1 text-xs text-neutral-400">
-                        <p>{t('liveVideo.streamIdLabel')} <span className="text-neutral-300 font-mono">{currentStream.id}</span></p>
-                        <p>{t('liveVideo.playbackUrlAvailable')}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <button
-                    onClick={handleEndLive}
-                    disabled={isEnding}
-                    className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
-                  >
-                    {isEnding ? t('liveVideo.ending') : t('liveVideo.endButton')}
-                  </button>
-                  <p className="mt-3 text-xs text-center text-neutral-400">
-                    {viewerCount} {viewerCount === 1 ? t('liveVideo.watchingSingular') : t('liveVideo.watchingPlural')} {t('liveVideo.watchingSuffix')}
-                  </p>
-                </div>
+                <LiveVideoLivePanel
+                  currentStream={currentStream}
+                  viewerCount={viewerCount}
+                  isEnding={isEnding}
+                  onEnd={handleEndLive}
+                  t={t}
+                />
               )}
             </DialogPanel>
           </TransitionChild>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { useState, useRef, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -8,17 +8,10 @@ import { useAuth } from '@/features/auth/context/auth-context';
 import { useStoryStore } from '../store';
 import { useStorySocket } from '../hooks/useStorySocket';
 import { STORY_BACKGROUNDS } from '../utils/colors';
-import { StoryType, FONT_STYLES, FONT_SIZES } from '../interfaces/stories.interfaces';
-import {
-  XMarkIcon,
-  PhotoIcon,
-  VideoCameraIcon,
-  PaintBrushIcon,
-  ArrowLeftIcon,
-  SparklesIcon,
-} from '@/components/icons/heroicons-shim';
-import Avatar from '@/ui/Avatar';
-import { cn } from '@/lib/utils';
+import { StoryType, FONT_STYLES } from '../interfaces/stories.interfaces';
+import { StoryToolbar } from './_components/StoryToolbar';
+import { StoryPreview } from './_components/StoryPreview';
+import { DiscardModal } from './_components/DiscardModal';
 
 export default function CreateStoryPage() {
   const router = useRouter();
@@ -26,11 +19,11 @@ export default function CreateStoryPage() {
   const t = useTranslations('stories.create');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+
   // Zustand store
-  const { 
-    isCreating, 
-    createStory, 
+  const {
+    isCreating,
+    createStory,
     clearDraft,
   } = useStoryStore();
 
@@ -41,16 +34,15 @@ export default function CreateStoryPage() {
   const [storyType, setStoryType] = useState<StoryType | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+
   // Estados para story de texto
   const [textContent, setTextContent] = useState('');
   const [selectedBackground, setSelectedBackground] = useState(STORY_BACKGROUNDS[0]);
   const [fontSize, setFontSize] = useState(2);
-  const [fontStyle, setFontStyle] = useState(FONT_STYLES[0]);
+  const [fontStyle] = useState(FONT_STYLES[0]);
   const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>('center');
-  
+
   // Estados UI
-  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
 
   // Validación de archivos
@@ -143,13 +135,13 @@ export default function CreateStoryPage() {
       await createStory(formData);
 
       toast.success(t('success.published'));
-      
+
       // Limpiar estados
       setStoryType(null);
       setSelectedFile(null);
       setPreviewUrl(null);
       setTextContent('');
-      
+
       // Redirigir al feed o cerrar
       router.push('/feed');
     } catch (error) {
@@ -172,7 +164,7 @@ export default function CreateStoryPage() {
     setSelectedFile(null);
     setPreviewUrl(null);
     setTextContent('');
-    
+
     clearDraft();
     router.back();
   };
@@ -182,247 +174,37 @@ export default function CreateStoryPage() {
   return (
     <div className="fixed inset-0 z-50 flex bg-neutral-950 text-white">
       {/* ============ SIDEBAR IZQUIERDO (estilo Facebook) ============ */}
-      <aside className="relative flex h-full w-full max-w-sm flex-col border-r border-neutral-800 bg-neutral-900 shadow-2xl">
-        {/* Header del sidebar */}
-        <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
-          <button
-            onClick={handleBack}
-            aria-label={t('back')}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800 text-white transition hover:bg-neutral-700"
-          >
-            <ArrowLeftIcon className="h-5 w-5" />
-          </button>
-          <h1 className="text-xl font-bold">{t('title')}</h1>
-        </div>
-
-        {/* Tarjeta de usuario */}
-        <div className="flex items-center gap-3 px-5 py-4">
-          <Avatar
-            initials={user.username.substring(0, 2).toUpperCase()}
-            src={user.avatar}
-            className="h-11 w-11 ring-2 ring-primary-500/40"
-          />
-          <div className="min-w-0">
-            <p className="truncate font-semibold">{user.username}</p>
-            <p className="text-xs text-neutral-400">{t('visibleFor24h')}</p>
-          </div>
-        </div>
-
-        {/* Contenido scrollable del sidebar */}
-        <div className="flex-1 overflow-y-auto px-5 pb-4">
-          {!storyType ? (
-            <div className="space-y-3">
-              <p className="mb-1 text-sm font-semibold text-neutral-300">{t('addToStory')}</p>
-
-              <button
-                onClick={() => handleTypeSelect('image')}
-                className="group flex w-full items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-800/60 p-4 text-left transition hover:border-primary-500/60 hover:bg-neutral-800"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600/20 text-primary-400 ring-1 ring-primary-500/40 transition group-hover:bg-primary-600 group-hover:text-white">
-                  <PhotoIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-semibold">{t('createWithPhoto')}</p>
-                  <p className="text-xs text-neutral-400">{t('shareImage')}</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleTypeSelect('video')}
-                className="group flex w-full items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-800/60 p-4 text-left transition hover:border-primary-500/60 hover:bg-neutral-800"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600/20 text-primary-400 ring-1 ring-primary-500/40 transition group-hover:bg-primary-600 group-hover:text-white">
-                  <VideoCameraIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-semibold">{t('createWithVideo')}</p>
-                  <p className="text-xs text-neutral-400">{t('upToSeconds', { seconds: MAX_VIDEO_DURATION })}</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleTypeSelect('text')}
-                className="group flex w-full items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-800/60 p-4 text-left transition hover:border-primary-500/60 hover:bg-neutral-800"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600/20 text-primary-400 ring-1 ring-primary-500/40 transition group-hover:bg-primary-600 group-hover:text-white">
-                  <PaintBrushIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-semibold">{t('createTextStory')}</p>
-                  <p className="text-xs text-neutral-400">{t('customBackgroundFont')}</p>
-                </div>
-              </button>
-            </div>
-          ) : storyType === 'text' ? (
-            <div className="space-y-5">
-              {/* Fondo */}
-              <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-300">{t('background')}</p>
-                <div className="grid grid-cols-5 gap-2">
-                  {STORY_BACKGROUNDS.map((bg, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedBackground(bg)}
-                      aria-label={t('backgroundOption', { index: index + 1 })}
-                      className={cn(
-                        'h-12 w-full rounded-lg transition',
-                        selectedBackground === bg
-                          ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-neutral-900'
-                          : 'hover:scale-105'
-                      )}
-                      style={{ background: bg.value }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Tamaño */}
-              <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-300">{t('size')}</p>
-                <div className="flex gap-2">
-                  {['S', 'M', 'L'].map((size, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setFontSize(index)}
-                      className={cn(
-                        'h-10 flex-1 rounded-lg font-bold transition',
-                        fontSize === index
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                      )}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Alineación */}
-              <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-300">{t('align')}</p>
-                <div className="flex gap-2">
-                  {(['left', 'center', 'right'] as const).map((align) => (
-                    <button
-                      key={align}
-                      onClick={() => setTextAlign(align)}
-                      className={cn(
-                        'h-10 flex-1 rounded-lg transition',
-                        textAlign === align
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                      )}
-                    >
-                      {align === 'left' ? '⬅' : align === 'center' ? '⬌' : '➡'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-neutral-300">{t('selectedFile')}</p>
-              <div className="rounded-xl border border-neutral-800 bg-neutral-800/60 p-4">
-                <p className="truncate text-sm font-medium">{selectedFile?.name}</p>
-                <p className="mt-1 text-xs text-neutral-400">
-                  {selectedFile && (selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                </p>
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-xl border border-neutral-700 bg-neutral-800 py-2.5 text-sm font-semibold text-neutral-200 transition hover:bg-neutral-700"
-              >
-                {t('changeFile')}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Footer acciones */}
-        <div className="border-t border-neutral-800 p-4">
-          {storyType ? (
-            <div className="flex gap-3">
-              <button
-                onClick={handleBack}
-                className="flex-1 rounded-xl bg-neutral-800 py-3 font-semibold text-white transition hover:bg-neutral-700"
-              >
-                {t('discard')}
-              </button>
-              <button
-                onClick={handlePublish}
-                disabled={isCreating}
-                className="flex-1 rounded-xl bg-primary-600 py-3 font-semibold text-white shadow-lg transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-700"
-              >
-                {isCreating ? t('publishing') : t('share')}
-              </button>
-            </div>
-          ) : (
-            <p className="text-center text-xs text-neutral-500">
-              {t('willBeVisible')}
-            </p>
-          )}
-        </div>
-      </aside>
+      <StoryToolbar
+        username={user.username}
+        avatar={user.avatar}
+        storyType={storyType}
+        selectedFile={selectedFile}
+        isCreating={isCreating}
+        maxVideoDuration={MAX_VIDEO_DURATION}
+        selectedBackground={selectedBackground}
+        fontSize={fontSize}
+        textAlign={textAlign}
+        onBack={handleBack}
+        onSelectType={handleTypeSelect}
+        onChangeFile={() => fileInputRef.current?.click()}
+        onPublish={handlePublish}
+        onSelectBackground={setSelectedBackground}
+        onSelectFontSize={setFontSize}
+        onSelectTextAlign={setTextAlign}
+      />
 
       {/* ============ PANEL DE PREVIEW ============ */}
-      <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-linear-to-br from-neutral-950 via-neutral-900 to-primary-950/40 p-8">
-        {/* Glow decorativo */}
-        <div className="pointer-events-none absolute -left-20 top-1/4 h-96 w-96 rounded-full bg-primary-600/10 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 bottom-1/4 h-96 w-96 rounded-full bg-primary-500/10 blur-3xl" />
-
-        {!storyType ? (
-          <div className="relative z-10 flex flex-col items-center gap-5 text-center">
-            <div className="aspect-9/16 w-40 rounded-2xl border border-dashed border-neutral-700" />
-            <h2 className="text-2xl font-semibold tracking-tight">{t('preview')}</h2>
-            <p className="max-w-xs text-sm text-neutral-500">
-              {t('chooseOption')}
-            </p>
-          </div>
-        ) : (
-          <div className="relative z-10 aspect-9/16 w-full max-w-[360px] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/10">
-            {storyType === 'text' && (
-              <div
-                className="flex h-full w-full items-center justify-center p-8"
-                style={{ background: selectedBackground.value }}
-              >
-                <textarea
-                  value={textContent}
-                  onChange={(e) => setTextContent(e.target.value)}
-                  placeholder={t('writeYourStory')}
-                  maxLength={250}
-                  style={{
-                    color: selectedBackground.textColor,
-                    fontSize: FONT_SIZES[fontSize],
-                    textAlign: textAlign,
-                  }}
-                  className={cn(
-                    'h-full w-full resize-none border-none bg-transparent text-center outline-none placeholder:opacity-60',
-                    fontStyle.className
-                  )}
-                />
-              </div>
-            )}
-
-            {storyType === 'image' && previewUrl && (
-              <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
-            )}
-
-            {storyType === 'video' && previewUrl && (
-              <video
-                ref={videoRef}
-                src={previewUrl}
-                controls
-                className="h-full w-full object-cover"
-              />
-            )}
-
-            {storyType === 'text' && (
-              <div className="absolute bottom-4 right-4 rounded-full bg-black/50 px-3 py-1 backdrop-blur-sm">
-                <span className="text-sm font-medium text-white">{textContent.length}/250</span>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
+      <StoryPreview
+        storyType={storyType}
+        previewUrl={previewUrl}
+        textContent={textContent}
+        selectedBackground={selectedBackground}
+        fontSize={fontSize}
+        fontStyle={fontStyle}
+        textAlign={textAlign}
+        videoRef={videoRef}
+        onTextChange={setTextContent}
+      />
 
       {/* Input oculto para archivos */}
       <input
@@ -435,33 +217,10 @@ export default function CreateStoryPage() {
 
       {/* Modal de confirmación personalizado */}
       {showDiscardModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-neutral-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-neutral-800">
-            {/* Header del modal */}
-            <div className="p-6 border-b border-neutral-800">
-              <h3 className="text-xl font-bold text-white">{t('discardModalTitle')}</h3>
-              <p className="text-neutral-400 mt-2">
-                {t('discardModalDescription')}
-              </p>
-            </div>
-
-            {/* Botones de acción */}
-            <div className="p-6 flex gap-3">
-              <button
-                onClick={() => setShowDiscardModal(false)}
-                className="flex-1 px-4 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-xl transition-colors"
-              >
-                {t('continueEditing')}
-              </button>
-              <button
-                onClick={confirmDiscard}
-                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors"
-              >
-                {t('discard')}
-              </button>
-            </div>
-          </div>
-        </div>
+        <DiscardModal
+          onContinue={() => setShowDiscardModal(false)}
+          onConfirm={confirmDiscard}
+        />
       )}
     </div>
   );

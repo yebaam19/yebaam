@@ -6,33 +6,29 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Dialog,
   DialogPanel,
-  DialogTitle,
   Transition,
   TransitionChild,
 } from '@headlessui/react';
-import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/features/auth';
 import { usePostStore } from '../stores/post.store';
 import { getUserInitials, getFirstName } from '@/lib/user-helpers';
-import { 
-  createPostSchema, 
+import {
+  createPostSchema,
   type CreatePostInput,
 } from '../validators/post.schemas';
 import type { PostFeeling, PostLocation, PostGif } from '../interfaces/post.interfaces';
-import Avatar from '@/ui/Avatar';
 
-// Nuevos componentes modulares
-import PostVisibilitySelector from './PostVisibilitySelector';
-import PostContentEditor from './PostContentEditor';
-import PostBackgroundColorPicker from './PostBackgroundColorPicker';
-import PostSelectedItems from './PostSelectedItems';
-import PostEnhancementsPicker from './PostEnhancementsPicker';
-import FilePreviews from './FilePreviews';
 import { useRef } from 'react';
 import { useUpdatePost } from '../hooks/usePosts';
+
+// Subcomponentes co-localizados
+import EditPostModalHeader from './EditPostModal/EditPostModalHeader';
+import EditPostFormFields from './EditPostModal/EditPostFormFields';
+import EditPostMedia from './EditPostModal/EditPostMedia';
+import EditPostFooter from './EditPostModal/EditPostFooter';
 
 export default function EditPostModal() {
   const t = useTranslations('feed');
@@ -61,7 +57,6 @@ export default function EditPostModal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
-    register,
     handleSubmit,
     formState: { errors },
     reset,
@@ -302,121 +297,58 @@ export default function EditPostModal() {
             >
               <DialogPanel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 shadow-xl transition-all">
                 {/* Header */}
-                <div className="relative border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
-                  <DialogTitle className="text-center text-xl font-bold text-neutral-900 dark:text-white">
-                    {t('editModal.title')}
-                  </DialogTitle>
-                  <button
-                    onClick={handleClose}
-                    disabled={isCreating}
-                    className="absolute right-4 top-4 rounded-full bg-neutral-100 p-2 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
-                  </button>
-                </div>
+                <EditPostModalHeader
+                  title={t('editModal.title')}
+                  onClose={handleClose}
+                  disabled={isCreating}
+                />
 
                 {/* Form */}
                 <form onSubmit={handleSubmit(onSubmit)}>
-                  {/* User Info */}
-                  <div className="px-6 pt-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={user.avatar}
-                        className="h-10 w-10"
-                        initials={userInitials}
-                      />
-                      <div>
-                        <p className="font-semibold text-neutral-900 dark:text-white">
-                          {user.username}
-                        </p>
-                        
-                        {/* Visibility Selector */}
-                        <PostVisibilitySelector
-                          value={selectedVisibility}
-                          onChange={(value) => {
-                            setSelectedVisibility(value);
-                            setValue('privacy', { value });
-                          }}
-                          disabled={isCreating}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content Input */}
-                  <div className="px-6 pt-4">
-                    <PostContentEditor
-                      content={content}
-                      onChange={(value) => setValue('content', value)}
-                      placeholder={t('composer.placeholder', { name: userFirstName })}
-                      backgroundColor={backgroundColor}
-                      error={errors.content?.message}
-                      disabled={isCreating}
-                    />
-                  </div>
-
-                  {/* File Previews */}
-                  {selectedFiles.length > 0 && (
-                    <div className="px-6 pt-4">
-                      <FilePreviews
-                        previewUrls={previewUrls}
-                        selectedFiles={selectedFiles}
-                        onRemove={removeFile}
-                      />
-                    </div>
-                  )}
-
-                  {/* Hidden File Input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/*"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-
-                  {/* Selected Items (Feeling, Location, GIF) */}
-                  <PostSelectedItems
-                    feeling={selectedFeeling}
-                    location={selectedLocation}
-                    gif={selectedGif}
+                  {/* Form sections: user info + visibility, content, selected items, enhancements */}
+                  <EditPostFormFields
+                    username={user.username}
+                    avatar={user.avatar}
+                    userInitials={userInitials}
+                    selectedVisibility={selectedVisibility}
+                    onVisibilityChange={(value) => {
+                      setSelectedVisibility(value);
+                      setValue('privacy', { value });
+                    }}
+                    content={content}
+                    onContentChange={(value) => setValue('content', value)}
+                    contentPlaceholder={t('composer.placeholder', { name: userFirstName })}
+                    contentError={errors.content?.message}
+                    backgroundColor={backgroundColor}
+                    selectedFeeling={selectedFeeling}
+                    selectedLocation={selectedLocation}
+                    selectedGif={selectedGif}
                     onRemoveFeeling={() => setSelectedFeeling(null)}
                     onRemoveLocation={() => setSelectedLocation(null)}
                     onRemoveGif={() => setSelectedGif(null)}
+                    onColorSelect={setBackgroundColor}
+                    showColorPicker={showColorPicker}
+                    onToggleColorPicker={() => setShowColorPicker(!showColorPicker)}
+                    onFeelingSelect={setSelectedFeeling}
+                    onPhotoClick={() => fileInputRef.current?.click()}
+                    disabled={isCreating}
+                    mediaSlot={
+                      /* Media: file previews + hidden file input */
+                      <EditPostMedia
+                        previewUrls={previewUrls}
+                        selectedFiles={selectedFiles}
+                        onRemove={removeFile}
+                        fileInputRef={fileInputRef}
+                        onFileSelect={handleFileSelect}
+                      />
+                    }
                   />
 
-                  {/* Enhanced Actions */}
-                  <div className="mx-6 rounded-lg border border-neutral-200 dark:border-neutral-800">
-                    {/* Color Picker */}
-                    {!selectedGif && (
-                      <PostBackgroundColorPicker
-                        selectedColor={backgroundColor}
-                        onColorSelect={setBackgroundColor}
-                        isOpen={showColorPicker}
-                        onToggle={() => setShowColorPicker(!showColorPicker)}
-                        disabled={isCreating}
-                      />
-                    )}
-                    
-                    {/* Enhancement Options */}
-                    <PostEnhancementsPicker
-                      onFeelingSelect={setSelectedFeeling}
-                      onPhotoClick={() => fileInputRef.current?.click()}
-                      disabled={isCreating}
-                    />
-                  </div>
-
                   {/* Footer Actions */}
-                  <div className="border-t border-neutral-200 px-6 py-4 dark:border-neutral-800">
-                    <button
-                      type="submit"
-                      disabled={isCreating || (!content?.trim() && !selectedGif)}
-                      className="w-full rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300 dark:disabled:bg-neutral-700"
-                    >
-                      {isCreating ? t('editModal.saving') : t('editModal.save')}
-                    </button>
-                  </div>
+                  <EditPostFooter
+                    label={isCreating ? t('editModal.saving') : t('editModal.save')}
+                    disabled={isCreating || (!content?.trim() && !selectedGif)}
+                  />
                 </form>
               </DialogPanel>
             </TransitionChild>
