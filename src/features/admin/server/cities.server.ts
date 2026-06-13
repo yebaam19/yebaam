@@ -67,7 +67,7 @@ type CityListRow = {
 
 const CITY_LIST_SELECT = `id, name, slug, is_featured, follower_count, photo_count, video_count, post_count,
   cover_cf_image_id, logo_cf_image_id, created_at,
-  country:countries(id, code, name),
+  country:countries!inner(id, code, name),
   state:states(id, name)`
 
 async function aggregateCounts(

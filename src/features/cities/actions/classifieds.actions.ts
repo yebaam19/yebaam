@@ -40,6 +40,7 @@ const ALLOWED_STATUSES = new Set<ClassifiedStatus>(['open', 'sold', 'closed']);
 
 const MAX_TITLE_LEN = 200;
 const MAX_DESCRIPTION_LEN = 5000;
+const MAX_IMAGES = 6;
 
 export interface PostClassifiedInput {
   cityId: string;
@@ -77,6 +78,15 @@ export async function postClassified(
     return { ok: false, error: 'invalid_price' };
   }
 
+  // Trust nothing in the client-supplied id list: drop blanks/non-strings and
+  // cap the count, mirroring the complaints action.
+  const cfImageIds = (input.cfImageIds ?? []).filter(
+    (id) => typeof id === 'string' && id.length > 0,
+  );
+  if (cfImageIds.length > MAX_IMAGES) {
+    return { ok: false, error: 'too_many_images' };
+  }
+
   const insertPayload = {
     city_id: input.cityId,
     author_id: sess.userId,
@@ -85,7 +95,7 @@ export async function postClassified(
     price_cents: input.priceCents,
     currency: input.currency ?? 'COP',
     kind: input.kind,
-    cf_image_ids: input.cfImageIds ?? [],
+    cf_image_ids: cfImageIds,
     status: 'open',
   };
 

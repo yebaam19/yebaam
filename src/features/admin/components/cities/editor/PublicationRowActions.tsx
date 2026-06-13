@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   deleteCityPublication,
@@ -17,16 +17,21 @@ export function PublicationRowActions({ publicationId, isPinned }: Props) {
   const t = useTranslations('admin.ciudades')
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState(false)
   const onPin = () =>
     startTransition(async () => {
+      setError(false)
       const res = await togglePublicationPinned({ publicationId, isPinned: !isPinned })
       if (res.ok) router.refresh()
+      else setError(true)
     })
   const onDelete = () => {
     if (!confirm(t('publicationDeleteConfirm'))) return
     startTransition(async () => {
+      setError(false)
       const res = await deleteCityPublication({ publicationId })
       if (res.ok) router.refresh()
+      else setError(true)
     })
   }
   return (
@@ -47,6 +52,9 @@ export function PublicationRowActions({ publicationId, isPinned }: Props) {
       >
         {t('removeCta')}
       </button>
+      {error && (
+        <span className="text-[11px] text-red-600 dark:text-red-400">{t('actionError')}</span>
+      )}
     </div>
   )
 }

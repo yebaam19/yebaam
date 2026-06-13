@@ -1,20 +1,29 @@
 import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
 import type {
-  Association,
-  CredentialStatus,
-  Experience,
-  Language,
-  License,
   ProfessionalProfile,
   ProfessionalProfileVisibility,
-  Skill,
-  Study,
-  StudyType,
-  Title,
-  TitleCategory,
-  TitleDistinction,
 } from '@/features/professional-profile/interfaces/professional-profile.interfaces';
+import {
+  type AssociationRow,
+  type ExperienceRow,
+  type LanguageRow,
+  type LicenseRow,
+  type SkillRow,
+  type StudyRow,
+  type TitleRow,
+  STUDY_PUBLIC_COLUMNS,
+  TITLE_PUBLIC_COLUMNS,
+  toAssociation,
+  toExperience,
+  toLanguage,
+  toLicense,
+  toSkill,
+  toStudy,
+  toTitle,
+} from './entities.mappers';
+
+type SupabaseServerClient = Awaited<ReturnType<typeof getServerClient>>;
 
 type ProfileRow = {
   id: string;
@@ -37,127 +46,7 @@ type UserProfileRow = {
   verified_at: string | null;
 };
 
-type TitleRow = {
-  id: string;
-  professional_profile_id: string;
-  name: string;
-  institution: string | null;
-  year: number | null;
-  category: TitleCategory | null;
-  distinction: TitleDistinction | null;
-  focuses: string[] | null;
-  credential_status: CredentialStatus;
-  credential_request_id: string | null;
-  verified_at: string | null;
-  verified_by: string | null;
-  verified_snapshot: Record<string, unknown> | null;
-  institution_page_id: string | null;
-  institution_slug: string | null;
-};
-type StudyRow = {
-  id: string;
-  professional_profile_id: string;
-  name: string;
-  institution: string | null;
-  year: number | null;
-  study_type: StudyType | null;
-  focuses: string[] | null;
-  credential_status: CredentialStatus;
-  credential_request_id: string | null;
-  verified_at: string | null;
-  verified_by: string | null;
-  verified_snapshot: Record<string, unknown> | null;
-  institution_page_id: string | null;
-  institution_slug: string | null;
-};
-
-// Public column lists — diploma_cf_image_id is intentionally excluded.
-// Owner-only data fetched separately via hydrateOwnerExtras.
-const TITLE_PUBLIC_COLUMNS =
-  'id, professional_profile_id, name, institution, year, category, distinction, focuses, credential_status, credential_request_id, verified_at, verified_by, verified_snapshot, institution_page_id, institution_slug';
-const STUDY_PUBLIC_COLUMNS =
-  'id, professional_profile_id, name, institution, year, study_type, focuses, credential_status, credential_request_id, verified_at, verified_by, verified_snapshot, institution_page_id, institution_slug';
-type AssociationRow = { id: string; professional_profile_id: string; name: string; role: string | null };
-type LicenseRow = { id: string; professional_profile_id: string; name: string; number: string | null; issued_by: string | null; issued_at: string | null };
-type SkillRow = { id: string; professional_profile_id: string; name: string; level: string | null };
-type LanguageRow = { id: string; professional_profile_id: string; name: string; proficiency: string | null };
-type ExperienceRow = {
-  id: string;
-  professional_profile_id: string;
-  position: string;
-  company: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  description: string | null;
-};
-
-function toTitle(row: TitleRow): Title {
-  return {
-    id: row.id,
-    professionalProfileId: row.professional_profile_id,
-    name: row.name,
-    institution: row.institution,
-    year: row.year,
-    category: row.category,
-    distinction: row.distinction,
-    focuses: row.focuses ?? [],
-    credentialStatus: row.credential_status,
-    credentialRequestId: row.credential_request_id,
-    verifiedAt: row.verified_at,
-    verifiedBy: row.verified_by,
-    verifiedSnapshot: row.verified_snapshot,
-    institutionPageId: row.institution_page_id,
-    institutionSlug: row.institution_slug,
-  };
-}
-function toStudy(row: StudyRow): Study {
-  return {
-    id: row.id,
-    professionalProfileId: row.professional_profile_id,
-    name: row.name,
-    institution: row.institution,
-    year: row.year,
-    studyType: row.study_type,
-    focuses: row.focuses ?? [],
-    credentialStatus: row.credential_status,
-    credentialRequestId: row.credential_request_id,
-    verifiedAt: row.verified_at,
-    verifiedBy: row.verified_by,
-    verifiedSnapshot: row.verified_snapshot,
-    institutionPageId: row.institution_page_id,
-    institutionSlug: row.institution_slug,
-  };
-}
-function toAssociation(row: AssociationRow): Association {
-  return { id: row.id, professionalProfileId: row.professional_profile_id, name: row.name, role: row.role };
-}
-function toLicense(row: LicenseRow): License {
-  return {
-    id: row.id,
-    professionalProfileId: row.professional_profile_id,
-    name: row.name,
-    number: row.number,
-    issuedBy: row.issued_by,
-    issuedAt: row.issued_at,
-  };
-}
-function toSkill(row: SkillRow): Skill {
-  return { id: row.id, professionalProfileId: row.professional_profile_id, name: row.name, level: row.level };
-}
-function toLanguage(row: LanguageRow): Language {
-  return { id: row.id, professionalProfileId: row.professional_profile_id, name: row.name, proficiency: row.proficiency };
-}
-function toExperience(row: ExperienceRow): Experience {
-  return {
-    id: row.id,
-    professionalProfileId: row.professional_profile_id,
-    position: row.position,
-    company: row.company,
-    startDate: row.start_date,
-    endDate: row.end_date,
-    description: row.description,
-  };
-}
+const USER_COLUMNS = 'id, username, first_name, last_name, avatar_url, is_verified, verified_at';
 
 function toProfile(row: ProfileRow, user?: UserProfileRow | null): ProfessionalProfile {
   return {
@@ -184,10 +73,23 @@ function toProfile(row: ProfileRow, user?: UserProfileRow | null): ProfessionalP
 }
 
 async function hydrateProfile(
-  client: Awaited<ReturnType<typeof getServerClient>>,
+  client: SupabaseServerClient,
   base: ProfessionalProfile,
 ): Promise<ProfessionalProfile> {
   const profileId = base.id;
+  const forProfile = (table: string) =>
+    client.from(table).select('*').eq('professional_profile_id', profileId);
+  // Ordered list query for one child table (nullsFirst:false is a no-op on the
+  // non-nullable created_at orderings, so one signature covers all seven).
+  const listRows = (table: string, columns: string, orderColumn: string) =>
+    client
+      .from(table)
+      .select(columns)
+      .eq('professional_profile_id', profileId)
+      .order(orderColumn, { ascending: false, nullsFirst: false });
+  const countRows = (table: string) =>
+    client.from(table).select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId);
+
   const [
     titles,
     studies,
@@ -206,33 +108,33 @@ async function hydrateProfile(
     postsCount,
     followersCount,
   ] = await Promise.all([
-    client.from('professional_profile_titles').select(TITLE_PUBLIC_COLUMNS).eq('professional_profile_id', profileId).order('year', { ascending: false, nullsFirst: false }),
-    client.from('professional_profile_studies').select(STUDY_PUBLIC_COLUMNS).eq('professional_profile_id', profileId).order('year', { ascending: false, nullsFirst: false }),
-    client.from('professional_profile_associations').select('*').eq('professional_profile_id', profileId).order('created_at', { ascending: false }),
-    client.from('professional_profile_licenses').select('*').eq('professional_profile_id', profileId).order('issued_at', { ascending: false, nullsFirst: false }),
-    client.from('professional_profile_skills').select('*').eq('professional_profile_id', profileId).order('created_at', { ascending: false }),
-    client.from('professional_profile_languages').select('*').eq('professional_profile_id', profileId).order('created_at', { ascending: false }),
-    client.from('professional_profile_experience').select('*').eq('professional_profile_id', profileId).order('start_date', { ascending: false, nullsFirst: false }),
-    client.from('professional_profile_titles').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_studies').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_associations').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_licenses').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_skills').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_languages').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_experience').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_posts').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
-    client.from('professional_profile_follows').select('id', { count: 'exact', head: true }).eq('professional_profile_id', profileId),
+    listRows('professional_profile_titles', TITLE_PUBLIC_COLUMNS, 'year'),
+    listRows('professional_profile_studies', STUDY_PUBLIC_COLUMNS, 'year'),
+    forProfile('professional_profile_associations').order('created_at', { ascending: false }),
+    listRows('professional_profile_licenses', '*', 'issued_at'),
+    forProfile('professional_profile_skills').order('created_at', { ascending: false }),
+    forProfile('professional_profile_languages').order('created_at', { ascending: false }),
+    listRows('professional_profile_experience', '*', 'start_date'),
+    countRows('professional_profile_titles'),
+    countRows('professional_profile_studies'),
+    countRows('professional_profile_associations'),
+    countRows('professional_profile_licenses'),
+    countRows('professional_profile_skills'),
+    countRows('professional_profile_languages'),
+    countRows('professional_profile_experience'),
+    countRows('professional_profile_posts'),
+    countRows('professional_profile_follows'),
   ]);
 
   return {
     ...base,
-    titles: ((titles.data ?? []) as TitleRow[]).map(toTitle),
-    studies: ((studies.data ?? []) as StudyRow[]).map(toStudy),
+    titles: ((titles.data ?? []) as unknown as TitleRow[]).map(toTitle),
+    studies: ((studies.data ?? []) as unknown as StudyRow[]).map(toStudy),
     associations: ((associations.data ?? []) as AssociationRow[]).map(toAssociation),
-    licenses: ((licenses.data ?? []) as LicenseRow[]).map(toLicense),
+    licenses: ((licenses.data ?? []) as unknown as LicenseRow[]).map(toLicense),
     skills: ((skills.data ?? []) as SkillRow[]).map(toSkill),
     languages: ((languages.data ?? []) as LanguageRow[]).map(toLanguage),
-    experience: ((experience.data ?? []) as ExperienceRow[]).map(toExperience),
+    experience: ((experience.data ?? []) as unknown as ExperienceRow[]).map(toExperience),
     _count: {
       titles: titlesCount.count ?? 0,
       studies: studiesCount.count ?? 0,
@@ -248,12 +150,12 @@ async function hydrateProfile(
 }
 
 async function loadUserById(
-  client: Awaited<ReturnType<typeof getServerClient>>,
+  client: SupabaseServerClient,
   userId: string,
 ): Promise<UserProfileRow | null> {
   const { data } = await client
     .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url, is_verified, verified_at')
+    .select(USER_COLUMNS)
     .eq('id', userId)
     .maybeSingle();
   return (data as UserProfileRow | null) ?? null;
@@ -281,7 +183,7 @@ export async function getProfileByUsername(username: string): Promise<Profession
 
   const { data: user } = await client
     .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url, is_verified, verified_at')
+    .select(USER_COLUMNS)
     .eq('username', username)
     .maybeSingle();
   if (!user) return null;
@@ -328,10 +230,7 @@ export async function listPublicProfiles(
   if (rows.length === 0) return { profiles: [], total: count ?? 0 };
 
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-  const { data: users } = await client
-    .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url, is_verified, verified_at')
-    .in('id', userIds);
+  const { data: users } = await client.from('profiles').select(USER_COLUMNS).in('id', userIds);
   const userById = new Map<string, UserProfileRow>();
   for (const u of (users ?? []) as UserProfileRow[]) userById.set(u.id, u);
 

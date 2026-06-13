@@ -79,11 +79,16 @@ export async function lookupUserByUsername(
   const { client } = await requireAdmin()
   const clean = (username ?? '').replace(/^@/, '').trim()
   if (!clean) return { ok: false, error: 'username_required' }
+  // Escape LIKE wildcards so an exact username (which may legitimately contain
+  // `_`, e.g. "john_doe") matches literally and case-insensitively, instead of
+  // `_`/`%` being interpreted as pattern metacharacters (which could match the
+  // wrong account or trip maybeSingle's multiple-rows error).
+  const literal = clean.replace(/[\\%_]/g, (c) => `\\${c}`)
 
   const { data, error } = await client
     .from('profiles')
     .select('id, username, display_name, first_name, last_name, avatar_url')
-    .ilike('username', clean)
+    .ilike('username', literal)
     .maybeSingle()
   if (error) return { ok: false, error: error.message }
   if (!data) return { ok: false, error: 'not_found' }

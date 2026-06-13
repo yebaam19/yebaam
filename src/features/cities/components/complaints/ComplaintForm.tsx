@@ -38,8 +38,12 @@ export function ComplaintForm({ cityId }: Props) {
     setError(null)
     setUploading(true)
     try {
-      for (const file of files) {
-        if (images.length >= MAX_IMAGES) break
+      // Bound a single multi-file pick to the remaining slots up-front:
+      // `images.length` is captured in this closure and never updates inside
+      // the loop, so a per-iteration guard would let an oversized selection
+      // through and the server would reject the whole submit.
+      const remaining = Math.max(MAX_IMAGES - images.length, 0)
+      for (const file of files.slice(0, remaining)) {
         const res = await uploadService.uploadImage(file, (p) => setProgress(p))
         setImages((prev) => [...prev, { cfId: res.id, url: res.url }])
       }

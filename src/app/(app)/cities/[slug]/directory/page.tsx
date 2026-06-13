@@ -1,6 +1,6 @@
 import { DirectoryCategoriesGrid } from '@/features/cities/components/directory/DirectoryCategoriesGrid'
 import { DirectoryHero } from '@/features/cities/components/directory/DirectoryHero'
-import { cityService } from '@/features/cities/services/city.service'
+import { getCityBySlug } from '@/features/cities/server/city.server'
 import { ChevronRightIcon, HomeIcon } from '@/components/icons/heroicons-shim'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -15,7 +15,7 @@ interface DirectoryPageProps {
  */
 export async function generateMetadata({ params }: DirectoryPageProps): Promise<Metadata> {
   const { slug } = await params
-  const city = await cityService.getCityBySlug(slug)
+  const city = await getCityBySlug(slug)
 
   if (!city) {
     return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: DirectoryPageProps): Promise<
  */
 export default async function DirectoryPage({ params }: DirectoryPageProps) {
   const { slug } = await params
-  const city = await cityService.getCityBySlug(slug)
+  const city = await getCityBySlug(slug)
 
   if (!city) {
     notFound()

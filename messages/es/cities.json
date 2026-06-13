@@ -82,13 +82,14 @@
     "header": {
       "title": "Chat público",
       "subtitle": "Conversación en vivo con la comunidad de {city}",
-      "capacity": "{count}/{max} en línea"
+      "capacity": "Aforo {max}"
     },
     "composer": {
       "placeholder": "Escribe un mensaje",
       "send": "Enviar",
       "signedOut": "Inicia sesión para participar",
-      "signInCta": "Inicia sesión"
+      "signInCta": "Inicia sesión",
+      "error": "No se pudo enviar. Inténtalo de nuevo."
     },
     "messages": {
       "empty": "Aún no hay mensajes. ¡Sé el primero en saludar!",

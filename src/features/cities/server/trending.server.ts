@@ -33,7 +33,8 @@ export async function fetchCityTrending(
     .select('id, title, cover_cf_image_id, published_at')
     .eq('city_id', cityId)
     .eq('status', 'approved')
-    .order('published_at', { ascending: false })
+    .not('published_at', 'is', null)
+    .order('published_at', { ascending: false, nullsFirst: false })
     .limit(limit);
   if (error) {
     console.error('[fetchCityTrending]', error);

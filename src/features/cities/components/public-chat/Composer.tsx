@@ -11,14 +11,18 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
 
+const MAX_BODY_LEN = 2000;
+
 interface ComposerProps {
-  /** Called with the trimmed body when the user dispatches a send. */
-  onSend: (body: string) => Promise<void> | void;
+  /** Called with the trimmed body when the user dispatches a send. Returns the
+   *  action result so the composer can keep the text + show an error on failure. */
+  onSend: (body: string) => Promise<{ ok: boolean } | void>;
 }
 
 export function Composer({ onSend }: ComposerProps) {
   const t = useTranslations('cities.publicChat.composer');
   const [value, setValue] = useState('');
+  const [failed, setFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const trimmed = value.trim();
@@ -27,9 +31,15 @@ export function Composer({ onSend }: ComposerProps) {
   const dispatchSend = () => {
     if (!canSend) return;
     const body = trimmed;
-    setValue('');
+    setFailed(false);
     startTransition(async () => {
-      await onSend(body);
+      const result = await onSend(body);
+      if (result && result.ok === false) {
+        // Keep the typed text so the user can retry without re-typing.
+        setFailed(true);
+        return;
+      }
+      setValue('');
     });
   };
 
@@ -49,10 +59,14 @@ export function Composer({ onSend }: ComposerProps) {
         <textarea
           id="public-chat-composer"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value);
+            if (failed) setFailed(false);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={t('placeholder')}
           rows={1}
+          maxLength={MAX_BODY_LEN}
           className="block max-h-32 min-h-[40px] flex-1 resize-none rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-primary-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-primary-500 dark:focus:bg-neutral-900"
           aria-label={t('placeholder')}
           disabled={isPending}
@@ -68,6 +82,11 @@ export function Composer({ onSend }: ComposerProps) {
           <span className="sr-only">{t('send')}</span>
         </button>
       </div>
+      {failed && (
+        <p className="mt-1 px-1 text-xs text-red-600 dark:text-red-400" role="alert">
+          {t('error')}
+        </p>
+      )}
     </div>
   );
 }

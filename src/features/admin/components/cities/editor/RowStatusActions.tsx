@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   setCityNewsStatus,
   setCityClassifiedStatus,
@@ -27,10 +28,13 @@ interface Props {
  * Each button calls the appropriate server action and refreshes the RSC tree.
  */
 export function RowStatusActions({ kind, rowId, actions }: Props) {
+  const t = useTranslations('admin.ciudades')
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState(false)
 
   const trigger = (status: string) => {
+    setError(false)
     startTransition(async () => {
       let res
       if (kind === 'news') {
@@ -50,22 +54,28 @@ export function RowStatusActions({ kind, rowId, actions }: Props) {
         })
       }
       if (res.ok) router.refresh()
+      else setError(true)
     })
   }
 
   return (
-    <div className="flex flex-wrap justify-end gap-1">
-      {actions.map((a) => (
-        <button
-          key={a.status}
-          type="button"
-          disabled={pending}
-          onClick={() => trigger(a.status)}
-          className={btnClass(a.intent)}
-        >
-          {a.label}
-        </button>
-      ))}
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex flex-wrap justify-end gap-1">
+        {actions.map((a) => (
+          <button
+            key={a.status}
+            type="button"
+            disabled={pending}
+            onClick={() => trigger(a.status)}
+            className={btnClass(a.intent)}
+          >
+            {a.label}
+          </button>
+        ))}
+      </div>
+      {error && (
+        <span className="text-[11px] text-red-600 dark:text-red-400">{t('actionError')}</span>
+      )}
     </div>
   )
 }

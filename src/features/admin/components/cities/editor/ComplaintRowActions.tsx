@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   setCityComplaintStatus,
@@ -17,23 +17,29 @@ export function ComplaintRowActions({ complaintId, status }: Props) {
   const t = useTranslations('admin.ciudades')
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState(false)
 
   const setStatus = (s: Props['status']) =>
     startTransition(async () => {
+      setError(false)
       const res = await setCityComplaintStatus({ complaintId, status: s })
       if (res.ok) router.refresh()
+      else setError(true)
     })
 
   const onDelete = () => {
     if (!confirm(t('complaintDeleteConfirm'))) return
     startTransition(async () => {
+      setError(false)
       const res = await deleteCityComplaint({ complaintId })
       if (res.ok) router.refresh()
+      else setError(true)
     })
   }
 
   return (
-    <div className="flex flex-wrap justify-end gap-1 pt-1">
+    <div className="flex flex-col items-end gap-1 pt-1">
+    <div className="flex flex-wrap justify-end gap-1">
       {status !== 'seen' && (
         <button
           type="button"
@@ -72,6 +78,10 @@ export function ComplaintRowActions({ complaintId, status }: Props) {
       >
         {t('removeCta')}
       </button>
+    </div>
+      {error && (
+        <span className="text-[11px] text-red-600 dark:text-red-400">{t('actionError')}</span>
+      )}
     </div>
   )
 }

@@ -109,14 +109,19 @@ export function PublicChatPanel({
       if (!result.ok) {
         // Drop the optimistic row on failure so the user can retry.
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        return;
+        return result;
       }
-      // Swap the temp id for the real one so subsequent realtime payloads
-      // can dedupe correctly.
+      // Reconcile the optimistic row with the real id. The realtime INSERT echo
+      // and this action response race: if the echo already added the real row,
+      // just drop the temp row; otherwise relabel temp → real. Either way the
+      // list ends with exactly one row per real id (no duplicate React keys).
       const realId = result.data.id;
       setMessages((prev) =>
-        prev.map((m) => (m.id === tempId ? { ...m, id: realId } : m)),
+        prev.some((m) => m.id === realId)
+          ? prev.filter((m) => m.id !== tempId)
+          : prev.map((m) => (m.id === tempId ? { ...m, id: realId } : m)),
       );
+      return result;
     },
     [topicId, currentUserId],
   );
@@ -136,7 +141,7 @@ export function PublicChatPanel({
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">
-          {t('header.capacity', { count: 0, max: maxCapacity })}
+          {t('header.capacity', { max: maxCapacity })}
         </span>
       </header>
 

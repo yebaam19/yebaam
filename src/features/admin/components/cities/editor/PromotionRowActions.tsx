@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   setCityPromotionStatus,
@@ -17,22 +17,28 @@ export function PromotionRowActions({ promotionId, status }: Props) {
   const t = useTranslations('admin.ciudades')
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState(false)
 
   const setStatus = (s: 'active' | 'expired' | 'removed') =>
     startTransition(async () => {
+      setError(false)
       const res = await setCityPromotionStatus({ promotionId, status: s })
       if (res.ok) router.refresh()
+      else setError(true)
     })
 
   const onDelete = () => {
     if (!confirm(t('promotionDeleteConfirm'))) return
     startTransition(async () => {
+      setError(false)
       const res = await deleteCityPromotion({ promotionId })
       if (res.ok) router.refresh()
+      else setError(true)
     })
   }
 
   return (
+    <div className="flex flex-col items-end gap-1">
     <div className="flex flex-wrap justify-end gap-1">
       {status !== 'active' && (
         <button
@@ -62,6 +68,10 @@ export function PromotionRowActions({ promotionId, status }: Props) {
       >
         {t('removeCta')}
       </button>
+    </div>
+      {error && (
+        <span className="text-[11px] text-red-600 dark:text-red-400">{t('actionError')}</span>
+      )}
     </div>
   )
 }

@@ -82,13 +82,14 @@
     "header": {
       "title": "Public chat",
       "subtitle": "Live conversation with the {city} community",
-      "capacity": "{count}/{max} online"
+      "capacity": "Capacity {max}"
     },
     "composer": {
       "placeholder": "Write a message",
       "send": "Send",
       "signedOut": "Sign in to participate",
-      "signInCta": "Sign in"
+      "signInCta": "Sign in",
+      "error": "Couldn't send. Please try again."
     },
     "messages": {
       "empty": "No messages yet. Be the first to say hi!",

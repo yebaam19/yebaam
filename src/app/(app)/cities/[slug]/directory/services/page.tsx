@@ -1,7 +1,10 @@
 import { DirectoryHero } from '@/features/cities/components/directory/DirectoryHero'
 import { ServiceList } from '@/features/cities/components/directory/ServiceList'
-import { cityService } from '@/features/cities/services/city.service'
-import { directoryService } from '@/features/cities/services/directory.service'
+import { getCityBySlug } from '@/features/cities/server/city.server'
+import {
+  getCityServices,
+  getServiceDirectoryCategories,
+} from '@/features/cities/server/directory.server'
 import { ChevronRightIcon, HomeIcon } from '@/components/icons/heroicons-shim'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -16,7 +19,7 @@ interface ServicesPageProps {
  */
 export async function generateMetadata({ params }: ServicesPageProps): Promise<Metadata> {
   const { slug } = await params
-  const city = await cityService.getCityBySlug(slug)
+  const city = await getCityBySlug(slug)
 
   if (!city) {
     return {
@@ -36,17 +39,15 @@ export async function generateMetadata({ params }: ServicesPageProps): Promise<M
  */
 export default async function ServicesPage({ params }: ServicesPageProps) {
   const { slug } = await params
-  const city = await cityService.getCityBySlug(slug)
+  const city = await getCityBySlug(slug)
 
   if (!city) {
     notFound()
   }
 
-  // Obtener servicios y categorías
-  const [servicesResponse, categories] = await Promise.all([
-    directoryService.getServicesByCity(city.id),
-    directoryService.getServiceCategories(),
-  ])
+  // Obtener servicios y categorías (datos reales de Supabase + taxonomía)
+  const services = await getCityServices(city.id)
+  const categories = getServiceDirectoryCategories()
 
   return (
     <div className="space-y-6">
@@ -80,7 +81,7 @@ export default async function ServicesPage({ params }: ServicesPageProps) {
 
       {/* Lista de servicios */}
       <section>
-        <ServiceList services={servicesResponse.services} categories={categories} />
+        <ServiceList services={services} categories={categories} />
       </section>
     </div>
   )

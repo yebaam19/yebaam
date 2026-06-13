@@ -1,7 +1,10 @@
 import { BusinessList } from '@/features/cities/components/directory/BusinessList'
 import { DirectoryHero } from '@/features/cities/components/directory/DirectoryHero'
-import { cityService } from '@/features/cities/services/city.service'
-import { directoryService } from '@/features/cities/services/directory.service'
+import { getCityBySlug } from '@/features/cities/server/city.server'
+import {
+  getBusinessDirectoryCategories,
+  getCityBusinesses,
+} from '@/features/cities/server/directory.server'
 import { ChevronRightIcon, HomeIcon } from '@/components/icons/heroicons-shim'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -16,7 +19,7 @@ interface BusinessesPageProps {
  */
 export async function generateMetadata({ params }: BusinessesPageProps): Promise<Metadata> {
   const { slug } = await params
-  const city = await cityService.getCityBySlug(slug)
+  const city = await getCityBySlug(slug)
 
   if (!city) {
     return {
@@ -36,16 +39,16 @@ export async function generateMetadata({ params }: BusinessesPageProps): Promise
  */
 export default async function BusinessesPage({ params }: BusinessesPageProps) {
   const { slug } = await params
-  const city = await cityService.getCityBySlug(slug)
+  const city = await getCityBySlug(slug)
 
   if (!city) {
     notFound()
   }
 
-  // Obtener negocios y categorías
-  const [businessesResponse, categories] = await Promise.all([
-    directoryService.getBusinessesByCity(city.id),
-    directoryService.getBusinessCategories(),
+  // Obtener negocios y categorías (datos reales de Supabase)
+  const [businesses, categories] = await Promise.all([
+    getCityBusinesses(city.id),
+    getBusinessDirectoryCategories(),
   ])
 
   return (
@@ -80,7 +83,7 @@ export default async function BusinessesPage({ params }: BusinessesPageProps) {
 
       {/* Lista de negocios */}
       <section>
-        <BusinessList businesses={businessesResponse.businesses} categories={categories} />
+        <BusinessList businesses={businesses} categories={categories} />
       </section>
     </div>
   )

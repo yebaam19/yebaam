@@ -50,10 +50,15 @@ function toDto(r: Row): CityComplaint {
 
 /**
  * Public list — only `seen` and `resolved` complaints. Aligns with the RLS
- * policy `city_complaints_public_read_acknowledged`: citizens see what the
- * administration has acknowledged or actioned, never raw new submissions
- * (those stay in the admin moderation queue + visible to the reporter).
+ * policy `city_complaints_public_read_acknowledged` (see
+ * `20260613120000_city_complaints_public_read.sql`): citizens see what the
+ * administration has acknowledged or actioned, never raw new submissions.
  * `rejected` is admin-only and never surfaces here.
+ *
+ * NOTE: a reporter's own pending (`new`/`rejected`) rows ARE readable under
+ * the `city_complaints_reporter_read_own` policy, but this public reader
+ * filters them out. Surface them via a dedicated "my complaints" reader (à la
+ * `contact.server.ts` `fetchMyMessagesForCity`) if/when that UI is built.
  */
 export async function fetchVisibleComplaints(
   client: SupabaseClient,
