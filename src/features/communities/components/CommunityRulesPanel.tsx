@@ -4,27 +4,24 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
   FlagIcon,
   PencilSquareIcon,
-  PlusIcon,
   ShieldCheckIcon,
-  TrashIcon,
-  XMarkIcon,
 } from '@/components/icons/heroicons-shim';
 import { updateCommunity } from '@/features/communities/actions/update.actions';
 import type {
   Community,
   CommunityRule,
 } from '@/features/communities/types/community.types';
+import { RulesList } from './CommunityRulesPanel/RulesList';
+import { RulesEditor } from './CommunityRulesPanel/RulesEditor';
 
 interface CommunityRulesPanelProps {
   community: Community;
   isOwner?: boolean;
 }
 
-interface DraftRule {
+export interface DraftRule {
   // Local-only key for React; server reassigns ids based on order.
   key: string;
   title: string;
@@ -161,133 +158,22 @@ export function CommunityRulesPanel({
           </p>
         )}
 
-        {!isEditing && (
-          <>
-            {sortedRules.length > 0 ? (
-              <ol className="space-y-3">
-                {sortedRules.map((rule, idx) => (
-                  <li key={rule.id ?? `${rule.title}-${idx}`} className="flex gap-3">
-                    <span className="shrink-0 font-semibold text-gray-900 dark:text-white">
-                      {idx + 1}.
-                    </span>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{rule.title}</p>
-                      {rule.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {rule.description}
-                        </p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="text-sm italic text-gray-500 dark:text-gray-400">
-                {isOwner
-                  ? t('admin.rules.emptyOwner')
-                  : t('admin.rules.emptyMember')}
-              </p>
-            )}
-          </>
-        )}
+        {!isEditing && <RulesList rules={sortedRules} isOwner={isOwner} />}
 
         {isEditing && (
-          <div className="space-y-4">
-            {drafts.length === 0 && (
-              <p className="text-sm italic text-gray-500 dark:text-gray-400">
-                {t('admin.rules.editorEmpty')}
-              </p>
-            )}
-            {drafts.map((draft, idx) => (
-              <div
-                key={draft.key}
-                className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30"
-              >
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    {t('admin.rules.ruleLabel', { n: idx + 1 })}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleMove(idx, -1)}
-                      disabled={idx === 0 || isPending}
-                      className="rounded-md p-1 text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:text-gray-400 dark:hover:bg-gray-700"
-                      aria-label={t('admin.rules.moveUpAria')}
-                    >
-                      <ChevronUpIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMove(idx, 1)}
-                      disabled={idx === drafts.length - 1 || isPending}
-                      className="rounded-md p-1 text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:text-gray-400 dark:hover:bg-gray-700"
-                      aria-label={t('admin.rules.moveDownAria')}
-                    >
-                      <ChevronDownIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveRule(draft.key)}
-                      disabled={isPending}
-                      className="rounded-md p-1 text-red-500 hover:bg-red-50 disabled:opacity-30 dark:hover:bg-red-900/30"
-                      aria-label={t('admin.rules.removeAria')}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <input
-                  type="text"
-                  value={draft.title}
-                  onChange={(e) => handleField(draft.key, 'title', e.target.value)}
-                  placeholder={t('admin.rules.titlePlaceholder')}
-                  disabled={isPending}
-                  maxLength={MAX_TITLE}
-                  className="mb-2 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                />
-                <textarea
-                  value={draft.description}
-                  onChange={(e) => handleField(draft.key, 'description', e.target.value)}
-                  placeholder={t('admin.rules.descriptionPlaceholder')}
-                  rows={2}
-                  disabled={isPending}
-                  maxLength={MAX_DESCRIPTION}
-                  className="w-full resize-none rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                />
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleAddRule}
-              disabled={isPending || drafts.length >= MAX_RULES}
-              className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:text-blue-400"
-            >
-              <PlusIcon className="h-4 w-4" />
-              {t('admin.rules.addRule')}
-            </button>
-
-            <div className="flex items-center justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isPending}
-                className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-200 dark:hover:bg-gray-700/60"
-              >
-                <XMarkIcon className="h-4 w-4" />
-                {t('admin.rules.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isPending}
-                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
-              >
-                {isPending ? t('admin.rules.saving') : t('admin.rules.save')}
-              </button>
-            </div>
-          </div>
+          <RulesEditor
+            drafts={drafts}
+            isPending={isPending}
+            maxRules={MAX_RULES}
+            maxTitle={MAX_TITLE}
+            maxDescription={MAX_DESCRIPTION}
+            onField={handleField}
+            onMove={handleMove}
+            onRemove={handleRemoveRule}
+            onAdd={handleAddRule}
+            onCancel={handleCancel}
+            onSave={handleSave}
+          />
         )}
       </section>
 

@@ -2,18 +2,15 @@
 
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import Link from 'next/link';
-import type { Route } from 'next';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
-import Avatar from '@/ui/Avatar';
-import { getUserInitials } from '@/lib/user-helpers';
 import { reactionService } from '../../services/reaction.service';
 import {
-  REACTION_CONFIGS,
   ReactionType,
   type Reaction,
   type ReactionCounts,
 } from '../../interfaces/reaction.interfaces';
+import { ReactionTabs } from './ReactionTabs';
+import { ReactorList } from './ReactorList';
 
 interface ReactionListModalProps {
   isOpen: boolean;
@@ -144,54 +141,19 @@ export function ReactionListModal({ isOpen, onClose, postId }: ReactionListModal
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1 overflow-x-auto border-b border-neutral-200 dark:border-neutral-800 px-2">
-                  <TabButton
-                    active={activeTab === 'all'}
-                    onClick={() => setActiveTab('all')}
-                    label="Todas"
-                    count={total}
-                  />
-                  {REACTION_ORDER.map((type) => {
-                    const c = counts[type] ?? 0;
-                    if (c === 0) return null;
-                    const config = REACTION_CONFIGS[type];
-                    return (
-                      <TabButton
-                        key={type}
-                        active={activeTab === type}
-                        onClick={() => setActiveTab(type)}
-                        label={config.emoji}
-                        count={c}
-                        title={config.label}
-                      />
-                    );
-                  })}
-                </div>
+                <ReactionTabs
+                  activeTab={activeTab}
+                  counts={counts}
+                  total={total}
+                  onSelect={setActiveTab}
+                />
 
-                <div className="max-h-[60vh] overflow-y-auto">
-                  {isLoading && (
-                    <div className="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                      Cargando...
-                    </div>
-                  )}
-                  {!isLoading && error && (
-                    <div className="px-4 py-8 text-center text-sm text-red-600 dark:text-red-400">
-                      {error}
-                    </div>
-                  )}
-                  {!isLoading && !error && filtered.length === 0 && (
-                    <div className="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                      No hay reacciones en esta categoría.
-                    </div>
-                  )}
-                  {!isLoading && !error && filtered.length > 0 && (
-                    <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                      {filtered.map((reaction) => (
-                        <ReactionRow key={reaction.id} reaction={reaction} onNavigate={onClose} />
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                <ReactorList
+                  isLoading={isLoading}
+                  error={error}
+                  reactions={filtered}
+                  onNavigate={onClose}
+                />
               </Dialog.Panel>
             </Transition.Child>
           </div>
@@ -199,88 +161,4 @@ export function ReactionListModal({ isOpen, onClose, postId }: ReactionListModal
       </Dialog>
     </Transition>
   );
-}
-
-interface TabButtonProps {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count: number;
-  title?: string;
-}
-
-function TabButton({ active, onClick, label, count, title }: TabButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className={[
-        'shrink-0 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors',
-        active
-          ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-          : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white',
-      ].join(' ')}
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <span>{label}</span>
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">{count}</span>
-      </span>
-    </button>
-  );
-}
-
-interface ReactionRowProps {
-  reaction: Reaction;
-  onNavigate: () => void;
-}
-
-function ReactionRow({ reaction, onNavigate }: ReactionRowProps) {
-  const user = reaction.user;
-  const config = REACTION_CONFIGS[reaction.type];
-  const displayName = user
-    ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.username
-    : 'Usuario';
-  const initials = getUserInitials(user?.username ?? '');
-  const href = user?.username ? (`/${user.username}` as Route) : null;
-
-  const content = (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <div className="relative shrink-0">
-        <Avatar src={user?.avatar} initials={initials} className="h-10 w-10" />
-        <span
-          aria-label={config.label}
-          title={config.label}
-          className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-neutral-900 ring-1 ring-neutral-200 dark:ring-neutral-700 text-sm"
-        >
-          {config.emoji}
-        </span>
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
-          {displayName}
-        </p>
-        {user?.username && (
-          <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-            @{user.username}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-
-  if (href) {
-    return (
-      <li>
-        <Link
-          href={href}
-          onClick={onNavigate}
-          className="block hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
-        >
-          {content}
-        </Link>
-      </li>
-    );
-  }
-  return <li>{content}</li>;
 }

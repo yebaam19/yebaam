@@ -1,14 +1,10 @@
 import { useState, useRef } from 'react';
-import {
-  PaperAirplaneIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  XMarkIcon,
-} from '@/components/icons/heroicons-shim';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';
-import Image from 'next/image';
-import ChatEmojiPopover from './ChatEmojiPopover';
+import { AttachmentPreview } from './ChatInput/AttachmentPreview';
+import { AttachButtons } from './ChatInput/AttachButtons';
+import { MessageInput } from './ChatInput/MessageInput';
+import { SendButton } from './ChatInput/SendButton';
 
 interface ChatInputProps {
   onSendMessage: (content?: string, media?: MessageMedia) => Promise<boolean>;
@@ -189,101 +185,50 @@ export default function ChatInput({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
+    }
+  };
+
   return (
     <div className="p-4 border-t border-neutral-200 dark:border-neutral-800">
       {/* Preview de imagen seleccionada */}
       {previewUrl && (
-        <div className="mb-3">
-          <div className="relative w-40 h-40 rounded-lg overflow-hidden group inline-block">
-            <Image
-              src={previewUrl}
-              alt="Preview"
-              fill
-              sizes="160px"
-              className="object-cover"
-            />
-            <button
-              type="button"
-              onClick={handleRemoveFile}
-              className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 rounded-full transition-colors"
-            >
-              <XMarkIcon className="w-4 h-4 text-white" />
-            </button>
-            {isUploading && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <div className="text-white text-sm font-medium">{uploadProgress}%</div>
-              </div>
-            )}
-          </div>
-          {error && (
-            <p className="text-xs text-red-500 mt-2">{error}</p>
-          )}
-        </div>
+        <AttachmentPreview
+          previewUrl={previewUrl}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          error={error}
+          onRemove={handleRemoveFile}
+        />
       )}
 
       <div className="flex items-end gap-2">
-        <div className="flex gap-1">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={isUploading}
-          />
-          
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Adjuntar imagen"
-          >
-            <PhotoIcon className="h-5 w-5 text-primary-600" />
-          </button>
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setEmojiOpen((v) => !v)}
-              title="Insertar emoji"
-              className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            >
-              <FaceSmileIcon className="h-5 w-5 text-primary-600" />
-            </button>
-            <ChatEmojiPopover
-              open={emojiOpen}
-              onClose={() => setEmojiOpen(false)}
-              onSelect={handleEmojiSelect}
-            />
-          </div>
-        </div>
+        <AttachButtons
+          fileInputRef={fileInputRef}
+          isUploading={isUploading}
+          emojiOpen={emojiOpen}
+          onFileSelect={handleFileSelect}
+          onToggleEmoji={() => setEmojiOpen((v) => !v)}
+          onCloseEmoji={() => setEmojiOpen(false)}
+          onSelectEmoji={handleEmojiSelect}
+        />
 
-        <div className="flex-1 relative">
-          <input
-            ref={textInputRef}
-            type="text"
-            value={message}
-            onChange={handleInputChange}
-            onPaste={handlePaste}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage(e);
-              }
-            }}
-            placeholder="Aa"
-            disabled={isUploading}
-            className="w-full rounded-full bg-neutral-100 dark:bg-neutral-800 px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-        </div>
+        <MessageInput
+          textInputRef={textInputRef}
+          value={message}
+          disabled={isUploading}
+          onChange={handleInputChange}
+          onPaste={handlePaste}
+          onKeyDown={handleKeyDown}
+        />
 
-        <button
-          onClick={handleSendMessage}
+        <SendButton
           disabled={(!message.trim() && !selectedFile) || isUploading}
-          className="rounded-full p-2 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <PaperAirplaneIcon className="h-5 w-5 text-primary-600" />
-        </button>
+          onSend={handleSendMessage}
+        />
       </div>
     </div>
   );

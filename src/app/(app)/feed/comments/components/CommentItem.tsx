@@ -2,16 +2,14 @@
 
 import { useAuth } from '@/features/auth'
 import { useSocket } from '@/providers/socket-provider'
-import { ChatBubbleLeftIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import type { Comment, CommentUpdatedPayload } from '../interfaces/comment.interfaces'
 import { commentService } from '../services/comment.service'
 import { useCommentStore } from '../store/comment.store'
-import { CommentActions } from './CommentActions'
-import { CommentContent } from './CommentContent'
-import { CommentHeader } from './CommentHeader'
-import { CommentReactionButton } from '@/app/(app)/feed/reacions/components/CommentReactionButton'
+import { CommentBody } from './CommentItem/CommentBody'
+import { CommentReplyComposer } from './CommentItem/CommentReplyComposer'
+import { CommentRepliesSection } from './CommentItem/CommentRepliesSection'
 import { useReactionStore } from '@/app/(app)/feed/reacions/store/reaction.store'
 
 interface CommentItemProps {
@@ -26,7 +24,7 @@ interface CommentItemProps {
  * Combina: Header + Content + Actions + Respuestas
  * Solo los comentarios raíz pueden tener respuestas (no hay replies anidados)
  */
-export function CommentItem({ comment, isReply = false, onReplyCreated, className = '' }: CommentItemProps) {
+export function CommentItem({ comment, isReply = false, className = '' }: CommentItemProps) {
   const t = useTranslations('feed')
   const { user } = useAuth()
   const { postsSocket } = useSocket()
@@ -44,7 +42,7 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
 
   const isAuthor = user?.id === localComment.author.id
   // Solo los comentarios raíz (no replies) pueden recibir respuestas
-  const canReply = !isReply && user
+  const canReply = !isReply && !!user
   const hasReplies = localRepliesCount > 0
 
   // Sincronizar con prop cuando cambia (para comentarios del store)
@@ -151,149 +149,51 @@ export function CommentItem({ comment, isReply = false, onReplyCreated, classNam
   return (
     <div className={` ${isDeleting ? 'pointer-events-none opacity-50' : ''} ${className} `}>
       {/* Comentario principal */}
-      <div
-        className={`group relative ${
-          isReply ? 'px-3 py-3' : 'border-b border-neutral-100 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900'
-        } transition-colors ${!isReply && 'hover:bg-neutral-50 dark:hover:bg-neutral-800/30'} `}
-      >
-        <div className="flex items-start gap-3">
-          {/* Avatar y contenido */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <CommentHeader
-                  author={localComment.author}
-                  createdAt={localComment.createdAt}
-                  isEdited={localComment.isEdited}
-                  editedAt={localComment.editedAt}
-                  isReply={isReply}
-                />
-
-                {/* Contenido del comentario en burbuja */}
-                <div className="mt-1 ml-10">
-                  <div
-                    className={`inline-block rounded-2xl px-4 py-2 ${
-                      isReply ? 'bg-neutral-100 dark:bg-neutral-800' : 'bg-neutral-100 dark:bg-neutral-800'
-                    } `}
-                  >
-                    <CommentContent
-                      content={localComment.content}
-                      commentId={localComment.id}
-                      isEditing={isEditing}
-                      onEdit={handleEdit}
-                      onCancelEdit={() => setIsEditing(false)}
-                    />
-                  </div>
-
-                  {/* Acciones del comentario */}
-                  <div className="mt-1.5 ml-1 flex items-center gap-4">
-                    {/* Reacción */}
-                    {!isEditing && <CommentReactionButton commentId={localComment.id} />}
-
-                    {/* Botón Responder */}
-                    {canReply && user && !isEditing && (
-                      <button
-                        onClick={() => setShowReplyInput(!showReplyInput)}
-                        className={`flex items-center gap-1.5 text-xs font-semibold ${
-                          showReplyInput
-                            ? 'text-primary-600 dark:text-primary-400'
-                            : 'text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400'
-                        } transition-colors`}
-                      >
-                        <ChatBubbleLeftIcon className="h-3.5 w-3.5" />
-                        {t('comments.reply')}
-                      </button>
-                    )}
-
-                    {/* Mostrar/Ocultar respuestas */}
-                    {hasReplies && !isReply && (
-                      <button
-                        onClick={handleToggleReplies}
-                        className="flex items-center gap-1 text-xs font-semibold text-neutral-500 transition-colors hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400"
-                      >
-                        {isLoadingReplies ? (
-                          <span className="flex items-center gap-1">
-                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-neutral-300 border-t-primary-500" />
-                            {t('comments.loading')}
-                          </span>
-                        ) : (
-                          <>
-                            {showReplies ? (
-                              <ChevronUpIcon className="h-3.5 w-3.5" />
-                            ) : (
-                              <ChevronDownIcon className="h-3.5 w-3.5" />
-                            )}
-                            {showReplies
-                              ? t('comments.hideReplies', { count: localRepliesCount })
-                              : t('comments.showReplies', { count: localRepliesCount })}
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Acciones solo para el autor */}
-              {isAuthor && !isEditing && (
-                <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                  <CommentActions onEdit={() => setIsEditing(true)} onDelete={handleDelete} isDeleting={isDeleting} />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <CommentBody
+        comment={localComment}
+        isReply={isReply}
+        isAuthor={isAuthor}
+        isEditing={isEditing}
+        isDeleting={isDeleting}
+        canReply={canReply}
+        showReplyInput={showReplyInput}
+        hasReplies={hasReplies}
+        showReplies={showReplies}
+        isLoadingReplies={isLoadingReplies}
+        repliesCount={localRepliesCount}
+        onToggleReplyInput={() => setShowReplyInput(!showReplyInput)}
+        onToggleReplies={handleToggleReplies}
+        onEdit={handleEdit}
+        onCancelEdit={() => setIsEditing(false)}
+        onStartEdit={() => setIsEditing(true)}
+        onDelete={handleDelete}
+      />
 
       {/* Input para responder - Solo para comentarios raíz */}
       {showReplyInput && canReply && (
-        <div className="bg-white pr-4 pb-3 pl-14 dark:bg-neutral-900">
-          {typeof window !== 'undefined' && (
-            <CommentReplyInputLazy
-              postId={localComment.postId}
-              parentCommentId={localComment.id}
-              replyingTo={{
-                username: localComment.author.username,
-                fullName: `${localComment.author.firstName} ${localComment.author.lastName}`,
-              }}
-              onCancel={() => setShowReplyInput(false)}
-              onReplyCreated={() => {
-                setShowReplyInput(false)
-                handleReplyCreated()
-              }}
-            />
-          )}
-        </div>
+        <CommentReplyComposer
+          postId={localComment.postId}
+          parentCommentId={localComment.id}
+          replyingTo={{
+            username: localComment.author.username,
+            fullName: `${localComment.author.firstName} ${localComment.author.lastName}`,
+          }}
+          onCancel={() => setShowReplyInput(false)}
+          onReplyCreated={() => {
+            setShowReplyInput(false)
+            handleReplyCreated()
+          }}
+        />
       )}
 
       {/* Lista de respuestas - Solo un nivel, sin anidación */}
-      {showReplies && hasReplies && !isReply && !isLoadingReplies && (
-        <div className="relative mt-1 ml-10">
-          {/* Línea vertical continua */}
-          <div className="absolute top-0 bottom-2 left-4 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
-
-          {typeof window !== 'undefined' && replies.length > 0 && <CommentReplyListLazy replies={replies} />}
-        </div>
-      )}
-
-      {/* Loading de respuestas */}
-      {showReplies && isLoadingReplies && (
-        <div className="ml-12 flex items-center gap-2 py-4">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-primary-500" />
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">{t('comments.loadingReplies')}</span>
-        </div>
-      )}
+      <CommentRepliesSection
+        showReplies={showReplies}
+        hasReplies={hasReplies}
+        isReply={isReply}
+        isLoadingReplies={isLoadingReplies}
+        replies={replies}
+      />
     </div>
   )
-}
-
-// Lazy imports para evitar importación circular
-const CommentReplyInputLazy = (props: any) => {
-  const { CommentReplyInput } = require('./CommentReplyInput')
-  return <CommentReplyInput {...props} />
-}
-
-const CommentReplyListLazy = (props: any) => {
-  const { CommentReplyList } = require('./CommentReplyList')
-  return <CommentReplyList {...props} />
 }

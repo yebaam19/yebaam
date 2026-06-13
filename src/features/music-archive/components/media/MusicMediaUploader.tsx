@@ -9,8 +9,10 @@ import {
 } from '../../actions/music-media.actions';
 import type { MusicMediaSource } from '../../types/music-media.types';
 import { AlbumTagPicker, type AlbumRef } from './AlbumTagPicker';
-
-type Mode = 'photo' | 'video_file' | 'video_url';
+import { ModeTabs, type Mode } from './MusicMediaUploader/ModeTabs';
+import { SourceInput } from './MusicMediaUploader/SourceInput';
+import { ClubSelector } from './MusicMediaUploader/ClubSelector';
+import { UploadStatus } from './MusicMediaUploader/UploadStatus';
 
 interface ArtistRef {
   id: string;
@@ -66,6 +68,24 @@ export function MusicMediaUploader({
       canceled = true;
     };
   }, []);
+
+  function handleModeSelect(key: Mode) {
+    setMode(key);
+    setFile(null);
+    setEmbedUrl('');
+    setError(null);
+    setProgress(null);
+    setTranscodeState(null);
+  }
+
+  function toggleClub(id: string) {
+    setSelectedClubIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   async function handleSubmit() {
     setError(null);
@@ -128,9 +148,6 @@ export function MusicMediaUploader({
     });
   }
 
-  const acceptByMode =
-    mode === 'photo' ? 'image/*' : mode === 'video_file' ? 'video/*' : undefined;
-
   return (
     <div
       role="dialog"
@@ -155,66 +172,15 @@ export function MusicMediaUploader({
           </button>
         </header>
 
-        <div className="mb-3 inline-flex w-full overflow-hidden rounded-md border border-zinc-200 text-xs font-medium dark:border-zinc-700">
-          {(
-            [
-              ['photo', 'Foto'],
-              ['video_file', 'Video archivo'],
-              ['video_url', 'Video URL'],
-            ] as Array<[Mode, string]>
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => {
-                setMode(key);
-                setFile(null);
-                setEmbedUrl('');
-                setError(null);
-                setProgress(null);
-                setTranscodeState(null);
-              }}
-              className={
-                'flex-1 px-3 py-1.5 transition ' +
-                (mode === key
-                  ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100'
-                  : 'bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800')
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <ModeTabs mode={mode} onSelect={handleModeSelect} />
 
         <div className="space-y-3">
-          {mode === 'video_url' ? (
-            <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-                URL de YouTube o Vimeo
-              </label>
-              <input
-                value={embedUrl}
-                onChange={(e) => setEmbedUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=…"
-                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-              />
-            </div>
-          ) : (
-            <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
-                {mode === 'photo' ? 'Archivo de imagen' : 'Archivo de video (MP4)'}
-              </label>
-              <input
-                type="file"
-                accept={acceptByMode}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  setFile(f ?? null);
-                }}
-                className="block w-full text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-amber-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-amber-900 hover:file:bg-amber-200 dark:text-zinc-300 dark:file:bg-amber-900/30 dark:file:text-amber-200"
-              />
-            </div>
-          )}
+          <SourceInput
+            mode={mode}
+            embedUrl={embedUrl}
+            onEmbedUrlChange={setEmbedUrl}
+            onFileChange={setFile}
+          />
 
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
@@ -233,53 +199,13 @@ export function MusicMediaUploader({
 
           <AlbumTagPicker value={albums} onChange={setAlbums} />
 
-          {clubs.length > 0 && (
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Clubes (solo donde eres miembro)
-              </p>
-              <ul className="flex flex-wrap gap-1.5">
-                {clubs.map((c) => {
-                  const selected = selectedClubIds.has(c.id);
-                  return (
-                    <li key={c.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedClubIds((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(c.id)) next.delete(c.id);
-                            else next.add(c.id);
-                            return next;
-                          });
-                        }}
-                        className={
-                          'rounded-full border px-2.5 py-1 text-xs ' +
-                          (selected
-                            ? 'border-rose-400 bg-rose-100 text-rose-900 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200'
-                            : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300')
-                        }
-                      >
-                        {c.name}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+          <ClubSelector
+            clubs={clubs}
+            selectedClubIds={selectedClubIds}
+            onToggle={toggleClub}
+          />
 
-          {error && (
-            <p className="rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-200">
-              {error}
-            </p>
-          )}
-          {progress !== null && progress < 100 && (
-            <p className="text-xs text-zinc-500">Subiendo… {progress}%</p>
-          )}
-          {transcodeState && (
-            <p className="text-xs text-zinc-500">Transcodificando: {transcodeState}</p>
-          )}
+          <UploadStatus error={error} progress={progress} transcodeState={transcodeState} />
 
           <div className="flex justify-end gap-2 pt-1">
             <button
@@ -303,4 +229,3 @@ export function MusicMediaUploader({
     </div>
   );
 }
-
