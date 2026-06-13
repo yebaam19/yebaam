@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
-import { createCommunityPost } from '@/features/communities/actions/communities.actions';
+import { createCommunityPost } from '@/features/communities/actions/create.actions';
 import { invalidate } from '@/lib/hooks/cacheStore';
 import { PhotoIcon, VideoCameraIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 

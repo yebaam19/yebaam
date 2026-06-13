@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { deleteCommunity } from '@/features/communities/actions/communities.actions';
+import { deleteCommunity } from '@/features/communities/actions/update.actions';
 import {
   EllipsisHorizontalIcon,
   TrashIcon,

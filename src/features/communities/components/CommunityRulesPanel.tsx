@@ -13,7 +13,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@/components/icons/heroicons-shim';
-import { updateCommunity } from '@/features/communities/actions/communities.actions';
+import { updateCommunity } from '@/features/communities/actions/update.actions';
 import type {
   Community,
   CommunityRule,

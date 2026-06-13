@@ -50,6 +50,25 @@ export const createClient = (request: NextRequest) => {
 };
 
 /**
+ * Build a redirect that carries forward any refreshed `sb-*` cookies Supabase
+ * SSR wrote onto the session response during `getUser()`. A bare
+ * `NextResponse.redirect()` returns a fresh response with no Set-Cookie
+ * headers, so a token rotation that happened on this request would be dropped
+ * and never reach the browser — the classic Supabase-middleware footgun. Use
+ * this for every redirect in the proxy instead of `NextResponse.redirect`.
+ */
+export const redirectWithCookies = (
+  url: URL,
+  client: ReturnType<typeof createClient>,
+): NextResponse => {
+  const response = NextResponse.redirect(url);
+  for (const cookie of client.supabaseResponse.cookies.getAll()) {
+    response.cookies.set(cookie);
+  }
+  return response;
+};
+
+/**
  * Auth error codes that mean the stored refresh token is no longer usable
  * (user signed out elsewhere, project rotated keys, cookies survived a
  * Supabase project swap in dev, etc.). When we see one of these we should

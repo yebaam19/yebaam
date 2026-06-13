@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
-import { createCommunity } from '@/features/communities/actions/communities.actions';
+import { createCommunity } from '@/features/communities/actions/create.actions';
 import {
   CommunityCategory,
   CommunityPrivacy,

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import {
   cancelJoinRequest,
   joinCommunity,
-} from '@/features/communities/actions/communities.actions';
+} from '@/features/communities/actions/members.actions';
 import { useLeaveCommunity } from '@/features/communities/hooks/useCommunities';
 import type { ViewerJoinState } from '@/features/communities/server/communities.server';
 import type { Community } from '@/features/communities/types/community.types';

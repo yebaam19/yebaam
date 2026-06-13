@@ -3,6 +3,7 @@ import {
   createClient,
   isAnonymousSessionError,
   isInvalidRefreshTokenError,
+  redirectWithCookies,
 } from '@/utils/supabase/middleware';
 import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config';
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
@@ -98,6 +99,18 @@ export async function proxy(request: NextRequest) {
 
   const hasSession = Boolean(user);
 
+  // `/` is a pure redirect target: signed-in users go to their feed, everyone
+  // else to login. Handle it here, before any page renders, so we never
+  // server-render the authenticated app-shell layout (Header, sidebars, music
+  // players, i18n catalog) just to throw it away on redirect. That discarded
+  // shell render — not the auth lookup — was the dominant Active CPU cost on
+  // `/` (Vercel Observability showed `/` burning ~6x the CPU/request of
+  // `/login`, which sits under the much lighter (auth) layout). Doing it here
+  // also skips the two admin-role queries below for this path.
+  if (pathname === '/') {
+    return redirectWithCookies(new URL(hasSession ? '/feed' : '/login', request.url), client);
+  }
+
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
     route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`),
   );
@@ -105,7 +118,7 @@ export async function proxy(request: NextRequest) {
   if (!hasSession && !isPublicRoute) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+    return redirectWithCookies(loginUrl, client);
   }
 
   const isAuthAllowedPublic = AUTH_ALLOWED_PUBLIC_ROUTES.some((route) =>
@@ -123,21 +136,21 @@ export async function proxy(request: NextRequest) {
     const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
 
     if (isPlatformAdmin && !isAdminRoute && !isPublicRoute && !isAuthAllowedPublic) {
-      return NextResponse.redirect(new URL('/admin/foros', request.url));
+      return redirectWithCookies(new URL('/admin/foros', request.url), client);
     }
 
     if (isPlatformAdmin && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
-      return NextResponse.redirect(new URL('/admin/foros', request.url));
+      return redirectWithCookies(new URL('/admin/foros', request.url), client);
     }
 
     if (!hasForumAccess && isAdminRoute) {
-      return NextResponse.redirect(new URL('/feed', request.url));
+      return redirectWithCookies(new URL('/feed', request.url), client);
     }
   }
 
   if (hasSession && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
     const safeRedirect = sanitizeRedirectPath(request.nextUrl.searchParams.get('redirect'));
-    return NextResponse.redirect(new URL(safeRedirect, request.url));
+    return redirectWithCookies(new URL(safeRedirect, request.url), client);
   }
 
   return client.supabaseResponse;

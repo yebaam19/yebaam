@@ -8,19 +8,23 @@ import {
   CommunityPostsResponse,
   CommunityMembersResponse,
 } from '../types/community.types';
+import { createCommunity as createCommunityAction } from '../actions/create.actions';
 import {
-  createCommunity as createCommunityAction,
   updateCommunity as updateCommunityAction,
   deleteCommunity as deleteCommunityAction,
+} from '../actions/update.actions';
+import {
   joinCommunity as joinCommunityAction,
   leaveCommunity as leaveCommunityAction,
+} from '../actions/members.actions';
+import {
   getCommunityBySlugAction,
   getCommunityPostsAction,
   getCommunityMembersAction,
   getMyCommunitiesAction,
   getPopularCommunitiesAction,
   getSuggestedCommunitiesAction,
-} from '../actions/communities.actions';
+} from '../actions/queries.actions';
 
 /**
  * Communities service — thin client wrapper around Server Actions.

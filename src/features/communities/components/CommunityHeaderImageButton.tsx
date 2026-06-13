@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadService } from '@/lib/service/upload.service';
-import { updateCommunity } from '@/features/communities/actions/communities.actions';
+import { updateCommunity } from '@/features/communities/actions/update.actions';
 import { CameraIcon } from '@/components/icons/heroicons-shim';
 
 interface CommunityHeaderImageButtonProps {
