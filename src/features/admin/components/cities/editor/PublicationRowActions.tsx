@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import {
   deleteCityPublication,
   togglePublicationPinned,
-} from '@/features/admin/actions/cities.actions'
+} from '@/features/admin/actions/city-media.actions'
 
 interface Props {
   publicationId: string

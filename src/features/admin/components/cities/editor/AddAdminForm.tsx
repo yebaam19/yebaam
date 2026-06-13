@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import {
   grantCityAdmin,
   lookupUserByUsername,
-} from '@/features/admin/actions/cities.actions'
+} from '@/features/admin/actions/city-admins.actions'
 
 interface Props {
   cityId: string

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
-import { deleteCityPhoto } from '@/features/admin/actions/cities.actions'
+import { deleteCityPhoto } from '@/features/admin/actions/city-media.actions'
 
 export function DeletePhotoButton({ photoId }: { photoId: string }) {
   const t = useTranslations('admin.ciudades')

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import {
   setCityComplaintStatus,
   deleteCityComplaint,
-} from '@/features/admin/actions/cities.actions'
+} from '@/features/admin/actions/city-moderation.actions'
 
 interface Props {
   complaintId: string

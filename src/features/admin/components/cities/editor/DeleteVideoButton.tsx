@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
-import { deleteCityVideo } from '@/features/admin/actions/cities.actions'
+import { deleteCityVideo } from '@/features/admin/actions/city-media.actions'
 
 export function DeleteVideoButton({ videoId }: { videoId: string }) {
   const t = useTranslations('admin.ciudades')

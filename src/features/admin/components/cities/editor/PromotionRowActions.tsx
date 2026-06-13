@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import {
   setCityPromotionStatus,
   deleteCityPromotion,
-} from '@/features/admin/actions/cities.actions'
+} from '@/features/admin/actions/city-promotions.actions'
 
 interface Props {
   promotionId: string

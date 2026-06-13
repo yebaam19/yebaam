@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
-import { createCityPublication } from '@/features/admin/actions/cities.actions'
+import { createCityPublication } from '@/features/admin/actions/city-media.actions'
 
 export function AddPublicationForm({ cityId }: { cityId: string }) {
   const t = useTranslations('admin.ciudades')

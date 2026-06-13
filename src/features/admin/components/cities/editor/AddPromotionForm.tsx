@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
-import { createCityPromotion } from '@/features/admin/actions/cities.actions'
+import { createCityPromotion } from '@/features/admin/actions/city-promotions.actions'
 
 type Duration = '1d' | '2d' | '3d' | '1w' | '2w' | '1m'
 const DURATIONS: Duration[] = ['1d', '2d', '3d', '1w', '2w', '1m']

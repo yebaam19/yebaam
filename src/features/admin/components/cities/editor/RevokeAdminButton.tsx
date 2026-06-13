@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import { revokeCityAdmin } from '@/features/admin/actions/cities.actions'
+import { revokeCityAdmin } from '@/features/admin/actions/city-admins.actions'
 
 interface Props {
   cityId: string

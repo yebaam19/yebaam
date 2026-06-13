@@ -7,7 +7,7 @@ import { uploadService } from '@/lib/service/upload.service'
 import {
   upsertDiscoveryThumbnail,
   deleteDiscoveryThumbnail,
-} from '@/features/admin/actions/cities.actions'
+} from '@/features/admin/actions/discovery-thumbnails.actions'
 
 interface Props {
   category: string

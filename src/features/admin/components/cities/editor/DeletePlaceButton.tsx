@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import { deleteCityPlace } from '@/features/admin/actions/cities.actions'
+import { deleteCityPlace } from '@/features/admin/actions/city-places.actions'
 
 export function DeletePlaceButton({ placeId }: { placeId: string }) {
   const t = useTranslations('admin.ciudades')

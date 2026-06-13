@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition, type ChangeEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { uploadService } from '@/lib/service/upload.service'
-import { addCityVideo } from '@/features/admin/actions/cities.actions'
+import { addCityVideo } from '@/features/admin/actions/city-media.actions'
 
 export function AddVideoForm({ cityId }: { cityId: string }) {
   const t = useTranslations('admin.ciudades')

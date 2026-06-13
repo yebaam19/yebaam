@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition, type ChangeEvent, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { uploadService } from '@/lib/service/upload.service'
-import { upsertCityPlace } from '@/features/admin/actions/cities.actions'
+import { upsertCityPlace } from '@/features/admin/actions/city-places.actions'
 
 interface Props {
   cityId: string

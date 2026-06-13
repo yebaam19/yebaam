@@ -6,7 +6,7 @@ import {
   setCityNewsStatus,
   setCityClassifiedStatus,
   setCityContactMessageStatus,
-} from '@/features/admin/actions/cities.actions'
+} from '@/features/admin/actions/city-moderation.actions'
 
 type Kind = 'news' | 'classified' | 'contact'
 
