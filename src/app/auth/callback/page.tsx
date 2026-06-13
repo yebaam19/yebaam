@@ -1,5 +1,6 @@
 'use client'
 
+import type { Route } from 'next'
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/features/auth/store/auth.store'
@@ -22,7 +23,7 @@ export default function AuthCallbackPage() {
       const { isAuthenticated } = useAuthStore.getState()
       const redirect = sanitizeRedirectPath(searchParams.get('redirect'))
       const authed = isAuthenticated || !!user
-      router.replace(authed ? redirect : '/login')
+      router.replace((authed ? redirect : '/login') as Route)
     }
     run()
     return () => {

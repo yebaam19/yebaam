@@ -1,5 +1,6 @@
 'use client'
 
+import type { Route } from 'next'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -69,7 +70,7 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
       })
 
       toast.success(t('login.welcomeBack'))
-      router.push(redirectTo)
+      router.push(redirectTo as Route)
     } catch (err: unknown) {
       // Half-registered account: the email was never confirmed. Instead of a
       // dead-end error, route the user back into the verification flow where
