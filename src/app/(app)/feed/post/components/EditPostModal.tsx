@@ -260,9 +260,9 @@ export default function EditPostModal() {
       setPreviewUrls([]);
       closeEditModal();
    
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al actualizar publicación:', error);
-      toast.error(error.message || t('editModal.updateError'));
+      toast.error(error instanceof Error && error.message ? error.message : t('editModal.updateError'));
     }
   };
 

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
@@ -16,7 +16,10 @@ import { ConversationType, type Conversation } from '@/features/chat/types';
 import { useIsXl } from '@/lib/hooks/useIsXl';
 import { uploadService } from '@/lib/service/upload.service';
 import { supabase } from '@/utils/supabase/client';
-import UserRow, { displayNameFor, type SearchResult } from './NewMessageDialog/UserRow';
+import { type SearchResult } from './NewMessageDialog/UserRow';
+import SearchField from './NewMessageDialog/SearchField';
+import ResultsList from './NewMessageDialog/ResultsList';
+import DirectSendBar from './NewMessageDialog/DirectSendBar';
 import GroupComposer from './NewMessageDialog/GroupComposer';
 
 interface NewMessageDialogProps {
@@ -215,6 +218,7 @@ export default function NewMessageDialog({ open, onClose, openInBubble = false, 
   };
 
   const selectedList = useMemo(() => Array.from(selected.values()), [selected]);
+  const selectedIds = useMemo(() => new Set(selected.keys()), [selected]);
 
   const createGroup = async () => {
     if (isSubmitting || isUploading || selectedList.length < 2) return;
@@ -260,62 +264,24 @@ export default function NewMessageDialog({ open, onClose, openInBubble = false, 
                   </button>
                 </div>
 
-                <div className="border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-                  <div className="relative">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                    <input
-                      autoFocus
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder={t('searchPlaceholder')}
-                      className="w-full rounded-full bg-neutral-100 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:bg-neutral-800"
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">{t('composeHint')}</p>
-                </div>
+                <SearchField value={query} onChange={setQuery} />
 
-                <div className="max-h-[50vh] overflow-y-auto">
-                  {filteredFriends.length > 0 && (
-                    <div>
-                      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{t('friends')}</div>
-                      {filteredFriends.map((user) => (
-                        <UserRow key={user.id} user={user} selectable selected={selected.has(user.id)} disabled={isSubmitting} onClick={() => toggleFriend(user)} />
-                      ))}
-                    </div>
-                  )}
-
-                  {showRemote && (
-                    <div>
-                      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{t('otherPeople')}</div>
-                      {remoteResults.map((user) => (
-                        <UserRow key={user.id} user={user} selectable={false} pending={pendingId === user.id} disabled={!!pendingId || isSubmitting} onClick={() => openDirect(user)} />
-                      ))}
-                    </div>
-                  )}
-
-                  {isSearching && debouncedQuery.length >= 2 && (
-                    <div className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">{t('searching')}</div>
-                  )}
-                  {nothingFound && (
-                    <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t('noResults', { query: debouncedQuery })}</div>
-                  )}
-                  {!debouncedQuery && filteredFriends.length === 0 && (
-                    <div className="px-4 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t('noFriendsYet')}</div>
-                  )}
-                </div>
+                <ResultsList
+                  filteredFriends={filteredFriends}
+                  remoteResults={remoteResults}
+                  selectedIds={selectedIds}
+                  debouncedQuery={debouncedQuery}
+                  isSearching={isSearching}
+                  showRemote={showRemote}
+                  nothingFound={nothingFound}
+                  isSubmitting={isSubmitting}
+                  pendingId={pendingId}
+                  onToggleFriend={toggleFriend}
+                  onOpenDirect={openDirect}
+                />
 
                 {onlySelected && !groupIntent && (
-                  <div className="border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
-                    <button
-                      type="button"
-                      onClick={() => openDirect(onlySelected)}
-                      disabled={!!pendingId}
-                      className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
-                    >
-                      {pendingId ? t('opening') : t('sendMessageTo', { name: displayNameFor(onlySelected, t('userFallback')) })}
-                    </button>
-                  </div>
+                  <DirectSendBar user={onlySelected} pending={!!pendingId} onSend={() => openDirect(onlySelected)} />
                 )}
 
                 {showGroupComposer && (

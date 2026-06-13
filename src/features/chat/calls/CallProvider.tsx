@@ -26,8 +26,9 @@ import {
   type CallType,
   type DbCallSessionRow,
 } from './types';
-import CallIncomingModal from './components/CallIncomingModal';
-import CallActiveOverlay from './components/CallActiveOverlay';
+import CallOverlays from './CallProvider/CallOverlays';
+import { createCallEngine } from './CallProvider/createCallEngine';
+import { createLifecycleSubscription } from './CallProvider/createLifecycleSubscription';
 
 const RING_TIMEOUT_MS = 30_000;
 
@@ -116,13 +117,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
   const subscribeLifecycle = (callId: string) => {
     if (lifecycleRef.current) unsubscribe(lifecycleRef.current);
-    lifecycleRef.current = subscribeToTable<DbCallSessionRow>({
-      channel: `calls:lifecycle:${callId}`,
-      table: 'call_sessions',
-      filter: `id=eq.${callId}`,
-      events: ['UPDATE'],
-      onChange: (p) => onLifecycle(p.new as DbCallSessionRow),
-    });
+    lifecycleRef.current = createLifecycleSubscription(callId, onLifecycle);
   };
 
   const onLifecycle = (row: DbCallSessionRow) => {
@@ -144,24 +139,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const startEngine = async (session: CallSession, role: 'caller' | 'callee') => {
     try {
       const iceServers = await callService.getIceServers();
-      const engine = new CallEngine({
-        callId: session.id,
-        selfId: myId as string,
-        role,
-        callType: session.callType,
+      const engine = createCallEngine(session, role, {
+        myId: myId as string,
         iceServers,
         onLocalStream: setLocalStream,
         onRemoteStream: setRemoteStream,
-        onStateChange: (state) => {
-          if (state === 'connected') setPhaseBoth('active');
-          else if (state === 'failed') void end();
-          else if (state === 'closed') void peerEnded('ended');
-        },
-        onError: (kind) => {
-          if (kind === 'media') toast.error(t('mediaDenied'));
-          else if (kind === 'unsupported') toast.error(t('unsupported'));
-          if (kind !== 'connection') void end();
-        },
+        setPhase: setPhaseBoth,
+        end,
+        peerEnded,
+        onMediaDenied: () => toast.error(t('mediaDenied')),
+        onUnsupported: () => toast.error(t('unsupported')),
       });
       engineRef.current = engine;
       await engine.start();
@@ -287,28 +274,20 @@ export function CallProvider({ children }: { children: ReactNode }) {
   return (
     <CallContext.Provider value={value}>
       {children}
-      {phase === 'incoming' && call && peer && (
-        <CallIncomingModal
-          peer={peer}
-          callType={call.callType}
-          onAccept={accept}
-          onDecline={decline}
-        />
-      )}
-      {(phase === 'outgoing' || phase === 'connecting' || phase === 'active') && call && peer && (
-        <CallActiveOverlay
-          peer={peer}
-          phase={phase}
-          callType={call.callType}
-          localStream={localStream}
-          remoteStream={remoteStream}
-          micOn={micOn}
-          camOn={camOn}
-          onToggleMic={toggleMic}
-          onToggleCam={toggleCam}
-          onEnd={end}
-        />
-      )}
+      <CallOverlays
+        phase={phase}
+        call={call}
+        peer={peer}
+        localStream={localStream}
+        remoteStream={remoteStream}
+        micOn={micOn}
+        camOn={camOn}
+        onAccept={accept}
+        onDecline={decline}
+        onToggleMic={toggleMic}
+        onToggleCam={toggleCam}
+        onEnd={end}
+      />
     </CallContext.Provider>
   );
 }

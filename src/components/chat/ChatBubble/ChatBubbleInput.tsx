@@ -1,24 +1,16 @@
 'use client';
 
-import {
-  FaceSmileIcon,
-  PaperAirplaneIcon,
-  CameraIcon,
-  PhotoIcon,
-  PlusIcon,
-  HandThumbUpIcon,
-  XMarkIcon,
-} from '@/components/icons/heroicons-shim';
-import Image from 'next/image';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import ChatEmojiPopover from '../ChatEmojiPopover';
 import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
 import type { MessageMedia } from '@/features/chat/types';
 import CameraCaptureModal from '../CameraCaptureModal';
-import VoiceRecorderButton from '../VoiceRecorderButton';
+import { AttachmentPreview } from './ChatBubbleInput/AttachmentPreview';
+import { AttachButtons } from './ChatBubbleInput/AttachButtons';
+import { MessageTextArea } from './ChatBubbleInput/MessageTextArea';
+import { InputActions } from './ChatBubbleInput/InputActions';
 
 interface ChatBubbleInputProps {
   onSendMessage: (content?: string, media?: MessageMedia) => Promise<boolean>;
@@ -206,140 +198,66 @@ export function ChatBubbleInput({
     setIsSending(false);
   };
 
+  const handleSendVoice = useCallback(
+    async (media: MessageMedia) => {
+      await onSendMessage(undefined, media);
+    },
+    [onSendMessage],
+  );
+
   return (
     <form
       onSubmit={handleSubmit}
       className="border-t border-neutral-200 bg-[#f0f2f5] px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900"
     >
       {previewUrl && (
-        <div className="mb-2 px-1">
-          <div className="relative h-24 w-24 overflow-hidden rounded-lg">
-            <Image
-              src={previewUrl}
-              alt={t('previewAlt')}
-              fill
-              sizes="96px"
-              className="object-cover"
-              unoptimized
-            />
-            <button
-              type="button"
-              onClick={handleRemoveFile}
-              disabled={isUploading || isSending}
-              className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80 disabled:opacity-50"
-              aria-label={t('removeImage')}
-            >
-              <XMarkIcon className="h-3.5 w-3.5" />
-            </button>
-            {isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <span className="text-xs font-medium text-white">{uploadProgress}%</span>
-              </div>
-            )}
-          </div>
-        </div>
+        <AttachmentPreview
+          previewUrl={previewUrl}
+          isUploading={isUploading}
+          isSending={isSending}
+          uploadProgress={uploadProgress}
+          onRemove={handleRemoveFile}
+          labels={{ previewAlt: t('previewAlt'), removeImage: t('removeImage') }}
+        />
       )}
 
       <div className="flex items-end gap-1.5">
-        <div className="flex shrink-0 items-center gap-0.5 pb-1">
-          <button
-            type="button"
-            onClick={stubSoon}
-            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10"
-            title={t('more')}
-          >
-            <PlusIcon className="h-7 w-7" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => setCameraOpen(true)}
-            disabled={isUploading || isSending}
-            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-white/10"
-            title={t('cameraPhoto')}
-          >
-            <CameraIcon className="h-6 w-6" aria-hidden />
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={isUploading || isSending}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading || isSending}
-            className="rounded-full p-1.5 text-[#0084ff] transition-colors hover:bg-black/5 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-white/10"
-            title={t('attachImage')}
-          >
-            <PhotoIcon className="h-6 w-6" aria-hidden />
-          </button>
-        </div>
+        <AttachButtons
+          fileInputRef={fileInputRef}
+          isUploading={isUploading}
+          isSending={isSending}
+          onMore={stubSoon}
+          onOpenCamera={() => setCameraOpen(true)}
+          onFileSelect={handleFileSelect}
+          labels={{
+            more: t('more'),
+            cameraPhoto: t('cameraPhoto'),
+            attachImage: t('attachImage'),
+          }}
+        />
 
-        <div className="min-w-0 flex-1 pb-px">
-          <textarea
-            ref={textareaRef}
-            value={message}
-            rows={1}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={t('placeholder')}
-            disabled={isSending || isUploading}
-            aria-label={t('ariaLabel')}
-            className="max-h-[120px] w-full resize-none rounded-[20px] border-0 bg-white px-3 py-2 text-sm leading-[1.36] wrap-break-word text-neutral-900 shadow-sm outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-blue-500/35 disabled:opacity-60 dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500"
-          />
-        </div>
+        <MessageTextArea
+          textareaRef={textareaRef}
+          value={message}
+          disabled={isSending || isUploading}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          labels={{ placeholder: t('placeholder'), ariaLabel: t('ariaLabel') }}
+        />
 
-        <div className="flex shrink-0 items-center gap-0 pb-2">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setEmojiOpen((v) => !v)}
-              className="rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              title={t('emoji')}
-            >
-              <FaceSmileIcon className="h-6 w-6 text-[#0084ff] dark:text-blue-400" />
-            </button>
-            <ChatEmojiPopover
-              open={emojiOpen}
-              onClose={() => setEmojiOpen(false)}
-              onSelect={handleEmojiSelect}
-              align="right"
-            />
-          </div>
-
-          {trimmedEmpty && !selectedFile ? (
-            <>
-              <VoiceRecorderButton
-                onSend={async (media) => {
-                  await onSendMessage(undefined, media);
-                }}
-                disabled={isSending || isUploading}
-              />
-              <button
-                type="button"
-                onClick={() => void handleThumb()}
-                disabled={isSending}
-                className="rounded-full p-2 transition-colors hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
-                title={t('sendLike')}
-              >
-                <HandThumbUpIcon className="h-7 w-7 text-[#0084ff] dark:text-blue-400" aria-hidden />
-              </button>
-            </>
-          ) : (
-            <button
-              type="submit"
-              disabled={isSending || isUploading}
-              className="rounded-full bg-[#0084ff] p-2 text-white shadow-sm transition-colors hover:bg-[#1877f2] disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
-              title={t('send')}
-            >
-              <PaperAirplaneIcon className="h-5 w-5 rtl:rotate-180" aria-hidden />
-            </button>
-          )}
-        </div>
+        <InputActions
+          emojiOpen={emojiOpen}
+          isSending={isSending}
+          isUploading={isUploading}
+          showSendAlternatives={trimmedEmpty && !selectedFile}
+          onToggleEmoji={() => setEmojiOpen((v) => !v)}
+          onCloseEmoji={() => setEmojiOpen(false)}
+          onSelectEmoji={handleEmojiSelect}
+          onSendVoice={handleSendVoice}
+          onSendLike={() => void handleThumb()}
+          labels={{ emoji: t('emoji'), sendLike: t('sendLike'), send: t('send') }}
+        />
       </div>
 
       <CameraCaptureModal

@@ -1,7 +1,6 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { PencilIcon, TrashIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { Fragment, useEffect, useState } from 'react'
@@ -9,10 +8,13 @@ import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { useDeleteBlog, useUpdateBlog } from '../hooks/useBlogs'
 import { uploadService } from '@/lib/service/upload.service'
-import { ArtistAutocomplete, type ArtistSelection } from '@/features/music-archive/components/upload/ArtistAutocomplete'
+import { type ArtistSelection } from '@/features/music-archive/components/upload/ArtistAutocomplete'
 import type { Blog } from '../types/blog.types'
 import { BlogFormFields, type BlogFormData } from './BlogFormFields'
-import { BlogImageUploader } from './BlogImageUploader'
+import { EditBlogModalHeader } from './EditBlogModal/EditBlogModalHeader'
+import { MiMusicaArtistField } from './EditBlogModal/MiMusicaArtistField'
+import { BlogImagesSection } from './EditBlogModal/BlogImagesSection'
+import { BlogDangerZone } from './EditBlogModal/BlogDangerZone'
 
 interface EditBlogModalProps {
   isOpen: boolean
@@ -221,27 +223,12 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
             >
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all dark:bg-neutral-800">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
-                  <div>
-                    <Dialog.Title
-                      as="h3"
-                      className="flex items-center gap-2 text-xl font-semibold text-neutral-900 dark:text-white"
-                    >
-                      <PencilIcon className="h-5 w-5" />
-                      {t('title')}
-                    </Dialog.Title>
-                    <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('subtitle')}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleClose}
-                    disabled={updateBlogMutation.isPending || uploadingImages}
-                    className="rounded-full p-2 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:hover:bg-neutral-700"
-                  >
-                    <XMarkIcon className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
-                  </button>
-                </div>
+                <EditBlogModalHeader
+                  title={t('title')}
+                  subtitle={t('subtitle')}
+                  onClose={handleClose}
+                  disabled={updateBlogMutation.isPending || uploadingImages}
+                />
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="max-h-[calc(100vh-200px)] space-y-4 overflow-y-auto px-6 py-6">
@@ -253,49 +240,24 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                   />
 
                   {/* Mi Música — link a catalog artist (PDF #10) */}
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      Mi Música — artista del archivo musical
-                    </label>
-                    <ArtistAutocomplete
-                      value={artist}
-                      onChange={setArtist}
-                      placeholder="Busca tu nombre de artista…"
-                    />
-                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                      Enlaza tu perfil de artista para mostrar tus álbumes y canciones (reproducibles) en la pestaña «Mi
-                      Música». Déjalo vacío para desvincular.
-                    </p>
-                  </div>
+                  <MiMusicaArtistField value={artist} onChange={setArtist} />
 
                   {/* Imágenes */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <BlogImageUploader
-                      label={t('avatarLabel')}
-                      preview={avatarPreview}
-                      file={avatarFile}
-                      onFileChange={handleAvatarChange}
-                      onRemove={handleAvatarRemove}
-                      disabled={updateBlogMutation.isPending || uploadingImages}
-                      type="avatar"
-                    />
-
-                    <BlogImageUploader
-                      label={t('coverLabel')}
-                      preview={coverPreview}
-                      file={coverFile}
-                      onFileChange={handleCoverChange}
-                      onRemove={handleCoverRemove}
-                      disabled={updateBlogMutation.isPending || uploadingImages}
-                      type="cover"
-                    />
-                  </div>
-
-                  {uploadingImages && (
-                    <div className="text-center text-sm text-primary-600 dark:text-primary-400">
-                      ⏳ {t('uploadingHint')}
-                    </div>
-                  )}
+                  <BlogImagesSection
+                    avatarLabel={t('avatarLabel')}
+                    coverLabel={t('coverLabel')}
+                    avatarPreview={avatarPreview}
+                    coverPreview={coverPreview}
+                    avatarFile={avatarFile}
+                    coverFile={coverFile}
+                    onAvatarChange={handleAvatarChange}
+                    onCoverChange={handleCoverChange}
+                    onAvatarRemove={handleAvatarRemove}
+                    onCoverRemove={handleCoverRemove}
+                    disabled={updateBlogMutation.isPending || uploadingImages}
+                    uploadingImages={uploadingImages}
+                    uploadingHint={t('uploadingHint')}
+                  />
 
                   {/* Actions */}
                   <div className="flex gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-700">
@@ -323,64 +285,20 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                   </div>
 
                   {/* Danger zone */}
-                  <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/50 dark:bg-rose-950/30">
-                    <h4 className="flex items-center gap-2 text-sm font-semibold text-rose-700 dark:text-rose-300">
-                      <TrashIcon className="h-4 w-4" />
-                      {t('dangerZoneTitle')}
-                    </h4>
-                    <p className="mt-1 text-xs text-rose-600/80 dark:text-rose-300/80">
-                      {t('dangerZoneDescription')}
-                    </p>
-                    {!showDeleteConfirm ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowDeleteConfirm(true)}
-                        disabled={updateBlogMutation.isPending || uploadingImages || deleteBlogMutation.isPending}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-50 dark:border-rose-800 dark:bg-neutral-900 dark:text-rose-300 dark:hover:bg-rose-950/60"
-                      >
-                        <TrashIcon className="h-3.5 w-3.5" />
-                        {t('deleteButton')}
-                      </button>
-                    ) : (
-                      <div className="mt-3 space-y-2">
-                        <label className="block text-xs font-medium text-rose-700 dark:text-rose-300">
-                          {t.rich('confirmDeleteLabel', {
-                            name: () => <span className="font-semibold">{blog.name}</span>,
-                          })}
-                        </label>
-                        <input
-                          type="text"
-                          value={confirmDeleteText}
-                          onChange={(e) => setConfirmDeleteText(e.target.value)}
-                          disabled={deleteBlogMutation.isPending}
-                          className="w-full rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-sm text-neutral-900 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 dark:border-rose-800 dark:bg-neutral-900 dark:text-neutral-100"
-                          placeholder={blog.name}
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowDeleteConfirm(false)
-                              setConfirmDeleteText('')
-                            }}
-                            disabled={deleteBlogMutation.isPending}
-                            className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                          >
-                            {tActions('cancel')}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleDelete}
-                            disabled={deleteBlogMutation.isPending || confirmDeleteText.trim() !== blog.name}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <TrashIcon className="h-3.5 w-3.5" />
-                            {deleteBlogMutation.isPending ? t('deletingLabel') : t('deletePermanently')}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <BlogDangerZone
+                    blogName={blog.name}
+                    showDeleteConfirm={showDeleteConfirm}
+                    confirmDeleteText={confirmDeleteText}
+                    onShowDeleteConfirm={() => setShowDeleteConfirm(true)}
+                    onCancelDeleteConfirm={() => {
+                      setShowDeleteConfirm(false)
+                      setConfirmDeleteText('')
+                    }}
+                    onConfirmDeleteTextChange={setConfirmDeleteText}
+                    onDelete={handleDelete}
+                    isDeleting={deleteBlogMutation.isPending}
+                    disabled={updateBlogMutation.isPending || uploadingImages || deleteBlogMutation.isPending}
+                  />
                 </form>
               </Dialog.Panel>
             </Transition.Child>

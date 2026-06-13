@@ -6,17 +6,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
-import MessengerSidebar from '@/components/chat/MessengerSidebar';
 import NewMessageDialog from '@/components/chat/NewMessageDialog';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { type Conversation, type MessageMedia } from '@/features/chat/types';
-import ChatHeader from '@/components/chat/ChatHeader';
-import MessagesList from '@/components/chat/MessagesList';
-import ChatInput from '@/components/chat/ChatInput';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 import { loadConversationDisplay, type ParticipantDisplay } from '@/features/chat/lib/conversationDisplay';
-import { cn } from '@/lib/utils';
+import InboxPanel from './_components/InboxPanel';
+import ConversationPane from './_components/ConversationPane';
 
 interface ChatPageClientProps {
   contactId: string;
@@ -63,8 +60,6 @@ function mergeMessages(prev: any[], incoming: any[]): any[] {
   for (const m of incoming) if (!seen.has(m.id)) merged.push(m);
   return merged.sort(byCreatedAt);
 }
-
-const noop = () => {};
 
 export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const router = useRouter();
@@ -239,76 +234,33 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
 
   return (
     <div className="relative flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-0 w-full bg-neutral-50 dark:bg-neutral-950">
-      {inboxDrawerOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
-          aria-label={t('conversation.drawerCloseAriaLabel')}
-          onClick={() => setInboxDrawerOpen(false)}
-        />
-      )}
+      <InboxPanel
+        conversationId={conversationId}
+        inboxDrawerOpen={inboxDrawerOpen}
+        onCloseDrawer={() => setInboxDrawerOpen(false)}
+        onSelectChat={handleSelectConversation}
+        onNewMessage={() => {
+          setInboxDrawerOpen(false);
+          setIsNewMessageOpen(true);
+        }}
+      />
 
-      <div
-        className={cn(
-          'relative z-40 flex h-full min-h-0 shrink-0 shadow-xl md:static md:z-auto md:shadow-none',
-          inboxDrawerOpen ? 'fixed bottom-0 left-0 md:static' : 'hidden md:flex',
-        )}
-      >
-        <MessengerSidebar
-          activeChat={null}
-          highlightConversationId={conversationId}
-          onSelectChat={handleSelectConversation}
-          onNewMessage={() => {
-            setInboxDrawerOpen(false);
-            setIsNewMessageOpen(true);
-          }}
-        />
-      </div>
-
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-neutral-200 bg-white md:border-l dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex h-11 shrink-0 items-center gap-2 border-b border-neutral-200 px-2 dark:border-neutral-800 md:hidden">
-          <button
-            type="button"
-            onClick={() => setInboxDrawerOpen(true)}
-            className="rounded-lg px-3 py-1.5 text-sm font-semibold text-primary-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            {t('conversation.conversationsButton')}
-          </button>
-        </div>
-
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <ChatHeader
-            contactName={contactInfo.name}
-            contactAvatar={contactInfo.avatar}
-            isOnline={contactInfo.isOnline}
-            conversationId={conversationId ?? undefined}
-            peerUserId={peerUserId ?? undefined}
-            isGroup={isGroup}
-            isEncrypted={headerEncrypted}
-            onClose={() => router.back()}
-          />
-
-          <MessagesList
-            messages={messages}
-            isLoading={isLoading}
-            isTyping={false}
-            currentUserId={user?.id}
-            contactAvatar={contactInfo.avatar}
-            contactName={contactInfo.name}
-            isGroup={isGroup}
-            participants={participants}
-            onEditMessage={handleEditMessage}
-            onDeleteMessage={handleDeleteMessage}
-          />
-
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            onTypingStart={noop}
-            onTypingStop={noop}
-            typingTimeoutRef={{ current: null }}
-          />
-        </div>
-      </div>
+      <ConversationPane
+        contactInfo={contactInfo}
+        conversationId={conversationId}
+        peerUserId={peerUserId}
+        isGroup={isGroup}
+        headerEncrypted={headerEncrypted}
+        messages={messages}
+        isLoading={isLoading}
+        currentUserId={user?.id}
+        participants={participants}
+        onOpenInboxDrawer={() => setInboxDrawerOpen(true)}
+        onClose={() => router.back()}
+        onSendMessage={handleSendMessage}
+        onEditMessage={handleEditMessage}
+        onDeleteMessage={handleDeleteMessage}
+      />
 
       <NewMessageDialog open={isNewMessageOpen} onClose={() => setIsNewMessageOpen(false)} />
     </div>
