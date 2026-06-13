@@ -9,7 +9,7 @@ import type {
   OwnerType,
   SpaceVisibility,
 } from '@/features/foro/types'
-import { toAuthor, type ProfileRow } from './_profile-row'
+import { loadProfiles, toAuthor } from './_profile-row'
 
 // Re-export shared admin types from sibling modules so existing import paths
 // (`@/app/(app)/foro/server/admin.server`) keep working after the split.
@@ -182,13 +182,7 @@ export async function listSpaceRoles(spaceId: string): Promise<ForoRoleMember[]>
     granted_at: string
   }>
   if (rows.length === 0) return []
-  const ids = Array.from(new Set(rows.map((r) => r.user_id)))
-  const { data: profiles } = await client
-    .from('profiles')
-    .select('id, username, first_name, last_name, display_name, avatar_url')
-    .in('id', ids)
-  const profileById = new Map<string, ProfileRow>()
-  for (const p of (profiles ?? []) as ProfileRow[]) profileById.set(p.id, p)
+  const profileById = await loadProfiles(rows.map((r) => r.user_id))
   return rows.map((r) => ({
     spaceId: r.space_id,
     userId: r.user_id,
@@ -203,11 +197,8 @@ export async function listPlatformAdmins(): Promise<ForoAuthor[]> {
   const { data } = await client.from('platform_admins').select('user_id')
   const ids = ((data ?? []) as { user_id: string }[]).map((r) => r.user_id)
   if (ids.length === 0) return []
-  const { data: profiles } = await client
-    .from('profiles')
-    .select('id, username, first_name, last_name, display_name, avatar_url')
-    .in('id', ids)
-  return ((profiles ?? []) as ProfileRow[]).map(toAuthor)
+  const profiles = await loadProfiles(ids)
+  return Array.from(profiles.values()).map(toAuthor)
 }
 
 export async function listForumGlobalStaff(): Promise<ForoGlobalStaff[]> {
@@ -222,13 +213,7 @@ export async function listForumGlobalStaff(): Promise<ForoGlobalStaff[]> {
     granted_at: string
   }>
   if (rows.length === 0) return []
-  const ids = Array.from(new Set(rows.map((r) => r.user_id)))
-  const { data: profiles } = await client
-    .from('profiles')
-    .select('id, username, first_name, last_name, display_name, avatar_url')
-    .in('id', ids)
-  const byId = new Map<string, ProfileRow>()
-  for (const p of (profiles ?? []) as ProfileRow[]) byId.set(p.id, p)
+  const byId = await loadProfiles(rows.map((r) => r.user_id))
   return rows.map((r) => ({
     role: r.role,
     grantedAt: r.granted_at,

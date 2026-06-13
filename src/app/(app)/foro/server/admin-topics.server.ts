@@ -1,7 +1,7 @@
 import 'server-only'
 import { getServerClient } from '@/utils/supabase/server'
 import type { ForoTopic } from '@/features/foro/types'
-import { toAuthor, type ProfileRow } from './_profile-row'
+import { loadProfiles, toAuthor } from './_profile-row'
 
 export interface ForoTopicAdminRow extends ForoTopic {
   spaceId: string
@@ -152,17 +152,9 @@ export async function listAllTopicsAdmin(
     return { topics: [], total: countRes.count ?? 0, page, pageSize }
   }
 
-  const profileIds = Array.from(
-    new Set(
-      rows.flatMap((r) => [r.author_id, r.last_post_author_id].filter(Boolean) as string[]),
-    ),
+  const profileById = await loadProfiles(
+    rows.flatMap((r) => [r.author_id, r.last_post_author_id].filter(Boolean) as string[]),
   )
-  const { data: profilesData } = await client
-    .from('profiles')
-    .select('id, username, first_name, last_name, display_name, avatar_url')
-    .in('id', profileIds)
-  const profileById = new Map<string, ProfileRow>()
-  for (const p of (profilesData ?? []) as ProfileRow[]) profileById.set(p.id, p)
 
   const topics: ForoTopicAdminRow[] = rows.map((r) => {
     const forum = forumById.get(r.forum_id)
