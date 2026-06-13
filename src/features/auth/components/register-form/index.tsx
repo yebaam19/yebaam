@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useAuthStore } from '../../store/auth.store';
 import { toast } from 'sonner';
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget';
+import { validatePasswordPolicy } from '@/lib/auth/password-policy';
 import { NameFields } from './NameFields';
 import { BirthDateFields } from './BirthDateFields';
 import { GenderField } from './GenderField';
@@ -64,6 +65,12 @@ export function RegisterForm() {
 
     if (formData.password !== formData.confirmPassword) {
       toast.error(t('signup.errorPasswordsDoNotMatch'));
+      return;
+    }
+
+    const passwordError = validatePasswordPolicy(formData.password);
+    if (passwordError) {
+      toast.error(passwordError);
       return;
     }
 

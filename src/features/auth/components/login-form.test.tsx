@@ -7,7 +7,9 @@ const loginMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
-  useSearchParams: () => ({ get: () => null }),
+  useSearchParams: () => ({
+    get: (key: string) => (key === 'redirect' ? '//evil.com' : null),
+  }),
 }));
 
 vi.mock('next-intl', () => ({
@@ -68,5 +70,29 @@ describe('LoginForm — unverified-email recovery', () => {
       expect(loginMock).toHaveBeenCalled();
     });
     expect(pushMock).not.toHaveBeenCalledWith(expect.stringContaining('/verify-email'));
+  });
+});
+
+describe('LoginForm — redirect sanitization', () => {
+  beforeEach(() => {
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
+    pushMock.mockReset();
+    loginMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('ignores ?redirect=//evil.com and lands on /feed after a successful login', async () => {
+    loginMock.mockResolvedValueOnce(undefined);
+    render(<LoginForm />);
+
+    submitLogin();
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith('/feed');
+    });
+    expect(pushMock).not.toHaveBeenCalledWith(expect.stringContaining('evil.com'));
   });
 });

@@ -54,7 +54,7 @@ const Page = async () => {
                 </div>
               }
             >
-              <LoginForm showForgotPassword={true} showDevHelper={true} />
+              <LoginForm showForgotPassword={true} />
             </Suspense>
 
             {/* Create account */}

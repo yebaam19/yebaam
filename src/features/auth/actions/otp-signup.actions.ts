@@ -3,6 +3,7 @@
 import { getServiceClient } from '@/utils/supabase/server';
 import { sendOtpEmail } from '@/services/email/resend.service';
 import { verifyTurnstileToken } from '@/lib/turnstile';
+import { validatePasswordPolicy } from '@/lib/auth/password-policy';
 import {
   generateCode,
   hashCode,
@@ -107,6 +108,11 @@ export async function signupWithOtpAction(userData: RegisterDTO): Promise<AuthAc
   try {
     if (!userData.email || !userData.password) {
       return { ok: false, error: 'Email y contraseña son requeridos' };
+    }
+
+    const passwordError = validatePasswordPolicy(userData.password);
+    if (passwordError) {
+      return { ok: false, error: passwordError };
     }
 
     if (!isOccupationSlug(userData.occupation)) {

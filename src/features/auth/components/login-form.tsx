@@ -7,14 +7,14 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { useAuthStore } from '../store/auth.store'
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
 import { isEmailNotConfirmedError } from '../utils/auth-errors'
 
 interface LoginFormProps {
   showForgotPassword?: boolean
-  showDevHelper?: boolean
 }
 
-export function LoginForm({ showForgotPassword = true, showDevHelper = true }: LoginFormProps) {
+export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
   const router = useRouter()
   const t = useTranslations('auth')
   const searchParams = useSearchParams()
@@ -24,7 +24,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
   const emailFromUrl = searchParams.get('email') || ''
   const verified = searchParams.get('verified') === 'true'
   const reset = searchParams.get('reset') === 'true'
-  const redirectTo = searchParams.get('redirect') || '/feed'
+  const redirectTo = sanitizeRedirectPath(searchParams.get('redirect'))
 
   const [identifier, setIdentifier] = useState(emailFromUrl)
   const [password, setPassword] = useState('')
@@ -69,7 +69,7 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
       })
 
       toast.success(t('login.welcomeBack'))
-      router.push(redirectTo as unknown as Parameters<typeof router.push>[0])
+      router.push(redirectTo)
     } catch (err: unknown) {
       // Half-registered account: the email was never confirmed. Instead of a
       // dead-end error, route the user back into the verification flow where
@@ -85,11 +85,6 @@ export function LoginForm({ showForgotPassword = true, showDevHelper = true }: L
       setCaptchaToken(null)
       turnstileRef.current?.reset()
     }
-  }
-
-  const handleSelectTestUser = (email: string, pass: string) => {
-    setIdentifier(email)
-    setPassword(pass)
   }
 
   return (

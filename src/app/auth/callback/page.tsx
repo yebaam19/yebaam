@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { authService } from '@/features/auth/services/auth.service'
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -19,9 +20,9 @@ export default function AuthCallbackPage() {
       await checkAuth()
       if (cancelled) return
       const { isAuthenticated } = useAuthStore.getState()
-      const redirect = searchParams.get('redirect') || '/feed'
+      const redirect = sanitizeRedirectPath(searchParams.get('redirect'))
       const authed = isAuthenticated || !!user
-      router.replace((authed ? redirect : '/login') as never)
+      router.replace(authed ? redirect : '/login')
     }
     run()
     return () => {

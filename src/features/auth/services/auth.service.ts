@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 import { parseISODate } from '@/lib/utils/date';
 import {
   signupWithOtpAction,
@@ -133,7 +134,7 @@ export class AuthService {
 
   async loginWithGoogle(redirectTo?: string): Promise<void> {
     if (typeof window === 'undefined') return;
-    const finalDestination = redirectTo ?? '/feed';
+    const finalDestination = sanitizeRedirectPath(redirectTo);
     const callbackUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(finalDestination)}`;
     const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',

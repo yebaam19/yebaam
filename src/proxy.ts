@@ -5,6 +5,7 @@ import {
   isInvalidRefreshTokenError,
 } from '@/utils/supabase/middleware';
 import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config';
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 
 const PUBLIC_ROUTES = [
   '/',
@@ -135,11 +136,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (hasSession && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
-    const redirectParam = request.nextUrl.searchParams.get('redirect');
-    const safeRedirect =
-      redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
-        ? redirectParam
-        : '/feed';
+    const safeRedirect = sanitizeRedirectPath(request.nextUrl.searchParams.get('redirect'));
     return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 

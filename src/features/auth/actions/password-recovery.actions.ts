@@ -3,6 +3,7 @@
 import { getServiceClient } from '@/utils/supabase/server';
 import { sendPasswordResetEmail } from '@/services/email/resend.service';
 import { verifyTurnstileToken } from '@/lib/turnstile';
+import { validatePasswordPolicy } from '@/lib/auth/password-policy';
 import {
   generateCode,
   hashCode,
@@ -27,6 +28,9 @@ interface ResetPasswordInput {
   otp: string;
   newPassword: string;
 }
+
+const PASSWORD_RESET_ACK =
+  'Si existe una cuenta con ese email, te enviamos un código para restablecer tu contraseña.';
 
 interface PasswordResetMetadata {
   code_hash: string;
@@ -53,7 +57,7 @@ export async function requestPasswordResetAction(
 
     const user = await findUserByEmail(email);
     if (!user) {
-      return { ok: false, error: 'No existe una cuenta con este email' };
+      return { ok: true, message: PASSWORD_RESET_ACK };
     }
 
     const admin = getServiceClient();
@@ -86,7 +90,7 @@ export async function requestPasswordResetAction(
 
     await sendPasswordResetEmail({ to: email, code, firstName: profile?.first_name ?? null });
 
-    return { ok: true, message: 'Te enviamos un código a tu email.' };
+    return { ok: true, message: PASSWORD_RESET_ACK };
   } catch (err) {
     console.error('[password-recovery] unexpected error:', err);
     return { ok: false, error: 'No pudimos enviar el código. Intenta de nuevo.' };
@@ -109,6 +113,11 @@ export async function resetPasswordAction(
 
     if (!email || !otp || !newPassword) {
       return { ok: false, error: 'Email, código y nueva contraseña son requeridos' };
+    }
+
+    const passwordError = validatePasswordPolicy(newPassword);
+    if (passwordError) {
+      return { ok: false, error: passwordError };
     }
 
     const user = await findUserByEmail(email);
