@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { imageUrl } from '@/lib/media/urls';
 import { UserIcon } from '@/components/icons/heroicons-shim';
-import { removeClubMember, setMemberRole } from '../../actions/club-roles.actions';
+import { removeClubMember, setMemberRole } from '../../actions/club-members.actions';
 import type { ClubMemberRole, ClubMemberRow } from '../../types/music.types';
 
 interface Props {

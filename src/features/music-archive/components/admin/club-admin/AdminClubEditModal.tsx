@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { imageUrl } from '@/lib/media/urls';
-import { updateClubProfile } from '../../../actions/club-admin.actions';
+import { updateClubProfile } from '../../../actions/club-settings.actions';
 
 interface ClubRow {
   id: string;

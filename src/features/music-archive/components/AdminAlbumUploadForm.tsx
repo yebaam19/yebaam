@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
@@ -14,36 +14,23 @@ import type {
   MusicAlbumFormat,
   MusicCopyrightStatus,
   MusicSourceMedia,
-  MusicTrackSide,
 } from '../types/music.types';
 import {
   COPYRIGHT_OPTIONS,
   COUNTRIES,
-  FORMATS,
   SOURCE_MEDIA,
-  fileInputCls,
   inputCls,
   sortCountryCodesByLabel,
   titleFromFilename,
   trackFormatFromMime,
 } from './upload/constants';
 import { Field, Section } from './upload/primitives';
-import { ArtistAutocomplete, type ArtistSelection } from './upload/ArtistAutocomplete';
-import { LabelAutocomplete, type LabelSelection } from './upload/LabelAutocomplete';
-import { CoverDropZone } from './upload/CoverDropZone';
-
-/** Per-track row in the multi-track list. Audio file is held until submit
- *  (we don't pre-upload to R2 to allow re-ordering and per-row delete without
- *  orphaning R2 objects). */
-interface TrackDraft {
-  id: string;
-  file: File;
-  title: string;
-  side: MusicTrackSide | '';
-  durationSeconds: number | null;
-  uploadProgress: number | null;
-  r2Key: string | null;
-}
+import { type ArtistSelection } from './upload/ArtistAutocomplete';
+import { type LabelSelection } from './upload/LabelAutocomplete';
+import { AlbumMetadataForm } from './AdminAlbumUploadForm/AlbumMetadataForm';
+import { CoverUpload } from './AdminAlbumUploadForm/CoverUpload';
+import { TrackList } from './AdminAlbumUploadForm/TrackList';
+import type { TrackDraft } from './AdminAlbumUploadForm/types';
 
 type Step = 'idle' | 'images' | 'rows' | 'audio' | 'tracks';
 
@@ -81,7 +68,7 @@ export function AdminAlbumUploadForm() {
   const [copyrightStatus, setCopyrightStatus] = useState<MusicCopyrightStatus>('public_domain');
   const [attestation, setAttestation] = useState(true);
 
-  function onFilesPicked(filesList: FileList | null) {
+  const onFilesPicked = useCallback((filesList: FileList | null) => {
     if (!filesList) return;
     const newTracks: TrackDraft[] = Array.from(filesList)
       .filter((f) => f.type.startsWith('audio/'))
@@ -95,7 +82,7 @@ export function AdminAlbumUploadForm() {
         r2Key: null,
       }));
     setTracks((prev) => [...prev, ...newTracks]);
-  }
+  }, []);
 
   // Detect duration client-side for newly added tracks, in parallel.
   useEffect(() => {
@@ -136,7 +123,7 @@ export function AdminAlbumUploadForm() {
     };
   }, [tracks]);
 
-  function moveTrack(id: string, dir: -1 | 1) {
+  const moveTrack = useCallback((id: string, dir: -1 | 1) => {
     setTracks((prev) => {
       const idx = prev.findIndex((t) => t.id === id);
       if (idx < 0) return prev;
@@ -146,15 +133,15 @@ export function AdminAlbumUploadForm() {
       [next[idx], next[target]] = [next[target]!, next[idx]!];
       return next;
     });
-  }
+  }, []);
 
-  function removeTrack(id: string) {
+  const removeTrack = useCallback((id: string) => {
     setTracks((prev) => prev.filter((t) => t.id !== id));
-  }
+  }, []);
 
-  function updateTrack(id: string, patch: Partial<TrackDraft>) {
+  const updateTrack = useCallback((id: string, patch: Partial<TrackDraft>) => {
     setTracks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-  }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -268,215 +255,52 @@ export function AdminAlbumUploadForm() {
     tracks: t('adminUpload.stepTracks'),
   };
 
-  const showCreateArtistFields = !artist.existingId && artist.name.trim().length > 0;
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Section title={t('adminUpload.section1Title')} hint={t('adminUpload.section1Hint')}>
-        <Field label={t('upload.artistName')} required>
-          <ArtistAutocomplete value={artist} onChange={setArtist} />
-        </Field>
-        {showCreateArtistFields && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Field label={t('upload.country')}>
-              <select
-                value={artistCountry}
-                onChange={(e) => setArtistCountry(e.target.value)}
-                className={inputCls}
-              >
-                <option value="">{t('upload.fieldEmpty')}</option>
-                {sortedCountries.map((code) => (
-                  <option key={code} value={code}>
-                    {t(`countries.${code}` as const)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label={t('upload.birth')}>
-              <input
-                type="number"
-                value={artistBornYear}
-                onChange={(e) => setArtistBornYear(e.target.value)}
-                min={1800}
-                max={2100}
-                className={inputCls}
-              />
-            </Field>
-            <Field label={t('upload.death')}>
-              <input
-                type="number"
-                value={artistDiedYear}
-                onChange={(e) => setArtistDiedYear(e.target.value)}
-                min={1800}
-                max={2100}
-                className={inputCls}
-              />
-            </Field>
-            <Field label={t('adminUpload.photoOptional')}>
-              <CoverDropZone file={artistPhoto} onChange={setArtistPhoto} showPreview={false} />
-            </Field>
-          </div>
-        )}
-      </Section>
+      <AlbumMetadataForm
+        sortedCountries={sortedCountries}
+        artist={artist}
+        onArtistChange={setArtist}
+        artistCountry={artistCountry}
+        onArtistCountryChange={setArtistCountry}
+        artistBornYear={artistBornYear}
+        onArtistBornYearChange={setArtistBornYear}
+        artistDiedYear={artistDiedYear}
+        onArtistDiedYearChange={setArtistDiedYear}
+        artistPhoto={artistPhoto}
+        onArtistPhotoChange={setArtistPhoto}
+        albumTitle={albumTitle}
+        onAlbumTitleChange={setAlbumTitle}
+        albumYear={albumYear}
+        onAlbumYearChange={setAlbumYear}
+        albumCountry={albumCountry}
+        onAlbumCountryChange={setAlbumCountry}
+        albumFormat={albumFormat}
+        onAlbumFormatChange={setAlbumFormat}
+        label={label}
+        onLabelChange={setLabel}
+        catalogNumber={catalogNumber}
+        onCatalogNumberChange={setCatalogNumber}
+        albumNotes={albumNotes}
+        onAlbumNotesChange={setAlbumNotes}
+      />
 
-      <Section title={t('adminUpload.section2Title')}>
-        <Field label={t('upload.albumTitle')} required>
-          <input
-            type="text"
-            value={albumTitle}
-            onChange={(e) => setAlbumTitle(e.target.value)}
-            maxLength={160}
-            className={inputCls}
-            placeholder={t('upload.albumTitlePlaceholder')}
-          />
-        </Field>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Field label={t('upload.year')}>
-            <input
-              type="number"
-              value={albumYear}
-              onChange={(e) => setAlbumYear(e.target.value)}
-              min={1900}
-              max={2100}
-              className={inputCls}
-              placeholder="1907"
-            />
-          </Field>
-          <Field label={t('upload.country')}>
-            <select
-              value={albumCountry}
-              onChange={(e) => setAlbumCountry(e.target.value)}
-              className={inputCls}
-            >
-              <option value="">{t('upload.fieldEmpty')}</option>
-              {sortedCountries.map((code) => (
-                <option key={code} value={code}>
-                  {t(`countries.${code}` as const)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t('upload.format')}>
-            <select
-              value={albumFormat}
-              onChange={(e) => setAlbumFormat(e.target.value as MusicAlbumFormat)}
-              className={inputCls}
-            >
-              {FORMATS.map((f) => (
-                <option key={f} value={f}>
-                  {t(`formats.${f}` as const)}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label={t('upload.labelField')}>
-            <LabelAutocomplete value={label} onChange={setLabel} />
-          </Field>
-          <Field label={t('upload.catalogNumber')}>
-            <input
-              type="text"
-              value={catalogNumber}
-              onChange={(e) => setCatalogNumber(e.target.value)}
-              maxLength={40}
-              className={inputCls}
-              placeholder={t('upload.catalogPlaceholder')}
-            />
-          </Field>
-        </div>
-        <Field label={t('upload.notes')}>
-          <textarea
-            value={albumNotes}
-            onChange={(e) => setAlbumNotes(e.target.value)}
-            maxLength={1000}
-            rows={2}
-            className={inputCls}
-          />
-        </Field>
-      </Section>
+      <CoverUpload
+        coverFront={coverFront}
+        onCoverFrontChange={setCoverFront}
+        coverBack={coverBack}
+        onCoverBackChange={setCoverBack}
+        labelImage={labelImage}
+        onLabelImageChange={setLabelImage}
+      />
 
-      <Section title={t('adminUpload.section3Title')} hint={t('adminUpload.section3Hint')}>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Field label={t('adminUpload.frontCoverLabel')} required>
-            <CoverDropZone file={coverFront} onChange={setCoverFront} />
-          </Field>
-          <Field label={t('adminUpload.backCoverLabel')}>
-            <CoverDropZone file={coverBack} onChange={setCoverBack} />
-          </Field>
-          <Field label={t('adminUpload.labelImageLabel')}>
-            <CoverDropZone file={labelImage} onChange={setLabelImage} />
-          </Field>
-        </div>
-      </Section>
-
-      <Section title={t('adminUpload.section4Title')} hint={t('adminUpload.section4Hint')}>
-        <input
-          type="file"
-          accept="audio/*"
-          multiple
-          onChange={(e) => onFilesPicked(e.target.files)}
-          className={fileInputCls}
-        />
-        {tracks.length > 0 && (
-          <ul className="mt-3 divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-            {tracks.map((tr, idx) => (
-              <li key={tr.id} className="grid grid-cols-12 items-center gap-2 p-2 text-sm">
-                <span className="col-span-1 text-right tabular-nums text-zinc-500">{idx + 1}.</span>
-                <input
-                  type="text"
-                  value={tr.title}
-                  onChange={(e) => updateTrack(tr.id, { title: e.target.value })}
-                  className={`${inputCls} col-span-5`}
-                  placeholder={t('adminUpload.titlePlaceholder')}
-                />
-                <select
-                  value={tr.side}
-                  onChange={(e) =>
-                    updateTrack(tr.id, { side: e.target.value as MusicTrackSide | '' })
-                  }
-                  className={`${inputCls} col-span-1`}
-                >
-                  <option value="">{t('upload.fieldEmpty')}</option>
-                  <option value="a">{t('upload.sideA')}</option>
-                  <option value="b">{t('upload.sideB')}</option>
-                </select>
-                <span className="col-span-2 text-xs text-zinc-500">
-                  {tr.durationSeconds != null
-                    ? `${Math.floor(tr.durationSeconds / 60)}:${String(tr.durationSeconds % 60).padStart(2, '0')}`
-                    : t('adminUpload.calculating')}
-                  {tr.uploadProgress != null && tr.uploadProgress < 100 && ` · ${tr.uploadProgress}%`}
-                </span>
-                <div className="col-span-3 flex justify-end gap-1">
-                  <button
-                    type="button"
-                    onClick={() => moveTrack(tr.id, -1)}
-                    disabled={idx === 0}
-                    className="rounded px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveTrack(tr.id, 1)}
-                    disabled={idx === tracks.length - 1}
-                    className="rounded px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeTrack(tr.id)}
-                    className="rounded px-2 py-1 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+      <TrackList
+        tracks={tracks}
+        onFilesPicked={onFilesPicked}
+        onUpdateTrack={updateTrack}
+        onMoveTrack={moveTrack}
+        onRemoveTrack={removeTrack}
+      />
 
       <Section title={t('adminUpload.section5Title')}>
         <Field label={t('upload.copyrightStatus')}>

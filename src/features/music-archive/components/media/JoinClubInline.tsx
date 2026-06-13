@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useState, useTransition } from 'react';
-import { joinClub } from '../../actions/club-roles.actions';
+import { joinClub } from '../../actions/club-members.actions';
 
 interface Props {
   clubId: string;

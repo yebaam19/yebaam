@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { moveClubMember } from '../../../actions/club-roles.actions';
+import { moveClubMember } from '../../../actions/club-moderation.actions';
 
 interface ClubOption {
   id: string;

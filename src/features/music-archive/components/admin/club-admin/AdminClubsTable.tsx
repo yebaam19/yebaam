@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import {
   adminDeleteMusicClub,
   toggleClubForum,
-} from '../../../actions/club-admin.actions';
+} from '../../../actions/club-settings.actions';
 import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue';
 import { AdminClubEditModal, type AdminClubEditRow } from './AdminClubEditModal';
 import {

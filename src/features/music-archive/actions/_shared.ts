@@ -11,6 +11,18 @@ export type Session = { userId: string; client: SupabaseClient };
 
 export const MAX_AUDIO_BYTES = 200 * 1024 * 1024;
 
+/** Revalidate a club's detail + members pages after a membership change.
+ *  Shared by the club members + moderation actions. */
+export async function revalidateClubMembers(clubId: string): Promise<void> {
+  const client = await getServerClient();
+  const { data } = await client.from('clubs').select('slug').eq('id', clubId).maybeSingle();
+  const slug = (data as { slug: string } | null)?.slug;
+  if (slug) {
+    revalidatePath(`/musica/clubes/${slug}`);
+    revalidatePath(`/musica/clubes/${slug}/miembros`);
+  }
+}
+
 export async function requireSession(): Promise<Session | null> {
   const client = await getServerClient();
   const { data } = await client.auth.getUser();

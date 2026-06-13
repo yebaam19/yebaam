@@ -6,7 +6,7 @@ import { UserIcon } from '@/components/icons/heroicons-shim';
 import {
   removeClubMember,
   setMemberRole,
-} from '../../../actions/club-roles.actions';
+} from '../../../actions/club-members.actions';
 import type { ClubMemberRole } from '../../../types/music.types';
 import { MoveMemberDialog } from './MoveMemberDialog';
 

@@ -5,7 +5,7 @@ import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { joinClub } from '../../actions/club-roles.actions';
+import { joinClub } from '../../actions/club-members.actions';
 import type { ClubJoinStatus } from '../../server/clubs.server';
 
 interface Props {

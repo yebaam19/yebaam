@@ -6,7 +6,7 @@ import { UserIcon } from '@/components/icons/heroicons-shim';
 import {
   approveJoinRequest,
   rejectJoinRequest,
-} from '../../../actions/club-roles.actions';
+} from '../../../actions/club-moderation.actions';
 
 interface Row {
   club_id: string;

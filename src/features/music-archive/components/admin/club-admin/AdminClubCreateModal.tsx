@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
-import { adminCreateMusicClub } from '../../../actions/club-admin.actions';
+import { adminCreateMusicClub } from '../../../actions/club-settings.actions';
 
 /** Lowercased + accent-stripped form for case/diacritic-insensitive matching. */
 function normalize(s: string): string {

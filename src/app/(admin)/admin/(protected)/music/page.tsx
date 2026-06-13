@@ -11,8 +11,8 @@ import {
   listMusicClubsForAdmin,
   listRecentMusicClubArticles,
   listRecentMusicClubPosts,
-} from '@/features/music-archive/actions/club-admin.actions';
-import { listPendingJoinRequests } from '@/features/music-archive/actions/club-roles.actions';
+} from '@/features/music-archive/actions/queries.actions';
+import { listPendingJoinRequests } from '@/features/music-archive/actions/club-moderation.actions';
 import { listAdminMusicMedia } from '@/features/music-archive/actions/music-media.actions';
 import { listGenresWithUsage } from '@/features/music-archive/actions/genres.actions';
 import { getMusicArchiveStats } from '@/features/music-archive/actions/admin-stats.actions';
