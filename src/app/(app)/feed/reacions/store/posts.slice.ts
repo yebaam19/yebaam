@@ -231,11 +231,14 @@ export const createPostsReactionSlice: StateCreator<
    * [WebSocket] Remover reacción
    */
   removeReaction: (postId: string, userId: string) => {
+    const removedReaction = (get().reactionsByPost[postId] || []).find(
+      r => r.userId === userId,
+    );
+
+    if (!removedReaction) return;
+
     set(state => {
       const postReactions = state.reactionsByPost[postId] || [];
-      const removedReaction = postReactions.find(r => r.userId === userId);
-
-      if (!removedReaction) return state;
 
       return {
         reactionsByPost: {
@@ -244,6 +247,10 @@ export const createPostsReactionSlice: StateCreator<
         },
       };
     });
+
+    // Decrementar contador: faltaba, así que el conteo quedaba desincronizado al
+    // recibir por WebSocket la eliminación de la reacción de otro usuario.
+    get().decrementCount(postId, removedReaction.type);
   },
 
   /**
