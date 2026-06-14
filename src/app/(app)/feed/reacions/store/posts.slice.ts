@@ -231,26 +231,24 @@ export const createPostsReactionSlice: StateCreator<
    * [WebSocket] Remover reacción
    */
   removeReaction: (postId: string, userId: string) => {
-    const removedReaction = (get().reactionsByPost[postId] || []).find(
-      r => r.userId === userId,
-    );
-
-    if (!removedReaction) return;
-
+    // Find, filter and decrement in ONE atomic set(): the reaction is read from
+    // the same snapshot it's removed from (no double-read of the store), and the
+    // list + counter update together so subscribers never see a torn state where
+    // the reaction is gone but its count hasn't been decremented yet.
     set(state => {
       const postReactions = state.reactionsByPost[postId] || [];
+      const removedReaction = postReactions.find(r => r.userId === userId);
+
+      if (!removedReaction) return state;
 
       return {
         reactionsByPost: {
           ...state.reactionsByPost,
           [postId]: postReactions.filter(r => r.userId !== userId),
         },
+        countsByPost: decrementCountsMap(state.countsByPost, postId, removedReaction.type),
       };
     });
-
-    // Decrementar contador: faltaba, así que el conteo quedaba desincronizado al
-    // recibir por WebSocket la eliminación de la reacción de otro usuario.
-    get().decrementCount(postId, removedReaction.type);
   },
 
   /**
