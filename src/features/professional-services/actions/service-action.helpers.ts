@@ -104,3 +104,11 @@ export function buildServiceUpdatePatch(dto: UpdateProfessionalServiceDTO): Reco
   if (dto.cvUrl !== undefined) update.cv_cf_file_id = extractCfImageId(dto.cvUrl)
   return update
 }
+
+export interface AddServiceMediaInput {
+  type: 'image' | 'video'
+  url: string
+  thumbnailUrl?: string
+  caption?: string
+  order?: number
+}

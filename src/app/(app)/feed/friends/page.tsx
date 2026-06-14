@@ -1,183 +1,48 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { FriendCard } from '@/features/user/components/FriendCard';
-import { FriendRequestCard } from '@/features/user/components/FriendRequestCard';
-import { SuggestionCard } from '@/features/user/components/SuggestionCard';
-import { FriendSuggestionsCompact } from '@/features/user/components/FriendSuggestionCard';
-import { useFriendships } from '@/features/friendships';
 import ChatBubble from '@/components/chat/ChatBubble';
-import { FriendsStats, FriendsTabs, SearchBar, ConfirmModal, type TabType } from './components';
+import { FriendsTabView, RequestsTabView, SentTabView, SuggestionsTabView } from './tabs';
+import { FriendsStats, FriendsTabs, SearchBar, ConfirmModal } from './components';
 import { FriendsHero } from './components/FriendsHero';
 import { ProfileProgress } from './components/ProfileProgress';
 import { SuggestedPeopleRail } from './components/SuggestedPeopleRail';
 import { RecentActivity } from './components/RecentActivity';
 import { ChevronDownIcon } from '@/components/icons/heroicons-shim';
-
-interface OpenChat {
-  contactId: string;
-  contactName: string;
-  contactAvatar: string;
-}
-
-interface ConfirmModalState {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  confirmText: string;
-  confirmAction: () => void;
-  type: 'danger' | 'warning';
-}
-
-const VALID_TABS: TabType[] = ['friends', 'requests', 'sent', 'suggestions'];
+import { useFriendsManager } from './useFriendsManager';
 
 export default function FriendsPage() {
   const t = useTranslations('feed');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const tabParam = searchParams?.get('tab');
-  const initialTab = tabParam && (VALID_TABS as string[]).includes(tabParam) ? (tabParam as TabType) : 'friends';
-  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
-  const [managerOpen, setManagerOpen] = useState<boolean>(Boolean(tabParam));
-  const managerRef = useRef<HTMLDivElement>(null);
-
-  const handleFindFriends = useCallback(() => {
-    setActiveTab('suggestions');
-    setManagerOpen(true);
-    router.replace('/feed/friends?tab=suggestions', { scroll: false });
-    requestAnimationFrame(() => {
-      managerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [router]);
-
-  useEffect(() => {
-    const t = searchParams?.get('tab');
-    if (t && (VALID_TABS as string[]).includes(t)) {
-      setActiveTab(t as TabType);
-      setManagerOpen(true);
-    }
-  }, [searchParams]);
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [openChats, setOpenChats] = useState<OpenChat[]>([]);
-  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
-  const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
-    isOpen: false,
-    title: '',
-    message: '',
-    confirmText: '',
-    confirmAction: () => {},
-    type: 'warning',
-  });
-
   const {
+    managerRef,
+    managerOpen,
+    setManagerOpen,
+    handleFindFriends,
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    getSearchPlaceholder,
+    stats,
+    pendingCount,
+    isLoading,
     friends,
     pendingRequests,
     sentRequests,
-    suggestions,
-    totalFriends,
-    closeFriendsCount,
-    pendingCount,
-    suggestionsCount,
-    isLoading,
+    visibleSuggestions,
     acceptFriendRequest,
     rejectFriendRequest,
-    cancelFriendRequest,
-    removeFriend,
-    updateFriendConfig,
     sendFriendRequest,
-  } = useFriendships();
-
-  const stats = {
-    totalFriends,
-    closeFriends: closeFriendsCount,
-    pendingRequests: pendingCount,
-    sentRequests: sentRequests?.length || 0,
-    suggestions: suggestionsCount,
-  };
-
-  const handleToggleCloseFriend = async (friendId: string) => {
-    const friend = friends?.find((f) => f.friendId === friendId);
-    if (!friend) return;
-    await updateFriendConfig(friendId, { closeFriend: !friend.closeFriend });
-  };
-
-  const handleRemoveFriend = async (friendshipId: string) => {
-    const friend = friends?.find((f) => f.friendshipId === friendshipId);
-    const friendName = friend ? `${friend.firstName} ${friend.lastName}` : t('friends.sentCard.fallbackPerson');
-
-    setConfirmModal({
-      isOpen: true,
-      title: t('friends.remove.title'),
-      message: t('friends.remove.message', { name: friendName }),
-      confirmText: t('friends.remove.confirm'),
-      type: 'danger',
-      confirmAction: async () => {
-        await removeFriend(friendshipId);
-        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
-
-  const handleOpenChat = (friendId: string) => {
-    const friend = friends?.find((f) => f.friendId === friendId);
-    if (!friend) return;
-    setOpenChats((prev) => {
-      if (prev.some((c) => c.contactId === friendId)) return prev;
-      const next = prev.length >= 3 ? prev.slice(1) : prev;
-      const name =
-        friend.firstName && friend.lastName ? `${friend.firstName} ${friend.lastName}` : friend.username;
-      return [...next, { contactId: friendId, contactName: name, contactAvatar: friend.avatar || '' }];
-    });
-  };
-
-  const handleCloseChat = (contactId: string) => {
-    setOpenChats((prev) => prev.filter((c) => c.contactId !== contactId));
-  };
-
-  const handleDismissSuggestion = (id: string) => {
-    setDismissedSuggestions((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-  };
-
-  const visibleSuggestions = useMemo(
-    () => (suggestions || []).filter((s) => !dismissedSuggestions.has(s.id)),
-    [suggestions, dismissedSuggestions],
-  );
-
-  const handleCancelRequest = async (requestId: string) => {
-    setConfirmModal({
-      isOpen: true,
-      title: t('friends.cancelRequest.title'),
-      message: t('friends.cancelRequest.message'),
-      confirmText: t('friends.cancelRequest.confirm'),
-      type: 'warning',
-      confirmAction: async () => {
-        await cancelFriendRequest(requestId);
-        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
-
-  const getSearchPlaceholder = () => {
-    switch (activeTab) {
-      case 'friends':
-        return t('friends.search.friends');
-      case 'requests':
-        return t('friends.search.requests');
-      case 'sent':
-        return t('friends.search.sent');
-      case 'suggestions':
-        return t('friends.search.suggestions');
-      default:
-        return t('friends.search.default');
-    }
-  };
+    handleToggleCloseFriend,
+    handleRemoveFriend,
+    handleOpenChat,
+    handleDismissSuggestion,
+    handleCancelRequest,
+    openChats,
+    handleCloseChat,
+    confirmModal,
+    setConfirmModal,
+  } = useFriendsManager();
 
   return (
     <div className="min-w-0">
@@ -238,180 +103,41 @@ export default function FriendsPage() {
                   />
 
                   <div className="min-h-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm sm:p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                    {activeTab === 'friends' &&
-                      (isLoading ? (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-                          {Array.from({ length: 6 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-48 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
-                            />
-                          ))}
-                        </div>
-                      ) : !friends || friends.length === 0 ? (
-                        <div className="py-16 text-center">
-                          <p className="text-neutral-500 dark:text-neutral-400">
-                            {t('friends.empty.friends')}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-                          {friends.map((friend) => (
-                            <FriendCard
-                              key={friend.friendId}
-                              friend={friend as any}
-                              onToggleCloseFriend={handleToggleCloseFriend}
-                              onRemove={handleRemoveFriend}
-                              onChat={handleOpenChat}
-                            />
-                          ))}
-                        </div>
-                      ))}
+                    {activeTab === 'friends' && (
+                      <FriendsTabView
+                        isLoading={isLoading}
+                        friends={friends}
+                        onToggleCloseFriend={handleToggleCloseFriend}
+                        onRemove={handleRemoveFriend}
+                        onChat={handleOpenChat}
+                      />
+                    )}
 
-                    {activeTab === 'requests' &&
-                      (isLoading ? (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-                          {Array.from({ length: 3 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-64 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
-                            />
-                          ))}
-                        </div>
-                      ) : !pendingRequests || pendingRequests.length === 0 ? (
-                        <div className="py-16 text-center">
-                          <p className="text-neutral-500 dark:text-neutral-400">
-                            {t('friends.empty.requests')}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-                          {pendingRequests.map((request) => (
-                            <FriendRequestCard
-                              key={request.id}
-                              request={{
-                                requestId: request.id,
-                                fromUserId: request.requesterId,
-                                message: request.message,
-                                sentAt: request.sentAt,
-                                status: request.status as 'pending' | 'accepted' | 'rejected',
-                                profile: request.profile ||
-                                  request.senderProfile || {
-                                    id: request.requesterId,
-                                    username: `user_${request.requesterId.slice(0, 8)}`,
-                                    firstName: 'Usuario',
-                                    lastName: request.requesterId.slice(0, 8),
-                                    avatar: undefined,
-                                  },
-                              }}
-                              onAccept={acceptFriendRequest}
-                              onReject={rejectFriendRequest}
-                            />
-                          ))}
-                        </div>
-                      ))}
+                    {activeTab === 'requests' && (
+                      <RequestsTabView
+                        isLoading={isLoading}
+                        pendingRequests={pendingRequests}
+                        onAccept={acceptFriendRequest}
+                        onReject={rejectFriendRequest}
+                      />
+                    )}
 
-                    {activeTab === 'sent' &&
-                      (isLoading ? (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-                          {Array.from({ length: 3 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-64 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
-                            />
-                          ))}
-                        </div>
-                      ) : !sentRequests || sentRequests.length === 0 ? (
-                        <div className="py-16 text-center">
-                          <p className="text-neutral-500 dark:text-neutral-400">{t('friends.empty.sent')}</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-                          {sentRequests.map((request) => {
-                            const profile = request.profile || request.recipientProfile;
+                    {activeTab === 'sent' && (
+                      <SentTabView
+                        isLoading={isLoading}
+                        sentRequests={sentRequests}
+                        onCancel={handleCancelRequest}
+                      />
+                    )}
 
-                            const displayName = profile
-                              ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
-                                profile.username
-                              : `${request.addresseeId?.slice(0, 8)}`;
-
-                            const initial =
-                              profile?.firstName?.charAt(0)?.toUpperCase() ||
-                              profile?.username?.charAt(0)?.toUpperCase() ||
-                              request.addresseeId?.charAt(0)?.toUpperCase() ||
-                              '?';
-
-                            return (
-                              <div
-                                key={`sent-${request.id}`}
-                                className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-800"
-                              >
-                                <div className="flex items-start gap-4">
-                                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary-400 to-primary-600 text-xl font-bold text-white">
-                                    {initial}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <h3 className="truncate font-semibold text-neutral-900 dark:text-white">
-                                      {displayName}
-                                    </h3>
-                                    {profile?.username && (
-                                      <p className="truncate text-xs text-neutral-400 dark:text-neutral-500">
-                                        @{profile.username}
-                                      </p>
-                                    )}
-                                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                                      {t('friends.sentCard.sentOn', { date: new Date(request.sentAt).toLocaleDateString() })}
-                                    </p>
-                                    <button
-                                      onClick={() => handleCancelRequest(request.id)}
-                                      className="mt-4 w-full rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
-                                    >
-                                      {t('friends.sentCard.cancel')}
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ))}
-
-                    {activeTab === 'suggestions' &&
-                      (isLoading ? (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-                          {Array.from({ length: 8 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-64 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
-                            />
-                          ))}
-                        </div>
-                      ) : visibleSuggestions.length === 0 ? (
-                        <div className="py-16 text-center">
-                          <p className="text-neutral-500 dark:text-neutral-400">
-                            {t('friends.empty.suggestions')}
-                          </p>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-                            {visibleSuggestions.map((suggestion) => (
-                              <SuggestionCard
-                                key={suggestion.id}
-                                suggestion={suggestion}
-                                onSendRequest={(userId) => sendFriendRequest({ addresseeId: userId })}
-                                onDismiss={handleDismissSuggestion}
-                              />
-                            ))}
-                          </div>
-                          <div className="mt-8 border-t border-neutral-200 pt-8 dark:border-neutral-700">
-                            <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-white">
-                              {t('friends.quickSuggestions')}
-                            </h3>
-                            <FriendSuggestionsCompact limit={6} />
-                          </div>
-                        </div>
-                      ))}
+                    {activeTab === 'suggestions' && (
+                      <SuggestionsTabView
+                        isLoading={isLoading}
+                        suggestions={visibleSuggestions}
+                        onSendRequest={(userId) => sendFriendRequest({ addresseeId: userId })}
+                        onDismiss={handleDismissSuggestion}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

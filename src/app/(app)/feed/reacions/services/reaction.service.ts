@@ -17,11 +17,13 @@ import {
   toClientType,
   toDbType,
 } from './reaction.mappers';
+import { hydrateUsers, isDuplicateUserPostReactionError } from './reaction.queries';
 import {
-  hydrateUsers,
-  isDuplicateUserCommentReactionError,
-  isDuplicateUserPostReactionError,
-} from './reaction.queries';
+  getCountsForComments as getCountsForCommentsImpl,
+  getMyReactionsForComments as getMyReactionsForCommentsImpl,
+  reactToComment as reactToCommentImpl,
+  unreactComment as unreactCommentImpl,
+} from './reaction.comments';
 
 export class ReactionService {
   async react(data: CreateReactionDTO): Promise<Reaction> {
@@ -194,110 +196,25 @@ export class ReactionService {
 
   // ===========================================================
   // Comment reactions — same `reactions` table; schema enforces
-  // post_id XOR comment_id via CHECK constraint.
+  // post_id XOR comment_id via CHECK constraint. Implementations live in
+  // `./reaction.comments`; exposed here so `reactionService` stays the single
+  // entry point for both post and comment reactions.
   // ===========================================================
 
   async reactToComment(commentId: string, type: ReactionType): Promise<Reaction> {
-    const userId = await getCurrentUserId();
-    if (!userId) throw new Error('Not authenticated');
-
-    const dbType = toDbType(type);
-    const rowPayload = { type: dbType, user_id: userId, comment_id: commentId };
-
-    const { data: updatedRows, error: updateError } = await supabase
-      .from('reactions')
-      .update({ type: dbType })
-      .eq('user_id', userId)
-      .eq('comment_id', commentId)
-      .select('*');
-    if (updateError) throw new Error(updateError.message || 'Error al reaccionar');
-
-    const fromUpdate = updatedRows?.[0];
-    if (fromUpdate) {
-      const row = fromUpdate as DbReaction;
-      const users = await hydrateUsers([row]);
-      return rowToReaction(row, users);
-    }
-
-    const { data: inserted, error: insertError } = await supabase
-      .from('reactions')
-      .insert([rowPayload])
-      .select('*')
-      .single();
-    if (!insertError && inserted) {
-      const row = inserted as DbReaction;
-      const users = await hydrateUsers([row]);
-      return rowToReaction(row, users);
-    }
-
-    if (insertError && isDuplicateUserCommentReactionError(insertError)) {
-      const { data: afterRace, error: retryError } = await supabase
-        .from('reactions')
-        .update({ type: dbType })
-        .eq('user_id', userId)
-        .eq('comment_id', commentId)
-        .select('*')
-        .single();
-      if (retryError || !afterRace) throw new Error(retryError?.message || 'Error al reaccionar');
-      const row = afterRace as DbReaction;
-      const users = await hydrateUsers([row]);
-      return rowToReaction(row, users);
-    }
-
-    throw new Error(insertError?.message || 'Error al reaccionar');
+    return reactToCommentImpl(commentId, type);
   }
 
   async unreactComment(commentId: string): Promise<void> {
-    const userId = await getCurrentUserId();
-    if (!userId) return;
-    const { error } = await supabase
-      .from('reactions')
-      .delete()
-      .eq('user_id', userId)
-      .eq('comment_id', commentId);
-    if (error) throw new Error(error.message || 'Error al quitar reacción');
+    return unreactCommentImpl(commentId);
   }
 
   async getMyReactionsForComments(commentIds: string[]): Promise<Record<string, Reaction | null>> {
-    const result: Record<string, Reaction | null> = {};
-    for (const id of commentIds) result[id] = null;
-    if (commentIds.length === 0) return result;
-
-    const userId = await getCurrentUserId();
-    if (!userId) return result;
-
-    const { data, error } = await supabase
-      .from('reactions')
-      .select('*')
-      .eq('user_id', userId)
-      .in('comment_id', commentIds);
-    if (error || !data) return result;
-
-    for (const row of data as DbReaction[]) {
-      const cid = row.comment_id;
-      if (cid) result[cid] = rowToReaction(row, new Map());
-    }
-    return result;
+    return getMyReactionsForCommentsImpl(commentIds);
   }
 
   async getCountsForComments(commentIds: string[]): Promise<Record<string, ReactionCounts>> {
-    const result: Record<string, ReactionCounts> = {};
-    for (const id of commentIds) result[id] = emptyCounts();
-    if (commentIds.length === 0) return result;
-
-    const { data, error } = await supabase
-      .from('reactions')
-      .select('comment_id, type')
-      .in('comment_id', commentIds);
-    if (error || !data) return result;
-
-    for (const row of data as { comment_id: string; type: DbReactionType }[]) {
-      const counts = result[row.comment_id] ?? emptyCounts();
-      const key = toClientType(row.type);
-      counts[key] = (counts[key] ?? 0) + 1;
-      result[row.comment_id] = counts;
-    }
-    return result;
+    return getCountsForCommentsImpl(commentIds);
   }
 }
 

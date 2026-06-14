@@ -1,52 +1,37 @@
 /**
  * FriendRequestDetailModal
- * 
+ *
  * Modal para mostrar el detalle completo de una solicitud de amistad:
  * - Perfil del solicitante/destinatario (según el contexto)
  * - Mensaje personalizado (si existe)
  * - Botones de acción: Aceptar, Rechazar, Cancelar
  * - Tiempo de envío
+ *
+ * Orchestration shell only: data loading, action handlers, and modal chrome.
+ * The visual sections live in ./detailModal/{ProfileHeader,MessageSection,
+ * InfoSection,ActionButtons}.
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import { 
-  XMarkIcon, 
-  CheckIcon, 
-  XCircleIcon, 
-  ClockIcon, 
-  ChatBubbleLeftRightIcon, 
-  UserIcon 
-} from '@/components/icons/heroicons-shim';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
 import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 import { friendshipsService } from '../services/friendships.service';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { ProfileHeader } from './detailModal/ProfileHeader';
+import { MessageSection } from './detailModal/MessageSection';
+import { InfoSection } from './detailModal/InfoSection';
+import { ActionButtons } from './detailModal/ActionButtons';
+import type { FriendRequestAction, RequesterProfileData } from './detailModal/types';
 
 interface FriendRequestDetailModalProps {
   friendshipId: string;
   isOpen: boolean;
   onClose: () => void;
   onActionComplete?: () => void;
-}
-
-interface RequesterProfileData {
-  friendshipId: string;
-  requesterId: string;
-  addresseeId: string;
-  message?: string;
-  sentAt: string;
-  status: string;
-  profile: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    avatar?: string;
-  };
-  profileType: 'requester' | 'addressee';
 }
 
 export default function FriendRequestDetailModal({
@@ -57,7 +42,7 @@ export default function FriendRequestDetailModal({
 }: FriendRequestDetailModalProps) {
   const [data, setData] = useState<RequesterProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | 'cancel' | null>(null);
+  const [actionLoading, setActionLoading] = useState<FriendRequestAction | null>(null);
   const t = useTranslations('friendships.detailModal');
   const dateLocale = useDateFnsLocale();
 
@@ -84,7 +69,7 @@ export default function FriendRequestDetailModal({
 
   const handleAccept = async () => {
     if (!data) return;
-    
+
     setActionLoading('accept');
     try {
       await friendshipsService.acceptFriendRequest(friendshipId);
@@ -101,7 +86,7 @@ export default function FriendRequestDetailModal({
 
   const handleReject = async () => {
     if (!data) return;
-    
+
     setActionLoading('reject');
     try {
       await friendshipsService.rejectFriendRequest(friendshipId);
@@ -118,7 +103,7 @@ export default function FriendRequestDetailModal({
 
   const handleCancel = async () => {
     if (!data) return;
-    
+
     setActionLoading('cancel');
     try {
       await friendshipsService.cancelFriendRequest(friendshipId);
@@ -171,130 +156,16 @@ export default function FriendRequestDetailModal({
             </div>
           ) : data ? (
             <>
-              {/* Avatar y nombre */}
-              <div className="flex flex-col items-center text-center mb-6">
-                <div className="relative mb-4">
-                  {data.profile.avatar ? (
-                    <img
-                      src={data.profile.avatar}
-                      alt={data.profile.username}
-                      className="w-24 h-24 rounded-full object-cover border-4 border-primary-100 dark:border-primary-900"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center border-4 border-primary-100 dark:border-primary-900">
-                      <UserIcon className="w-12 h-12 text-white" />
-                    </div>
-                  )}
-                </div>
-                
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-1">
-                  {data.profile.firstName} {data.profile.lastName}
-                </h3>
-                
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
-                  @{data.profile.username}
-                </p>
-
-                {/* Badge de tipo de solicitud */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-medium">
-                  <ClockIcon className="w-3 h-3" />
-                  {timeAgo}
-                </div>
-              </div>
-
-              {/* Mensaje personalizado (si existe) */}
-              {data.message && (
-                <div className="mb-6 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <div className="flex items-start gap-2 mb-2">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 mt-0.5 shrink-0" />
-                    <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
-                      {t('messageLabel')}
-                    </p>
-                  </div>
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    &quot;{data.message}&quot;
-                  </p>
-                </div>
-              )}
-
-              {/* Información adicional */}
-              <div className="mb-6 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-neutral-600 dark:text-neutral-400">{t('status')}</span>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100 capitalize">
-                    {data.status === 'pending' ? t('statusPending') : data.status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600 dark:text-neutral-400">{t('type')}</span>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {isAddressee ? t('typeReceived') : t('typeSent')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Botones de acción */}
-              <div className="space-y-3">
-                {isAddressee ? (
-                  // Si eres el destinatario: mostrar Aceptar y Rechazar
-                  <>
-                    <button
-                      onClick={handleAccept}
-                      disabled={actionLoading !== null}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {actionLoading === 'accept' ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>{t('accepting')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckIcon className="w-5 h-5" />
-                          <span>{t('acceptRequest')}</span>
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={handleReject}
-                      disabled={actionLoading !== null}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {actionLoading === 'reject' ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />
-                          <span>{t('rejecting')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <XCircleIcon className="w-5 h-5" />
-                          <span>{t('reject')}</span>
-                        </>
-                      )}
-                    </button>
-                  </>
-                ) : (
-                  // Si eres el remitente: mostrar solo Cancelar
-                  <button
-                    onClick={handleCancel}
-                    disabled={actionLoading !== null}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {actionLoading === 'cancel' ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>{t('cancelling')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircleIcon className="w-5 h-5" />
-                        <span>{t('cancelRequest')}</span>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+              <ProfileHeader profile={data.profile} timeAgo={timeAgo} />
+              <MessageSection message={data.message} />
+              <InfoSection status={data.status} isAddressee={isAddressee} />
+              <ActionButtons
+                isAddressee={isAddressee}
+                actionLoading={actionLoading}
+                onAccept={handleAccept}
+                onReject={handleReject}
+                onCancel={handleCancel}
+              />
             </>
           ) : (
             <div className="text-center py-8">
