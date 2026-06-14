@@ -1,221 +1,38 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken, getServiceClient } from '@/utils/supabase/server';
-import { withRetry } from '@/utils/supabase/with-retry';
 import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
-import { groupAutoName } from '@/features/chat/lib/groupName';
-import { imageUrl } from '@/lib/media/urls';
-
-type ParticipantRow = {
-  conversation_id: string;
-  user_id: string;
-  last_read_at: string | null;
-};
-
-type ConversationRow = {
-  id: string;
-  type: string;
-  name: string | null;
-  avatar: string | null;
-  created_by: string | null;
-  club_id: string | null;
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type MessageRow = {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  media: unknown;
-  created_at: string;
-};
-
-async function getUserId(): Promise<string | null> {
-  const client = await getServerClient();
-  const { data } = await client.auth.getUser();
-  return data?.user?.id ?? null;
-}
+import { getUserIdFromSession } from './_lib/session';
+import { loadConversationList } from './_lib/listConversations';
+import { serializeDirectConversation } from './_lib/serializeConversation';
+import type { ConversationRow } from './_lib/conversations.types';
 
 export async function GET() {
   const token = await getServerAccessToken();
   if (!token) return NextResponse.json({ success: true, data: [], count: 0 });
 
   const client = await getServerClient();
-  const userId = await getUserId();
+  const userId = await getUserIdFromSession();
   if (!userId) return NextResponse.json({ success: true, data: [], count: 0 });
 
-  const { data: myParts, error: partsErr } = await withRetry(() =>
-    client
-      .from('conversation_participants')
-      .select('conversation_id,last_read_at')
-      .eq('user_id', userId),
-  );
-
-  if (partsErr) {
-    return NextResponse.json({ error: partsErr.message }, { status: 500 });
-  }
-
-  const conversationIds = (myParts ?? []).map((p: Partial<ParticipantRow>) => p.conversation_id).filter(Boolean) as string[];
-  if (conversationIds.length === 0) {
-    return NextResponse.json({ success: true, data: [], count: 0 });
-  }
-
-  const { data: convs, error: convErr } = await withRetry(() =>
-    client
-      .from('conversations')
-      .select('*')
-      .in('id', conversationIds)
-      .order('updated_at', { ascending: false }),
-  );
-
-  if (convErr) {
-    return NextResponse.json({ error: convErr.message }, { status: 500 });
-  }
-
-  const { data: allParts } = await withRetry(() =>
-    client
-      .from('conversation_participants')
-      .select('conversation_id,user_id,last_read_at')
-      .in('conversation_id', conversationIds),
-  );
-
-  // Fetch only the latest message per conversation. A single unbounded
-  // `in('conversation_id', …)` pulls every message in every conversation,
-  // which OOM-killed Postgres in the small dev container.
-  const lastMsgResults = await Promise.all(
-    conversationIds.map((cid) =>
-      withRetry(() =>
-        client
-          .from('messages')
-          .select('id,conversation_id,sender_id,content,media,created_at')
-          .eq('conversation_id', cid)
-          .eq('is_deleted', false)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ),
-    ),
-  );
-  const recentMsgs = lastMsgResults
-    .map((r) => (r.data as MessageRow | null))
-    .filter((m): m is MessageRow => m !== null);
-
-  const partsByConv = new Map<string, ParticipantRow[]>();
-  for (const p of (allParts ?? []) as ParticipantRow[]) {
-    if (!partsByConv.has(p.conversation_id)) partsByConv.set(p.conversation_id, []);
-    partsByConv.get(p.conversation_id)!.push(p);
-  }
-
-  const lastMsgByConv = new Map<string, MessageRow>();
-  for (const m of recentMsgs) {
-    lastMsgByConv.set(m.conversation_id, m);
-  }
-
-  const mine = new Map<string, ParticipantRow>();
-  for (const p of (myParts ?? []) as ParticipantRow[]) mine.set(p.conversation_id, p);
-
-  // For DIRECT chats, `conversations.name`/`avatar` are NULL — populate them
-  // from the peer's profile so consumers (header dropdown, etc.) can render
-  // the row without re-fetching. For auto-named GROUP chats we likewise need
-  // the other members' first names to build the per-viewer display name.
-  const peerByConv = new Map<string, string>();
-  const peerIds = new Set<string>();
-  // Group conv id -> ordered list of the *other* members' user ids.
-  const groupOthersByConv = new Map<string, string[]>();
-  for (const c of (convs ?? []) as ConversationRow[]) {
-    if (c.type === 'direct') {
-      const peer = (partsByConv.get(c.id) ?? []).find((p) => p.user_id !== userId);
-      if (peer) {
-        peerByConv.set(c.id, peer.user_id);
-        peerIds.add(peer.user_id);
-      }
-      continue;
+  try {
+    const result = await loadConversationList(client, userId);
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
-    // Group: only fetch member names when we'll need to auto-name it.
-    if (!c.name) {
-      const others = (partsByConv.get(c.id) ?? [])
-        .map((p) => p.user_id)
-        .filter((id) => id !== userId);
-      groupOthersByConv.set(c.id, others);
-      for (const id of others) peerIds.add(id);
-    }
-  }
-
-  const profileById = new Map<string, PeerProfileRow>();
-  if (peerIds.size > 0) {
-    const { data: profiles } = await withRetry(() =>
-      client
-        .from('profiles')
-        .select('id,username,first_name,last_name,avatar_url')
-        .in('id', Array.from(peerIds)),
+    return NextResponse.json({ success: true, data: result.data, count: result.data.length });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Failed to load conversations' },
+      { status: 500 },
     );
-    for (const p of (profiles ?? []) as PeerProfileRow[]) {
-      profileById.set(p.id, p);
-    }
   }
-
-  const result = ((convs ?? []) as ConversationRow[]).map((c) => {
-    const participants = partsByConv.get(c.id) ?? [];
-    const last = lastMsgByConv.get(c.id) ?? null;
-    const myPart = mine.get(c.id);
-    const meta = c.metadata ?? {};
-
-    let name = c.name;
-    let avatar = c.avatar;
-    if (c.type === 'direct') {
-      const peerId = peerByConv.get(c.id);
-      if (peerId) {
-        const display = resolvePeerDisplay(profileById.get(peerId) ?? null, peerId);
-        name = name ?? display.name;
-        avatar = avatar ?? display.avatar;
-      }
-    } else {
-      // GROUP: resolve the Cloudflare photo (we store only the id), and build a
-      // per-viewer display name from the other members when unnamed.
-      const cfImageId = (meta as { avatar_cf_image_id?: string }).avatar_cf_image_id;
-      avatar = avatar ?? (cfImageId ? imageUrl(cfImageId) : null);
-      if (!name) {
-        const others = groupOthersByConv.get(c.id) ?? [];
-        name = groupAutoName(others.map((id) => profileById.get(id)?.first_name ?? ''));
-      }
-    }
-
-    return {
-      id: c.id,
-      type: c.type,
-      name,
-      avatar,
-      clubId: c.club_id ?? null,
-      participantIds: participants.map((p) => p.user_id),
-      lastMessage: last
-        ? {
-            id: last.id,
-            content: last.content,
-            senderId: last.sender_id,
-            createdAt: last.created_at,
-            media: last.media ?? null,
-          }
-        : null,
-      unreadCount: 0,
-      lastReadAt: myPart?.last_read_at ?? null,
-      createdAt: c.created_at,
-      updatedAt: c.updated_at,
-      metadata: meta,
-      isEncrypted: Boolean((meta as { is_encrypted?: boolean }).is_encrypted),
-      encryptionEnabledAt: (meta as { encryption_enabled_at?: string }).encryption_enabled_at ?? null,
-    };
-  });
-
-  return NextResponse.json({ success: true, data: result, count: result.length });
 }
 
 export async function POST(request: NextRequest) {
   const token = await getServerAccessToken();
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const userId = await getUserId();
+  const userId = await getUserIdFromSession();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { participantId } = (await request.json().catch(() => ({}))) as {
@@ -266,20 +83,16 @@ export async function POST(request: NextRequest) {
       if (existing) {
         return NextResponse.json({
           success: true,
-          data: {
+          data: serializeDirectConversation({
+            existing,
+            peer: peerDisplay,
             id: existing.id,
             type: existing.type,
-            name: existing.name ?? peerDisplay.name,
-            avatar: existing.avatar ?? peerDisplay.avatar,
-            participantIds: [userId, participantId],
-            lastMessage: null,
-            unreadCount: 0,
-            lastReadAt: null,
+            userId,
+            participantId,
             createdAt: existing.created_at,
             updatedAt: existing.updated_at,
-            isEncrypted: false,
-            encryptionEnabledAt: null,
-          },
+          }),
         });
       }
     }
@@ -313,19 +126,15 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    data: {
+    data: serializeDirectConversation({
+      existing: conv,
+      peer: peerDisplay,
       id: conv.id,
       type: conv.type,
-      name: conv.name ?? peerDisplay.name,
-      avatar: conv.avatar ?? peerDisplay.avatar,
-      participantIds: [userId, participantId],
-      lastMessage: null,
-      unreadCount: 0,
-      lastReadAt: null,
+      userId,
+      participantId,
       createdAt: conv.created_at,
       updatedAt: conv.updated_at,
-      isEncrypted: false,
-      encryptionEnabledAt: null,
-    },
+    }),
   });
 }

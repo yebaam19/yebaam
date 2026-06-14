@@ -9,6 +9,11 @@ import type {
   MusicAlbumRow,
   MusicArticleAuthor,
 } from '../types/music.types';
+import {
+  CLUB_SELECT,
+  mapClubRow,
+  type ClubRowRaw,
+} from './clubs/club-shape.helpers';
 
 type ProfileLite = {
   id: string;
@@ -64,15 +69,6 @@ export interface MusicClubRow {
   member_count: number;
 }
 
-type ClubGenreJoin = { slug: string; name: string } | Array<{ slug: string; name: string }> | null;
-const CLUB_SELECT =
-  'id, name, slug, description, music_genre_id, cover_image_url, profile_image_url, music_genres!inner(slug, name)';
-
-function pickGenre(j: ClubGenreJoin): { slug: string; name: string } {
-  if (!j) return { slug: '', name: '' };
-  return Array.isArray(j) ? (j[0] ?? { slug: '', name: '' }) : j;
-}
-
 /** Lookup of every genre-club + its album count + its member count.
  *  Ordered by album count desc so the densest clubs lead. `react.cache()` so
  *  the same render doesn't double-query. */
@@ -85,17 +81,7 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
     .not('music_genre_id', 'is', null)
     .order('name', { ascending: true });
   if (error || !clubs) return [];
-  type Row = {
-    id: string;
-    name: string;
-    slug: string;
-    description: string;
-    music_genre_id: string;
-    cover_image_url: string | null;
-    profile_image_url: string | null;
-    music_genres: ClubGenreJoin;
-  };
-  const rows = clubs as unknown as Row[];
+  const rows = clubs as unknown as ClubRowRaw[];
 
   const clubIds = rows.map((r) => r.id);
   if (clubIds.length === 0) return [];
@@ -116,22 +102,12 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
   }
 
   return rows
-    .map((r) => {
-      const g = pickGenre(r.music_genres);
-      return {
-        id: r.id,
-        name: r.name,
-        slug: r.slug,
-        description: r.description,
-        music_genre_id: r.music_genre_id,
-        genre_slug: g.slug,
-        genre_name: g.name,
-        cover_image_url: r.cover_image_url,
-        profile_image_url: r.profile_image_url,
-        album_count: albumCount.get(r.id) ?? 0,
-        member_count: memberCount.get(r.id) ?? 0,
-      };
-    })
+    .map((r) =>
+      mapClubRow(r, {
+        albumCount: albumCount.get(r.id) ?? 0,
+        memberCount: memberCount.get(r.id) ?? 0,
+      }),
+    )
     .sort((a, b) => b.album_count - a.album_count || a.name.localeCompare(b.name));
 });
 
@@ -144,18 +120,7 @@ export const getMusicClubBySlug = cache(async (slug: string): Promise<MusicClubR
     .eq('slug', slug)
     .maybeSingle();
   if (!club) return null;
-  type Row = {
-    id: string;
-    name: string;
-    slug: string;
-    description: string;
-    music_genre_id: string;
-    cover_image_url: string | null;
-    profile_image_url: string | null;
-    music_genres: ClubGenreJoin;
-  };
-  const c = club as unknown as Row;
-  const g = pickGenre(c.music_genres);
+  const c = club as unknown as ClubRowRaw;
 
   const [{ count: albumCount }, { count: memberCount }] = await Promise.all([
     client
@@ -168,19 +133,10 @@ export const getMusicClubBySlug = cache(async (slug: string): Promise<MusicClubR
       .eq('club_id', c.id),
   ]);
 
-  return {
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    description: c.description,
-    music_genre_id: c.music_genre_id,
-    genre_slug: g.slug,
-    genre_name: g.name,
-    cover_image_url: c.cover_image_url,
-    profile_image_url: c.profile_image_url,
-    album_count: albumCount ?? 0,
-    member_count: memberCount ?? 0,
-  };
+  return mapClubRow(c, {
+    albumCount: albumCount ?? 0,
+    memberCount: memberCount ?? 0,
+  });
 });
 
 export interface AlbumForClub extends MusicAlbumRow {

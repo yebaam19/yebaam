@@ -9,79 +9,19 @@ import {
   type ReactionsResponse,
   type UpdateReactionDTO,
 } from '../interfaces/reaction.interfaces';
-
-type DbReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
-
-type DbReaction = {
-  id: string;
-  type: DbReactionType;
-  user_id: string;
-  post_id: string | null;
-  comment_id: string | null;
-  created_at: string;
-};
-
-type DbProfile = {
-  id: string;
-  username: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  avatar_url: string | null;
-};
-
-function toClientType(t: DbReactionType): ReactionType {
-  return t.toUpperCase() as ReactionType;
-}
-function toDbType(t: ReactionType): DbReactionType {
-  return t.toLowerCase() as DbReactionType;
-}
-
-function rowToReaction(row: DbReaction, users: Map<string, DbProfile>): Reaction {
-  const profile = users.get(row.user_id);
-  return {
-    id: row.id,
-    postId: row.post_id ?? '',
-    commentId: row.comment_id ?? undefined,
-    userId: row.user_id,
-    type: toClientType(row.type),
-    createdAt: row.created_at,
-    updatedAt: row.created_at,
-    user: profile
-      ? {
-          id: profile.id,
-          username: profile.username ?? '',
-          firstName: profile.first_name ?? '',
-          lastName: profile.last_name ?? '',
-          avatar: profile.avatar_url ?? undefined,
-        }
-      : undefined,
-  };
-}
-
-async function hydrateUsers(rows: DbReaction[]): Promise<Map<string, DbProfile>> {
-  const ids = Array.from(new Set(rows.map((r) => r.user_id)));
-  if (ids.length === 0) return new Map();
-  const { data } = await supabase
-    .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url')
-    .in('id', ids);
-  const map = new Map<string, DbProfile>();
-  for (const p of (data ?? []) as DbProfile[]) map.set(p.id, p);
-  return map;
-}
-
-function emptyCounts(): ReactionCounts {
-  return { LIKE: 0, LOVE: 0, HAHA: 0, WOW: 0, SAD: 0, ANGRY: 0 };
-}
-
-function isDuplicateUserPostReactionError(err: { message?: string } | null | undefined): boolean {
-  const msg = err?.message ?? '';
-  return (
-    msg.includes('idx_reactions_user_post') ||
-    msg.includes('duplicate key') ||
-    msg.includes('23505')
-  );
-}
+import {
+  type DbReaction,
+  type DbReactionType,
+  emptyCounts,
+  rowToReaction,
+  toClientType,
+  toDbType,
+} from './reaction.mappers';
+import {
+  hydrateUsers,
+  isDuplicateUserCommentReactionError,
+  isDuplicateUserPostReactionError,
+} from './reaction.queries';
 
 export class ReactionService {
   async react(data: CreateReactionDTO): Promise<Reaction> {
@@ -290,7 +230,7 @@ export class ReactionService {
       return rowToReaction(row, users);
     }
 
-    if (insertError && /duplicate key|23505|idx_reactions_user_comment/.test(insertError.message ?? '')) {
+    if (insertError && isDuplicateUserCommentReactionError(insertError)) {
       const { data: afterRace, error: retryError } = await supabase
         .from('reactions')
         .update({ type: dbType })

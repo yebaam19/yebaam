@@ -1,7 +1,6 @@
 import 'server-only'
 import { cache } from 'react'
 import { getServerClient } from '@/utils/supabase/server'
-import { cfImageUrl } from '@/features/badges/server/cf'
 import type {
   AdminBadgeRow,
   AdminUserLookup,
@@ -9,6 +8,16 @@ import type {
   BadgeRequestRow,
   UserBadgeGrant,
 } from '@/features/admin/types/badges.types'
+import { aggregateBadgeCounts } from '@/features/admin/server/badges/badge-counts.server'
+import {
+  BADGE_COLUMNS,
+  mapAuditRow,
+  mapBadgeRow,
+  mapGrantRow,
+  mapRequestRow,
+  mapUserLookup,
+  type BadgeListRow,
+} from '@/features/admin/server/badges/badges.mappers'
 
 /**
  * Server reads backing the `/admin/badges/**` views.
@@ -20,25 +29,6 @@ import type {
  */
 
 // ---------- Badges list ----------
-
-type BadgeListRow = {
-  id: string
-  slug: string
-  name: string
-  description: string
-  icon_cf_image_id: string | null
-  category: string
-  slot: 'insignia' | 'badge'
-  visibility: 'public' | 'private'
-  tier: string | null
-  is_unique: boolean
-  requestable: boolean
-  auto_accept: boolean
-  is_system: boolean
-  deleted_at: string | null
-  created_at: string
-  requirements_md: string
-}
 
 export interface ListAdminBadgesResult {
   items: AdminBadgeRow[]
@@ -62,10 +52,7 @@ export const listAdminBadges = cache(async function listAdminBadges(params: {
 
   let q = client
     .from('badges')
-    .select(
-      'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at, requirements_md',
-      { count: 'exact' },
-    )
+    .select(BADGE_COLUMNS, { count: 'exact' })
     .order('is_system', { ascending: false })
     .order('name', { ascending: true })
 
@@ -84,56 +71,16 @@ export const listAdminBadges = cache(async function listAdminBadges(params: {
     console.error('[listAdminBadges]', error)
     return { items: [], total: 0, page, pageSize }
   }
-  const rows = (data ?? []) as BadgeListRow[]
+  const rows = (data ?? []) as unknown as BadgeListRow[]
 
   // Aggregate active grant counts + pending request counts per badge.
   const ids = rows.map((r) => r.id)
   const counts = await aggregateBadgeCounts(ids)
 
-  const items: AdminBadgeRow[] = rows.map((r) => ({
-    id: r.id,
-    slug: r.slug,
-    name: r.name,
-    description: r.description,
-    iconUrl: cfImageUrl(r.icon_cf_image_id),
-    category: r.category,
-    slot: r.slot,
-    visibility: r.visibility,
-    tier: r.tier,
-    isUnique: Boolean(r.is_unique),
-    requestable: Boolean(r.requestable),
-    autoAccept: Boolean(r.auto_accept),
-    isSystem: Boolean(r.is_system),
-    deletedAt: r.deleted_at,
-    grantCount: counts[r.id]?.grants ?? 0,
-    pendingRequestCount: counts[r.id]?.requests ?? 0,
-    createdAt: r.created_at,
-    requirementsMd: r.requirements_md ?? '',
-  }))
+  const items: AdminBadgeRow[] = rows.map((r) => mapBadgeRow(r, counts))
 
   return { items, total: count ?? 0, page, pageSize }
 })
-
-async function aggregateBadgeCounts(
-  badgeIds: string[],
-): Promise<Record<string, { grants: number; requests: number }>> {
-  const out: Record<string, { grants: number; requests: number }> = {}
-  if (badgeIds.length === 0) return out
-  for (const id of badgeIds) out[id] = { grants: 0, requests: 0 }
-
-  const client = await getServerClient()
-  const [grants, requests] = await Promise.all([
-    client.from('user_badges').select('badge_id').in('badge_id', badgeIds).is('revoked_at', null),
-    client.from('badge_requests').select('badge_id').in('badge_id', badgeIds).eq('status', 'pending'),
-  ])
-  for (const row of (grants.data ?? []) as Array<{ badge_id: string }>) {
-    if (out[row.badge_id]) out[row.badge_id].grants += 1
-  }
-  for (const row of (requests.data ?? []) as Array<{ badge_id: string }>) {
-    if (out[row.badge_id]) out[row.badge_id].requests += 1
-  }
-  return out
-}
 
 // ---------- Single badge detail ----------
 
@@ -143,9 +90,7 @@ export const getAdminBadgeBySlug = cache(async function getAdminBadgeBySlug(
   const client = await getServerClient()
   const { data, error } = await client
     .from('badges')
-    .select(
-      'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at, requirements_md',
-    )
+    .select(BADGE_COLUMNS)
     .eq('slug', slug)
     .maybeSingle()
   if (error) {
@@ -153,54 +98,12 @@ export const getAdminBadgeBySlug = cache(async function getAdminBadgeBySlug(
     return null
   }
   if (!data) return null
-  const row = data as BadgeListRow
+  const row = data as unknown as BadgeListRow
   const counts = await aggregateBadgeCounts([row.id])
-  return {
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    description: row.description,
-    iconUrl: cfImageUrl(row.icon_cf_image_id),
-    category: row.category,
-    slot: row.slot,
-    visibility: row.visibility,
-    tier: row.tier,
-    isUnique: Boolean(row.is_unique),
-    requestable: Boolean(row.requestable),
-    autoAccept: Boolean(row.auto_accept),
-    isSystem: Boolean(row.is_system),
-    deletedAt: row.deleted_at,
-    grantCount: counts[row.id]?.grants ?? 0,
-    pendingRequestCount: counts[row.id]?.requests ?? 0,
-    createdAt: row.created_at,
-    requirementsMd: row.requirements_md ?? '',
-  }
+  return mapBadgeRow(row, counts)
 })
 
 // ---------- Grants for a badge ----------
-
-type GrantRow = {
-  id: string
-  user_id: string
-  awarded_by: string | null
-  awarded_at: string
-  reason: string | null
-  acceptance_status: 'pending' | 'accepted' | 'declined'
-  accepted_at: string | null
-  declined_at: string | null
-  revoked_at: string | null
-  revoke_reason: string | null
-  is_hidden: boolean
-  recipient: {
-    id: string
-    username: string | null
-    display_name: string | null
-    first_name: string | null
-    last_name: string | null
-    avatar_url: string | null
-  } | null
-  granter: { id: string; username: string | null } | null
-}
 
 export const listBadgeGrants = cache(async function listBadgeGrants(
   badgeId: string,
@@ -223,42 +126,10 @@ export const listBadgeGrants = cache(async function listBadgeGrants(
     console.error('[listBadgeGrants]', error)
     return []
   }
-  return ((data ?? []) as unknown as GrantRow[]).map((r) => ({
-    id: r.id,
-    userId: r.user_id,
-    username: r.recipient?.username ?? null,
-    displayName:
-      r.recipient?.display_name ??
-      ([r.recipient?.first_name, r.recipient?.last_name].filter(Boolean).join(' ') || null),
-    avatarUrl: r.recipient?.avatar_url ?? null,
-    awardedBy: r.awarded_by,
-    awardedByUsername: r.granter?.username ?? null,
-    awardedAt: r.awarded_at,
-    reason: r.reason,
-    acceptanceStatus: r.acceptance_status,
-    acceptedAt: r.accepted_at,
-    declinedAt: r.declined_at,
-    revokedAt: r.revoked_at,
-    revokeReason: r.revoke_reason,
-    isHidden: Boolean(r.is_hidden),
-  }))
+  return ((data ?? []) as unknown as Parameters<typeof mapGrantRow>[0][]).map(mapGrantRow)
 })
 
 // ---------- Audit log ----------
-
-type AuditRow = {
-  id: string
-  action: BadgeAuditRow['action']
-  badge_id: string | null
-  user_id: string | null
-  actor_id: string | null
-  reason: string | null
-  detail: Record<string, unknown> | null
-  created_at: string
-  badge: { name: string } | null
-  recipient: { username: string | null } | null
-  actor: { username: string | null } | null
-}
 
 export const listBadgeAudit = cache(async function listBadgeAudit(params: {
   badgeId?: string
@@ -288,19 +159,7 @@ export const listBadgeAudit = cache(async function listBadgeAudit(params: {
     console.error('[listBadgeAudit]', error)
     return []
   }
-  return ((data ?? []) as unknown as AuditRow[]).map((r) => ({
-    id: r.id,
-    action: r.action,
-    badgeId: r.badge_id,
-    badgeName: r.badge?.name ?? null,
-    userId: r.user_id,
-    username: r.recipient?.username ?? null,
-    actorId: r.actor_id,
-    actorUsername: r.actor?.username ?? null,
-    reason: r.reason,
-    detail: r.detail,
-    createdAt: r.created_at,
-  }))
+  return ((data ?? []) as unknown as Parameters<typeof mapAuditRow>[0][]).map(mapAuditRow)
 })
 
 // ---------- User lookup for grant ----------
@@ -325,47 +184,10 @@ export const lookupUserForGrant = cache(async function lookupUserForGrant(
     console.error('[lookupUserForGrant]', error)
     return []
   }
-  return ((data ?? []) as Array<{
-    id: string
-    username: string | null
-    display_name: string | null
-    first_name: string | null
-    last_name: string | null
-    avatar_url: string | null
-  }>).map((r) => ({
-    id: r.id,
-    username: r.username ?? '',
-    displayName:
-      r.display_name ??
-      ([r.first_name, r.last_name].filter(Boolean).join(' ') || r.username || ''),
-    avatarUrl: r.avatar_url,
-  }))
+  return ((data ?? []) as unknown as Parameters<typeof mapUserLookup>[0][]).map(mapUserLookup)
 })
 
 // ---------- Badge requests admin queue ----------
-
-type RequestListRow = {
-  id: string
-  status: 'pending' | 'approved' | 'rejected' | 'withdrawn'
-  badge_id: string
-  user_id: string
-  reason: string
-  supporting_cf_image_ids: string[]
-  created_at: string
-  reviewed_at: string | null
-  reviewed_by: string | null
-  decision_reason: string | null
-  badge: { slug: string; name: string; icon_cf_image_id: string | null } | null
-  requester: {
-    id: string
-    username: string | null
-    display_name: string | null
-    first_name: string | null
-    last_name: string | null
-    avatar_url: string | null
-  } | null
-  reviewer: { username: string | null } | null
-}
 
 export const listPendingBadgeRequests = cache(async function listPendingBadgeRequests(params: {
   status?: 'pending' | 'approved' | 'rejected' | 'withdrawn'
@@ -395,25 +217,5 @@ export const listPendingBadgeRequests = cache(async function listPendingBadgeReq
     console.error('[listPendingBadgeRequests]', error)
     return []
   }
-  return ((data ?? []) as unknown as RequestListRow[]).map((r) => ({
-    id: r.id,
-    status: r.status,
-    badgeId: r.badge_id,
-    badgeSlug: r.badge?.slug ?? '',
-    badgeName: r.badge?.name ?? '',
-    badgeIconUrl: cfImageUrl(r.badge?.icon_cf_image_id),
-    userId: r.user_id,
-    username: r.requester?.username ?? null,
-    displayName:
-      r.requester?.display_name ??
-      ([r.requester?.first_name, r.requester?.last_name].filter(Boolean).join(' ') || null),
-    avatarUrl: r.requester?.avatar_url ?? null,
-    reason: r.reason,
-    supportingCfImageIds: r.supporting_cf_image_ids ?? [],
-    createdAt: r.created_at,
-    reviewedAt: r.reviewed_at,
-    reviewedBy: r.reviewed_by,
-    reviewedByUsername: r.reviewer?.username ?? null,
-    decisionReason: r.decision_reason,
-  }))
+  return ((data ?? []) as unknown as Parameters<typeof mapRequestRow>[0][]).map(mapRequestRow)
 })

@@ -10,6 +10,7 @@ import type {
   ReactionType,
 } from '../interfaces/reaction.interfaces';
 import { reactionService } from '../services/reaction.service';
+import { bumpCount, decrementCountsMap, incrementCountsMap } from './reaction.counts';
 
 interface ReactionState {
   // Estado principal
@@ -303,52 +304,18 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
    * [WebSocket] Incrementar contador de reacciones
    */
   incrementCount: (postId: string, type: ReactionType) => {
-    set(state => {
-      const counts = state.countsByPost[postId] || {
-        LIKE: 0,
-        LOVE: 0,
-        HAHA: 0,
-        WOW: 0,
-        SAD: 0,
-        ANGRY: 0,
-      };
-
-      return {
-        countsByPost: {
-          ...state.countsByPost,
-          [postId]: {
-            ...counts,
-            [type]: counts[type] + 1,
-          },
-        },
-      };
-    });
+    set(state => ({
+      countsByPost: incrementCountsMap(state.countsByPost, postId, type),
+    }));
   },
 
   /**
    * [WebSocket] Decrementar contador de reacciones
    */
   decrementCount: (postId: string, type: ReactionType) => {
-    set(state => {
-      const counts = state.countsByPost[postId] || {
-        LIKE: 0,
-        LOVE: 0,
-        HAHA: 0,
-        WOW: 0,
-        SAD: 0,
-        ANGRY: 0,
-      };
-
-      return {
-        countsByPost: {
-          ...state.countsByPost,
-          [postId]: {
-            ...counts,
-            [type]: Math.max(0, counts[type] - 1),
-          },
-        },
-      };
-    });
+    set(state => ({
+      countsByPost: decrementCountsMap(state.countsByPost, postId, type),
+    }));
   },
 
   // ============================================
@@ -466,20 +433,3 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
     });
   },
 }));
-
-function emptyCounts(): ReactionCounts {
-  return { LIKE: 0, LOVE: 0, HAHA: 0, WOW: 0, SAD: 0, ANGRY: 0 };
-}
-
-function bumpCount(
-  map: Record<string, ReactionCounts>,
-  id: string,
-  add: ReactionType | null,
-  remove: ReactionType | null,
-): Record<string, ReactionCounts> {
-  const current = map[id] ?? emptyCounts();
-  const next: ReactionCounts = { ...current };
-  if (remove) next[remove] = Math.max(0, next[remove] - 1);
-  if (add) next[add] = next[add] + 1;
-  return { ...map, [id]: next };
-}

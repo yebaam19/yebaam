@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
 import { getServiceClient } from '@/utils/supabase/server';
 import { deleteImage } from '@/lib/cloudflare/images';
@@ -12,21 +11,12 @@ import type {
   UpdateMusicMediaInput,
 } from '../types/music-media.types';
 import { requireSession, type ActionResult } from './_shared';
-
-function revalidateForItem(item: {
-  artists: Array<{ slug: string }>;
-  albums: Array<{ slug: string }>;
-  clubs: Array<{ slug: string }>;
-}) {
-  revalidatePath('/musica');
-  revalidatePath('/admin/music');
-  for (const a of item.artists) revalidatePath(`/musica/artistas/${a.slug}`);
-  for (const a of item.albums) revalidatePath(`/musica/albumes/${a.slug}`);
-  for (const c of item.clubs) {
-    revalidatePath(`/musica/clubes/${c.slug}`);
-    revalidatePath(`/musica/clubes/${c.slug}/galeria`);
-  }
-}
+import { isPlatformAdmin, assertClubMembership } from './music-media/authorization.helpers';
+import { revalidateForItem, revalidateMusicMediaBase } from './music-media/revalidate.helpers';
+import {
+  assembleAdminMediaItems,
+  type RawAdminMediaRow,
+} from './music-media/admin-media.helpers';
 
 /** Insert a new music media item plus its three pivots. The base row is
  *  inserted by the user's own client so RLS attributes uploaded_by correctly;
@@ -92,23 +82,12 @@ export async function createMusicMedia(
   // Enforce club membership unless the user is a platform admin. Service
   // client bypasses RLS, so we re-check the authorization rule here.
   if (clubIds.length > 0) {
-    const { data: pa } = await session.client
-      .from('platform_admins')
-      .select('user_id')
-      .eq('user_id', session.userId)
-      .maybeSingle();
-    if (!pa) {
-      const { data: cm } = await session.client
-        .from('club_members')
-        .select('club_id')
-        .eq('user_id', session.userId)
-        .in('club_id', clubIds);
-      const allowed = new Set(((cm ?? []) as Array<{ club_id: string }>).map((r) => r.club_id));
-      const denied = clubIds.filter((id) => !allowed.has(id));
-      if (denied.length > 0) {
+    if (!(await isPlatformAdmin(session.client, session.userId))) {
+      const denied = await assertClubMembership(session.client, session.userId, clubIds);
+      if (denied) {
         return {
           ok: false,
-          error: 'No eres miembro de uno o más clubes seleccionados.',
+          error: denied,
         };
       }
     }
@@ -132,8 +111,7 @@ export async function createMusicMedia(
       : Promise.resolve(null),
   ]);
 
-  revalidatePath('/musica');
-  revalidatePath('/admin/music');
+  revalidateMusicMediaBase();
   return { ok: true, data: { id: mediaId } };
 }
 
@@ -155,12 +133,7 @@ export async function updateMusicMedia(
   if (!existing) return { ok: false, error: 'Item no encontrado.' };
   const ownerId = (existing as { uploaded_by: string | null }).uploaded_by;
 
-  const { data: pa } = await session.client
-    .from('platform_admins')
-    .select('user_id')
-    .eq('user_id', session.userId)
-    .maybeSingle();
-  const isAdmin = Boolean(pa);
+  const isAdmin = await isPlatformAdmin(session.client, session.userId);
   if (!isAdmin && ownerId !== session.userId) {
     return { ok: false, error: 'No tienes permisos para editar este item.' };
   }
@@ -201,14 +174,9 @@ export async function updateMusicMedia(
   }
   if (patch.clubIds !== undefined) {
     if (!isAdmin && patch.clubIds.length > 0) {
-      const { data: cm } = await session.client
-        .from('club_members')
-        .select('club_id')
-        .eq('user_id', session.userId)
-        .in('club_id', patch.clubIds);
-      const allowed = new Set(((cm ?? []) as Array<{ club_id: string }>).map((r) => r.club_id));
-      if (patch.clubIds.some((cid) => !allowed.has(cid))) {
-        return { ok: false, error: 'No eres miembro de uno o más clubes seleccionados.' };
+      const denied = await assertClubMembership(session.client, session.userId, patch.clubIds);
+      if (denied) {
+        return { ok: false, error: denied };
       }
     }
     ops.push(
@@ -224,8 +192,7 @@ export async function updateMusicMedia(
   }
   await Promise.all(ops);
 
-  revalidatePath('/musica');
-  revalidatePath('/admin/music');
+  revalidateMusicMediaBase();
   return { ok: true, data: { updated: true } };
 }
 
@@ -251,12 +218,7 @@ export async function deleteMusicMedia(
     thumbnail_cf_image_id: string | null;
   };
 
-  const { data: pa } = await session.client
-    .from('platform_admins')
-    .select('user_id')
-    .eq('user_id', session.userId)
-    .maybeSingle();
-  const isAdmin = Boolean(pa);
+  const isAdmin = await isPlatformAdmin(session.client, session.userId);
   if (!isAdmin && row.uploaded_by !== session.userId) {
     return { ok: false, error: 'No tienes permisos para borrar este item.' };
   }
@@ -329,12 +291,7 @@ export async function listClubsForCurrentUser(): Promise<
 > {
   const session = await requireSession();
   if (!session) return { ok: false, error: 'Inicia sesión.' };
-  const { data: pa } = await session.client
-    .from('platform_admins')
-    .select('user_id')
-    .eq('user_id', session.userId)
-    .maybeSingle();
-  if (pa) {
+  if (await isPlatformAdmin(session.client, session.userId)) {
     const { data } = await session.client
       .from('clubs')
       .select('id, name, slug')
@@ -365,12 +322,9 @@ export async function listAdminMusicMedia(
 ): Promise<ActionResult<MusicMediaItem[]>> {
   const session = await requireSession();
   if (!session) return { ok: false, error: 'Inicia sesión.' };
-  const { data: pa } = await session.client
-    .from('platform_admins')
-    .select('user_id')
-    .eq('user_id', session.userId)
-    .maybeSingle();
-  if (!pa) return { ok: false, error: 'Solo administradores.' };
+  if (!(await isPlatformAdmin(session.client, session.userId))) {
+    return { ok: false, error: 'Solo administradores.' };
+  }
 
   const service = getServiceClient();
   const { data: rows, error } = await service
@@ -408,58 +362,16 @@ export async function listAdminMusicMedia(
       ? service.from('clubs').select('id, name, slug').in('id', cIds)
       : Promise.resolve({ data: [] as Array<{ id: string; name: string; slug: string }> }),
   ]);
-  const aMap = new Map<string, { id: string; name: string; slug: string }>();
-  for (const a of (aRes.data ?? []) as Array<{ id: string; name: string; slug: string }>) aMap.set(a.id, a);
-  const bMap = new Map<string, { id: string; title: string; slug: string }>();
-  for (const a of (bRes.data ?? []) as Array<{ id: string; title: string; slug: string }>) bMap.set(a.id, a);
-  const cMap = new Map<string, { id: string; name: string; slug: string }>();
-  for (const a of (cRes.data ?? []) as Array<{ id: string; name: string; slug: string }>) cMap.set(a.id, a);
-
-  const artistsByMediaId = new Map<string, Array<{ id: string; name: string; slug: string }>>();
-  for (const r of aRows) {
-    const ref = aMap.get(r.artist_id);
-    if (!ref) continue;
-    const list = artistsByMediaId.get(r.media_id) ?? [];
-    list.push(ref);
-    artistsByMediaId.set(r.media_id, list);
-  }
-  const albumsByMediaId = new Map<string, Array<{ id: string; title: string; slug: string }>>();
-  for (const r of bRows) {
-    const ref = bMap.get(r.album_id);
-    if (!ref) continue;
-    const list = albumsByMediaId.get(r.media_id) ?? [];
-    list.push(ref);
-    albumsByMediaId.set(r.media_id, list);
-  }
-  const clubsByMediaId = new Map<string, Array<{ id: string; name: string; slug: string }>>();
-  for (const r of cRows) {
-    const ref = cMap.get(r.club_id);
-    if (!ref) continue;
-    const list = clubsByMediaId.get(r.media_id) ?? [];
-    list.push(ref);
-    clubsByMediaId.set(r.media_id, list);
-  }
 
   return {
     ok: true,
-    data: (rows as Array<{
-      id: string;
-      kind: 'photo' | 'video';
-      source: 'cf_image' | 'cf_stream' | 'embed';
-      cf_image_id: string | null;
-      cf_stream_uid: string | null;
-      embed_url: string | null;
-      embed_provider: 'youtube' | 'vimeo' | null;
-      thumbnail_cf_image_id: string | null;
-      caption: string | null;
-      duration_seconds: number | null;
-      uploaded_by: string | null;
-      created_at: string;
-    }>).map((r) => ({
-      ...r,
-      artists: artistsByMediaId.get(r.id) ?? [],
-      albums: albumsByMediaId.get(r.id) ?? [],
-      clubs: clubsByMediaId.get(r.id) ?? [],
-    })),
+    data: assembleAdminMediaItems(rows as RawAdminMediaRow[], {
+      aRows,
+      bRows,
+      cRows,
+      aRes: (aRes.data ?? []) as Array<{ id: string; name: string; slug: string }>,
+      bRes: (bRes.data ?? []) as Array<{ id: string; title: string; slug: string }>,
+      cRes: (cRes.data ?? []) as Array<{ id: string; name: string; slug: string }>,
+    }),
   };
 }

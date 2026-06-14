@@ -1,110 +1,39 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getServerClient } from '@/utils/supabase/server'
-import { requirePlatformAdmin } from '@/features/admin/server/auth'
+import { requireAdminWithUser } from './_shared'
+import { slugify, validateSlug } from './_shared'
+import {
+  sanitizeForm,
+  insertAudit,
+  revalidateBadgeSurfaces,
+} from './badges/badges.helpers'
 import type { BadgeFormInput } from '@/features/admin/types/badges.types'
 
 /**
- * Admin-only Server Actions for `/admin/badges/**`. Every export starts with
- * `await requirePlatformAdmin()` so direct navigation to the action endpoint
- * is gated. RLS on badges/user_badges/badge_requests/badge_audit_log already
- * grants writes to `platform_admins`, so the queries use the caller's session.
+ * Admin-only Server Actions for `/admin/badges/**`. Every export gates via
+ * `requireAdminWithUser()` (which redirects a non-admin before any mutation)
+ * and returns the acting user id. RLS on badges/user_badges/badge_requests/
+ * badge_audit_log already grants writes to `platform_admins`, so the queries
+ * use the caller's session.
  */
 
-export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string }
-
-const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80)
-}
-
-function validateSlug(slug: string): string | null {
-  if (!slug) return 'slug_required'
-  if (slug.length < 2 || slug.length > 80) return 'slug_length'
-  if (!SLUG_RE.test(slug)) return 'slug_format'
-  return null
-}
-
-function sanitizeForm(input: BadgeFormInput): BadgeFormInput {
-  return {
-    slug: (input.slug ?? '').trim(),
-    name: (input.name ?? '').trim(),
-    description: (input.description ?? '').trim(),
-    iconCfImageId: input.iconCfImageId?.trim() || null,
-    category: (input.category ?? 'other').trim() || 'other',
-    slot: input.slot === 'badge' ? 'badge' : 'insignia',
-    visibility: input.visibility === 'private' ? 'private' : 'public',
-    tier: input.tier?.trim() || null,
-    isUnique: Boolean(input.isUnique),
-    requestable: Boolean(input.requestable),
-    autoAccept: Boolean(input.autoAccept),
-    requirementsMd: (input.requirementsMd ?? '').trim(),
-  }
-}
-
-async function insertAudit(
-  client: Awaited<ReturnType<typeof getServerClient>>,
-  actorId: string,
-  action:
-    | 'create'
-    | 'update'
-    | 'soft_delete'
-    | 'restore'
-    | 'grant'
-    | 'revoke'
-    | 'request_approve'
-    | 'request_reject',
-  ctx: { badgeId?: string | null; userId?: string | null; reason?: string | null; detail?: Record<string, unknown> },
-): Promise<void> {
-  const { error } = await client.from('badge_audit_log').insert({
-    actor_id: actorId,
-    action,
-    badge_id: ctx.badgeId ?? null,
-    user_id: ctx.userId ?? null,
-    reason: ctx.reason ?? null,
-    detail: ctx.detail ?? null,
-  })
-  if (error) console.error('[badge_audit_log insert]', error)
-}
-
-function revalidateBadgeSurfaces(opts?: { username?: string | null; slug?: string }) {
-  // Tag-based invalidation across unstable_cache (catalog.server.ts). The
-  // 2-arg revalidateTag in Next 16 wants a CacheLife profile name; 'default'
-  // matches what unstable_cache uses out of the box.
-  revalidatePath('/admin/badges')
-  revalidatePath('/insignias')
-  if (opts?.slug) {
-    revalidatePath(`/admin/badges/${opts.slug}`)
-    revalidatePath(`/insignias/${opts.slug}`)
-  }
-  if (opts?.username) revalidatePath(`/${opts.username}`)
-}
+export type { ActionResult } from './_shared'
+import type { ActionResult } from './_shared'
 
 // ---------- Badge catalog CRUD ----------
 
 export async function createBadge(
   input: BadgeFormInput,
 ): Promise<ActionResult<{ id: string; slug: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   const safe = sanitizeForm(input)
   if (!safe.name) return { ok: false, error: 'name_required' }
   const slug = safe.slug || slugify(safe.name)
   const slugErr = validateSlug(slug)
   if (slugErr) return { ok: false, error: slugErr }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   const { data: existing } = await client.from('badges').select('id').eq('slug', slug).maybeSingle()
   if (existing) return { ok: false, error: 'slug_taken' }
@@ -124,14 +53,14 @@ export async function createBadge(
       requestable: safe.requestable,
       auto_accept: safe.autoAccept,
       requirements_md: safe.requirementsMd,
-      created_by: user.id,
+      created_by: userId,
     })
     .select('id, slug')
     .maybeSingle()
   if (error) return { ok: false, error: error.message }
   if (!data) return { ok: false, error: 'insert_returned_no_row' }
 
-  await insertAudit(client, user.id, 'create', {
+  await insertAudit(client, userId, 'create', {
     badgeId: data.id,
     detail: { slug: data.slug, name: safe.name },
   })
@@ -142,7 +71,7 @@ export async function createBadge(
 export async function updateBadge(
   input: BadgeFormInput & { id: string; previousSlug: string },
 ): Promise<ActionResult<{ slug: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!input.id) return { ok: false, error: 'id_required' }
   const safe = sanitizeForm(input)
   if (!safe.name) return { ok: false, error: 'name_required' }
@@ -150,11 +79,7 @@ export async function updateBadge(
   const slugErr = validateSlug(slug)
   if (slugErr) return { ok: false, error: slugErr }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   if (slug !== input.previousSlug) {
     const { data: clash } = await client
@@ -185,7 +110,7 @@ export async function updateBadge(
     .eq('id', input.id)
   if (error) return { ok: false, error: error.message }
 
-  await insertAudit(client, user.id, 'update', {
+  await insertAudit(client, userId, 'update', {
     badgeId: input.id,
     detail: { slug, name: safe.name, previousSlug: input.previousSlug },
   })
@@ -198,14 +123,10 @@ export async function updateBadge(
 }
 
 export async function softDeleteBadge(badgeId: string): Promise<ActionResult<{ slug: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!badgeId) return { ok: false, error: 'id_required' }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   const { data: existing } = await client
     .from('badges')
@@ -221,20 +142,16 @@ export async function softDeleteBadge(badgeId: string): Promise<ActionResult<{ s
     .eq('id', badgeId)
   if (error) return { ok: false, error: error.message }
 
-  await insertAudit(client, user.id, 'soft_delete', { badgeId, detail: { slug: existing.slug } })
+  await insertAudit(client, userId, 'soft_delete', { badgeId, detail: { slug: existing.slug } })
   revalidateBadgeSurfaces({ slug: existing.slug })
   return { ok: true, data: { slug: existing.slug } }
 }
 
 export async function restoreBadge(badgeId: string): Promise<ActionResult<{ slug: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!badgeId) return { ok: false, error: 'id_required' }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   const { data: existing } = await client
     .from('badges')
@@ -246,7 +163,7 @@ export async function restoreBadge(badgeId: string): Promise<ActionResult<{ slug
   const { error } = await client.from('badges').update({ deleted_at: null }).eq('id', badgeId)
   if (error) return { ok: false, error: error.message }
 
-  await insertAudit(client, user.id, 'restore', { badgeId, detail: { slug: existing.slug } })
+  await insertAudit(client, userId, 'restore', { badgeId, detail: { slug: existing.slug } })
   revalidateBadgeSurfaces({ slug: existing.slug })
   return { ok: true, data: { slug: existing.slug } }
 }
@@ -258,14 +175,10 @@ export async function grantBadge(input: {
   userId: string
   reason?: string | null
 }): Promise<ActionResult<{ grantId: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!input.badgeId || !input.userId) return { ok: false, error: 'missing_args' }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   // Confirm badge exists + not soft-deleted.
   const { data: badge } = await client
@@ -287,7 +200,7 @@ export async function grantBadge(input: {
     .insert({
       badge_id: input.badgeId,
       user_id: input.userId,
-      awarded_by: user.id,
+      awarded_by: userId,
       reason: input.reason?.trim() || null,
     })
     .select('id')
@@ -298,7 +211,7 @@ export async function grantBadge(input: {
   }
   if (!data) return { ok: false, error: 'insert_returned_no_row' }
 
-  await insertAudit(client, user.id, 'grant', {
+  await insertAudit(client, userId, 'grant', {
     badgeId: input.badgeId,
     userId: input.userId,
     reason: input.reason ?? null,
@@ -312,14 +225,10 @@ export async function revokeBadge(input: {
   grantId: string
   reason?: string | null
 }): Promise<ActionResult<{ grantId: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!input.grantId) return { ok: false, error: 'id_required' }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   const { data: grant } = await client
     .from('user_badges')
@@ -331,7 +240,7 @@ export async function revokeBadge(input: {
   const { error } = await client
     .from('user_badges')
     .update({
-      revoked_by: user.id,
+      revoked_by: userId,
       revoked_at: new Date().toISOString(),
       revoke_reason: input.reason?.trim() || null,
     })
@@ -340,7 +249,7 @@ export async function revokeBadge(input: {
 
   const slug = (grant as unknown as { badge: { slug: string } | null }).badge?.slug
   const username = (grant as unknown as { recipient: { username: string } | null }).recipient?.username
-  await insertAudit(client, user.id, 'revoke', {
+  await insertAudit(client, userId, 'revoke', {
     badgeId: grant.badge_id,
     userId: grant.user_id,
     reason: input.reason ?? null,
@@ -356,14 +265,10 @@ export async function approveBadgeRequest(input: {
   requestId: string
   reason?: string | null
 }): Promise<ActionResult<{ grantId: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!input.requestId) return { ok: false, error: 'id_required' }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   const { data: req, error: reqErr } = await client
     .from('badge_requests')
@@ -382,7 +287,7 @@ export async function approveBadgeRequest(input: {
     .insert({
       badge_id: req.badge_id,
       user_id: req.user_id,
-      awarded_by: user.id,
+      awarded_by: userId,
       acceptance_status: 'accepted',
       accepted_at: nowIso,
       source_request_id: req.id,
@@ -399,7 +304,7 @@ export async function approveBadgeRequest(input: {
     .from('badge_requests')
     .update({
       status: 'approved',
-      reviewed_by: user.id,
+      reviewed_by: userId,
       reviewed_at: nowIso,
       decision_reason: input.reason?.trim() || null,
     })
@@ -408,7 +313,7 @@ export async function approveBadgeRequest(input: {
 
   const slug = (req as unknown as { badge: { slug: string } | null }).badge?.slug
   const username = (req as unknown as { requester: { username: string } | null }).requester?.username
-  await insertAudit(client, user.id, 'request_approve', {
+  await insertAudit(client, userId, 'request_approve', {
     badgeId: req.badge_id,
     userId: req.user_id,
     reason: input.reason ?? null,
@@ -423,14 +328,10 @@ export async function rejectBadgeRequest(input: {
   requestId: string
   reason?: string | null
 }): Promise<ActionResult<{ requestId: string }>> {
-  await requirePlatformAdmin()
+  const { client, userId } = await requireAdminWithUser()
   if (!input.requestId) return { ok: false, error: 'id_required' }
 
-  const client = await getServerClient()
-  const {
-    data: { user },
-  } = await client.auth.getUser()
-  if (!user) return { ok: false, error: 'not_authenticated' }
+  if (userId === null) return { ok: false, error: 'not_authenticated' }
 
   const { data: req } = await client
     .from('badge_requests')
@@ -444,7 +345,7 @@ export async function rejectBadgeRequest(input: {
     .from('badge_requests')
     .update({
       status: 'rejected',
-      reviewed_by: user.id,
+      reviewed_by: userId,
       reviewed_at: new Date().toISOString(),
       decision_reason: input.reason?.trim() || null,
     })
@@ -453,7 +354,7 @@ export async function rejectBadgeRequest(input: {
 
   const slug = (req as unknown as { badge: { slug: string } | null }).badge?.slug
   const username = (req as unknown as { requester: { username: string } | null }).requester?.username
-  await insertAudit(client, user.id, 'request_reject', {
+  await insertAudit(client, userId, 'request_reject', {
     badgeId: req.badge_id,
     userId: req.user_id,
     reason: input.reason ?? null,
