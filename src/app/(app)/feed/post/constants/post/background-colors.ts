@@ -1,0 +1,118 @@
+/**
+ * Colores de fondo para posts (estilo Facebook)
+ * Solo colores sólidos hexadecimales compatibles con el backend
+ */
+export const BACKGROUND_COLORS = [
+  {
+    id: 'none',
+    name: 'Sin color',
+    value: '#ffffff',
+    textColor: '#000000',
+    preview: 'bg-white dark:bg-neutral-900',
+  },
+  {
+    id: 'solid-red',
+    name: 'Rojo',
+    value: '#FF5733',
+    textColor: '#ffffff',
+    preview: 'bg-[#FF5733]',
+  },
+  {
+    id: 'solid-pink',
+    name: 'Rosa',
+    value: '#FF69B4',
+    textColor: '#ffffff',
+    preview: 'bg-[#FF69B4]',
+  },
+  {
+    id: 'solid-orange',
+    name: 'Naranja',
+    value: '#e67e22',
+    textColor: '#ffffff',
+    preview: 'bg-[#e67e22]',
+  },
+  {
+    id: 'solid-yellow',
+    name: 'Amarillo',
+    value: '#f1c40f',
+    textColor: '#000000',
+    preview: 'bg-[#f1c40f]',
+  },
+  {
+    id: 'solid-green',
+    name: 'Verde',
+    value: '#2ecc71',
+    textColor: '#ffffff',
+    preview: 'bg-[#2ecc71]',
+  },
+  {
+    id: 'solid-teal',
+    name: 'Verde azulado',
+    value: '#1abc9c',
+    textColor: '#ffffff',
+    preview: 'bg-[#1abc9c]',
+  },
+  {
+    id: 'solid-blue',
+    name: 'Azul',
+    value: '#3498db',
+    textColor: '#ffffff',
+    preview: 'bg-[#3498db]',
+  },
+  {
+    id: 'solid-indigo',
+    name: 'Índigo',
+    value: '#667eea',
+    textColor: '#ffffff',
+    preview: 'bg-[#667eea]',
+  },
+  {
+    id: 'solid-purple',
+    name: 'Morado',
+    value: '#9b59b6',
+    textColor: '#ffffff',
+    preview: 'bg-[#9b59b6]',
+  },
+  {
+    id: 'solid-magenta',
+    name: 'Magenta',
+    value: '#A445B2',
+    textColor: '#ffffff',
+    preview: 'bg-[#A445B2]',
+  },
+  {
+    id: 'solid-brown',
+    name: 'Marrón',
+    value: '#8B4513',
+    textColor: '#ffffff',
+    preview: 'bg-[#8B4513]',
+  },
+  {
+    id: 'solid-gray',
+    name: 'Gris',
+    value: '#95a5a6',
+    textColor: '#ffffff',
+    preview: 'bg-[#95a5a6]',
+  },
+  {
+    id: 'solid-navy',
+    name: 'Azul marino',
+    value: '#2c3e50',
+    textColor: '#ffffff',
+    preview: 'bg-[#2c3e50]',
+  },
+  {
+    id: 'solid-crimson',
+    name: 'Carmesí',
+    value: '#DC143C',
+    textColor: '#ffffff',
+    preview: 'bg-[#DC143C]',
+  },
+  {
+    id: 'solid-lime',
+    name: 'Lima',
+    value: '#32CD32',
+    textColor: '#000000',
+    preview: 'bg-[#32CD32]',
+  },
+] as const;

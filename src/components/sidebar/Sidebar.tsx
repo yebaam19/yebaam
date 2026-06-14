@@ -184,7 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-1">
           {/* Items siempre visibles */}
-          {visibleItems.map((item: any) => {
+          {visibleItems.map((item) => {
             const isActive = isPathActive(item.href)
             const IconComponent = item.icon
             const showExpanded = isMobile || !isCollapsed
@@ -255,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
           {/* Items adicionales */}
           {isExpanded &&
             (isMobile || !isCollapsed) &&
-            additionalItems.map((item: any) => {
+            additionalItems.map((item) => {
               const isActive = isPathActive(item.href)
               const IconComponent = item.icon
 
