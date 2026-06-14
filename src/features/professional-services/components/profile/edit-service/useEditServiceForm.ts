@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { FEATURE_FLAGS } from '@/config/features-flag';
 import { useUpdateService } from '../../../hooks/useServices';
@@ -11,109 +10,29 @@ import type {
   ProfessionalService,
   UpdateProfessionalServiceDTO,
 } from '../../../interfaces/professional-service.interfaces';
+import type {
+  EditServiceFields,
+  EditServiceSetters,
+  UseEditServiceForm,
+} from './edit-service-form.types';
+
+// Re-exported so the tab components keep importing these from `./useEditServiceForm`.
+export type { EditServiceFields, EditServiceSetters, UseEditServiceForm };
 
 /**
  * View-model for `EditServiceModal`. Owns the ~20 form-state pieces, the
  * three Cloudflare upload hooks, the submit pipeline, and the derived
- * `isBusy` flag the shell + footer buttons gate on.
+ * `isBusy` flag the shell + footer buttons gate on. The return-contract types
+ * live in `./edit-service-form.types`.
  *
  * Tabs read their slice off the returned object — the modal shell wires
  * everything together and chooses which tabs render.
  */
-export interface UseEditServiceForm {
-  fields: EditServiceFields;
-  setters: EditServiceSetters;
-  images: ImageState;
-  cv: CvState;
-  portfolio: PortfolioState;
-  rates: RatesHelpers;
-  uploads: {
-    cover: ReturnType<typeof useUploadServiceImages>;
-    logo: ReturnType<typeof useUploadServiceImages>;
-    cv: ReturnType<typeof useUploadServiceImages>;
-  };
-  status: {
-    isBusy: boolean;
-    isPending: boolean;
-    saveSuccess: boolean;
-    error: string | null;
-  };
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
-}
-
-export interface EditServiceFields {
-  name: string;
-  description: string;
-  tags: string;
-  email: string;
-  phone: string;
-  website: string;
-  address: string;
-  facebookUrl: string;
-  instagramUrl: string;
-  twitterUrl: string;
-  linkedinUrl: string;
-  youtubeUrl: string;
-  tiktokUrl: string;
-  hourlyRate: string;
-  dailyRate: string;
-  projectRate: string;
-  currency: string;
-  availableForHire: boolean;
-  workType: string[];
-}
-
-export interface EditServiceSetters {
-  setName: (v: string) => void;
-  setDescription: (v: string) => void;
-  setTags: (v: string) => void;
-  setEmail: (v: string) => void;
-  setPhone: (v: string) => void;
-  setWebsite: (v: string) => void;
-  setAddress: (v: string) => void;
-  setFacebookUrl: (v: string) => void;
-  setInstagramUrl: (v: string) => void;
-  setTwitterUrl: (v: string) => void;
-  setLinkedinUrl: (v: string) => void;
-  setYoutubeUrl: (v: string) => void;
-  setTiktokUrl: (v: string) => void;
-  setHourlyRate: (v: string) => void;
-  setDailyRate: (v: string) => void;
-  setProjectRate: (v: string) => void;
-  setCurrency: (v: string) => void;
-  setAvailableForHire: (v: boolean) => void;
-}
-
-interface ImageState {
-  logoUrl: string | null;
-  coverUrl: string | null;
-  onLogoSelect: (file: File) => void;
-  onCoverSelect: (file: File) => void;
-  onLogoUrlChange: (url: string) => void;
-  onCoverUrlChange: (url: string) => void;
-}
-
-interface CvState {
-  cvUrl: string | null;
-  onCvSelect: (file: File) => void;
-  onCvUrlChange: (url: string | null) => void;
-}
-
-interface PortfolioState {
-  projects: PortfolioProject[];
-  setProjects: (p: PortfolioProject[]) => void;
-}
-
-interface RatesHelpers {
-  toggleWorkType: (type: string) => void;
-}
-
 export function useEditServiceForm(
   service: ProfessionalService,
   onOpenChange: (open: boolean) => void,
 ): UseEditServiceForm {
   const t = useTranslations('professional.services.editModal');
-  const router = useRouter();
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -186,16 +105,9 @@ export function useEditServiceForm(
     );
   }, []);
 
-  // NOTE: the original modal defined `handleUpdateSuccess` / `handleUpdateError`
-  // for the mutation but never wired them to React Query — they were silenced
-  // with `void`. Preserving the same behavior here (mutation fires-and-forgets;
-  // success toast/cache invalidation lives in `useUpdateService`). The local
-  // `saveSuccess` + auto-close branch remain reachable via a dedicated wiring
-  // in a follow-up — out of scope for this split.
-  // Reserved for that follow-up:
-  void setSaveSuccess;
-  void router;
-  void t;
+  // NOTE: `saveSuccess` is returned in `status` but currently only ever set to
+  // `false` — the mutation fires-and-forgets; success toast + cache invalidation
+  // live in `useUpdateService`. Wiring a success/auto-close branch is a follow-up.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

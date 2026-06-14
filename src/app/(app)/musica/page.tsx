@@ -13,12 +13,9 @@ import { AlbumCoverCard } from '@/features/music-archive/components/AlbumCoverCa
 import { MusicSearchBar } from '@/features/music-archive/components/MusicSearchBar';
 import { MusicClubsGrid } from '@/features/music-archive/components/MusicClubsGrid';
 import { MusicMediaSmartFeed } from '@/features/music-archive/components/media/MusicMediaSmartFeed';
-import { GenreBrowser } from '@/features/music-archive/components/genre/GenreBrowser';
-import { pillClass } from '@/features/music-archive/lib/pill-class';
-import {
-  MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS,
-  sortCountryCodesByLabel,
-} from '@/features/music-archive/components/upload/constants';
+import { MusicFilterRail } from '@/features/music-archive/components/landing/MusicFilterRail';
+import { LANDING_DECADES } from '@/features/music-archive/components/landing/musica-decades';
+import { MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS } from '@/features/music-archive/components/upload/constants';
 import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
 import { getServerClient } from '@/utils/supabase/server';
 
@@ -28,34 +25,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('landing.metaTitle'),
     description: t('landing.metaDescription'),
   };
-}
-
-const DECADES: Array<{ start: number; label: string }> = [
-  { start: 1900, label: '1900s' },
-  { start: 1910, label: '1910s' },
-  { start: 1920, label: '1920s' },
-  { start: 1930, label: '1930s' },
-  { start: 1940, label: '1940s' },
-  { start: 1950, label: '1950s' },
-  { start: 1960, label: '1960s' },
-  { start: 1970, label: '1970s' },
-];
-
-function buildHref(opts: {
-  decade?: number;
-  country?: string;
-  forTrade?: boolean;
-  genre?: string;
-  condition?: string;
-}): Route {
-  const params = new URLSearchParams();
-  if (opts.decade !== undefined) params.set('decade', String(opts.decade));
-  if (opts.country) params.set('country', opts.country);
-  if (opts.forTrade) params.set('trade', '1');
-  if (opts.genre) params.set('genre', opts.genre);
-  if (opts.condition) params.set('condition', opts.condition);
-  const qs = params.toString();
-  return (qs ? `/musica?${qs}` : '/musica') as Route;
 }
 
 export default async function MusicArchiveLandingPage({
@@ -73,7 +42,7 @@ export default async function MusicArchiveLandingPage({
   const t = await getTranslations('musica');
 
   const decadeNum = Number(sp.decade);
-  const decade = DECADES.some((d) => d.start === decadeNum) ? decadeNum : undefined;
+  const decade = LANDING_DECADES.some((d) => d.start === decadeNum) ? decadeNum : undefined;
   const countryCode = (sp.country ?? '').toUpperCase();
   const country = MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS.includes(countryCode) ? countryCode : undefined;
   const forTrade = sp.trade === '1';
@@ -125,10 +94,6 @@ export default async function MusicArchiveLandingPage({
     headingFragments.length === 0
       ? t('landing.recentlyUploaded')
       : `${t('landing.filteredHeadingBase')} ${headingFragments.join(' ')}`;
-
-  const sortedCountries = sortCountryCodesByLabel(MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS, (code) =>
-    t(`countries.${code}`),
-  );
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
@@ -225,105 +190,14 @@ export default async function MusicArchiveLandingPage({
         </section>
       )}
 
-      <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.decadeHeading')}</h2>
-        <div className="flex flex-wrap gap-2">
-          {DECADES.map((d) => {
-            const active = decade === d.start;
-            return (
-              <Link
-                key={d.start}
-                href={buildHref({
-                  decade: active ? undefined : d.start,
-                  country,
-                  forTrade,
-                  genre: genreSlug,
-                  condition: conditionValue,
-                })}
-                className={pillClass(active)}
-                aria-pressed={active}
-              >
-                {d.label}
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.tradeHeading')}</h2>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={buildHref({
-              decade,
-              country,
-              forTrade: !forTrade,
-              genre: genreSlug,
-              condition: conditionValue,
-            })}
-            className={pillClass(forTrade)}
-            aria-pressed={forTrade}
-          >
-            {t('landing.tradeOnly')}
-          </Link>
-        </div>
-      </section>
-
-      <GenreBrowser
+      <MusicFilterRail
+        decade={decade}
+        country={country}
+        forTrade={forTrade}
+        genreSlug={genreSlug}
+        conditionValue={conditionValue}
         genres={genres}
-        activeSlug={genreSlug}
-        currentParams={{ decade, country, forTrade, condition: conditionValue }}
       />
-
-      <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.conditionHeading')}</h2>
-        <div className="flex flex-wrap gap-2">
-          {(Object.keys(ALBUM_CONDITION_LABELS) as AlbumCondition[]).map((c) => {
-            const active = conditionValue === c;
-            return (
-              <Link
-                key={c}
-                href={buildHref({
-                  decade,
-                  country,
-                  forTrade,
-                  genre: genreSlug,
-                  condition: active ? undefined : c,
-                })}
-                className={pillClass(active)}
-                aria-pressed={active}
-              >
-                {t(`conditions.${c}`)}
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{t('landing.countryHeading')}</h2>
-        <div className="flex flex-wrap gap-2">
-          {sortedCountries.map((code) => {
-            const active = country === code;
-            return (
-              <Link
-                key={code}
-                href={buildHref({
-                  decade,
-                  country: active ? undefined : code,
-                  forTrade,
-                  genre: genreSlug,
-                  condition: conditionValue,
-                })}
-                className={pillClass(active)}
-                aria-pressed={active}
-              >
-                {t(`countries.${code}`)}
-              </Link>
-            );
-          })}
-        </div>
-      </section>
     </div>
   );
 }

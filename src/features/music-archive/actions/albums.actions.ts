@@ -5,6 +5,7 @@ import { getServiceClient } from '@/utils/supabase/server';
 import { deleteAudio } from '@/lib/cloudflare/r2';
 import { deleteImage } from '@/lib/cloudflare/images';
 import type {
+  AdminAlbumListItem,
   CreateAlbumDto,
   MusicAlbumRow,
   MusicArtistRow,
@@ -136,25 +137,7 @@ export async function deleteAlbum(id: string): Promise<ActionResult<{ deleted: t
   return { ok: true, data: { deleted: true } };
 }
 
-export async function listAdminAlbums(q?: string): Promise<
-  ActionResult<
-    Array<{
-      id: string;
-      title: string;
-      slug: string;
-      year: number | null;
-      country: string | null;
-      format: string;
-      cover_cf_image_id: string | null;
-      catalog_number: string | null;
-      condition: string | null;
-      for_trade: boolean;
-      artist_id: string;
-      artist_name: string;
-      track_count: number;
-    }>
-  >
-> {
+export async function listAdminAlbums(q?: string): Promise<ActionResult<AdminAlbumListItem[]>> {
   const gate = await adminGate();
   if (!gate.ok) return gate;
   const service = getServiceClient();

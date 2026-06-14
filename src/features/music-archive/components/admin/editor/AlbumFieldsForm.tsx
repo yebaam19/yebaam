@@ -14,37 +14,14 @@ import {
 } from '../../../types/music.types';
 import { COUNTRIES, FORMATS, inputCls, sortCountryCodesByLabel } from '../../upload/constants';
 import { CoverField } from './CoverField';
+import type { AlbumFieldsSetters, AlbumFieldsValues } from './useAlbumFields';
 
 interface Props {
   album: MusicAlbumRow;
   artist: MusicArtistRow | null;
   label: MusicLabelRow | null;
-  title: string;
-  setTitle: (v: string) => void;
-  year: string;
-  setYear: (v: string) => void;
-  decade: string;
-  setDecade: (v: string) => void;
-  country: string;
-  setCountry: (v: string) => void;
-  accompaniment: string;
-  setAccompaniment: (v: string) => void;
-  format: MusicAlbumFormat;
-  setFormat: (v: MusicAlbumFormat) => void;
-  catalogNumber: string;
-  setCatalogNumber: (v: string) => void;
-  notes: string;
-  setNotes: (v: string) => void;
-  condition: AlbumCondition | '';
-  setCondition: (v: AlbumCondition | '') => void;
-  forTrade: boolean;
-  setForTrade: (v: boolean) => void;
-  coverFront: File | null;
-  setCoverFront: (f: File | null) => void;
-  coverBack: File | null;
-  setCoverBack: (f: File | null) => void;
-  labelImage: File | null;
-  setLabelImage: (f: File | null) => void;
+  fields: AlbumFieldsValues;
+  setters: AlbumFieldsSetters;
   saving: boolean;
   onSave: () => void;
 }
@@ -56,41 +33,10 @@ const DECADES: number[] = (() => {
 })();
 
 /** Album-level field block inside the AdminAlbumEditor — every editable
- *  scalar plus the three cover slots. The parent owns state so a single
- *  Save button submits everything in one updateAlbum call. */
-export function AlbumFieldsForm({
-  album,
-  artist,
-  label,
-  title,
-  setTitle,
-  year,
-  setYear,
-  decade,
-  setDecade,
-  country,
-  setCountry,
-  accompaniment,
-  setAccompaniment,
-  format,
-  setFormat,
-  catalogNumber,
-  setCatalogNumber,
-  notes,
-  setNotes,
-  condition,
-  setCondition,
-  forTrade,
-  setForTrade,
-  coverFront,
-  setCoverFront,
-  coverBack,
-  setCoverBack,
-  labelImage,
-  setLabelImage,
-  saving,
-  onSave,
-}: Props) {
+ *  scalar plus the three cover slots. The parent owns state (via
+ *  `useAlbumEditor`) so a single Save button submits everything in one
+ *  updateAlbum call. */
+export function AlbumFieldsForm({ album, artist, label, fields, setters, saving, onSave }: Props) {
   const t = useTranslations('musica');
   const sortedCountries = useMemo(
     () => sortCountryCodesByLabel(COUNTRIES, (code) => t(`countries.${code}` as const)),
@@ -98,10 +44,10 @@ export function AlbumFieldsForm({
   );
 
   function syncDecadeFromYear() {
-    const n = Number(year);
-    if (!year || Number.isNaN(n) || n < 1850 || n > 2030) return;
+    const n = Number(fields.year);
+    if (!fields.year || Number.isNaN(n) || n < 1850 || n > 2030) return;
     const computed = Math.floor(n / 10) * 10;
-    if (!decade) setDecade(String(computed));
+    if (!fields.decade) setters.setDecade(String(computed));
   }
 
   return (
@@ -111,8 +57,8 @@ export function AlbumFieldsForm({
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.titleField')}</label>
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={fields.title}
+            onChange={(e) => setters.setTitle(e.target.value)}
             className={inputCls}
           />
         </div>
@@ -129,8 +75,8 @@ export function AlbumFieldsForm({
           </label>
           <input
             type="text"
-            value={accompaniment}
-            onChange={(e) => setAccompaniment(e.target.value)}
+            value={fields.accompaniment}
+            onChange={(e) => setters.setAccompaniment(e.target.value)}
             className={inputCls}
           />
         </div>
@@ -139,8 +85,8 @@ export function AlbumFieldsForm({
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.yearField')}</label>
           <input
             type="number"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
+            value={fields.year}
+            onChange={(e) => setters.setYear(e.target.value)}
             onBlur={syncDecadeFromYear}
             className={inputCls}
             min={1800}
@@ -152,8 +98,8 @@ export function AlbumFieldsForm({
             {t('admin.albumEditor.decadeField')}
           </label>
           <select
-            value={decade}
-            onChange={(e) => setDecade(e.target.value)}
+            value={fields.decade}
+            onChange={(e) => setters.setDecade(e.target.value)}
             className={inputCls}
           >
             <option value="">{t('upload.fieldEmpty')}</option>
@@ -167,8 +113,8 @@ export function AlbumFieldsForm({
         <div>
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.countryField')}</label>
           <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
+            value={fields.country}
+            onChange={(e) => setters.setCountry(e.target.value)}
             className={inputCls}
           >
             <option value="">{t('upload.fieldEmpty')}</option>
@@ -183,8 +129,8 @@ export function AlbumFieldsForm({
         <div>
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.formatField')}</label>
           <select
-            value={format}
-            onChange={(e) => setFormat(e.target.value as MusicAlbumFormat)}
+            value={fields.format}
+            onChange={(e) => setters.setFormat(e.target.value as MusicAlbumFormat)}
             className={inputCls}
           >
             {FORMATS.map((f) => (
@@ -213,8 +159,8 @@ export function AlbumFieldsForm({
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.catalogNumberField')}</label>
           <input
             type="text"
-            value={catalogNumber}
-            onChange={(e) => setCatalogNumber(e.target.value)}
+            value={fields.catalogNumber}
+            onChange={(e) => setters.setCatalogNumber(e.target.value)}
             className={inputCls}
           />
         </div>
@@ -223,8 +169,8 @@ export function AlbumFieldsForm({
       <div>
         <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.notesField')}</label>
         <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          value={fields.notes}
+          onChange={(e) => setters.setNotes(e.target.value)}
           rows={3}
           className={inputCls}
         />
@@ -234,8 +180,8 @@ export function AlbumFieldsForm({
         <div className="sm:col-span-2">
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.conditionField')}</label>
           <select
-            value={condition}
-            onChange={(e) => setCondition(e.target.value as AlbumCondition | '')}
+            value={fields.condition}
+            onChange={(e) => setters.setCondition(e.target.value as AlbumCondition | '')}
             className={inputCls}
           >
             <option value="">{t('upload.fieldEmpty')}</option>
@@ -250,8 +196,8 @@ export function AlbumFieldsForm({
           <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
-              checked={forTrade}
-              onChange={(e) => setForTrade(e.target.checked)}
+              checked={fields.forTrade}
+              onChange={(e) => setters.setForTrade(e.target.checked)}
               className="h-4 w-4"
             />
             <span>{t('admin.albumEditor.tradeField')}</span>
@@ -263,20 +209,20 @@ export function AlbumFieldsForm({
         <CoverField
           label={t('admin.albumEditor.coverFrontField')}
           currentId={album.cover_cf_image_id}
-          file={coverFront}
-          onChange={setCoverFront}
+          file={fields.coverFront}
+          onChange={setters.setCoverFront}
         />
         <CoverField
           label={t('admin.albumEditor.coverBackField')}
           currentId={album.back_cover_cf_image_id}
-          file={coverBack}
-          onChange={setCoverBack}
+          file={fields.coverBack}
+          onChange={setters.setCoverBack}
         />
         <CoverField
           label={t('admin.albumEditor.labelImageField')}
           currentId={album.label_cf_image_id}
-          file={labelImage}
-          onChange={setLabelImage}
+          file={fields.labelImage}
+          onChange={setters.setLabelImage}
         />
       </div>
 

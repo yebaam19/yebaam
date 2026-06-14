@@ -6,7 +6,7 @@ import {
   mapPost,
   type PostRow,
 } from '@/lib/api/posts';
-import { fromPostMedia } from '@/lib/media/parse';
+import { mirrorMediaToProfileGallery } from '@/lib/api/mirror-post-media';
 
 async function getUserId() {
   const client = await getServerClient();
@@ -174,82 +174,4 @@ export async function POST(request: NextRequest) {
 
   const profiles = await loadProfilesForPosts(client, [row]);
   return NextResponse.json({ success: true, data: mapPost(row, profiles) });
-}
-
-type SupabaseClient = Awaited<ReturnType<typeof getServerClient>>;
-
-const POST_TO_GALLERY_VISIBILITY: Record<string, 'public' | 'friends' | 'private'> = {
-  public: 'public',
-  friends: 'friends',
-  private: 'private',
-};
-
-/**
- * Mirror a post's media into the profile gallery tables. Decisions about
- * "what is this entry, where does its Cloudflare id live, what's the
- * duration" are delegated to `fromPostMedia` from `src/lib/media/parse.ts`.
- *
- * Wire-only fields the canonical `MediaItem` doesn't carry (`url` and
- * `size_bytes` — both stored verbatim on the gallery row) are read from the
- * raw JSONB entry alongside the parsed item. The two arrays stay in
- * lockstep: `fromPostMedia` returns one `MediaItem` per parsed entry, and we
- * skip raw entries it dropped.
- */
-async function mirrorMediaToProfileGallery(
-  client: SupabaseClient,
-  userId: string,
-  postPrivacy: string,
-  mediaFiles: unknown,
-): Promise<void> {
-  if (!Array.isArray(mediaFiles) || mediaFiles.length === 0) return;
-  const visibility = POST_TO_GALLERY_VISIBILITY[postPrivacy] ?? 'public';
-
-  const photos: Array<Record<string, unknown>> = [];
-  const videos: Array<Record<string, unknown>> = [];
-
-  for (const raw of mediaFiles) {
-    if (!raw || typeof raw !== 'object') continue;
-    const rawObj = raw as Record<string, unknown>;
-    const [item] = fromPostMedia([rawObj]);
-    // The legacy mirror also required a delivery URL — keep that requirement
-    // (we persist it verbatim on the gallery row).
-    if (!item) continue;
-    const url = typeof rawObj.url === 'string' ? rawObj.url : null;
-    if (!url) continue;
-    const size = typeof rawObj.size === 'number' ? rawObj.size : null;
-
-    if (item.kind === 'video') {
-      videos.push({
-        user_id: userId,
-        storage_bucket: 'cloudflare-stream',
-        storage_key: item.cfId,
-        url,
-        thumbnail_url: item.thumbnailUrl ?? null,
-        duration_seconds:
-          typeof item.durationSeconds === 'number' ? Math.round(item.durationSeconds) : null,
-        size_bytes: size,
-        mime_type: item.mimeType ?? null,
-        visibility,
-      });
-    } else {
-      photos.push({
-        user_id: userId,
-        storage_bucket: 'cloudflare-images',
-        storage_key: item.cfId,
-        url,
-        size_bytes: size,
-        mime_type: item.mimeType ?? null,
-        visibility,
-      });
-    }
-  }
-
-  if (photos.length > 0) {
-    const { error: photoErr } = await client.from('profile_photos').insert(photos);
-    if (photoErr) console.error('[posts] mirror profile_photos failed:', photoErr.message);
-  }
-  if (videos.length > 0) {
-    const { error: videoErr } = await client.from('profile_videos').insert(videos);
-    if (videoErr) console.error('[posts] mirror profile_videos failed:', videoErr.message);
-  }
 }

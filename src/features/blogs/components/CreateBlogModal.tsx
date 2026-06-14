@@ -2,13 +2,10 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
-import { useRouter } from 'next/navigation'
-import { Fragment, useState } from 'react'
-import { toast } from 'sonner'
+import { Fragment } from 'react'
 import { useTranslations } from 'next-intl'
-import { useCreateBlog } from '../hooks/useBlogs'
-import { uploadService } from '@/lib/service/upload.service'
-import { BlogFormFields, type BlogFormData } from './BlogFormFields'
+import { useCreateBlogForm } from '../hooks/useCreateBlogForm'
+import { BlogFormFields } from './BlogFormFields'
 import { BlogImageUploader } from './BlogImageUploader'
 
 interface CreateBlogModalProps {
@@ -17,137 +14,19 @@ interface CreateBlogModalProps {
 }
 
 export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
-  const router = useRouter()
   const t = useTranslations('blogs')
-  const createBlogMutation = useCreateBlog()
-  const [uploadingImages, setUploadingImages] = useState(false)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [coverFile, setCoverFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [coverPreview, setCoverPreview] = useState<string | null>(null)
-  const [formData, setFormData] = useState<BlogFormData>({
-    name: '',
-    description: '',
-    category: 'AMIGOS',
-    subcategory: '',
-    website: '',
-    tags: '',
-  })
-
-  const handleAvatarChange = (file: File | null) => {
-    if (file) {
-      setAvatarFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleCoverChange = (file: File | null) => {
-    if (file) {
-      setCoverFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setCoverPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleAvatarRemove = () => {
-    setAvatarFile(null)
-    setAvatarPreview(null)
-  }
-
-  const handleCoverRemove = () => {
-    setCoverFile(null)
-    setCoverPreview(null)
-  }
-
-  const uploadImages = async (): Promise<{ profileImageUrl?: string; coverImageUrl?: string }> => {
-    const urls: { profileImageUrl?: string; coverImageUrl?: string } = {}
-
-    try {
-      // Upload to Cloudflare Images (every image in the app goes to Cloudflare).
-      if (avatarFile) {
-        setUploadingImages(true)
-        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).url
-      }
-      if (coverFile) {
-        setUploadingImages(true)
-        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).url
-      }
-    } finally {
-      setUploadingImages(false)
-    }
-
-    return urls
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.name || !formData.description) {
-      toast.error(t('create.errorRequired'))
-      return
-    }
-
-    try {
-      // Primero subir imágenes si existen
-      const imageUrls = await uploadImages()
-
-      const blog = await createBlogMutation.mutateAsync({
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        subcategory: formData.subcategory || undefined,
-        website: formData.website || undefined,
-        social: {
-          instagram: formData.instagram?.trim() || undefined,
-          youtube: formData.youtube?.trim() || undefined,
-          facebook: formData.facebook?.trim() || undefined,
-          twitter: formData.twitter?.trim() || undefined,
-        },
-        tags: formData.tags
-          ? formData.tags
-              .split(',')
-              .map((t) => t.trim())
-              .filter(Boolean)
-          : undefined,
-        ...imageUrls, // profileImageUrl y coverImageUrl
-      })
-
-      toast.success(t('create.success'))
-      handleClose()
-      router.push(`/feed/blogs/${blog.slug}`)
-    } catch (error) {
-      console.error('Error creating blog:', error)
-      toast.error(error instanceof Error ? error.message : t('create.errorCreating'))
-    }
-  }
-
-  const handleClose = () => {
-    if (!createBlogMutation.isPending && !uploadingImages) {
-      onClose()
-      // Reset form after animation
-      setTimeout(() => {
-        setFormData({
-          name: '',
-          description: '',
-          category: 'AMIGOS',
-          subcategory: '',
-          website: '',
-          tags: '',
-        })
-        setAvatarFile(null)
-        setAvatarPreview(null)
-        setCoverFile(null)
-        setCoverPreview(null)
-      }, 300)
-    }
-  }
+  const {
+    formData,
+    handleFieldsChange,
+    uploadingImages,
+    isPending,
+    coverFile,
+    coverPreview,
+    handleCoverChange,
+    handleCoverRemove,
+    handleSubmit,
+    handleClose,
+  } = useCreateBlogForm(onClose)
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -188,7 +67,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                   </div>
                   <button
                     onClick={handleClose}
-                    disabled={createBlogMutation.isPending}
+                    disabled={isPending}
                     className="rounded-full p-2 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:hover:bg-neutral-700"
                   >
                     <XMarkIcon className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
@@ -200,8 +79,8 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                   {/* Form Fields */}
                   <BlogFormFields
                     formData={formData}
-                    onChange={(data) => setFormData({ ...formData, ...data })}
-                    disabled={createBlogMutation.isPending || uploadingImages}
+                    onChange={handleFieldsChange}
+                    disabled={isPending || uploadingImages}
                   />
 
                   {/* Imágenes */}
@@ -212,7 +91,7 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                       file={coverFile}
                       onFileChange={handleCoverChange}
                       onRemove={handleCoverRemove}
-                      disabled={createBlogMutation.isPending || uploadingImages}
+                      disabled={isPending || uploadingImages}
                       type="cover"
                     />
                   </div>
@@ -228,21 +107,19 @@ export const CreateBlogModal = ({ isOpen, onClose }: CreateBlogModalProps) => {
                     <button
                       type="button"
                       onClick={handleClose}
-                      disabled={createBlogMutation.isPending}
+                      disabled={isPending}
                       className="flex-1 rounded-lg border border-neutral-300 px-4 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
                     >
                       {t('actions.cancel')}
                     </button>
                     <button
                       type="submit"
-                      disabled={
-                        createBlogMutation.isPending || uploadingImages || !formData.name || !formData.description
-                      }
+                      disabled={isPending || uploadingImages || !formData.name || !formData.description}
                       className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {uploadingImages
                         ? t('create.uploading')
-                        : createBlogMutation.isPending
+                        : isPending
                           ? t('create.submitting')
                           : t('create.submit')}
                     </button>

@@ -2,176 +2,31 @@
 
 import { ClubsGrid, CreateClubModal, Pagination } from '@/features/clubs/components'
 import { ClubsHero } from '@/features/clubs/components/ClubsHero'
-import {
-  useJoinClub,
-  useLeaveClub,
-  useMyClubs,
-  usePopularClubsPage,
-  useSuggestedClubsPage,
-} from '@/features/clubs/hooks/useClubs'
-import { useClubsUIStore } from '@/features/clubs/store/clubsUIStore'
-import {
-  AdjustmentsHorizontalIcon,
-  FireIcon,
-  MagnifyingGlassIcon,
-  SparklesIcon,
-  StarIcon,
-  UsersIcon,
-} from '@/components/icons/heroicons-shim'
-import type { Route } from 'next'
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useClubesPage } from '@/features/clubs/hooks/useClubesPage'
+import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo, useState } from 'react'
-
-type TabType = 'mis-clubes' | 'sugeridos' | 'populares' | 'nuevos'
-
-const PAGE_SIZE = 12
 
 export function ClubesPageContainer() {
   const t = useTranslations('clubes')
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  const tabParam = (searchParams.get('tab') as TabType) || 'mis-clubes'
-  const pageParam = Math.max(1, Number(searchParams.get('page')) || 1)
-
-  const [activeTab, setActiveTab] = useState<TabType>(tabParam)
-  const [loadingClubId, setLoadingClubId] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-
-  useEffect(() => {
-    setActiveTab(tabParam)
-  }, [tabParam])
-
-  const { setIsCreateModalOpen } = useClubsUIStore()
-
-  const { data: myClubs, isLoading: isLoadingMyClubs } = useMyClubs()
-  const { data: suggestedPage, isLoading: isLoadingSuggested } = useSuggestedClubsPage(
-    activeTab === 'sugeridos' ? pageParam : 1,
-    PAGE_SIZE,
-  )
-  const { data: popularPage, isLoading: isLoadingPopular } = usePopularClubsPage(
-    activeTab === 'populares' || activeTab === 'nuevos' ? pageParam : 1,
-    PAGE_SIZE,
-  )
-
-  const joinMutation = useJoinClub()
-  const leaveMutation = useLeaveClub()
-
-  const handleJoin = async (clubId: string) => {
-    setLoadingClubId(clubId)
-    try {
-      await joinMutation.mutateAsync(clubId)
-    } finally {
-      setLoadingClubId(null)
-    }
-  }
-
-  const handleLeave = async (clubId: string) => {
-    setLoadingClubId(clubId)
-    try {
-      await leaveMutation.mutateAsync(clubId)
-    } finally {
-      setLoadingClubId(null)
-    }
-  }
-
-  const changeTab = (tab: TabType) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (tab === 'mis-clubes') {
-      params.delete('tab')
-    } else {
-      params.set('tab', tab)
-    }
-    params.delete('page')
-    const qs = params.toString()
-    router.replace((qs ? `${pathname}?${qs}` : pathname) as Route, { scroll: false })
-  }
-
-  const tabs = [
-    {
-      id: 'mis-clubes' as TabType,
-      label: t('list.tabs.mine'),
-      icon: UsersIcon,
-      count: Array.isArray(myClubs) ? myClubs.length : undefined,
-    },
-    {
-      id: 'sugeridos' as TabType,
-      label: t('list.tabs.suggested'),
-      icon: SparklesIcon,
-      count: suggestedPage?.totalCount,
-    },
-    {
-      id: 'populares' as TabType,
-      label: t('list.tabs.popular'),
-      icon: FireIcon,
-      count: undefined,
-    },
-    {
-      id: 'nuevos' as TabType,
-      label: t('list.tabs.new'),
-      icon: StarIcon,
-      count: undefined,
-    },
-  ]
-
-  const activeData = useMemo(() => {
-    let items: ReturnType<typeof getActiveItems>
-    function getActiveItems() {
-      if (activeTab === 'mis-clubes') return Array.isArray(myClubs) ? myClubs : []
-      if (activeTab === 'sugeridos') return suggestedPage?.items ?? []
-      return popularPage?.items ?? []
-    }
-    items = getActiveItems()
-
-    const q = searchQuery.trim().toLowerCase()
-    if (!q) return items
-    return items.filter((club) => {
-      const haystack = `${club.name} ${club.description ?? ''} ${club.category ?? ''}`.toLowerCase()
-      return haystack.includes(q)
-    })
-  }, [activeTab, myClubs, suggestedPage, popularPage, searchQuery])
-
-  const getTotalPages = () => {
-    if (activeTab === 'sugeridos') return suggestedPage?.totalPages ?? 1
-    if (activeTab === 'populares' || activeTab === 'nuevos') return popularPage?.totalPages ?? 1
-    return 1
-  }
-
-  const isLoading = () => {
-    switch (activeTab) {
-      case 'mis-clubes':
-        return isLoadingMyClubs
-      case 'sugeridos':
-        return isLoadingSuggested
-      case 'populares':
-      case 'nuevos':
-      default:
-        return isLoadingPopular
-    }
-  }
-
-  const getEmptyMessage = () => {
-    switch (activeTab) {
-      case 'mis-clubes':
-        return t('list.empty.mine')
-      case 'sugeridos':
-        return t('list.empty.suggested')
-      case 'nuevos':
-        return t('list.empty.new')
-      case 'populares':
-      default:
-        return t('list.empty.popular')
-    }
-  }
+  const {
+    activeTab,
+    tabs,
+    activeData,
+    isLoading,
+    totalPages,
+    emptyMessage,
+    loadingClubId,
+    searchQuery,
+    setSearchQuery,
+    handleJoin,
+    handleLeave,
+    changeTab,
+    openCreateModal,
+  } = useClubesPage()
 
   return (
     <div className="container mx-auto max-w-7xl space-y-6 p-5">
-      <ClubsHero
-        onCreateClick={() => setIsCreateModalOpen(true)}
-        showCreateButton
-      />
+      <ClubsHero onCreateClick={openCreateModal} showCreateButton />
 
       <div className="rounded-2xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 sm:px-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -230,7 +85,7 @@ export function ClubesPageContainer() {
         </div>
       </div>
 
-      {isLoading() ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
@@ -257,9 +112,9 @@ export function ClubesPageContainer() {
             onJoin={handleJoin}
             onLeave={handleLeave}
             loadingClubId={loadingClubId}
-            emptyMessage={getEmptyMessage()}
+            emptyMessage={emptyMessage}
           />
-          {activeTab !== 'mis-clubes' && <Pagination totalPages={getTotalPages()} />}
+          {activeTab !== 'mis-clubes' && <Pagination totalPages={totalPages} />}
         </>
       )}
 

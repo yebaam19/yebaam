@@ -15,6 +15,7 @@ import { AdminMusicMediaList } from './admin/AdminMusicMediaList';
 import { AdminGenresList, type AdminGenreRow } from './admin/AdminGenresList';
 import { AdminMusicStats } from './admin/AdminMusicStats';
 import type { MusicMediaItem } from '../types/music-media.types';
+import type { AdminAlbumListItem } from '../types/music.types';
 import type { MusicArchiveStats } from '../actions/admin-stats.actions';
 
 interface RecentImport {
@@ -25,22 +26,6 @@ interface RecentImport {
   created_album_id: string | null;
   error_detail: string | null;
   created_at: string;
-}
-
-interface AlbumRow {
-  id: string;
-  title: string;
-  slug: string;
-  year: number | null;
-  country: string | null;
-  format: string;
-  cover_cf_image_id: string | null;
-  catalog_number: string | null;
-  condition: string | null;
-  for_trade: boolean;
-  artist_id: string;
-  artist_name: string;
-  track_count: number;
 }
 
 interface ArtistRow {
@@ -132,7 +117,7 @@ interface ArticleRow {
 interface Props {
   recentImports: RecentImport[];
   recentError: string | null;
-  initialAlbums: AlbumRow[];
+  initialAlbums: AdminAlbumListItem[];
   initialArtists: ArtistRow[];
   initialLabels: LabelRow[];
   pendingRequests: PendingRow[];

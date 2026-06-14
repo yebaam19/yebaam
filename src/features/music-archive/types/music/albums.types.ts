@@ -25,6 +25,29 @@ export interface MusicAlbumRow {
   created_at: string;
 }
 
+/**
+ * Flattened album row for the admin albums list (`listAdminAlbums` →
+ * `AdminAlbumsList`). `format`/`condition` stay loosely typed as strings
+ * because they come straight off the admin DB select; the editor narrows
+ * them when needed. Single source of truth shared by the action's return
+ * type, `AdminMusicTabs`, and `AdminAlbumsList`.
+ */
+export interface AdminAlbumListItem {
+  id: string;
+  title: string;
+  slug: string;
+  year: number | null;
+  country: string | null;
+  format: string;
+  cover_cf_image_id: string | null;
+  catalog_number: string | null;
+  condition: string | null;
+  for_trade: boolean;
+  artist_id: string;
+  artist_name: string;
+  track_count: number;
+}
+
 export interface AlbumWithDetails extends MusicAlbumRow {
   artist: Pick<MusicArtistRow, 'id' | 'name' | 'slug' | 'photo_cf_image_id'>;
   label: Pick<MusicLabelRow, 'id' | 'name' | 'slug'> | null;

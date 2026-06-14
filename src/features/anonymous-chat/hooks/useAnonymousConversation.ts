@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabase/client';
 import { anonymousChatService } from '../services/anonymous-chat.service';
+import { newId } from '../lib/newId';
 import {
   ANON_EVENT,
   anonChannelName,
@@ -11,13 +12,6 @@ import {
   type AnonMessage,
   type AnonSession,
 } from '../types';
-
-function newId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.floor(Math.random() * 1e9).toString(36)}`;
-}
 
 export type AnonEndReason = 'peer-left' | 'closed' | 'error';
 
@@ -68,9 +62,12 @@ export function useAnonymousConversation({
   /** Cloudflare ids of images THIS client uploaded — deleted on teardown. */
   const sentMediaRef = useRef<string[]>([]);
   const typingOffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Keep the latest onEnded without re-subscribing the channel on every render.
+  // Latest onEnded without re-subscribing the channel — updated in an effect
+  // (read only from async handlers/teardown, so post-commit timing is fine).
   const onEndedRef = useRef(onEnded);
-  onEndedRef.current = onEnded;
+  useEffect(() => {
+    onEndedRef.current = onEnded;
+  }, [onEnded]);
 
   const end = useCallback((reason: AnonEndReason) => {
     if (endedRef.current) return;

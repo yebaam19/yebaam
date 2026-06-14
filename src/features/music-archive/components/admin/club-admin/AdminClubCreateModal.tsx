@@ -4,11 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { adminCreateMusicClub } from '../../../actions/club-settings.actions';
-
-/** Lowercased + accent-stripped form for case/diacritic-insensitive matching. */
-function normalize(s: string): string {
-  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-}
+import { ClubGenreSelector } from './ClubGenreSelector';
 
 interface GenreOption {
   id: string;
@@ -46,22 +42,10 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
   const t = useTranslations('musica.admin.clubCreate');
   const [name, setName] = useState('');
   const [genreId, setGenreId] = useState<string>(genres[0]?.id ?? '');
-  const [genreQuery, setGenreQuery] = useState('');
   const [description, setDescription] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const filteredGenres = useMemo(() => {
-    const q = normalize(genreQuery.trim());
-    if (!q) return genres;
-    return genres.filter((g) => normalize(g.name).includes(q));
-  }, [genres, genreQuery]);
-
-  const selectedGenreName = useMemo(
-    () => genres.find((g) => g.id === genreId)?.name ?? '',
-    [genres, genreId],
-  );
 
   const coverPreview = useMemo(
     () => (coverFile ? URL.createObjectURL(coverFile) : null),
@@ -148,59 +132,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">
               {t('genreLabel')}
             </label>
-            {genres.length === 0 ? (
-              <p className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
-                {t('noGenres')}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                <input
-                  type="search"
-                  value={genreQuery}
-                  onChange={(e) => setGenreQuery(e.target.value)}
-                  placeholder={t('searchPlaceholder', { count: genres.length })}
-                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-                  aria-label={t('searchAriaLabel')}
-                />
-                <div
-                  role="listbox"
-                  aria-label={t('listAriaLabel')}
-                  className="max-h-56 overflow-y-auto rounded-md border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900"
-                >
-                  {filteredGenres.length === 0 ? (
-                    <p className="px-2 py-3 text-center text-xs text-zinc-500">
-                      {t('noMatches', { query: genreQuery })}
-                    </p>
-                  ) : (
-                    filteredGenres.map((g) => {
-                      const selected = g.id === genreId;
-                      return (
-                        <button
-                          key={g.id}
-                          type="button"
-                          role="option"
-                          aria-selected={selected}
-                          onClick={() => setGenreId(g.id)}
-                          className={
-                            'block w-full rounded-sm px-2 py-1.5 text-left text-sm transition ' +
-                            (selected
-                              ? 'bg-amber-600 text-white'
-                              : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800')
-                          }
-                        >
-                          {g.name}
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-                {selectedGenreName && (
-                  <p className="text-xs text-zinc-500">
-                    {t('selectedLabel')} <span className="font-medium text-zinc-700 dark:text-zinc-200">{selectedGenreName}</span>
-                  </p>
-                )}
-              </div>
-            )}
+            <ClubGenreSelector genres={genres} selectedId={genreId} onSelect={setGenreId} />
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-zinc-500">

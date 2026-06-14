@@ -38,6 +38,7 @@ export type {
 // Albums.
 export type {
   MusicAlbumRow,
+  AdminAlbumListItem,
   AlbumWithDetails,
   CreateAlbumDto,
   UpdateAlbumDto,

@@ -13,6 +13,8 @@ import { getServerClient } from '@/utils/supabase/server';
 import { AlbumTracklist } from '@/features/music-archive/components/AlbumTracklist';
 import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
+import { AlbumMetaField } from '@/features/music-archive/components/AlbumMetaField';
+import { AlbumExtraImages } from '@/features/music-archive/components/AlbumExtraImages';
 import { AlbumReactionsBar } from '@/features/music-archive/components/club/AlbumReactionsBar';
 import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
 
@@ -121,35 +123,35 @@ export default async function AlbumPage({
 
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm sm:grid-cols-3">
             {album.year ? (
-              <Field label={t('album.year')} value={String(album.year)} />
+              <AlbumMetaField label={t('album.year')} value={String(album.year)} />
             ) : album.decade ? (
-              <Field label={t('album.decade')} value={t('album.decadeValue', { decade: album.decade })} />
+              <AlbumMetaField label={t('album.decade')} value={t('album.decadeValue', { decade: album.decade })} />
             ) : null}
             {album.country && (
-              <Field
+              <AlbumMetaField
                 label={t('album.country')}
                 value={t.has(`countries.${album.country}`) ? t(`countries.${album.country}`) : album.country}
               />
             )}
-            <Field
+            <AlbumMetaField
               label={t('album.format')}
               value={t.has(`formats.${album.format}`) ? t(`formats.${album.format}`) : album.format}
             />
             {album.label && (
-              <Field
+              <AlbumMetaField
                 label={t('album.labelField')}
                 value={album.label.name}
                 href={`/musica/sellos/${album.label.slug}`}
               />
             )}
             {album.catalog_number && (
-              <Field label={t('album.catalogNumber')} value={album.catalog_number} mono />
+              <AlbumMetaField label={t('album.catalogNumber')} value={album.catalog_number} mono />
             )}
-            <Field label={t('album.tracks')} value={String(album.tracks.length)} />
+            <AlbumMetaField label={t('album.tracks')} value={String(album.tracks.length)} />
             {album.condition && (
-              <Field label={t('album.condition')} value={t(`conditions.${album.condition}`)} />
+              <AlbumMetaField label={t('album.condition')} value={t(`conditions.${album.condition}`)} />
             )}
-            {album.for_trade && <Field label={t('album.tradeField')} value={t('album.tradeAvailable')} />}
+            {album.for_trade && <AlbumMetaField label={t('album.tradeField')} value={t('album.tradeAvailable')} />}
           </dl>
 
           {clubs.length > 0 && (
@@ -189,77 +191,10 @@ export default async function AlbumPage({
         </section>
       )}
 
-      {(album.back_cover_cf_image_id || album.label_cf_image_id) && (
-        <section>
-          <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            {t('album.moreImages')}
-          </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {album.back_cover_cf_image_id && (
-              <a
-                href={imageUrl(album.back_cover_cf_image_id, 'public')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800"
-              >
-                <img
-                  src={imageUrl(album.back_cover_cf_image_id, 'public')}
-                  alt={t('album.backCoverAlt')}
-                  className="aspect-square w-full object-cover"
-                  loading="lazy"
-                />
-              </a>
-            )}
-            {album.label_cf_image_id && (
-              <a
-                href={imageUrl(album.label_cf_image_id, 'public')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800"
-              >
-                <img
-                  src={imageUrl(album.label_cf_image_id, 'public')}
-                  alt={t('album.labelImageAlt')}
-                  className="aspect-square w-full object-cover"
-                  loading="lazy"
-                />
-              </a>
-            )}
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  href,
-  mono,
-}: {
-  label: string;
-  value: string;
-  href?: string;
-  /** Monospaced + word-break for catalog numbers / long IDs that have no
-   *  natural break points. */
-  mono?: boolean;
-}) {
-  const valueClass = `text-sm text-zinc-900 dark:text-zinc-100 ${
-    mono ? 'break-all font-mono text-[13px]' : 'break-words'
-  }`;
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs uppercase tracking-wide text-zinc-500">{label}</dt>
-      <dd className={valueClass}>
-        {href ? (
-          <Link href={href as Route} className="hover:underline">
-            {value}
-          </Link>
-        ) : (
-          value
-        )}
-      </dd>
+      <AlbumExtraImages
+        backCoverCfImageId={album.back_cover_cf_image_id}
+        labelCfImageId={album.label_cf_image_id}
+      />
     </div>
   );
 }
