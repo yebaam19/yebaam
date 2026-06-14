@@ -169,8 +169,19 @@ export async function updateClubImagesAction(
     return { ok: false, error: 'No hay cambios para guardar' };
   }
 
-  const { error } = await client.from('clubs').update(patch).eq('id', clubId);
+  const { data: updated, error } = await client
+    .from('clubs')
+    .update(patch)
+    .eq('id', clubId)
+    .select('id')
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+  if (!updated) {
+    return {
+      ok: false,
+      error: 'No se pudo guardar la imagen (sin permiso o club no encontrado)',
+    };
+  }
   revalidatePath('/feed/clubs/[slug]', 'page');
   return { ok: true };
 }
@@ -222,13 +233,41 @@ export async function addClubMemberByUsernameAction(
   return { ok: true };
 }
 
+type ClubPostMediaInput = {
+  kind: 'image' | 'video';
+  cfImageId?: string;
+  cfVideoUid?: string;
+  thumbnail?: string | null;
+};
+
+/**
+ * Normalise the client-supplied media list into the snake-case JSONB shape
+ * stored in `club_posts.media`. Mirrors the communities sanitizer: bad entries
+ * (missing the relevant Cloudflare id) are dropped silently.
+ */
+function sanitizeMedia(items: ClubPostMediaInput[] | undefined): Record<string, unknown>[] {
+  if (!Array.isArray(items)) return [];
+  const out: Record<string, unknown>[] = [];
+  for (const m of items) {
+    if (m.kind === 'image' && m.cfImageId) {
+      out.push({ kind: 'image', cf_image_id: m.cfImageId });
+    } else if (m.kind === 'video' && m.cfVideoUid) {
+      out.push({
+        kind: 'video',
+        cf_video_uid: m.cfVideoUid,
+        ...(m.thumbnail ? { thumbnail: m.thumbnail } : {}),
+      });
+    }
+  }
+  return out;
+}
+
 export interface CreateClubPostInput {
   clubId: string;
-  kind: ClubPostKind;
+  kind?: ClubPostKind;
   title?: string;
   body?: string;
-  mediaUrl?: string;
-  thumbnailUrl?: string;
+  media?: ClubPostMediaInput[];
   albumId?: string;
 }
 
@@ -238,16 +277,28 @@ export async function createClubPostAction(
   const { client, userId } = await requireUser();
   if (!userId) return { ok: false, error: 'No autenticado' };
 
+  const body = (input.body ?? '').trim();
+  const media = sanitizeMedia(input.media);
+  if (!body && !input.title && media.length === 0) {
+    return { ok: false, error: 'La publicación no puede estar vacía' };
+  }
+
+  // Derive the post kind from the attached media when present so the existing
+  // fotos / videos tabs (which filter by `kind`) pick the post up.
+  const hasImage = media.some((m) => m.kind === 'image');
+  const hasVideo = media.some((m) => m.kind === 'video');
+  const kind: ClubPostKind =
+    input.kind ?? (hasImage ? 'PHOTO' : hasVideo ? 'VIDEO' : 'NOTE');
+
   const { data, error } = await client
     .from('club_posts')
     .insert({
       club_id: input.clubId,
       author_id: userId,
-      kind: input.kind,
+      kind,
       title: input.title ?? null,
-      body: input.body ?? null,
-      media_url: input.mediaUrl ?? null,
-      thumbnail_url: input.thumbnailUrl ?? null,
+      body: body || null,
+      media,
       album_id: input.albumId ?? null,
     })
     .select('id')
@@ -290,12 +341,33 @@ export async function assignClubRoleAction(
   const { client, userId } = await requireUser();
   if (!userId) return { ok: false, error: 'No autenticado' };
 
-  const { error } = await client
+  // Only the club OWNER may assign roles. This mirrors RLS policy
+  // `club_members_update_owner` (owner-only updates) so the UI gets a
+  // friendly error instead of a silent 0-row no-op.
+  const { data: club } = await client
+    .from('clubs')
+    .select('owner_id')
+    .eq('id', clubId)
+    .maybeSingle();
+  if (!club) return { ok: false, error: 'Club no encontrado' };
+  if ((club as { owner_id: string }).owner_id !== userId) {
+    return { ok: false, error: 'Solo el propietario puede asignar administradores' };
+  }
+  if (targetUserId === userId) {
+    return { ok: false, error: 'No puedes cambiar tu propio rol de propietario' };
+  }
+
+  const { data: updated, error } = await client
     .from('club_members')
     .update({ role })
     .eq('club_id', clubId)
-    .eq('user_id', targetUserId);
+    .eq('user_id', targetUserId)
+    .select('user_id')
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+  if (!updated) {
+    return { ok: false, error: 'No se pudo actualizar el rol (miembro no encontrado)' };
+  }
   revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }

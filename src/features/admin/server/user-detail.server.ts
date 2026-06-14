@@ -20,6 +20,9 @@ export interface AdminUserDetail {
   phoneNumber: string | null;
   occupation: string | null;
   workPlace: string | null;
+  workPosition: string | null;
+  workVerified: boolean | null;
+  workVerifiedAt: string | null;
   studyPlace: string | null;
   languages: string[];
   interests: string[];
@@ -42,7 +45,7 @@ export const getAdminUserDetailByUsername = cache(async (username: string): Prom
   const { data, error } = await client
     .from('profiles')
     .select(
-      'id, username, first_name, middle_name, last_name, second_last_name, display_name, avatar_url, bio, birth_date, gender, country, state, city, phone_number, occupation, work_place, study_place, languages, interests, verification_status, is_verified, verified_at, pioneer_number, terms_accepted_at, profile_completed, friends_count, followers_count, posts_count, created_at, updated_at, last_active_at',
+      'id, username, first_name, middle_name, last_name, second_last_name, display_name, avatar_url, bio, birth_date, gender, country, state, city, phone_number, occupation, work_place, work_position, work_verified, work_verified_at, study_place, languages, interests, verification_status, is_verified, verified_at, pioneer_number, terms_accepted_at, profile_completed, friends_count, followers_count, posts_count, created_at, updated_at, last_active_at',
     )
     .eq('username', username)
     .maybeSingle();
@@ -67,6 +70,9 @@ export const getAdminUserDetailByUsername = cache(async (username: string): Prom
     phoneNumber: (r.phone_number as string | null) ?? null,
     occupation: (r.occupation as string | null) ?? null,
     workPlace: (r.work_place as string | null) ?? null,
+    workPosition: (r.work_position as string | null) ?? null,
+    workVerified: (r.work_verified as boolean | null) ?? null,
+    workVerifiedAt: (r.work_verified_at as string | null) ?? null,
     studyPlace: (r.study_place as string | null) ?? null,
     languages: (r.languages as string[] | null) ?? [],
     interests: (r.interests as string[] | null) ?? [],

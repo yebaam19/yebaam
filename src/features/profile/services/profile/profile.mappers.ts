@@ -98,6 +98,9 @@ export function mapDbToProfile(
     favoriteGames: row.favorite_games ?? [],
     studyPlace: row.study_place ?? null,
     workPlace: row.work_place ?? null,
+    workPosition: row.work_position ?? null,
+    workVerified: row.work_verified === true,
+    occupation: row.occupation ?? null,
     _count: {
       posts: row.posts_count ?? 0,
       followers: row.followers_count ?? 0,
@@ -151,6 +154,10 @@ export function mapUpdateToDb(data: UpdateProfileDTO): Record<string, unknown> {
   if (data.phone !== undefined) payload.phone_number = data.phone;
   if (data.studyPlace !== undefined) payload.study_place = nullIfEmpty(data.studyPlace);
   if (data.workPlace !== undefined) payload.work_place = nullIfEmpty(data.workPlace);
+  // Puesto. Editing work_place/work_position auto-clears verification via a DB
+  // trigger — intended. Never write work_verified from the client.
+  if (data.workPosition !== undefined) payload.work_position = nullIfEmpty(data.workPosition);
+  if (data.occupation !== undefined) payload.occupation = nullIfEmpty(data.occupation);
   if (data.facebookUrl !== undefined) payload.facebook_url = nullIfEmpty(data.facebookUrl);
   if (data.instagramUrl !== undefined) payload.instagram_url = nullIfEmpty(data.instagramUrl);
   if (data.twitterUrl !== undefined) payload.twitter_url = nullIfEmpty(data.twitterUrl);

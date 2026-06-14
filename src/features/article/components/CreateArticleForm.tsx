@@ -13,8 +13,9 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { ArticleContextType, ArticleVisibility, CreateArticleData } from '../interfaces'
-import { articleService } from '../services'
+import { ArticleContextType } from '../interfaces'
+import { createArticleAction } from '../actions/articles.actions'
+import { uploadService } from '@/lib/service/upload.service'
 import { ArticleContextSelector } from './ArticleContextSelector'
 import { ArticleCreatedDialog } from './ArticleCreatedDialog'
 import { CoverImageArea } from './CoverImageArea'
@@ -63,18 +64,9 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
     name: t('individualArticle'),
   })
 
-  // Load contexts on mount
+  // Contexts are loaded inside ArticleContextSelector; nothing to fetch here.
   useEffect(() => {
-    const loadContexts = async () => {
-      setIsLoadingContexts(true)
-      try {
-        // Contexts are loaded inside ArticleContextSelector
-        // This is just for the loading state
-      } finally {
-        setIsLoadingContexts(false)
-      }
-    }
-    loadContexts()
+    setIsLoadingContexts(false)
   }, [user.id])
 
   const handleCoverUpload = useCallback((file: File) => {
@@ -114,24 +106,24 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
     setIsPublishing(true)
 
     try {
-      // TODO: In real implementation, upload cover image to server first
-      const headerImageUrl = coverImageUrl || undefined
-
-      const articleData: CreateArticleData = {
-        title: title.trim(),
-        content: content,
-        headerImageUrl,
-        authorId: user.id,
-        contextType: selectedContext.type,
-        contextId: selectedContext.id || undefined,
-        visibility: ArticleVisibility.PUBLIC,
-        tags: [],
+      // Upload the cover to Cloudflare Images first (if any); we only persist
+      // the resulting cf image id, never the blob/delivery URL.
+      let cfImageId: string | null = null
+      if (coverImageFile) {
+        const uploaded = await uploadService.uploadImage(coverImageFile)
+        cfImageId = uploaded.id
       }
 
-      const result = await articleService.createArticle(articleData, user.id)
+      const result = await createArticleAction({
+        title: title.trim(),
+        content,
+        cfImageId,
+        tags: [],
+        visibility: 'public',
+      })
 
-      if (result.success && result.article) {
-        setCreatedArticle({ id: result.article.id, title: result.article.title })
+      if (result.ok) {
+        setCreatedArticle({ id: result.data.id, title: title.trim() })
         setShowSuccessDialog(true)
       } else {
         alert(t('createError', { message: result.error || t('unknownError') }))

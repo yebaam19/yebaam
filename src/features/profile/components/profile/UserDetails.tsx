@@ -10,6 +10,7 @@ import {
   AcademicCapIcon,
   BriefcaseIcon,
   CakeIcon,
+  CheckBadgeIcon,
   HandRaisedIcon,
   HeartIcon,
   HomeIcon,
@@ -17,6 +18,7 @@ import {
   MapPinIcon,
   UserIcon,
 } from '@/components/icons/heroicons-shim'
+import { occupationLabel } from '@/features/auth/constants/occupations'
 import { format } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
 import Link from 'next/link'
@@ -62,6 +64,7 @@ interface UserDetailsProps {
 export default function UserDetails({ user }: UserDetailsProps) {
   const t = useTranslations('profile.details')
   const tSidebar = useTranslations('profile.sidebar')
+  const tSections = useTranslations('profile.sections')
   const locale = useLocale()
   // Usar el perfil actualizado del store si existe, sino usar el de props
   const { currentProfile } = useProfileStore()
@@ -83,6 +86,14 @@ export default function UserDetails({ user }: UserDetailsProps) {
         try { return t(`relationship_values.${displayUser.relationshipStatus as 'SINGLE' | 'IN_RELATIONSHIP' | 'MARRIED' | 'DIVORCED' | 'WIDOWED'}`) } catch { return displayUser.relationshipStatus }
       })()
     : null
+
+  // Empleo — Puesto · Empresa, with an admin-verified mark when work_verified.
+  const workPlace = displayUser.workPlace?.trim() || null
+  const workPosition = displayUser.workPosition?.trim() || null
+  const employment = [workPosition, workPlace].filter(Boolean).join(' · ') || null
+  const workVerified = displayUser.workVerified === true
+  const occupation = displayUser.occupation?.trim() ? occupationLabel(displayUser.occupation) : null
+  const occupationValid = occupation && occupation !== '—' ? occupation : null
 
   return (
     <div className="h-auto w-full rounded-2xl bg-white p-5 shadow-sm dark:bg-gray-800">
@@ -143,9 +154,31 @@ export default function UserDetails({ user }: UserDetailsProps) {
           <DetailRow icon={AcademicCapIcon} label={t('studyPlace')} value={displayUser.studyPlace} />
         )}
 
-        {/* Work Place */}
-        {displayUser.workPlace && (
-          <DetailRow icon={BriefcaseIcon} label={t('workPlace')} value={displayUser.workPlace} />
+        {/* Empleo — Puesto · Empresa + admin-verified mark */}
+        {employment && (
+          <DetailRow
+            icon={BriefcaseIcon}
+            label={t('workPlace')}
+            value={
+              <span className="inline-flex flex-wrap items-center gap-1.5">
+                {employment}
+                {workVerified && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                    title={tSections('workVerifiedTitle')}
+                  >
+                    <CheckBadgeIcon className="h-3.5 w-3.5" />
+                    {tSections('workVerified')}
+                  </span>
+                )}
+              </span>
+            }
+          />
+        )}
+
+        {/* Occupation */}
+        {occupationValid && (
+          <DetailRow icon={UserIcon} label={tSections('occupation')} value={occupationValid} />
         )}
 
         {/* Gender */}

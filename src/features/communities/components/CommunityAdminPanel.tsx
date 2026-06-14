@@ -12,6 +12,7 @@ import {
 import type { PendingJoinRequest } from '@/features/communities/server/communities.server';
 import { invalidate } from '@/lib/hooks/cacheStore';
 import { CheckBadgeIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
+import { AddCommunityMemberForm } from './community-admin/AddCommunityMemberForm';
 
 interface CommunityAdminPanelProps {
   communityId: string;
@@ -82,6 +83,8 @@ export function CommunityAdminPanel({
         <CheckBadgeIcon className="h-5 w-5 text-blue-500" />
         {t('admin.panel.title')}
       </h2>
+
+      <AddCommunityMemberForm communityId={communityId} />
 
       {privacy === 'SECRET' && (
         <div className="mb-6">

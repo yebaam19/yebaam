@@ -278,7 +278,10 @@
     "clubsViewAll": "Ver todos",
     "clubsEmptyOwn": "No eres miembro de ningún club aún",
     "clubsEmptyOther": "Este usuario no es miembro de ningún club",
-    "clubsMembers": "{count} miembros"
+    "clubsMembers": "{count} miembros",
+    "occupation": "Ocupación",
+    "workVerified": "Verificado",
+    "workVerifiedTitle": "Empleo verificado por un administrador"
   },
   "verificationPrompt": {
     "title": "Verifica tu cuenta",
@@ -338,7 +341,13 @@
       "studyPlaceHelper": "Universidad, instituto o centro educativo",
       "languagesLabel": "Idiomas",
       "languagesHelper": "Agrega los idiomas que hablas. Presiona Enter o coma para agregar.",
-      "languagesPlaceholder": "Ej. Español, Inglés, Francés"
+      "languagesPlaceholder": "Ej. Español, Inglés, Francés",
+      "occupationLabel": "Ocupación",
+      "occupationPlaceholder": "Selecciona tu ocupación",
+      "occupationHelper": "Tu actividad principal (estudiante, empleado, empresario, etc.)",
+      "workPositionLabel": "Puesto",
+      "workPositionPlaceholder": "Ej: Ingeniero de software, Gerente de ventas",
+      "workPositionHelper": "Tu cargo o puesto en la empresa"
     },
     "interests": {
       "title": "Editar intereses y favoritos",

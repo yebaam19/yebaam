@@ -3,8 +3,10 @@ import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 import { getSpaceBoard } from '@/app/(app)/foro/server/foro.server';
+import { fromCommunityMedia } from '@/lib/media/parse';
+import { imageUrl } from '@/lib/media/urls';
 import type { ForoCategory, ForoSpace } from '@/features/foro/types';
-import type { Club } from '../types/club.types';
+import type { Club, ClubPostMedia } from '../types/club.types';
 
 export type ClubForoBoard = { space: ForoSpace; categories: ForoCategory[] } | null;
 
@@ -20,6 +22,7 @@ export interface ClubPost {
   mediaUrl: string | null;
   thumbnailUrl: string | null;
   albumId: string | null;
+  media: ClubPostMedia[];
   views: number;
   reactionsCount: number;
   commentsCount: number;
@@ -84,12 +87,44 @@ type PostRow = {
   media_url: string | null;
   thumbnail_url: string | null;
   album_id: string | null;
+  media?: unknown;
   views: number;
   reactions_count: number;
   comments_count: number;
   is_featured: boolean;
   created_at: string;
 };
+
+function resolveCfImage(id: string | null | undefined): string | undefined {
+  if (!id) return undefined;
+  try {
+    return imageUrl(id, 'public');
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Parse the `club_posts.media` JSONB column into renderable `ClubPostMedia`.
+ * Reuses the canonical community-media parser (same snake-case wire shape),
+ * then resolves image Cloudflare ids to delivery URLs. Bad rows are dropped.
+ */
+export function toClubPostMedia(raw: unknown): ClubPostMedia[] {
+  const out: ClubPostMedia[] = [];
+  for (const m of fromCommunityMedia(raw)) {
+    if (m.kind === 'image') {
+      const url = resolveCfImage(m.cfId);
+      if (url) out.push({ kind: 'image', cfImageId: m.cfId, url });
+      continue;
+    }
+    out.push({
+      kind: 'video',
+      cfVideoUid: m.cfId,
+      thumbnail: m.thumbnailUrl ?? null,
+    });
+  }
+  return out;
+}
 
 function mapPost(row: PostRow, authors?: Map<string, ClubPost['author']>): ClubPost {
   return {
@@ -102,6 +137,7 @@ function mapPost(row: PostRow, authors?: Map<string, ClubPost['author']>): ClubP
     mediaUrl: row.media_url,
     thumbnailUrl: row.thumbnail_url,
     albumId: row.album_id,
+    media: toClubPostMedia(row.media),
     views: row.views,
     reactionsCount: row.reactions_count,
     commentsCount: row.comments_count,
@@ -258,16 +294,24 @@ export async function getClubMembers(
       'id',
       rows.map((r) => r.user_id),
     );
+  const profileRows = (profiles ?? []) as Array<{
+    id: string;
+    username: string | null;
+    display_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  }>;
   const byId = new Map(
-    (profiles ?? []).map((p: any) => [
-      p.id as string,
+    profileRows.map((p) => [
+      p.id,
       {
-        username: p.username as string | null,
+        username: p.username,
         displayName:
-          (p.display_name as string | null) ||
+          p.display_name ||
           [p.first_name, p.last_name].filter(Boolean).join(' ') ||
           p.username,
-        avatarUrl: p.avatar_url as string | null,
+        avatarUrl: p.avatar_url,
       },
     ]),
   );

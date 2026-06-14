@@ -149,6 +149,13 @@
   "admin": {
     "panel": {
       "title": "Admin panel",
+      "addSectionTitle": "Add person",
+      "addPlaceholder": "@username",
+      "addHint": "Directly add an existing user as a community member.",
+      "addSubmit": "Add",
+      "addSubmitting": "Adding...",
+      "addSuccess": "@{username} was added to the community.",
+      "addUsernameRequired": "Enter a username.",
       "inviteSectionTitle": "Invite user",
       "invitePlaceholder": "@username",
       "inviteSubmit": "Invite",

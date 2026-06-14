@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { OCCUPATIONS } from '@/features/auth/constants/occupations'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
 import BaseDialog from './BaseDialog'
@@ -29,6 +30,8 @@ export default function EditWorkEducationDialog({
   const t = useTranslations('profile.dialogs.editWorkEducation')
   const tc = useTranslations('profile.dialogs.common')
   const [workPlace, setWorkPlace] = useState(user.workPlace || '')
+  const [workPosition, setWorkPosition] = useState(user.workPosition || '')
+  const [occupation, setOccupation] = useState(user.occupation || '')
   const [studyPlace, setStudyPlace] = useState(user.studyPlace || '')
   const [languages, setLanguages] = useState<string[]>(user.languages ?? [])
 
@@ -37,6 +40,8 @@ export default function EditWorkEducationDialog({
   useEffect(() => {
     if (open) {
       setWorkPlace(user.workPlace || '')
+      setWorkPosition(user.workPosition || '')
+      setOccupation(user.occupation || '')
       setStudyPlace(user.studyPlace || '')
       setLanguages(user.languages ?? [])
     }
@@ -45,7 +50,9 @@ export default function EditWorkEducationDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await updateProfile({ workPlace, studyPlace, languages })
+      // Editing workPlace/workPosition auto-clears admin verification via a DB
+      // trigger — that is intended (verification must be re-confirmed).
+      await updateProfile({ workPlace, workPosition, occupation, studyPlace, languages })
       onOpenChange(false)
     } catch (error) {
       console.error('Error al guardar trabajo/educación:', error)
@@ -65,15 +72,48 @@ export default function EditWorkEducationDialog({
     >
       <div className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-2">{t('workPlaceLabel')}</label>
-          <Input
-            value={workPlace}
-            onChange={(e) => setWorkPlace(e.target.value)}
-            placeholder={t('workPlacePlaceholder')}
-          />
+          <label className="block text-sm font-medium mb-2">{t('occupationLabel')}</label>
+          <select
+            value={occupation}
+            onChange={(e) => setOccupation(e.target.value)}
+            className="block w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+          >
+            <option value="">{t('occupationPlaceholder')}</option>
+            {OCCUPATIONS.map((o) => (
+              <option key={o.slug} value={o.slug}>
+                {o.label}
+              </option>
+            ))}
+          </select>
           <p className="mt-2 text-xs text-muted-foreground">
-            {t('workPlaceHelper')}
+            {t('occupationHelper')}
           </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium mb-2">{t('workPlaceLabel')}</label>
+            <Input
+              value={workPlace}
+              onChange={(e) => setWorkPlace(e.target.value)}
+              placeholder={t('workPlacePlaceholder')}
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('workPlaceHelper')}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">{t('workPositionLabel')}</label>
+            <Input
+              value={workPosition}
+              onChange={(e) => setWorkPosition(e.target.value)}
+              placeholder={t('workPositionPlaceholder')}
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('workPositionHelper')}
+            </p>
+          </div>
         </div>
 
         <div>

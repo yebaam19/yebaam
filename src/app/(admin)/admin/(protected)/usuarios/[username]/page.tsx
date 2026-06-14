@@ -5,6 +5,8 @@ import UserAvatar from '@/features/foro/components/UserAvatar'
 import { getAdminUserDetailByUsername } from '@/features/admin/server/user-detail.server'
 import { getOccupationDistribution } from '@/features/admin/server/occupation-stats.server'
 import { OccupationContextChart } from '@/features/admin/components/charts/OccupationContextChart'
+import { WorkVerificationToggle } from '@/features/admin/components/users/WorkVerificationToggle'
+import { CheckBadgeIcon } from '@/components/icons/heroicons-shim'
 import { occupationLabel } from '@/features/auth/constants/occupations'
 
 export const metadata = { title: 'Admin · Detalle de usuario' }
@@ -145,7 +147,20 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             <Field label="Género" value={genderLabel(user.gender)} />
             <Field label="Fecha de nacimiento" value={formatDate(user.birthDate)} />
             <Field label="Teléfono" value={user.phoneNumber} />
-            <Field label="Trabaja en" value={user.workPlace} />
+            <Field
+              label="Empresa"
+              value={
+                user.workPlace ? (
+                  <span className="inline-flex items-center gap-1">
+                    {user.workPlace}
+                    {user.workVerified && (
+                      <CheckBadgeIcon className="h-4 w-4 text-sky-500" title="Empleo autenticado" />
+                    )}
+                  </span>
+                ) : null
+              }
+            />
+            <Field label="Puesto" value={user.workPosition} />
             <Field label="Estudió en" value={user.studyPlace} />
             <Field
               label="Idiomas"
@@ -198,6 +213,27 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
           </dl>
         </section>
       </div>
+
+      <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <h2 className="mb-1 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
+          Autenticación de empleo
+        </h2>
+        <p className="mb-4 text-xs text-neutral-500">
+          Otorga el chulito de empleo verificado sin necesidad de documentos.
+        </p>
+        <dl className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Field label="Ocupación" value={occupationLabel(user.occupation)} />
+          <Field label="Empresa" value={user.workPlace} />
+          <Field label="Puesto" value={user.workPosition} />
+        </dl>
+        <WorkVerificationToggle
+          userId={user.id}
+          verified={Boolean(user.workVerified)}
+          workPlace={user.workPlace}
+          workPosition={user.workPosition}
+          verifiedAt={user.workVerifiedAt}
+        />
+      </section>
 
       <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <h2 className="mb-1 text-sm font-semibold text-neutral-700 dark:text-neutral-200">

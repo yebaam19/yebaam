@@ -68,7 +68,12 @@ export interface UserProfile {
 
   // Work and Study
   studyPlace?: string | null
-  workPlace?: string | null
+  workPlace?: string | null // Empresa (profiles.work_place)
+  workPosition?: string | null // Puesto (profiles.work_position)
+  /** Read-only: admin-verified workplace/position flag (profiles.work_verified). */
+  workVerified?: boolean
+  /** Occupation slug (profiles.occupation) — label via occupationLabel(). */
+  occupation?: string | null
 
   // Stats
   _count?: {
@@ -109,7 +114,9 @@ export interface UpdateProfileDTO {
   websiteUrl?: string
   relationshipStatus?: string
   studyPlace?: string
-  workPlace?: string
+  workPlace?: string // Empresa (profiles.work_place)
+  workPosition?: string // Puesto (profiles.work_position)
+  occupation?: string // Occupation slug (profiles.occupation)
   gender?: string
   birthDate?: string // Backend espera 'birthDate' como string en formato ISO (YYYY-MM-DD)
   residenceCity?: string

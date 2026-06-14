@@ -22,6 +22,19 @@ export type MembershipTier = 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP';
 
 export type ClubRole = 'OWNER' | 'ADMIN' | 'MODERATOR' | 'MEMBER';
 
+/**
+ * A single media attachment on a club post. Mirrors the communities media item:
+ * images carry the resolved Cloudflare delivery `url`, videos carry the
+ * Cloudflare Stream `cfVideoUid` (+ optional poster `thumbnail`).
+ */
+export interface ClubPostMedia {
+  kind: 'image' | 'video';
+  cfImageId?: string;
+  cfVideoUid?: string;
+  thumbnail?: string | null;
+  url?: string | null;
+}
+
 export interface ClubMember {
   id: string;
   userId: string;

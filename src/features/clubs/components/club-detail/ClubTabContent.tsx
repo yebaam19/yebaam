@@ -3,6 +3,8 @@
 import type { Club } from '@/features/clubs/types/club.types';
 import type { ClubPost } from '@/features/clubs/server/clubs.server';
 import { ClubPostsGrid, type ViewMode } from './ClubPostsGrid';
+import { ClubPhotosPanel } from './ClubPhotosPanel';
+import { ClubVideosPanel } from './ClubVideosPanel';
 import { formatDate } from '@/features/clubs/utils/clubHelpers';
 import type { TabType } from './ClubTabs';
 
@@ -62,9 +64,15 @@ export function ClubTabContent({
     );
   }
 
-  const filterMap: Record<Exclude<TabType, 'acerca'>, ClubPost['kind']> = {
-    fotos: 'PHOTO',
-    videos: 'VIDEO',
+  if (activeTab === 'fotos') {
+    return <ClubPhotosPanel posts={posts} />;
+  }
+
+  if (activeTab === 'videos') {
+    return <ClubVideosPanel posts={posts} />;
+  }
+
+  const filterMap: Record<'articulos' | 'archivos', ClubPost['kind']> = {
     articulos: 'ARTICLE',
     archivos: 'FILE',
   };

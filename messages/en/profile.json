@@ -278,7 +278,10 @@
     "clubsViewAll": "View all",
     "clubsEmptyOwn": "You're not a member of any club yet",
     "clubsEmptyOther": "This user isn't a member of any club",
-    "clubsMembers": "{count} members"
+    "clubsMembers": "{count} members",
+    "occupation": "Occupation",
+    "workVerified": "Verified",
+    "workVerifiedTitle": "Employment verified by an administrator"
   },
   "verificationPrompt": {
     "title": "Verify your account",
@@ -338,7 +341,13 @@
       "studyPlaceHelper": "University, institute or school",
       "languagesLabel": "Languages",
       "languagesHelper": "Add the languages you speak. Press Enter or comma to add.",
-      "languagesPlaceholder": "E.g. Spanish, English, French"
+      "languagesPlaceholder": "E.g. Spanish, English, French",
+      "occupationLabel": "Occupation",
+      "occupationPlaceholder": "Select your occupation",
+      "occupationHelper": "Your main activity (student, employee, entrepreneur, etc.)",
+      "workPositionLabel": "Position",
+      "workPositionPlaceholder": "E.g. Software engineer, Sales manager",
+      "workPositionHelper": "Your role or position at the company"
     },
     "interests": {
       "title": "Edit interests & favorites",

@@ -53,6 +53,9 @@ export type DbProfile = {
   education: unknown;
   study_place: string | null;
   work_place: string | null;
+  work_position: string | null;
+  work_verified: boolean | null;
+  occupation: string | null;
   residence_country: string | null;
   residence_state: string | null;
   residence_city: string | null;

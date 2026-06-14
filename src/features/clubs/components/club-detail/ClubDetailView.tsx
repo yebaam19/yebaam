@@ -23,6 +23,8 @@ import { ClubTabs, type TabType } from './ClubTabs';
 import { ClubHighlightedPosts } from './ClubHighlightedPosts';
 import { ClubDrawer } from './ClubDrawer';
 import { ClubTabContent } from './ClubTabContent';
+import { ClubPostComposer } from './ClubPostComposer';
+import { ClubAdminPanel } from './ClubAdminPanel';
 import type { ViewMode } from './ClubPostsGrid';
 import {
   MembersPanel,
@@ -303,6 +305,18 @@ export function ClubDetailView({
               </div>
             </div>
           )}
+
+          {/* Owner-only: name administrators */}
+          {club.isOwner && (
+            <ClubAdminPanel
+              clubId={club.id}
+              ownerId={club.ownerId}
+              members={members}
+            />
+          )}
+
+          {/* Member composer: share photos / videos / notes */}
+          {club.isMember && <ClubPostComposer clubId={club.id} />}
 
           {/* Highlights row */}
           <ClubHighlightedPosts highlights={highlights} onOpen={openPost} />

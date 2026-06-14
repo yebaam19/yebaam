@@ -9,8 +9,9 @@
 
 'use client'
 
-import { AcademicCapIcon, BriefcaseIcon, LanguageIcon } from '@/components/icons/heroicons-shim'
+import { AcademicCapIcon, BriefcaseIcon, CheckBadgeIcon, LanguageIcon, UserIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
+import { occupationLabel } from '@/features/auth/constants/occupations'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
 
@@ -23,10 +24,14 @@ interface WorkEducationSectionProps {
 export default function WorkEducationSection({ user, isOwner = false, onEdit }: WorkEducationSectionProps) {
   const t = useTranslations('profile.sections')
   const workPlace = user.workPlace?.trim() || null
+  const workPosition = user.workPosition?.trim() || null
+  const occupation = user.occupation?.trim() ? occupationLabel(user.occupation) : null
+  const occupationValid = occupation && occupation !== '—' ? occupation : null
+  const workVerified = user.workVerified === true
   const studyPlace = user.studyPlace?.trim() || null
   const languages = (user.languages ?? []).filter(Boolean)
 
-  const hasAny = !!(workPlace || studyPlace || languages.length)
+  const hasAny = !!(workPlace || workPosition || occupationValid || studyPlace || languages.length)
 
   if (!hasAny && !isOwner) return null
 
@@ -34,12 +39,32 @@ export default function WorkEducationSection({ user, isOwner = false, onEdit }: 
     <ProfileSection title={t('workEducation')} isOwner={isOwner} onEdit={onEdit}>
       {hasAny ? (
         <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
-          {workPlace && (
+          {(workPlace || workPosition) && (
             <div className="flex items-start gap-2.5">
               <BriefcaseIcon className="mt-0.5 size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-              <p className="min-w-0 wrap-break-word">
+              <div className="min-w-0 wrap-break-word">
                 <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('worksAt')}</span>
-                <span className="block font-medium text-gray-900 dark:text-white">{workPlace}</span>
+                <span className="flex flex-wrap items-center gap-1.5 font-medium text-gray-900 dark:text-white">
+                  {[workPosition, workPlace].filter(Boolean).join(' · ')}
+                  {workVerified && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                      title={t('workVerifiedTitle')}
+                    >
+                      <CheckBadgeIcon className="h-3.5 w-3.5" />
+                      {t('workVerified')}
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
+          {occupationValid && (
+            <div className="flex items-start gap-2.5">
+              <UserIcon className="mt-0.5 size-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+              <p className="min-w-0 wrap-break-word">
+                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('occupation')}</span>
+                <span className="block font-medium text-gray-900 dark:text-white">{occupationValid}</span>
               </p>
             </div>
           )}

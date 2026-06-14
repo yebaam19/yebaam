@@ -112,14 +112,21 @@ class ProfileService {
     const { id, url } = await uploadService.uploadImage(file);
 
     const userId = await getCurrentUserId();
-    if (userId) {
-      const urlColumn = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
-      const idColumn = type === 'avatar' ? 'avatar_cloudflare_id' : 'cover_cloudflare_id';
-      await supabase
-        .from('profiles')
-        .update({ [urlColumn]: url, [idColumn]: id })
-        .eq('id', userId);
-    }
+    if (!userId) throw new Error('No autenticado');
+
+    const urlColumn = type === 'avatar' ? 'avatar_url' : 'cover_photo_url';
+    const idColumn = type === 'avatar' ? 'avatar_cloudflare_id' : 'cover_cloudflare_id';
+    // Persist both the delivery URL and the Cloudflare id, and verify the write
+    // landed. `.select(...).maybeSingle()` returns null when RLS silently blocks
+    // the UPDATE (no matching row) — surface that instead of swallowing it.
+    const { data: updated, error } = await supabase
+      .from('profiles')
+      .update({ [urlColumn]: url, [idColumn]: id })
+      .eq('id', userId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(error.message || 'Error al guardar la imagen');
+    if (!updated) throw new Error('No se pudo guardar la imagen en el perfil');
 
     return { url };
   }
