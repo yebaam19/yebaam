@@ -45,8 +45,18 @@ export async function PUT(
   if (typeof body.category === 'string') patch.category = body.category;
   if (typeof body.subcategory === 'string' || body.subcategory === null) patch.subcategory = body.subcategory;
   if (typeof body.privacy === 'string') patch.privacy = body.privacy;
-  if (typeof body.profileImageUrl === 'string' || body.profileImageUrl === null) patch.profile_image_url = body.profileImageUrl;
-  if (typeof body.coverImageUrl === 'string' || body.coverImageUrl === null) patch.cover_image_url = body.coverImageUrl;
+  const profileImageUrl =
+    body.profileImageUrl !== undefined
+      ? body.profileImageUrl
+      : body.profileImage;
+  const coverImageUrl =
+    body.coverImageUrl !== undefined ? body.coverImageUrl : body.coverImage;
+  if (typeof profileImageUrl === 'string' || profileImageUrl === null) {
+    patch.profile_image_url = profileImageUrl;
+  }
+  if (typeof coverImageUrl === 'string' || coverImageUrl === null) {
+    patch.cover_image_url = coverImageUrl;
+  }
   if (Array.isArray(body.rules)) patch.rules = body.rules;
   if (typeof body.location === 'string' || body.location === null) patch.location = body.location;
   if (typeof body.website === 'string' || body.website === null) patch.website = body.website;

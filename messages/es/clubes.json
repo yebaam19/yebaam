@@ -222,5 +222,18 @@
     "ADMIN": "Administrador",
     "MODERATOR": "Moderador",
     "MEMBER": "Miembro"
+  },
+  "inviteMember": {
+    "trigger": "Agregar miembro",
+    "label": "Agregar por @username",
+    "placeholder": "@username",
+    "hint": "Solo usuarios existentes en Yebaam. Se unirán directamente al club.",
+    "errors": {
+      "usernameRequired": "Escribe un @username."
+    },
+    "success": "@{username} fue agregado al club.",
+    "close": "Cerrar",
+    "submit": "Agregar",
+    "submitting": "Agregando…"
   }
 }

@@ -11,6 +11,7 @@ import {
   EnvelopeIcon,
   UserPlusIcon,
 } from '@/components/icons/heroicons-shim';
+import { ClubHeaderImageButton } from './ClubHeaderImageButton';
 
 interface ClubHeaderProps {
   club: Club;
@@ -66,6 +67,11 @@ export function ClubHeader({
           />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/35 via-transparent to-transparent" />
+        {club.isOwner && (
+          <div className="absolute bottom-3 right-3">
+            <ClubHeaderImageButton clubId={club.id} target="cover" />
+          </div>
+        )}
       </div>
 
       {/* Identity: avatar overlaps cover; title + chips + actions sit fully on the white surface below */}
@@ -85,6 +91,15 @@ export function ClubHeader({
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-500 to-primary-700 text-3xl font-bold text-white">
                 {(club.name || '?').charAt(0).toUpperCase()}
+              </div>
+            )}
+            {club.isOwner && (
+              <div className="absolute bottom-0.5 right-0.5">
+                <ClubHeaderImageButton
+                  clubId={club.id}
+                  target="profile"
+                  className="inline-flex items-center justify-center rounded-full bg-black/55 p-1.5 text-white shadow-md backdrop-blur-sm transition-colors hover:bg-black/70 disabled:opacity-60"
+                />
               </div>
             )}
           </div>

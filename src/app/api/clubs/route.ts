@@ -53,8 +53,17 @@ export async function POST(request: NextRequest) {
     subcategory: typeof body.subcategory === 'string' ? body.subcategory : null,
     privacy: typeof body.privacy === 'string' ? body.privacy : 'PUBLIC',
     profile_image_url:
-      typeof body.profileImageUrl === 'string' ? body.profileImageUrl : null,
-    cover_image_url: typeof body.coverImageUrl === 'string' ? body.coverImageUrl : null,
+      typeof body.profileImageUrl === 'string'
+        ? body.profileImageUrl
+        : typeof body.profileImage === 'string'
+          ? body.profileImage
+          : null,
+    cover_image_url:
+      typeof body.coverImageUrl === 'string'
+        ? body.coverImageUrl
+        : typeof body.coverImage === 'string'
+          ? body.coverImage
+          : null,
     membership_tiers: Array.isArray(body.membershipTiers)
       ? (body.membershipTiers as string[])
       : ['FREE'],

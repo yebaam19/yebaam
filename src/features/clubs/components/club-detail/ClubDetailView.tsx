@@ -106,6 +106,11 @@ export function ClubDetailView({
     });
   };
 
+  const canManageMembers =
+    club.isOwner ||
+    club.currentUserRole === 'OWNER' ||
+    club.currentUserRole === 'ADMIN';
+
   const handleInvite = () => {
     setDrawer('members');
   };
@@ -319,7 +324,13 @@ export function ClubDetailView({
         title={drawer ? drawerTitles[drawer] : ''}
         onClose={() => setDrawer(null)}
       >
-        {drawer === 'members' && <MembersPanel members={members} />}
+        {drawer === 'members' && (
+          <MembersPanel
+            members={members}
+            clubId={club.id}
+            canManage={canManageMembers}
+          />
+        )}
         {drawer === 'events' && <EventsPanel events={events} />}
         {drawer === 'promotions' && <PromotionsPanel promotions={promotions} />}
         {drawer === 'foro' && (

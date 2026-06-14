@@ -60,9 +60,14 @@ export const clubsService = {
   },
 
   async createClub(clubData: CreateClubDto): Promise<Club> {
+    const { profileImage, coverImage, ...rest } = clubData;
     return jsonFetch<Club>(API_BASE, {
       method: 'POST',
-      body: JSON.stringify(clubData),
+      body: JSON.stringify({
+        ...rest,
+        profileImageUrl: profileImage,
+        coverImageUrl: coverImage,
+      }),
     });
   },
 

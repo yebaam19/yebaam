@@ -17,39 +17,53 @@ import {
   ArrowTopRightOnSquareIcon,
 } from '@/components/icons/heroicons-shim';
 
-export function MembersPanel({ members }: { members: ClubMemberLite[] }) {
+import { InviteClubMemberForm } from './InviteClubMemberForm';
+
+export function MembersPanel({
+  members,
+  clubId,
+  canManage,
+}: {
+  members: ClubMemberLite[];
+  clubId: string;
+  canManage?: boolean;
+}) {
   const t = useTranslations('clubes.panels.members');
   const tRoles = useTranslations('clubes.roles');
-  if (!members.length) {
-    return <p className="text-sm text-gray-500 dark:text-gray-400">{t('empty')}</p>;
-  }
   return (
-    <ul className="space-y-2">
-      {members.map((m) => (
-        <li
-          key={m.userId}
-          className="flex items-center gap-3 rounded-md border border-gray-200 p-2 dark:border-gray-700"
-        >
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-            {m.avatarUrl ? (
-              <Image src={m.avatarUrl} alt={m.displayName ?? 'user'} fill sizes="40px" unoptimized className="object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-gray-400">
-                <UserCircleIcon className="h-7 w-7" />
+    <div className="space-y-4">
+      {canManage && <InviteClubMemberForm clubId={clubId} />}
+      {!members.length ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('empty')}</p>
+      ) : (
+        <ul className="space-y-2">
+          {members.map((m) => (
+            <li
+              key={m.userId}
+              className="flex items-center gap-3 rounded-md border border-gray-200 p-2 dark:border-gray-700"
+            >
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                {m.avatarUrl ? (
+                  <Image src={m.avatarUrl} alt={m.displayName ?? 'user'} fill sizes="40px" unoptimized className="object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-gray-400">
+                    <UserCircleIcon className="h-7 w-7" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-gray-900 dark:text-white">
-              {m.displayName || m.username || t('fallbackName')}
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {tRoles(m.role)} · {m.membershipTier}
-            </div>
-          </div>
-        </li>
-      ))}
-    </ul>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                  {m.displayName || m.username || t('fallbackName')}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {tRoles(m.role)} · {m.membershipTier}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
