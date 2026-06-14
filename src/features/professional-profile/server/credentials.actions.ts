@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { requireOwner } from '@/app/(app)/feed/professional-profile/server/entities.actions';
+import { requireOwner } from '@/app/(app)/feed/professional-profile/server/entities/_helpers';
 import { emptyToNull, revalidateProfile } from '@/app/(app)/feed/professional-profile/server/entities.utils';
 import type {
   CredentialTargetKind,
