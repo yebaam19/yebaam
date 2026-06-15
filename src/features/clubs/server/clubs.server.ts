@@ -27,6 +27,8 @@ export interface ClubPost {
   reactionsCount: number;
   commentsCount: number;
   isFeatured: boolean;
+  /** Whether the current viewer has liked this post. */
+  viewerReacted: boolean;
   createdAt: string;
   author?: {
     id: string;
@@ -126,7 +128,11 @@ export function toClubPostMedia(raw: unknown): ClubPostMedia[] {
   return out;
 }
 
-function mapPost(row: PostRow, authors?: Map<string, ClubPost['author']>): ClubPost {
+function mapPost(
+  row: PostRow,
+  authors?: Map<string, ClubPost['author']>,
+  reactedSet?: Set<string>,
+): ClubPost {
   return {
     id: row.id,
     clubId: row.club_id,
@@ -142,9 +148,26 @@ function mapPost(row: PostRow, authors?: Map<string, ClubPost['author']>): ClubP
     reactionsCount: row.reactions_count,
     commentsCount: row.comments_count,
     isFeatured: row.is_featured,
+    viewerReacted: reactedSet?.has(row.id) ?? false,
     createdAt: row.created_at,
     author: authors?.get(row.author_id),
   };
+}
+
+/** Set of post ids the viewer has liked, among the given post ids. */
+async function fetchViewerReactions(
+  client: Awaited<ReturnType<typeof getServerClient>>,
+  postIds: string[],
+): Promise<Set<string>> {
+  const { data: me } = await client.auth.getUser();
+  const viewerId = me?.user?.id ?? null;
+  if (!viewerId || postIds.length === 0) return new Set();
+  const { data } = await client
+    .from('club_post_reactions')
+    .select('club_post_id')
+    .eq('user_id', viewerId)
+    .in('club_post_id', postIds);
+  return new Set((data ?? []).map((r) => (r as { club_post_id: string }).club_post_id));
 }
 
 async function attachAuthors(
@@ -214,8 +237,11 @@ export async function getClubPosts(
   const { data, error } = await q;
   if (error || !data) return [];
   const rows = data as PostRow[];
-  const authors = await attachAuthors(client, rows);
-  return rows.map((r) => mapPost(r, authors));
+  const [authors, reactedSet] = await Promise.all([
+    attachAuthors(client, rows),
+    fetchViewerReactions(client, rows.map((r) => r.id)),
+  ]);
+  return rows.map((r) => mapPost(r, authors, reactedSet));
 }
 
 export async function getClubHighlights(clubId: string): Promise<{
