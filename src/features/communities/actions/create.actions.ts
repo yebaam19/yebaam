@@ -2,6 +2,7 @@
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { slugifyCommunity } from '@/lib/api/communities';
+import { ensureCommunityForumSpace } from '../server/community-forum.server';
 import type { CreateCommunityDto } from '../types/community.types';
 import {
   type ActionResult,
@@ -104,6 +105,21 @@ export async function createCommunity(
 
   if (error || !data) {
     return { ok: false, error: error?.message ?? 'No se pudo crear la comunidad.' };
+  }
+
+  // Activate the community forum out of the box (space + General category +
+  // default forum + owner admin role), mirroring how clubs provision on create.
+  // Best-effort: a forum hiccup must not fail community creation.
+  try {
+    await ensureCommunityForumSpace({
+      id: data.id,
+      name,
+      slug: data.slug,
+      owner_id: userId,
+      privacy: dto.privacy,
+    });
+  } catch (err) {
+    console.error('[createCommunity] ensureCommunityForumSpace failed', err);
   }
 
   revalidateCommunityPaths(data.slug);
