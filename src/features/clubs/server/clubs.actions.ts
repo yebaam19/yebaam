@@ -217,7 +217,13 @@ export async function addClubMemberByUsernameAction(
     .maybeSingle();
   if (existingMember) return { ok: false, error: 'Ya es miembro del club' };
 
-  const { error } = await client.from('club_members').insert({
+  // The club_members INSERT RLS only allows the owner, but the UI shows the
+  // add-member form to ADMINs too (canManageClubMembers above gates on
+  // owner OR admin). Perform the insert with the service client — exactly like
+  // communities' addCommunityMemberByUsernameAction — so gated owners/admins
+  // can add members without loosening RLS.
+  const svc = getServiceClient();
+  const { error } = await svc.from('club_members').insert({
     club_id: clubId,
     user_id: inviteeId,
     role: 'MEMBER',
@@ -373,8 +379,19 @@ export async function deleteClubPostAction(postId: string): Promise<ActionResult
   const { client, userId } = await requireUser();
   if (!userId) return { ok: false, error: 'No autenticado' };
 
-  const { error } = await client.from('club_posts').delete().eq('id', postId);
+  // Detect the RLS-blocked 0-row case (mirrors assignClubRoleAction): a
+  // delete the caller isn't allowed to make removes no rows but reports no
+  // error, so without the .select() guard we'd falsely return ok:true.
+  const { data: deleted, error } = await client
+    .from('club_posts')
+    .delete()
+    .eq('id', postId)
+    .select('id')
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+  if (!deleted) {
+    return { ok: false, error: 'No tienes permiso para eliminar esta publicación' };
+  }
   revalidatePath(`/feed/clubs/[slug]`, 'page');
   return { ok: true };
 }

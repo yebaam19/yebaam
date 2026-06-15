@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 
@@ -14,14 +14,24 @@ interface ClubDrawerProps {
 
 export function ClubDrawer({ open, title, onClose, children, width = 'md' }: ClubDrawerProps) {
   const t = useTranslations('clubes.drawer');
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    // Remember who had focus, then move focus into the drawer.
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    closeBtnRef.current?.focus();
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      // Restore focus to the trigger when the drawer closes/unmounts.
+      previouslyFocused.current?.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -31,6 +41,7 @@ export function ClubDrawer({ open, title, onClose, children, width = 'md' }: Clu
       <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden />
       <aside
         role="dialog"
+        aria-modal="true"
         aria-label={title}
         className={`flex h-full flex-col overflow-hidden bg-white shadow-xl dark:bg-gray-900 ${
           width === 'lg' ? 'w-full max-w-2xl' : 'w-full max-w-md'
@@ -39,6 +50,7 @@ export function ClubDrawer({ open, title, onClose, children, width = 'md' }: Clu
         <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
           <h2 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h2>
           <button
+            ref={closeBtnRef}
             onClick={onClose}
             aria-label={t('close')}
             className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"

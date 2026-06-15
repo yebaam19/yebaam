@@ -46,6 +46,9 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
     }
   }
 
+  const isUploading = uploadProfileImage.isPending || uploadCoverImage.isPending
+  const hasUploadError = uploadProfileImage.isError || uploadCoverImage.isError
+
   const handleNext = () => {
     onUpdate({
       profileImage: profileImageUrl || undefined,
@@ -131,6 +134,16 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
         </div>
       </div>
 
+      {/* Upload error */}
+      {hasUploadError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200"
+        >
+          {t('uploadError')}
+        </div>
+      )}
+
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         <button
@@ -141,7 +154,7 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
         </button>
         <button
           onClick={handleNext}
-          disabled={uploadProfileImage.isPending || uploadCoverImage.isPending}
+          disabled={isUploading || hasUploadError}
           className="rounded-lg bg-primary-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         >
           {t('next')}

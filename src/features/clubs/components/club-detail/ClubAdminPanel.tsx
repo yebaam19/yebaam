@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import type { ClubMemberLite } from '@/features/clubs/server/clubs.server';
@@ -18,34 +18,36 @@ interface ClubAdminPanelProps {
 
 type AssignableRole = 'ADMIN' | 'MEMBER';
 
+/** Per-member save status so concurrent role changes don't clobber each other. */
+interface MemberState {
+  pending?: boolean;
+  error?: string;
+  success?: string;
+}
+
 export function ClubAdminPanel({ clubId, ownerId, members }: ClubAdminPanelProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [savingFor, setSavingFor] = useState<string | null>(null);
+  // Keyed by userId: each row owns its own pending/error/success so a save on
+  // one member never re-enables or overwrites the message of another.
+  const [states, setStates] = useState<Record<string, MemberState>>({});
 
   // The owner manages everyone else's role; the owner row is never editable.
   const manageable = members.filter((m) => m.userId !== ownerId);
 
-  const handleRoleChange = (member: ClubMemberLite, role: AssignableRole) => {
-    setError(null);
-    setSuccess(null);
-    setSavingFor(member.userId);
-    startTransition(async () => {
-      const result = await assignClubRoleAction(clubId, member.userId, role);
-      setSavingFor(null);
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      setSuccess(
-        `${member.displayName || member.username || 'El miembro'} ahora es ${
-          role === 'ADMIN' ? 'Administrador' : 'Miembro'
-        }.`,
-      );
-      router.refresh();
-    });
+  const handleRoleChange = async (member: ClubMemberLite, role: AssignableRole) => {
+    setStates((prev) => ({ ...prev, [member.userId]: { pending: true } }));
+    const result = await assignClubRoleAction(clubId, member.userId, role);
+    if (!result.ok) {
+      setStates((prev) => ({ ...prev, [member.userId]: { error: result.error } }));
+      return;
+    }
+    setStates((prev) => ({
+      ...prev,
+      [member.userId]: {
+        success: `Ahora es ${role === 'ADMIN' ? 'Administrador' : 'Miembro'}.`,
+      },
+    }));
+    router.refresh();
   };
 
   return (
@@ -66,64 +68,64 @@ export function ClubAdminPanel({ clubId, ownerId, members }: ClubAdminPanelProps
         <ul className="space-y-2">
           {manageable.map((m) => {
             const role: AssignableRole = m.role === 'ADMIN' ? 'ADMIN' : 'MEMBER';
+            const state = states[m.userId];
             return (
               <li
                 key={m.userId}
-                className="flex items-center justify-between gap-3 rounded-md border border-gray-200 p-3 dark:border-gray-700"
+                className="rounded-md border border-gray-200 p-3 dark:border-gray-700"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                    {m.avatarUrl ? (
-                      <Image
-                        src={m.avatarUrl}
-                        alt={m.displayName ?? 'user'}
-                        fill
-                        sizes="36px"
-                        unoptimized
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-gray-400">
-                        <UserCircleIcon className="h-7 w-7" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-gray-900 dark:text-white">
-                      {m.displayName || m.username || 'Sin nombre'}
-                    </p>
-                    {m.username && (
-                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                        @{m.username}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                      {m.avatarUrl ? (
+                        <Image
+                          src={m.avatarUrl}
+                          alt={m.displayName ?? 'user'}
+                          fill
+                          sizes="36px"
+                          unoptimized
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-300">
+                          <UserCircleIcon className="h-7 w-7" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-gray-900 dark:text-white">
+                        {m.displayName || m.username || 'Sin nombre'}
                       </p>
-                    )}
+                      {m.username && (
+                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                          @{m.username}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  <select
+                    value={role}
+                    disabled={state?.pending}
+                    onChange={(e) => void handleRoleChange(m, e.target.value as AssignableRole)}
+                    className="shrink-0 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    aria-label="Rol del miembro"
+                  >
+                    <option value="MEMBER">Miembro</option>
+                    <option value="ADMIN">Administrador</option>
+                  </select>
                 </div>
-                <select
-                  value={role}
-                  disabled={isPending && savingFor === m.userId}
-                  onChange={(e) => handleRoleChange(m, e.target.value as AssignableRole)}
-                  className="shrink-0 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                  aria-label="Rol del miembro"
-                >
-                  <option value="MEMBER">Miembro</option>
-                  <option value="ADMIN">Administrador</option>
-                </select>
+                {state?.success && (
+                  <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+                    {state.success}
+                  </p>
+                )}
+                {state?.error && (
+                  <p className="mt-2 text-xs text-red-600 dark:text-red-400">{state.error}</p>
+                )}
               </li>
             );
           })}
         </ul>
-      )}
-
-      {success && (
-        <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
-          {success}
-        </p>
-      )}
-      {error && (
-        <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
-          {error}
-        </p>
       )}
     </div>
   );

@@ -2,6 +2,21 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 
+/**
+ * A club website is optional. When provided it must be an absolute http(s) URL;
+ * anything else (relative paths, javascript: URIs, garbage) is rejected.
+ */
+function isValidWebsite(value: unknown): boolean {
+  if (value === null || value === undefined || value === '') return true;
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -34,6 +49,10 @@ export async function PUT(
 
   const { id } = await context.params;
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+
+  if (body.website !== undefined && !isValidWebsite(body.website)) {
+    return NextResponse.json({ error: 'URL de sitio web no válida' }, { status: 400 });
+  }
 
   const client = await getServerClient();
   const { data: me } = await client.auth.getUser();

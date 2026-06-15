@@ -128,21 +128,29 @@ export function ClubHeader({
 
             {/* Actions: full-width on mobile, inline on sm+ */}
             <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
-              <button
-                onClick={onMembershipToggle}
-                disabled={isLoading}
-                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-initial ${
-                  isMember
-                    ? 'border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
-                    : 'bg-primary-600 text-white shadow-sm hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
-                } disabled:cursor-not-allowed disabled:opacity-50`}
-              >
-                {isLoading
-                  ? t('detail.actions.loading')
-                  : isMember
-                    ? t('detail.actions.member')
-                    : t('detail.actions.join')}
-              </button>
+              {/* Owners can't join/leave their own club — show a status pill. */}
+              {club.isOwner ? (
+                <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-medium text-primary-700 sm:flex-initial dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
+                  <CheckBadgeIcon className="h-4 w-4" />
+                  Propietario
+                </span>
+              ) : (
+                <button
+                  onClick={onMembershipToggle}
+                  disabled={isLoading}
+                  className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-initial ${
+                    isMember
+                      ? 'border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                      : 'bg-primary-600 text-white shadow-sm hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
+                  } disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  {isLoading
+                    ? t('detail.actions.loading')
+                    : isMember
+                      ? t('detail.actions.member')
+                      : t('detail.actions.join')}
+                </button>
+              )}
               <button
                 onClick={onMessage}
                 aria-label={t('detail.actions.messageAria')}

@@ -8,6 +8,8 @@ import {
   useSuggestedClubsPage,
 } from './useClubs'
 import { useClubsUIStore } from '../store/clubsUIStore'
+import { clubsService } from '../services/clubs.service'
+import type { Club } from '../types/club.types'
 import { FireIcon, SparklesIcon, StarIcon, UsersIcon } from '@/components/icons/heroicons-shim'
 import type { Route } from 'next'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
@@ -17,6 +19,7 @@ import { useEffect, useMemo, useState } from 'react'
 type TabType = 'mis-clubes' | 'sugeridos' | 'populares' | 'nuevos'
 
 const PAGE_SIZE = 12
+const SEARCH_DEBOUNCE_MS = 300
 
 /**
  * View-model for `ClubesPageContainer`: owns the tab/page URL state, the four
@@ -36,10 +39,43 @@ export function useClubesPage() {
   const [activeTab, setActiveTab] = useState<TabType>(tabParam)
   const [loadingClubId, setLoadingClubId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  // Server-side search results (across all pages). null = not searching.
+  const [searchResults, setSearchResults] = useState<Club[] | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     setActiveTab(tabParam)
   }, [tabParam])
+
+  // Debounced server-side search. The activeData filter only sees the loaded
+  // page, so an empty query falls back to tab data and a non-empty query hits
+  // /api/clubs/search to match clubs across every page.
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (!q) {
+      setSearchResults(null)
+      setIsSearching(false)
+      return
+    }
+
+    let cancelled = false
+    setIsSearching(true)
+    const handle = setTimeout(async () => {
+      try {
+        const res = await clubsService.searchClubs({ query: q })
+        if (!cancelled) setSearchResults(res.clubs)
+      } catch {
+        if (!cancelled) setSearchResults([])
+      } finally {
+        if (!cancelled) setIsSearching(false)
+      }
+    }, SEARCH_DEBOUNCE_MS)
+
+    return () => {
+      cancelled = true
+      clearTimeout(handle)
+    }
+  }, [searchQuery])
 
   const { setIsCreateModalOpen } = useClubsUIStore()
 
@@ -113,38 +149,38 @@ export function useClubesPage() {
     },
   ]
 
+  const isSearchMode = searchQuery.trim().length > 0
+
   const activeData = useMemo(() => {
-    function getActiveItems() {
-      if (activeTab === 'mis-clubes') return Array.isArray(myClubs) ? myClubs : []
-      if (activeTab === 'sugeridos') return suggestedPage?.items ?? []
-      return popularPage?.items ?? []
-    }
-    const items = getActiveItems()
+    // When the user is searching, surface the server-side results (across all
+    // pages) instead of filtering the currently-loaded tab page.
+    if (isSearchMode) return searchResults ?? []
 
-    const q = searchQuery.trim().toLowerCase()
-    if (!q) return items
-    return items.filter((club) => {
-      const haystack = `${club.name} ${club.description ?? ''} ${club.category ?? ''}`.toLowerCase()
-      return haystack.includes(q)
-    })
-  }, [activeTab, myClubs, suggestedPage, popularPage, searchQuery])
+    if (activeTab === 'mis-clubes') return Array.isArray(myClubs) ? myClubs : []
+    if (activeTab === 'sugeridos') return suggestedPage?.items ?? []
+    return popularPage?.items ?? []
+  }, [isSearchMode, searchResults, activeTab, myClubs, suggestedPage, popularPage])
 
-  const totalPages =
-    activeTab === 'sugeridos'
+  // Search results are a single flat list, so collapse pagination to one page.
+  const totalPages = isSearchMode
+    ? 1
+    : activeTab === 'sugeridos'
       ? suggestedPage?.totalPages ?? 1
       : activeTab === 'populares' || activeTab === 'nuevos'
         ? popularPage?.totalPages ?? 1
         : 1
 
-  const isLoading =
-    activeTab === 'mis-clubes'
+  const isLoading = isSearchMode
+    ? isSearching
+    : activeTab === 'mis-clubes'
       ? isLoadingMyClubs
       : activeTab === 'sugeridos'
         ? isLoadingSuggested
         : isLoadingPopular
 
-  const emptyMessage =
-    activeTab === 'mis-clubes'
+  const emptyMessage = isSearchMode
+    ? t('list.empty.default')
+    : activeTab === 'mis-clubes'
       ? t('list.empty.mine')
       : activeTab === 'sugeridos'
         ? t('list.empty.suggested')

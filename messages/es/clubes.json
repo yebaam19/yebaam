@@ -95,6 +95,24 @@
       "requiredMark": "*",
       "next": "Siguiente"
     },
+    "step2": {
+      "heading": "Configuración del club",
+      "subtitle": "Define la privacidad y detalles adicionales de tu club",
+      "privacyLabel": "Privacidad",
+      "privacyPublic": "Público - Cualquiera puede unirse",
+      "privacyPrivate": "Privado - Requiere aprobación",
+      "privacyPublicHint": "Los miembros pueden unirse libremente",
+      "privacyPrivateHint": "Los administradores deben aprobar las solicitudes",
+      "subcategoryLabel": "Subcategoría",
+      "subcategoryPlaceholder": "Ej: Ciencia Ficción, Fútbol, Fotografía Digital...",
+      "locationLabel": "Ubicación",
+      "locationPlaceholder": "Ej: Ciudad, País o 'Online'",
+      "websiteLabel": "Sitio web",
+      "websitePlaceholder": "https://ejemplo.com",
+      "optional": "(opcional)",
+      "back": "Atrás",
+      "next": "Siguiente"
+    },
     "step4": {
       "heading": "Información adicional",
       "subtitle": "Añade etiquetas y reglas para tu club (opcional)",
@@ -106,6 +124,8 @@
       "rulesHint": "(opcional, máx. 20)",
       "rulesPlaceholder": "Añadir regla...",
       "addRule": "Añadir",
+      "removeTagAria": "Quitar etiqueta: {tag}",
+      "removeRuleAria": "Quitar regla",
       "summaryHeading": "Resumen del club",
       "summaryName": "Nombre:",
       "summaryCategory": "Categoría:",
@@ -129,6 +149,7 @@
       "uploadImage": "Subir imagen",
       "profileHint": "Recomendado: 400x400px, máx. 5MB",
       "coverHint": "Recomendado: 1200x400px, máx. 5MB",
+      "uploadError": "No se pudo subir la imagen. Inténtalo de nuevo.",
       "back": "Atrás",
       "next": "Siguiente"
     }

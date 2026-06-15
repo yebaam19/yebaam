@@ -27,7 +27,7 @@ export const ClubsGrid: FC<ClubsGridProps> = ({
       <div className="flex flex-col items-center justify-center py-16 px-4">
         <div className="text-center">
           <svg
-            className="w-24 h-24 mx-auto text-gray-300 dark:text-gray-600 mb-4"
+            className="w-24 h-24 mx-auto text-gray-300 dark:text-neutral-400 mb-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

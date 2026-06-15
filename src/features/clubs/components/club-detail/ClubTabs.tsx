@@ -7,14 +7,29 @@ import {
   VideoCameraIcon,
   DocumentTextIcon,
   FolderIcon,
+  Squares2X2Icon,
 } from '@/components/icons/heroicons-shim';
 
-export type TabType = 'acerca' | 'fotos' | 'videos' | 'articulos' | 'archivos';
+export type TabType =
+  | 'acerca'
+  | 'publicaciones'
+  | 'fotos'
+  | 'videos'
+  | 'articulos'
+  | 'archivos';
 
 type TabKey = 'about' | 'photos' | 'videos' | 'articles' | 'files';
 
-const TABS: { id: TabType; labelKey: TabKey; icon: typeof PhotoIcon }[] = [
+// `labelKey` resolves via next-intl; `label` is a hardcoded fallback for tabs
+// without a translation entry yet (Publicaciones).
+const TABS: {
+  id: TabType;
+  labelKey?: TabKey;
+  label?: string;
+  icon: typeof PhotoIcon;
+}[] = [
   { id: 'acerca', labelKey: 'about', icon: InformationCircleIcon },
+  { id: 'publicaciones', label: 'Publicaciones', icon: Squares2X2Icon },
   { id: 'fotos', labelKey: 'photos', icon: PhotoIcon },
   { id: 'videos', labelKey: 'videos', icon: VideoCameraIcon },
   { id: 'articulos', labelKey: 'articles', icon: DocumentTextIcon },
@@ -30,12 +45,18 @@ export function ClubTabs({ activeTab, onTabChange }: ClubTabsProps) {
   const t = useTranslations('clubes');
   return (
     <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-      <nav className="-mb-px flex gap-1 overflow-x-auto px-2" aria-label={t('detail.tabs.ariaLabel')}>
-        {TABS.map(({ id, labelKey, icon: Icon }) => {
+      <nav
+        role="tablist"
+        className="-mb-px flex gap-1 overflow-x-auto px-2"
+        aria-label={t('detail.tabs.ariaLabel')}
+      >
+        {TABS.map(({ id, labelKey, label, icon: Icon }) => {
           const active = activeTab === id;
           return (
             <button
               key={id}
+              role="tab"
+              aria-selected={active}
               onClick={() => onTabChange(id)}
               className={`inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 active
@@ -44,7 +65,7 @@ export function ClubTabs({ activeTab, onTabChange }: ClubTabsProps) {
               }`}
             >
               <Icon className="h-4 w-4" />
-              {t(`detail.tabs.${labelKey}`)}
+              {labelKey ? t(`detail.tabs.${labelKey}`) : label}
             </button>
           );
         })}

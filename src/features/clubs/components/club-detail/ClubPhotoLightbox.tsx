@@ -92,8 +92,16 @@ export function ClubPhotoLightbox({
         className="relative flex max-h-[90vh] w-full max-w-4xl flex-col items-center gap-3"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative h-[78vh] w-full">
-          <Image src={url} alt="" fill sizes="90vw" className="object-contain" unoptimized priority />
+        <div className="relative w-full grow" style={{ height: 'min(78vh, calc(100vh - 160px))' }}>
+          <Image
+            src={url}
+            alt={`Foto ${index + 1} de ${total}`}
+            fill
+            sizes="90vw"
+            className="object-contain"
+            unoptimized
+            priority
+          />
         </div>
 
         <div className="flex items-center gap-4">

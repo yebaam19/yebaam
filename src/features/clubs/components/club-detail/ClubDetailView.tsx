@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
 import type { Club } from '@/features/clubs/types/club.types';
@@ -24,6 +25,7 @@ import { ClubHighlightedPosts } from './ClubHighlightedPosts';
 import { ClubDrawer } from './ClubDrawer';
 import { ClubTabContent } from './ClubTabContent';
 import { ClubPostComposer } from './ClubPostComposer';
+import { ClubPostModal } from './ClubPostModal';
 import { ClubAdminPanel } from './ClubAdminPanel';
 import type { ViewMode } from './ClubPostsGrid';
 import {
@@ -91,6 +93,7 @@ export function ClubDetailView({
   const [activeTab, setActiveTab] = useState<TabType>('acerca');
   const [drawer, setDrawer] = useState<DrawerKey>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cascade');
+  const [openPostId, setOpenPostId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const NAV_ITEMS = NAV_ITEM_DEFS.map((n) => ({
@@ -104,7 +107,7 @@ export function ClubDetailView({
         ? await leaveClubAction(club.id)
         : await joinClubAction(club.id);
       if (res.ok) router.refresh();
-      else alert(res.error);
+      else toast.error(res.error);
     });
   };
 
@@ -123,8 +126,21 @@ export function ClubDetailView({
   };
 
   const openPost = (id: string) => {
-    console.info('open post', id);
+    setOpenPostId(id);
   };
+
+  // Resolve the open post id against every list it could come from: the main
+  // feed plus the highlight cards (which can reference posts not in initialPosts).
+  const openPost_ = useMemo(() => {
+    if (!openPostId) return null;
+    const candidates = [
+      ...initialPosts,
+      highlights.mostRecent,
+      highlights.mostViewed,
+      highlights.mostReacted,
+    ];
+    return candidates.find((p): p is ClubPost => !!p && p.id === openPostId) ?? null;
+  }, [openPostId, initialPosts, highlights]);
 
   const drawerTitles: Record<Exclude<DrawerKey, null>, string> = {
     chat: t('detail.sideNav.publicChat'),
@@ -170,7 +186,7 @@ export function ClubDetailView({
       <ClubTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Mobile section nav — horizontal scroll above main */}
-      <nav className="flex gap-2 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-800">
+      <nav className="flex gap-2 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-800 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700 [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)]">
         {NAV_ITEMS.map((n) => {
           const Icon = n.icon;
           return (
@@ -352,6 +368,11 @@ export function ClubDetailView({
         )}
         {drawer === 'chat' && <PublicChatPanel publicChatId={publicChatId} />}
       </ClubDrawer>
+
+      {/* Post viewer */}
+      {openPost_ && (
+        <ClubPostModal post={openPost_} onClose={() => setOpenPostId(null)} />
+      )}
     </div>
   );
 }

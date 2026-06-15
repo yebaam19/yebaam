@@ -67,7 +67,7 @@ export function InviteClubMemberForm({ clubId }: { clubId: string }) {
             onChange={(e) => setUsername(e.target.value)}
             placeholder={t('placeholder')}
             autoFocus
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-200"
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('hint')}</p>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { HeartIcon } from '@/components/icons/heroicons-shim';
 import type { ClubPost } from '@/features/clubs/server/clubs.server';
@@ -14,6 +14,7 @@ interface ClubPhotosPanelProps {
 interface PhotoItem {
   url: string;
   postId: string;
+  mediaIndex: number;
 }
 
 interface LikeState {
@@ -31,9 +32,9 @@ export function ClubPhotosPanel({ posts }: ClubPhotosPanelProps) {
   const photos = useMemo<PhotoItem[]>(() => {
     const out: PhotoItem[] = [];
     for (const post of posts) {
-      for (const m of post.media) {
-        if (m.kind === 'image' && m.url) out.push({ url: m.url, postId: post.id });
-      }
+      post.media.forEach((m, mediaIndex) => {
+        if (m.kind === 'image' && m.url) out.push({ url: m.url, postId: post.id, mediaIndex });
+      });
     }
     return out;
   }, [posts]);
@@ -45,6 +46,13 @@ export function ClubPhotosPanel({ posts }: ClubPhotosPanelProps) {
   });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // If the photo list shrinks (e.g. a post is removed) keep the open index valid.
+  useEffect(() => {
+    if (openIndex !== null && openIndex >= photos.length) {
+      setOpenIndex(photos.length ? photos.length - 1 : null);
+    }
+  }, [photos.length, openIndex]);
 
   const toggleLike = useCallback((postId: string) => {
     setLikes((prev) => ({ ...prev, [postId]: flip(prev[postId] ?? { liked: false, count: 0 }) }));
@@ -78,10 +86,10 @@ export function ClubPhotosPanel({ posts }: ClubPhotosPanelProps) {
           const like = likes[photo.postId] ?? { liked: false, count: 0 };
           return (
             <button
-              key={`${photo.url}-${idx}`}
+              key={`${photo.postId}-${photo.mediaIndex}`}
               type="button"
               onClick={() => setOpenIndex(idx)}
-              aria-label="Ampliar foto"
+              aria-label={`Ampliar foto ${idx + 1} de ${photos.length}`}
               className="group relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-900"
             >
               <Image
@@ -116,7 +124,10 @@ export function ClubPhotosPanel({ posts }: ClubPhotosPanelProps) {
           onClose={() => setOpenIndex(null)}
           onPrev={() => setOpenIndex((i) => (i === null ? i : (i - 1 + photos.length) % photos.length))}
           onNext={() => setOpenIndex((i) => (i === null ? i : (i + 1) % photos.length))}
-          onToggleLike={() => toggleLike(photos[openIndex].postId)}
+          onToggleLike={() => {
+            const photo = photos[openIndex];
+            if (photo) toggleLike(photo.postId);
+          }}
         />
       )}
     </>

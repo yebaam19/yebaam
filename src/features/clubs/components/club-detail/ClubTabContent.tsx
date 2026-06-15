@@ -64,6 +64,13 @@ export function ClubTabContent({
     );
   }
 
+  if (activeTab === 'publicaciones') {
+    // No filterKind → show every post, including text-only NOTE posts.
+    return (
+      <ClubPostsGrid posts={posts} viewMode={viewMode} onOpen={onOpenPost} />
+    );
+  }
+
   if (activeTab === 'fotos') {
     return <ClubPhotosPanel posts={posts} />;
   }

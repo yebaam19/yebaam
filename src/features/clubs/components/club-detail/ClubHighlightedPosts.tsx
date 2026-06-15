@@ -13,6 +13,7 @@ import {
   FolderIcon,
   ChatBubbleOvalLeftIcon,
 } from '@/components/icons/heroicons-shim';
+import { clubPostThumb } from './postMedia';
 
 interface ClubHighlightedPostsProps {
   highlights: {
@@ -33,13 +34,11 @@ const KIND_ICON: Record<ClubPostKind, typeof PhotoIcon> = {
 
 function Card({
   title,
-  subtitle,
   icon: TitleIcon,
   post,
   onOpen,
 }: {
   title: string;
-  subtitle: string;
   icon: typeof ClockIcon;
   post: ClubPost | null;
   onOpen?: (id: string) => void;
@@ -56,23 +55,24 @@ function Card({
     );
   }
   const KindIcon = KIND_ICON[post.kind];
+  const thumb = clubPostThumb(post);
   return (
     <button
       onClick={() => onOpen?.(post.id)}
       className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
     >
       <div className="relative aspect-video w-full bg-gray-100 dark:bg-gray-700">
-        {post.thumbnailUrl || post.mediaUrl ? (
+        {thumb ? (
           <Image
-            src={post.thumbnailUrl || post.mediaUrl || ''}
-            alt={post.title ?? title}
+            src={thumb}
+            alt={post.title || post.body?.slice(0, 100) || title}
             fill
             sizes="(max-width: 640px) 100vw, 33vw"
             className="object-cover"
             unoptimized
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-gray-300">
+          <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
             <KindIcon className="h-10 w-10" />
           </div>
         )}
@@ -103,24 +103,21 @@ function Card({
 export function ClubHighlightedPosts({ highlights, onOpen }: ClubHighlightedPostsProps) {
   const t = useTranslations('clubes');
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <Card
         title={t('detail.sort.mostRecent')}
-        subtitle="Última publicación"
         icon={ClockIcon}
         post={highlights.mostRecent}
         onOpen={onOpen}
       />
       <Card
         title={t('detail.sort.mostViewed')}
-        subtitle="Mayor alcance"
         icon={EyeIcon}
         post={highlights.mostViewed}
         onOpen={onOpen}
       />
       <Card
         title={t('detail.sort.mostReacted')}
-        subtitle="Mayor engagement"
         icon={HeartIcon}
         post={highlights.mostReacted}
         onOpen={onOpen}

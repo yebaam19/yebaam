@@ -95,6 +95,24 @@
       "requiredMark": "*",
       "next": "Next"
     },
+    "step2": {
+      "heading": "Club settings",
+      "subtitle": "Set the privacy and additional details of your club",
+      "privacyLabel": "Privacy",
+      "privacyPublic": "Public - Anyone can join",
+      "privacyPrivate": "Private - Requires approval",
+      "privacyPublicHint": "Members can join freely",
+      "privacyPrivateHint": "Admins must approve requests",
+      "subcategoryLabel": "Subcategory",
+      "subcategoryPlaceholder": "E.g. Sci-Fi, Football, Digital Photography...",
+      "locationLabel": "Location",
+      "locationPlaceholder": "E.g. City, Country or 'Online'",
+      "websiteLabel": "Website",
+      "websitePlaceholder": "https://example.com",
+      "optional": "(optional)",
+      "back": "Back",
+      "next": "Next"
+    },
     "step4": {
       "heading": "Additional information",
       "subtitle": "Add tags and rules for your club (optional)",
@@ -106,6 +124,8 @@
       "rulesHint": "(optional, max. 20)",
       "rulesPlaceholder": "Add rule...",
       "addRule": "Add",
+      "removeTagAria": "Remove tag: {tag}",
+      "removeRuleAria": "Remove rule",
       "summaryHeading": "Club summary",
       "summaryName": "Name:",
       "summaryCategory": "Category:",
@@ -129,6 +149,7 @@
       "uploadImage": "Upload image",
       "profileHint": "Recommended: 400x400px, max. 5MB",
       "coverHint": "Recommended: 1200x400px, max. 5MB",
+      "uploadError": "The image could not be uploaded. Please try again.",
       "back": "Back",
       "next": "Next"
     }

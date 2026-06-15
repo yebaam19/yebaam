@@ -89,7 +89,7 @@ export function ClubPostComposer({ clubId }: ClubPostComposerProps) {
         onChange={(e) => setBody(e.target.value)}
         rows={3}
         placeholder="Comparte algo con el club…"
-        className="w-full resize-none border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 dark:text-white"
+        className="w-full resize-none border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 dark:text-white dark:placeholder:text-gray-500"
       />
 
       <MediaPreviewGrid media={media} onRemove={removeMedia} />

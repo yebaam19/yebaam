@@ -40,7 +40,7 @@ export function MediaPreviewGrid({ media, onRemove }: MediaPreviewGridProps) {
               unoptimized
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-gray-400">
+            <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
               <VideoCameraIcon className="h-8 w-8" />
             </div>
           )}

@@ -93,7 +93,7 @@ export const CreateClubStep4: FC<CreateClubStep4Props> = ({
             }}
             placeholder={t('tagsPlaceholder')}
             maxLength={30}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <button
             onClick={handleAddTag}
@@ -112,7 +112,9 @@ export const CreateClubStep4: FC<CreateClubStep4Props> = ({
               >
                 {tag}
                 <button
+                  type="button"
                   onClick={() => handleRemoveTag(tag)}
+                  aria-label={t('removeTagAria', { tag })}
                   className="hover:text-blue-900 dark:hover:text-blue-100"
                 >
                   <XMarkIcon className="w-4 h-4" />
@@ -141,7 +143,7 @@ export const CreateClubStep4: FC<CreateClubStep4Props> = ({
             }}
             placeholder={t('rulesPlaceholder')}
             maxLength={200}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <button
             onClick={handleAddRule}
@@ -163,7 +165,9 @@ export const CreateClubStep4: FC<CreateClubStep4Props> = ({
                 </span>
                 <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{rule}</span>
                 <button
+                  type="button"
                   onClick={() => handleRemoveRule(rule)}
+                  aria-label={t('removeRuleAria')}
                   className="shrink-0 text-gray-400 hover:text-red-500"
                 >
                   <XMarkIcon className="w-5 h-5" />

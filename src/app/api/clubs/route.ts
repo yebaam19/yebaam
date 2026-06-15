@@ -9,6 +9,21 @@ import {
   type ClubRow,
 } from '@/lib/api/clubs';
 
+/**
+ * A club website is optional. When provided it must be an absolute http(s) URL;
+ * anything else (relative paths, javascript: URIs, garbage) is rejected.
+ */
+function isValidWebsite(value: unknown): boolean {
+  if (value === null || value === undefined || value === '') return true;
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export async function GET() {
   const client = await getServerClient();
   const { data: me } = await client.auth.getUser();
@@ -36,6 +51,9 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
+  if (!isValidWebsite(body.website)) {
+    return NextResponse.json({ error: 'URL de sitio web no válida' }, { status: 400 });
+  }
 
   const client = await getServerClient();
   const { data: me } = await client.auth.getUser();

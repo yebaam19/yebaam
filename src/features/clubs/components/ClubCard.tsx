@@ -45,7 +45,9 @@ function pickAvatarGradient(seed: string): string {
 
 export const ClubCard: FC<ClubCardProps> = ({ club }) => {
   const t = useTranslations('clubes');
-  const isPrivate = club.privacy === 'PRIVATE';
+  // Anything other than PUBLIC (PRIVATE / SECRET / AFFILIATION) is gated, so it
+  // gets the lock badge rather than falling through to "Público".
+  const isPrivate = club.privacy !== 'PUBLIC';
   const avatarGradient = pickAvatarGradient(club.id || club.slug || club.name);
 
   return (
@@ -94,6 +96,7 @@ export const ClubCard: FC<ClubCardProps> = ({ club }) => {
                 />
               ) : (
                 <div
+                  aria-label={club.name}
                   className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${avatarGradient}`}
                 >
                   <span className="text-xl font-bold text-white">

@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl'
 import { FC, useState } from 'react'
+import { CLUB_CATEGORY_LABELS, getCategoryLabel } from '@/features/clubs/utils/clubHelpers'
 import type { CreateClubDto, ClubCategory } from '../../types/club.types'
 
 interface CreateClubStep1Props {
@@ -46,6 +47,8 @@ export const CreateClubStep1: FC<CreateClubStep1Props> = ({ data, onUpdate, onNe
         <input
           id="club-name"
           type="text"
+          required
+          autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('namePlaceholder')}
@@ -62,6 +65,7 @@ export const CreateClubStep1: FC<CreateClubStep1Props> = ({ data, onUpdate, onNe
         </label>
         <textarea
           id="club-description"
+          required
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t('descriptionPlaceholder')}
@@ -79,25 +83,17 @@ export const CreateClubStep1: FC<CreateClubStep1Props> = ({ data, onUpdate, onNe
         </label>
         <select
           id="club-category"
+          required
           value={category}
           onChange={(e) => setCategory(e.target.value as ClubCategory | '')}
           className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
         >
           <option value="">{t('categoryPlaceholder')}</option>
-          <option value="DEPORTES">{t('categories.DEPORTES')}</option>
-          <option value="TECNOLOGIA">{t('categories.TECNOLOGIA')}</option>
-          <option value="ARTE">{t('categories.ARTE')}</option>
-          <option value="MUSICA">{t('categories.MUSICA')}</option>
-          <option value="LECTURA">{t('categories.LECTURA')}</option>
-          <option value="COCINA">{t('categories.COCINA')}</option>
-          <option value="VIAJES">{t('categories.VIAJES')}</option>
-          <option value="FOTOGRAFIA">{t('categories.FOTOGRAFIA')}</option>
-          <option value="NEGOCIOS">{t('categories.NEGOCIOS')}</option>
-          <option value="EDUCACION">{t('categories.EDUCACION')}</option>
-          <option value="SALUD">{t('categories.SALUD')}</option>
-          <option value="GAMING">{t('categories.GAMING')}</option>
-          <option value="CINE">{t('categories.CINE')}</option>
-          <option value="OTRO">{t('categories.OTRO')}</option>
+          {Object.keys(CLUB_CATEGORY_LABELS).map((cat) => (
+            <option key={cat} value={cat}>
+              {getCategoryLabel(cat as ClubCategory)}
+            </option>
+          ))}
         </select>
       </div>
 

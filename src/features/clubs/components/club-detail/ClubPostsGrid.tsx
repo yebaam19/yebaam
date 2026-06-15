@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import type { ClubPost, ClubPostKind } from '@/features/clubs/server/clubs.server';
+import { clubPostThumb } from './postMedia';
 import {
   PhotoIcon,
   VideoCameraIcon,
@@ -37,6 +38,10 @@ const PAGE_SIZE = 12;
 export function ClubPostsGrid({ posts, filterKind, viewMode, onOpen }: ClubPostsGridProps) {
   const [page, setPage] = useState(0);
 
+  // Reset pagination when the active filter changes, otherwise the current page
+  // index can point past the end of the newly filtered list (empty page).
+  useEffect(() => setPage(0), [filterKind]);
+
   const filtered = useMemo(
     () => (filterKind ? posts.filter((p) => p.kind === filterKind) : posts),
     [posts, filterKind],
@@ -60,19 +65,21 @@ export function ClubPostsGrid({ posts, filterKind, viewMode, onOpen }: ClubPosts
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {visible.map((post) => {
           const Icon = KIND_ICON[post.kind];
+          const thumb = clubPostThumb(post);
           return (
             <button
               key={post.id}
               onClick={() => onOpen?.(post.id)}
+              aria-label={post.title || post.kind}
               className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
             >
               <div className="relative aspect-square w-full bg-gray-100 dark:bg-gray-700">
-                {post.thumbnailUrl || post.mediaUrl ? (
+                {thumb ? (
                   <Image
-                    src={post.thumbnailUrl || post.mediaUrl || ''}
+                    src={thumb}
                     alt={post.title ?? 'post'}
                     fill
                     sizes="(max-width: 768px) 50vw, 33vw"
@@ -80,7 +87,7 @@ export function ClubPostsGrid({ posts, filterKind, viewMode, onOpen }: ClubPosts
                     unoptimized
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-gray-300">
+                  <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
                     <Icon className="h-10 w-10" />
                   </div>
                 )}
