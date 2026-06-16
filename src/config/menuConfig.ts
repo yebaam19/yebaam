@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-import { menuConfig, type MenuItem } from './menu/menu-data';
-import { isFeatureEnabled } from './features-flag';
-
-export { menuConfig };
-export type { MenuIcon, MenuItem, MenuSection, MenuConfig } from './menu/menu-data';
-
-/** A menu item after its href/badge placeholders have been resolved for a user. */
-export interface ResolvedMenuItem extends MenuItem {
-  /** Always present (defaulted to false) once the menu has been resolved. */
-  badgeHideOnMobile: boolean;
-}
-
-/** A menu section whose items have been resolved. */
-export interface ResolvedMenuSection {
-  sectionKey: string;
-  items: ResolvedMenuItem[];
-}
-=======
 import {
   AcademicCapIcon,
   ArrowTrendingUpIcon,
@@ -44,8 +25,12 @@ import {
   UserIcon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim';
+import type { ComponentType } from 'react';
 import type { FeatureFlag } from './features-flag';
 import { isFeatureEnabled } from './features-flag';
+
+/** Icon component rendered in the sidebar; heroicons-shim wrappers accept only `className`. */
+export type MenuIcon = ComponentType<{ className?: string }>;
 
 export const menuConfig: Record<string, any[]> = {
   USER: [
@@ -255,7 +240,23 @@ export const menuConfig: Record<string, any[]> = {
     },
   ],
 };
->>>>>>> a6c4ca7 (feat(business): work in progress before sync)
+
+/** A menu item after its href/badge placeholders have been resolved for a user. */
+export interface ResolvedMenuItem {
+  icon: MenuIcon;
+  labelKey: string;
+  href: string;
+  badge?: string;
+  badgeKey?: string;
+  /** Always present (defaulted to false) once the menu has been resolved. */
+  badgeHideOnMobile: boolean;
+}
+
+/** A menu section whose items have been resolved. */
+export interface ResolvedMenuSection {
+  sectionKey: string;
+  items: ResolvedMenuItem[];
+}
 
 /**
  * Helper para obtener el menú con rutas dinámicas según el usuario.
@@ -279,13 +280,13 @@ export function getMenuForUser(
     .map((section) => ({
       ...section,
       items: section.items
-        .filter((item) => {
+        .filter((item: any) => {
           if (item.featureFlag) {
             return isFeatureEnabled(item.featureFlag);
           }
           return true;
         })
-        .map((item) => {
+        .map((item: any) => {
           const href = item.href.replace('{basePath}', basePath).replace('{username}', username || '');
 
           // Resolver placeholders dinámicos de badges (números/contadores).

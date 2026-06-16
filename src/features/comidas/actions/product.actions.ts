@@ -13,8 +13,8 @@ async function requireSession() {
   return { userId: data.user.id, client }
 }
 
-async function requireBusinessAdmin(businessId: string, userId: string) {
-  if (!(await isUserBusinessAdmin(businessId, userId))) {
+async function requireBusinessAdmin(businessId: string) {
+  if (!(await isUserBusinessAdmin(businessId))) {
     throw new Error('No tienes permisos para administrar este negocio')
   }
 }
@@ -35,10 +35,10 @@ const ProductSchema = z.object({
 })
 
 export async function createProduct(formData: FormData) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
   const parsed = ProductSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
-  await requireBusinessAdmin(parsed.data.business_id, userId)
+  await requireBusinessAdmin(parsed.data.business_id)
 
   const { data, error } = await client.rpc('comidas_create_product', { p_data: parsed.data })
   if (error) throw new Error(error.message)
@@ -47,7 +47,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(productId: string, formData: FormData) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
 
   // Lookup actual business_id server-side — the form sets it but we verify against the DB
   const sc = getServiceClient()
@@ -58,7 +58,7 @@ export async function updateProduct(productId: string, formData: FormData) {
     .eq('id', productId)
     .maybeSingle()
   if (!prod) throw new Error('Producto no encontrado')
-  await requireBusinessAdmin(prod.business_id as string, userId)
+  await requireBusinessAdmin(prod.business_id as string)
 
   const parsed = ProductSchema.partial().safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
@@ -73,7 +73,7 @@ export async function updateProduct(productId: string, formData: FormData) {
 }
 
 export async function deactivateProduct(productId: string) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
 
   // Lookup actual business_id server-side
   const sc = getServiceClient()
@@ -84,7 +84,7 @@ export async function deactivateProduct(productId: string) {
     .eq('id', productId)
     .maybeSingle()
   if (!prod) throw new Error('Producto no encontrado')
-  await requireBusinessAdmin(prod.business_id as string, userId)
+  await requireBusinessAdmin(prod.business_id as string)
 
   const { error } = await client.rpc('comidas_deactivate_product', { p_id: productId })
   if (error) throw new Error(error.message)

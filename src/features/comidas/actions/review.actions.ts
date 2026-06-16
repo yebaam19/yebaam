@@ -19,13 +19,12 @@ const ReviewSchema = z.object({
 })
 
 export async function createReview(formData: FormData) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
   const parsed = ReviewSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
 
   const { data, error } = await client.rpc('comidas_create_review', {
-    p_user_id: userId,
-    p_data:    parsed.data,
+    p_data: parsed.data,
   })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]', 'page')

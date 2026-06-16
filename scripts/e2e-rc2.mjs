@@ -88,13 +88,12 @@ async function main() {
     // ---- STEP 2: confirm auto-admin trigger fired (business_admins row + check_business_admin RPC) ----
     const { data: isAdmin, error: isAdminErr } = await sessionA.client.rpc('check_business_admin', {
       p_business_id: businessId,
-      p_user_id: userA.user.id,
     })
     if (isAdminErr) return fail('check_business_admin', isAdminErr.message)
     if (isAdmin !== true) return fail('auto-admin trigger', `expected true, got ${isAdmin}`)
     ok('Auto-admin trigger confirmó a Cuenta A como admin', `check_business_admin=${isAdmin}`)
 
-    const { data: myBiz, error: myBizErr } = await sessionA.client.rpc('get_my_businesses', { p_user_id: userA.user.id })
+    const { data: myBiz, error: myBizErr } = await sessionA.client.rpc('get_my_businesses')
     if (myBizErr) return fail('get_my_businesses (mis-negocios dashboard data)', myBizErr.message)
     if (!myBiz.some((b) => b.business.id === businessId)) return fail('get_my_businesses', 'negocio creado no aparece en Mis Negocios')
     ok('Negocio aparece en /feed/mis-negocios (get_my_businesses)', `count=${myBiz.length}`)
@@ -120,7 +119,6 @@ async function main() {
     console.log('\n=== Cuenta B: Seguir negocio (toggle_business_follow RPC) ===')
     const { data: followResult, error: followErr } = await sessionB.client.rpc('toggle_business_follow', {
       p_business_id: businessId,
-      p_user_id: userB.user.id,
     })
     if (followErr) return fail('toggle_business_follow', followErr.message)
     if (!followResult?.is_following) return fail('toggle_business_follow', `expected is_following=true, got ${JSON.stringify(followResult)}`)

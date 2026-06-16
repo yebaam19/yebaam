@@ -15,14 +15,26 @@ export const createComposerSlice: StateCreator<PostState, [], [], ComposerSlice>
   postToEdit: null,
   contextBlogId: undefined,
   contextPageId: undefined,
+  contextBusinessId: undefined,
+  contextBusinessName: undefined,
+  contextBusinessSlug: undefined,
   pendingPostContent: undefined,
 
-  openCreateModal: (blogId?: string, pageId?: string) => {
+  openCreateModal: (
+    blogId?: string,
+    pageId?: string,
+    businessId?: string,
+    businessName?: string,
+    businessSlug?: string
+  ) => {
     set({
       isCreateModalOpen: true,
       error: null,
       contextBlogId: blogId,
       contextPageId: pageId,
+      contextBusinessId: businessId,
+      contextBusinessName: businessName,
+      contextBusinessSlug: businessSlug,
     });
   },
 
@@ -32,6 +44,9 @@ export const createComposerSlice: StateCreator<PostState, [], [], ComposerSlice>
       error: null,
       contextBlogId: undefined,
       contextPageId: undefined,
+      contextBusinessId: undefined,
+      contextBusinessName: undefined,
+      contextBusinessSlug: undefined,
       pendingPostContent: undefined,
     });
   },

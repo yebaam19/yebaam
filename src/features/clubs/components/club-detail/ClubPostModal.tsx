@@ -59,7 +59,7 @@ export function ClubPostModal({ post, onClose }: ClubPostModalProps) {
     setCount((c) => c + (nextLiked ? 1 : -1));
     startTransition(async () => {
       const res = await toggleClubPostReactionAction(post.id);
-      if (res.ok) {
+      if (res.ok && res.data) {
         setLiked(res.data.liked);
         setCount(res.data.count);
       } else {

@@ -34,10 +34,10 @@ export default async function BusinessPage({ params }: Props) {
 
   const [engagement, communityPreviews, isAdmin] = await Promise.all([
     user
-      ? getBusinessEngagement(business.id, user.id).catch(() => null)
+      ? getBusinessEngagement(business.id).catch(() => null)
       : Promise.resolve(null),
     getBusinessCommunityPreviews(business.id),
-    user ? isUserBusinessAdmin(business.id, user.id).catch(() => false) : Promise.resolve(false),
+    user ? isUserBusinessAdmin(business.id).catch(() => false) : Promise.resolve(false),
   ])
 
   return (

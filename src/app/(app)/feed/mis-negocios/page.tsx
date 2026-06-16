@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 }
 
 export default async function MisNegociosPage() {
-  const { userId } = await requireSession()
-  const myBusinesses = await getMyBusinesses(userId)
+  await requireSession()
+  const myBusinesses = await getMyBusinesses()
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">

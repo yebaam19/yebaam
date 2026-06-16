@@ -8,7 +8,7 @@ export async function GET() {
   if (!data.user) return NextResponse.json({ count: 0 })
 
   try {
-    const businesses = await getMyBusinesses(data.user.id)
+    const businesses = await getMyBusinesses()
     return NextResponse.json({ count: businesses.length })
   } catch (err) {
     console.error('[admin-count] failed:', err instanceof Error ? err.message : err)

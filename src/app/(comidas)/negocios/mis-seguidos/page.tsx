@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 }
 
 export default async function MisSeguidosPage() {
-  const { userId } = await requireSession()
-  const businesses = await getFollowedBusinesses(userId)
+  await requireSession()
+  const businesses = await getFollowedBusinesses()
 
   return (
     <main className="min-h-screen bg-white">

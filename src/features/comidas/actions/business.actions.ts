@@ -13,8 +13,8 @@ async function requireSession() {
   return { userId: data.user.id, client }
 }
 
-async function requireBusinessAdmin(businessId: string, userId: string) {
-  if (!(await isUserBusinessAdmin(businessId, userId))) {
+async function requireBusinessAdmin(businessId: string) {
+  if (!(await isUserBusinessAdmin(businessId))) {
     throw new Error('No tienes permisos para administrar este negocio')
   }
 }
@@ -59,8 +59,8 @@ export async function createBusiness(formData: FormData) {
 }
 
 export async function updateBusiness(businessId: string, formData: FormData) {
-  const { userId, client } = await requireSession()
-  await requireBusinessAdmin(businessId, userId)
+  const { client } = await requireSession()
+  await requireBusinessAdmin(businessId)
   const parsed = UpdateBusinessSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
 
@@ -73,39 +73,9 @@ export async function updateBusiness(businessId: string, formData: FormData) {
   return data as Business
 }
 
-export async function toggleBusinessLike(businessId: string) {
-  const { userId, client } = await requireSession()
-  const { error } = await client.rpc('comidas_toggle_business_like', {
-    p_user_id:     userId,
-    p_business_id: businessId,
-  })
-  if (error) throw new Error(error.message)
-  revalidatePath('/negocios/[slug]', 'page')
-}
-
-export async function toggleBusinessFollow(businessId: string) {
-  const { userId, client } = await requireSession()
-  const { error } = await client.rpc('comidas_toggle_business_follow', {
-    p_user_id:     userId,
-    p_business_id: businessId,
-  })
-  if (error) throw new Error(error.message)
-  revalidatePath('/negocios/[slug]', 'page')
-}
-
-export async function toggleBusinessCustomer(businessId: string) {
-  const { userId, client } = await requireSession()
-  const { error } = await client.rpc('comidas_toggle_business_customer', {
-    p_user_id:     userId,
-    p_business_id: businessId,
-  })
-  if (error) throw new Error(error.message)
-  revalidatePath('/negocios/[slug]', 'page')
-}
-
 export async function updateBusinessStatus(businessId: string, isActive: boolean) {
-  const { userId, client } = await requireSession()
-  await requireBusinessAdmin(businessId, userId)
+  const { client } = await requireSession()
+  await requireBusinessAdmin(businessId)
   const { error } = await client.rpc('comidas_update_business_status', {
     p_id:       businessId,
     p_is_active: isActive,

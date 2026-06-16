@@ -39,6 +39,13 @@ export interface Post {
   // Campos de Reels
   isReel?: boolean;
   aspectRatio?: 'vertical' | 'horizontal' | 'square';
+
+  // Business/blog/page association (set when post belongs to a business wall)
+  businessId?: string;
+  // Only present when returned by get_timeline_posts RPC (not on business-scoped queries)
+  businessName?: string;
+  businessSlug?: string;
+  businessAvatarUrl?: string;
 }
 
 /**

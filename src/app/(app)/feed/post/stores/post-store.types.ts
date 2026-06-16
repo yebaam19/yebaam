@@ -45,14 +45,23 @@ export interface ComposerSlice {
   isCreating: boolean;
   isEditModalOpen: boolean;
   postToEdit: Post | null;
-  // Context for creating posts in blogs/pages.
+  // Context for creating posts in blogs/pages/businesses.
   contextBlogId?: string;
   contextPageId?: string;
+  contextBusinessId?: string;
+  contextBusinessName?: string;
+  contextBusinessSlug?: string;
   // Pending content used to seed CreatePostModal (e.g. when sharing a pet to
   // feed). Consumed and cleared by the modal on open.
   pendingPostContent?: string;
 
-  openCreateModal: (blogId?: string, pageId?: string) => void;
+  openCreateModal: (
+    blogId?: string,
+    pageId?: string,
+    businessId?: string,
+    businessName?: string,
+    businessSlug?: string
+  ) => void;
   closeCreateModal: () => void;
   openEditModal: (post: Post) => void;
   closeEditModal: () => void;

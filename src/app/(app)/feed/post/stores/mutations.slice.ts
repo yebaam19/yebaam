@@ -116,8 +116,18 @@ export const createMutationsSlice: StateCreator<PostState, [], [], MutationsSlic
     set({ isCreating: true, error: null });
     try {
       const newPost = await postService.create(data);
+
+      // Enrich business posts with name/slug so the badge renders correctly
+      // on optimistic insert. The API response omits these because public.posts
+      // has no business_name column — only get_timeline_posts RPC returns them.
+      const { contextBusinessName, contextBusinessSlug } = get();
+      const postForCache =
+        newPost.businessId && contextBusinessName
+          ? { ...newPost, businessName: contextBusinessName, businessSlug: contextBusinessSlug }
+          : newPost;
+
       const safePosts = Array.isArray(get().posts) ? get().posts : [];
-      const updatedPosts = [newPost, ...safePosts];
+      const updatedPosts = [postForCache, ...safePosts];
 
       set({
         posts: updatedPosts,
@@ -128,7 +138,7 @@ export const createMutationsSlice: StateCreator<PostState, [], [], MutationsSlic
 
       // Mirror into shared cache so FeedTimeline (usePosts → useFetch → cacheStore) re-renders.
       updateCached<TimelineCache>(TIMELINE_CACHE_KEY, (record) => ({
-        data: record?.data ? [newPost, ...record.data] : [newPost],
+        data: record?.data ? [postForCache, ...record.data] : [postForCache],
         fetchedAt: Date.now(),
       }));
 

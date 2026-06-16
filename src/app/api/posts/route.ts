@@ -167,7 +167,6 @@ export async function POST(request: NextRequest) {
   if (businessId) {
     const { data: isAdmin, error: adminCheckError } = await client.rpc('check_business_admin', {
       p_business_id: businessId,
-      p_user_id: userId,
     });
     if (adminCheckError || !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

@@ -68,14 +68,13 @@ export const getBusinessAdmins = cache(async (businessId: string): Promise<Busin
   return (data ?? []) as BusinessAdmin[]
 })
 
-// check_business_admin RPC (20260618000000_admin_rpcs.sql) checks both
-// business_admins rows AND created_by in a single SECURITY DEFINER call,
-// eliminating the need for .schema('comidas') direct table access.
-export async function isUserBusinessAdmin(businessId: string, userId: string): Promise<boolean> {
+// check_business_admin RPC (20260619000000_negocios_security_remediation.sql)
+// derives the caller from auth.uid() internally — no user_id parameter,
+// so a caller can never check admin status for an identity other than their own.
+export async function isUserBusinessAdmin(businessId: string): Promise<boolean> {
   const client = await getServerClient()
   const { data, error } = await client.rpc('check_business_admin', {
     p_business_id: businessId,
-    p_user_id: userId,
   })
   if (error) {
     console.error('[isUserBusinessAdmin] RPC error:', error.message)
@@ -85,19 +84,18 @@ export async function isUserBusinessAdmin(businessId: string, userId: string): P
 }
 
 export const getMyAdminRecord = cache(
-  async (businessId: string, userId: string): Promise<BusinessAdmin | null> => {
+  async (businessId: string): Promise<BusinessAdmin | null> => {
     const client = await getServerClient()
     const { data } = await client.rpc('get_my_admin_record', {
       p_business_id: businessId,
-      p_user_id: userId,
     })
     return data as BusinessAdmin | null
   },
 )
 
-export const getMyBusinesses = cache(async (userId: string): Promise<MyBusiness[]> => {
+export const getMyBusinesses = cache(async (): Promise<MyBusiness[]> => {
   const client = await getServerClient()
-  const { data, error } = await client.rpc('get_my_businesses', { p_user_id: userId })
+  const { data, error } = await client.rpc('get_my_businesses')
   if (error) throw new Error(error.message)
   return (data ?? []).map((r: any) => ({
     business: r.business as Business,

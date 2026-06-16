@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
     ]
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   typedRoutes: true,
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],

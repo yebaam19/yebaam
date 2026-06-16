@@ -9,12 +9,12 @@ interface Props {
 }
 
 export default async function AdminMediaPage({ params }: Props) {
-  const { userId } = await requireSession()
+  await requireSession()
   const { businessId } = await params
 
   const [business, adminRecord] = await Promise.all([
     getBusinessById(businessId),
-    getMyAdminRecord(businessId, userId),
+    getMyAdminRecord(businessId),
   ])
   if (!business) notFound()
 

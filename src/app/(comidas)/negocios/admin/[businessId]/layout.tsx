@@ -17,12 +17,12 @@ interface Props {
 
 export default async function AdminBusinessLayout({ children, params }: Props) {
   const { businessId } = await params
-  const { userId } = await requireSession()
+  await requireSession()
 
   const [business, isAdmin, myBusinesses] = await Promise.all([
     getBusinessById(businessId),
-    isUserBusinessAdmin(businessId, userId),
-    getMyBusinesses(userId),
+    isUserBusinessAdmin(businessId),
+    getMyBusinesses(),
   ])
 
   if (!business) notFound()

@@ -13,8 +13,8 @@ async function requireSession() {
   return { userId: data.user.id, client }
 }
 
-async function requireBusinessAdmin(businessId: string, userId: string) {
-  if (!(await isUserBusinessAdmin(businessId, userId))) {
+async function requireBusinessAdmin(businessId: string) {
+  if (!(await isUserBusinessAdmin(businessId))) {
     throw new Error('No tienes permisos para administrar este negocio')
   }
 }
@@ -32,9 +32,9 @@ const VideoAssetSchema = z.object({
 })
 
 export async function saveBusinessImage(input: z.infer<typeof ImageAssetSchema>) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
   const parsed = ImageAssetSchema.parse(input)
-  await requireBusinessAdmin(parsed.business_id, userId)
+  await requireBusinessAdmin(parsed.business_id)
 
   const { data, error } = await client.rpc('comidas_save_business_image', {
     p_business_id: parsed.business_id,
@@ -48,9 +48,9 @@ export async function saveBusinessImage(input: z.infer<typeof ImageAssetSchema>)
 }
 
 export async function saveBusinessVideo(input: z.infer<typeof VideoAssetSchema>) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
   const parsed = VideoAssetSchema.parse(input)
-  await requireBusinessAdmin(parsed.business_id, userId)
+  await requireBusinessAdmin(parsed.business_id)
 
   const { data, error } = await client.rpc('comidas_save_business_video', {
     p_business_id: parsed.business_id,
@@ -62,8 +62,8 @@ export async function saveBusinessVideo(input: z.infer<typeof VideoAssetSchema>)
 }
 
 export async function setPrimaryMedia(mediaId: string, businessId: string) {
-  const { userId, client } = await requireSession()
-  await requireBusinessAdmin(businessId, userId)
+  const { client } = await requireSession()
+  await requireBusinessAdmin(businessId)
 
   const { error } = await client.rpc('comidas_set_primary_media', {
     p_media_id:    mediaId,
@@ -74,7 +74,7 @@ export async function setPrimaryMedia(mediaId: string, businessId: string) {
 }
 
 export async function deleteMedia(mediaId: string) {
-  const { userId, client } = await requireSession()
+  const { client } = await requireSession()
 
   // Lookup the asset's business_id server-side — never trust client for ownership scope
   const sc = getServiceClient()
@@ -85,7 +85,7 @@ export async function deleteMedia(mediaId: string) {
     .eq('id', mediaId)
     .maybeSingle()
   if (!asset) throw new Error('Archivo no encontrado')
-  await requireBusinessAdmin(asset.business_id as string, userId)
+  await requireBusinessAdmin(asset.business_id as string)
 
   const { error } = await client.rpc('comidas_delete_media', { p_media_id: mediaId })
   if (error) throw new Error(error.message)

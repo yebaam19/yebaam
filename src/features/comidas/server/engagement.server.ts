@@ -26,11 +26,10 @@ const EMPTY: EngagementState = {
 }
 
 export const getBusinessEngagement = cache(
-  async (businessId: string, userId: string): Promise<EngagementState> => {
+  async (businessId: string): Promise<EngagementState> => {
     const client = await getServerClient()
     const { data, error } = await client.rpc('get_business_engagement', {
       p_business_id: businessId,
-      p_user_id: userId,
     })
     if (error) throw new Error(error.message)
     return (data ?? EMPTY) as EngagementState
@@ -38,12 +37,11 @@ export const getBusinessEngagement = cache(
 )
 
 export const getFollowedBusinesses = cache(
-  async (userId: string, limit = 48) => {
+  async (limit = 48) => {
     try {
       const client = await getServerClient()
       const { data, error } = await client.rpc('get_businesses_followed_by_user', {
-        p_user_id: userId,
-        p_limit:   limit,
+        p_limit: limit,
       })
       if (error) throw new Error(error.message)
       return (data ?? []) as Business[]

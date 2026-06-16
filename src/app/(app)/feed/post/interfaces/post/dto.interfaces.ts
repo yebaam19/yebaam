@@ -50,9 +50,10 @@ export interface CreatePostDTO {
   };
   scheduledFor?: string; // ISO date string
 
-  // Optional blog or page association
+  // Optional blog, page, or business association
   blogId?: string;
   pageId?: string;
+  businessId?: string;
 
   // Reels
   isReel?: boolean;

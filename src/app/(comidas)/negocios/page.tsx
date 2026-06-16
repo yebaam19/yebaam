@@ -16,7 +16,7 @@ export default async function NegociosPage() {
   ])
 
   const followedIds = user
-    ? new Set((await getFollowedBusinesses(user.id)).map((b) => b.id))
+    ? new Set((await getFollowedBusinesses()).map((b) => b.id))
     : new Set<string>()
 
   return (
