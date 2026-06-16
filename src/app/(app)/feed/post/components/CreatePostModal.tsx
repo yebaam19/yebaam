@@ -20,7 +20,7 @@ export default function CreatePostModal() {
   const t = useTranslations('feed')
   const { user } = useAuth()
 
-  const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId, pendingPostContent, setPendingPostContent } = usePostStore()
+  const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId, contextBusinessId, pendingPostContent, setPendingPostContent } = usePostStore()
 
   const {
     register,
@@ -90,6 +90,7 @@ export default function CreatePostModal() {
         toast.success(t('composer.uploadedCount', { count: selectedFiles.length }))
       }
 
+<<<<<<< HEAD
       const postData = buildPostData({
         content: data.content,
         selectedVisibility,
@@ -102,6 +103,89 @@ export default function CreatePostModal() {
         contextBlogId,
         contextPageId,
       })
+=======
+      const isValidHexColor =
+        backgroundColor &&
+        backgroundColor.startsWith('#') &&
+        backgroundColor !== '#ffffff' &&
+        /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
+
+      // Construir el objeto de datos asegurándose de que no haya referencias circulares
+      const postData: any = {
+        content: data.content?.trim() || undefined,
+        privacy: selectedVisibility,
+        backgroundColor: isValidHexColor ? backgroundColor : undefined,
+      }
+
+      // Agregar feeling solo si existe, asegurando estructura limpia
+      if (selectedFeeling) {
+        postData.feeling = {
+          type: selectedFeeling.type,
+          label: selectedFeeling.label,
+          emoji: selectedFeeling.emoji,
+          activity: selectedFeeling.activity,
+        }
+      }
+
+      // Agregar location solo si existe, asegurando estructura limpia
+      if (selectedLocation) {
+        postData.location = {
+          name: selectedLocation.name,
+          address: selectedLocation.address,
+          city: selectedLocation.city,
+          country: selectedLocation.country,
+          coordinates: selectedLocation.coordinates ? {
+            lat: selectedLocation.coordinates.lat,
+            lng: selectedLocation.coordinates.lng,
+          } : undefined,
+          placeId: selectedLocation.placeId,
+        }
+      }
+
+      // Agregar taggedUserIds solo si hay tags
+      if (taggedUserIds && taggedUserIds.length > 0) {
+        postData.taggedUserIds = [...taggedUserIds]
+      }
+
+      // Agregar GIF solo si existe, asegurando estructura limpia
+      if (selectedGif) {
+        postData.gif = {
+          id: selectedGif.id,
+          url: selectedGif.url,
+          previewUrl: selectedGif.previewUrl,
+          width: selectedGif.width,
+          height: selectedGif.height,
+          source: selectedGif.source,
+        }
+      }
+
+      // Agregar mediaFiles solo si hay archivos
+      if (mediaFiles.length > 0) {
+        postData.mediaFiles = mediaFiles.map(file => ({
+          s3Key: file.s3Key,
+          url: file.url,
+          type: file.type,
+          size: file.size,
+          mimeType: file.mimeType,
+          duration: file.duration,
+          streamUid: file.streamUid,
+          thumbnailUrl: file.thumbnailUrl,
+        }))
+      }
+
+      // Agregar contexto de blog/page/business si existe
+      if (contextBlogId) {
+        postData.blogId = contextBlogId
+      }
+
+      if (contextPageId) {
+        postData.pageId = contextPageId
+      }
+>>>>>>> a6c4ca7 (feat(business): work in progress before sync)
+
+      if (contextBusinessId) {
+        postData.businessId = contextBusinessId
+      }
 
       console.log('[CreatePostModal] Post data prepared:', postData)
 

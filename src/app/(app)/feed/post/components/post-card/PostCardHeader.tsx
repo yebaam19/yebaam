@@ -34,21 +34,47 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
     ? t(`privacyLabel.${privacyValue}`)
     : ''
 
+  const isBusiness = Boolean(post.businessId && post.businessName)
+
   return (
     <div className="flex items-start justify-between px-4 pt-4 pb-3">
       <div className="flex min-w-0 flex-1 gap-3">
-        <Link href={`/${post.author.username}`} className="shrink-0">
-          <Avatar src={post.author.avatar} initials={authorInitials} className="h-10 w-10" />
-        </Link>
+        {isBusiness ? (
+          <Link href={`/negocios/${post.businessSlug ?? post.businessId}`} className="shrink-0">
+            <Avatar
+              src={post.businessAvatarUrl}
+              initials={(post.businessName ?? '').slice(0, 2).toUpperCase()}
+              className="h-10 w-10"
+            />
+          </Link>
+        ) : (
+          <Link href={`/${post.author.username}`} className="shrink-0">
+            <Avatar src={post.author.avatar} initials={authorInitials} className="h-10 w-10" />
+          </Link>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/${post.author.username}`}
-              className="font-semibold wrap-break-word text-neutral-900 hover:underline dark:text-white"
-            >
-              {post.author.firstName} {post.author.lastName}
-            </Link>
-            {post.author.isVerified && (
+            {isBusiness ? (
+              <Link
+                href={`/negocios/${post.businessSlug ?? post.businessId}`}
+                className="font-semibold wrap-break-word text-neutral-900 hover:underline dark:text-white"
+              >
+                {post.businessName}
+              </Link>
+            ) : (
+              <Link
+                href={`/${post.author.username}`}
+                className="font-semibold wrap-break-word text-neutral-900 hover:underline dark:text-white"
+              >
+                {post.author.firstName} {post.author.lastName}
+              </Link>
+            )}
+            {isBusiness && (
+              <span className="inline-flex items-center rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-700 ring-1 ring-primary-100">
+                Negocio
+              </span>
+            )}
+            {!isBusiness && post.author.isVerified && (
               <svg className="h-4 w-4 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -64,7 +90,14 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
             )}
           </div>
           <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-            <Link href={`/${post.author.username}/posts/${post.id}`} className="hover:underline">
+            <Link
+              href={
+                isBusiness
+                  ? `/negocios/${post.businessSlug ?? post.businessId}`
+                  : `/${post.author.username}/posts/${post.id}`
+              }
+              className="hover:underline"
+            >
               {timeAgo}
             </Link>
             <span>·</span>

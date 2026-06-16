@@ -98,7 +98,14 @@
     "contact": "Contacto",
     "myProfile": "Mi perfil",
     "professionalProfile": "Perfil profesional",
-    "statistics": "Estadísticas"
+    "statistics": "Estadísticas",
+    "comidas": "Negocios",
+    "descubrirNegocios": "Descubrir negocios",
+    "misSeguidosNegocios": "Mis seguidos",
+    "misNegocios": "Mis Negocios",
+    "registrarNegocio": "Registrar mi negocio",
+    "artistas": "Artistas",
+    "escuelas": "Escuelas"
   },
   "badges": {
     "pronto": "Pronto",

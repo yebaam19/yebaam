@@ -28,7 +28,7 @@ export default function BusinessNotFound() {
         {/* Actions */}
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/feed/businesses"
+            href="/negocios"
             className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
           >
             <MagnifyingGlassIcon className="h-5 w-5" />

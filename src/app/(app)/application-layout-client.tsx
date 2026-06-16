@@ -21,6 +21,7 @@ interface User {
   username: string
   displayName: string
   avatarUrl?: string | null
+  email?: string
 }
 
 interface Props {

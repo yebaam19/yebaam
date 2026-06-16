@@ -39,6 +39,10 @@
   "exclude": [
     "node_modules",
     "docs",
-    "supabase/functions"
+    "supabase/functions",
+    "src/features/comidas/original",
+    "src/features/businesses/original",
+    "src/features/artistas/original",
+    "src/features/escuelas/original"
   ]
 }

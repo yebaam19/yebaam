@@ -49,7 +49,10 @@ const FEATURE_FLAGS_BASE = {
   // ============================================================================
   
   SERVICIOS_PROFESIONALES_ENABLED: true, // Servicios Profesionales - Funcional 
-  NEGOCIOS_ENABLED: true, // Negocios - Funcional 
+  NEGOCIOS_ENABLED: false, // unificado en /negocios via COMIDAS_ENABLED
+  COMIDAS_ENABLED: true, // ComídasYebaam — directorio de negocios gastronómicos
+  ARTISTAS_ENABLED: true, // PerfilArtístico — perfiles artísticos y servicios creativos
+  ESCUELAS_ENABLED: true, // YebaamEscuelas — directorio de escuelas artísticas
   
   // ============================================================================
   // SERVICIOS PROFESIONALES - FEATURES AVANZADAS

@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
   const scope = searchParams.get('scope') ?? 'timeline';
   const userIdFilter = searchParams.get('userId');
   const blogIdFilter = searchParams.get('blogId');
+  const businessIdFilter = searchParams.get('businessId');
   const limit = parseIntParam(searchParams.get('limit'), 20);
   const page = parseIntParam(searchParams.get('page'), 1);
   const offset = (page - 1) * limit;
@@ -32,9 +33,27 @@ export async function GET(request: NextRequest) {
   const { client, userId } = await getUserId();
 
   const needsAuth = scope === 'mine' || scope === 'timeline' || scope === 'suggestions';
+  // business scope is public — followers and visitors can read a business wall without auth
 
   if (needsAuth && !userId) {
     return NextResponse.json({ success: true, data: [] });
+  }
+
+  // ── Timeline: single-source-of-truth RPC (friends + followed businesses) ──
+  if (scope === 'timeline' && userId) {
+    const { data: rpcRows, error: rpcError } = await client.rpc('get_timeline_posts', {
+      p_user_id: userId,
+      p_limit: limit,
+      p_offset: offset,
+    });
+    if (rpcError) {
+      return NextResponse.json({ error: rpcError.message }, { status: 500 });
+    }
+    const rows = (rpcRows ?? []) as PostRow[];
+    const profiles = await loadProfilesForPosts(client, rows);
+    const myReactions = await loadMyReactions(client, rows.map((r) => r.id), userId);
+    const posts = rows.map((r) => mapPost(r, profiles, myReactions.get(r.id) ?? null));
+    return NextResponse.json({ success: true, data: posts });
   }
 
   let query = client
@@ -50,10 +69,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: [] });
     }
     query = query.eq('blog_id', blogIdFilter);
+  } else if (scope === 'business') {
+    // Public business wall: posts tagged with this business_id.
+    if (!businessIdFilter) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+    query = query.eq('business_id', businessIdFilter);
   } else {
-    // Every non-blog scope excludes wall posts (non-null blog_id) so they never
-    // leak into the global feed, the personal timeline, or profile posts.
-    query = query.is('blog_id', null);
+    // Every non-blog, non-business scope excludes wall posts so they never leak
+    // into the global feed, the personal timeline, or profile posts.
+    query = query.is('blog_id', null).is('business_id', null);
 
     if (scope === 'mine' && userId) {
       query = query.eq('author_id', userId);
@@ -131,14 +156,30 @@ export async function POST(request: NextRequest) {
   const privacyRaw = typeof body.privacy === 'string' ? (body.privacy as string).toLowerCase() : 'public';
   const privacy = ['public', 'friends', 'private'].includes(privacyRaw) ? privacyRaw : 'public';
 
-  // Blog-wall post: tag with blog_id and force `public` so every visitor of the
-  // (public) blog can see it. A normal feed post keeps blog_id null.
+  // Blog-wall post: tag with blog_id and force `public`.
   const blogId = typeof body.blogId === 'string' && body.blogId ? body.blogId : null;
-  const effectivePrivacy = blogId ? 'public' : privacy;
+
+  // Business-wall post: tag with business_id and force `public`.
+  // Verify the caller is an admin or creator of the business before inserting.
+  // `comidas` is not an exposed PostgREST schema, so this goes through the
+  // same SECURITY DEFINER RPC business.server.ts uses for admin checks.
+  const businessId = typeof body.businessId === 'string' && body.businessId ? body.businessId : null;
+  if (businessId) {
+    const { data: isAdmin, error: adminCheckError } = await client.rpc('check_business_admin', {
+      p_business_id: businessId,
+      p_user_id: userId,
+    });
+    if (adminCheckError || !isAdmin) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
+  const effectivePrivacy = (blogId || businessId) ? 'public' : privacy;
 
   const insertRow = {
     author_id: userId,
     blog_id: blogId,
+    business_id: businessId,
     content: typeof body.content === 'string' ? body.content : '',
     background_color: typeof body.backgroundColor === 'string' ? body.backgroundColor : null,
     media_files: Array.isArray(body.mediaFiles) ? body.mediaFiles : [],
@@ -164,11 +205,9 @@ export async function POST(request: NextRequest) {
 
   const row = data as PostRow;
 
-  // Mirror media into the profile gallery tables so photos/videos posted to
-  // the feed also show up under the user's profile Fotos/Videos tabs. Failure
-  // here must not block the post response — log and continue. Wall posts are
-  // skipped: their media belongs to the blog, not the author's profile gallery.
-  if (!blogId) {
+  // Mirror media into the profile gallery tables. Wall posts (blog or business)
+  // are skipped — their media belongs to the wall, not the author's profile gallery.
+  if (!blogId && !businessId) {
     await mirrorMediaToProfileGallery(client, userId, effectivePrivacy, insertRow.media_files);
   }
 

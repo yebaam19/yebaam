@@ -44,7 +44,7 @@ export function DirectoryCategoryCard({ category, citySlug }: DirectoryCategoryC
 
   const getHref = () => {
     if (category.type === DirectoryCategoryType.BUSINESS) {
-      return `/feed/businesses?city=${citySlug}`
+      return `/negocios`
     } else if (category.type === DirectoryCategoryType.SERVICE) {
       return professionalServicesCityPath(citySlug)
     }

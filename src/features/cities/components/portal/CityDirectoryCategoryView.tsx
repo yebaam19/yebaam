@@ -120,7 +120,7 @@ function BusinessListItem({ business }: BusinessListItemProps) {
   return (
     <li>
       <Link
-        href={`/feed/businesses/${business.slug}` as `/${string}`}
+        href={`/negocios/${business.slug}` as `/${string}`}
         className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 dark:border-neutral-800 dark:bg-neutral-900"
       >
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-primary-100 via-primary-200 to-primary-300 dark:from-primary-900/40 dark:via-primary-800/40 dark:to-primary-700/40">

@@ -56,9 +56,11 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
 
   const handleShare = async () => {
     if (typeof window === 'undefined') return
-    const url = `${window.location.origin}/${post.author.username}/posts/${post.id}`
+    const url = post.businessSlug
+      ? `${window.location.origin}/negocios/${post.businessSlug}`
+      : `${window.location.origin}/${post.author.username}/posts/${post.id}`
     const shareData = {
-      title: t('post.shareTitle', { author: post.author.firstName ?? post.author.username }),
+      title: t('post.shareTitle', { author: post.businessName ?? post.author.firstName ?? post.author.username }),
       text: post.content?.slice(0, 140) ?? '',
       url,
     }

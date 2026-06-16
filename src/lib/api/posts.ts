@@ -15,6 +15,12 @@ export type PostRow = {
   aspect_ratio: string | null;
   created_at: string;
   updated_at: string;
+  blog_id?: string | null;
+  business_id?: string | null;
+  // Extra columns returned only by get_timeline_posts RPC (NULL for personal posts)
+  business_name?: string | null;
+  business_slug?: string | null;
+  business_cf_image_id?: string | null;
 };
 
 export type ProfileLite = {
@@ -101,6 +107,13 @@ function mapPrivacy(raw: string | null | undefined) {
   return { value: (['public', 'friends', 'private', 'custom'] as const).includes(value as 'public') ? value : 'public' };
 }
 
+const CF_ACCOUNT_HASH = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? '';
+
+function cfImageUrl(cfId: string | null | undefined): string | undefined {
+  if (!cfId || !CF_ACCOUNT_HASH) return undefined;
+  return `https://imagedelivery.net/${CF_ACCOUNT_HASH}/${cfId}/public`;
+}
+
 export function mapPost(row: PostRow, profilesById: Map<string, ProfileLite>, myReaction?: string | null) {
   const author = profilesById.get(row.author_id);
   return {
@@ -131,6 +144,10 @@ export function mapPost(row: PostRow, profilesById: Map<string, ProfileLite>, my
     updatedAt: row.updated_at,
     isReel: row.is_reel ?? false,
     aspectRatio: (row.aspect_ratio ?? undefined) as 'vertical' | 'horizontal' | 'square' | undefined,
+    businessId: row.business_id ?? undefined,
+    businessName: row.business_name ?? undefined,
+    businessSlug: row.business_slug ?? undefined,
+    businessAvatarUrl: cfImageUrl(row.business_cf_image_id),
   };
 }
 

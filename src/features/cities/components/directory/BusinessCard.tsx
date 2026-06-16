@@ -63,7 +63,7 @@ export function BusinessCard({ business }: BusinessCardProps) {
 
   return (
     <Link
-      href={`/feed/businesses/${business.slug}`}
+      href={`/negocios/${business.slug}`}
       className="group relative block h-64 cursor-pointer overflow-hidden rounded-xl bg-neutral-200 shadow-sm transition-shadow hover:shadow-lg dark:bg-neutral-700"
     >
       {/* Imagen de fondo */}

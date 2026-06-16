@@ -17,7 +17,7 @@ import { useMenuBadges } from './hooks/useMenuBadges'
 import { useSidebar } from './hooks/useSidebar'
 import { useSidebarExpanded } from './hooks/useSidebarExpanded'
 
-const MAX_VISIBLE_ITEMS = 7
+const MAX_VISIBLE_ITEMS = 10
 
 const isExternalHref = (href: string) => /^https?:\/\//i.test(href)
 
@@ -85,11 +85,20 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
     return menu
   }, [basePath, badges, user.username])
 
-  // Aplanar todos los items de todas las secciones
+  // Aplanar todos los items de todas las secciones.
+  // El item "Mis Negocios" se sobreescribe aquí porque su label/href dependen
+  // de si el usuario administra algún negocio (myBusinessesCount), algo que
+  // getMenuForUser no puede resolver de forma estática.
   const allItems = useMemo(() => {
     const items = userMenuConfig.flatMap((section) => section.items)
-    return items
-  }, [userMenuConfig])
+    return items.map((item: any) => {
+      if (item.href !== '/feed/mis-negocios') return item
+      if (badges.myBusinessesCount > 0) {
+        return { ...item, badge: String(badges.myBusinessesCount) }
+      }
+      return { ...item, labelKey: 'items.registrarNegocio', href: '/negocios/crear' }
+    })
+  }, [userMenuConfig, badges.myBusinessesCount])
 
   // Dividir items en visibles y adicionales
   const visibleItems = useMemo(() => allItems.slice(0, MAX_VISIBLE_ITEMS), [allItems])

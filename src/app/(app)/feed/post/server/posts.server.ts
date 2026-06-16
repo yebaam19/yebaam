@@ -1,61 +1,7 @@
 import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
-import type { Post, MediaFile, ReactionsCount } from '../interfaces/post.interfaces';
-
-type PostRow = {
-  id: string;
-  author_id: string;
-  content: string | null;
-  background_color: string | null;
-  media_files: unknown;
-  reactions_count: unknown;
-  comments_count: number | null;
-  privacy: 'public' | 'friends' | 'private';
-  is_reel: boolean | null;
-  aspect_ratio: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type ProfileRow = {
-  id: string;
-  username: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  avatar_url: string | null;
-  is_verified: boolean | null;
-};
-
-function mapRowToPost(row: PostRow, profileById: Map<string, ProfileRow>): Post {
-  const profile = profileById.get(row.author_id);
-  const media = Array.isArray(row.media_files) ? (row.media_files as MediaFile[]) : [];
-  const reactions = (row.reactions_count && typeof row.reactions_count === 'object'
-    ? row.reactions_count
-    : {}) as ReactionsCount;
-
-  return {
-    id: row.id,
-    content: row.content ?? '',
-    backgroundColor: row.background_color ?? undefined,
-    mediaFiles: media,
-    privacy: { value: row.privacy },
-    reactionsCount: reactions,
-    commentsCount: row.comments_count ?? 0,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    isReel: row.is_reel ?? undefined,
-    aspectRatio: (row.aspect_ratio as Post['aspectRatio']) ?? undefined,
-    author: {
-      id: row.author_id,
-      _id: row.author_id,
-      username: profile?.username ?? '',
-      firstName: profile?.first_name ?? '',
-      lastName: profile?.last_name ?? '',
-      avatar: profile?.avatar_url ?? undefined,
-      isVerified: profile?.is_verified ?? undefined,
-    },
-  };
-}
+import { mapPost, loadProfilesForPosts, type PostRow } from '@/lib/api/posts';
+import type { Post } from '../interfaces/post.interfaces';
 
 export async function listTimelinePosts(limit = 20): Promise<Post[]> {
   const client = await getServerClient();
@@ -64,40 +10,15 @@ export async function listTimelinePosts(limit = 20): Promise<Post[]> {
   const userId = auth?.user?.id;
   if (!userId) return [];
 
-  // Friends-only feed: own posts (any privacy) + accepted-friend posts whose
-  // privacy is 'public' or 'friends'. Private friend posts stay hidden.
-  const { data: friendships } = await client
-    .from('friendships')
-    .select('requester_id, recipient_id')
-    .eq('status', 'accepted')
-    .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
+  const { data: rpcRows, error } = await client.rpc('get_timeline_posts', {
+    p_user_id: userId,
+    p_limit: limit,
+    p_offset: 0,
+  });
 
-  const allowedAuthorIds = new Set<string>([userId]);
-  for (const f of (friendships ?? []) as Array<{ requester_id: string; recipient_id: string }>) {
-    allowedAuthorIds.add(f.requester_id === userId ? f.recipient_id : f.requester_id);
-  }
+  if (error || !rpcRows) return [];
 
-  const { data: rows, error } = await client
-    .from('posts')
-    .select('*')
-    .in('author_id', Array.from(allowedAuthorIds))
-    .or(`author_id.eq.${userId},privacy.in.(public,friends)`)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error || !rows) return [];
-
-  const posts = rows as PostRow[];
-  const authorIds = Array.from(new Set(posts.map((p) => p.author_id)));
-  if (authorIds.length === 0) return [];
-
-  const { data: profiles } = await client
-    .from('profiles')
-    .select('id, username, first_name, last_name, avatar_url, is_verified')
-    .in('id', authorIds);
-
-  const profileById = new Map<string, ProfileRow>();
-  for (const p of (profiles ?? []) as ProfileRow[]) profileById.set(p.id, p);
-
-  return posts.map((row) => mapRowToPost(row, profileById));
+  const rows = rpcRows as PostRow[];
+  const profiles = await loadProfilesForPosts(client, rows);
+  return rows.map((r) => mapPost(r, profiles) as unknown as Post);
 }

@@ -1,5 +1,6 @@
-'use client'
+import { redirect } from 'next/navigation'
 
+<<<<<<< HEAD
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { BusinessProfileContainer } from '@/features/businesses'
 import { useBusinessBySlug } from '@/features/businesses/hooks'
@@ -123,4 +124,13 @@ export default function BusinessProfilePage() {
       </div>
     </div>
   )
+=======
+interface Props {
+  params: Promise<{ slug: string }>
+}
+
+export default async function BusinessProfilePage({ params }: Props) {
+  const { slug } = await params
+  redirect(`/negocios/${slug}`)
+>>>>>>> a6c4ca7 (feat(business): work in progress before sync)
 }

@@ -37,6 +37,15 @@ const PUBLIC_ROUTES = [
   // discovery flow starts in the public city portal directory). Creating a
   // service requires a verified professional profile, gated in the UI.
   '/professional-services',
+  // Secondary platforms migrated into this app: ComídasYebaam, PerfilArtístico,
+  // YebaamEscuelas. Public listing and detail pages; writes gate at the
+  // server-action layer via requireSession().
+  '/negocios',
+  '/artistas',
+  '/escuelas',
+  '/programas',
+  '/oportunidades',
+  '/promociones',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
@@ -48,6 +57,12 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/cities',
   '/insignias',
   '/professional-services',
+  '/negocios',
+  '/artistas',
+  '/escuelas',
+  '/programas',
+  '/oportunidades',
+  '/promociones',
 ];
 
 export async function proxy(request: NextRequest) {

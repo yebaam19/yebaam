@@ -6,6 +6,7 @@ export interface User {
   username: string;
   displayName: string;
   avatarUrl?: string | null;
+  email?: string;
 }
 
 type ProfileRow = {
@@ -44,5 +45,6 @@ export async function getAuthUser(): Promise<User | null> {
     username: p?.username ?? fallbackName,
     displayName,
     avatarUrl: p?.avatar_url ?? null,
+    email,
   };
 }
