@@ -29,8 +29,10 @@ export const listBusinesses = cache(async (filters: BusinessFilters = {}) => {
 
 export const getBusinessBySlug = cache(async (slug: string): Promise<BusinessDetail | null> => {
   const client = await getServerClient()
-  const { data: base, error } = await client.rpc('get_business_by_slug', { p_slug: slug })
+  const { data: raw, error } = await client.rpc('get_business_by_slug', { p_slug: slug })
   if (error) throw new Error(error.message)
+  // get_business_by_slug is declared RETURNS TABLE, so supabase-js gives back an array
+  const base = Array.isArray(raw) ? (raw[0] ?? null) : raw
   if (!base) return null
 
   const bid = (base as { id: string }).id
@@ -44,7 +46,7 @@ export const getBusinessBySlug = cache(async (slug: string): Promise<BusinessDet
   ])
 
   return {
-    ...(base as BusinessDetail),
+    ...(base as unknown as BusinessDetail),
     menus:        menus        as BusinessDetail['menus'],
     media_assets: media        as BusinessDetail['media_assets'],
     reviews:      reviews      as BusinessDetail['reviews'],
