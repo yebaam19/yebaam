@@ -1,50 +1,8 @@
-import { cache } from 'react'
-import { getServerClient } from '@/utils/supabase/server'
+import { fetchBusinessStats } from '@/features/comidas/server/stats.server'
 
 interface Props {
   businessId: string
 }
-
-interface Stat {
-  label: string
-  value: number
-  hint: string
-  highlight?: boolean
-}
-
-export interface BusinessStats {
-  reviews: number
-  follows: number
-  likes: number
-  posts: number
-  reactions: number
-  comments: number
-  lastPostAt: string | null
-}
-
-export const fetchBusinessStats = cache(async (businessId: string): Promise<BusinessStats> => {
-  const client = await getServerClient()
-  const [statsRes, lastPostRes] = await Promise.all([
-    client.rpc('get_comidas_stats', { p_business_id: businessId }),
-    client
-      .from('posts')
-      .select('created_at')
-      .eq('business_id', businessId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ])
-  const d = (statsRes.data ?? {}) as Partial<BusinessStats>
-  return {
-    reviews:    d.reviews   ?? 0,
-    follows:    d.follows   ?? 0,
-    likes:      d.likes     ?? 0,
-    posts:      d.posts     ?? 0,
-    reactions:  d.reactions ?? 0,
-    comments:   d.comments  ?? 0,
-    lastPostAt: lastPostRes.data?.created_at ?? null,
-  }
-})
 
 function relativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime()
@@ -61,9 +19,9 @@ function relativeTime(iso: string): string {
 export async function DashboardStats({ businessId }: Props) {
   const s = await fetchBusinessStats(businessId)
 
-  const stats: Stat[] = [
+  const stats = [
     { label: 'Seguidores',    value: s.follows,   hint: 'Ven tus novedades en el feed', highlight: true },
-    { label: 'Publicaciones', value: s.posts,     hint: 'Posts en la red social' },
+    { label: 'Publicaciones', value: s.posts,     hint: 'Posts publicados' },
     { label: 'Reacciones',    value: s.reactions, hint: 'En tus publicaciones' },
     { label: 'Comentarios',   value: s.comments,  hint: 'En tus publicaciones' },
     { label: 'Reseñas',       value: s.reviews,   hint: 'Opiniones visibles' },
@@ -80,9 +38,7 @@ export async function DashboardStats({ businessId }: Props) {
             key={label}
             className={[
               'rounded-2xl border p-5 shadow-sm',
-              highlight
-                ? 'border-primary-200 bg-primary-50'
-                : 'border-neutral-200 bg-white',
+              highlight ? 'border-primary-200 bg-primary-50' : 'border-neutral-200 bg-white',
             ].join(' ')}
           >
             <p className={['text-sm font-medium', highlight ? 'text-primary-700' : 'text-neutral-500'].join(' ')}>
@@ -113,7 +69,7 @@ export async function DashboardStats({ businessId }: Props) {
         )}
         {lastPost && s.follows > 0 && (
           <span className="shrink-0 rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">
-            {s.follows} seguidor{s.follows !== 1 ? 'es' : ''} lo vieron
+            {s.follows} seguidor{s.follows !== 1 ? 'es' : ''} activos
           </span>
         )}
       </div>

@@ -69,17 +69,22 @@ export async function updateBusiness(businessId: string, formData: FormData) {
     p_data: parsed.data,
   })
   if (error) throw new Error(error.message)
-  revalidatePath(`/negocios/${(data as Business).slug}`)
-  return data as Business
+  const updated = data as Business
+  revalidatePath(`/negocios/${updated.slug}`)
+  revalidatePath(`/negocios/admin/${businessId}/settings`)
+  revalidatePath(`/negocios/admin/${businessId}`)
+  return updated
 }
 
 export async function updateBusinessStatus(businessId: string, isActive: boolean) {
   const { client } = await requireSession()
   await requireBusinessAdmin(businessId)
   const { error } = await client.rpc('comidas_update_business_status', {
-    p_id:       businessId,
+    p_id:        businessId,
     p_is_active: isActive,
   })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios')
+  revalidatePath(`/negocios/admin/${businessId}`)
+  revalidatePath(`/negocios/admin/${businessId}/settings`)
 }

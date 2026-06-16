@@ -114,5 +114,5 @@ export const getActivityLogs = cache(async (businessId: string) => {
   const client = await getServerClient()
   const { data, error } = await client.rpc('get_activity_logs_by_business', { p_business_id: businessId })
   if (error) throw new Error(error.message)
-  return (data ?? []) as Array<{ id: string; action: string; created_at: string; user_id: string }>
+  return (data ?? []) as Array<{ id: string; action: string; created_at: string; user_id: string; details?: Record<string, unknown> | null }>
 })
