@@ -43,7 +43,7 @@ export function BusinessProfileContainer({ business, currentUserId }: BusinessPr
           </Link>
           <ChevronRightIcon className="h-4 w-4 text-neutral-400" />
           <Link
-            href="/feed/businesses"
+            href="/negocios"
             className="text-neutral-500 transition-colors hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
           >
             Negocios
@@ -106,7 +106,7 @@ export function BusinessProfileContainer({ business, currentUserId }: BusinessPr
         {/* Back Link */}
         <div className="mt-8 border-t border-neutral-200 pt-8 dark:border-neutral-700">
           <Link
-            href="/feed/businesses"
+            href="/negocios"
             className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
             <ChevronRightIcon className="h-4 w-4 rotate-180" />

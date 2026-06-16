@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Yebaam favicon">
+  <g fill="#16a44c">
+    <ellipse cx="32" cy="16" rx="6" ry="6" />
+    <path d="M18 18c0-6 6-11 14-11s14 5 14 11-6 11-14 11-14-5-14-11Zm4 0c0 4 4 7 10 7s10-3 10-7-4-7-10-7-10 3-10 7Z"/>
+    <path d="M13 30c0-5 8-9 19-9s19 4 19 9-8 9-19 9-19-4-19-9Zm4 0c0 2 7 5 15 5s15-3 15-5-7-5-15-5-15 3-15 5Z"/>
+    <path d="M30 36h4l3 10h-10l3-10Z"/>
+  </g>
+</svg>

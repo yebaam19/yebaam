@@ -20,7 +20,7 @@ export function BusinessListCard({ business }: BusinessListCardProps) {
   const t = useTranslations('businesses')
   return (
     <Link
-      href={`/feed/businesses/${business.slug}`}
+      href={`/negocios/${business.slug}`}
       className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-neutral-800"
     >
       {/* Cover/Ad Image */}
