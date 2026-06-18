@@ -883,6 +883,17 @@
       "deleteDialogTitleGeneric": "Eliminar club",
       "deleteDialogDescription": "Se borrarán permanentemente {memberCount} miembros, {postCount} publicaciones y {articleCount} artículos relacionados (los artículos quedan sin club asignado). Esta acción no se puede deshacer."
     },
+    "activateClub": {
+      "heading": "Activar club existente para discos",
+      "description": "Los clubes creados en el feed no aparecen en el editor de álbumes hasta vincularlos a un género musical.",
+      "searchPlaceholder": "Buscar por nombre o slug (ej. rescatemos sello vergara)…",
+      "loading": "Buscando clubes…",
+      "empty": "No hay clubes sin género. Crea uno en el feed o usa «+ Crear club».",
+      "genreLabel": "Género musical",
+      "activateButton": "Activar para discos",
+      "activating": "Activando…",
+      "success": "«{name}» activado — ya aparece en el editor de álbumes."
+    },
     "mediaEditDialog": {
       "editPhoto": "Editar foto",
       "editVideo": "Editar video",
@@ -1046,7 +1057,9 @@
       "saved": "Guardado ✓",
       "primaryTitle": "Marcar como género principal",
       "primaryAria": "Género principal",
-      "markPrimaryAria": "Marcar como principal"
+      "markPrimaryAria": "Marcar como principal",
+      "filterPlaceholder": "Filtrar clubes por nombre o género…",
+      "noMatches": "Ningún club coincide con el filtro."
     }
   },
   "article": {

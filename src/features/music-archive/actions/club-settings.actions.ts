@@ -216,8 +216,136 @@ export async function adminDeleteMusicClub(
   }
 
   revalidatePath('/admin/music');
+  return { ok: true, data: { deleted: true } };
+}
+
+export type UnlinkedClubRow = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+};
+
+/** Clubs that exist in `clubs` but lack `music_genre_id` — they won't appear
+ *  in the album editor until linked to a genre. Platform-admin only. */
+export async function listClubsPendingMusicActivation(
+  query?: string,
+): Promise<ActionResult<UnlinkedClubRow[]>> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  const svc = getServiceClient();
+
+  let q = svc
+    .from('clubs')
+    .select('id, name, slug, description, category')
+    .is('music_genre_id', null)
+    .order('name', { ascending: true })
+    .limit(50);
+
+  const term = (query ?? '').trim();
+  if (term.length >= 2) {
+    const escaped = term.replace(/[\\%_]/g, '\\$&');
+    const pattern = `%${escaped}%`;
+    q = q.or(`name.ilike.${pattern},slug.ilike.${pattern}`);
+  }
+
+  const { data, error } = await q;
+  if (error) return { ok: false, error: error.message };
+
+  return {
+    ok: true,
+    data: ((data ?? []) as UnlinkedClubRow[]).map((r) => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description,
+      category: r.category,
+    })),
+  };
+}
+
+/** Link an existing club row to a music genre so it appears in /admin/music
+ *  album assignment and /musica/clubes. Sets category to MUSICA. */
+export async function linkClubToMusicGenre(
+  clubId: string,
+  musicGenreId: string,
+): Promise<
+  ActionResult<{
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    rules: string[];
+    music_genre_id: string;
+    genre_slug: string;
+    genre_name: string;
+    cover_image_url: string | null;
+  }>
+> {
+  const gate = await adminGate();
+  if (!gate.ok) return gate;
+  if (!musicGenreId) return { ok: false, error: 'Selecciona un género musical.' };
+
+  const svc = getServiceClient();
+  const { data: genre } = await svc
+    .from('music_genres')
+    .select('id, slug, name')
+    .eq('id', musicGenreId)
+    .maybeSingle();
+  if (!genre) return { ok: false, error: 'Género musical inválido.' };
+
+  const { data: club } = await svc
+    .from('clubs')
+    .select('id, name, slug, description, rules, cover_image_url, music_genre_id')
+    .eq('id', clubId)
+    .maybeSingle();
+  if (!club) return { ok: false, error: 'Club no encontrado.' };
+  if ((club as { music_genre_id: string | null }).music_genre_id) {
+    return { ok: false, error: 'Este club ya está vinculado a un género.' };
+  }
+
+  const { data: updated, error } = await svc
+    .from('clubs')
+    .update({
+      category: 'MUSICA',
+      music_genre_id: musicGenreId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', clubId)
+    .select('id, name, slug, description, rules, cover_image_url, music_genre_id')
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!updated) return { ok: false, error: 'No se pudo vincular el club.' };
+
+  const row = updated as {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    rules: string[] | null;
+    cover_image_url: string | null;
+    music_genre_id: string;
+  };
+  const g = genre as { slug: string; name: string };
+
+  revalidatePath('/admin/music');
   revalidatePath('/musica/clubes');
   revalidatePath('/musica');
-  revalidatePath(`/musica/clubes/${c.slug}`, 'layout');
-  return { ok: true, data: { deleted: true } };
+  revalidatePath(`/musica/clubes/${row.slug}`, 'layout');
+
+  return {
+    ok: true,
+    data: {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description ?? '',
+      rules: row.rules ?? [],
+      music_genre_id: row.music_genre_id,
+      genre_slug: g.slug,
+      genre_name: g.name,
+      cover_image_url: row.cover_image_url,
+    },
+  };
 }

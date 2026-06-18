@@ -27,7 +27,6 @@ export type ClubMemberCandidate = {
 
 async function addUserToClubPublicChat(clubId: string, userId: string): Promise<void> {
   const svc = getServiceClient();
-
   let { data: conv } = await svc
     .from('conversations')
     .select('id')
@@ -75,6 +74,68 @@ async function removeUserFromClubPublicChat(clubId: string, userId: string): Pro
     .delete()
     .eq('conversation_id', (conv as { id: string }).id)
     .eq('user_id', userId);
+}
+
+type ProfileLookup = { id: string; username: string | null };
+
+/** Profile search bypasses RLS — callers must gate with canManageClubMembers first. */
+async function findProfileByUsername(
+  svc: ReturnType<typeof getServiceClient>,
+  rawUsername: string,
+): Promise<{ profile: ProfileLookup | null; ambiguous: boolean }> {
+  const normalized = rawUsername.trim().replace(/^@/, '');
+  if (!normalized) return { profile: null, ambiguous: false };
+
+  const { data: exact } = await svc
+    .from('profiles')
+    .select('id, username')
+    .ilike('username', normalized)
+    .maybeSingle();
+  if (exact) return { profile: exact as ProfileLookup, ambiguous: false };
+
+  const escaped = normalized.replace(/[\\%_]/g, '\\$&');
+  const { data: partialRows } = await svc
+    .from('profiles')
+    .select('id, username')
+    .ilike('username', `%${escaped}%`)
+    .limit(5);
+  const partial = (partialRows ?? []) as ProfileLookup[];
+  if (partial.length === 0) return { profile: null, ambiguous: false };
+  if (partial.length === 1) return { profile: partial[0], ambiguous: false };
+
+  const caseMatch = partial.find(
+    (p) => p.username?.toLowerCase() === normalized.toLowerCase(),
+  );
+  if (caseMatch) return { profile: caseMatch, ambiguous: false };
+
+  return { profile: null, ambiguous: true };
+}
+
+async function isMusicClub(
+  svc: ReturnType<typeof getServiceClient>,
+  clubId: string,
+): Promise<boolean> {
+  const { data: club } = await svc
+    .from('clubs')
+    .select('category')
+    .eq('id', clubId)
+    .maybeSingle();
+  return (club as { category?: string } | null)?.category === 'MUSICA';
+}
+
+function buildMemberInsertRow(
+  clubId: string,
+  userId: string,
+  musicClub: boolean,
+): Record<string, unknown> {
+  const row: Record<string, unknown> = {
+    club_id: clubId,
+    user_id: userId,
+    role: 'MEMBER',
+    membership_tier: 'FREE',
+  };
+  if (musicClub) row.status = 'approved';
+  return row;
 }
 
 type ActionResult<T = undefined> =
@@ -234,7 +295,8 @@ export async function searchClubMemberCandidatesAction(
 
   const limit = Math.min(Math.max(input.limit ?? 20, 1), 20);
 
-  const { data: memberRows } = await client
+  const svc = getServiceClient();
+  const { data: memberRows } = await svc
     .from('club_members')
     .select('user_id')
     .eq('club_id', clubId);
@@ -243,7 +305,7 @@ export async function searchClubMemberCandidatesAction(
   );
   excludeIds.add(userId);
 
-  let q = client
+  let q = svc
     .from('profiles')
     .select('id, username, first_name, last_name, avatar_url, study_place');
 
@@ -316,13 +378,9 @@ export async function addClubMembersAction(
   }
 
   const svc = getServiceClient();
+  const musicClub = await isMusicClub(svc, clubId);
   const { error } = await svc.from('club_members').insert(
-    toAdd.map((uid) => ({
-      club_id: clubId,
-      user_id: uid,
-      role: 'MEMBER',
-      membership_tier: 'FREE',
-    })),
+    toAdd.map((uid) => buildMemberInsertRow(clubId, uid, musicClub)),
   );
   if (error) return { ok: false, error: error.message };
 
@@ -392,17 +450,20 @@ export async function addClubMemberByUsernameAction(
   const normalized = username.trim().replace(/^@/, '');
   if (!normalized) return { ok: false, error: 'Escribe un @username' };
 
-  const { data: profile } = await client
-    .from('profiles')
-    .select('id, username')
-    .ilike('username', normalized)
-    .maybeSingle();
+  const svc = getServiceClient();
+  const { profile, ambiguous } = await findProfileByUsername(svc, normalized);
+  if (ambiguous) {
+    return {
+      ok: false,
+      error: 'Varios usuarios coinciden con ese nombre. Escribe el @username completo.',
+    };
+  }
   if (!profile) return { ok: false, error: 'Usuario no encontrado' };
 
-  const inviteeId = (profile as { id: string }).id;
+  const inviteeId = profile.id;
   if (inviteeId === userId) return { ok: false, error: 'No puedes agregarte a ti mismo' };
 
-  const { data: existingMember } = await client
+  const { data: existingMember } = await svc
     .from('club_members')
     .select('user_id')
     .eq('club_id', clubId)
@@ -415,13 +476,10 @@ export async function addClubMemberByUsernameAction(
   // owner OR admin). Perform the insert with the service client — exactly like
   // communities' addCommunityMemberByUsernameAction — so gated owners/admins
   // can add members without loosening RLS.
-  const svc = getServiceClient();
-  const { error } = await svc.from('club_members').insert({
-    club_id: clubId,
-    user_id: inviteeId,
-    role: 'MEMBER',
-    membership_tier: 'FREE',
-  });
+  const musicClub = await isMusicClub(svc, clubId);
+  const { error } = await svc
+    .from('club_members')
+    .insert(buildMemberInsertRow(clubId, inviteeId, musicClub));
   if (error) return { ok: false, error: error.message };
 
   await addUserToClubPublicChat(clubId, inviteeId).catch((err) => {

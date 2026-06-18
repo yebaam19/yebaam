@@ -14,6 +14,7 @@ import {
 } from './AdminClubCreateModal';
 import { DeleteConfirmDialog } from '@/features/professional-profile/components/dialogs/DeleteConfirmDialog';
 import { AdminClubRow } from './AdminClubRow';
+import { AdminActivateMusicClubPanel } from './AdminActivateMusicClubPanel';
 import type { ClubRow, GenreOption } from './admin-clubs-table.types';
 
 /** Lowercased + accent-stripped form for case/diacritic-insensitive matching.
@@ -106,6 +107,14 @@ export function AdminClubsTable({ initial, genres }: Props) {
 
   return (
     <div className="space-y-3">
+      {genres && genres.length > 0 && (
+        <AdminActivateMusicClubPanel
+          genres={genres}
+          onActivated={(row) => {
+            setRows((prev) => [...prev, row].sort((a, b) => a.name.localeCompare(b.name)));
+          }}
+        />
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           {isFiltering ? (

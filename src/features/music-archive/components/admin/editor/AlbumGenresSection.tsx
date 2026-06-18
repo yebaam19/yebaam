@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   getAlbumClubAssignments,
@@ -20,6 +20,10 @@ interface Props {
   albumId: string;
 }
 
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 /** Inline section inside the AdminAlbumEditor modal that lists every music-
  *  category club (genre) with a checkbox + a "Primario" radio. Calls
  *  `setAlbumClubs` to atomically replace the album's club set + primary. */
@@ -28,12 +32,12 @@ export function AlbumGenresSection({ albumId }: Props) {
   const [clubs, setClubs] = useState<ClubOption[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [primaryId, setPrimaryId] = useState<string | null>(null);
+  const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  // Load the club list + the album's current assignments once on mount.
   useEffect(() => {
     let cancelled = false;
     void Promise.all([listMusicClubsForPicker(), getAlbumClubAssignments(albumId)]).then(
@@ -52,6 +56,15 @@ export function AlbumGenresSection({ albumId }: Props) {
       cancelled = true;
     };
   }, [albumId]);
+
+  const filteredClubs = useMemo(() => {
+    const q = normalize(filter.trim());
+    if (!q) return clubs;
+    return clubs.filter((c) => {
+      const haystack = normalize(`${c.name} ${c.genre_name} ${c.slug}`);
+      return haystack.includes(q);
+    });
+  }, [clubs, filter]);
 
   function toggle(id: string) {
     setSaved(false);
@@ -105,52 +118,72 @@ export function AlbumGenresSection({ albumId }: Props) {
           {t('summary', { count: selectedIds.size })}
         </span>
       </div>
+      <input
+        type="search"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder={t('filterPlaceholder')}
+        className="mb-2 w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+      />
       {error && (
         <div className="mb-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
           {error}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-        {clubs.map((c) => {
-          const selected = selectedIds.has(c.id);
-          const isPrimary = primaryId === c.id;
-          return (
-            <div
-              key={c.id}
-              className={`flex items-center justify-between gap-1 rounded-md border px-2 py-1.5 text-xs ${
-                selected
-                  ? 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/30'
-                  : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
-              }`}
-            >
-              <label className="flex flex-1 cursor-pointer items-center gap-1.5">
-                <input
-                  type="checkbox"
-                  checked={selected}
-                  onChange={() => toggle(c.id)}
-                  className="h-3.5 w-3.5"
-                />
-                <span className="truncate">{c.genre_name || c.name}</span>
-              </label>
-              {selected && (
-                <button
-                  type="button"
-                  onClick={() => makePrimary(c.id)}
-                  className={`shrink-0 rounded px-1 text-base leading-none ${
-                    isPrimary
-                      ? 'text-amber-600'
-                      : 'text-zinc-300 hover:text-amber-500 dark:text-zinc-600'
-                  }`}
-                  title={t('primaryTitle')}
-                  aria-label={isPrimary ? t('primaryAria') : t('markPrimaryAria')}
-                >
-                  ★
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {filteredClubs.length === 0 ? (
+        <p className="text-xs text-zinc-500">{t('noMatches')}</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          {filteredClubs.map((c) => {
+            const selected = selectedIds.has(c.id);
+            const isPrimary = primaryId === c.id;
+            const showGenreSubtitle =
+              c.genre_name && normalize(c.genre_name) !== normalize(c.name);
+            return (
+              <div
+                key={c.id}
+                className={`flex items-center justify-between gap-1 rounded-md border px-2 py-1.5 text-xs ${
+                  selected
+                    ? 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/30'
+                    : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
+                }`}
+              >
+                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={() => toggle(c.id)}
+                    className="h-3.5 w-3.5 shrink-0"
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{c.name}</span>
+                    {showGenreSubtitle && (
+                      <span className="block truncate text-[10px] text-zinc-500">
+                        {c.genre_name}
+                      </span>
+                    )}
+                  </span>
+                </label>
+                {selected && (
+                  <button
+                    type="button"
+                    onClick={() => makePrimary(c.id)}
+                    className={`shrink-0 rounded px-1 text-base leading-none ${
+                      isPrimary
+                        ? 'text-amber-600'
+                        : 'text-zinc-300 hover:text-amber-500 dark:text-zinc-600'
+                    }`}
+                    title={t('primaryTitle')}
+                    aria-label={isPrimary ? t('primaryAria') : t('markPrimaryAria')}
+                  >
+                    ★
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div className="mt-3 flex items-center gap-2">
         <button
           type="button"

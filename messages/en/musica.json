@@ -883,6 +883,17 @@
       "deleteDialogTitleGeneric": "Delete club",
       "deleteDialogDescription": "{memberCount} members, {postCount} posts and {articleCount} related articles will be permanently deleted (articles become unassigned from the club). This action cannot be undone."
     },
+    "activateClub": {
+      "heading": "Activate existing club for records",
+      "description": "Clubs created in the feed won't appear in the album editor until linked to a music genre.",
+      "searchPlaceholder": "Search by name or slug (e.g. rescatemos sello vergara)…",
+      "loading": "Searching clubs…",
+      "empty": "No unlinked clubs. Create one in the feed or use «+ Create club».",
+      "genreLabel": "Music genre",
+      "activateButton": "Activate for records",
+      "activating": "Activating…",
+      "success": "«{name}» activated — it now appears in the album editor."
+    },
     "mediaEditDialog": {
       "editPhoto": "Edit photo",
       "editVideo": "Edit video",
@@ -1046,7 +1057,9 @@
       "saved": "Saved ✓",
       "primaryTitle": "Mark as primary genre",
       "primaryAria": "Primary genre",
-      "markPrimaryAria": "Mark as primary"
+      "markPrimaryAria": "Mark as primary",
+      "filterPlaceholder": "Filter clubs by name or genre…",
+      "noMatches": "No clubs match the filter."
     }
   },
   "article": {
