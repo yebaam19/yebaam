@@ -3,7 +3,27 @@
 import { revalidatePath } from 'next/cache';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { ensureClubPublicChat } from '@/lib/api/clubs';
+import type { UpdateClubDto } from '@/features/clubs/types/club.types';
 import type { ClubPostKind } from './clubs.server';
+
+function isValidWebsite(value: unknown): boolean {
+  if (value === null || value === undefined || value === '') return true;
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export type ClubMemberCandidate = {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  studyPlace: string | null;
+};
 
 async function addUserToClubPublicChat(clubId: string, userId: string): Promise<void> {
   const svc = getServiceClient();
@@ -143,6 +163,179 @@ async function canManageClubMembers(
     .maybeSingle();
   const role = (membership as { role: string } | null)?.role;
   return role === 'OWNER' || role === 'ADMIN';
+}
+
+export async function updateClubAction(
+  clubId: string,
+  dto: UpdateClubDto,
+): Promise<ActionResult> {
+  const { client, userId } = await requireUser();
+  if (!userId) return { ok: false, error: 'No autenticado' };
+
+  const canManage = await canManageClubMembers(client, clubId, userId);
+  if (!canManage) return { ok: false, error: 'No tienes permiso para editar este club' };
+
+  if (dto.name !== undefined && !dto.name.trim()) {
+    return { ok: false, error: 'El nombre no puede estar vacío' };
+  }
+  if (dto.description !== undefined && !dto.description.trim()) {
+    return { ok: false, error: 'La descripción no puede estar vacía' };
+  }
+  if (dto.website !== undefined && !isValidWebsite(dto.website)) {
+    return { ok: false, error: 'URL de sitio web no válida' };
+  }
+
+  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (dto.name !== undefined) patch.name = dto.name.trim();
+  if (dto.description !== undefined) patch.description = dto.description.trim();
+  if (dto.category !== undefined) patch.category = dto.category;
+  if (dto.subcategory !== undefined) patch.subcategory = dto.subcategory.trim() || null;
+  if (dto.privacy !== undefined) patch.privacy = dto.privacy;
+  if (dto.location !== undefined) patch.location = dto.location.trim() || null;
+  if (dto.website !== undefined) patch.website = dto.website.trim() || null;
+  if (dto.rules !== undefined) {
+    patch.rules = dto.rules.map((r) => r.trim()).filter(Boolean);
+  }
+  if (dto.tags !== undefined) patch.tags = dto.tags;
+
+  if (Object.keys(patch).length === 1) {
+    return { ok: false, error: 'No hay cambios para guardar' };
+  }
+
+  const svc = getServiceClient();
+  const { data: updated, error } = await svc
+    .from('clubs')
+    .update(patch)
+    .eq('id', clubId)
+    .select('id')
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!updated) return { ok: false, error: 'No se pudo guardar (club no encontrado)' };
+
+  revalidatePath('/feed/clubs/[slug]', 'page');
+  return { ok: true };
+}
+
+export async function searchClubMemberCandidatesAction(
+  clubId: string,
+  input: { query?: string; studyPlace?: string; limit?: number },
+): Promise<ActionResult<{ candidates: ClubMemberCandidate[] }>> {
+  const { client, userId } = await requireUser();
+  if (!userId) return { ok: false, error: 'No autenticado' };
+
+  const canManage = await canManageClubMembers(client, clubId, userId);
+  if (!canManage) return { ok: false, error: 'No tienes permiso para buscar miembros' };
+
+  const studyPlace = (input.studyPlace ?? '').trim();
+  const query = (input.query ?? '').trim();
+  if (!studyPlace && query.length < 2) {
+    return { ok: false, error: 'Escribe al menos 2 caracteres o un colegio para buscar' };
+  }
+
+  const limit = Math.min(Math.max(input.limit ?? 20, 1), 20);
+
+  const { data: memberRows } = await client
+    .from('club_members')
+    .select('user_id')
+    .eq('club_id', clubId);
+  const excludeIds = new Set(
+    ((memberRows ?? []) as { user_id: string }[]).map((r) => r.user_id),
+  );
+  excludeIds.add(userId);
+
+  let q = client
+    .from('profiles')
+    .select('id, username, first_name, last_name, avatar_url, study_place');
+
+  if (studyPlace) {
+    const escaped = studyPlace.replace(/[\\%_]/g, '\\$&');
+    q = q.ilike('study_place', `%${escaped}%`);
+  }
+  if (query.length >= 2) {
+    const escaped = query.replace(/[\\%_]/g, '\\$&');
+    const pattern = `%${escaped}%`;
+    q = q.or(
+      `username.ilike.${pattern},first_name.ilike.${pattern},last_name.ilike.${pattern}`,
+    );
+  }
+
+  const { data, error } = await q.limit(limit);
+  if (error) return { ok: false, error: error.message };
+
+  type ProfileRow = {
+    id: string;
+    username: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+    study_place: string | null;
+  };
+
+  const candidates = ((data ?? []) as ProfileRow[])
+    .filter((row) => !excludeIds.has(row.id))
+    .map((row) => ({
+      id: row.id,
+      username: row.username ?? '',
+      displayName:
+        [row.first_name, row.last_name].filter(Boolean).join(' ') ||
+        row.username ||
+        'Sin nombre',
+      avatarUrl: row.avatar_url,
+      studyPlace: row.study_place,
+    }));
+
+  return { ok: true, data: { candidates } };
+}
+
+export async function addClubMembersAction(
+  clubId: string,
+  userIds: string[],
+): Promise<ActionResult<{ added: number }>> {
+  const { client, userId } = await requireUser();
+  if (!userId) return { ok: false, error: 'No autenticado' };
+
+  const canManage = await canManageClubMembers(client, clubId, userId);
+  if (!canManage) return { ok: false, error: 'No tienes permiso para agregar miembros' };
+
+  const uniqueIds = [...new Set(userIds.filter((id) => id && id !== userId))];
+  if (uniqueIds.length === 0) {
+    return { ok: false, error: 'Selecciona al menos un usuario' };
+  }
+
+  const { data: existingRows } = await client
+    .from('club_members')
+    .select('user_id')
+    .eq('club_id', clubId)
+    .in('user_id', uniqueIds);
+  const existing = new Set(
+    ((existingRows ?? []) as { user_id: string }[]).map((r) => r.user_id),
+  );
+  const toAdd = uniqueIds.filter((id) => !existing.has(id));
+  if (toAdd.length === 0) {
+    return { ok: false, error: 'Los usuarios seleccionados ya son miembros' };
+  }
+
+  const svc = getServiceClient();
+  const { error } = await svc.from('club_members').insert(
+    toAdd.map((uid) => ({
+      club_id: clubId,
+      user_id: uid,
+      role: 'MEMBER',
+      membership_tier: 'FREE',
+    })),
+  );
+  if (error) return { ok: false, error: error.message };
+
+  await Promise.all(
+    toAdd.map((uid) =>
+      addUserToClubPublicChat(clubId, uid).catch((err) => {
+        console.error('[addClubMembersAction] addUserToClubPublicChat failed', err);
+      }),
+    ),
+  );
+
+  revalidatePath('/feed/clubs/[slug]', 'page');
+  return { ok: true, data: { added: toAdd.length } };
 }
 
 export async function updateClubImagesAction(

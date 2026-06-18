@@ -17,22 +17,29 @@ import {
   ArrowTopRightOnSquareIcon,
 } from '@/components/icons/heroicons-shim';
 
-import { InviteClubMemberForm } from './InviteClubMemberForm';
+import { ClubMemberPicker } from './ClubMemberPicker';
+import type { ClubCategory } from '@/features/clubs/types/club.types';
 
 export function MembersPanel({
   members,
   clubId,
   canManage,
+  subcategory,
+  category,
 }: {
   members: ClubMemberLite[];
   clubId: string;
   canManage?: boolean;
+  subcategory?: string;
+  category?: ClubCategory;
 }) {
   const t = useTranslations('clubes.panels.members');
   const tRoles = useTranslations('clubes.roles');
   return (
     <div className="space-y-4">
-      {canManage && <InviteClubMemberForm clubId={clubId} />}
+      {canManage && (
+        <ClubMemberPicker clubId={clubId} subcategory={subcategory} category={category} />
+      )}
       {!members.length ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">{t('empty')}</p>
       ) : (

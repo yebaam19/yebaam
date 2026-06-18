@@ -27,6 +27,7 @@ import { ClubTabContent } from './ClubTabContent';
 import { ClubPostComposer } from './ClubPostComposer';
 import { ClubPostModal } from './ClubPostModal';
 import { ClubAdminPanel } from './ClubAdminPanel';
+import { EditClubDetailsModal } from './EditClubDetailsPanel';
 import type { ViewMode } from './ClubPostsGrid';
 import {
   MembersPanel,
@@ -94,6 +95,7 @@ export function ClubDetailView({
   const [drawer, setDrawer] = useState<DrawerKey>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cascade');
   const [openPostId, setOpenPostId] = useState<string | null>(null);
+  const [editDetailsOpen, setEditDetailsOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const NAV_ITEMS = NAV_ITEM_DEFS.map((n) => ({
@@ -228,9 +230,20 @@ export function ClubDetailView({
         <main className="min-w-0 space-y-4">
           {/* DETALLES card */}
           <section className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              {t('detail.detailsHeading')}
-            </h2>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {t('detail.detailsHeading')}
+              </h2>
+              {canManageMembers && (
+                <button
+                  type="button"
+                  onClick={() => setEditDetailsOpen(true)}
+                  className="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
+                >
+                  {t('editDetails.editDetailsButton')}
+                </button>
+              )}
+            </div>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
               <div className="min-w-0">
                 <dt className="truncate text-xs text-gray-500 dark:text-gray-400">{t('detail.stats.members')}</dt>
@@ -343,6 +356,7 @@ export function ClubDetailView({
             posts={initialPosts}
             activeTab={activeTab}
             viewMode={viewMode}
+            canManage={canManageMembers}
             onOpenPost={openPost}
           />
         </main>
@@ -359,6 +373,8 @@ export function ClubDetailView({
             members={members}
             clubId={club.id}
             canManage={canManageMembers}
+            subcategory={club.subcategory}
+            category={club.category}
           />
         )}
         {drawer === 'events' && <EventsPanel events={events} />}
@@ -372,6 +388,10 @@ export function ClubDetailView({
       {/* Post viewer */}
       {openPost_ && (
         <ClubPostModal post={openPost_} onClose={() => setOpenPostId(null)} />
+      )}
+
+      {canManageMembers && editDetailsOpen && (
+        <EditClubDetailsModal club={club} onClose={() => setEditDetailsOpen(false)} />
       )}
     </div>
   );
