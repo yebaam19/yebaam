@@ -12,7 +12,6 @@ export interface LegalDoc {
 export const LEGAL_DOCS = {
   "terminos": {
     "slug": "terminos",
-    "file": "contrato-usuario.md",
     "title": "Términos y Condiciones",
     "subtitle": "Contrato de Usuario y Términos y Condiciones de Uso",
     "updatedAt": "2026",
@@ -20,7 +19,6 @@ export const LEGAL_DOCS = {
   },
   "normas-comunitarias": {
     "slug": "normas-comunitarias",
-    "file": "manual-convivencia.md",
     "title": "Normas Comunitarias",
     "subtitle": "Manual de Convivencia, Gobernanza y Reglamento de Uso",
     "updatedAt": "19 de mayo de 2026",
@@ -28,7 +26,6 @@ export const LEGAL_DOCS = {
   },
   "reglamento": {
     "slug": "reglamento",
-    "file": "macro-reglamento.md",
     "title": "Reglamento General",
     "subtitle": "Macro Reglamento de Regulación, Gobernanza y Convivencia Digital",
     "updatedAt": "2026",
