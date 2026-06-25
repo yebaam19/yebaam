@@ -162,6 +162,24 @@ Use this when legal counsel has not yet cleared catalog distribution, or in any 
 
 Single source of truth: [`src/config/features-flag.ts`](src/config/features-flag.ts) (`MUSIC_CLUB_ENABLED`). Convenience re-export at [`src/features/music-archive/config.ts`](src/features/music-archive/config.ts) for places where importing the sidebar config would be heavyweight.
 
+## Governance & compliance — binding rules per feature
+
+YEBAAM has a binding legal/governance corpus authored by Jim Oliver Cano Martínez (2026), now transcribed to markdown under [`docs/legal/`](docs/legal/) (the original `.docx`/`.pdf` in `docs/` remain authoritative):
+
+- [`docs/legal/macro-reglamento.md`](docs/legal/macro-reglamento.md) — **superior statute** (16 capítulos, 45 artículos); prevails on conflict.
+- [`docs/legal/manual-convivencia.md`](docs/legal/manual-convivencia.md) — operational rulebook that regulates **each feature atomically** (24 artículos).
+- [`docs/legal/contrato-usuario.md`](docs/legal/contrato-usuario.md) — the user-facing clickwrap T&C (38 cláusulas).
+
+Hierarchy: **Macro Reglamento › Manual de Convivencia › Contrato de Usuario**.
+
+Three Claude Code subagents under `.claude/agents/` encode these for **build + review** — consult the matching one when touching a feature:
+
+- `manual-convivencia` — per-feature work (Feed, Amigos, Ciudades, Clubes, Comunidades, Blogs, Perfiles, Servicios, Negocios, Chat, food). The day-to-day agent.
+- `macro-reglamento` — cross-cutting/architecture (privacy-by-default, Safe Harbor, moderation/sanction engine, ARCO/Derecho al Olvido) and document-conflict tie-breaking.
+- `contrato-usuario` — user-facing consent/onboarding, content license, prohibited-content categories, privacy rights.
+
+Recurring invariants these enforce: privacy-by-default at the DB/RLS layer; Safe Harbor (no editorial pre-moderation of UGC); media → Cloudflare or official embed, **never native**; `#Publicidad`/`#Patrocinio` on sponsored content; anti-scraping (lists hidden by default); minors require verifiable parental consent; 24h takedown SLA; progressive sanction ladder; clickwrap consent with a durable evidentiary record. Known code/rule gaps (not yet built) are tracked in [`docs/legal/ENFORCEMENT-GAPS.md`](docs/legal/ENFORCEMENT-GAPS.md).
+
 ## Refactor discipline — DRY at the right moment, not the wrong one
 
 After substantial feature work, do a **refactor pass before declaring done**. It is part of "done", not extra credit. Concretely, look for:

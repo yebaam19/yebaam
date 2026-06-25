@@ -151,6 +151,10 @@ The only place where Broadcast (ephemeral, no DB) is appropriate is signals like
 
 Public auth forms (login, signup, password reset, OTP resend) gate on a **Cloudflare Turnstile** token via [`<TurnstileWidget>`](src/components/auth/TurnstileWidget.tsx). Login uses Supabase's native captcha (`options.captchaToken` on `signInWithPassword`, with the secret configured in Supabase Dashboard → Auth → Bot and Abuse Protection). Signup, OTP resend, and password reset run through `admin.*` endpoints, so they verify the token themselves with `verifyTurnstileToken()` from [`src/lib/turnstile.ts`](src/lib/turnstile.ts) before doing any work. Env: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`. For raw flood protection, enable Bot Fight Mode + WAF rate limits in the Cloudflare dashboard — those run at the edge.
 
+## Governance & compliance (TL;DR)
+
+YEBAAM's binding legal corpus (author Jim Oliver Cano Martínez, 2026) is transcribed under [`docs/legal/`](docs/legal/): [`macro-reglamento.md`](docs/legal/macro-reglamento.md) (superior statute, prevails) › [`manual-convivencia.md`](docs/legal/manual-convivencia.md) (per-feature rulebook, 24 artículos) › [`contrato-usuario.md`](docs/legal/contrato-usuario.md) (user clickwrap T&C). Three `.claude/agents/` subagents — `manual-convivencia` (per-feature build/review), `macro-reglamento` (cross-cutting/architecture + conflict tie-break), `contrato-usuario` (consent/onboarding/privacy) — encode them for build + review; consult the matching one when touching a feature. Code/rule gaps not yet enforced live in [`docs/legal/ENFORCEMENT-GAPS.md`](docs/legal/ENFORCEMENT-GAPS.md). Full detail in AGENTS.md → "Governance & compliance".
+
 ## Comunidades — periodic counter-drift check
 
 The `communities.member_count` and `communities.post_count` columns are kept in sync by `AFTER INSERT/DELETE` triggers (`tg_community_member_counter`, `tg_community_post_counter`). Triggers can drift if a migration disables them, a bulk operation bypasses the trigger, or a transaction half-fails. **After ~1 month of usage, spot-check via the Supabase MCP**:

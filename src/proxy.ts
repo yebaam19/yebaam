@@ -46,6 +46,10 @@ const PUBLIC_ROUTES = [
   '/programas',
   '/oportunidades',
   '/promociones',
+  // Legal / normativa pages (Términos, Normas Comunitarias, Reglamento). Public
+  // by design — must be readable by anyone (incl. from the signup consent links)
+  // without an account, like a platform's Terms/Privacy pages.
+  '/normativa',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
@@ -63,6 +67,7 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/programas',
   '/oportunidades',
   '/promociones',
+  '/normativa',
 ];
 
 export async function proxy(request: NextRequest) {

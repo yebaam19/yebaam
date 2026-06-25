@@ -150,13 +150,21 @@ tokens.json
 # markdown docs — don't push to repo
 *.md
 !README.md
+# YEBAAM governance source-of-truth — keep tracked despite the *.md ignore above
+!docs/legal/
+!docs/legal/**
 
 # InsForge & AI agent skills
 .insforge
 .agent
 .agents
 .augment
-.claude
+# .claude is ignored EXCEPT the governance subagents (.claude/agents/), which are tracked.
+# Use .claude/* (ignore children) so the agents/ negation below can take effect — a bare
+# `.claude` would exclude the parent dir and make the negation a no-op.
+.claude/*
+!.claude/agents/
+!.claude/agents/**
 .cline
 .github/copilot*
 .kilocode
