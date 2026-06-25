@@ -21,13 +21,33 @@ const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700'],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.yebaam.com';
+const siteDescription =
+  'Yebaam es una plataforma social donde puedes conectar, compartir y descubrir contenido con personas de todo el mundo.';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     template: '%s - Yebaam',
     default: 'Yebaam - Conecta con el mundo',
   },
-  description: 'Yebaam es una plataforma social donde puedes conectar, compartir y descubrir contenido con personas de todo el mundo.',
+  description: siteDescription,
   keywords: ['yebaam', 'red social', 'conectar', 'amigos', 'compartir'],
+  // The site-wide OG image (logo) is supplied by app/opengraph-image.tsx, which
+  // Next injects into both `og:image` and `twitter:image` automatically.
+  openGraph: {
+    type: 'website',
+    siteName: 'Yebaam',
+    title: 'Yebaam - Conecta con el mundo',
+    description: siteDescription,
+    url: siteUrl,
+    locale: 'es_CO',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Yebaam - Conecta con el mundo',
+    description: siteDescription,
+  },
 };
 
 export const viewport: Viewport = {
