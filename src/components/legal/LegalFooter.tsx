@@ -13,7 +13,7 @@ export async function LegalFooter() {
     { href: '/normativa/terminos', label: t('footer.terms') },
     { href: '/normativa/normas-comunitarias', label: t('footer.community') },
     { href: '/normativa/reglamento', label: t('footer.rules') },
-  ];
+  ] as const;
 
   return (
     <footer className="border-t border-neutral-200 px-4 py-6 text-center dark:border-neutral-800">
