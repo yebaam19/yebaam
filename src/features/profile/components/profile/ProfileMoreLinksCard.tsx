@@ -31,7 +31,7 @@ export default function ProfileMoreLinksCard({ user }: ProfileMoreLinksCardProps
             href={`/${user.username}?tab=${tab}`}
             className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
           >
-            <Icon className="h-5 w-5 text-gray-500" />
+            <Icon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             <span>{t(`tabs.${labelKey}`)}</span>
           </Link>
         ))}

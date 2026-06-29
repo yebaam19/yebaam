@@ -39,7 +39,7 @@ export default function UserFamilies({ userId, isOwnProfile }: UserFamiliesProps
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <ArrowPathIcon className="h-8 w-8 animate-spin text-emerald-600" />
+        <ArrowPathIcon className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

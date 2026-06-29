@@ -52,7 +52,7 @@ export default function ProfileTabPanels({
                   </Suspense>
                 )}
                 <Suspense
-                  fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>}
+                  fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>}
                 >
                   <UserPosts userId={user.userId} isOwnProfile={isOwnProfile} />
                 </Suspense>
@@ -71,7 +71,7 @@ export default function ProfileTabPanels({
 
             {activeTab === 'mascotas' && (
               <Suspense
-                fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-emerald-600"></div>}
+                fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>}
               >
                 <UserPets userId={user.userId} ownerUsername={user.username} isOwnProfile={isOwnProfile} />
               </Suspense>
@@ -79,7 +79,7 @@ export default function ProfileTabPanels({
 
             {activeTab === 'fotos' && (
               <Suspense
-                fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>}
+                fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>}
               >
                 <UserPhotos userId={user.userId} />
               </Suspense>
@@ -87,7 +87,7 @@ export default function ProfileTabPanels({
 
             {activeTab === 'videos' && (
               <Suspense
-                fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>}
+                fallback={<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>}
               >
                 <UserVideos userId={user.userId} />
               </Suspense>
@@ -98,7 +98,7 @@ export default function ProfileTabPanels({
 
         {/* Sidebar - always visible */}
         <div className="min-w-0 lg:col-span-1">
-          <div className="lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top,0px))]">
+          <div className="lg:sticky lg:top-[calc(7rem+env(safe-area-inset-top,0px))]">
             <ProfileSidebar user={user} loggedInUserId={loggedInUserId} />
           </div>
         </div>

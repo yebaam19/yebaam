@@ -18,7 +18,6 @@ export function AvatarMedallion({ badge }: { badge: ProfileBadge | null }) {
 
   return (
     <span
-      aria-hidden="false"
       title={badge.description ? `${badge.name}: ${badge.description}` : badge.name}
       className="absolute bottom-1 left-0 inline-flex items-center gap-1 rounded-full border border-emerald-400/80 bg-slate-950/95 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-emerald-300 shadow-lg ring-1 ring-emerald-400/40 backdrop-blur-sm lg:bottom-2 lg:left-1 lg:px-2 lg:text-[11px]"
     >

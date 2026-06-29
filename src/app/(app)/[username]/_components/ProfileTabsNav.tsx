@@ -56,7 +56,7 @@ export default function ProfileTabsNav({ activeTab, onTabChange }: ProfileTabsNa
                 }`}
               >
                 <Icon
-                  className={`h-5 w-5 shrink-0 ${isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500'}`}
+                  className={`h-5 w-5 shrink-0 ${isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}`}
                 />
                 <span>{t(`tabs.${tab.labelKey}`)}</span>
               </button>
