@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { supabase } from '@/utils/supabase/client'
+import { getUserDisplayName } from '@/lib/user-helpers'
 import VerifyProfileDialog from '@/features/verification/components/VerifyProfileDialog'
 import UserInfoHeader from './AvatarDropdown/UserInfoHeader'
 import ProfileMenuSection from './AvatarDropdown/ProfileMenuSection'
@@ -58,7 +59,8 @@ export default function AvatarDropdown({ className, isPlatformAdmin }: Props) {
 
   if (!user) return null
 
-  const displayName = user.username
+  // Show the person's real name (first … last), not the email-derived username.
+  const displayName = getUserDisplayName(user)
   const userAvatar = user.avatarUrl || user.avatar
 
   return (

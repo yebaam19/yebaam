@@ -6,6 +6,7 @@ import { UserIcon } from '@/components/icons/heroicons-shim';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
+import { getUserDisplayName } from '@/lib/user-helpers';
 import {
   profileMediaInteractionsService,
   Comment,
@@ -172,7 +173,7 @@ export default function MediaCommentsSection({
           {/* Comment content */}
           <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl px-4 py-2">
             <p className="font-semibold text-sm text-gray-900 dark:text-white">
-              {comment.user.firstName || comment.user.username}
+              {getUserDisplayName(comment.user)}
             </p>
             <p className="text-gray-800 dark:text-gray-200 wrap-break-word">{comment.content}</p>
           </div>

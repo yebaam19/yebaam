@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
+import { getUserDisplayName } from '@/lib/user-helpers'
 import type { Route } from 'next';
 
 type FriendRequestsApi = ReturnType<typeof useFriendRequests>
@@ -51,6 +52,8 @@ export function FriendSuggestionCard({
   // Valores por defecto seguros
   const displayFirstName = firstName || username
   const displayLastName = lastName || ''
+  // Full real name for the visible label (falls back to @handle, never email).
+  const displayName = getUserDisplayName({ firstName, lastName, username })
   const displayMutualFriends = mutualFriends || 0
   const displayReason = reason || ''
 
@@ -96,7 +99,7 @@ export function FriendSuggestionCard({
       <div className="p-2.5">
         <Link href={`/${username}` as Route} className="block hover:underline">
           <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-            {displayFirstName} {displayLastName}
+            {displayName}
           </p>
         </Link>
 

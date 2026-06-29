@@ -15,6 +15,7 @@ import {
 } from '@/components/icons/heroicons-shim';
 import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim';
 import { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces';
+import { getUserDisplayName } from '@/lib/user-helpers';
 import Image from 'next/image';
 
 interface ReelViewerModalProps {
@@ -194,7 +195,7 @@ export const ReelViewerModal: FC<ReelViewerModalProps> = ({
                           </div>
                         )}
                         <div>
-                          <p className="font-semibold">{reel.author?.username}</p>
+                          <p className="font-semibold">{getUserDisplayName(reel.author)}</p>
                         </div>
                       </div>
 

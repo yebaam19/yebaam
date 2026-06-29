@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl'
 
 import { getMenuForUser } from '@/config/menuConfig'
 import { AuthUser } from '@/features/auth/interfaces/auth.interfaces'
-import { getUserInitials } from '@/lib/user-helpers'
+import { getUserInitials, getUserDisplayName } from '@/lib/user-helpers'
 import { cn } from '@/lib/utils'
 import { getUserAvatarUrl } from '@/lib/utils/avatar'
 import Avatar from '@/ui/Avatar'
@@ -73,8 +73,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
 
   const basePath = '/feed'
 
-  const fullName = user.username || user.email.split('@')[0]
-  const initials = getUserInitials(user.username)
+  const fullName = getUserDisplayName(user)
+  const initials = getUserInitials(fullName)
 
   // Obtener badges dinámicos
   const badges = useMenuBadges()

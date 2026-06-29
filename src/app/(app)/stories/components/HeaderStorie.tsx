@@ -9,6 +9,7 @@ import {
 import Avatar from '@/ui/Avatar';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth';
+import { getUserDisplayName } from '@/lib/user-helpers';
 import {useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -98,7 +99,7 @@ const HeaderStorie = () => {
               initials={user.username?.slice(0, 2).toUpperCase() || 'U'}
             />
             <div className="text-white">
-              <p className="font-semibold">{user.firstName || user.username}</p>
+              <p className="font-semibold">{getUserDisplayName(user)}</p>
               <p className="text-xs opacity-80">{t('header.now')}</p>
             </div>
           </div>

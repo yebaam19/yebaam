@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { UserProfile } from '../../interfaces/profile.interfaces';
+import { getUserDisplayName } from '@/lib/user-helpers';
 import { useProfileStore } from '../../store/profile.store';
 import PersonalDialog from '../dialogs/PersonalDialog';
 
@@ -18,7 +19,7 @@ export default function ProfileInfoCard({ user, loggedInUserId }: ProfileInfoCar
   const displayUser = currentProfile && currentProfile.userId === user.userId ? currentProfile : user;
 
   const isOwner = displayUser.userId === loggedInUserId;
-  const firstName = displayUser.firstName || displayUser.username;
+  const firstName = getUserDisplayName(displayUser);
 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-gray-800">

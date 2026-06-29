@@ -29,6 +29,8 @@ export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
           user={{
             avatar: user.avatar,
             username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
           }}
           onCreateClick={() => openCreateModal()}
         />

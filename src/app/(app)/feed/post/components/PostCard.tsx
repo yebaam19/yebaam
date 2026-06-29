@@ -9,6 +9,7 @@ import { CommentList } from '@/app/(app)/feed/comments'
 import { ReactionListModal } from '@/app/(app)/feed/reacions'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
+import { getUserDisplayName } from '@/lib/user-helpers'
 import type { Post } from '../interfaces/post.interfaces'
 import { usePostStore } from '../stores/post.store'
 import DeletePostModal from './DeletePostModal'
@@ -63,7 +64,7 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
       ? `${window.location.origin}/negocios/${post.businessSlug}`
       : `${window.location.origin}/${post.author.username}/posts/${post.id}`
     const shareData = {
-      title: t('post.shareTitle', { author: post.businessName ?? post.author.firstName ?? post.author.username }),
+      title: t('post.shareTitle', { author: post.businessName ?? getUserDisplayName(post.author) }),
       text: post.content?.slice(0, 140) ?? '',
       url,
     }

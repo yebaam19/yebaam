@@ -1,6 +1,6 @@
 'use client'
 
-import { getFirstName, getUserInitials } from '@/lib/user-helpers'
+import { getFirstName, getUserInitials, getUserDisplayName } from '@/lib/user-helpers'
 import Avatar from '@/ui/Avatar'
 import { FaceSmileIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
 
@@ -8,6 +8,8 @@ interface CreatePostCardProps {
   user: {
     avatar?: string
     username?: string
+    firstName?: string | null
+    lastName?: string | null
   }
   onCreateClick: () => void
   onFeelingClick?: () => void
@@ -20,8 +22,11 @@ export default function CreatePostCard({
   onFeelingClick,
   className,
 }: CreatePostCardProps) {
-  const firstName = getFirstName(user.username)
-  const initials = getUserInitials(user.username)
+  // Greet by the person's real first name (falls back to the @handle only when
+  // no name exists) — never the email-derived username when a name is present.
+  const displayName = getUserDisplayName(user)
+  const firstName = getFirstName(displayName)
+  const initials = getUserInitials(displayName)
 
   const handleFeelingClick = () => {
     if (onFeelingClick) {

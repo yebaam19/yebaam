@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getUserDisplayName } from '@/lib/user-helpers';
 import { useNotificationStore } from '../store/notification.store';
 import { NotificationType } from '../interfaces/notification.interfaces';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
@@ -177,9 +178,7 @@ export function useNotificationWebSocket() {
 
     socket.on('friend_request_received', (data: any) => {
       const fromProfile = data.data?.from || data.notification?.actor;
-      const senderName = fromProfile
-        ? `${fromProfile.firstName || fromProfile.username} ${fromProfile.lastName || ''}`.trim()
-        : 'Alguien';
+      const senderName = fromProfile ? getUserDisplayName(fromProfile) : 'Alguien';
 
       toast.success(`${senderName} te envió una solicitud de amistad`, {
         duration: 5000,

@@ -11,6 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import type { BusinessOwner } from '../../interfaces/business.interfaces'
+import { getUserDisplayName } from '@/lib/user-helpers'
 import type { Route } from 'next';
 
 interface BusinessOwnerCardProps {
@@ -68,7 +69,7 @@ export function BusinessOwnerCard({ owner, createdAt, businessName }: BusinessOw
               href={`/user/${owner.username}` as Route}
               className="font-semibold text-neutral-900 hover:text-primary-600 dark:text-neutral-100 dark:hover:text-primary-400"
             >
-              {owner.username}
+              {getUserDisplayName(owner)}
             </Link>
             {owner.isVerified && <CheckBadgeIcon className="h-5 w-5 text-primary-500" title={t('verifiedUser')} />}
           </div>

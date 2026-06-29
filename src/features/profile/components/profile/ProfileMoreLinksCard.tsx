@@ -7,6 +7,7 @@ import {
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { UserProfile } from '../../interfaces/profile.interfaces';
+import { getUserDisplayName } from '@/lib/user-helpers';
 
 interface ProfileMoreLinksCardProps {
   user: UserProfile;
@@ -19,7 +20,7 @@ const items = [
 
 export default function ProfileMoreLinksCard({ user }: ProfileMoreLinksCardProps) {
   const t = useTranslations('profile');
-  const firstName = user.firstName || user.username;
+  const firstName = getUserDisplayName(user);
 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-gray-800">

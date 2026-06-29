@@ -46,6 +46,8 @@ export default function ProfileTabPanels({
                       user={{
                         avatar: user.avatarUrl || undefined,
                         username: user.username,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
                       }}
                       onCreateClick={onCreatePost}
                     />
