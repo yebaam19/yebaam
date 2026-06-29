@@ -13,7 +13,7 @@ export default function CertificateHeader({ fullName, username }: CertificateHea
       {/* Header */}
       <header className="text-center">
         <div className="flex items-center justify-center">
-          <Image src={YebaamLogo} alt="Yebaam" priority className="h-14 w-auto" />
+          <Image src={YebaamLogo} alt="Yebaam" priority className="h-14 w-auto" style={{ width: 'auto' }} />
         </div>
         <div className="mt-4 flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.4em] text-[#0f3d2a]/80">
           <span className="h-px w-10 bg-[#c8a86a]" />
