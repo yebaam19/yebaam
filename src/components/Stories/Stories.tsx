@@ -13,7 +13,7 @@ import Avatar from '@/ui/Avatar';
 
 function storyPreviewSrc(story: Story): string | null {
   if (story.type === 'video') {
-    if (story.cloudflareStreamUid) return streamThumb(story.cloudflareStreamUid, { width: 360 });
+    if (story.cloudflareStreamUid) return streamThumb(story.cloudflareStreamUid, { width: 240 });
     if (story.thumbnailUrl) return story.thumbnailUrl;
     return null;
   }
@@ -108,6 +108,8 @@ export default function Stories({ className }: StoriesProps) {
                     src={preview}
                     alt={myStories[0].type === 'video' ? t('myStoryVideoAlt') : t('myStoryAlt')}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full bg-neutral-700" />
@@ -175,6 +177,8 @@ export default function Stories({ className }: StoriesProps) {
                     src={preview}
                     alt={userStories.username}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full bg-neutral-700" />

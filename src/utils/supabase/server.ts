@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -29,10 +30,14 @@ export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) =
  * Server client bound to the caller's session — use from route handlers and
  * Server Actions when you want RLS to apply with the user's identity.
  */
-export async function getServerClient() {
+// Memoized per server request (React.cache): the Supabase SSR client is
+// cookie-bound and stateless per request, so layout + page + actions share one
+// instance instead of each calling cookies() and re-creating a client. This also
+// collapses the duplicate auth.getUser() network round-trips on heavy routes (/feed).
+export const getServerClient = cache(async () => {
   const cookieStore = await cookies();
   return createClient(cookieStore);
-}
+});
 
 /**
  * Service-role client — bypasses RLS. Use ONLY from server code for

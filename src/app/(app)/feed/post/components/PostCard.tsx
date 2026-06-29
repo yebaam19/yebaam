@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'sonner'
 
 import { CommentList } from '@/app/(app)/feed/comments'
@@ -32,7 +33,9 @@ interface PostCardProps {
 function PostCard({ post, className, onShowReactions }: PostCardProps) {
   const t = useTranslations('feed')
   const { user } = useAuth()
-  const { deletePost, openEditModal } = usePostStore()
+  const { deletePost, openEditModal } = usePostStore(
+    useShallow((s) => ({ deletePost: s.deletePost, openEditModal: s.openEditModal }))
+  )
   const [showComments, setShowComments] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

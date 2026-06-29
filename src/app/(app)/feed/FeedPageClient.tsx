@@ -14,7 +14,7 @@ interface FeedPageClientProps {
 
 export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
   const { user } = useAuth()
-  const { openCreateModal } = usePostStore()
+  const openCreateModal = usePostStore((s) => s.openCreateModal)
 
   if (!user) return null
 

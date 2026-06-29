@@ -47,7 +47,7 @@ export default function Avatar({
           </text>
         </svg>
       )}
-      {src && <img className="size-full object-cover" src={src} alt={alt} />}
+      {src && <img className="size-full object-cover" src={src} alt={alt} loading="lazy" decoding="async" />}
     </span>
   )
 }
@@ -64,7 +64,7 @@ export const AvatarButton = forwardRef(function AvatarButton(
     (Omit<Headless.ButtonProps, 'as' | 'className'> | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>),
   ref: React.ForwardedRef<HTMLElement>
 ) {
-  let classes = clsx(
+  const classes = clsx(
     className,
     square ? 'rounded-[20%]' : 'rounded-full',
     'relative inline-grid focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500'

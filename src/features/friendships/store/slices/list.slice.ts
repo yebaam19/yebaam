@@ -27,6 +27,17 @@ export function createListActions(
   | 'handleFriendAdded'
   | 'handleFriendRemoved'
 > {
+  // Per-action in-flight guards: RightSidebar mounts useFriendships() in several
+  // widgets (and React StrictMode double-invokes effects in dev), so identical
+  // reads fan out (the 8x friend_settings + duplicate suggestions seen on /feed).
+  // Each holder collapses concurrent calls to the SAME action into one request.
+  // Intentionally PER-ACTION, never a shared isLoading flag — these run in
+  // parallel (initializeFriendships uses Promise.all) and a shared guard would
+  // make them cancel each other and drop pending/sent/suggestions data.
+  let friendsP: Promise<void> | null = null;
+  let pendingP: Promise<void> | null = null;
+  let sentP: Promise<void> | null = null;
+  let suggP: Promise<void> | null = null;
   return {
     /**
      * Inicializa todos los datos de friendships de una vez
@@ -70,6 +81,8 @@ export function createListActions(
 
 
     fetchFriends: async () => {
+      if (friendsP) return friendsP;
+      friendsP = (async () => {
       set({ isLoading: true, error: null });
       try {
         const data = await friendshipsService.getFriends();
@@ -85,13 +98,16 @@ export function createListActions(
         set({ error: errorMsg, isLoading: false });
         toast.error(errorMsg);
       }
+      })();
+      try { await friendsP; } finally { friendsP = null; }
     },
 
     /**
      * Obtener solicitudes pendientes
      */
     fetchPendingRequests: async () => {
-
+      if (pendingP) return pendingP;
+      pendingP = (async () => {
       set({ isLoading: true, error: null });
       try {
         const data = await friendshipsService.getPendingRequests();
@@ -110,12 +126,16 @@ export function createListActions(
         set({ error: errorMsg, isLoading: false });
         toast.error(errorMsg);
       }
+      })();
+      try { await pendingP; } finally { pendingP = null; }
     },
 
     /**
      * Obtener solicitudes enviadas
      */
     fetchSentRequests: async () => {
+      if (sentP) return sentP;
+      sentP = (async () => {
       set({ isLoading: true, error: null });
       try {
         const data = await friendshipsService.getSentRequests();
@@ -129,12 +149,16 @@ export function createListActions(
         set({ error: errorMsg, isLoading: false });
         toast.error(errorMsg);
       }
+      })();
+      try { await sentP; } finally { sentP = null; }
     },
 
     /**
      * Obtener sugerencias de amigos
      */
     fetchSuggestions: async (limit: number = 10) => {
+      if (suggP) return suggP;
+      suggP = (async () => {
       set({ isLoading: true, error: null });
       try {
         const suggestions = await friendshipsService.getFriendSuggestions(limit);
@@ -148,6 +172,8 @@ export function createListActions(
         set({ error: errorMsg, isLoading: false });
         toast.error(errorMsg);
       }
+      })();
+      try { await suggP; } finally { suggP = null; }
     },
 
     /**

@@ -1,14 +1,15 @@
 import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { mapPost, loadProfilesForPosts, type PostRow } from '@/lib/api/posts';
 import type { Post } from '../interfaces/post.interfaces';
 
 export async function listTimelinePosts(limit = 20): Promise<Post[]> {
-  const client = await getServerClient();
-
-  const { data: auth } = await client.auth.getUser();
-  const userId = auth?.user?.id;
+  const authUser = await getCachedAuthUser();
+  const userId = authUser?.id;
   if (!userId) return [];
+
+  const client = await getServerClient();
 
   const { data: rpcRows, error } = await client.rpc('get_timeline_posts', {
     p_user_id: userId,

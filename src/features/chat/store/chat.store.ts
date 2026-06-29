@@ -19,6 +19,11 @@ export interface OpenBubble {
 
 const MAX_OPEN_BUBBLES = 3;
 
+// Shared across all useChat() consumers (MessengerDropdown + open ChatBubbles)
+// so concurrent initial mounts collapse into ONE /api/conversations request
+// instead of firing the ~2s endpoint multiple times in parallel.
+let loadConversationsInFlight: Promise<void> | null = null;
+
 interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
@@ -44,7 +49,8 @@ export const useChatStore = create<ChatState>()(
       activeConversationId: null,
       isLoadingConversations: false,
       loadConversations: async () => {
-
+        if (loadConversationsInFlight) return loadConversationsInFlight;
+        loadConversationsInFlight = (async () => {
         set({ isLoadingConversations: true });
         try {
           const conversations = await chatService.getConversations();
@@ -70,6 +76,12 @@ export const useChatStore = create<ChatState>()(
         } catch (error) {
           console.error(' [CHAT STORE] Error loading conversations:', error);
           set({ isLoadingConversations: false });
+        }
+        })();
+        try {
+          await loadConversationsInFlight;
+        } finally {
+          loadConversationsInFlight = null;
         }
       },
       setActiveConversation: (conversationId) => {

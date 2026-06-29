@@ -173,39 +173,57 @@ async function getRequesterProfile(friendshipId: string) {
   };
 }
 
+// getPendingRequests and getSentRequests are different *views* of the same
+// received+sent payload, but the store calls them as two separate actions and
+// useFriendships() fires both on mount (plus a realtime-reconnect refetch).
+// Without this guard each would run its own 2 friendships queries + a
+// hydrateProfiles — doubling the friendships/profiles traffic on /feed for
+// identical data. The in-flight promise collapses concurrent callers into ONE
+// round-trip, then clears so a later refetch (e.g. after accepting a request)
+// still gets fresh rows.
+let pendingReqsInFlight: Promise<AllPendingRequestsResponse> | null = null;
+
 async function getAllPendingRequests(): Promise<AllPendingRequestsResponse> {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return { received: [], sent: [], totalReceived: 0, totalSent: 0 };
+  if (pendingReqsInFlight) return pendingReqsInFlight;
+  pendingReqsInFlight = (async () => {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { received: [], sent: [], totalReceived: 0, totalSent: 0 };
+    }
+
+    const [receivedRes, sentRes] = await Promise.all([
+      supabase
+        .from('friendships')
+        .select('*')
+        .eq('status', 'pending')
+        .eq('recipient_id', userId),
+      supabase
+        .from('friendships')
+        .select('*')
+        .eq('status', 'pending')
+        .eq('requester_id', userId),
+    ]);
+
+    const receivedRows = (receivedRes.data ?? []) as DbFriendship[];
+    const sentRows = (sentRes.data ?? []) as DbFriendship[];
+
+    const profiles = await hydrateProfiles([
+      ...receivedRows.map((r) => r.requester_id),
+      ...sentRows.map((r) => r.recipient_id),
+    ]);
+
+    return {
+      received: receivedRows.map((r) => rowToRequest(r, profiles.get(r.requester_id))),
+      sent: sentRows.map((r) => rowToRequest(r, profiles.get(r.recipient_id))),
+      totalReceived: receivedRows.length,
+      totalSent: sentRows.length,
+    };
+  })();
+  try {
+    return await pendingReqsInFlight;
+  } finally {
+    pendingReqsInFlight = null;
   }
-
-  const [receivedRes, sentRes] = await Promise.all([
-    supabase
-      .from('friendships')
-      .select('*')
-      .eq('status', 'pending')
-      .eq('recipient_id', userId),
-    supabase
-      .from('friendships')
-      .select('*')
-      .eq('status', 'pending')
-      .eq('requester_id', userId),
-  ]);
-
-  const receivedRows = (receivedRes.data ?? []) as DbFriendship[];
-  const sentRows = (sentRes.data ?? []) as DbFriendship[];
-
-  const profiles = await hydrateProfiles([
-    ...receivedRows.map((r) => r.requester_id),
-    ...sentRows.map((r) => r.recipient_id),
-  ]);
-
-  return {
-    received: receivedRows.map((r) => rowToRequest(r, profiles.get(r.requester_id))),
-    sent: sentRows.map((r) => rowToRequest(r, profiles.get(r.recipient_id))),
-    totalReceived: receivedRows.length,
-    totalSent: sentRows.length,
-  };
 }
 
 async function getPendingRequests(): Promise<PendingRequestsResponse> {

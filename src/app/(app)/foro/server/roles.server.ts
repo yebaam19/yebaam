@@ -1,5 +1,7 @@
 import 'server-only'
+import { cache } from 'react'
 import { getServerClient } from '@/utils/supabase/server'
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 
 /**
  * Forum authorization checks: per-space roles, global forum staff, and platform
@@ -13,14 +15,14 @@ import { getServerClient } from '@/utils/supabase/server'
  * role / any global role passes. Platform admins always pass.
  */
 async function hasSpaceRole(spaceId: string, adminOnly: boolean): Promise<boolean> {
+  const user = await getCachedAuthUser()
+  if (!user) return false
   const client = await getServerClient()
-  const { data: auth } = await client.auth.getUser()
-  if (!auth?.user) return false
   let query = client
     .from('forum_roles')
     .select('role')
     .eq('space_id', spaceId)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
   if (adminOnly) query = query.eq('role', 'admin')
   const { data } = await query.limit(1)
   if ((data?.length ?? 0) > 0) return true
@@ -37,29 +39,29 @@ export async function isSpaceModerator(spaceId: string): Promise<boolean> {
   return hasSpaceRole(spaceId, false)
 }
 
-export async function isPlatformAdmin(): Promise<boolean> {
+export const isPlatformAdmin = cache(async (): Promise<boolean> => {
+  const user = await getCachedAuthUser()
+  if (!user) return false
   const client = await getServerClient()
-  const { data: auth } = await client.auth.getUser()
-  if (!auth?.user) return false
   const { data } = await client
     .from('platform_admins')
     .select('user_id')
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .maybeSingle()
   return !!data
-}
+})
 
-export async function getForumGlobalRole(): Promise<'admin' | 'moderator' | null> {
+export const getForumGlobalRole = cache(async (): Promise<'admin' | 'moderator' | null> => {
+  const user = await getCachedAuthUser()
+  if (!user) return null
   const client = await getServerClient()
-  const { data: auth } = await client.auth.getUser()
-  if (!auth?.user) return null
   const { data } = await client
     .from('forum_global_roles')
     .select('role')
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .maybeSingle()
   return (data as { role: 'admin' | 'moderator' } | null)?.role ?? null
-}
+})
 
 export async function canAccessForumAdmin(): Promise<boolean> {
   if (await isPlatformAdmin()) return true

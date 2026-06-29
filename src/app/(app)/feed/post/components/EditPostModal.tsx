@@ -12,6 +12,7 @@ import {
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
+import { useShallow } from 'zustand/react/shallow';
 import { useAuth } from '@/features/auth';
 import { usePostStore } from '../stores/post.store';
 import { getUserInitials, getFirstName } from '@/lib/user-helpers';
@@ -37,7 +38,13 @@ export default function EditPostModal() {
     isEditModalOpen,
     postToEdit,
     closeEditModal,
-  } = usePostStore();
+  } = usePostStore(
+    useShallow((s) => ({
+      isEditModalOpen: s.isEditModalOpen,
+      postToEdit: s.postToEdit,
+      closeEditModal: s.closeEditModal,
+    }))
+  );
   
   // Usar TanStack Query mutation para actualizar
   const updatePostMutation = useUpdatePost();

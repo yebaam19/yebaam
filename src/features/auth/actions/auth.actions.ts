@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
 
 export interface User {
@@ -18,13 +19,25 @@ type ProfileRow = {
   avatar_url: string | null;
 };
 
-export async function getAuthUser(): Promise<User | null> {
+// Raw Supabase auth user, memoized per request. Every server caller that only
+// needs the user id (forum-role checks, post queries, the layout) should use
+// THIS — supabase.auth.getUser() is a GoTrue network round-trip, and cache()
+// collapses the several per-request calls on heavy routes (/feed) into one.
+export const getCachedAuthUser = cache(async () => {
   const client = await getServerClient();
-  const { data: authResponse, error: authError } = await client.auth.getUser();
-  if (authError || !authResponse?.user) return null;
+  const { data } = await client.auth.getUser();
+  return data?.user ?? null;
+});
 
-  const userId = authResponse.user.id;
-  const email = authResponse.user.email ?? '';
+// Memoized per request: layout + page data fns need the enriched app user.
+// Built on getCachedAuthUser so the underlying getUser round-trip is shared.
+export const getAuthUser = cache(async (): Promise<User | null> => {
+  const authUser = await getCachedAuthUser();
+  if (!authUser) return null;
+
+  const client = await getServerClient();
+  const userId = authUser.id;
+  const email = authUser.email ?? '';
 
   const { data: profile } = await client
     .from('profiles')
@@ -47,4 +60,4 @@ export async function getAuthUser(): Promise<User | null> {
     avatarUrl: p?.avatar_url ?? null,
     email,
   };
-}
+});

@@ -9,6 +9,8 @@ import { useRef, useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
 import type { Route } from 'next';
 
+type FriendRequestsApi = ReturnType<typeof useFriendRequests>
+
 interface FriendSuggestionCardProps {
   userId: string
   username: string
@@ -18,6 +20,12 @@ interface FriendSuggestionCardProps {
   mutualFriends?: number
   reason?: string
   onHide?: (userId: string) => void
+  // Passed down from FriendSuggestionsCompact so each card does NOT mount its
+  // own useFriendRequests() (which would re-fire friend_suggestions + friend
+  // requests per card — the source of the 14x friend_suggestions burst).
+  sendRequest: FriendRequestsApi['sendRequest']
+  isSending: FriendRequestsApi['isSending']
+  sentRequests: FriendRequestsApi['sentRequests']
 }
 
 /**
@@ -33,8 +41,10 @@ export function FriendSuggestionCard({
   mutualFriends,
   reason,
   onHide,
+  sendRequest,
+  isSending,
+  sentRequests,
 }: FriendSuggestionCardProps) {
-  const { sendRequest, isSending, sentRequests } = useFriendRequests()
   const t = useTranslations('friendships.suggestionCard')
   const [requestSent, setRequestSent] = useState(false)
 
@@ -128,7 +138,7 @@ export function FriendSuggestionCard({
  * Estilo Facebook-like con scroll horizontal
  */
 export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
-  const { suggestions, isLoadingSuggestions } = useFriendRequests()
+  const { suggestions, isLoadingSuggestions, sendRequest, isSending, sentRequests } = useFriendRequests()
   const t = useTranslations('friendships.suggestionCard')
   const [hiddenSuggestions, setHiddenSuggestions] = useState<Set<string>>(new Set())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -222,6 +232,9 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
                 mutualFriends={suggestion.mutualFriends || 0}
                 reason={suggestion.reason || ''}
                 onHide={handleHide}
+                sendRequest={sendRequest}
+                isSending={isSending}
+                sentRequests={sentRequests}
               />
             ))}
         </div>

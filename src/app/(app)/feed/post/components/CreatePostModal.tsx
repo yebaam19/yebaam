@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import { useTranslations } from 'next-intl'
+import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'sonner'
 import { invalidate } from '@/lib/hooks/cacheStore'
 
@@ -20,7 +21,19 @@ export default function CreatePostModal() {
   const t = useTranslations('feed')
   const { user } = useAuth()
 
-  const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId, contextBusinessId, pendingPostContent, setPendingPostContent } = usePostStore()
+  const { isCreateModalOpen, closeCreateModal, createPost, isCreating, contextBlogId, contextPageId, contextBusinessId, pendingPostContent, setPendingPostContent } = usePostStore(
+    useShallow((s) => ({
+      isCreateModalOpen: s.isCreateModalOpen,
+      closeCreateModal: s.closeCreateModal,
+      createPost: s.createPost,
+      isCreating: s.isCreating,
+      contextBlogId: s.contextBlogId,
+      contextPageId: s.contextPageId,
+      contextBusinessId: s.contextBusinessId,
+      pendingPostContent: s.pendingPostContent,
+      setPendingPostContent: s.setPendingPostContent,
+    }))
+  )
 
   const {
     register,
