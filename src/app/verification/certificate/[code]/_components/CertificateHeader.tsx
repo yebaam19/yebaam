@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import YebaamLogo from '@/images/brand/Yebaam-Logo.svg';
+import YebaamLogo from '@/images/brand/Yebaam-Logo.png';
 import { Diamond } from './CertificateIcons';
 
 interface CertificateHeaderProps {

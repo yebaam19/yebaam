@@ -2,7 +2,8 @@
 
 import { isFeatureEnabled, type FeatureFlag } from '@/config/features-flag'
 import { NotificationBell } from '@/features/notification'
-import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
+import YebaamLogoLight from '@/images/brand/Logo-Yebaam_white.png'
 import { cn } from '@/lib/utils'
 import {
   Bars3Icon,
@@ -103,10 +104,19 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
 
             {/* Logo - Responsive sizes */}
             <Link href={'/feed' as Route} className="flex h-7 shrink-0 items-center sm:h-8">
+              {/* Green wordmark on the light header; cream wordmark in dark mode */}
               <Image
                 src={YebaamLogo}
                 alt="Yebaam"
-                className="h-full w-auto"
+                className="h-full w-auto dark:hidden"
+                style={{ width: 'auto' }}
+                priority
+                unoptimized
+              />
+              <Image
+                src={YebaamLogoLight}
+                alt="Yebaam"
+                className="hidden h-full w-auto dark:block"
                 style={{ width: 'auto' }}
                 priority
                 unoptimized

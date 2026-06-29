@@ -65,7 +65,7 @@ export function useNotificationWebSocket() {
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(notification.title, {
           body: notification.message,
-          icon: notification.actor?.avatar || '/icon.ico',
+          icon: notification.actor?.avatar || '/icon.png',
           tag: notification.id,
         });
       }

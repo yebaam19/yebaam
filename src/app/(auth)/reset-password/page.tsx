@@ -1,4 +1,4 @@
-import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg';
+import LogoWhite from '@/images/brand/Logo-Yebaam_white.png';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Metadata } from 'next';

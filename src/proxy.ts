@@ -178,6 +178,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|monitoring|_next/static|_next/image|favicon.ico|icon.svg|opengraph-image|twitter-image|apple-icon|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.webp|.*\\.svg).*)',
+    '/((?!api|monitoring|_next/static|_next/image|favicon.ico|icon.png|opengraph-image|twitter-image|apple-icon|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.webp|.*\\.svg).*)',
   ],
 };

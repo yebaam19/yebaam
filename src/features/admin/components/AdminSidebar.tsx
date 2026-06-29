@@ -20,7 +20,7 @@ import {
 import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import Image from 'next/image'
-import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
 import { useTranslations } from 'next-intl'
 
 // Maps the Spanish nav labels (defined in nav.ts) to translation keys under admin.nav.

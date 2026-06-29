@@ -6,7 +6,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import AdminSidebar from './AdminSidebar'
-import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
 import { useTranslations } from 'next-intl'
 
 interface Props {

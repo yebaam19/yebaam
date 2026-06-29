@@ -1,6 +1,6 @@
 import VerifyEmailForm from '@/features/auth/components/VerifyEmailForm';
 import BackgroundImage from '@/images/brand/Background-1.png';
-import LogoWhite from '@/images/brand/Logo-Yebaam_white.svg';
+import LogoWhite from '@/images/brand/Logo-Yebaam_white.png';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';

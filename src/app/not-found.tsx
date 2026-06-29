@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import YebaamLogo from '@/images/brand/Yebaam-Logo.svg'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
+import YebaamLogoLight from '@/images/brand/Logo-Yebaam_white.png'
 
 const NotFound = () => {
   const t = useTranslations('common.notFound')
@@ -17,7 +18,16 @@ const NotFound = () => {
               alt="Yebaam"
               width={180}
               height={60}
-              className="dark:invert"
+              className="dark:hidden"
+              style={{ height: 'auto' }}
+              unoptimized
+            />
+            <Image
+              src={YebaamLogoLight}
+              alt="Yebaam"
+              width={180}
+              height={60}
+              className="hidden dark:block"
               style={{ height: 'auto' }}
               unoptimized
             />

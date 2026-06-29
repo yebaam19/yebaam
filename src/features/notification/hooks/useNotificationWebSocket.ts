@@ -102,7 +102,7 @@ export function useNotificationWebSocket() {
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(notification.title, {
             body: notification.message,
-            icon: notification.actor?.avatar || '/icon.ico',
+            icon: notification.actor?.avatar || '/icon.png',
             tag: notification.id,
             requireInteraction: notification.priority === 'high',
           });
@@ -192,7 +192,7 @@ export function useNotificationWebSocket() {
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Nueva solicitud de amistad', {
           body: `${senderName} quiere ser tu amigo`,
-          icon: fromProfile?.avatar || '/icon.ico',
+          icon: fromProfile?.avatar || '/icon.png',
           tag: data.data?.requestId,
         });
       }
@@ -219,7 +219,7 @@ export function useNotificationWebSocket() {
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(notification.title, {
           body: notification.message,
-          icon: notification.actor?.avatar || '/icon.ico',
+          icon: notification.actor?.avatar || '/icon.png',
           tag: notification.id,
         });
       }

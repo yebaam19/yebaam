@@ -6,14 +6,15 @@ import { ImageResponse } from 'next/og';
 // Default Open Graph / social-share card for every route (login, signup, feed…)
 // unless a page exports its own `openGraph.images`. Renders the YEBAAM logo so a
 // shared link always previews with the brand mark instead of whatever image the
-// scraper happens to find on the page. Source logo: public/yebaam.png.
+// scraper happens to find on the page. Source logo: public/yebaam.png
+// (green YEBAAM wordmark from the 2026 brand manual, ~1400×434, ~3.23:1).
 export const alt = 'Yebaam';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function OpengraphImage() {
   // Read from public/ — Vercel ships the public dir to the function, so this path
-  // resolves both locally and in production. The logo is 1536×1024 (3:2).
+  // resolves both locally and in production. The logo is ~1400×434 (~3.23:1).
   const logo = await readFile(join(process.cwd(), 'public', 'yebaam.png'));
   const logoSrc = `data:image/png;base64,${logo.toString('base64')}`;
 
@@ -43,7 +44,7 @@ export default async function OpengraphImage() {
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logoSrc} width={468} height={312} alt="Yebaam" />
+          <img src={logoSrc} width={760} height={236} alt="Yebaam" />
         </div>
         <div
           style={{
