@@ -16,9 +16,11 @@ import {
  * edits, and the cover / logo images. Admin gating, slug helpers, and the
  * generic mutators live in [`_shared.ts`](./_shared.ts); the other
  * `/admin/ciudades/**` concerns live in the sibling `city-*.actions.ts` files.
+ *
+ * NOTE: never `export type` from a 'use server' module — Turbopack includes
+ * the identifier in `ensureServerEntryExports`, which throws a runtime
+ * ReferenceError the moment ANY action in the chunk is invoked.
  */
-
-export type { ActionResult }
 
 // ---------- City CRUD ----------
 

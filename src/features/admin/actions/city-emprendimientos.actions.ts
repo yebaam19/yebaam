@@ -1,6 +1,7 @@
 'use server'
 
-import { type ActionResult, requireAdminWithUser, revalidateCityById } from './_shared'
+import type { ActionResult } from './_shared'
+import { requireAdminWithUser, revalidateCityById } from './_shared'
 
 /**
  * Admin review action for city emprendimientos. Unlike the generic
