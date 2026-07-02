@@ -29,6 +29,50 @@ export const listLatestAlbums = cache(async (limit = 24): Promise<MusicAlbumRow[
   return (data as MusicAlbumRow[] | null) ?? [];
 });
 
+export interface AlbumsPage {
+  albums: MusicAlbumRow[];
+  total: number;
+  /** Requested page clamped to [1, pageCount]. */
+  page: number;
+  pageCount: number;
+}
+
+export const listAlbumsPage = cache(
+  async (requestedPage: number, pageSize = 24): Promise<AlbumsPage> => {
+    const client = await getServerClient();
+    const { count } = await client
+      .from('music_albums')
+      .select('id', { count: 'exact', head: true });
+    const total = count ?? 0;
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1;
+    const page = Math.min(Math.max(1, safePage), pageCount);
+    const from = (page - 1) * pageSize;
+    const { data } = await client
+      .from('music_albums')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, from + pageSize - 1);
+    return { albums: (data as MusicAlbumRow[] | null) ?? [], total, page, pageCount };
+  },
+);
+
+/** Resolve artist display names for a set of album rows in one query.
+ *  Intentionally not wrapped in react.cache(): callers pass a fresh array each
+ *  render, so reference-keyed memoization would never hit. */
+export async function getArtistNamesByIds(artistIds: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const ids = Array.from(new Set(artistIds));
+  if (ids.length === 0) return map;
+  const client = await getServerClient();
+  const { data } = await client.from('music_artists').select('id, name').in('id', ids);
+  for (const a of ((data ?? []) as Array<{ id: string; name: string }>)) {
+    map.set(a.id, a.name);
+  }
+  return map;
+}
+
 export const listAlbumsFiltered = cache(
   async (opts: {
     decade?: number;

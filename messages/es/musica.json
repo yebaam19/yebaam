@@ -18,6 +18,7 @@
     "emptyFiltered": "Sin álbumes para este filtro.",
     "emptyAll": "Aún no hay álbumes en el archivo.",
     "viewAll": "Ver todos los álbumes",
+    "viewAllClubs": "Ver todos los clubes",
     "uploadFirst": "Sube el primero",
     "recentlyUploaded": "Subidos recientemente",
     "clubsHeading": "Clubes",
@@ -33,6 +34,18 @@
     "filteredHeadingInCountry": "en {country}",
     "filteredHeadingForTrade": "para intercambio",
     "filteredHeadingInCondition": "en estado {condition}"
+  },
+  "albumsIndex": {
+    "metaTitle": "Todos los álbumes — Archivo Musical",
+    "metaDescription": "Explora el catálogo completo del archivo: todos los álbumes subidos por los coleccionistas, del más reciente al más antiguo.",
+    "backToArchive": "← Archivo Musical",
+    "title": "Todos los álbumes",
+    "subtitle": "Del subido más recientemente al más antiguo.",
+    "empty": "Aún no hay álbumes en el archivo.",
+    "pageOf": "Página {page} de {pageCount}",
+    "paginationAriaLabel": "Paginación de álbumes",
+    "prev": "← Anteriores",
+    "next": "Siguientes →"
   },
   "search": {
     "metaTitle": "Buscar — Archivo Musical",

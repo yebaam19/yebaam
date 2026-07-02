@@ -18,6 +18,7 @@
     "emptyFiltered": "No albums match this filter.",
     "emptyAll": "The archive is still empty.",
     "viewAll": "View all albums",
+    "viewAllClubs": "View all clubs",
     "uploadFirst": "Upload the first",
     "recentlyUploaded": "Recently uploaded",
     "clubsHeading": "Clubs",
@@ -33,6 +34,18 @@
     "filteredHeadingInCountry": "in {country}",
     "filteredHeadingForTrade": "for trade",
     "filteredHeadingInCondition": "in {condition} condition"
+  },
+  "albumsIndex": {
+    "metaTitle": "All albums — Music Archive",
+    "metaDescription": "Browse the archive's full catalog: every album uploaded by collectors, newest to oldest.",
+    "backToArchive": "← Music Archive",
+    "title": "All albums",
+    "subtitle": "From most recently uploaded to oldest.",
+    "empty": "The archive is still empty.",
+    "pageOf": "Page {page} of {pageCount}",
+    "paginationAriaLabel": "Album pagination",
+    "prev": "← Previous",
+    "next": "Next →"
   },
   "search": {
     "metaTitle": "Search — Music Archive",

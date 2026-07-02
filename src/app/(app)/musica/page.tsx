@@ -3,6 +3,7 @@ import type { Metadata, Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { MusicalNoteIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import {
+  getArtistNamesByIds,
   listAlbumsFiltered,
   listLatestAlbums,
 } from '@/features/music-archive/server/music.server';
@@ -74,14 +75,7 @@ export default async function MusicArchiveLandingPage({
   const { data: userData } = await client.auth.getUser();
   const isAuthed = Boolean(userData.user);
 
-  const artistIds = Array.from(new Set(albums.map((a) => a.artist_id)));
-  const artistsById = new Map<string, string>();
-  if (artistIds.length > 0) {
-    const { data } = await client.from('music_artists').select('id, name').in('id', artistIds);
-    for (const a of (data ?? []) as Array<{ id: string; name: string }>) {
-      artistsById.set(a.id, a.name);
-    }
-  }
+  const artistsById = await getArtistNamesByIds(albums.map((a) => a.artist_id));
 
   const countryLabel = country ? t(`countries.${country}`) : null;
   const headingFragments: string[] = [];
@@ -125,12 +119,19 @@ export default async function MusicArchiveLandingPage({
           <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">{heading}</h2>
           <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
             <span>{t('landing.albumsCount', { count: albums.length })}</span>
-            {isFiltered && (
+            {isFiltered ? (
               <Link
                 href={'/musica' as Route}
                 className="font-medium text-zinc-700 hover:underline dark:text-zinc-300"
               >
                 {t('landing.removeFilters')}
+              </Link>
+            ) : (
+              <Link
+                href={'/musica/albumes' as Route}
+                className="font-medium text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                {t('landing.viewAll')}
               </Link>
             )}
           </div>
@@ -183,7 +184,7 @@ export default async function MusicArchiveLandingPage({
               href={'/musica/clubes' as Route}
               className="text-xs font-medium text-zinc-600 hover:underline dark:text-zinc-400"
             >
-              {t('landing.viewAll')}
+              {t('landing.viewAllClubs')}
             </Link>
           </div>
           <MusicClubsGrid clubs={clubs} limit={8} />
