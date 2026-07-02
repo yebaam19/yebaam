@@ -11,6 +11,7 @@ import { CityAdminsList } from './editor/CityAdminsList'
 import { CityFeatureLinks } from './editor/CityFeatureLinks'
 import { CityNewsModerationTab } from './editor/CityNewsModerationTab'
 import { CityClassifiedsModerationTab } from './editor/CityClassifiedsModerationTab'
+import { CityEmprendimientosModerationTab } from './editor/CityEmprendimientosModerationTab'
 import { CityContactInboxTab } from './editor/CityContactInboxTab'
 import { CityPlacesTab } from './editor/CityPlacesTab'
 import { CityMultimediaTab } from './editor/CityMultimediaTab'
@@ -27,6 +28,7 @@ type TabId =
   | 'promotions'
   | 'news'
   | 'classifieds'
+  | 'emprendimientos'
   | 'contact'
   | 'complaints'
 
@@ -48,6 +50,7 @@ const TAB_KEYS: { id: TabId; labelKey: string }[] = [
   { id: 'promotions', labelKey: 'tabPromotions' },
   { id: 'news', labelKey: 'tabNews' },
   { id: 'classifieds', labelKey: 'tabClassifieds' },
+  { id: 'emprendimientos', labelKey: 'tabEmprendimientos' },
   { id: 'contact', labelKey: 'tabContact' },
   { id: 'complaints', labelKey: 'tabComplaints' },
 ]
@@ -96,6 +99,9 @@ export async function CityEditView({ city, admins, activeTab, statusFilter, page
       )}
       {activeTab === 'classifieds' && (
         <CityClassifiedsModerationTab city={city} statusFilter={statusFilter} page={page} />
+      )}
+      {activeTab === 'emprendimientos' && (
+        <CityEmprendimientosModerationTab city={city} statusFilter={statusFilter} page={page} />
       )}
       {activeTab === 'contact' && (
         <CityContactInboxTab city={city} statusFilter={statusFilter} page={page} />

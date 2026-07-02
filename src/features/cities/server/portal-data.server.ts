@@ -11,6 +11,7 @@ export interface CityPortalData {
   newsCount: number;
   promotionCount: number;
   classifiedCount: number;
+  emprendimientoCount: number;
   socialHelpCount: number;
   placeCount: number;
   businessCount: number;
@@ -93,6 +94,7 @@ export async function fetchCityPortalData(
     newsCount,
     promotionCount,
     classifiedCount,
+    emprendimientoCount,
     socialHelpCount,
     placeCount,
     businessCount,
@@ -104,6 +106,7 @@ export async function fetchCityPortalData(
     countCityRows(client, 'city_news', cityId, { column: 'status', value: 'approved' }),
     countCityRows(client, 'city_promotions', cityId, { column: 'status', value: 'active' }),
     countCityRows(client, 'city_classifieds', cityId, { column: 'status', value: 'open' }),
+    countCityRows(client, 'city_emprendimientos', cityId, { column: 'status', value: 'APPROVED' }),
     countCityRows(client, 'city_social_help', cityId, { column: 'status', value: 'open' }),
     countCityRows(client, 'city_places', cityId),
     countCityRows(client, 'businesses', cityId),
@@ -117,6 +120,7 @@ export async function fetchCityPortalData(
     newsCount,
     promotionCount,
     classifiedCount,
+    emprendimientoCount,
     socialHelpCount,
     placeCount,
     businessCount,

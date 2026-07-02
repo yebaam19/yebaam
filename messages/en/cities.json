@@ -194,6 +194,7 @@
       "news": { "label": "News" },
       "directories": { "label": "Directories" },
       "classifieds": { "label": "Classifieds" },
+      "emprendimientos": { "label": "Local ventures" },
       "events": { "label": "Events" },
       "photos": { "label": "Photos" },
       "videos": { "label": "Videos" },
@@ -215,6 +216,122 @@
       "contact": { "label": "Contact" },
       "complaints": { "label": "Complaints Portal" },
       "rural": { "label": "Rural Area" }
+    }
+  },
+  "emprendimientos": {
+    "metadata": {
+      "title": "Local ventures — {city}",
+      "description": "Support {city}'s small entrepreneurs: discover their products and services, recommend them and get in touch."
+    },
+    "header": {
+      "title": "Local ventures",
+      "subtitle": "Support the entrepreneurs of {city}",
+      "newCta": "Post your venture"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search arepas, repairs, hairstyles…",
+      "all": "All"
+    },
+    "categories": {
+      "comida": "Food",
+      "ropa": "Clothing",
+      "servicios": "Services",
+      "tecnologia": "Technology",
+      "artesanias": "Crafts",
+      "belleza": "Beauty",
+      "hogar": "Home",
+      "otro": "Other"
+    },
+    "badge": { "verified": "Verified entrepreneur" },
+    "list": {
+      "empty": "No ventures in {city} yet.",
+      "emptyHint": "Do you sell arepas, fix phones, style hair? Be the first to post.",
+      "emptySearch": "Nothing found for «{q}».",
+      "viewAll": "View all",
+      "recommendations": "{count, plural, =1 {# recommendation} other {# recommendations}}"
+    },
+    "pendingBanner": {
+      "pendingTitle": "Your venture is under review",
+      "pendingBody": "Only you can see it for now. We'll let you know once it's published.",
+      "rejectedTitle": "Your venture was not approved",
+      "rejectedBody": "Reason: {reason}",
+      "noReason": "No reason given.",
+      "editCta": "Edit"
+    },
+    "detail": {
+      "back": "Back to ventures",
+      "detailsTitle": "Venture details",
+      "aboutTitle": "About this venture",
+      "noStory": "This entrepreneur hasn't told their story yet.",
+      "ownerLabel": "Entrepreneur",
+      "zoneLabel": "Neighborhood / Area",
+      "addressLabel": "Address",
+      "categoryLabel": "Type of sale",
+      "contactLabel": "Contact",
+      "mediaTitle": "Photos and videos",
+      "recommend": "Recommend",
+      "recommended": "Recommended",
+      "contact": "Contact",
+      "whatsapp": "WhatsApp",
+      "call": "Call",
+      "memberOf": "Member of {city}",
+      "editCta": "Edit",
+      "deleteCta": "Delete",
+      "deleteConfirm": "Delete this venture? This cannot be undone.",
+      "openImage": "View photo {index} of {total}",
+      "closeLightbox": "Close",
+      "playVideo": "Play video",
+      "whatsappMessage": "Hi, I saw your venture {name} on YEBAAM"
+    },
+    "composer": {
+      "title": "Post your venture",
+      "editTitle": "Edit your venture",
+      "reviewNote": "Your venture will be reviewed before it appears publicly.",
+      "reviewNoteEdit": "When you save changes, your venture goes back to review before showing again.",
+      "groups": {
+        "photos": "1. Photos",
+        "about": "2. Your venture",
+        "contact": "3. How people reach you"
+      },
+      "fields": {
+        "heroLabel": "The main photo of your business",
+        "heroHint": "Tap here to upload your business photo",
+        "heroChange": "Change photo",
+        "nameLabel": "What is your venture called?",
+        "namePlaceholder": "E.g. Arepas Doña Rosa",
+        "shortDescriptionLabel": "What do you make or sell?",
+        "shortDescriptionPlaceholder": "E.g. I sell stuffed arepas on weekends",
+        "storyLabel": "Tell us your story (optional)",
+        "storyHint": "How did you start? People love getting to know you.",
+        "zoneLabel": "Which neighborhood are you in?",
+        "zonePlaceholder": "E.g. Barrio El Recuerdo",
+        "addressLabel": "Address (optional)",
+        "addressHint": "Only if you serve customers at a fixed spot.",
+        "categoryLabel": "What type of sale is it?",
+        "phoneLabel": "Your WhatsApp or phone number (optional)",
+        "phoneHint": "People can also message you through YEBAAM chat without this number.",
+        "ownerPhotoLabel": "A photo of you (optional)",
+        "ownerPhotoHint": "Putting a face to your business builds trust.",
+        "ownerPhotoPick": "Tap here to upload your photo",
+        "mediaLabel": "More photos or videos of your products",
+        "mediaHint": "Up to 3 photos or videos"
+      },
+      "actions": {
+        "submit": "Publish",
+        "submitting": "Publishing…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "removeMedia": "Remove"
+      },
+      "errors": {
+        "nameRequired": "Write your venture's name",
+        "shortDescriptionRequired": "Tell us what you sell or do",
+        "uploadFailed": "We couldn't upload the file. Please try again.",
+        "submitFailed": "We couldn't publish. Check the info and try again."
+      },
+      "signInRequired": "Sign in to post your venture.",
+      "signInCta": "Sign in"
     }
   },
   "classifieds": {

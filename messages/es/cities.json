@@ -194,6 +194,7 @@
       "news": { "label": "Noticias" },
       "directories": { "label": "Directorios" },
       "classifieds": { "label": "Clasificados" },
+      "emprendimientos": { "label": "Emprendimientos" },
       "events": { "label": "Eventos" },
       "photos": { "label": "Fotos" },
       "videos": { "label": "Videos" },
@@ -215,6 +216,122 @@
       "contact": { "label": "Contacto" },
       "complaints": { "label": "Portal de Denuncias" },
       "rural": { "label": "Zona Rural" }
+    }
+  },
+  "emprendimientos": {
+    "metadata": {
+      "title": "Emprendimientos — {city}",
+      "description": "Apoya a los emprendedores de {city}: conoce sus productos y servicios, recomiéndalos y contáctalos."
+    },
+    "header": {
+      "title": "Emprendimientos",
+      "subtitle": "Apoya a los emprendedores de {city}",
+      "newCta": "Publica tu emprendimiento"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Busca arepas, arreglos, peinados…",
+      "all": "Todos"
+    },
+    "categories": {
+      "comida": "Comida",
+      "ropa": "Ropa",
+      "servicios": "Servicios",
+      "tecnologia": "Tecnología",
+      "artesanias": "Artesanías",
+      "belleza": "Belleza",
+      "hogar": "Hogar",
+      "otro": "Otro"
+    },
+    "badge": { "verified": "Emprendedor verificado" },
+    "list": {
+      "empty": "Aún no hay emprendimientos en {city}.",
+      "emptyHint": "¿Vendes arepas, arreglas celulares, haces peinados? Sé la primera persona en publicar.",
+      "emptySearch": "No encontramos nada para «{q}».",
+      "viewAll": "Ver todos",
+      "recommendations": "{count, plural, =1 {# recomendación} other {# recomendaciones}}"
+    },
+    "pendingBanner": {
+      "pendingTitle": "Tu emprendimiento está en revisión",
+      "pendingBody": "Solo tú puedes verlo por ahora. Te avisaremos cuando esté publicado.",
+      "rejectedTitle": "Tu emprendimiento no fue aprobado",
+      "rejectedBody": "Motivo: {reason}",
+      "noReason": "Sin motivo especificado.",
+      "editCta": "Editar"
+    },
+    "detail": {
+      "back": "Volver a emprendimientos",
+      "detailsTitle": "Detalles del emprendimiento",
+      "aboutTitle": "Acerca del emprendimiento",
+      "noStory": "Este emprendedor aún no ha contado su historia.",
+      "ownerLabel": "Emprendedor/a",
+      "zoneLabel": "Barrio / Zona",
+      "addressLabel": "Dirección",
+      "categoryLabel": "Tipo de venta",
+      "contactLabel": "Contacto",
+      "mediaTitle": "Fotos y videos",
+      "recommend": "Recomendar",
+      "recommended": "Recomendado",
+      "contact": "Contactar",
+      "whatsapp": "WhatsApp",
+      "call": "Llamar",
+      "memberOf": "Miembro de {city}",
+      "editCta": "Editar",
+      "deleteCta": "Eliminar",
+      "deleteConfirm": "¿Eliminar este emprendimiento? Esta acción no se puede deshacer.",
+      "openImage": "Ver foto {index} de {total}",
+      "closeLightbox": "Cerrar",
+      "playVideo": "Reproducir video",
+      "whatsappMessage": "Hola, vi tu emprendimiento {name} en YEBAAM"
+    },
+    "composer": {
+      "title": "Publica tu emprendimiento",
+      "editTitle": "Edita tu emprendimiento",
+      "reviewNote": "Tu emprendimiento será revisado antes de aparecer públicamente.",
+      "reviewNoteEdit": "Al guardar cambios, tu emprendimiento volverá a revisión antes de mostrarse de nuevo.",
+      "groups": {
+        "photos": "1. Fotos",
+        "about": "2. Tu emprendimiento",
+        "contact": "3. Cómo te contactan"
+      },
+      "fields": {
+        "heroLabel": "La foto principal de tu negocio",
+        "heroHint": "Toca aquí para subir la foto de tu negocio",
+        "heroChange": "Cambiar foto",
+        "nameLabel": "¿Cómo se llama tu emprendimiento?",
+        "namePlaceholder": "Ej: Arepas Doña Rosa",
+        "shortDescriptionLabel": "¿Qué haces o vendes?",
+        "shortDescriptionPlaceholder": "Ej: Vendo arepas rellenas los fines de semana",
+        "storyLabel": "Cuéntanos tu historia (si quieres)",
+        "storyHint": "¿Cómo empezaste? A la gente le gusta conocerte.",
+        "zoneLabel": "¿En qué barrio estás?",
+        "zonePlaceholder": "Ej: Barrio El Recuerdo",
+        "addressLabel": "Dirección (si quieres)",
+        "addressHint": "Solo si atiendes en un punto fijo.",
+        "categoryLabel": "¿Qué tipo de venta es?",
+        "phoneLabel": "Tu número de WhatsApp o teléfono (si quieres)",
+        "phoneHint": "Las personas también pueden escribirte por el chat de YEBAAM sin este número.",
+        "ownerPhotoLabel": "Una foto tuya (si quieres)",
+        "ownerPhotoHint": "Ponerle cara a tu negocio genera confianza.",
+        "ownerPhotoPick": "Toca aquí para subir tu foto",
+        "mediaLabel": "Más fotos o videos de tus productos",
+        "mediaHint": "Hasta 3 fotos o videos"
+      },
+      "actions": {
+        "submit": "Publicar",
+        "submitting": "Publicando…",
+        "save": "Guardar cambios",
+        "saving": "Guardando…",
+        "cancel": "Cancelar",
+        "removeMedia": "Quitar"
+      },
+      "errors": {
+        "nameRequired": "Escribe el nombre de tu emprendimiento",
+        "shortDescriptionRequired": "Cuéntanos qué vendes o qué haces",
+        "uploadFailed": "No pudimos subir el archivo. Inténtalo de nuevo.",
+        "submitFailed": "No pudimos publicar. Revisa los datos e inténtalo de nuevo."
+      },
+      "signInRequired": "Inicia sesión para publicar tu emprendimiento.",
+      "signInCta": "Iniciar sesión"
     }
   },
   "classifieds": {

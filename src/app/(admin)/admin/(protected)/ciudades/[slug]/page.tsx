@@ -21,6 +21,7 @@ type TabId =
   | 'promotions'
   | 'news'
   | 'classifieds'
+  | 'emprendimientos'
   | 'contact'
   | 'complaints'
 
@@ -34,6 +35,7 @@ const TABS = new Set<TabId>([
   'promotions',
   'news',
   'classifieds',
+  'emprendimientos',
   'contact',
   'complaints',
 ])

@@ -24,6 +24,7 @@ export type PortalCountKey =
   | 'newsCount'
   | 'promotionCount'
   | 'classifiedCount'
+  | 'emprendimientoCount'
   | 'socialHelpCount'
   | 'placeCount'
   | 'businessCount'
@@ -99,6 +100,14 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     hrefTemplate: '/cities/:slug/classifieds',
     comingSoon: false,
     countKey: 'classifiedCount',
+  },
+  {
+    id: 'emprendimientos',
+    column: 'left',
+    icon: 'RocketLaunchIcon',
+    hrefTemplate: '/cities/:slug/emprendimientos',
+    comingSoon: false,
+    countKey: 'emprendimientoCount',
   },
   {
     id: 'events',

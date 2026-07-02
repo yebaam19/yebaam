@@ -138,6 +138,73 @@ export const listCityClassifiedsForAdmin = cache(async function listCityClassifi
   return { items, total: count ?? 0, page, pageSize }
 })
 
+export interface AdminEmprendimientoRow {
+  id: string
+  name: string
+  shortDescription: string
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  category: string
+  zone: string | null
+  rejectionReason: string | null
+  heroImageUrl?: string
+  ownerId: string
+  ownerName: string | null
+  createdAt: string
+}
+
+export const listCityEmprendimientosForAdmin = cache(async function listCityEmprendimientosForAdmin(
+  cityId: string,
+  params: { status?: 'PENDING' | 'APPROVED' | 'REJECTED'; page?: number; pageSize?: number },
+): Promise<PaginatedList<AdminEmprendimientoRow>> {
+  const client = await getServerClient()
+  const page = Math.max(1, params.page ?? 1)
+  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20))
+  let q = client
+    .from('city_emprendimientos')
+    .select(
+      'id, name, short_description, status, category, zone, rejection_reason, hero_cf_image_id, owner_id, created_at',
+      { count: 'exact' },
+    )
+    .eq('city_id', cityId)
+    .order('created_at', { ascending: false })
+  if (params.status) q = q.eq('status', params.status)
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, count, error } = await q.range(from, to)
+  if (error) {
+    console.error('[listCityEmprendimientosForAdmin]', error)
+    return { items: [], total: 0, page, pageSize }
+  }
+  type Row = {
+    id: string
+    name: string
+    short_description: string
+    status: 'PENDING' | 'APPROVED' | 'REJECTED'
+    category: string
+    zone: string | null
+    rejection_reason: string | null
+    hero_cf_image_id: string | null
+    owner_id: string
+    created_at: string
+  }
+  const rows = (data ?? []) as Row[]
+  const profiles = await fetchProfilesByIds(rows.map((r) => r.owner_id))
+  const items = rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    shortDescription: r.short_description,
+    status: r.status,
+    category: r.category,
+    zone: r.zone,
+    rejectionReason: r.rejection_reason,
+    heroImageUrl: cfImageUrl(r.hero_cf_image_id),
+    ownerId: r.owner_id,
+    ownerName: profileToDisplay(profiles.get(r.owner_id)),
+    createdAt: r.created_at,
+  }))
+  return { items, total: count ?? 0, page, pageSize }
+})
+
 export const listCityContactMessagesForAdmin = cache(async function listCityContactMessagesForAdmin(
   cityId: string,
   params: { status?: 'new' | 'read' | 'resolved'; page?: number; pageSize?: number },
