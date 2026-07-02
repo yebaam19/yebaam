@@ -23,7 +23,7 @@ export async function EntrepreneurCard({ ownerName, ownerPhotoUrl, cityName, ver
         {ownerPhotoUrl ? (
           <img src={ownerPhotoUrl} alt={ownerName} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-primary-700 text-4xl font-black text-white">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-500 to-primary-800 text-4xl font-black text-white">
             {initials || '?'}
           </div>
         )}

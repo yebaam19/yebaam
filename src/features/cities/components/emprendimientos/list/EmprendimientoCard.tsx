@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { HandThumbUpIcon, MapPinIcon } from '@/components/icons/heroicons-shim';
 import {
-  HandThumbUpIcon,
-  MapPinIcon,
-  RocketLaunchIcon,
-} from '@/components/icons/heroicons-shim';
+  AWNING_STRIPES,
+  EMPRENDIMIENTO_CATEGORY_CHIP,
+  EMPRENDIMIENTO_CATEGORY_EMOJI,
+  EMPRENDIMIENTO_CATEGORY_GRADIENT,
+} from '@/features/cities/data/emprendimientos';
 import type { EmprendimientoSummary } from '@/features/cities/server/emprendimientos.server';
 import { VerifiedEntrepreneurBadge } from '../VerifiedEntrepreneurBadge';
 
@@ -15,8 +17,9 @@ interface Props {
 }
 
 /**
- * Grid card for one emprendimiento. RSC — zero client JS. Everything in the
- * public grid is APPROVED by definition, so the verified dot always shows.
+ * Grid card for one emprendimiento. RSC — zero client JS. Photo-less stalls
+ * get their category's "market awning": colored gradient + diagonal stripes
+ * + a big emoji, so every card reads at a glance even without uploads.
  */
 export async function EmprendimientoCard({ citySlug, item }: Props) {
   const t = await getTranslations('cities.emprendimientos');
@@ -34,11 +37,22 @@ export async function EmprendimientoCard({ citySlug, item }: Props) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-primary-800">
-            <RocketLaunchIcon className="h-12 w-12 text-white/30" />
+          <div
+            className={`flex h-full w-full items-center justify-center ${EMPRENDIMIENTO_CATEGORY_GRADIENT[item.category]}`}
+          >
+            <div className="absolute inset-0" style={AWNING_STRIPES} aria-hidden="true" />
+            <span
+              className="relative text-6xl drop-shadow-lg transition-transform group-hover:scale-110"
+              aria-hidden="true"
+            >
+              {EMPRENDIMIENTO_CATEGORY_EMOJI[item.category]}
+            </span>
           </div>
         )}
-        <span className="absolute left-2 top-2 inline-flex items-center rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-700 shadow-sm dark:bg-neutral-900/95 dark:text-primary-300">
+        <span
+          className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow-sm ${EMPRENDIMIENTO_CATEGORY_CHIP[item.category]}`}
+        >
+          <span aria-hidden="true">{EMPRENDIMIENTO_CATEGORY_EMOJI[item.category]}</span>
           {t(`categories.${item.category}`)}
         </span>
         {item.recommendationsCount > 0 && (

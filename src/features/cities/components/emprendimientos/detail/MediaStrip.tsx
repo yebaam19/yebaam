@@ -1,18 +1,23 @@
 'use client';
 
 /**
- * Wireframe row 3: the 3-slot photo/video strip. Photos open a lightbox;
- * videos swap in-place for the Cloudflare Stream player (mobile-friendly,
- * no dialog juggling).
+ * Wireframe row 3 — always exactly THREE slots ("Foto o Video 1/2/3", per
+ * the client's mockup), placeholders included when the entrepreneur hasn't
+ * filled them yet. Photos open a lightbox; videos play in-place via
+ * Cloudflare Stream.
  */
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { PlayIcon } from '@/components/icons/heroicons-shim';
+import { PhotoIcon, PlayIcon } from '@/components/icons/heroicons-shim';
 import { streamThumb } from '@/lib/media/urls';
 import { StreamVideo } from '@/components/media/StreamVideo';
 import type { EmprendimientoMediaItem } from '@/features/cities/server/emprendimientos.server';
 import { MediaLightbox } from './MediaLightbox';
+
+const SLOT_COUNT = 3;
+const FRAME =
+  'relative aspect-[4/3] overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900';
 
 interface Props {
   items: EmprendimientoMediaItem[];
@@ -23,8 +28,9 @@ export function MediaStrip({ items }: Props) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
 
-  if (items.length === 0) return null;
+  const slots = items.slice(0, Math.max(SLOT_COUNT, items.length));
   const images = items.filter((m) => m.type === 'IMAGE' && m.imageUrl);
+  const placeholders = Math.max(0, SLOT_COUNT - slots.length);
 
   return (
     <section className="space-y-3">
@@ -32,14 +38,11 @@ export function MediaStrip({ items }: Props) {
         {t('mediaTitle')}
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {items.map((item) => {
-          const frame =
-            'relative aspect-[4/3] overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900';
-
+        {slots.map((item) => {
           if (item.type === 'VIDEO' && item.cfStreamUid) {
             if (playingVideoId === item.id) {
               return (
-                <div key={item.id} className={frame}>
+                <div key={item.id} className={FRAME}>
                   <StreamVideo
                     uid={item.cfStreamUid}
                     autoplay
@@ -56,7 +59,7 @@ export function MediaStrip({ items }: Props) {
                 type="button"
                 onClick={() => setPlayingVideoId(item.id)}
                 aria-label={t('playVideo')}
-                className={`${frame} group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
+                className={`${FRAME} group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
               >
                 <img
                   src={streamThumb(item.cfStreamUid, { time: 1 })}
@@ -81,7 +84,7 @@ export function MediaStrip({ items }: Props) {
               type="button"
               onClick={() => setLightboxIndex(imageIndex)}
               aria-label={t('openImage', { index: imageIndex + 1, total: images.length })}
-              className={`${frame} group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
+              className={`${FRAME} group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
             >
               <img
                 src={item.imageUrl}
@@ -92,6 +95,18 @@ export function MediaStrip({ items }: Props) {
             </button>
           );
         })}
+        {Array.from({ length: placeholders }).map((_, i) => (
+          <div
+            key={`placeholder-${i}`}
+            aria-hidden="true"
+            className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 text-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-600"
+          >
+            <PhotoIcon className="h-8 w-8" />
+            <span className="text-xs font-medium">
+              {t('mediaSlot', { index: slots.length + i + 1 })}
+            </span>
+          </div>
+        ))}
       </div>
       {lightboxIndex !== null && images.length > 0 && (
         <MediaLightbox

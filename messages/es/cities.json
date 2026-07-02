@@ -269,6 +269,7 @@
       "categoryLabel": "Tipo de venta",
       "contactLabel": "Contacto",
       "mediaTitle": "Fotos y videos",
+      "mediaSlot": "Foto o video {index}",
       "recommend": "Recomendar",
       "recommended": "Recomendado",
       "contact": "Contactar",

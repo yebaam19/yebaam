@@ -1,22 +1,29 @@
 import type { ReactNode } from 'react';
-import { RocketLaunchIcon } from '@/components/icons/heroicons-shim';
+import {
+  AWNING_STRIPES,
+  EMPRENDIMIENTO_CATEGORY_EMOJI,
+  EMPRENDIMIENTO_CATEGORY_GRADIENT,
+  type EmprendimientoCategory,
+} from '@/features/cities/data/emprendimientos';
 import { VerifiedEntrepreneurBadge } from '../VerifiedEntrepreneurBadge';
 
 interface Props {
   name: string;
   heroImageUrl?: string;
   zone: string | null;
+  category: EmprendimientoCategory;
   verified: boolean;
-  /** Client-island action buttons overlaid top-right on ≥sm. */
+  /** Client-island action buttons — per the client wireframe they stack
+   *  VERTICALLY on the right side of the photo ([Recomendar] over [Contacto]). */
   actions: ReactNode;
 }
 
 /**
- * Wireframe row 1: hero photo with [Recomendar][Contacto]. The name lives on
- * the photo's bottom gradient so the page has a headline; on mobile the
- * actions render below the image instead of overlaying it.
+ * Wireframe row 1: the Foto with the two action buttons stacked at its
+ * right edge. On mobile the actions drop below the image. Photo-less
+ * listings get the category "market awning" fallback.
  */
-export function EmprendimientoHero({ name, heroImageUrl, zone, verified, actions }: Props) {
+export function EmprendimientoHero({ name, heroImageUrl, zone, category, verified, actions }: Props) {
   return (
     <div className="space-y-3">
       <div className="relative overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
@@ -29,8 +36,13 @@ export function EmprendimientoHero({ name, heroImageUrl, zone, verified, actions
               fetchPriority="high"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-primary-800">
-              <RocketLaunchIcon className="h-16 w-16 text-white/30" />
+            <div
+              className={`relative flex h-full w-full items-center justify-center ${EMPRENDIMIENTO_CATEGORY_GRADIENT[category]}`}
+            >
+              <div className="absolute inset-0" style={AWNING_STRIPES} aria-hidden="true" />
+              <span className="relative text-7xl drop-shadow-xl sm:text-8xl" aria-hidden="true">
+                {EMPRENDIMIENTO_CATEGORY_EMOJI[category]}
+              </span>
             </div>
           )}
         </div>
@@ -44,7 +56,10 @@ export function EmprendimientoHero({ name, heroImageUrl, zone, verified, actions
             </span>
           )}
         </div>
-        <div className="absolute right-4 top-4 hidden gap-2 sm:flex">{actions}</div>
+        {/* Wireframe: [Recomendar] stacked above [Contacto], right side. */}
+        <div className="absolute right-4 top-4 hidden flex-col items-end gap-2 sm:flex">
+          {actions}
+        </div>
       </div>
       <div className="flex flex-wrap gap-2 sm:hidden">{actions}</div>
     </div>

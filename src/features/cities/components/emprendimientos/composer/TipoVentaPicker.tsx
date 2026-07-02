@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import {
   EMPRENDIMIENTO_CATEGORIES,
+  EMPRENDIMIENTO_CATEGORY_EMOJI,
   type EmprendimientoCategory,
 } from '@/features/cities/data/emprendimientos';
 
@@ -45,6 +46,9 @@ export function TipoVentaPicker({ value, onChange, disabled }: Props) {
                 disabled={disabled}
                 className="sr-only"
               />
+              <span className="text-xl" aria-hidden="true">
+                {EMPRENDIMIENTO_CATEGORY_EMOJI[category]}
+              </span>
               {t(`categories.${category}`)}
             </label>
           );

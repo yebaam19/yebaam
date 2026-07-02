@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { PlusIcon, RocketLaunchIcon } from '@/components/icons/heroicons-shim';
+import { PlusIcon } from '@/components/icons/heroicons-shim';
+import { AWNING_STRIPES } from '@/features/cities/data/emprendimientos';
 import type { EmprendimientoSummary } from '@/features/cities/server/emprendimientos.server';
 import { EmprendimientoCard } from './EmprendimientoCard';
 
@@ -21,15 +22,26 @@ export async function EmprendimientoList({ citySlug, cityName, items, q, isFilte
   if (items.length === 0) {
     const searching = Boolean(q && q.trim());
     return (
-      <div className="rounded-2xl border border-dashed border-neutral-300 bg-white px-6 py-14 text-center dark:border-neutral-700 dark:bg-neutral-800">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30">
-          <RocketLaunchIcon className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+      <div className="overflow-hidden rounded-2xl border border-dashed border-neutral-300 bg-white pb-14 text-center dark:border-neutral-700 dark:bg-neutral-800">
+        {/* Market-awning ribbon — the feature's visual signature. */}
+        <div
+          className="h-3 w-full bg-primary-600"
+          style={AWNING_STRIPES}
+          aria-hidden="true"
+        />
+        <div
+          className="mx-auto mt-10 flex items-center justify-center gap-3 text-4xl"
+          aria-hidden="true"
+        >
+          <span className="-rotate-6">🍲</span>
+          <span className="text-5xl">🛠️</span>
+          <span className="rotate-6">👕</span>
         </div>
-        <p className="mt-4 text-base font-semibold text-neutral-900 dark:text-neutral-100">
+        <p className="mt-4 px-6 text-base font-semibold text-neutral-900 dark:text-neutral-100">
           {searching ? t('list.emptySearch', { q: q!.trim() }) : t('list.empty', { city: cityName })}
         </p>
         {!searching && (
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mt-1 px-6 text-sm text-neutral-500 dark:text-neutral-400">
             {t('list.emptyHint')}
           </p>
         )}

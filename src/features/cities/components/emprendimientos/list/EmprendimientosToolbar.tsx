@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon } from '@/components/icons/heroicons-shim';
 import {
   EMPRENDIMIENTO_CATEGORIES,
+  EMPRENDIMIENTO_CATEGORY_EMOJI,
   type EmprendimientoCategory,
 } from '@/features/cities/data/emprendimientos';
 
@@ -86,6 +87,7 @@ export function EmprendimientosToolbar() {
               aria-pressed={active}
               className={active ? ACTIVE_CHIP : IDLE_CHIP}
             >
+              <span aria-hidden="true">{EMPRENDIMIENTO_CATEGORY_EMOJI[category]}</span>{' '}
               {t(`categories.${category}`)}
             </button>
           );

@@ -65,10 +65,7 @@ export default async function EmprendimientoDetailPage({ params }: Props) {
         />
       )}
       <ContactActions
-        name={item.name}
         ownerId={item.ownerId}
-        phone={item.phone}
-        whatsapp={item.whatsapp}
         viewerId={viewerId}
         viewerIsOwner={viewerIsOwner}
         editHref={editHref}
@@ -97,6 +94,7 @@ export default async function EmprendimientoDetailPage({ params }: Props) {
         name={item.name}
         heroImageUrl={item.heroImageUrl}
         zone={item.zone}
+        category={item.category}
         verified={approved}
         actions={actions}
       />
