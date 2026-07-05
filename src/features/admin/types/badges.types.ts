@@ -20,6 +20,7 @@ export interface AdminBadgeRow {
   isUnique: boolean
   requestable: boolean
   autoAccept: boolean
+  evidenceRequired: boolean
   isSystem: boolean
   deletedAt: string | null
   grantCount: number
@@ -41,6 +42,7 @@ export interface BadgeFormInput {
   isUnique: boolean
   requestable: boolean
   autoAccept: boolean
+  evidenceRequired: boolean
   requirementsMd: string
 }
 
@@ -94,6 +96,9 @@ export interface BadgeRequestRow {
   badgeSlug: string
   badgeName: string
   badgeIconUrl: string | null
+  /** Mirrors badges.evidence_required — the queue/dialog warn when a request
+   *  for an evidence-required badge carries zero documents. */
+  badgeEvidenceRequired: boolean
   userId: string
   username: string | null
   displayName: string | null

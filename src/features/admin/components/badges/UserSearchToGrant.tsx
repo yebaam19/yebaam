@@ -12,9 +12,11 @@ interface Props {
   badgeId: string
   badgeSlug: string
   badgeName: string
+  /** Mirrors badges.evidence_required — direct grants then demand a written reason. */
+  evidenceRequired?: boolean
 }
 
-export function UserSearchToGrant({ badgeId, badgeSlug, badgeName }: Props) {
+export function UserSearchToGrant({ badgeId, badgeSlug, badgeName, evidenceRequired = false }: Props) {
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<AdminUserLookup[]>([])
@@ -57,6 +59,12 @@ export function UserSearchToGrant({ badgeId, badgeSlug, badgeName }: Props) {
       <p className="text-sm text-neutral-600 dark:text-neutral-400">
         Buscar usuario para asignar <strong>{badgeName}</strong>.
       </p>
+      {evidenceRequired && (
+        <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          Esta insignia certifica una credencial. Verifica el diploma u otro soporte antes de
+          asignarla y <strong>explica en el motivo cómo la verificaste</strong> (obligatorio).
+        </p>
+      )}
       <input
         autoFocus
         value={query}
@@ -112,7 +120,7 @@ export function UserSearchToGrant({ badgeId, badgeSlug, badgeName }: Props) {
           </div>
           <div className="mt-3">
             <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-              Motivo (opcional)
+              Motivo {evidenceRequired ? '(obligatorio: cómo verificaste la credencial)' : '(opcional)'}
             </label>
             <textarea
               value={reason}
@@ -125,7 +133,7 @@ export function UserSearchToGrant({ badgeId, badgeSlug, badgeName }: Props) {
           <button
             type="button"
             onClick={handleGrant}
-            disabled={pending}
+            disabled={pending || (evidenceRequired && !reason.trim())}
             className="mt-3 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
           >
             {pending ? 'Asignando…' : 'Asignar insignia'}

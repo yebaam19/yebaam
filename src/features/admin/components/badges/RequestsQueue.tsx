@@ -42,13 +42,23 @@ export function RequestsQueue({ requests }: { requests: BadgeRequestRow[] }) {
                 <p className="truncate text-xs text-neutral-500">
                   solicita {r.badgeName} · {new Date(r.createdAt).toLocaleDateString('es-ES')}
                 </p>
-                {r.reason && <p className="mt-0.5 truncate text-xs text-neutral-600 dark:text-neutral-400">"{r.reason}"</p>}
+                {r.reason && <p className="mt-0.5 truncate text-xs text-neutral-600 dark:text-neutral-400">&ldquo;{r.reason}&rdquo;</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {r.supportingCfImageIds.length > 0 && (
+              {r.supportingCfImageIds.length > 0 ? (
                 <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] dark:bg-neutral-800">
                   {r.supportingCfImageIds.length} doc
+                </span>
+              ) : (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    r.badgeEvidenceRequired
+                      ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300'
+                      : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'
+                  }`}
+                >
+                  0 doc{r.badgeEvidenceRequired ? ' ⚠' : ''}
                 </span>
               )}
               <button

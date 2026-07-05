@@ -10,6 +10,9 @@ import type { ActionResult } from '../_shared'
 export async function approveBadgeRequest(input: {
   requestId: string
   reason?: string | null
+  /** Explicit admin override to approve an evidence-required badge whose
+   *  request carries zero documents. Requires a non-empty `reason`. */
+  overrideMissingEvidence?: boolean
 }): Promise<ActionResult<{ grantId: string }>> {
   const { client, userId } = await requireAdminWithUser()
   if (!input.requestId) return { ok: false, error: 'id_required' }
@@ -18,12 +21,24 @@ export async function approveBadgeRequest(input: {
 
   const { data: req, error: reqErr } = await client
     .from('badge_requests')
-    .select('id, badge_id, user_id, status, badge:badges!badge_requests_badge_id_fkey(slug), requester:profiles!badge_requests_user_id_fkey(username)')
+    .select('id, badge_id, user_id, status, supporting_cf_image_ids, badge:badges!badge_requests_badge_id_fkey(slug, evidence_required), requester:profiles!badge_requests_user_id_fkey(username)')
     .eq('id', input.requestId)
     .maybeSingle()
   if (reqErr) return { ok: false, error: reqErr.message }
   if (!req) return { ok: false, error: 'not_found' }
   if (req.status !== 'pending') return { ok: false, error: 'not_pending' }
+
+  // An evidence-required badge cannot be approved off a document-less request
+  // unless the admin explicitly overrides AND writes down why.
+  const evidenceRequired = Boolean(
+    (req as unknown as { badge: { evidence_required: boolean } | null }).badge?.evidence_required,
+  )
+  const docCount = ((req as unknown as { supporting_cf_image_ids: string[] | null })
+    .supporting_cf_image_ids ?? []).length
+  const missingEvidence = evidenceRequired && docCount === 0
+  if (missingEvidence && (!input.overrideMissingEvidence || !input.reason?.trim())) {
+    return { ok: false, error: 'evidence_required_missing' }
+  }
 
   // Insert the grant. Request-flow grants are auto-accepted (user already
   // asked for it) — override the trigger's auto_accept logic explicitly.
@@ -63,7 +78,11 @@ export async function approveBadgeRequest(input: {
     badgeId: req.badge_id,
     userId: req.user_id,
     reason: input.reason ?? null,
-    detail: { slug, requestId: req.id },
+    detail: {
+      slug,
+      requestId: req.id,
+      ...(missingEvidence ? { overrodeMissingEvidence: true } : {}),
+    },
   })
   revalidateBadgeSurfaces({ slug, username })
   revalidatePath('/admin/badges/requests')

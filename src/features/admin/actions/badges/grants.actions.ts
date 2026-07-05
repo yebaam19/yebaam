@@ -19,11 +19,17 @@ export async function grantBadge(input: {
   // Confirm badge exists + not soft-deleted.
   const { data: badge } = await client
     .from('badges')
-    .select('id, slug, deleted_at')
+    .select('id, slug, deleted_at, evidence_required')
     .eq('id', input.badgeId)
     .maybeSingle()
   if (!badge) return { ok: false, error: 'badge_not_found' }
   if (badge.deleted_at) return { ok: false, error: 'badge_deleted' }
+
+  // Direct grants of evidence-required badges must record how the credential
+  // was verified — same policy as approving a document-less request.
+  if (badge.evidence_required && !input.reason?.trim()) {
+    return { ok: false, error: 'reason_required_evidence_badge' }
+  }
 
   const { data: recipient } = await client
     .from('profiles')
@@ -51,7 +57,10 @@ export async function grantBadge(input: {
     badgeId: input.badgeId,
     userId: input.userId,
     reason: input.reason ?? null,
-    detail: { slug: badge.slug },
+    detail: {
+      slug: badge.slug,
+      ...(badge.evidence_required ? { evidenceRequiredBadge: true } : {}),
+    },
   })
   revalidateBadgeSurfaces({ slug: badge.slug, username: recipient?.username ?? null })
   return { ok: true, data: { grantId: data.id } }

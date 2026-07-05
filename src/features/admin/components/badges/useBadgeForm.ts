@@ -47,6 +47,7 @@ export function useBadgeForm(mode: 'create' | 'edit', initial?: AdminBadgeRow | 
   const [isUnique, setIsUnique] = useState(initial?.isUnique ?? false)
   const [requestable, setRequestable] = useState(initial?.requestable ?? false)
   const [autoAccept, setAutoAccept] = useState(initial?.autoAccept ?? false)
+  const [evidenceRequired, setEvidenceRequired] = useState(initial?.evidenceRequired ?? false)
   const [requirementsMd, setRequirementsMd] = useState(initial?.requirementsMd ?? '')
   const [icon, setIcon] = useState<{ cfImageId: string | null; url: string | null }>({
     cfImageId: null,
@@ -75,6 +76,7 @@ export function useBadgeForm(mode: 'create' | 'edit', initial?: AdminBadgeRow | 
       isUnique,
       requestable,
       autoAccept,
+      evidenceRequired,
       requirementsMd,
     }
     startTransition(async () => {
@@ -143,6 +145,8 @@ export function useBadgeForm(mode: 'create' | 'edit', initial?: AdminBadgeRow | 
     setRequestable,
     autoAccept,
     setAutoAccept,
+    evidenceRequired,
+    setEvidenceRequired,
     requirementsMd,
     setRequirementsMd,
     icon,

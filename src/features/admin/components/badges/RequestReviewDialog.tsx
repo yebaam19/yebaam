@@ -21,8 +21,12 @@ export function RequestReviewDialog({ request, open, onClose }: Props) {
   const [urls, setUrls] = useState<string[]>([])
   const [loadingUrls, setLoadingUrls] = useState(false)
   const [reason, setReason] = useState('')
+  const [overrideMissingEvidence, setOverrideMissingEvidence] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+
+  const missingEvidence =
+    request.badgeEvidenceRequired && request.supportingCfImageIds.length === 0
 
   useEffect(() => {
     if (!open) return
@@ -47,10 +51,27 @@ export function RequestReviewDialog({ request, open, onClose }: Props) {
 
   const handleApprove = () => {
     setError(null)
+    if (missingEvidence && (!overrideMissingEvidence || !reason.trim())) {
+      setError(
+        'Esta insignia exige documentos y la solicitud no tiene ninguno. Para aprobarla igualmente, marca la casilla de excepción y escribe el motivo.',
+      )
+      return
+    }
     startTransition(async () => {
-      const res = await approveBadgeRequest({ requestId: request.id, reason: reason.trim() || null })
+      const res = await approveBadgeRequest({
+        requestId: request.id,
+        reason: reason.trim() || null,
+        overrideMissingEvidence: missingEvidence ? overrideMissingEvidence : undefined,
+      })
       if (!res.ok) {
-        setError(res.error)
+        // `evidence_required_missing` means the badge was flagged
+        // evidence-required after this queue page rendered, so the local
+        // `missingEvidence` prop is stale and the override UI never showed.
+        setError(
+          res.error === 'evidence_required_missing'
+            ? 'Esta insignia ahora exige documentos y la solicitud no tiene ninguno. Recarga la página para ver la opción de aprobar como excepción.'
+            : res.error,
+        )
         return
       }
       onClose()
@@ -105,7 +126,27 @@ export function RequestReviewDialog({ request, open, onClose }: Props) {
               Documentos de soporte
             </h3>
             {request.supportingCfImageIds.length === 0 ? (
-              <p className="mt-1 text-sm text-neutral-400">Sin documentos.</p>
+              missingEvidence ? (
+                <div className="mt-1 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+                  <p className="font-semibold">⚠ Sin documentos — esta insignia exige evidencia.</p>
+                  <p className="mt-1">
+                    Certifica una credencial (p. ej. un título académico). No la apruebes sin ver el
+                    diploma u otro soporte verificable.
+                  </p>
+                  <label className="mt-2 flex items-start gap-2 text-xs font-medium">
+                    <input
+                      type="checkbox"
+                      checked={overrideMissingEvidence}
+                      onChange={(e) => setOverrideMissingEvidence(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    Aprobar como excepción (verifiqué la credencial por otro medio — obligatorio
+                    explicar en el comentario)
+                  </label>
+                </div>
+              ) : (
+                <p className="mt-1 text-sm text-neutral-400">Sin documentos.</p>
+              )
             ) : loadingUrls ? (
               <p className="mt-1 text-sm text-neutral-500">Cargando…</p>
             ) : (
@@ -128,7 +169,7 @@ export function RequestReviewDialog({ request, open, onClose }: Props) {
 
           <div>
             <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-              Comentario (opcional)
+              Comentario {missingEvidence ? '(obligatorio para aprobar sin documentos)' : '(opcional)'}
             </label>
             <textarea
               value={reason}

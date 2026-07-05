@@ -26,6 +26,7 @@ export function sanitizeForm(input: BadgeFormInput): BadgeFormInput {
     isUnique: Boolean(input.isUnique),
     requestable: Boolean(input.requestable),
     autoAccept: Boolean(input.autoAccept),
+    evidenceRequired: Boolean(input.evidenceRequired),
     requirementsMd: (input.requirementsMd ?? '').trim(),
   }
 }

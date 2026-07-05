@@ -23,6 +23,7 @@ type Row = {
   slot: 'insignia' | 'badge'
   tier: string | null
   requestable: boolean
+  evidence_required: boolean
   requirements_md: string
   is_system: boolean
 }
@@ -32,7 +33,7 @@ async function fetchCatalog(filter: { slot?: string; category?: string }): Promi
   let q = client
     .from('badges')
     .select(
-      'id, slug, name, description, icon_cf_image_id, category, slot, tier, requestable, requirements_md, is_system',
+      'id, slug, name, description, icon_cf_image_id, category, slot, tier, requestable, evidence_required, requirements_md, is_system',
     )
     .is('deleted_at', null)
     .eq('visibility', 'public')
@@ -57,6 +58,7 @@ async function fetchCatalog(filter: { slot?: string; category?: string }): Promi
     slot: r.slot,
     tier: r.tier,
     requestable: Boolean(r.requestable),
+    evidenceRequired: Boolean(r.evidence_required),
     requirementsMd: r.requirements_md,
     isSystem: Boolean(r.is_system),
     grantCount: counts[r.id] ?? 0,

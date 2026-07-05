@@ -42,6 +42,7 @@ export async function createBadge(
       is_unique: safe.isUnique,
       requestable: safe.requestable,
       auto_accept: safe.autoAccept,
+      evidence_required: safe.evidenceRequired,
       requirements_md: safe.requirementsMd,
       created_by: userId,
     })
@@ -95,6 +96,7 @@ export async function updateBadge(
       is_unique: safe.isUnique,
       requestable: safe.requestable,
       auto_accept: safe.autoAccept,
+      evidence_required: safe.evidenceRequired,
       requirements_md: safe.requirementsMd,
     })
     .eq('id', input.id)

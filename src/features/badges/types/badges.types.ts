@@ -60,6 +60,8 @@ export interface CatalogBadge {
   slot: BadgeSlot
   tier: string | null
   requestable: boolean
+  /** When true, a request must attach at least one supporting document. */
+  evidenceRequired: boolean
   requirementsMd: string
   isSystem: boolean
   /** How many users currently hold this badge (active + accepted). */

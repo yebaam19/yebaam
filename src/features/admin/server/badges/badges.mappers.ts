@@ -14,9 +14,9 @@ import type {
  * mapper were duplicated between the list and single-detail reads).
  */
 
-/** The 22-field badge select string shared by the list + single-detail reads. */
+/** The badge select string shared by the list + single-detail reads. */
 export const BADGE_COLUMNS =
-  'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, is_system, deleted_at, created_at, requirements_md'
+  'id, slug, name, description, icon_cf_image_id, category, slot, visibility, tier, is_unique, requestable, auto_accept, evidence_required, is_system, deleted_at, created_at, requirements_md'
 
 export type BadgeListRow = {
   id: string
@@ -31,6 +31,7 @@ export type BadgeListRow = {
   is_unique: boolean
   requestable: boolean
   auto_accept: boolean
+  evidence_required: boolean
   is_system: boolean
   deleted_at: string | null
   created_at: string
@@ -64,13 +65,14 @@ export function mapBadgeRow(
     isUnique: Boolean(row.is_unique),
     requestable: Boolean(row.requestable),
     autoAccept: Boolean(row.auto_accept),
+    evidenceRequired: Boolean(row.evidence_required),
     isSystem: Boolean(row.is_system),
     deletedAt: row.deleted_at,
     grantCount: counts[row.id]?.grants ?? 0,
     pendingRequestCount: counts[row.id]?.requests ?? 0,
     createdAt: row.created_at,
     requirementsMd: row.requirements_md ?? '',
-  } as AdminBadgeRow
+  }
 }
 
 // ---------- Grants ----------
@@ -187,7 +189,12 @@ type RequestListRow = {
   reviewed_at: string | null
   reviewed_by: string | null
   decision_reason: string | null
-  badge: { slug: string; name: string; icon_cf_image_id: string | null } | null
+  badge: {
+    slug: string
+    name: string
+    icon_cf_image_id: string | null
+    evidence_required: boolean
+  } | null
   requester: {
     id: string
     username: string | null
@@ -207,6 +214,7 @@ export function mapRequestRow(r: RequestListRow): BadgeRequestRow {
     badgeSlug: r.badge?.slug ?? '',
     badgeName: r.badge?.name ?? '',
     badgeIconUrl: cfImageUrl(r.badge?.icon_cf_image_id),
+    badgeEvidenceRequired: Boolean(r.badge?.evidence_required),
     userId: r.user_id,
     username: r.requester?.username ?? null,
     displayName:

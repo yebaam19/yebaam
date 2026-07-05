@@ -42,13 +42,16 @@ export async function requestBadge(input: {
 
   const { data: badge } = await client
     .from('badges')
-    .select('id, slug, requestable, deleted_at, visibility')
+    .select('id, slug, requestable, evidence_required, deleted_at, visibility')
     .eq('slug', slug)
     .maybeSingle()
   if (!badge) return { ok: false, error: 'badge_not_found' }
   if (badge.deleted_at) return { ok: false, error: 'badge_deleted' }
   if (badge.visibility !== 'public') return { ok: false, error: 'badge_not_public' }
   if (!badge.requestable) return { ok: false, error: 'not_requestable' }
+  if (badge.evidence_required && supporting.length === 0) {
+    return { ok: false, error: 'evidence_required' }
+  }
 
   // Block duplicate pending requests + existing accepted grants.
   const [{ data: existingRequest }, { data: existingGrant }] = await Promise.all([

@@ -38,6 +38,8 @@ export function BadgeForm({ mode, initial }: Props) {
     setRequestable,
     autoAccept,
     setAutoAccept,
+    evidenceRequired,
+    setEvidenceRequired,
     requirementsMd,
     setRequirementsMd,
     icon,
@@ -148,6 +150,10 @@ export function BadgeForm({ mode, initial }: Props) {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={autoAccept} onChange={(e) => setAutoAccept(e.target.checked)} disabled={isSystem} />
           Aceptación automática
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={evidenceRequired} onChange={(e) => setEvidenceRequired(e.target.checked)} />
+          Evidencia obligatoria (solicitudes deben adjuntar documentos)
         </label>
       </div>
 

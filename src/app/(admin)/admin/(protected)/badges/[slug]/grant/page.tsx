@@ -31,7 +31,12 @@ export default async function GrantBadgePage({ params }: PageProps) {
         Asignar a un usuario
       </h1>
       <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <UserSearchToGrant badgeId={badge.id} badgeSlug={badge.slug} badgeName={badge.name} />
+        <UserSearchToGrant
+          badgeId={badge.id}
+          badgeSlug={badge.slug}
+          badgeName={badge.name}
+          evidenceRequired={badge.evidenceRequired}
+        />
       </div>
     </div>
   )

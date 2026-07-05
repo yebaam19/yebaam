@@ -9,6 +9,8 @@ import { requestBadge } from '@/features/badges/actions/requests.actions'
 interface Props {
   badgeSlug: string
   badgeName: string
+  /** When true, the request cannot be sent without at least one document. */
+  evidenceRequired?: boolean
 }
 
 interface UploadedDoc {
@@ -19,7 +21,7 @@ interface UploadedDoc {
 
 const MAX_DOCS = 5
 
-export function RequestBadgeForm({ badgeSlug, badgeName }: Props) {
+export function RequestBadgeForm({ badgeSlug, badgeName, evidenceRequired = false }: Props) {
   const router = useRouter()
   const [reason, setReason] = useState('')
   const [docs, setDocs] = useState<UploadedDoc[]>([])
@@ -80,7 +82,7 @@ export function RequestBadgeForm({ badgeSlug, badgeName }: Props) {
       <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
         <p className="font-semibold">Solicitud enviada</p>
         <p className="mt-1">
-          Un administrador la revisará pronto. Recibirás una notificación cuando sea aprobada o rechazada.
+          Un administrador la revisará pronto. Puedes consultar el estado de tu solicitud en esta misma página.
         </p>
       </div>
     )
@@ -92,6 +94,21 @@ export function RequestBadgeForm({ badgeSlug, badgeName }: Props) {
         Solicita la insignia <strong>{badgeName}</strong>. Adjunta documentos de soporte (diploma, certificado, captura, etc.).
         Los documentos solo serán visibles para administradores.
       </p>
+
+      {evidenceRequired && (
+        <div className="space-y-1 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          <p>
+            Esta insignia certifica una credencial: es <strong>obligatorio</strong> adjuntar al menos un
+            documento (por ejemplo, el diploma oficial). Las solicitudes sin documentos no se pueden enviar.
+          </p>
+          <p className="text-xs">
+            Al enviar declaras bajo la gravedad del juramento que los documentos son auténticos — la
+            falsedad documental es una infracción gravísima — y autorizas su tratamiento únicamente para
+            verificar esta credencial. Puedes ejercer tus derechos de acceso, rectificación y cancelación
+            (ARCO) según la Política de Privacidad.
+          </p>
+        </div>
+      )}
 
       <div>
         <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
@@ -109,7 +126,7 @@ export function RequestBadgeForm({ badgeSlug, badgeName }: Props) {
 
       <div>
         <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-          Documentos de soporte (máx. {MAX_DOCS})
+          Documentos de soporte ({evidenceRequired ? 'mínimo 1, ' : ''}máx. {MAX_DOCS})
         </label>
         {docs.length > 0 && (
           <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -150,7 +167,7 @@ export function RequestBadgeForm({ badgeSlug, badgeName }: Props) {
 
       <button
         type="submit"
-        disabled={pending || uploading || !reason.trim()}
+        disabled={pending || uploading || !reason.trim() || (evidenceRequired && docs.length === 0)}
         className="rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
       >
         {pending ? 'Enviando…' : 'Enviar solicitud'}

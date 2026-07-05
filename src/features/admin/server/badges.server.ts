@@ -206,7 +206,7 @@ export const listPendingBadgeRequests = cache(async function listPendingBadgeReq
     .select(
       `id, status, badge_id, user_id, reason, supporting_cf_image_ids, created_at,
        reviewed_at, reviewed_by, decision_reason,
-       badge:badges!badge_requests_badge_id_fkey(slug, name, icon_cf_image_id),
+       badge:badges!badge_requests_badge_id_fkey(slug, name, icon_cf_image_id, evidence_required),
        requester:profiles!badge_requests_user_id_fkey(id, username, display_name, first_name, last_name, avatar_url),
        reviewer:profiles!badge_requests_reviewed_by_fkey(username)`,
     )
