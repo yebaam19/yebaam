@@ -2,6 +2,7 @@ import 'server-only'
 
 import { getServerClient } from '@/utils/supabase/server'
 import { getAuthUser } from '@/features/auth/actions/auth.actions'
+import { fetchProfileAvatarUrl } from './avatar'
 import { hashSessionToken, readSessionToken } from './session'
 import type { ChatIdentity } from '../types'
 
@@ -45,7 +46,9 @@ export async function getRoomIdentity(roomId: string): Promise<ChatIdentity | nu
       sessionToken,
       displayName: user.displayName,
       username: user.username,
-      avatarUrl: user.avatarUrl ?? null,
+      // id-first: this feeds the sender_avatar_url snapshot on every message,
+      // so resolve from avatar_cloudflare_id (legacy avatar_url fallback).
+      avatarUrl: await fetchProfileAvatarUrl(client, user.id),
     }
   }
   if (p.identity_kind === 'nick' && p.user_id) {

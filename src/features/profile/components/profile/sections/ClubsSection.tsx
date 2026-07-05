@@ -3,6 +3,7 @@
 import { UserGroupIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import Link from 'next/link'
+import { resolveImageRef } from '@/lib/media/urls'
 import { useMyClubs } from '@/features/clubs/hooks/useClubs'
 import type { UserProfile } from '../../../interfaces/profile.interfaces'
 import ProfileSection from './ProfileSection'
@@ -77,7 +78,7 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
               <div className="relative h-20 bg-linear-to-r from-blue-500 to-purple-500">
                 {club.coverImageUrl && (
                   <Image
-                    src={club.coverImageUrl}
+                    src={resolveImageRef(club.coverImageUrl, 'cover') ?? club.coverImageUrl}
                     alt={club.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -94,7 +95,7 @@ export default function ClubsSection({ user, isOwner }: ClubsSectionProps) {
                   <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 border-white dark:border-gray-800">
                     {club.profileImageUrl ? (
                       <Image
-                        src={club.profileImageUrl}
+                        src={resolveImageRef(club.profileImageUrl, 'avatar') ?? club.profileImageUrl}
                         alt={club.name}
                         fill
                         sizes="40px"

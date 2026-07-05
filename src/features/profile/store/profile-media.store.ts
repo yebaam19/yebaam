@@ -12,8 +12,6 @@ import {
   type ProfileAlbum,
   type CreateAlbumDTO,
   type UpdateAlbumDTO,
-  type UploadPhotoDTO,
-  type UploadVideoDTO,
 } from '../services/profile-media.service'
 
 interface UploadProgress {

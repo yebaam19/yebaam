@@ -98,18 +98,28 @@ export function buildPostData({
     }
   }
 
-  // Agregar mediaFiles solo si hay archivos
+  // Agregar mediaFiles solo si hay archivos.
+  // Persistencia id-first: guardamos solo el id de Cloudflare (cfImageId /
+  // streamUid — las claves que lee fromPostMedia en src/lib/media/parse.ts).
+  // Las URLs de entrega y el thumbnail de Stream se reconstruyen al renderizar
+  // (normalizeMedia en src/lib/api/posts.ts), nunca se persisten completas.
   if (mediaFiles.length > 0) {
-    postData.mediaFiles = mediaFiles.map(file => ({
-      s3Key: file.s3Key,
-      url: file.url,
-      type: file.type,
-      size: file.size,
-      mimeType: file.mimeType,
-      duration: file.duration,
-      streamUid: file.streamUid,
-      thumbnailUrl: file.thumbnailUrl,
-    }))
+    postData.mediaFiles = mediaFiles.map(file =>
+      file.type === 'video'
+        ? {
+            type: 'video',
+            streamUid: file.streamUid ?? file.s3Key,
+            size: file.size,
+            mimeType: file.mimeType,
+            duration: file.duration,
+          }
+        : {
+            type: 'image',
+            cfImageId: file.s3Key,
+            size: file.size,
+            mimeType: file.mimeType,
+          }
+    )
   }
 
   // Agregar contexto de blog/page si existe

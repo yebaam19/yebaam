@@ -4,6 +4,7 @@ import {
   loadMyReactions,
   loadProfilesForPosts,
   mapPost,
+  sanitizeMediaFilesForInsert,
   type PostRow,
 } from '@/lib/api/posts';
 
@@ -50,7 +51,8 @@ export async function PATCH(
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (typeof body.content === 'string') patch.content = body.content;
   if (typeof body.backgroundColor === 'string') patch.background_color = body.backgroundColor;
-  if (Array.isArray(body.mediaFiles)) patch.media_files = body.mediaFiles;
+  // id-first: strip full delivery URLs down to the bare Cloudflare id, same as POST.
+  if (Array.isArray(body.mediaFiles)) patch.media_files = sanitizeMediaFilesForInsert(body.mediaFiles);
   if (typeof body.privacy === 'string') {
     const p = (body.privacy as string).toLowerCase();
     patch.privacy = ['public', 'friends', 'private'].includes(p) ? p : 'public';

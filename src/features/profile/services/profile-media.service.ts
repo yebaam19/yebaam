@@ -1,5 +1,11 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { deleteProfileMediaAsset } from '../actions/profile-media.actions';
+import {
+  isCloudflareMediaBucket,
+  profilePhotoUrl,
+  profileVideoUrls,
+} from './media-url.helpers';
 
 export interface ProfilePhoto {
   id: string;
@@ -65,32 +71,6 @@ export interface UpdateAlbumDTO {
   coverPhotoId?: string;
 }
 
-export interface UploadPhotoDTO {
-  s3Key: string;
-  url: string;
-  caption?: string;
-  albumId?: string;
-  width?: number;
-  height?: number;
-  size: number;
-  mimeType: string;
-  visibility?: 'public' | 'friends' | 'only_me';
-}
-
-export interface UploadVideoDTO {
-  s3Key: string;
-  url: string;
-  thumbnailUrl?: string;
-  caption?: string;
-  albumId?: string;
-  duration?: number;
-  width?: number;
-  height?: number;
-  size: number;
-  mimeType: string;
-  visibility?: 'public' | 'friends' | 'only_me';
-}
-
 type DbPhoto = {
   id: string;
   user_id: string;
@@ -143,9 +123,6 @@ type DbAlbum = {
   updated_at: string;
 };
 
-const PHOTOS_BUCKET = 'profile-photos';
-const VIDEOS_BUCKET = 'profile-videos';
-
 function dbVisibilityToClient(v: DbPhoto['visibility']): ProfilePhoto['visibility'] {
   return v === 'private' ? 'only_me' : v;
 }
@@ -158,7 +135,9 @@ function rowToPhoto(row: DbPhoto): ProfilePhoto {
     id: row.id,
     userId: row.user_id,
     albumId: row.album_id ?? undefined,
-    url: row.url,
+    // id-first: build the delivery URL from storage_key; legacy rows that only
+    // stored a full `url` fall back to it (media-url.helpers).
+    url: profilePhotoUrl(row),
     s3Key: row.storage_key,
     caption: row.caption ?? undefined,
     width: row.width ?? undefined,
@@ -172,13 +151,14 @@ function rowToPhoto(row: DbPhoto): ProfilePhoto {
 }
 
 function rowToVideo(row: DbVideo): ProfileVideo {
+  const { url, thumbnailUrl } = profileVideoUrls(row);
   return {
     id: row.id,
     userId: row.user_id,
     albumId: row.album_id ?? undefined,
-    url: row.url,
+    url,
     s3Key: row.storage_key,
-    thumbnailUrl: row.thumbnail_url ?? undefined,
+    thumbnailUrl,
     caption: row.caption ?? undefined,
     duration: row.duration_seconds ?? undefined,
     width: row.width ?? undefined,
@@ -250,8 +230,11 @@ class ProfileMediaService {
     const userId = await getUserId();
 
     const { uploadService } = await import('@/lib/service/upload.service');
-    const { id, url } = await uploadService.uploadImage(file);
+    const { id } = await uploadService.uploadImage(file);
 
+    // id-first: persist only the Cloudflare id (storage_key). `url` is NOT NULL
+    // in the frozen schema, so write an empty sentinel; readers rebuild the
+    // delivery URL from storage_key at render time.
     const { data, error } = await supabase
       .from('profile_photos')
       .insert([
@@ -260,7 +243,7 @@ class ProfileMediaService {
           album_id: options.albumId ?? null,
           storage_bucket: 'cloudflare-images',
           storage_key: id,
-          url,
+          url: '',
           caption: options.caption ?? null,
           size_bytes: file.size,
           mime_type: file.type,
@@ -271,31 +254,6 @@ class ProfileMediaService {
       .single();
     if (error || !data) throw new Error(error?.message || 'Error al registrar foto');
     return rowToPhoto(data as DbPhoto);
-  }
-
-  async uploadPhoto(data: UploadPhotoDTO): Promise<ProfilePhoto> {
-    const userId = await getUserId();
-    const { data: inserted, error } = await supabase
-      .from('profile_photos')
-      .insert([
-        {
-          user_id: userId,
-          album_id: data.albumId ?? null,
-          storage_bucket: PHOTOS_BUCKET,
-          storage_key: data.s3Key,
-          url: data.url,
-          caption: data.caption ?? null,
-          width: data.width ?? null,
-          height: data.height ?? null,
-          size_bytes: data.size,
-          mime_type: data.mimeType,
-          visibility: clientVisibilityToDb(data.visibility ?? 'friends'),
-        },
-      ])
-      .select('*')
-      .single();
-    if (error || !inserted) throw new Error(error?.message || 'Error al registrar foto');
-    return rowToPhoto(inserted as DbPhoto);
   }
 
   async getMyPhotos(
@@ -329,7 +287,23 @@ class ProfileMediaService {
       .maybeSingle();
     if (row) {
       const { storage_bucket, storage_key } = row as { storage_bucket: string; storage_key: string };
-      await supabase.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
+      if (isCloudflareMediaBucket(storage_bucket)) {
+        // Cloudflare assets live outside Supabase Storage — delete them via the
+        // server action (which re-verifies ownership). Best-effort: a transient
+        // failure shouldn't block removing the row, but log it for follow-up.
+        const result = await deleteProfileMediaAsset('photo', photoId).catch(
+          (err: unknown): { ok: false; error: string } => ({
+            ok: false,
+            error: err instanceof Error ? err.message : 'network error',
+          }),
+        );
+        if (!result.ok) {
+          console.error('[profileMedia] deletePhoto: Cloudflare asset delete failed:', result.error);
+        }
+      } else if (storage_bucket && storage_key) {
+        // Genuine legacy Supabase Storage buckets only.
+        await supabase.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
+      }
     }
     const { error } = await supabase
       .from('profile_photos')
@@ -356,11 +330,15 @@ class ProfileMediaService {
     const userId = await getUserId();
 
     const { uploadService } = await import('@/lib/service/upload.service');
-    const { uid, duration, thumbnail } = await uploadService.uploadVideo(file, {
+    const { uid, duration } = await uploadService.uploadVideo(file, {
       onProgress: options.onProgress,
       onTranscode: options.onTranscode,
     });
 
+    // id-first: persist only the Stream uid (storage_key). `url` is NOT NULL in
+    // the frozen schema → empty sentinel; the iframe URL and default poster are
+    // rebuilt from the uid at render time. Only a caller-supplied custom poster
+    // is worth persisting.
     const { data, error } = await supabase
       .from('profile_videos')
       .insert([
@@ -369,8 +347,8 @@ class ProfileMediaService {
           album_id: options.albumId ?? null,
           storage_bucket: 'cloudflare-stream',
           storage_key: uid,
-          url: `https://iframe.videodelivery.net/${uid}`,
-          thumbnail_url: options.thumbnailUrl ?? thumbnail,
+          url: '',
+          thumbnail_url: options.thumbnailUrl ?? null,
           caption: options.caption ?? null,
           duration_seconds: Math.round(duration),
           size_bytes: file.size,
@@ -382,33 +360,6 @@ class ProfileMediaService {
       .single();
     if (error || !data) throw new Error(error?.message || 'Error al registrar video');
     return rowToVideo(data as DbVideo);
-  }
-
-  async uploadVideo(data: UploadVideoDTO): Promise<ProfileVideo> {
-    const userId = await getUserId();
-    const { data: inserted, error } = await supabase
-      .from('profile_videos')
-      .insert([
-        {
-          user_id: userId,
-          album_id: data.albumId ?? null,
-          storage_bucket: VIDEOS_BUCKET,
-          storage_key: data.s3Key,
-          url: data.url,
-          thumbnail_url: data.thumbnailUrl ?? null,
-          caption: data.caption ?? null,
-          duration_seconds: data.duration ?? null,
-          width: data.width ?? null,
-          height: data.height ?? null,
-          size_bytes: data.size,
-          mime_type: data.mimeType,
-          visibility: clientVisibilityToDb(data.visibility ?? 'friends'),
-        },
-      ])
-      .select('*')
-      .single();
-    if (error || !inserted) throw new Error(error?.message || 'Error al registrar video');
-    return rowToVideo(inserted as DbVideo);
   }
 
   async getMyVideos(
@@ -442,7 +393,22 @@ class ProfileMediaService {
       .maybeSingle();
     if (row) {
       const { storage_bucket, storage_key } = row as { storage_bucket: string; storage_key: string };
-      await supabase.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
+      if (isCloudflareMediaBucket(storage_bucket)) {
+        // Cloudflare Stream assets are deleted via the server action (ownership
+        // re-verified server-side). Best-effort — see deletePhoto.
+        const result = await deleteProfileMediaAsset('video', videoId).catch(
+          (err: unknown): { ok: false; error: string } => ({
+            ok: false,
+            error: err instanceof Error ? err.message : 'network error',
+          }),
+        );
+        if (!result.ok) {
+          console.error('[profileMedia] deleteVideo: Cloudflare asset delete failed:', result.error);
+        }
+      } else if (storage_bucket && storage_key) {
+        // Genuine legacy Supabase Storage buckets only.
+        await supabase.storage.from(storage_bucket).remove(storage_key).catch(() => undefined);
+      }
     }
     const { error } = await supabase
       .from('profile_videos')

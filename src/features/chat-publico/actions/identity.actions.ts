@@ -2,6 +2,7 @@
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server'
 import { getAuthUser } from '@/features/auth/actions/auth.actions'
+import { fetchProfileAvatarUrl } from '../lib/avatar'
 import {
   getOrCreateSessionToken,
   hashSessionToken,
@@ -70,6 +71,9 @@ export async function joinRoomAsProfile(roomId: string): Promise<JoinRoomResult>
   const sessionToken = await getOrCreateSessionToken()
   const sessionHash = hashSessionToken(sessionToken)
   const client = await getServerClient()
+  // Identity snapshot id-first: resolve the avatar from avatar_cloudflare_id
+  // (legacy avatar_url fallback) instead of trusting the raw URL column.
+  const avatarUrl = await fetchProfileAvatarUrl(client, user.id)
   const { error } = await client
     .from('public_chat_presence')
     .upsert(
@@ -79,7 +83,7 @@ export async function joinRoomAsProfile(roomId: string): Promise<JoinRoomResult>
         session_hash: sessionHash,
         identity_kind: 'profile',
         display_name: user.displayName,
-        avatar_url: user.avatarUrl ?? null,
+        avatar_url: avatarUrl,
         last_seen_at: new Date().toISOString(),
       },
       { onConflict: 'room_id,session_hash' },
@@ -92,7 +96,7 @@ export async function joinRoomAsProfile(roomId: string): Promise<JoinRoomResult>
     sessionToken,
     displayName: user.displayName,
     username: user.username,
-    avatarUrl: user.avatarUrl ?? null,
+    avatarUrl,
   }
   return { ok: true, identity }
 }
@@ -161,6 +165,9 @@ export async function joinRoomAsNickname(
     }
   }
 
+  // Identity snapshot id-first (see joinRoomAsProfile). Guests have no avatar.
+  const avatarUrl = user ? await fetchProfileAvatarUrl(service, user.id) : null
+
   // 2. Upsert the presence row.
   const { error: presenceError } = await service
     .from('public_chat_presence')
@@ -171,7 +178,7 @@ export async function joinRoomAsNickname(
         session_hash: sessionHash,
         identity_kind: identityKind,
         display_name: nickname,
-        avatar_url: user?.avatarUrl ?? null,
+        avatar_url: avatarUrl,
         last_seen_at: new Date().toISOString(),
       },
       { onConflict: 'room_id,session_hash' },
@@ -189,7 +196,7 @@ export async function joinRoomAsNickname(
           userId: user.id,
           sessionToken,
           nickname,
-          avatarUrl: user.avatarUrl ?? null,
+          avatarUrl,
         }
       : {
           kind: 'guest',

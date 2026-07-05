@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
+import { resolveImageRef } from '@/lib/media/urls';
 import type { MusicClubRow } from '../server/clubs.server';
 
 interface Props {
@@ -28,7 +29,7 @@ export function MusicClubsGrid({ clubs, limit }: Props) {
           <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100 dark:from-amber-900/40 dark:via-zinc-800 dark:to-rose-900/40">
             {c.cover_image_url ? (
               <img
-                src={c.cover_image_url}
+                src={resolveImageRef(c.cover_image_url, 'cover') ?? undefined}
                 alt={t('clubs.cardAlt', { name: c.name })}
                 className="h-full w-full object-cover transition group-hover:scale-105"
                 loading="lazy"

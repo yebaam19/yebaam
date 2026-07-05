@@ -14,11 +14,11 @@ const POST_TO_GALLERY_VISIBILITY: Record<string, 'public' | 'friends' | 'private
  * "what is this entry, where does its Cloudflare id live, what's the
  * duration" are delegated to `fromPostMedia` from `src/lib/media/parse.ts`.
  *
- * Wire-only fields the canonical `MediaItem` doesn't carry (`url` and
- * `size_bytes` — both stored verbatim on the gallery row) are read from the
- * raw JSONB entry alongside the parsed item. The two arrays stay in
- * lockstep: `fromPostMedia` returns one `MediaItem` per parsed entry, and we
- * skip raw entries it dropped.
+ * id-first: `storage_key` (the Cloudflare id) is the source of truth and the
+ * readers rebuild delivery URLs from it at render time. We no longer persist
+ * delivery URLs — but the `url` column is NOT NULL in the (frozen) schema, so
+ * we write an empty-string sentinel until the queued batch migration relaxes
+ * it. `thumbnail_url` is nullable and derivable from the Stream uid → null.
  */
 export async function mirrorMediaToProfileGallery(
   client: SupabaseClient,
@@ -36,11 +36,7 @@ export async function mirrorMediaToProfileGallery(
     if (!raw || typeof raw !== 'object') continue;
     const rawObj = raw as Record<string, unknown>;
     const [item] = fromPostMedia([rawObj]);
-    // The legacy mirror also required a delivery URL — keep that requirement
-    // (we persist it verbatim on the gallery row).
     if (!item) continue;
-    const url = typeof rawObj.url === 'string' ? rawObj.url : null;
-    if (!url) continue;
     const size = typeof rawObj.size === 'number' ? rawObj.size : null;
 
     if (item.kind === 'video') {
@@ -48,8 +44,8 @@ export async function mirrorMediaToProfileGallery(
         user_id: userId,
         storage_bucket: 'cloudflare-stream',
         storage_key: item.cfId,
-        url,
-        thumbnail_url: item.thumbnailUrl ?? null,
+        url: '',
+        thumbnail_url: null,
         duration_seconds:
           typeof item.durationSeconds === 'number' ? Math.round(item.durationSeconds) : null,
         size_bytes: size,
@@ -61,7 +57,7 @@ export async function mirrorMediaToProfileGallery(
         user_id: userId,
         storage_bucket: 'cloudflare-images',
         storage_key: item.cfId,
-        url,
+        url: '',
         size_bytes: size,
         mime_type: item.mimeType ?? null,
         visibility,

@@ -1,13 +1,14 @@
 import 'server-only'
 
 import { getServerClient } from '@/utils/supabase/server'
+import { resolveMessageSenderAvatars } from '../lib/avatar'
 import type {
   PublicChatTopic,
   PublicMessageWithSender,
 } from '../types'
 
 const MESSAGE_SELECT =
-  'id, content, sender_id, created_at, is_deleted, topic_id, sender:sender_id(username, display_name, avatar_url)'
+  'id, content, sender_id, created_at, is_deleted, topic_id, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)'
 
 export async function listAdminTopics(): Promise<PublicChatTopic[]> {
   const client = await getServerClient()
@@ -76,7 +77,9 @@ export async function listAdminMessages(
     client.from('public_chat_topics').select('id, name'),
   ])
 
-  const messages = (listRes.data as unknown as PublicMessageWithSender[] | null) ?? []
+  const messages = resolveMessageSenderAvatars(
+    (listRes.data as unknown as PublicMessageWithSender[] | null) ?? [],
+  )
   const topicNameById: Record<string, string> = {}
   for (const t of (topicsRes.data ?? []) as Array<{ id: string; name: string }>) {
     topicNameById[t.id] = t.name

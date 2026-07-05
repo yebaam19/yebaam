@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
-import { imageUrl } from '@/lib/media/urls';
+import { resolveImageRef } from '@/lib/media/urls';
 import { updateClubProfile } from '../../../actions/club-settings.actions';
 import type { ClubRow, GenreOption } from './admin-club-edit.types';
 
@@ -35,7 +35,10 @@ export function useAdminClubEdit(
     if (!newCoverPreview) return;
     return () => URL.revokeObjectURL(newCoverPreview);
   }, [newCoverPreview]);
-  const currentCoverUrl = club.cover_image_url ? imageUrl(club.cover_image_url, 'cover') : null;
+  // resolveImageRef: los clubs legacy guardan la URL completa; los nuevos, el id bare.
+  const currentCoverUrl = club.cover_image_url
+    ? resolveImageRef(club.cover_image_url, 'cover')
+    : null;
 
   function setRule(i: number, value: string) {
     setRules((prev) => prev.map((r, idx) => (idx === i ? value : r)));

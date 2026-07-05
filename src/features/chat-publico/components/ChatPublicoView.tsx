@@ -16,6 +16,7 @@ import type {
 } from '../types'
 import { sendChatMessage, softDeletePublicMessage } from '../actions/chat-publico.actions'
 import { capabilitiesFor } from '../lib/permissions'
+import { profileAvatarUrl, resolveMessageSenderAvatars } from '../lib/avatar'
 
 interface Props {
   topic: PublicChatTopic
@@ -130,16 +131,19 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
     const missing = ids.filter((id) => id && !profileCacheRef.current.has(id))
     if (missing.length === 0) return
     const client = createClient()
+    // id-first: prefer avatar_cloudflare_id, fall back to legacy avatar_url.
     const { data } = await client
       .from('profiles')
-      .select('id, username, display_name, avatar_url')
+      .select('id, username, display_name, avatar_url, avatar_cloudflare_id')
       .in('id', missing)
     if (!data) return
-    for (const row of data as Array<PublicMessageSender & { id: string }>) {
+    for (const row of data as Array<
+      PublicMessageSender & { id: string; avatar_cloudflare_id: string | null }
+    >) {
       profileCacheRef.current.set(row.id, {
         username: row.username,
         display_name: row.display_name,
-        avatar_url: row.avatar_url,
+        avatar_url: profileAvatarUrl(row),
       })
     }
     setMessages((prev) =>
@@ -194,14 +198,16 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
       const { data } = await client
         .from('public_chat_messages')
         .select(
-          'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url)',
+          'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)',
         )
         .eq('topic_id', topic.id)
         .eq('is_deleted', false)
         .lt('created_at', first.created_at)
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE)
-      const rows = (data as unknown as PublicMessageWithSender[] | null) ?? []
+      const rows = resolveMessageSenderAvatars(
+        (data as unknown as PublicMessageWithSender[] | null) ?? [],
+      )
       if (rows.length > 0) {
         const el = listRef.current
         const prevHeight = el?.scrollHeight ?? 0

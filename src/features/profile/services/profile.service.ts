@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
 import { uploadService } from '@/lib/service/upload.service';
+import { profilePhotoUrl, profileVideoUrls } from './media-url.helpers';
 import type {
   ProfileStatsResponse,
   UpdateInterestsDTO,
@@ -172,9 +173,14 @@ class ProfileService {
 
     const { data, error } = await query;
     if (error || !data) return { items: [], nextCursor: null };
-    const rows = data as { id: string; uploaded_at: string }[];
+    const rows = data as Array<
+      { id: string; uploaded_at: string; storage_bucket: string | null; storage_key: string | null; url: string | null }
+    >;
+    // id-first: rebuild the delivery URL from storage_key (new rows persist an
+    // empty `url`); legacy rows fall back to their stored URL.
+    const items = rows.map((row) => ({ ...row, url: profilePhotoUrl(row) }));
     return {
-      items: data,
+      items,
       nextCursor: rows.length === 20 ? rows[rows.length - 1].uploaded_at : null,
     };
   }
@@ -190,9 +196,23 @@ class ProfileService {
 
     const { data, error } = await query;
     if (error || !data) return { items: [], nextCursor: null };
-    const rows = data as { id: string; uploaded_at: string }[];
+    const rows = data as Array<{
+      id: string;
+      uploaded_at: string;
+      storage_bucket: string | null;
+      storage_key: string | null;
+      url: string | null;
+      thumbnail_url?: string | null;
+    }>;
+    // id-first: rebuild playback + poster URLs from the Stream uid; legacy rows
+    // pass their stored columns through. `thumbnailUrl` (camelCase) is what the
+    // gallery component reads.
+    const items = rows.map((row) => {
+      const { url, thumbnailUrl } = profileVideoUrls(row);
+      return { ...row, url, thumbnailUrl };
+    });
     return {
-      items: data,
+      items,
       nextCursor: rows.length === 20 ? rows[rows.length - 1].uploaded_at : null,
     };
   }

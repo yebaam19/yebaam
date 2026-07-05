@@ -4,6 +4,7 @@ import {
   loadMyReactions,
   loadProfilesForPosts,
   mapPost,
+  sanitizeMediaFilesForInsert,
   type PostRow,
 } from '@/lib/api/posts';
 import { mirrorMediaToProfileGallery } from '@/lib/api/mirror-post-media';
@@ -181,7 +182,9 @@ export async function POST(request: NextRequest) {
     business_id: businessId,
     content: typeof body.content === 'string' ? body.content : '',
     background_color: typeof body.backgroundColor === 'string' ? body.backgroundColor : null,
-    media_files: Array.isArray(body.mediaFiles) ? body.mediaFiles : [],
+    // id-first: persist only the bare Cloudflare id + metadata per entry —
+    // never full delivery URLs. Render-time URL building lives in normalizeMedia.
+    media_files: sanitizeMediaFilesForInsert(body.mediaFiles),
     privacy: effectivePrivacy,
     is_reel: Boolean(body.isReel),
     aspect_ratio: typeof body.aspectRatio === 'string' ? body.aspectRatio : null,

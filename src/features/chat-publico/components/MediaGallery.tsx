@@ -5,6 +5,7 @@ import Avatar from '@/ui/Avatar'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime'
+import { resolveMessageSenderAvatars } from '../lib/avatar'
 import type {
   PublicMessageRow,
   PublicMessageSender,
@@ -43,7 +44,7 @@ const MODE_CONFIG: Record<
 }
 
 const SELECT_COLS =
-  'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, trending_at, sender:sender_id(username, display_name, avatar_url)'
+  'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, trending_at, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)'
 
 function matchesMode(mode: MediaMode, row: PublicMessageRow): boolean {
   if (row.is_deleted) return false
@@ -107,7 +108,7 @@ export default function MediaGallery({ roomId, mode, onClose }: Props) {
 
       const { data, error: err } = await q
       if (err) throw err
-      setRows((data as unknown as PublicMessageWithSender[] | null) ?? [])
+      setRows(resolveMessageSenderAvatars((data as unknown as PublicMessageWithSender[] | null) ?? []))
     } catch (e) {
       setError((e as Error).message || 'No se pudo cargar.')
     } finally {
