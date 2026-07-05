@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { FEATURE_FLAGS } from '@/config/features-flag';
 import { useUpdateService } from '../../../hooks/useServices';
 import { useUploadServiceImages } from '../../../hooks/useUploadServiceImages';
+import type { UpdateServicePatchInput } from '../../../actions/service-action.helpers';
 import type {
   PortfolioProject,
   ProfessionalService,
@@ -21,7 +22,7 @@ export type { EditServiceFields, EditServiceSetters, UseEditServiceForm };
 
 /**
  * View-model for `EditServiceModal`. Owns the ~20 form-state pieces, the
- * three Cloudflare upload hooks, the submit pipeline, and the derived
+ * four Cloudflare upload hooks, the submit pipeline, and the derived
  * `isBusy` flag the shell + footer buttons gate on. The return-contract types
  * live in `./edit-service-form.types`.
  *
@@ -39,6 +40,7 @@ export function useEditServiceForm(
   const updateServiceMutation = useUpdateService();
   const coverUpload = useUploadServiceImages();
   const logoUpload = useUploadServiceImages();
+  const adImageUpload = useUploadServiceImages();
   const cvUpload = useUploadServiceImages();
 
   // Basic
@@ -73,8 +75,10 @@ export function useEditServiceForm(
   const [coverUrl, setCoverUrl] = useState<string | null>(
     service.coverImage || service.coverUrl || null,
   );
+  const [adImageUrl, setAdImageUrl] = useState<string | null>(service.adImageUrl || null);
   const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const [selectedCoverFile, setSelectedCoverFile] = useState<File | null>(null);
+  const [selectedAdImageFile, setSelectedAdImageFile] = useState<File | null>(null);
 
   // CV + portfolio (feature-flagged)
   const [cvUrl, setCvUrl] = useState<string | null>(service.cvUrl || null);
@@ -85,6 +89,7 @@ export function useEditServiceForm(
 
   const onLogoSelect = useCallback((file: File) => setSelectedLogoFile(file), []);
   const onCoverSelect = useCallback((file: File) => setSelectedCoverFile(file), []);
+  const onAdImageSelect = useCallback((file: File) => setSelectedAdImageFile(file), []);
   const onLogoUrlChange = useCallback((url: string) => {
     setLogoUrl(url);
     setSelectedLogoFile(null);
@@ -92,6 +97,10 @@ export function useEditServiceForm(
   const onCoverUrlChange = useCallback((url: string) => {
     setCoverUrl(url);
     setSelectedCoverFile(null);
+  }, []);
+  const onAdImageUrlChange = useCallback((url: string) => {
+    setAdImageUrl(url);
+    setSelectedAdImageFile(null);
   }, []);
   const onCvSelect = useCallback((file: File) => setSelectedCvFile(file), []);
   const onCvUrlChange = useCallback((url: string | null) => {
@@ -117,7 +126,9 @@ export function useEditServiceForm(
     try {
       let uploadedLogoUrl = logoUrl;
       let uploadedCoverUrl = coverUrl;
+      let uploadedAdImageUrl = adImageUrl;
       let uploadedCvUrl = cvUrl;
+      let cvError: string | null = null;
 
       if (selectedLogoFile) {
         uploadedLogoUrl = await logoUpload.uploadImage(selectedLogoFile);
@@ -127,50 +138,79 @@ export function useEditServiceForm(
         uploadedCoverUrl = await coverUpload.uploadImage(selectedCoverFile);
         setCoverUrl(uploadedCoverUrl);
       }
+      if (selectedAdImageFile) {
+        uploadedAdImageUrl = await adImageUpload.uploadImage(selectedAdImageFile);
+        setAdImageUrl(uploadedAdImageUrl);
+      }
       if (FEATURE_FLAGS.SERVICES_CV_UPLOAD && selectedCvFile) {
-        uploadedCvUrl = await cvUpload.uploadImage(selectedCvFile);
-        setCvUrl(uploadedCvUrl);
+        // El CV se aísla del resto del guardado: hoy no existe ruta de subida
+        // de documentos PDF (Cloudflare Images los rechaza), así que su fallo
+        // solo marca este campo y deja que los demás cambios se guarden.
+        try {
+          uploadedCvUrl = await cvUpload.uploadImage(selectedCvFile);
+          setCvUrl(uploadedCvUrl);
+        } catch {
+          cvError =
+            'No se pudo subir el CV: la subida de documentos PDF aún no está disponible. El resto de los cambios sí se guardó.';
+          uploadedCvUrl = cvUrl; // conserva el CV anterior; no tocamos cv_cf_file_id
+        }
       }
 
-      const updateData: UpdateProfessionalServiceDTO = {
+      const updateData: UpdateServicePatchInput = {
         name,
-        description: description || undefined,
-        email: email || undefined,
-        phone: phone || undefined,
-        website: website || undefined,
-        address: address || undefined,
-        facebookUrl: facebookUrl || undefined,
-        instagramUrl: instagramUrl || undefined,
-        twitterUrl: twitterUrl || undefined,
-        linkedinUrl: linkedinUrl || undefined,
-        youtubeUrl: youtubeUrl || undefined,
-        tiktokUrl: tiktokUrl || undefined,
-        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-        dailyRate: dailyRate ? parseFloat(dailyRate) : undefined,
-        projectRate: projectRate ? parseFloat(projectRate) : undefined,
+        // Cadena vacía = limpieza explícita (el patch del servidor la persiste
+        // como NULL). Este formulario edita el servicio completo, así que los
+        // campos de texto siempre viajan.
+        description,
+        email,
+        phone,
+        website,
+        address,
+        facebookUrl,
+        instagramUrl,
+        twitterUrl,
+        linkedinUrl,
+        youtubeUrl,
+        tiktokUrl,
+        // `null` = limpiar la tarifa guardada (`undefined` significaría "no tocar").
+        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
+        dailyRate: dailyRate ? parseFloat(dailyRate) : null,
+        projectRate: projectRate ? parseFloat(projectRate) : null,
         currency,
         availableForHire,
         workType,
-        tags: tags ? tags.split(',').map((tt) => tt.trim()) : undefined,
+        tags: tags.split(',').map((tt) => tt.trim()).filter(Boolean),
         // `?? undefined` (not `||`) so a cleared field ('') is sent through and
         // persisted as a removal; updateServiceAction maps '' → null.
         logoUrl: uploadedLogoUrl ?? undefined,
         coverUrl: uploadedCoverUrl ?? undefined,
+        adImageUrl: uploadedAdImageUrl ?? undefined,
       };
 
-      if (FEATURE_FLAGS.SERVICES_CV_UPLOAD) {
+      if (FEATURE_FLAGS.SERVICES_CV_UPLOAD && !cvError) {
         updateData.cvUrl = uploadedCvUrl ?? undefined;
       }
-      if (FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO) {
-        updateData.portfolioProjects =
-          portfolioProjects.length > 0 ? portfolioProjects : undefined;
-      }
+      // NOTE: portfolioProjects no se envía — no existe la columna
+      // `portfolio_projects` todavía; el tab está apagado vía
+      // FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO hasta la migración.
 
-      updateServiceMutation.mutate({ id: service.id, data: updateData });
-      // Close the modal optimistically — the mutation hook handles toast +
-      // cache invalidation. Preserves the original auto-close UX from before
-      // the split.
-      onOpenChange(false);
+      // El hook de mutación está tipado con el DTO base; el cast habilita los
+      // `null` de limpieza de tarifas que `updateServiceAction` sí acepta
+      // (UpdateServicePatchInput). Solo afecta tipos, no runtime.
+      updateServiceMutation.mutate({
+        id: service.id,
+        data: updateData as UpdateProfessionalServiceDTO,
+      });
+
+      if (cvError) {
+        // Mantener el modal abierto para que el fallo del CV sea visible.
+        setError(cvError);
+      } else {
+        // Close the modal optimistically — the mutation hook handles toast +
+        // cache invalidation. Preserves the original auto-close UX from before
+        // the split.
+        onOpenChange(false);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : t('uploadError');
       setError(message);
@@ -179,7 +219,11 @@ export function useEditServiceForm(
 
   const isPending = updateServiceMutation.isPending;
   const isBusy =
-    isPending || coverUpload.isUploading || logoUpload.isUploading || cvUpload.isUploading;
+    isPending ||
+    coverUpload.isUploading ||
+    logoUpload.isUploading ||
+    adImageUpload.isUploading ||
+    cvUpload.isUploading;
 
   return {
     fields: {
@@ -226,15 +270,18 @@ export function useEditServiceForm(
     images: {
       logoUrl,
       coverUrl,
+      adImageUrl,
       onLogoSelect,
       onCoverSelect,
+      onAdImageSelect,
       onLogoUrlChange,
       onCoverUrlChange,
+      onAdImageUrlChange,
     },
     cv: { cvUrl, onCvSelect, onCvUrlChange },
     portfolio: { projects: portfolioProjects, setProjects: setPortfolioProjects },
     rates: { toggleWorkType },
-    uploads: { cover: coverUpload, logo: logoUpload, cv: cvUpload },
+    uploads: { cover: coverUpload, logo: logoUpload, adImage: adImageUpload, cv: cvUpload },
     status: { isBusy, isPending, saveSuccess, error },
     handleSubmit,
   };

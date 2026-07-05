@@ -41,8 +41,14 @@ const FEATURE_FLAGS_BASE = {
   // ============================================================================
   
   PERFIL_PROFESIONAL_ENABLED: true, // Perfil Profesional - Funcional 
-  SERVICES_CV_UPLOAD: true, // Subir CV (PDF) para profesionales - No solicitado aún
-  SERVICES_PROJECTS_PORTFOLIO: true, // Portafolio de proyectos con URLs - No solicitado aún
+  // Apagado: no existe ruta de subida de documentos PDF (Cloudflare Images rechaza
+  // PDFs y no hay bucket de Storage para CVs de servicios). Reactivar cuando exista
+  // la infraestructura de documentos.
+  SERVICES_CV_UPLOAD: false, // Subir CV (PDF) para profesionales
+  // Apagado: pendiente la columna `portfolio_projects` (jsonb) en
+  // `professional_services` — sin ella los proyectos se pierden en silencio al
+  // guardar. Reactivar cuando llegue la migración de persistencia.
+  SERVICES_PROJECTS_PORTFOLIO: false, // Portafolio de proyectos con URLs
 
   // ============================================================================
   // DIRECTORIOS Y NEGOCIOS

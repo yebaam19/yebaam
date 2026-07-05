@@ -3,12 +3,16 @@
  *
  * Barra de filtros para búsqueda de servicios profesionales.
  * Incluye búsqueda, filtros por ubicación y categoría.
+ *
+ * `filters` (que viene de la store) es la única fuente de verdad — incluido el
+ * término de búsqueda (`filters.search`). El input sólo mantiene estado local
+ * para el debounce y se sincroniza en ambos sentidos.
  */
 
 'use client'
 
 import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { cn } from '@/lib/utils'
@@ -20,6 +24,8 @@ import {
   ProfessionalServiceFilters,
   State,
 } from '../../interfaces/professional-service.interfaces'
+import { ActiveFilterTags } from './filter-bar/ActiveFilterTags'
+import { FilterSelect } from './filter-bar/FilterSelect'
 
 // ============================================================================
 // TYPES
@@ -52,19 +58,39 @@ export function ServicesFilterBar({
   const [searchValue, setSearchValue] = useState(filters.search ?? '')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
-  // Ciudades filtradas por estado seleccionado
-  const filteredCities = filters.stateId ? cities.filter((city) => city.stateId === filters.stateId) : cities
+  // Último término emitido por este input hacia los filtros (estado, no ref:
+  // las reglas de pureza prohíben leer refs durante el render). Distingue
+  // cambios externos de `filters.search` (initialQuery, limpiar búsqueda) de
+  // los ecos de nuestras propias emisiones, para no pisar lo que el usuario
+  // sigue escribiendo.
+  const [lastEmittedSearch, setLastEmittedSearch] = useState(filters.search ?? '')
 
-  // Debounce search
+  // Sincroniza cambios externos de `filters.search` hacia el input con el
+  // patrón "ajustar estado durante el render" (sin setState en efectos).
+  const external = filters.search ?? ''
+  const [prevExternal, setPrevExternal] = useState(external)
+  if (external !== prevExternal) {
+    setPrevExternal(external)
+    if (external !== lastEmittedSearch && external !== searchValue) {
+      setSearchValue(external)
+    }
+  }
+
+  // Debounce: el texto viaja a `filters.search`, que es lo que lee el fetch.
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchValue !== filters.search) {
-        onFiltersChange({ ...filters, search: searchValue || undefined, page: 1 })
+      const next = searchValue || undefined
+      if (next !== (filters.search || undefined)) {
+        setLastEmittedSearch(searchValue)
+        onFiltersChange({ ...filters, search: next, page: 1 })
       }
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [searchValue])
+  }, [searchValue, filters, onFiltersChange])
+
+  // Ciudades filtradas por estado seleccionado
+  const filteredCities = filters.stateId ? cities.filter((city) => city.stateId === filters.stateId) : cities
 
   const handleStateChange = useCallback(
     (stateId: string) => {
@@ -102,10 +128,11 @@ export function ServicesFilterBar({
 
   const clearFilters = useCallback(() => {
     setSearchValue('')
+    setLastEmittedSearch('')
     onFiltersChange({ page: 1, limit: filters.limit })
   }, [filters.limit, onFiltersChange])
 
-  const hasActiveFilters = filters.search || filters.stateId || filters.cityId || filters.categoryId
+  const hasActiveFilters = Boolean(filters.search || filters.stateId || filters.cityId || filters.categoryId)
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -143,77 +170,33 @@ export function ServicesFilterBar({
 
       {/* Desktop Filters */}
       <div className={cn('grid gap-3 lg:grid-cols-4', showMobileFilters ? 'grid-cols-1' : 'hidden lg:grid')}>
-        {/* State/Department Filter */}
-        <div>
-          <label
-            htmlFor="state-filter"
-            className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-          >
-            {t('stateLabel')}
-          </label>
-          <select
-            id="state-filter"
-            value={filters.stateId ?? ''}
-            onChange={(e) => handleStateChange(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
-            disabled={isLoading}
-          >
-            <option value="">{t('stateAll')}</option>
-            {states.map((state) => (
-              <option key={state.id} value={state.id}>
-                {state.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* City Filter */}
-        <div>
-          <label
-            htmlFor="city-filter"
-            className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-          >
-            {t('cityLabel')}
-          </label>
-          <select
-            id="city-filter"
-            value={filters.cityId ?? ''}
-            onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
-            disabled={isLoading || (!filters.stateId && filteredCities.length === 0)}
-          >
-            <option value="">{t('cityAll')}</option>
-            {filteredCities.map((city) => (
-              <option key={city.id} value={city.id}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Category Filter */}
-        <div>
-          <label
-            htmlFor="category-filter"
-            className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-          >
-            {t('categoryLabel')}
-          </label>
-          <select
-            id="category-filter"
-            value={filters.categoryId ?? ''}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
-            disabled={isLoading}
-          >
-            <option value="">{t('categoryAll')}</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <FilterSelect
+          id="state-filter"
+          label={t('stateLabel')}
+          allLabel={t('stateAll')}
+          value={filters.stateId ?? ''}
+          options={states}
+          onChange={handleStateChange}
+          disabled={isLoading}
+        />
+        <FilterSelect
+          id="city-filter"
+          label={t('cityLabel')}
+          allLabel={t('cityAll')}
+          value={filters.cityId ?? ''}
+          options={filteredCities}
+          onChange={handleCityChange}
+          disabled={isLoading || (!filters.stateId && filteredCities.length === 0)}
+        />
+        <FilterSelect
+          id="category-filter"
+          label={t('categoryLabel')}
+          allLabel={t('categoryAll')}
+          value={filters.categoryId ?? ''}
+          options={categories}
+          onChange={handleCategoryChange}
+          disabled={isLoading}
+        />
 
         {/* Clear Filters */}
         <div className="flex items-end">
@@ -232,56 +215,21 @@ export function ServicesFilterBar({
 
       {/* Active filters tags */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2">
-          {filters.search && (
-            <FilterTag
-              label={t('searchTag', { query: filters.search })}
-              onRemove={() => {
-                setSearchValue('')
-                onFiltersChange({ ...filters, search: undefined, page: 1 })
-              }}
-            />
-          )}
-          {filters.stateId && (
-            <FilterTag
-              label={states.find((s) => s.id === filters.stateId)?.name ?? t('stateFallback')}
-              onRemove={() => handleStateChange('')}
-            />
-          )}
-          {filters.cityId && (
-            <FilterTag
-              label={cities.find((c) => c.id === filters.cityId)?.name ?? t('cityFallback')}
-              onRemove={() => handleCityChange('')}
-            />
-          )}
-          {filters.categoryId && (
-            <FilterTag
-              label={categories.find((c) => c.id === filters.categoryId)?.name ?? t('categoryFallback')}
-              onRemove={() => handleCategoryChange('')}
-            />
-          )}
-        </div>
+        <ActiveFilterTags
+          filters={filters}
+          states={states}
+          cities={cities}
+          categories={categories}
+          onRemoveSearch={() => {
+            setSearchValue('')
+            setLastEmittedSearch('')
+            onFiltersChange({ ...filters, search: undefined, page: 1 })
+          }}
+          onRemoveState={() => handleStateChange('')}
+          onRemoveCity={() => handleCityChange('')}
+          onRemoveCategory={() => handleCategoryChange('')}
+        />
       )}
     </div>
-  )
-}
-
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
-
-interface FilterTagProps {
-  label: string
-  onRemove: () => void
-}
-
-function FilterTag({ label, onRemove }: FilterTagProps) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-      {label}
-      <button onClick={onRemove} className="ml-1 hover:text-primary-900 dark:hover:text-primary-100">
-        <XMarkIcon className="h-3 w-3" />
-      </button>
-    </span>
   )
 }

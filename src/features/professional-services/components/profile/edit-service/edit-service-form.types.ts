@@ -18,6 +18,7 @@ export interface UseEditServiceForm {
   uploads: {
     cover: ReturnType<typeof useUploadServiceImages>;
     logo: ReturnType<typeof useUploadServiceImages>;
+    adImage: ReturnType<typeof useUploadServiceImages>;
     cv: ReturnType<typeof useUploadServiceImages>;
   };
   status: {
@@ -75,10 +76,14 @@ export interface EditServiceSetters {
 interface ImageState {
   logoUrl: string | null;
   coverUrl: string | null;
+  /** Arte de la tarjeta del directorio (columna `ad_cf_image_id`). */
+  adImageUrl: string | null;
   onLogoSelect: (file: File) => void;
   onCoverSelect: (file: File) => void;
+  onAdImageSelect: (file: File) => void;
   onLogoUrlChange: (url: string) => void;
   onCoverUrlChange: (url: string) => void;
+  onAdImageUrlChange: (url: string) => void;
 }
 
 interface CvState {

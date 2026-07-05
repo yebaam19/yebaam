@@ -13,8 +13,12 @@ import type {
   ProfessionalServiceDetailResponse,
   ProfessionalServiceFilters,
   ProfessionalServicesListResponse,
-  UpdateProfessionalServiceDTO,
 } from '../interfaces/professional-service.interfaces'
+import type {
+  CreateServiceActionInput,
+  ServiceActionResult,
+  UpdateServicePatchInput,
+} from '../actions/service-action.helpers'
 import {
   createServiceAction,
   deleteServiceAction,
@@ -24,6 +28,18 @@ import {
   searchServicesAction,
   updateServiceAction,
 } from '../actions/services.actions'
+
+/**
+ * Las actions de escritura devuelven `{ ok, ... }` (nunca lanzan a través de la
+ * frontera server/cliente — Next.js redacta esos mensajes en producción). Aquí,
+ * ya en el cliente, re-lanzamos el mensaje dentro de la mutationFn para que
+ * `useAsyncAction` y la UI de errores existente lo muestren sin cambios.
+ */
+async function unwrap<T>(pending: Promise<ServiceActionResult<T>>): Promise<T> {
+  const result = await pending
+  if (!result.ok) throw new Error(result.error)
+  return result.data
+}
 
 class ServicesApiClient {
   getById(id: string): Promise<ProfessionalServiceDetailResponse | null> {
@@ -42,16 +58,18 @@ class ServicesApiClient {
     return searchServicesAction(query, limit)
   }
 
-  create(data: CreateProfessionalServiceDTO): Promise<ProfessionalServiceDetailResponse> {
-    return createServiceAction(data)
+  create(
+    data: CreateProfessionalServiceDTO | CreateServiceActionInput,
+  ): Promise<ProfessionalServiceDetailResponse> {
+    return unwrap(createServiceAction(data))
   }
 
-  update(id: string, data: UpdateProfessionalServiceDTO): Promise<ProfessionalServiceDetailResponse> {
-    return updateServiceAction(id, data)
+  update(id: string, data: UpdateServicePatchInput): Promise<ProfessionalServiceDetailResponse> {
+    return unwrap(updateServiceAction(id, data))
   }
 
   async delete(id: string): Promise<void> {
-    await deleteServiceAction(id)
+    await unwrap(deleteServiceAction(id))
   }
 }
 

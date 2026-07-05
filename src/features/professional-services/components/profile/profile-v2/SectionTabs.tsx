@@ -1,9 +1,11 @@
 'use client'
 
+import { getUserDisplayName } from '@/lib/user-helpers'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { useState } from 'react'
 import { ProfessionalService, ServiceMediaType } from '../../../interfaces/professional-service.interfaces'
+import { ServiceCV } from '../../ServiceCV'
 import { AboutService } from '../AboutService'
 import { ServiceMediaGallery } from '../ServiceMediaGallery'
 import { ServiceReviews } from '../ServiceReviews'
@@ -90,6 +92,8 @@ export function SectionTabs({ service }: SectionTabsProps) {
 
         {active === 'reviews' && (
           <ServiceReviews
+            serviceId={service.id}
+            ownerId={service.userId}
             reviews={service.reviews}
             averageRating={service.averageRating}
             totalReviews={service._count.reviews}
@@ -104,22 +108,27 @@ function ProfessionalProfilePanel({ service }: { service: ProfessionalService })
   const username = service.user?.username
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-800">
-      <h2 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Perfil Profesional</h2>
-      <p className="text-sm text-neutral-600 dark:text-neutral-400">
-        {service.user?.firstName
-          ? `Conoce la trayectoria, títulos y experiencia de ${service.user.firstName} ${service.user.lastName ?? ''}.`
-          : 'Conoce la trayectoria, títulos y experiencia del profesional.'}
-      </p>
+    <div className="space-y-4">
+      <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-800">
+        <h2 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Perfil Profesional</h2>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          {service.user
+            ? `Conoce la trayectoria, títulos y experiencia de ${getUserDisplayName(service.user)}.`
+            : 'Conoce la trayectoria, títulos y experiencia del profesional.'}
+        </p>
 
-      {username && (
-        <Link
-          href={`/feed/professional-profile/${username}`}
-          className="mt-4 inline-block rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
-        >
-          Ver perfil profesional
-        </Link>
-      )}
+        {username && (
+          <Link
+            href={`/feed/professional-profile/${username}`}
+            className="mt-4 inline-block rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
+          >
+            Ver perfil profesional
+          </Link>
+        )}
+      </div>
+
+      {/* CV descargable (se oculta solo si no hay archivo o el flag está apagado) */}
+      {service.cvUrl && <ServiceCV cvUrl={service.cvUrl} serviceName={service.name} />}
     </div>
   )
 }

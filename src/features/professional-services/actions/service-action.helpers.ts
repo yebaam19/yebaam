@@ -3,6 +3,40 @@ import type {
   UpdateProfessionalServiceDTO,
 } from '../interfaces/professional-service.interfaces'
 
+/**
+ * Contrato de retorno de las Server Actions de escritura: los errores se
+ * DEVUELVEN (nunca se lanzan a través de la frontera server/cliente) porque
+ * Next.js redacta los mensajes de errores lanzados en producción. El facade
+ * del cliente (`api/services.api.ts`) re-lanza el mensaje dentro de sus
+ * mutationFns para que la UI de errores existente siga funcionando.
+ */
+export type ServiceActionResult<T> = { ok: true; data: T } | { ok: false; error: string }
+
+/** Input de creación + declaración de autonomía del prestador (Art. 12). */
+export type CreateServiceActionInput = CreateProfessionalServiceDTO & {
+  /**
+   * Art. 12 (Manual de Convivencia): el prestador declara autonomía técnica y
+   * administrativa antes de publicar. Por ahora solo se valida en el servidor —
+   * persistir `provider_declaration_accepted_at` queda pendiente de la
+   * migración en cola (el schema está congelado en este pase).
+   */
+  providerDeclarationAccepted?: boolean
+}
+
+/**
+ * Patch de actualización aceptado por `updateServiceAction`. Igual que el DTO,
+ * pero las tarifas admiten `null` como limpieza explícita del valor guardado
+ * (`undefined` = no tocar).
+ */
+export type UpdateServicePatchInput = Omit<
+  UpdateProfessionalServiceDTO,
+  'hourlyRate' | 'dailyRate' | 'projectRate'
+> & {
+  hourlyRate?: number | null
+  dailyRate?: number | null
+  projectRate?: number | null
+}
+
 export function slugify(value: string): string {
   return (
     value
@@ -71,28 +105,34 @@ export function buildServiceInsertPayload(
   }
 }
 
-export function buildServiceUpdatePatch(dto: UpdateProfessionalServiceDTO): Record<string, unknown> {
+export function buildServiceUpdatePatch(dto: UpdateServicePatchInput): Record<string, unknown> {
   const update: Record<string, unknown> = {}
+  // `undefined` = "no tocar": solo se escriben las claves que el caller envió
+  // explícitamente, así una actualización parcial nunca borra datos que no
+  // incluyó. `null` (tarifas) y cadena vacía (textos) son limpiezas explícitas.
   const set = (key: string, value: unknown) => {
     if (value !== undefined) update[key] = value
   }
+  const setText = (key: string, value: string | undefined) => {
+    if (value !== undefined) update[key] = value.trim() === '' ? null : value
+  }
   set('name', dto.name)
-  set('description', dto.description ?? null)
+  setText('description', dto.description)
   set('category_id', dto.categoryId)
   set('city_id', dto.cityId)
-  set('address', dto.address ?? null)
-  set('email', dto.email ?? null)
-  set('phone', dto.phone ?? null)
-  set('website', dto.website ?? null)
-  set('facebook_url', dto.facebookUrl ?? null)
-  set('instagram_url', dto.instagramUrl ?? null)
-  set('twitter_url', dto.twitterUrl ?? null)
-  set('linkedin_url', dto.linkedinUrl ?? null)
-  set('tiktok_url', dto.tiktokUrl ?? null)
-  set('youtube_url', dto.youtubeUrl ?? null)
-  set('hourly_rate', dto.hourlyRate ?? null)
-  set('daily_rate', dto.dailyRate ?? null)
-  set('project_rate', dto.projectRate ?? null)
+  setText('address', dto.address)
+  setText('email', dto.email)
+  setText('phone', dto.phone)
+  setText('website', dto.website)
+  setText('facebook_url', dto.facebookUrl)
+  setText('instagram_url', dto.instagramUrl)
+  setText('twitter_url', dto.twitterUrl)
+  setText('linkedin_url', dto.linkedinUrl)
+  setText('tiktok_url', dto.tiktokUrl)
+  setText('youtube_url', dto.youtubeUrl)
+  set('hourly_rate', dto.hourlyRate)
+  set('daily_rate', dto.dailyRate)
+  set('project_rate', dto.projectRate)
   set('currency', dto.currency)
   set('available_for_hire', dto.availableForHire)
   set('work_type', dto.workType)
@@ -102,6 +142,9 @@ export function buildServiceUpdatePatch(dto: UpdateProfessionalServiceDTO): Reco
   if (dto.coverUrl !== undefined) update.cover_cf_image_id = extractCfImageId(dto.coverUrl)
   if (dto.adImageUrl !== undefined) update.ad_cf_image_id = extractCfImageId(dto.adImageUrl)
   if (dto.cvUrl !== undefined) update.cv_cf_file_id = extractCfImageId(dto.cvUrl)
+  // NOTE: dto.portfolioProjects NO se mapea a propósito — todavía no existe la
+  // columna `portfolio_projects` (jsonb). El tab de proyectos está apagado vía
+  // FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO hasta que llegue esa migración.
   return update
 }
 

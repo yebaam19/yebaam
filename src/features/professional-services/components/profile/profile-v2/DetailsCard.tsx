@@ -9,12 +9,13 @@ interface DetailsCardProps {
 }
 
 /**
- * "Detalles" — Profesión, Especialización, Dirección, Ciudad de Trabajo y Redes
- * Sociales. Los campos sin dato en el modelo (Especialización) se omiten.
+ * "Detalles" — Profesión, Especialización (subcategorías de la taxonomía),
+ * Modalidad, Dirección, Ciudad de Trabajo y Redes Sociales. Los campos sin
+ * dato se omiten.
  */
 export function DetailsCard({ service }: DetailsCardProps) {
   const { category, address, city, workType, subcategories } = service
-  const specialization = workType && workType.length > 0 ? workType.map(workTypeLabel).join(', ') : undefined
+  const modality = workType && workType.length > 0 ? workType.map(workTypeLabel).join(', ') : undefined
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-800">
@@ -23,7 +24,28 @@ export function DetailsCard({ service }: DetailsCardProps) {
       <dl className="space-y-4 text-sm">
         {category?.name && <DetailRow term="Profesión" value={category.name} />}
 
-        {specialization && <DetailRow term="Especialización" value={specialization} />}
+        {/* Especialización = subcategorías elegidas de la taxonomía (PDF).
+            La modalidad de trabajo tiene su propia fila para no duplicar
+            "Modalidad de trabajo" de AboutService bajo otro nombre. */}
+        {subcategories && subcategories.length > 0 && (
+          <DetailRow
+            term="Especialización"
+            value={
+              <span className="flex flex-wrap gap-1.5">
+                {subcategories.map((sub) => (
+                  <span
+                    key={sub.id}
+                    className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300"
+                  >
+                    {sub.name}
+                  </span>
+                ))}
+              </span>
+            }
+          />
+        )}
+
+        {modality && <DetailRow term="Modalidad" value={modality} />}
 
         {address && (
           <DetailRow
@@ -59,25 +81,6 @@ export function DetailsCard({ service }: DetailsCardProps) {
           />
         )}
       </dl>
-
-      {/* Especialidades — subcategorías elegidas de la taxonomía (PDF) */}
-      {subcategories && subcategories.length > 0 && (
-        <div className="mt-4">
-          <p className="mb-2 text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
-            Especialidades
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {subcategories.map((sub) => (
-              <span
-                key={sub.id}
-                className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300"
-              >
-                {sub.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Redes Sociales */}
       <div className="mt-2">

@@ -6,11 +6,13 @@
 
 'use client'
 
-import { ArrowUpTrayIcon, PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import Image from 'next/image'
+import { ArrowUpTrayIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { CreateProfessionalServiceDTO } from '../../../interfaces/professional-service.interfaces'
+import { MediaGridItem } from './MediaGridItem'
+import { ProviderDeclarationField } from './ProviderDeclarationField'
+import { setPendingMedia } from './uploadPendingMedia'
 
 interface MediaItem {
   id: string
@@ -25,7 +27,7 @@ interface CreateServiceStep5Props {
   data: Partial<CreateProfessionalServiceDTO>
   onUpdate: (data: Partial<CreateProfessionalServiceDTO>) => void
   onBack: () => void
-  onSubmit: () => void
+  onSubmit: (opts: { providerDeclarationAccepted: boolean }) => void
   isSubmitting: boolean
 }
 
@@ -33,6 +35,8 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
   const t = useTranslations('professional.services.createStep5')
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
   const [uploadingFiles, setUploadingFiles] = useState(false)
+  // Art. 12: la declaración de autonomía del prestador bloquea el envío.
+  const [declarationAccepted, setDeclarationAccepted] = useState(false)
 
   // Crear URL temporal para preview (sin subir a Cloudflare todavía)
   const createPreviewUrl = (file: File): string => {
@@ -80,16 +84,23 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
   }
 
   const handleSubmit = () => {
-    // Por ahora solo guardamos las imágenes para subirlas después de crear el servicio
-    // El flujo será: 1) Crear servicio, 2) Subir medios al servicio creado
-    // Las imágenes se subirán en el modal después de que el servicio sea creado
+    if (!declarationAccepted) return
 
-    // Guardar temporalmente los media items para subirlos después
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('pendingMediaItems', JSON.stringify(mediaItems))
-    }
+    // Flujo: 1) crear el servicio, 2) subir los medios staged al servicio creado.
+    // Los `File` NO sobreviven JSON.stringify (serializan a `{}`), así que la
+    // galería staged viaja en memoria vía setPendingMedia — el modal la sube y
+    // la limpia tras crear el servicio (o al cancelar).
+    setPendingMedia(
+      mediaItems.map((item) => ({
+        file: item.file,
+        type: item.type,
+        caption: item.caption,
+        order: item.order,
+        previewUrl: item.url,
+      })),
+    )
 
-    onSubmit()
+    onSubmit({ providerDeclarationAccepted: declarationAccepted })
   }
 
   return (
@@ -138,44 +149,14 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
           </h5>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {mediaItems.map((item) => (
-              <div
+              <MediaGridItem
                 key={item.id}
-                className="group relative overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
-              >
-                {/* Media Preview */}
-                <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-700">
-                  {item.type === 'image' ? (
-                    <Image src={item.url} alt={item.caption || t('imageAlt')} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <PhotoIcon className="h-12 w-12 text-neutral-400" />
-                      <span className="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
-                        {t('videoLabel')}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Remove Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMedia(item.id)}
-                    className="absolute top-2 right-2 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                </div>
-
-                {/* Caption Input */}
-                <div className="p-2">
-                  <input
-                    type="text"
-                    value={item.caption}
-                    onChange={(e) => handleCaptionChange(item.id, e.target.value)}
-                    placeholder={t('captionPlaceholder')}
-                    className="w-full rounded border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 placeholder-neutral-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
-                  />
-                </div>
-              </div>
+                type={item.type}
+                url={item.url}
+                caption={item.caption}
+                onRemove={() => handleRemoveMedia(item.id)}
+                onCaptionChange={(caption) => handleCaptionChange(item.id, caption)}
+              />
             ))}
           </div>
         </div>
@@ -187,6 +168,13 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
           💡 <strong>{t('tipPrefix')}</strong> {t('tipBody')}
         </p>
       </div>
+
+      {/* Declaración de autonomía (Art. 12) — obligatoria para publicar */}
+      <ProviderDeclarationField
+        checked={declarationAccepted}
+        onChange={setDeclarationAccepted}
+        disabled={isSubmitting}
+      />
 
       {/* Navigation Buttons */}
       <div className="flex items-center justify-between gap-4 pt-4">
@@ -203,8 +191,9 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+            disabled={isSubmitting || !declarationAccepted}
+            title={!declarationAccepted ? 'Acepta la declaración de autonomía para continuar' : undefined}
+            className="rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
@@ -220,11 +209,13 @@ export function CreateServiceStep5({ data, onUpdate, onBack, onSubmit, isSubmitt
 
       {/* Skip Option */}
       <div className="text-center">
+        {/* "Omitir" también crea el servicio, así que exige la misma declaración. */}
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+          disabled={isSubmitting || !declarationAccepted}
+          title={!declarationAccepted ? 'Acepta la declaración de autonomía para continuar' : undefined}
+          className="text-sm text-neutral-500 underline hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-200"
         >
           {t('skip')}
         </button>

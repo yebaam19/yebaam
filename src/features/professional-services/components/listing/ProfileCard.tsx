@@ -10,13 +10,15 @@ import type { ProfessionalProfile } from '@/features/professional-profile/interf
 import { UserIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
+import { getUserDisplayName } from '@/lib/user-helpers'
+
 interface ProfileCardProps {
   profile: ProfessionalProfile
 }
 
 export function ProfileCard({ profile }: ProfileCardProps) {
   const username = profile.user?.username || 'usuario'
-  const displayName = profile.user ? `${profile.user.firstName} ${profile.user.lastName}`.trim() : 'Usuario'
+  const displayName = getUserDisplayName(profile.user)
   const avatar = profile.user?.avatar
 
   // Obtener el primer título si existe

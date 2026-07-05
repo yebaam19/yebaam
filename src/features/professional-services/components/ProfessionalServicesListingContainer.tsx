@@ -13,6 +13,7 @@ import {
   City,
   ProfessionalServiceBasic,
   ProfessionalServiceCategory,
+  ProfessionalServiceFilters,
   State,
 } from '../interfaces/professional-service.interfaces'
 import { useProfessionalServicesUIStore } from '../store/professionalServicesUI.store'
@@ -40,7 +41,11 @@ interface ProfessionalServicesListingContainerProps {
   initialQuery?: string
 }
 
+/** ¿Hay algún filtro que deba disparar la búsqueda client-side? */
+const hasQueryFilters = (f: ProfessionalServiceFilters) => Boolean(f.search || f.categoryId || f.cityId || f.stateId)
+
 export function ProfessionalServicesListingContainer({
+  initialServices,
   states,
   cities,
   categories,
@@ -48,35 +53,29 @@ export function ProfessionalServicesListingContainer({
   initialQuery,
 }: ProfessionalServicesListingContainerProps) {
   const { user } = useAuth()
-  const {
-    activeTab,
-    setActiveTab,
-    searchQuery,
-    isSearching,
-    setIsSearching,
-    setSearchQuery,
-    filters,
-    setFilters,
-    openCreateModal,
-  } = useProfessionalServicesUIStore()
 
-  // Pre-filtra por ciudad al llegar desde el portal de la ciudad (?city=slug → cityId).
-  useEffect(() => {
-    if (initialCityId) {
-      setFilters({ cityId: initialCityId })
-      setIsSearching(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCityId])
+  // Selectores por campo: así una tecla en el buscador o abrir/cerrar el modal
+  // no re-renderiza el árbol por campos de la store que aquí no se leen.
+  const activeTab = useProfessionalServicesUIStore((s) => s.activeTab)
+  const setActiveTab = useProfessionalServicesUIStore((s) => s.setActiveTab)
+  const isSearching = useProfessionalServicesUIStore((s) => s.isSearching)
+  const setIsSearching = useProfessionalServicesUIStore((s) => s.setIsSearching)
+  const filters = useProfessionalServicesUIStore((s) => s.filters)
+  const setFilters = useProfessionalServicesUIStore((s) => s.setFilters)
+  const openCreateModal = useProfessionalServicesUIStore((s) => s.openCreateModal)
 
-  // Pre-aplica la búsqueda al llegar desde un hashtag del perfil (?q=etiqueta).
+  // Pre-filtros al llegar desde el portal de ciudad (?city=slug) o desde un
+  // hashtag (?q=etiqueta). `filters.search` es la única fuente de verdad del
+  // término — el mismo campo que alimenta el fetch de búsqueda.
   useEffect(() => {
-    if (initialQuery) {
-      setSearchQuery(initialQuery)
-      setIsSearching(true)
-    }
+    if (!initialCityId && !initialQuery) return
+    setFilters({
+      ...(initialCityId ? { cityId: initialCityId } : {}),
+      ...(initialQuery ? { search: initialQuery } : {}),
+    })
+    setIsSearching(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialQuery])
+  }, [initialCityId, initialQuery])
 
   // "Mis servicios" = los servicios del usuario autenticado (no todo el directorio).
   const [myServicesRaw, setMyServicesRaw] = useState<ProfessionalServiceBasic[] | null>(null)
@@ -101,9 +100,9 @@ export function ProfessionalServicesListingContainer({
   const { data: suggestedServicesRaw, isLoading: isLoadingSuggested } = useFeaturedServices(12)
   const suggestedServices = suggestedServicesRaw ?? []
 
-  // Servicios para descubrir = todos los servicios.
-  const { data: discoverData, isLoading: isLoadingDiscover } = useServices({ page: 1, limit: 24 })
-  const discoverServices = discoverData?.services || []
+  // Descubrir = el payload SSR que ya trajo la página (sin re-fetch inicial ni
+  // skeleton). Sólo la búsqueda refetchea, y únicamente con filtros activos.
+  const discoverServices = initialServices
 
   // Perfiles profesionales para descubrir.
   const [professionalProfiles, setProfessionalProfiles] = useState<ProfessionalProfile[]>([])
@@ -123,27 +122,30 @@ export function ProfessionalServicesListingContainer({
     }
   }, [])
 
-  // Búsqueda — aplica filtros cuando hay término o filtros activos.
-  const { data: searchResults, isLoading: isSearchLoading } = useServices({
-    search: searchQuery,
-    categoryId: filters.categoryId,
-    cityId: filters.cityId,
-    stateId: filters.stateId,
-    page: 1,
-    limit: 50,
-  })
+  // Búsqueda — corre sólo cuando hay término o filtros activos.
+  const activeFilters = hasQueryFilters(filters)
+  const { data: searchResults, isLoading: isSearchLoading } = useServices(
+    {
+      search: filters.search,
+      categoryId: filters.categoryId,
+      cityId: filters.cityId,
+      stateId: filters.stateId,
+      page: 1,
+      limit: 48,
+    },
+    { enabled: activeFilters },
+  )
 
   const handleFiltersChange = useCallback(
-    (newFilters: typeof filters) => {
+    (newFilters: ProfessionalServiceFilters) => {
       setFilters(newFilters)
-      const hasFilters = !!(newFilters.search || newFilters.categoryId || newFilters.cityId || newFilters.stateId)
-      setIsSearching(hasFilters)
+      setIsSearching(hasQueryFilters(newFilters))
     },
     [setFilters, setIsSearching],
   )
 
   const getServicesToDisplay = (): ProfessionalServiceBasic[] => {
-    if (isSearching && (searchQuery || filters.categoryId || filters.cityId || filters.stateId)) {
+    if (isSearching && activeFilters) {
       return searchResults?.services || []
     }
     switch (activeTab) {
@@ -162,8 +164,7 @@ export function ProfessionalServicesListingContainer({
   const isLoading =
     (activeTab === 'my-services' && isLoadingMy) ||
     (activeTab === 'suggested' && isLoadingSuggested) ||
-    (activeTab === 'discover' && isLoadingDiscover) ||
-    (isSearching && isSearchLoading)
+    (isSearching && activeFilters && isSearchLoading)
 
   const getEmptyStateType = (): 'my-services' | 'suggested' | 'discover' | 'search' => {
     if (isSearching) return 'search'
@@ -186,11 +187,11 @@ export function ProfessionalServicesListingContainer({
         />
       )}
 
-      {isSearching && searchResults?.services && <SearchResultsHeader totalResults={searchResults.services.length} />}
+      {isSearching && searchResults && <SearchResultsHeader totalResults={searchResults.total} />}
 
       <section id="services-filters" className="scroll-mt-20">
         <ServicesFilterBar
-          filters={{ ...filters, search: searchQuery }}
+          filters={filters}
           onFiltersChange={handleFiltersChange}
           states={states}
           cities={cities}
@@ -222,7 +223,6 @@ export function ProfessionalServicesListingContainer({
           onClearSearch={() => {
             setIsSearching(false)
             setFilters({})
-            setSearchQuery('')
           }}
           onDiscoverClick={() => setActiveTab('discover')}
         />

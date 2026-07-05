@@ -10,6 +10,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
+import { getUserDisplayName, getUserInitials } from '@/lib/user-helpers'
 
 import { professionalServicePath } from '../../constants/routes'
 import { ProfessionalServiceBasic } from '../../interfaces/professional-service.interfaces'
@@ -44,6 +45,9 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
     _count,
     averageRating,
   } = service
+
+  // Nombre humano del dueño — nunca username/email crudos.
+  const ownerName = user ? getUserDisplayName(user) : ''
 
   // Format price
   const formattedPrice = hourlyRate
@@ -105,11 +109,11 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
           <h3 className="line-clamp-1 text-lg font-semibold text-neutral-900 group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
             {name}
           </h3>
-          {averageRating && (
+          {_count.reviews > 0 && (
             <div className="flex shrink-0 items-center gap-1">
               <StarIcon className="h-4 w-4 fill-primary-400 text-primary-400" />
               <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                {averageRating.toFixed(1)}
+                {(averageRating ?? 0).toFixed(1)}
               </span>
               <span className="text-xs text-neutral-500">({_count.reviews})</span>
             </div>
@@ -142,7 +146,7 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
               {user.avatarUrl ? (
                 <Image
                   src={user.avatarUrl}
-                  alt={`${user.firstName} ${user.lastName}`}
+                  alt={ownerName}
                   width={24}
                   height={24}
                   className="h-6 w-6 rounded-full object-cover"
@@ -150,14 +154,11 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
               ) : (
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 dark:bg-neutral-700">
                   <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
-                    {user.firstName?.charAt(0)}
-                    {user.lastName?.charAt(0)}
+                    {getUserInitials(ownerName)}
                   </span>
                 </div>
               )}
-              <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                {user.firstName} {user.lastName}
-              </span>
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">{ownerName}</span>
             </div>
           )}
 

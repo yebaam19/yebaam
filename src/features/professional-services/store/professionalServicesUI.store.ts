@@ -2,28 +2,22 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface ServicesFilters {
-  search?: string
-  categoryId?: string
-  stateId?: string
-  cityId?: string
-  availableForHire?: boolean
-}
+import type { ProfessionalServiceFilters } from '../interfaces/professional-service.interfaces'
 
 interface ProfessionalServicesUIState {
   // Active tab
   activeTab: 'my-services' | 'suggested' | 'discover'
   setActiveTab: (tab: 'my-services' | 'suggested' | 'discover') => void
 
-  // Search state
-  searchQuery: string
-  setSearchQuery: (query: string) => void
+  // Search mode flag (drives hiding the tabs while a search is active).
   isSearching: boolean
   setIsSearching: (searching: boolean) => void
 
-  // Filters
-  filters: ServicesFilters
-  setFilters: (filters: ServicesFilters) => void
+  // Filters — single source of truth for the directory query, including the
+  // free-text term (`filters.search`). There is deliberately no parallel
+  // `searchQuery` field: the fetch and the filter bar read the same value.
+  filters: ProfessionalServiceFilters
+  setFilters: (filters: ProfessionalServiceFilters) => void
   clearFilters: () => void
 
   // View mode
@@ -48,15 +42,13 @@ export const useProfessionalServicesUIStore = create<ProfessionalServicesUIState
       setActiveTab: (tab) => set({ activeTab: tab }),
 
       // Search state
-      searchQuery: '',
-      setSearchQuery: (query) => set({ searchQuery: query }),
       isSearching: false,
       setIsSearching: (searching) => set({ isSearching: searching }),
 
       // Filters
       filters: {},
       setFilters: (filters) => set({ filters }),
-      clearFilters: () => set({ filters: {}, searchQuery: '' }),
+      clearFilters: () => set({ filters: {} }),
 
       // View mode
       viewMode: 'grid',

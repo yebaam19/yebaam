@@ -1,109 +1,24 @@
 import { StarIcon } from '@/components/icons/heroicons-shim'
-import Image from 'next/image'
 import { ProfessionalServiceReview } from '../../interfaces/professional-service.interfaces'
+import { ReviewCard } from './reviews/ReviewCard'
+import { ReviewForm } from './reviews/ReviewForm'
+import { StarRating } from './reviews/StarRating'
 
 interface ServiceReviewsProps {
+  serviceId: string
+  /** Dueño del servicio — se le oculta el formulario de reseña. */
+  ownerId: string
   reviews: ProfessionalServiceReview[]
   averageRating?: number
   totalReviews: number
 }
 
 /**
- * Componente de estrella individual
+ * Sección de reseñas del servicio profesional: resumen de calificación,
+ * formulario para reseñar (visitantes con sesión que no sean el dueño) y la
+ * lista de reseñas.
  */
-function RatingStar({ filled }: { filled: boolean }) {
-  return <StarIcon className={`h-4 w-4 ${filled ? 'text-primary-500' : 'text-neutral-300 dark:text-neutral-600'}`} />
-}
-
-/**
- * Componente de rating con estrellas
- */
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <RatingStar key={star} filled={star <= rating} />
-      ))}
-    </div>
-  )
-}
-
-/**
- * Formatea fecha relativa
- */
-function formatRelativeDate(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) {
-    return 'Hoy'
-  } else if (diffDays === 1) {
-    return 'Ayer'
-  } else if (diffDays < 7) {
-    return `Hace ${diffDays} días`
-  } else if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7)
-    return `Hace ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`
-  } else if (diffDays < 365) {
-    const months = Math.floor(diffDays / 30)
-    return `Hace ${months} ${months === 1 ? 'mes' : 'meses'}`
-  } else {
-    const years = Math.floor(diffDays / 365)
-    return `Hace ${years} ${years === 1 ? 'año' : 'años'}`
-  }
-}
-
-/**
- * Tarjeta de reseña individual
- */
-function ReviewCard({ review }: { review: ProfessionalServiceReview }) {
-  return (
-    <div className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-      <div className="flex items-start gap-3">
-        {/* Avatar */}
-        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
-          {review.user.avatarUrl ? (
-            <Image
-              src={review.user.avatarUrl}
-              alt={`${review.user.firstName} ${review.user.lastName}`}
-              fill
-              sizes="40px"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm font-medium text-neutral-500">
-              {review.user.firstName.charAt(0)}
-              {review.user.lastName.charAt(0)}
-            </div>
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <h4 className="truncate font-medium text-neutral-900 dark:text-neutral-100">
-              {review.user.firstName} {review.user.lastName}
-            </h4>
-            <span className="shrink-0 text-xs text-neutral-500">{formatRelativeDate(review.createdAt)}</span>
-          </div>
-
-          <div className="mt-1">
-            <StarRating rating={review.rating} />
-          </div>
-
-          {review.comment && <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">{review.comment}</p>}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Sección de reseñas del servicio profesional
- */
-export function ServiceReviews({ reviews, averageRating, totalReviews }: ServiceReviewsProps) {
+export function ServiceReviews({ serviceId, ownerId, reviews, averageRating, totalReviews }: ServiceReviewsProps) {
   // Distribución de ratings
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
     const count = reviews.filter((r) => r.rating === rating).length
@@ -125,7 +40,7 @@ export function ServiceReviews({ reviews, averageRating, totalReviews }: Service
           <div className="text-4xl font-bold text-primary-600 dark:text-primary-400">
             {averageRating?.toFixed(1) || '0.0'}
           </div>
-          <div className="mt-1">
+          <div className="mt-1 flex justify-center">
             <StarRating rating={Math.round(averageRating || 0)} />
           </div>
           <div className="mt-1 text-sm text-neutral-500">
@@ -150,6 +65,9 @@ export function ServiceReviews({ reviews, averageRating, totalReviews }: Service
           ))}
         </div>
       </div>
+
+      {/* Formulario de reseña (oculto para el dueño; login para anónimos) */}
+      <ReviewForm serviceId={serviceId} ownerId={ownerId} reviews={reviews} />
 
       {/* Lista de reseñas */}
       {reviews.length > 0 ? (

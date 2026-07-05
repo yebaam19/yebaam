@@ -37,11 +37,16 @@ export function useServiceBySlug(slug: string | undefined) {
   );
 }
 
-export function useServices(filters: ProfessionalServiceFilters = {}) {
+interface UseServicesOptions {
+  /** Skip the fetch entirely when false (e.g. no active filters yet). */
+  enabled?: boolean;
+}
+
+export function useServices(filters: ProfessionalServiceFilters = {}, options: UseServicesOptions = {}) {
   return useFetch(
     servicesKeys.list(filters),
     () => servicesApiClient.list(filters),
-    { staleTime: 1000 * 60 * 2 }
+    { staleTime: 1000 * 60 * 2, enabled: options.enabled ?? true }
   );
 }
 

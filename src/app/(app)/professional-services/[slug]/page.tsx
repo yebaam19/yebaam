@@ -12,13 +12,21 @@ interface ProfessionalServicePageProps {
   params: Promise<{ slug: string }>
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Busca por slug y solo intenta el fallback por id cuando el parámetro es un
+ * UUID — así los slugs inválidos no disparan errores 22P02 en Postgres.
+ */
+async function findService(slug: string) {
+  const bySlug = await getServiceBySlug(slug)
+  if (bySlug) return bySlug
+  return UUID_RE.test(slug) ? getServiceById(slug) : null
+}
+
 export async function generateMetadata({ params }: ProfessionalServicePageProps): Promise<Metadata> {
   const { slug } = await params
-  let response = await getServiceBySlug(slug)
-
-  if (!response) {
-    response = await getServiceById(slug)
-  }
+  const response = await findService(slug)
 
   if (!response) {
     return {
@@ -45,12 +53,8 @@ export async function generateMetadata({ params }: ProfessionalServicePageProps)
 export default async function ProfessionalServicePage({ params }: ProfessionalServicePageProps) {
   const { slug } = await params
 
-  // Intentar buscar por slug primero, luego por ID
-  let response = await getServiceBySlug(slug)
-
-  if (!response) {
-    response = await getServiceById(slug)
-  }
+  // Intentar buscar por slug primero; por ID solo si el parámetro es un UUID
+  const response = await findService(slug)
 
   if (!response) {
     notFound()

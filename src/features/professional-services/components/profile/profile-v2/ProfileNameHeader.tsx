@@ -44,10 +44,12 @@ export function ProfileNameHeader({ service }: ProfileNameHeaderProps) {
           </span>
         )}
 
-        {averageRating && (
+        {/* Solo con reseñas reales: `averageRating` llega como 0 sin reseñas y
+            `{0 && …}` renderizaba un "0" suelto. */}
+        {reviewsCount > 0 && (
           <span className="inline-flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
             <StarIcon className="h-4 w-4 text-amber-500" />
-            <span className="font-medium">{averageRating.toFixed(1)}</span>
+            <span className="font-medium">{(averageRating ?? 0).toFixed(1)}</span>
             <span className="text-neutral-400">({reviewsCount})</span>
           </span>
         )}

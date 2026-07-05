@@ -1,13 +1,36 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { StarIcon } from '@/components/icons/heroicons-shim'
-import type { AdminServiceRow } from '@/features/admin/server/professional-services.server'
+import type {
+  AdminServiceRow,
+  AdminServiceStatus,
+} from '@/features/admin/server/professional-services.server'
+import { ServiceRowActions } from './ServiceRowActions'
+
+const STATUS_BADGE: Record<AdminServiceStatus, { label: string; className: string }> = {
+  ACTIVE: {
+    label: 'Activo',
+    className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  },
+  SUSPENDED: {
+    label: 'Suspendido',
+    className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  },
+  INACTIVE: {
+    label: 'Inactivo',
+    className: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
+  },
+  PENDING_APPROVAL: {
+    label: 'Pendiente',
+    className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  },
+}
 
 /**
  * Tabla de supervisión de servicios profesionales para administración.
- * Lista cada perfil con su profesional, categoría, ciudad y rating, más un
- * enlace para abrir el perfil público y revisarlo. Es de solo lectura mientras
- * los datos sean mock (pre-backend).
+ * Lista cada perfil con su profesional, categoría, ciudad, rating y estado,
+ * con un enlace al perfil público y acciones de suspender/reactivar
+ * ({@link ServiceRowActions}).
  */
 export function AdminServicesTable({ services }: { services: AdminServiceRow[] }) {
   if (services.length === 0) {
@@ -70,8 +93,17 @@ export function AdminServicesTable({ services }: { services: AdminServiceRow[] }
             </span>
           </div>
 
-          {/* Acción */}
-          <div className="shrink-0">
+          {/* Estado */}
+          <div className="shrink-0 lg:w-28">
+            <span
+              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[s.status].className}`}
+            >
+              {STATUS_BADGE[s.status].label}
+            </span>
+          </div>
+
+          {/* Acciones */}
+          <div className="flex shrink-0 items-center gap-2">
             <Link
               href={`/professional-services/${s.slug}` as Route}
               target="_blank"
@@ -79,6 +111,7 @@ export function AdminServicesTable({ services }: { services: AdminServiceRow[] }
             >
               Ver perfil
             </Link>
+            <ServiceRowActions serviceId={s.id} serviceName={s.name} status={s.status} />
           </div>
         </div>
       ))}

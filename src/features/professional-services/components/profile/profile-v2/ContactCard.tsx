@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ProfessionalService } from '../../../interfaces/professional-service.interfaces'
 
 interface ContactCardProps {
@@ -64,6 +65,17 @@ export function ContactCard({ service, inline }: ContactCardProps) {
           /hora
         </p>
       )}
+
+      {/* Aviso de intermediación (Manual de Convivencia, Art. 12) */}
+      <p className="mt-4 text-center text-xs leading-5 text-neutral-500 dark:text-neutral-400">
+        Yebaam actúa como portal de intermediación neutro; la relación contractual es directa entre las partes.{' '}
+        <Link
+          href="/normativa/normas-comunitarias"
+          className="underline underline-offset-2 transition-colors hover:text-primary-600 dark:hover:text-primary-400"
+        >
+          Normas comunitarias
+        </Link>
+      </p>
     </div>
   )
 }

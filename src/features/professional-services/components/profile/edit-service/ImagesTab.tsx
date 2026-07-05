@@ -36,6 +36,20 @@ export function ImagesTab({ images, uploads }: Props) {
         error={uploads.logo.error}
         aspectRatio="square"
       />
+
+      {/* Arte de la tarjeta del directorio (ad_cf_image_id → dto.adImageUrl).
+          Etiqueta fija en español: la clave i18n `images.adLabel` aún no existe
+          en messages/ (fuera del alcance de este pase). */}
+      <ImageUploader
+        label="Imagen del directorio (foto o GIF)"
+        currentImageUrl={images.adImageUrl || undefined}
+        onImageSelect={images.onAdImageSelect}
+        onUrlChange={images.onAdImageUrlChange}
+        isUploading={uploads.adImage.isUploading}
+        progress={uploads.adImage.progress}
+        error={uploads.adImage.error}
+        aspectRatio="cover"
+      />
     </div>
   );
 }

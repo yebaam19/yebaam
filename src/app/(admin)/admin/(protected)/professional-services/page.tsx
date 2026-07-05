@@ -28,12 +28,9 @@ export default async function AdminProfessionalServicesPage({ searchParams }: Pa
         </span>
       </header>
 
-      {/* Nota honesta: los datos aún son mock (pre-backend), así que esta vista
-          es de solo lectura hasta que la migración a Supabase habilite acciones
-          de ciclo de vida (suspender, eliminar, verificar). */}
       <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200">
-        Vista de supervisión. Los datos de servicios profesionales son temporales (mock) hasta migrar el backend a
-        Supabase; las acciones de suspender/eliminar/verificar se habilitarán entonces.
+        Suspender oculta el servicio del directorio público y de su página de detalle hasta que un administrador lo
+        reactive. El motivo de cada suspensión queda registrado en los logs del servidor.
       </p>
 
       <form method="get" className="mb-4">

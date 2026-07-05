@@ -71,7 +71,8 @@ export function ServiceBusinessCard({ service, isOwner }: ServiceBusinessCardPro
     setBusy(true)
     try {
       const result = await uploadService.uploadImage(file)
-      await setServiceBusinessCardAction(service.id, result.url)
+      const saved = await setServiceBusinessCardAction(service.id, result.url)
+      if (!saved.ok) throw new Error(saved.error)
       setCardUrl(result.url)
     } catch (err) {
       console.error('[business-card] upload failed:', err)

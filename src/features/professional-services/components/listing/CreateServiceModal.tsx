@@ -16,7 +16,7 @@ import { CreateProfessionalServiceDTO } from '../../interfaces/professional-serv
 import { useProfessionalServicesUIStore } from '../../store/professionalServicesUI.store'
 import { CreateServiceStep1, CreateServiceStep2, CreateServiceStep3, CreateServiceStep4, CreateServiceStep5 } from './create-service'
 import { CreateServiceGate } from './create-service/CreateServiceGate'
-import { uploadPendingMedia } from './create-service/uploadPendingMedia'
+import { clearPendingMedia, uploadPendingMedia } from './create-service/uploadPendingMedia'
 import { useCreateService } from '../../hooks/useServices'
 import { myEligibilityAction } from '../../actions/services.actions'
 import { professionalServicePath } from '../../constants/routes'
@@ -70,10 +70,18 @@ export function CreateServiceModal() {
     setFormData((prev) => ({ ...prev, ...data }))
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async ({ providerDeclarationAccepted }: { providerDeclarationAccepted: boolean }) => {
     try {
-      // 1. Crear el servicio. 2. Subir los medios pendientes (galería del paso 5).
-      const response = await createMutation.mutateAsync(formData as CreateProfessionalServiceDTO)
+      // 1. Crear el servicio — la action valida de nuevo la declaración Art. 12.
+      //    El cast es solo de tipos: el hook está tipado con el DTO base, pero
+      //    la action lee `providerDeclarationAccepted` del objeto en runtime.
+      //    Si la action devuelve { ok:false }, el facade re-lanza el mensaje y
+      //    cae en el catch → banner de error existente.
+      const response = await createMutation.mutateAsync({
+        ...formData,
+        providerDeclarationAccepted,
+      } as CreateProfessionalServiceDTO)
+      // 2. Subir los medios staged del paso 5 (viven en memoria) y adjuntarlos.
       await uploadPendingMedia(response.service.id)
 
       // 3. Cerrar modal y navegar al perfil del servicio.
@@ -90,6 +98,8 @@ export function CreateServiceModal() {
     setFormData({ currency: 'COP', availableForHire: true })
     // Reset eligibility so the next open re-checks and shows the loading state.
     setEligibility(null)
+    // Al cancelar/cerrar, suelta los File staged del paso 5 (y sus object URLs).
+    clearPendingMedia()
   }
 
   const handleClose = () => {
