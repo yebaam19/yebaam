@@ -1,5 +1,6 @@
 import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { ProfileLite } from '@/lib/api/communities';
 
 export type PendingJoinRequest = {
@@ -13,10 +14,11 @@ export type PendingJoinRequest = {
 };
 
 export async function getPendingJoinRequests(communityId: string): Promise<PendingJoinRequest[]> {
-  const client = await getServerClient();
-  const { data: userData } = await client.auth.getUser();
-  const userId = userData.user?.id;
+  const user = await getCachedAuthUser();
+  const userId = user?.id;
   if (!userId) return [];
+
+  const client = await getServerClient();
 
   // RLS already gates this to owners/admins; the query just returns [] otherwise.
   const { data } = await client

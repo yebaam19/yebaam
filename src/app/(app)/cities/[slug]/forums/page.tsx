@@ -1,8 +1,14 @@
 import { notFound, redirect } from 'next/navigation'
-import type { Route } from 'next'
+import type { Metadata, Route } from 'next'
 import { getCityBySlug } from '@/features/cities/server/city.server'
 import { getCityForumSpaceSlug } from '@/features/cities/server/forums.server'
 import { PortalUnderConstruction } from '@/features/cities/components/portal/PortalUnderConstruction'
+
+// Redirect shim / placeholder — keep out of search indexes (the target /foro
+// page is the indexable surface).
+export const metadata: Metadata = {
+  robots: { index: false },
+}
 
 interface Props {
   params: Promise<{ slug: string }>

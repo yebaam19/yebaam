@@ -5,7 +5,7 @@ import {
   getCommunityArticleBySlug,
 } from '@/features/communities/server/community-articles.server';
 import { CommunityArticleView } from '@/features/communities/components/CommunityArticleView';
-import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 
 interface PageProps {
   params: Promise<{ slug: string; articleSlug: string }>;
@@ -16,14 +16,14 @@ export default async function CommunityArticleDetailPage({ params }: PageProps) 
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
-  const [article, canManage, viewerId] = await Promise.all([
+  const [article, canManage, viewer] = await Promise.all([
     getCommunityArticleBySlug(community.id, articleSlug),
     canManageCommunityArticle(community.id),
-    getServerClient().then(async (c) => (await c.auth.getUser()).data.user?.id ?? null),
+    getCachedAuthUser(),
   ]);
   if (!article) notFound();
 
-  const isAuthor = Boolean(viewerId && viewerId === article.author.id);
+  const isAuthor = Boolean(viewer && viewer.id === article.author.id);
 
   return (
     <CommunityArticleView

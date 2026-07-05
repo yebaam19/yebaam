@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { imageUrl } from '@/lib/media/urls';
 import type {
   CommunityArticle,
@@ -166,10 +167,11 @@ export async function getCommunityArticleForEdit(
  * server action (defense in depth — RLS already blocks unauthorized inserts).
  */
 export async function canPublishCommunityArticle(communityId: string): Promise<boolean> {
-  const client = await getServerClient();
-  const { data: auth } = await client.auth.getUser();
-  const userId = auth?.user?.id;
+  const user = await getCachedAuthUser();
+  const userId = user?.id;
   if (!userId) return false;
+
+  const client = await getServerClient();
 
   const { data: c } = await client
     .from('communities')
@@ -194,10 +196,11 @@ export async function canPublishCommunityArticle(communityId: string): Promise<b
  * or the community owner; we tighten the UI/server-action layer to OWNER only.
  */
 export async function canManageCommunityArticle(communityId: string): Promise<boolean> {
-  const client = await getServerClient();
-  const { data: auth } = await client.auth.getUser();
-  const userId = auth?.user?.id;
+  const user = await getCachedAuthUser();
+  const userId = user?.id;
   if (!userId) return false;
+
+  const client = await getServerClient();
 
   const { data: c } = await client
     .from('communities')

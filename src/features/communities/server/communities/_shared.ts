@@ -1,5 +1,6 @@
 import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import {
   CommunityMemberRow,
   CommunityRow,
@@ -9,9 +10,8 @@ import {
 import { Community } from '../../types/community.types';
 
 export async function getViewerId(): Promise<string | null> {
-  const client = await getServerClient();
-  const { data } = await client.auth.getUser();
-  return data.user?.id ?? null;
+  const user = await getCachedAuthUser();
+  return user?.id ?? null;
 }
 
 export type Loaded = {

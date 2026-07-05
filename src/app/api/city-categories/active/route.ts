@@ -25,18 +25,21 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const rows = (data ?? []) as CityCategoryRow[];
-  return NextResponse.json({
-    categories: rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      slug: r.slug,
-      description: r.description ?? '',
-      icon: r.icon ?? '',
-      color: r.color ?? '#16A44C',
-      order: r.sort_order ?? 0,
-      isActive: r.is_active,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    })),
-  });
+  return NextResponse.json(
+    {
+      categories: rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        description: r.description ?? '',
+        icon: r.icon ?? '',
+        color: r.color ?? '#16A44C',
+        order: r.sort_order ?? 0,
+        isActive: r.is_active,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      })),
+    },
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+  );
 }

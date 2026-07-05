@@ -8,7 +8,6 @@ import { useNotificationStore } from '../store/notification.store';
 import NotificationHeader from './NotificationHeader';
 import NotificationTabs from './NotificationTabs';
 import { cn } from '@/lib/utils';
-import { useNotificationWebSocket } from '../hooks/useNotificationWebSocket';
 import { useTranslations } from 'next-intl';
 
 export default function NotificationBell() {
@@ -26,8 +25,6 @@ export default function NotificationBell() {
     stopPolling,
   } = useNotificationStore();
 
-  // Conectar a WebSocket para notificaciones en tiempo real
-  useNotificationWebSocket();
   const t = useTranslations('notification.bell');
 
   const [selectedTab, setSelectedTab] = useState<'all' | 'unread'>('all');

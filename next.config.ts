@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   images: {
+    // AVIF first (25-40% smaller than WebP for photos), WebP fallback. First
+    // transform is slower but the long minimumCacheTTL amortizes it.
+    formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 2678400 * 6,
     dangerouslyAllowSVG: true,
     remotePatterns: [

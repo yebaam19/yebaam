@@ -7,9 +7,11 @@ import PostVideoPlayer from './PostVideoPlayer';
 interface PostMediaProps {
   mediaFiles: MediaFile[];
   isLiveStream?: boolean;
+  /** Solo el primer post del timeline debe precargar su primera imagen (LCP). */
+  lcpCandidate?: boolean;
 }
 
-export default function PostMedia({ mediaFiles, isLiveStream = false }: PostMediaProps) {
+export default function PostMedia({ mediaFiles, isLiveStream = false, lcpCandidate = false }: PostMediaProps) {
   if (!mediaFiles || mediaFiles.length === 0) return null;
 
   // Filtrar por tipo (case-insensitive)
@@ -34,7 +36,7 @@ export default function PostMedia({ mediaFiles, isLiveStream = false }: PostMedi
 
       {/* Imágenes */}
       {images.length > 0 && (
-        <PostImageGallery images={images} />
+        <PostImageGallery images={images} lcpCandidate={lcpCandidate} />
       )}
     </div>
   );

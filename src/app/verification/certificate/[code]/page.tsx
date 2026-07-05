@@ -10,7 +10,12 @@ import CertificateQr from './_components/CertificateQr';
 import CertificateFooter from './_components/CertificateFooter';
 import CertificateActions from './_components/CertificateActions';
 
-export const metadata = { title: 'Identidad Digital Certificada · Yebaam' };
+export const metadata = {
+  title: 'Identidad Digital Certificada · Yebaam',
+  // Personal data (full name, verification code) — must never surface in
+  // name searches. robots.ts also disallows /verification/.
+  robots: { index: false, follow: false },
+};
 
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap', weight: ['600', '700', '900'] });
 const greatVibes = Great_Vibes({ subsets: ['latin'], display: 'swap', weight: '400' });

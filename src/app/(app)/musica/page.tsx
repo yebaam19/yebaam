@@ -18,7 +18,7 @@ import { MusicFilterRail } from '@/features/music-archive/components/landing/Mus
 import { LANDING_DECADES } from '@/features/music-archive/components/landing/musica-decades';
 import { MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS } from '@/features/music-archive/components/upload/constants';
 import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
-import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('musica');
@@ -54,7 +54,7 @@ export default async function MusicArchiveLandingPage({
   const isFiltered =
     decade !== undefined || country !== undefined || forTrade || !!genreSlug || !!conditionValue;
 
-  const [albums, client, clubs, media, genres] = await Promise.all([
+  const [albums, viewer, clubs, media, genres] = await Promise.all([
     isFiltered
       ? listAlbumsFiltered({
           decade,
@@ -65,15 +65,14 @@ export default async function MusicArchiveLandingPage({
           limit: 60,
         })
       : listLatestAlbums(24),
-    getServerClient(),
+    getCachedAuthUser(),
     listMusicClubs(),
     listLatestMusicMedia(12),
     listMusicGenres(),
   ]);
   const genreName = genreSlug ? genres.find((g) => g.slug === genreSlug)?.name ?? null : null;
   const conditionLabel = conditionValue ? t(`filteredCondition.${conditionValue}`) : null;
-  const { data: userData } = await client.auth.getUser();
-  const isAuthed = Boolean(userData.user);
+  const isAuthed = Boolean(viewer);
 
   const artistsById = await getArtistNamesByIds(albums.map((a) => a.artist_id));
 

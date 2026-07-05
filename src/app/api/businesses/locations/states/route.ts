@@ -18,6 +18,7 @@ export async function GET() {
       name: s.name,
       slug: s.slug,
       country: { id: s.country_name, name: s.country_name },
-    }))
+    })),
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
   );
 }

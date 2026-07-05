@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import {
   getMusicClubBySlug,
   getViewerJoinStatus,
@@ -19,14 +19,13 @@ export default async function ClubMembersPage({
   const { slug } = await params;
   const club = await getMusicClubBySlug(slug);
   if (!club) notFound();
-  const [members, viewerRole, joinStatus, t] = await Promise.all([
+  const [members, viewerRole, joinStatus, t, viewer] = await Promise.all([
     listClubMembers(club.id),
     getViewerRoleInClub(club.id),
     getViewerJoinStatus(club.id),
     getTranslations('musica'),
+    getCachedAuthUser(),
   ]);
-  const client = await getServerClient();
-  const { data: u } = await client.auth.getUser();
   const isMember = joinStatus.kind === 'approved';
 
   return (
@@ -46,7 +45,7 @@ export default async function ClubMembersPage({
         clubId={club.id}
         members={members}
         viewerRole={(viewerRole as ClubMemberRole | null) ?? null}
-        viewerId={u.user?.id ?? null}
+        viewerId={viewer?.id ?? null}
       />
     </section>
   );

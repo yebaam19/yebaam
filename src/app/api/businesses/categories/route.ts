@@ -19,6 +19,7 @@ export async function GET() {
       description: r.description ?? undefined,
       iconUrl: r.icon_url ?? undefined,
       createdAt: r.created_at,
-    }))
+    })),
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
   );
 }

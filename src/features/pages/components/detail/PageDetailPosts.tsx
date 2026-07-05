@@ -1,11 +1,17 @@
 import { FC } from 'react';
+import dynamic from 'next/dynamic';
 import { DocumentTextIcon } from '@/components/icons/heroicons-shim';
 import { useFetch } from '@/lib/hooks/useFetch';
 import { CreatePostCard } from '@/components/CreatePostCard';
-import { CreatePostModal, usePostStore } from '@/features/post';
+import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { postService } from '@/app/(app)/feed/post/services/post.service';
 import PostCard from '@/app/(app)/feed/post/components/PostCard';
+
+// Composer modal cargado bajo demanda para sacarlo del JS inicial de la página.
+const CreatePostModal = dynamic(() => import('@/app/(app)/feed/post/components/CreatePostModal'), {
+  ssr: false,
+});
 
 interface PageDetailPostsProps {
   pageId: string;
@@ -14,7 +20,8 @@ interface PageDetailPostsProps {
 
 export const PageDetailPosts: FC<PageDetailPostsProps> = ({ pageId, isOwner = false }) => {
   const currentUser = useAuthStore((state) => state.user);
-  const { openCreateModal } = usePostStore();
+  const openCreateModal = usePostStore((s) => s.openCreateModal);
+  const isCreateModalOpen = usePostStore((s) => s.isCreateModalOpen);
   
   // Fetch posts from API
   const { data: allPostsData, isLoading } = useFetch(
@@ -44,7 +51,7 @@ export const PageDetailPosts: FC<PageDetailPostsProps> = ({ pageId, isOwner = fa
             onCreateClick={handleCreatePostClick}
             className="mb-4"
           />
-          <CreatePostModal />
+          {isCreateModalOpen && <CreatePostModal />}
         </>
       )}
 

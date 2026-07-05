@@ -3,9 +3,10 @@ import Image from 'next/image'
 
 const CF_HASH = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? ''
 
+// Tarjetas de grid: la variante `thumbnail` (~20KB) rinde igual que `/public` (~87KB).
 function cfImageUrl(id: string | null) {
   if (!id || !CF_HASH) return null
-  return `https://imagedelivery.net/${CF_HASH}/${id}/public`
+  return `https://imagedelivery.net/${CF_HASH}/${id}/thumbnail`
 }
 
 export interface FeaturedBusinessItem {

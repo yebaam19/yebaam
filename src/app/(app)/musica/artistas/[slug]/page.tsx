@@ -31,6 +31,9 @@ export async function generateMetadata({
       lifespan,
       count: artist.albums.length,
     }),
+    ...(artist.photo_cf_image_id
+      ? { openGraph: { images: [imageUrl(artist.photo_cf_image_id, 'public')] } }
+      : {}),
   };
 }
 

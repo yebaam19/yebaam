@@ -11,6 +11,7 @@ import { CityPortalSidebarSkeleton } from '@/features/cities/components/portal/C
 import { getCityBySlug } from '@/features/cities/server/city.server'
 import { fetchIsFollowing } from '@/features/cities/server/followers.server'
 import { getCityPortalData } from '@/features/cities/server/portal-data.server'
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 import { getServerClient } from '@/utils/supabase/server'
 
 interface Props {
@@ -51,12 +52,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  */
 export default async function CityPortalPage({ params }: Props) {
   const { slug } = await params
-  const city = await getCityBySlug(slug)
+  const [city, user, client] = await Promise.all([
+    getCityBySlug(slug),
+    getCachedAuthUser(),
+    getServerClient(),
+  ])
   if (!city) notFound()
 
-  const client = await getServerClient()
-  const { data: auth } = await client.auth.getUser()
-  const isFollowing = await fetchIsFollowing(client, city.id, auth.user?.id ?? null)
+  const isFollowing = await fetchIsFollowing(client, city.id, user?.id ?? null)
 
   const t = await getTranslations('cities.portal')
 

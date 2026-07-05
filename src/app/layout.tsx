@@ -6,7 +6,6 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Toaster } from 'sonner';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
-import 'rc-slider/assets/index.css';
 
 import { AuthProvider } from '@/features/auth/context/auth-context';
 import { ThemeSync } from '@/components/settings/ThemeSync';
@@ -27,6 +26,7 @@ const siteDescription =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  alternates: { canonical: './' },
   title: {
     template: '%s - Yebaam',
     default: 'Yebaam - Conecta con el mundo',
@@ -58,6 +58,25 @@ export const viewport: Viewport = {
 
 const themeInitScript = `(function(){try{var p=JSON.parse(localStorage.getItem('yebaam.preferences')||'null');var t=p&&p.state&&p.state.theme;var d=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
+// Site-level structured data (Organization + WebSite) so search engines can
+// attribute content to the Yebaam brand.
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'Yebaam',
+      url: siteUrl,
+      logo: `${siteUrl}/yebaam.png`,
+    },
+    {
+      '@type': 'WebSite',
+      name: 'Yebaam',
+      url: siteUrl,
+    },
+  ],
+};
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
   return (
@@ -66,6 +85,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-dvh bg-gray-50 text-neutral-900 antialiased dark:bg-neutral-900 dark:text-neutral-100">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <ErrorBoundary>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <ThemeSync />

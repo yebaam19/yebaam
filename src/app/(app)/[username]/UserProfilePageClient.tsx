@@ -8,16 +8,25 @@
 
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { useAuth } from '@/features/auth/context/auth-context';
-import { CreatePostModal, EditPostModal, usePostStore } from '@/features/post';
+import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
 import { ProfilePageSkeleton, UserProfileComponent } from '@/features/profile/components';
 import { useProfile } from '@/features/profile/hooks/useProfile';
 import CompleteAuthenticationBanner from '@/features/verification/components/CompleteAuthenticationBanner';
 import { useFetch } from '@/lib/hooks/useFetch';
+import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import ProfileTabPanels from './_components/ProfileTabPanels';
 import ProfileTabsNav, { isValidTab, type TabType } from './_components/ProfileTabsNav';
+
+// Composer modals cargados bajo demanda para sacarlos del JS inicial del perfil.
+const CreatePostModal = dynamic(() => import('@/app/(app)/feed/post/components/CreatePostModal'), {
+  ssr: false,
+});
+const EditPostModal = dynamic(() => import('@/app/(app)/feed/post/components/EditPostModal'), {
+  ssr: false,
+});
 
 interface UserProfilePageClientProps {
   username: string;
@@ -27,7 +36,9 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
   const t = useTranslations('profile');
   const searchParams = useSearchParams();
   const { user: currentUser, isInitialized } = useAuth();
-  const { openCreateModal } = usePostStore();
+  const openCreateModal = usePostStore((s) => s.openCreateModal);
+  const isCreateModalOpen = usePostStore((s) => s.isCreateModalOpen);
+  const isEditModalOpen = usePostStore((s) => s.isEditModalOpen);
 
   const initialTab = (() => {
     const t = searchParams?.get('tab');
@@ -149,8 +160,8 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
       />
 
       {/* Modals */}
-      <CreatePostModal />
-      <EditPostModal />
+      {isCreateModalOpen && <CreatePostModal />}
+      {isEditModalOpen && <EditPostModal />}
     </>
   );
 }

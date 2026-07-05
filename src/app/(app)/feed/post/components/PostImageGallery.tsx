@@ -8,9 +8,11 @@ import type { MediaFile } from '../interfaces/post.interfaces';
 
 interface PostImageGalleryProps {
   images: MediaFile[];
+  /** Solo el primer post visible del timeline es candidato a LCP; el resto carga lazy. */
+  lcpCandidate?: boolean;
 }
 
-export default function PostImageGallery({ images }: PostImageGalleryProps) {
+export default function PostImageGallery({ images, lcpCandidate = false }: PostImageGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -64,7 +66,8 @@ export default function PostImageGallery({ images }: PostImageGalleryProps) {
       <div className={cn('grid gap-1', getImageGridLayout(images.length))}>
         {images.map((image, index) => {
           const showMoreOverlay = index === 5 && images.length > 6;
-          
+          const isLcp = lcpCandidate && index === 0;
+
           return (
             <div
               key={image.id || image.url}
@@ -80,7 +83,8 @@ export default function PostImageGallery({ images }: PostImageGalleryProps) {
                 fill
                 className="object-contain object-center transition-opacity group-hover:opacity-95"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                priority={index === 0}
+                priority={isLcp}
+                loading={isLcp ? undefined : 'lazy'}
               />
               
               {showMoreOverlay && (

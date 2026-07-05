@@ -12,18 +12,21 @@ export async function GET() {
   const stateRows = (states ?? []) as StateRow[];
   const cityRows = (cities ?? []) as BusinessCityRow[];
 
-  return NextResponse.json({
-    states: stateRows.map((s) => ({
-      id: s.id,
-      name: s.name,
-      slug: s.slug,
-      country: { id: s.country_name, name: s.country_name },
-    })),
-    cities: cityRows.map((c) => ({
-      id: c.id,
-      name: c.name,
-      slug: c.slug,
-      stateId: c.state_id,
-    })),
-  });
+  return NextResponse.json(
+    {
+      states: stateRows.map((s) => ({
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        country: { id: s.country_name, name: s.country_name },
+      })),
+      cities: cityRows.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        stateId: c.state_id,
+      })),
+    },
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+  );
 }

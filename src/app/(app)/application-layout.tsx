@@ -1,5 +1,4 @@
 import Header from '@/components/Header/Header';
-import 'rc-slider/assets/index.css';
 import React, { ReactNode } from 'react';
 import { ApplicationLayoutClient } from './application-layout-client';
 import { getAuthUser } from '@/features/auth/actions/auth.actions';

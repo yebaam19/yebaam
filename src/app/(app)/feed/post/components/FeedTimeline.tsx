@@ -128,8 +128,8 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
           </div>*/}
 
           {/* Lista de Posts */}
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+          {posts.map((post, postIndex) => (
+            <PostCard key={post.id} post={post} lcpCandidate={postIndex === 0} />
           ))}
         </>
       ) : (

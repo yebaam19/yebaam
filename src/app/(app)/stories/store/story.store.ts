@@ -27,6 +27,14 @@ interface StoryState {
   clearDraft: () => void;
 }
 
+// Module-scoped in-flight guards (same pattern as the friendships list slice):
+// StoriesBar mounts in several places and React StrictMode double-invokes
+// effects in dev, so identical reads fan out. Each holder collapses concurrent
+// calls to the SAME action into one request. Intentionally per-action so the
+// two fetchers can run in parallel without cancelling each other.
+let friendsStoriesP: Promise<void> | null = null;
+let myStoriesP: Promise<void> | null = null;
+
 export const useStoryStore = create<StoryState>((set, get) => ({
   // Estado inicial
   friendsStories: [],
@@ -39,40 +47,48 @@ export const useStoryStore = create<StoryState>((set, get) => ({
    * Obtener historias de amigos (agrupadas por usuario)
    */
   fetchFriendsStories: async () => {
+    if (friendsStoriesP) return friendsStoriesP;
+    friendsStoriesP = (async () => {
     set({ isLoading: true, error: null });
     try {
       const stories = await storyService.getFriendsStories();
-      set({ 
+      set({
         friendsStories: stories,
-        isLoading: false 
+        isLoading: false
       });
     } catch (error) {
       console.error('[STORY STORE] Error fetching friends stories:', error);
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Error al cargar historias',
-        isLoading: false 
+        isLoading: false
       });
     }
+    })();
+    try { await friendsStoriesP; } finally { friendsStoriesP = null; }
   },
 
   /**
    * Obtener mis historias activas
    */
   fetchMyStories: async () => {
+    if (myStoriesP) return myStoriesP;
+    myStoriesP = (async () => {
     set({ isLoading: true, error: null });
     try {
       const stories = await storyService.getMyStories();
-      set({ 
+      set({
         myStories: stories,
-        isLoading: false 
+        isLoading: false
       });
     } catch (error) {
       console.error('[STORY STORE] Error fetching my stories:', error);
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Error al cargar mis historias',
-        isLoading: false 
+        isLoading: false
       });
     }
+    })();
+    try { await myStoriesP; } finally { myStoriesP = null; }
   },
 
   /**

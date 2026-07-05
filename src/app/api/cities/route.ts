@@ -68,8 +68,11 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const rows = (data ?? []) as unknown as CityRow[];
-  return NextResponse.json({
-    cities: rows.map(mapCity),
-    total: count ?? rows.length,
-  });
+  return NextResponse.json(
+    {
+      cities: rows.map(mapCity),
+      total: count ?? rows.length,
+    },
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+  );
 }

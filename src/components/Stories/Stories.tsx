@@ -11,13 +11,20 @@ import type { Story } from '@/app/(app)/stories/services/story.service';
 import { streamThumb } from '@/lib/media/urls';
 import Avatar from '@/ui/Avatar';
 
+/** Los tiles del carrusel miden 120x200 — la variante `thumbnail` de Cloudflare
+ *  (~20KB vs ~87KB de `/public`) basta de sobra. URLs no-Cloudflare pasan intactas. */
+function toThumbnailVariant(src: string): string {
+  if (!src.startsWith('https://imagedelivery.net/')) return src;
+  return src.replace(/\/public$/, '/thumbnail');
+}
+
 function storyPreviewSrc(story: Story): string | null {
   if (story.type === 'video') {
     if (story.cloudflareStreamUid) return streamThumb(story.cloudflareStreamUid, { width: 240 });
     if (story.thumbnailUrl) return story.thumbnailUrl;
     return null;
   }
-  return story.mediaUrl ?? null;
+  return story.mediaUrl ? toThumbnailVariant(story.mediaUrl) : null;
 }
 
 interface StoriesProps {

@@ -9,7 +9,7 @@ import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
 import { listClubsForAlbum } from '@/features/music-archive/server/clubs.server';
 import { getAlbumReactionCounts } from '@/features/music-archive/server/music-reactions.server';
 import { listMusicMediaForAlbum } from '@/features/music-archive/server/music-media.server';
-import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { AlbumTracklist } from '@/features/music-archive/components/AlbumTracklist';
 import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
@@ -36,6 +36,9 @@ export async function generateMetadata({
       year: yearPart,
       trackCount: album.tracks.length,
     }),
+    ...(album.cover_cf_image_id
+      ? { openGraph: { images: [imageUrl(album.cover_cf_image_id, 'public')] } }
+      : {}),
   };
 }
 
@@ -49,18 +52,10 @@ export default async function AlbumPage({
   if (!album) notFound();
   const t = await getTranslations('musica');
 
-  const [clubs, reactions, sessionClient, media] = await Promise.all([
-    listClubsForAlbum(album.id),
-    getAlbumReactionCounts(album.id),
-    getServerClient(),
-    listMusicMediaForAlbum(album.id),
-  ]);
-  const { data: userData } = await sessionClient.auth.getUser();
-  const signedIn = Boolean(userData.user);
-
   // Pre-sign R2 URLs for every track in parallel. The TTL is 1h which is
-  // plenty for a single page session.
-  const audioEntries = await Promise.all(
+  // plenty for a single page session. Kicked off before the Promise.all below
+  // (its only input is album.tracks) so the fan-out overlaps the other reads.
+  const audioEntriesPromise = Promise.all(
     album.tracks.map(async (track) => {
       try {
         const url = await getPublicAudioUrl(track.r2_key, 3600);
@@ -71,14 +66,43 @@ export default async function AlbumPage({
       }
     }),
   );
+
+  const [clubs, reactions, authUser, media, audioEntries] = await Promise.all([
+    listClubsForAlbum(album.id),
+    getAlbumReactionCounts(album.id),
+    getCachedAuthUser(),
+    listMusicMediaForAlbum(album.id),
+    audioEntriesPromise,
+  ]);
+  const signedIn = Boolean(authUser);
+
   const audioUrlByTrackId = Object.fromEntries(
     audioEntries.filter(([, url]) => url !== ''),
   ) as Record<string, string>;
 
-  const cover = album.cover_cf_image_id ? imageUrl(album.cover_cf_image_id, 'public') : null;
+  const cover = album.cover_cf_image_id ? imageUrl(album.cover_cf_image_id, 'cover') : null;
+
+  const albumJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'MusicAlbum',
+    name: album.title,
+    byArtist: { '@type': 'MusicGroup', name: album.artist.name },
+    ...(album.year ? { datePublished: String(album.year) } : {}),
+    numTracks: album.tracks.length,
+    track: album.tracks.map((track) => ({
+      '@type': 'MusicRecording',
+      name: track.title,
+    })),
+  };
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      {/* Titles are user content — escape "<" so a "</script>" inside a string
+          can't terminate the tag. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(albumJsonLd).replace(/</g, '\\u003c') }}
+      />
       <nav className="text-xs">
         <Link
           href={'/musica' as Route}
@@ -96,6 +120,7 @@ export default async function AlbumPage({
             <img
               src={cover}
               alt={t('album.coverAlt', { title: album.title })}
+              fetchPriority="high"
               className="aspect-square w-full object-cover"
             />
           ) : (

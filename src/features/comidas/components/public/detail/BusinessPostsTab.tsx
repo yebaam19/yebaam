@@ -46,7 +46,7 @@ export function BusinessPostsTab({ posts, businessId, onSocialCountLoaded }: Pro
           </h2>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {published.map((post) => {
-              const cover = cfImageUrl(post.cover_cf_image_id)
+              const cover = cfImageUrl(post.cover_cf_image_id, 'thumbnail')
               const date = post.published_at ? formatDate(post.published_at) : null
 
               return (
@@ -60,6 +60,8 @@ export function BusinessPostsTab({ posts, businessId, onSocialCountLoaded }: Pro
                         src={cover}
                         alt={post.title}
                         className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-primary-50">

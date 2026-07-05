@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { getFamilyBySlug } from '@/features/families/server/families.server';
 import { FamilyHeader } from '@/features/families/components/FamilyHeader';
 import { FamilyTopTabs } from '@/features/families/components/FamilyTopTabs';
@@ -17,12 +18,12 @@ interface FamilyLayoutProps {
 
 export default async function FamilyLayout({ params, children }: FamilyLayoutProps) {
   const { slug } = await params;
-  const t = await getTranslations('familias');
-  const client = await getServerClient();
-  const { data: userRes } = await client.auth.getUser();
-  if (!userRes.user) redirect(`/login?redirect=/feed/familias/${slug}`);
-
-  const family = await getFamilyBySlug(slug);
+  const [t, user, family] = await Promise.all([
+    getTranslations('familias'),
+    getCachedAuthUser(),
+    getFamilyBySlug(slug),
+  ]);
+  if (!user) redirect(`/login?redirect=/feed/familias/${slug}`);
   if (!family) notFound();
 
   // Member: show tabs + body
@@ -39,11 +40,12 @@ export default async function FamilyLayout({ params, children }: FamilyLayoutPro
 
   // Pending invite: show header preview + accept/decline banner, no tabs/body
   if (family.has_pending_invite) {
+    const client = await getServerClient();
     const { data: invite } = await client
       .from('family_invitations')
       .select('id, invited_by, created_at')
       .eq('family_id', family.id)
-      .eq('invitee_id', userRes.user.id)
+      .eq('invitee_id', user.id)
       .eq('status', 'pending')
       .maybeSingle();
 

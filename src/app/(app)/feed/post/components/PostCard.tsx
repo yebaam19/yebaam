@@ -29,9 +29,14 @@ interface PostCardProps {
    * state itself (e.g. the post-detail page already does).
    */
   onShowReactions?: () => void
+  /**
+   * Marca el primer post visible del timeline: solo su primera imagen se
+   * precarga (candidata a LCP); las demás cargan lazy.
+   */
+  lcpCandidate?: boolean
 }
 
-function PostCard({ post, className, onShowReactions }: PostCardProps) {
+function PostCard({ post, className, onShowReactions, lcpCandidate = false }: PostCardProps) {
   const t = useTranslations('feed')
   const { user } = useAuth()
   const { deletePost, openEditModal } = usePostStore(
@@ -108,6 +113,7 @@ function PostCard({ post, className, onShowReactions }: PostCardProps) {
         <PostMedia
           mediaFiles={post.mediaFiles}
           isLiveStream={post.content?.includes(' Transmisión en vivo finalizada')}
+          lcpCandidate={lcpCandidate}
         />
       )}
 
@@ -150,6 +156,7 @@ export default memo(PostCard, (prevProps, nextProps) => {
     prevProps.post.updatedAt === nextProps.post.updatedAt &&
     prevProps.post.reactionsCount === nextProps.post.reactionsCount &&
     prevProps.className === nextProps.className &&
-    prevProps.onShowReactions === nextProps.onShowReactions
+    prevProps.onShowReactions === nextProps.onShowReactions &&
+    prevProps.lcpCandidate === nextProps.lcpCandidate
   )
 })

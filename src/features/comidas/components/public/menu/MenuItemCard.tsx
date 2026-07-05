@@ -21,9 +21,11 @@ export function MenuItemCard({ product, businessName, onOpenProduct, onOrder }: 
       <div className="relative overflow-hidden bg-neutral-100">
         {product.cf_image_id ? (
           <img
-            src={`https://imagedelivery.net/${process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH}/${product.cf_image_id}/public`}
+            src={`https://imagedelivery.net/${process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH}/${product.cf_image_id}/thumbnail`}
             alt={product.name}
             className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-primary-50 to-neutral-100">

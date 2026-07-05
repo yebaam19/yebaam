@@ -12,6 +12,16 @@ type AvatarProps = {
   className?: string
 }
 
+/**
+ * Profiles store the full-size Cloudflare `/public` delivery URL (~87KB); the
+ * named `avatar` variant (~5.8KB) is live on the account. Rewrite at render
+ * time so stored URLs stay untouched. Non-Cloudflare URLs pass through as-is.
+ */
+export function toAvatarVariant(src: string): string {
+  if (!src.startsWith('https://imagedelivery.net/')) return src
+  return src.replace(/\/public$/, '/avatar')
+}
+
 export default function Avatar({
   src = null,
   square = false,
@@ -47,7 +57,9 @@ export default function Avatar({
           </text>
         </svg>
       )}
-      {src && <img className="size-full object-cover" src={src} alt={alt} loading="lazy" decoding="async" />}
+      {src && (
+        <img className="size-full object-cover" src={toAvatarVariant(src)} alt={alt} loading="lazy" decoding="async" />
+      )}
     </span>
   )
 }

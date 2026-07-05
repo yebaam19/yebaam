@@ -1,5 +1,7 @@
 import 'server-only';
+import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import {
   CommunityMemberRow,
   ProfileLite,
@@ -16,53 +18,55 @@ export type ViewerJoinState =
   | { kind: 'invited'; invitationId: string }
   | { kind: 'none' };
 
-export async function getViewerJoinState(communityId: string): Promise<ViewerJoinState> {
-  const client = await getServerClient();
-  const { data: userData } = await client.auth.getUser();
-  const userId = userData.user?.id;
+export const getViewerJoinState = cache(async (communityId: string): Promise<ViewerJoinState> => {
+  const user = await getCachedAuthUser();
+  const userId = user?.id;
   if (!userId) return { kind: 'guest' };
 
-  const { data: c } = await client
-    .from('communities')
-    .select('owner_id')
-    .eq('id', communityId)
-    .maybeSingle();
+  const client = await getServerClient();
+  // The four lookups are independent — run them in parallel and pick the
+  // highest-priority result (owner > member > invited > request).
+  const [{ data: c }, { data: member }, { data: invite }, { data: req }] = await Promise.all([
+    client
+      .from('communities')
+      .select('owner_id')
+      .eq('id', communityId)
+      .maybeSingle(),
+    client
+      .from('community_members')
+      .select('user_id')
+      .eq('community_id', communityId)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle(),
+    client
+      .from('community_invitations')
+      .select('id')
+      .eq('community_id', communityId)
+      .eq('invitee_id', userId)
+      .eq('status', 'pending')
+      .maybeSingle(),
+    client
+      .from('community_join_requests')
+      .select('status')
+      .eq('community_id', communityId)
+      .eq('user_id', userId)
+      .in('status', ['pending', 'declined'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
   if (c && (c as { owner_id: string }).owner_id === userId) return { kind: 'owner' };
-
-  const { data: member } = await client
-    .from('community_members')
-    .select('user_id')
-    .eq('community_id', communityId)
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .maybeSingle();
   if (member) return { kind: 'member' };
-
-  const { data: invite } = await client
-    .from('community_invitations')
-    .select('id')
-    .eq('community_id', communityId)
-    .eq('invitee_id', userId)
-    .eq('status', 'pending')
-    .maybeSingle();
   if (invite) return { kind: 'invited', invitationId: (invite as { id: string }).id };
-
-  const { data: req } = await client
-    .from('community_join_requests')
-    .select('status')
-    .eq('community_id', communityId)
-    .eq('user_id', userId)
-    .in('status', ['pending', 'declined'])
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
   if (req) {
     const status = (req as { status: 'pending' | 'declined' }).status;
     return status === 'pending' ? { kind: 'request_pending' } : { kind: 'request_declined' };
   }
 
   return { kind: 'none' };
-}
+});
 
 export async function getCommunityMembers(
   communityId: string,
