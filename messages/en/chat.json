@@ -105,7 +105,11 @@
     "cancel": "Cancel",
     "editAria": "Edit message",
     "deleteFailed": "Could not delete the message",
-    "editFailed": "Could not edit the message"
+    "editFailed": "Could not edit the message",
+    "report": "Report",
+    "reportConfirm": "Confirm report?",
+    "reportSuccess": "Message reported. Our team will review it.",
+    "reportFailed": "Could not report the message. Please try again."
   },
   "public": {
     "roomsSidebar": {
@@ -180,27 +184,8 @@
     "activeNow": "Active now",
     "offline": "Offline",
     "closeAria": "Close chat",
-    "infoAria": "Conversation info"
-  },
-  "encryptionModal": {
-    "disableTitle": "Disable encryption",
-    "enableTitle": "Encrypt conversation",
-    "closeAria": "Close",
-    "disableDescription": "Disabling encryption will return messages to plain text.",
-    "disableConfirm": "Enter your current password to confirm.",
-    "enableDescription": "Encryption protects your messages with a password only you know.",
-    "enableHint": "Use a secure password of at least 8 characters.",
-    "passwordLabelCurrent": "Current password",
-    "passwordLabelEncryption": "Encryption password",
-    "passwordPlaceholder": "Minimum 8 characters",
-    "showPasswordAria": "Show password",
-    "hidePasswordAria": "Hide password",
-    "encryptExisting": "Also encrypt previous messages",
-    "encryptExistingHint": "This may take a moment if there are many messages",
-    "cancel": "Cancel",
-    "processing": "Processing...",
-    "disable": "Disable",
-    "encrypt": "Encrypt"
+    "infoAria": "Conversation info",
+    "encryptedTooltip": "Messages in this conversation are stored encrypted (AES-256). Yebaam cannot access their content except under a judicial order or a participant report."
   },
   "camera": {
     "open": "Camera",

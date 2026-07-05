@@ -1,13 +1,14 @@
 import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
 import { groupAutoName } from '@/features/chat/lib/groupName';
 import { imageUrl } from '@/lib/media/urls';
+import { chatCryptoReady } from '@/lib/server/chat-crypto';
 import type { ConversationRow, MessageRow, ParticipantRow } from './conversations.types';
 
 /**
  * POST serializer — collapses the two identical "direct conversation" response
  * objects (the "existing" and "newly created" branches). Hardcodes the
- * direct-create defaults (no last message, zero unread, encryption off) and
- * falls back to the peer's display name/avatar when the row's own are NULL.
+ * direct-create defaults (no last message, zero unread) and falls back to the
+ * peer's display name/avatar when the row's own are NULL.
  */
 export function serializeDirectConversation(args: {
   existing: { name: string | null; avatar: string | null };
@@ -31,7 +32,9 @@ export function serializeDirectConversation(args: {
     lastReadAt: null,
     createdAt,
     updatedAt,
-    isEncrypted: false,
+    // Encryption is a platform policy, not a per-conversation toggle: every
+    // private conversation is encrypted at rest once the key is configured.
+    isEncrypted: chatCryptoReady(),
     encryptionEnabledAt: null,
   };
 }
@@ -44,7 +47,6 @@ export function serializeDirectConversation(args: {
  */
 export function serializeConversationRow(args: {
   c: ConversationRow;
-  userId: string;
   partsByConv: Map<string, ParticipantRow[]>;
   lastMsgByConv: Map<string, MessageRow>;
   mine: Map<string, ParticipantRow>;
@@ -52,7 +54,7 @@ export function serializeConversationRow(args: {
   groupOthersByConv: Map<string, string[]>;
   profileById: Map<string, PeerProfileRow>;
 }) {
-  const { c, userId, partsByConv, lastMsgByConv, mine, peerByConv, groupOthersByConv, profileById } =
+  const { c, partsByConv, lastMsgByConv, mine, peerByConv, groupOthersByConv, profileById } =
     args;
   const participants = partsByConv.get(c.id) ?? [];
   const last = lastMsgByConv.get(c.id) ?? null;
@@ -100,7 +102,9 @@ export function serializeConversationRow(args: {
     createdAt: c.created_at,
     updatedAt: c.updated_at,
     metadata: meta,
-    isEncrypted: Boolean((meta as { is_encrypted?: boolean }).is_encrypted),
+    // Policy-derived: private conversations (everything except club public
+    // chats) are encrypted at rest; club chats stay server-readable.
+    isEncrypted: !c.club_id && chatCryptoReady(),
     encryptionEnabledAt: (meta as { encryption_enabled_at?: string }).encryption_enabled_at ?? null,
   };
 }

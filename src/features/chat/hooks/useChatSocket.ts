@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
+import { fetchDecryptedContent, isEncryptedContent } from '../lib/messageCipher';
 import { useChatStore } from '../store/chat.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -160,9 +161,20 @@ export function useChatSocket({
         const row = payload.new as DbMessageRow;
         if (!row?.id) return;
         if (!conversationIdSetRef.current.has(row.conversation_id)) return;
-        const message = rowToMessage(row);
+        // Private-chat rows arrive as ciphertext — resolve the plaintext
+        // (inbox previews / unread toasts render it) before dispatching.
+        if (isEncryptedContent(row.content)) {
+          void fetchDecryptedContent(row.conversation_id, row.id).then((plain) => {
+            if (plain === null) return;
+            callbacksRef.current.onMessageReceived?.({
+              message: rowToMessage({ ...row, content: plain }),
+              conversationId: row.conversation_id,
+            });
+          });
+          return;
+        }
         callbacksRef.current.onMessageReceived?.({
-          message,
+          message: rowToMessage(row),
           conversationId: row.conversation_id,
         });
       },

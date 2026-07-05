@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { CheckIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import MessageContent from './MessageContent';
@@ -61,6 +62,24 @@ export default function MessageBubble({
   }
 
   const canEdit = Boolean(onEdit) && Boolean(contentText) && !message.media;
+
+  const handleReport = async () => {
+    try {
+      const response = await fetch(
+        `/api/conversations/${message.conversationId}/messages/${message.id}/report`,
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: 'contenido_inapropiado' }),
+        },
+      );
+      if (!response.ok) throw new Error(`Request failed (${response.status})`);
+      toast.success(t('reportSuccess'));
+    } catch {
+      toast.error(t('reportFailed'));
+    }
+  };
 
   const submitEdit = () => {
     const next = editValue.trim();
@@ -152,6 +171,13 @@ export default function MessageBubble({
           </>
         )}
       </div>
+
+      {/* Reporting someone else's message is the participant-side compliance
+          trigger: it authorizes an audited, thread-scoped review (the only
+          non-judicial path that can decrypt private content). */}
+      {!isOwn && message.conversationId && (
+        <MessageActionsMenu align="left" onReport={handleReport} />
+      )}
 
       {message.media && (
         <ImageModal

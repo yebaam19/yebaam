@@ -2,31 +2,41 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { EllipsisHorizontalIcon, PencilSquareIcon, TrashIcon } from '@/components/icons/heroicons-shim';
+import { EllipsisHorizontalIcon, FlagIcon, PencilSquareIcon, TrashIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 interface MessageActionsMenuProps {
   /** Only text messages can be edited (no media-only edits). */
-  canEdit: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
+  canEdit?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  /** Report someone else's message (two-tap inline confirm, no native dialog). */
+  onReport?: () => void;
   /** Where the popover grows from the trigger (ChatBubble uses left; full-page chat uses right). */
   align?: 'left' | 'right';
 }
 
 /**
- * Hover "…" menu on your own messages — Editar (text only) / Eliminar.
- * Uses onMouseDown so the action fires before outside-click closes the menu.
+ * Hover "…" menu on a message — Editar/Eliminar on your own, Reportar on
+ * someone else's. Uses onMouseDown so the action fires before outside-click
+ * closes the menu.
  */
 export function MessageActionsMenu({
-  canEdit,
+  canEdit = false,
   onEdit,
   onDelete,
+  onReport,
   align = 'right',
 }: MessageActionsMenuProps) {
   const [open, setOpen] = useState(false);
+  const [confirmingReport, setConfirmingReport] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('chat.message');
+
+  const toggleMenu = () => {
+    setConfirmingReport(false); // never carry a half-confirmed report across opens
+    setOpen((v) => !v);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -55,7 +65,7 @@ export function MessageActionsMenu({
     >
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleMenu}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={t('actions')}
@@ -67,11 +77,11 @@ export function MessageActionsMenu({
         <div
           role="menu"
           className={cn(
-            'absolute bottom-full z-50 mb-1 w-32 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800',
+            'absolute bottom-full z-50 mb-1 w-40 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800',
             align === 'right' ? 'right-0' : 'left-0',
           )}
         >
-          {canEdit && (
+          {canEdit && onEdit && (
             <button
               type="button"
               role="menuitem"
@@ -86,19 +96,43 @@ export function MessageActionsMenu({
               {t('edit')}
             </button>
           )}
-          <button
-            type="button"
-            role="menuitem"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              setOpen(false);
-              onDelete();
-            }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-          >
-            <TrashIcon className="h-4 w-4" />
-            {t('delete')}
-          </button>
+          {onDelete && (
+            <button
+              type="button"
+              role="menuitem"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setOpen(false);
+                onDelete();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+            >
+              <TrashIcon className="h-4 w-4" />
+              {t('delete')}
+            </button>
+          )}
+          {onReport && (
+            <button
+              type="button"
+              role="menuitem"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                if (!confirmingReport) {
+                  setConfirmingReport(true);
+                  return;
+                }
+                setOpen(false);
+                onReport();
+              }}
+              className={cn(
+                'flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700',
+                confirmingReport ? 'font-medium text-red-600' : 'text-neutral-700 dark:text-neutral-200',
+              )}
+            >
+              <FlagIcon className="h-4 w-4" />
+              {confirmingReport ? t('reportConfirm') : t('report')}
+            </button>
+          )}
         </div>
       )}
     </div>

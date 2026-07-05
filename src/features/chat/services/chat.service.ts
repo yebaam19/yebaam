@@ -1,9 +1,6 @@
 import {
   Conversation,
   GetMessagesResponse,
-  EnableEncryptionDto,
-  DisableEncryptionDto,
-  EncryptionResult,
   Message,
   MessageMedia,
 } from '../types';
@@ -144,7 +141,6 @@ class ChatService {
     conversationId: string,
     limit: number = 50,
     offset: number = 0,
-    encryptionPassword?: string,
   ): Promise<GetMessagesResponse> {
     if (!conversationId || conversationId === 'undefined' || conversationId === 'null') {
       throw new Error('conversationId es requerido para obtener mensajes');
@@ -154,7 +150,6 @@ class ChatService {
       limit: String(limit),
       offset: String(offset),
     });
-    if (encryptionPassword) params.set('encryptionPassword', encryptionPassword);
 
     const payload = await jsonFetch<{
       data: GetMessagesResponse['messages'];
@@ -229,20 +224,6 @@ class ChatService {
       createdAt: new Date(payload.data.createdAt as unknown as string),
       updatedAt: new Date(payload.data.updatedAt as unknown as string),
     };
-  }
-
-  async enableEncryption(
-    _conversationId: string,
-    _data: EnableEncryptionDto,
-  ): Promise<EncryptionResult> {
-    throw new Error('Encryption is not yet available on this backend.');
-  }
-
-  async disableEncryption(
-    _conversationId: string,
-    _data: DisableEncryptionDto,
-  ): Promise<EncryptionResult> {
-    throw new Error('Encryption is not yet available on this backend.');
   }
 }
 

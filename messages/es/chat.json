@@ -105,7 +105,11 @@
     "cancel": "Cancelar",
     "editAria": "Editar mensaje",
     "deleteFailed": "No se pudo eliminar el mensaje",
-    "editFailed": "No se pudo editar el mensaje"
+    "editFailed": "No se pudo editar el mensaje",
+    "report": "Reportar",
+    "reportConfirm": "¿Confirmar reporte?",
+    "reportSuccess": "Mensaje reportado. Nuestro equipo lo revisará.",
+    "reportFailed": "No se pudo reportar el mensaje. Inténtalo de nuevo."
   },
   "public": {
     "roomsSidebar": {
@@ -176,31 +180,12 @@
     "send": "Enviar"
   },
   "header": {
-    "encryptedBadge": "Encriptado",
+    "encryptedBadge": "Cifrado",
     "activeNow": "Activo ahora",
     "offline": "Desconectado",
     "closeAria": "Cerrar chat",
-    "infoAria": "Información de la conversación"
-  },
-  "encryptionModal": {
-    "disableTitle": "Deshabilitar Encriptación",
-    "enableTitle": "Encriptar Conversación",
-    "closeAria": "Cerrar",
-    "disableDescription": "Al deshabilitar la encriptación, los mensajes volverán a estar en texto plano.",
-    "disableConfirm": "Ingresa tu contraseña actual para confirmar.",
-    "enableDescription": "La encriptación protege tus mensajes con una contraseña que solo tú conoces.",
-    "enableHint": "Usa una contraseña segura de al menos 8 caracteres.",
-    "passwordLabelCurrent": "Contraseña actual",
-    "passwordLabelEncryption": "Contraseña de encriptación",
-    "passwordPlaceholder": "Mínimo 8 caracteres",
-    "showPasswordAria": "Mostrar contraseña",
-    "hidePasswordAria": "Ocultar contraseña",
-    "encryptExisting": "Encriptar también los mensajes anteriores",
-    "encryptExistingHint": "Esto puede tomar un momento si hay muchos mensajes",
-    "cancel": "Cancelar",
-    "processing": "Procesando...",
-    "disable": "Deshabilitar",
-    "encrypt": "Encriptar"
+    "infoAria": "Información de la conversación",
+    "encryptedTooltip": "Los mensajes de esta conversación se guardan cifrados (AES-256). Yebaam no accede a su contenido, salvo orden judicial o denuncia de un participante."
   },
   "camera": {
     "open": "Cámara",

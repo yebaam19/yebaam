@@ -1,5 +1,6 @@
 import { getServerClient } from '@/utils/supabase/server';
 import { withRetry } from '@/utils/supabase/with-retry';
+import { decryptChatContent } from '@/lib/server/chat-crypto';
 import { type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
 import type { ConversationRow, MessageRow, ParticipantRow } from './conversations.types';
 import { serializeConversationRow } from './serializeConversation';
@@ -70,7 +71,10 @@ export async function loadConversationList(
   );
   const recentMsgs = lastMsgResults
     .map((r) => (r.data as MessageRow | null))
-    .filter((m): m is MessageRow => m !== null);
+    .filter((m): m is MessageRow => m !== null)
+    // Sidebar/inbox previews ship `lastMessage.content` — decrypt here, inside
+    // the participant-authenticated request, so ciphertext never reaches the UI.
+    .map((m) => ({ ...m, content: decryptChatContent(m.content, m.conversation_id) }));
 
   const partsByConv = new Map<string, ParticipantRow[]>();
   for (const p of (allParts ?? []) as ParticipantRow[]) {
@@ -129,7 +133,6 @@ export async function loadConversationList(
   const result = ((convs ?? []) as ConversationRow[]).map((c) =>
     serializeConversationRow({
       c,
-      userId,
       partsByConv,
       lastMsgByConv,
       mine,

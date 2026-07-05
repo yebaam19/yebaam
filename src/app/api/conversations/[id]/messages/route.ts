@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import {
+  decryptChatContent,
+  encryptChatContent,
+  isPrivateConversation,
+} from '@/lib/server/chat-crypto';
 
 type MessageRow = {
   id: string;
@@ -20,7 +25,7 @@ function mapMessage(row: MessageRow) {
     id: row.id,
     conversationId: row.conversation_id,
     senderId: row.sender_id,
-    content: row.content,
+    content: decryptChatContent(row.content, row.conversation_id),
     media: row.media ?? null,
     status: row.status,
     replyToId: row.reply_to_id,
@@ -132,29 +137,35 @@ export async function POST(
   const senderId = me?.user?.id;
   if (!senderId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: membership, error: memberErr } = await client
-    .from('conversation_participants')
-    .select('conversation_id')
-    .eq('conversation_id', conversationId)
-    .eq('user_id', senderId)
+  // Membership check via the conversation row itself (`conv_select` RLS =
+  // is_conversation_participant), which also yields club_id for the
+  // encryption policy gate in the same round-trip.
+  const { data: conv, error: memberErr } = await client
+    .from('conversations')
+    .select('id, club_id')
+    .eq('id', conversationId)
     .maybeSingle();
 
   if (memberErr) {
     return NextResponse.json({ error: memberErr.message }, { status: 500 });
   }
-  if (!membership) {
+  if (!conv) {
     return NextResponse.json(
       { error: 'Not a participant in this conversation' },
       { status: 403 },
     );
   }
 
+  const storedContent = isPrivateConversation(conv as { club_id: string | null })
+    ? encryptChatContent(content, conversationId)
+    : content;
+
   const { data: inserted, error } = await client
     .from('messages')
     .insert({
       conversation_id: conversationId,
       sender_id: senderId,
-      content: content || '',
+      content: storedContent || '',
       media: body.media ?? null,
       reply_to_id: body.replyToId ?? null,
       status: 'sent',

@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import {
+  decryptChatContent,
+  encryptChatContent,
+  isPrivateConversation,
+} from '@/lib/server/chat-crypto';
 
 type MessageRow = {
   id: string;
@@ -20,7 +25,7 @@ function mapMessage(row: MessageRow) {
     id: row.id,
     conversationId: row.conversation_id,
     senderId: row.sender_id,
-    content: row.content,
+    content: decryptChatContent(row.content, row.conversation_id),
     media: row.media ?? null,
     status: row.status,
     replyToId: row.reply_to_id,
@@ -29,6 +34,31 @@ function mapMessage(row: MessageRow) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+/**
+ * Fetch one message, decrypted. Realtime subscribers receive the raw row —
+ * ciphertext for private conversations — and call this to resolve the
+ * plaintext. `msg_select` RLS already restricts the read to participants.
+ */
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string; messageId: string }> }) {
+  const token = await getServerAccessToken();
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id: conversationId, messageId } = await context.params;
+
+  const client = await getServerClient();
+  const { data, error } = await client
+    .from('messages')
+    .select('*')
+    .eq('id', messageId)
+    .eq('conversation_id', conversationId)
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!data) return NextResponse.json({ error: 'Message not found' }, { status: 404 });
+
+  return NextResponse.json({ success: true, data: mapMessage(data as MessageRow) });
 }
 
 /**
@@ -53,10 +83,21 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   const senderId = me?.user?.id;
   if (!senderId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Same policy gate as the send path: private conversations store ciphertext.
+  const { data: conv } = await client
+    .from('conversations')
+    .select('id, club_id')
+    .eq('id', conversationId)
+    .maybeSingle();
+  const storedContent =
+    conv && isPrivateConversation(conv as { club_id: string | null })
+      ? encryptChatContent(content, conversationId)
+      : content;
+
   const now = new Date().toISOString();
   const { data, error } = await client
     .from('messages')
-    .update({ content, edited_at: now, updated_at: now })
+    .update({ content: storedContent, edited_at: now, updated_at: now })
     .eq('id', messageId)
     .eq('conversation_id', conversationId)
     .eq('sender_id', senderId)

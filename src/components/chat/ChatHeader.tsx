@@ -3,10 +3,10 @@
 import { useTranslations } from 'next-intl';
 import {
   InformationCircleIcon,
+  LockClosedIcon,
   XMarkIcon,
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
-import EncryptionButton from './EncryptionButton';
 import ChatOptionsMenu from './ChatOptionsMenu';
 import CallHeaderButtons from '@/features/chat/calls/components/CallHeaderButtons';
 
@@ -52,7 +52,11 @@ export default function ChatHeader({
           <h3 className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             {contactName}
             {isEncrypted && (
-              <span className="text-xs text-primary-600 dark:text-primary-500 font-normal">
+              <span
+                title={t('encryptedTooltip')}
+                className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-500 font-normal"
+              >
+                <LockClosedIcon className="h-3.5 w-3.5" aria-hidden />
                 {t('encryptedBadge')}
               </span>
             )}
@@ -68,12 +72,6 @@ export default function ChatHeader({
           <CallHeaderButtons
             conversationId={conversationId}
             peer={peerUserId ? { id: peerUserId, name: contactName, avatar: contactAvatar } : null}
-          />
-        )}
-        {conversationId && (
-          <EncryptionButton
-            conversationId={conversationId}
-            isEncrypted={isEncrypted}
           />
         )}
         {peerUserId && <ChatOptionsMenu recipientId={peerUserId} />}

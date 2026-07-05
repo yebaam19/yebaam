@@ -72,27 +72,10 @@ export interface Conversation {
   lastReadAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  // Campos de encriptación
+  /** Policy-derived: private conversations (direct + salitas) are encrypted
+   * at rest once the platform key is configured; club chats are not. */
   isEncrypted?: boolean;
   encryptionEnabledAt?: Date | null;
-}
-
-// DTOs para encriptación
-export interface EnableEncryptionDto {
-  password: string;
-  encryptExistingMessages?: boolean;
-}
-
-export interface DisableEncryptionDto {
-  password: string;
-}
-
-export interface EncryptionResult {
-  conversationId: string;
-  encryptionEnabled: boolean;
-  encryptedMessagesCount?: number;
-  decryptedMessagesCount?: number;
-  message: string;
 }
 
 // DTOs para requests

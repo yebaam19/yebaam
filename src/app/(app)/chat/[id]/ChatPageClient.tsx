@@ -11,6 +11,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { type Conversation, type MessageMedia } from '@/features/chat/types';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
+import { fetchDecryptedContent, isEncryptedContent } from '@/features/chat/lib/messageCipher';
 import { loadConversationDisplay, type ParticipantDisplay } from '@/features/chat/lib/conversationDisplay';
 import InboxPanel from './_components/InboxPanel';
 import ConversationPane from './_components/ConversationPane';
@@ -140,17 +141,28 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
             if (!isMounted) return;
             const row = payload.new as DbMessageRow;
             if (!row?.id) return;
-            const incoming = rowToMessage(row);
             // UPDATE (edit / soft-delete) → replace in place; INSERT → append.
-            setMessages((prev) => {
-              const idx = prev.findIndex((m) => m.id === incoming.id);
-              if (idx !== -1) {
-                const next = [...prev];
-                next[idx] = incoming;
-                return next;
-              }
-              return mergeMessages(prev, [incoming]);
-            });
+            const applyIncoming = (incoming: ReturnType<typeof rowToMessage>) => {
+              setMessages((prev) => {
+                const idx = prev.findIndex((m) => m.id === incoming.id);
+                if (idx !== -1) {
+                  const next = [...prev];
+                  next[idx] = incoming;
+                  return next;
+                }
+                return mergeMessages(prev, [incoming]);
+              });
+            };
+            // Private-chat rows arrive as ciphertext — resolve the plaintext
+            // through the membership-gated single-message endpoint first.
+            if (isEncryptedContent(row.content)) {
+              void fetchDecryptedContent(row.conversation_id, row.id).then((plain) => {
+                if (!isMounted || plain === null) return;
+                applyIncoming(rowToMessage({ ...row, content: plain }));
+              });
+              return;
+            }
+            applyIncoming(rowToMessage(row));
           },
         });
 

@@ -3,22 +3,12 @@ import { useSocket } from '@/providers/socket-provider';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
 import { chatService } from '@/features/chat/services/chat.service';
-import { useEncryptionStore } from '@/features/chat/store/encryption.store';
 import type { MessageMedia } from '@/features/chat/types';
 
 interface UseMessengerChatProps {
   contactId: string;
   activeChat: any;
 }
-
-// Helper para extraer texto del content (puede ser string u objeto)
-const getContentText = (content: any): string => {
-  if (!content) return '';
-  if (typeof content === 'string') return content;
-  if (content.text) return content.text;
-  if (content.type === 'text' && content.text) return content.text;
-  return '';
-};
 
 export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -29,7 +19,6 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const user = useAuthStore((state) => state.user);
-  const { getPassword } = useEncryptionStore();
 
   const { markConversationAsOpen, markConversationAsClosed } = useChatNotifications();
   const { chatSocket, usersSocket } = useSocket();
@@ -58,40 +47,7 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
         setConversationId(conversation.id);
         markConversationAsOpen(conversation.id);
 
-        // Obtener contraseña de encriptación si la conversación está encriptada
-        const encryptionPassword = conversation.isEncrypted 
-          ? getPassword(conversation.id) || undefined
-          : undefined;
-
-        if (conversation.isEncrypted && !encryptionPassword) {
-          console.warn(' [useMessengerChat] Conversación encriptada pero no hay contraseña guardada');
-        }
-
-        if (encryptionPassword) {
-          console.log(' [useMessengerChat] Usando contraseña de encriptación:', {
-            conversationId: conversation.id,
-            passwordLength: encryptionPassword.length,
-            passwordPreview: encryptionPassword.substring(0, 3) + '***',
-          });
-        }
- 
-        const result = await chatService.getConversationMessages(
-          conversation.id, 
-          50, 
-          0,
-          encryptionPassword,
-        );
-       
-        console.log(' [useMessengerChat] Primeros 3 mensajes:', result.messages.slice(0, 3).map((m: any) => {
-          const contentText = getContentText(m.content);
-          return {
-            id: m.id?.slice(0, 8),
-            content: contentText.slice(0, 20),
-            status: m.status,
-            senderId: m.senderId?.slice(0, 8),
-            media: m.media
-          };
-        }));
+        const result = await chatService.getConversationMessages(conversation.id, 50, 0);
 
         const sortedMessages = result.messages.sort((a: any, b: any) => {
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();

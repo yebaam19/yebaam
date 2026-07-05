@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { withRetry } from '@/utils/supabase/with-retry';
+import { chatCryptoReady } from '@/lib/server/chat-crypto';
 import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
 
 type ConversationRow = {
@@ -116,7 +117,8 @@ export async function GET(
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         metadata: meta,
-        isEncrypted: Boolean((meta as { is_encrypted?: boolean }).is_encrypted),
+        // Direct conversations are always private → encrypted-by-policy.
+        isEncrypted: chatCryptoReady(),
         encryptionEnabledAt:
           (meta as { encryption_enabled_at?: string }).encryption_enabled_at ?? null,
       },

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken, getServiceClient } from '@/utils/supabase/server';
 import { imageUrl } from '@/lib/media/urls';
+import { chatCryptoReady } from '@/lib/server/chat-crypto';
 import { groupAutoName } from '@/features/chat/lib/groupName';
 
 type ConversationRow = {
@@ -152,7 +153,8 @@ export async function POST(request: NextRequest) {
       lastReadAt: null,
       createdAt: conv.created_at,
       updatedAt: conv.updated_at,
-      isEncrypted: false,
+      // Group "salitas" are private conversations → encrypted-by-policy.
+      isEncrypted: chatCryptoReady(),
       encryptionEnabledAt: null,
     },
   });
