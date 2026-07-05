@@ -8,6 +8,7 @@
 'use client'
 
 import { ArrowPathIcon, ArrowUpTrayIcon, LinkIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { extractImageId } from '@/lib/media/urls'
 import { uploadService } from '@/lib/service/upload.service'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
@@ -15,7 +16,8 @@ import { toast } from 'sonner'
 
 interface ImageUploadProps {
   currentImageUrl?: string | null
-  onImageChange: (url: string) => void
+  /** `cloudflareId` es el id "pelado" de Cloudflare Images; null cuando la imagen no vive en Cloudflare (URL externa) o se elimina. */
+  onImageChange: (url: string, cloudflareId?: string | null) => void
   label: string
   imageType: 'avatar' | 'cover' // Tipo de imagen para el backend
   maxSizeMB?: number
@@ -51,9 +53,9 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
       const localPreview = URL.createObjectURL(file)
       setPreviewUrl(localPreview)
 
-      const { url } = await uploadService.uploadImage(file)
+      const { id, url } = await uploadService.uploadImage(file)
       setPreviewUrl(url)
-      onImageChange(url)
+      onImageChange(url, id)
       toast.success('Imagen subida correctamente')
     } catch (error) {
       console.error('Error uploading image:', error)
@@ -66,7 +68,7 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
 
   const handleRemoveImage = () => {
     setPreviewUrl(null)
-    onImageChange('')
+    onImageChange('', null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -91,7 +93,8 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
     }
 
     setPreviewUrl(urlInput)
-    onImageChange(urlInput)
+    // URLs de imagedelivery.net se reducen a su id; URLs externas quedan sin id (null).
+    onImageChange(urlInput, extractImageId(urlInput))
     setShowUrlInput(false)
     setUrlInput('')
     toast.success('URL agregada correctamente')

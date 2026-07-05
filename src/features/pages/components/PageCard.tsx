@@ -7,6 +7,7 @@ import { CheckBadgeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim
 import { useTranslations } from 'next-intl';
 import type { Page } from '../types/page.types';
 import { formatFollowersCount, getCategoryLabel, truncateText } from '../utils/pageHelpers';
+import { resolveImageRef } from '@/lib/media/urls';
 
 interface PageCardProps {
   page: Page;
@@ -28,21 +29,19 @@ export const PageCard: FC<PageCardProps> = ({
     onFollowToggle?.(page.id, page.isFollowing || false);
   };
 
-  // Log para debug de imágenes
-  console.log('PageCard:', {
-    name: page.name,
-    profileImageUrl: page.profileImageUrl,
-    coverImageUrl: page.coverImageUrl,
-  });
+  // id-first: la DB guarda el id de Cloudflare desnudo; resolveImageRef lo
+  // convierte en URL de entrega (las URLs completas legadas pasan intactas).
+  const coverSrc = resolveImageRef(page.coverImageUrl, 'cover');
+  const profileSrc = resolveImageRef(page.profileImageUrl, 'avatar');
 
   return (
     <Link href={`/feed/paginas/${page.slug}`}>
       <div className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* Cover Image */}
-        {page.coverImageUrl && (
+        {coverSrc && (
           <div className="relative h-24 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
             <Image
-              src={page.coverImageUrl}
+              src={coverSrc}
               alt={t('coverAlt', { name: page.name })}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -52,7 +51,7 @@ export const PageCard: FC<PageCardProps> = ({
           </div>
         )}
 
-        {!page.coverImageUrl && (
+        {!coverSrc && (
           <div className="h-24 bg-gradient-to-br from-blue-500 to-purple-600" />
         )}
 
@@ -61,9 +60,9 @@ export const PageCard: FC<PageCardProps> = ({
           {/* Avatar */}
           <div className="flex items-start justify-between mb-3">
             <div className="relative">
-              {page.profileImageUrl ? (
+              {profileSrc ? (
                 <Image
-                  src={page.profileImageUrl}
+                  src={profileSrc}
                   alt={page.name}
                   width={64}
                   height={64}

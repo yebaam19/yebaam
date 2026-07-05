@@ -13,6 +13,7 @@ import {
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { invalidate } from '@/lib/hooks/cacheStore';
 import { postService } from '@/app/(app)/feed/post/services/post.service';
+import { uploadService } from '@/lib/service/upload.service';
 
 interface CreateReelModalProps {
   isOpen: boolean;
@@ -176,35 +177,22 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
         pageId,
       });
 
-      // 1. Generar presigned URL
-      const fileName = `reel-${Date.now()}.${videoBlob ? 'webm' : 'mp4'}`;
-      const { urls } = await postService.generateUploadUrls({
-        files: [{
-          fileName,
-          fileType: videoToUpload.type,
-          fileSize: videoToUpload.size,
-        }],
+      // 1. Subir a Cloudflare Stream vía uploadService (el MediaRecorder
+      // entrega un Blob; uploadVideo espera File).
+      const file =
+        videoToUpload instanceof File
+          ? videoToUpload
+          : new File([videoToUpload], `reel-${Date.now()}.webm`, {
+              type: videoToUpload.type || 'video/webm',
+            });
+
+      const { uid, duration } = await uploadService.uploadVideo(file, {
+        maxDurationSeconds: MAX_DURATION,
       });
 
-      const { uploadUrl, cloudFrontUrl, s3Key } = urls[0];
-      console.log('[CREATE REEL] Presigned URL generada:', s3Key);
-
-      // 2. Subir a S3
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: videoToUpload,
-        headers: {
-          'Content-Type': videoToUpload.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(t('uploadS3Error'));
-      }
-
-      console.log('[CREATE REEL] Video subido a S3');
-
-      // 3. Crear post como reel
+      // 2. Crear post como reel — persistencia id-first (misma forma que
+      // buildPostData): solo el uid de Stream viaja al backend; las URLs de
+      // reproducción se reconstruyen al renderizar.
       await postService.create({
         content: caption || undefined,
         isReel: true,
@@ -212,12 +200,11 @@ export function CreateReelModal({ isOpen, onClose, pageId }: CreateReelModalProp
         privacy: 'public',
         pageId: pageId || undefined,
         mediaFiles: [{
-          s3Key,
-          url: cloudFrontUrl,
-          type: 'video' as any, // Backend espera 'video' en minúscula
-          size: videoToUpload.size,
-          duration: videoDuration,
-          mimeType: videoToUpload.type,
+          type: 'video',
+          streamUid: uid,
+          size: file.size,
+          mimeType: file.type,
+          duration: duration || videoDuration,
         }],
       });
 

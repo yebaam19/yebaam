@@ -175,20 +175,7 @@ export interface CreateArticleData {
   tags?: string[]
 }
 
-export interface UpdateArticleData {
-  title?: string
-  subtitle?: string
-  content?: string
-  headerImageUrl?: string
-  coverImageUrl?: string
-  attachments?: Array<{
-    type: MediaType
-    url: string
-    caption?: string | null
-  }>
-  visibility?: ArticleVisibility
-  tags?: string[]
-}
+// La actualización real vive en actions/articles.actions.ts (UpdateArticleInput).
 
 // ============================================================================
 // RESULT INTERFACES
@@ -201,18 +188,6 @@ export interface CreateArticleResult {
     title: string
     slug: string
     url: string
-  }
-  error?: string
-}
-
-export interface UpdateArticleResult {
-  success: boolean
-  article?: {
-    id: string
-    title: string
-    slug: string
-    url: string
-    media: ArticleMedia[]
   }
   error?: string
 }

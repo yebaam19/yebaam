@@ -179,6 +179,10 @@ export interface UpdateProfessionalProfileDTO {
   visibility?: ProfessionalProfileVisibility
   avatarUrl?: string
   coverUrl?: string
+  /** Bare Cloudflare Images id for the avatar. When omitted, the server derives it from avatarUrl. */
+  avatarCloudflareId?: string | null
+  /** Bare Cloudflare Images id for the cover. When omitted, the server derives it from coverUrl. */
+  coverCloudflareId?: string | null
   bio?: string
 }
 

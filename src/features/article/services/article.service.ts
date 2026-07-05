@@ -19,8 +19,6 @@ import {
   DeleteArticleResult,
   ToggleBookmarkResult,
   ToggleLikeResult,
-  UpdateArticleData,
-  UpdateArticleResult,
 } from '../interfaces'
 
 // ============================================================================
@@ -275,71 +273,8 @@ class ArticleService {
     }
   }
 
-  async updateArticle(articleId: string, data: UpdateArticleData, userId: string): Promise<UpdateArticleResult> {
-    await delay(600)
-
-    try {
-      const articleIndex = this.articles.findIndex((a) => a.id === articleId)
-      if (articleIndex === -1) {
-        return { success: false, error: 'Artículo no encontrado' }
-      }
-
-      const article = this.articles[articleIndex]
-      if (article.authorId !== userId) {
-        return { success: false, error: 'No tienes permisos para editar este artículo' }
-      }
-
-      // Update fields
-      let slug = article.slug
-      if (data.title && data.title !== article.title) {
-        slug = generateSlug(data.title)
-        let counter = 1
-        while (this.articles.some((a) => a.slug === slug && a.id !== articleId)) {
-          slug = `${generateSlug(data.title)}-${counter}`
-          counter++
-        }
-      }
-
-      const updatedArticle: Article = {
-        ...article,
-        title: data.title?.trim() || article.title,
-        content: data.content || article.content,
-        headerImageUrl: data.coverImageUrl !== undefined ? data.coverImageUrl : article.headerImageUrl,
-        visibility: data.visibility || article.visibility,
-        tags: data.tags || article.tags,
-        slug,
-        readTime: data.content ? calculateReadTime(data.content) : article.readTime,
-        updatedAt: new Date(),
-        media: data.attachments
-          ? data.attachments.map((att, index) => ({
-              id: `media-${Date.now()}-${index}`,
-              articleId: article.id,
-              type: att.type,
-              url: att.url,
-              caption: att.caption || null,
-              order: index,
-              createdAt: new Date(),
-            }))
-          : article.media,
-      }
-
-      this.articles[articleIndex] = updatedArticle
-
-      return {
-        success: true,
-        article: {
-          id: updatedArticle.id,
-          title: updatedArticle.title,
-          slug: updatedArticle.slug,
-          url: `/feed/article/${updatedArticle.id}`,
-          media: updatedArticle.media,
-        },
-      }
-    } catch (error) {
-      console.error('Error updating article:', error)
-      return { success: false, error: 'Error al actualizar el artículo' }
-    }
-  }
+  // updateArticle vive en `actions/articles.actions.ts` (updateArticleAction):
+  // persiste de verdad en Supabase. El mock que existía aquí fue eliminado.
 
   async deleteArticle(articleId: string, userId: string): Promise<DeleteArticleResult> {
     await delay(400)

@@ -29,6 +29,9 @@ export interface EditProfileFormData {
   bio?: string
   avatarUrl?: string
   coverUrl?: string
+  /** Id "pelado" de Cloudflare Images (lo emite ImageUpload); el servidor lo deriva de la URL si falta. */
+  avatarCloudflareId?: string | null
+  coverCloudflareId?: string | null
   visibility: ProfessionalProfileVisibility
 }
 
@@ -54,6 +57,8 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
       bio: '',
       avatarUrl: '',
       coverUrl: '',
+      avatarCloudflareId: null,
+      coverCloudflareId: null,
       visibility: 'PUBLIC',
     },
   })
@@ -84,6 +89,10 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
         bio: profile.bio ?? '',
         avatarUrl: profile.avatarUrl ?? '',
         coverUrl: profile.coverUrl ?? '',
+        // El perfil solo expone URLs resueltas; si el usuario no cambia la
+        // imagen, el servidor recupera el id desde la URL (extractImageId).
+        avatarCloudflareId: null,
+        coverCloudflareId: null,
         visibility: profile.visibility ?? 'PUBLIC',
       })
     }
@@ -102,11 +111,13 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
     // Solo incluir avatarUrl si hay contenido
     if (data.avatarUrl?.trim()) {
       cleanData.avatarUrl = data.avatarUrl.trim()
+      if (data.avatarCloudflareId) cleanData.avatarCloudflareId = data.avatarCloudflareId
     }
 
     // Solo incluir coverUrl si hay contenido
     if (data.coverUrl?.trim()) {
       cleanData.coverUrl = data.coverUrl.trim()
+      if (data.coverCloudflareId) cleanData.coverCloudflareId = data.coverCloudflareId
     }
 
     await onSubmit(cleanData)
@@ -201,7 +212,10 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
                   {/* Avatar Upload */}
                   <ImageUpload
                     currentImageUrl={avatarUrl}
-                    onImageChange={(url) => setValue('avatarUrl', url)}
+                    onImageChange={(url, cloudflareId) => {
+                      setValue('avatarUrl', url)
+                      setValue('avatarCloudflareId', cloudflareId ?? null)
+                    }}
                     label={t('avatarLabel')}
                     imageType="avatar"
                     maxSizeMB={5}
@@ -210,7 +224,10 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
                   {/* Cover Upload */}
                   <ImageUpload
                     currentImageUrl={coverUrl}
-                    onImageChange={(url) => setValue('coverUrl', url)}
+                    onImageChange={(url, cloudflareId) => {
+                      setValue('coverUrl', url)
+                      setValue('coverCloudflareId', cloudflareId ?? null)
+                    }}
                     label={t('coverLabel')}
                     imageType="cover"
                     maxSizeMB={10}

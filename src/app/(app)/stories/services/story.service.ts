@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
 import { uploadService } from '@/lib/service/upload.service';
+import { imageUrl } from '@/lib/media/urls';
 
 export interface StoryView {
   userId: string;
@@ -53,7 +54,7 @@ export interface PresignedUrlResponse {
 type DbStory = {
   id: string;
   author_id: string;
-  media_url: string;
+  media_url: string | null;
   media_type: 'image' | 'video';
   content: string | null;
   background_color: string | null;
@@ -79,12 +80,33 @@ type DbProfile = {
   avatar_url: string | null;
 };
 
+/**
+ * id-first: la URL de entrega se reconstruye del id de Cloudflare al leer.
+ * Videos → URL de iframe (mismo formato que devolvía uploadFile; el visor usa
+ * StreamVideo con el uid y solo cae a mediaUrl en filas legadas sin uid).
+ * Imágenes → imagedelivery.net variante `public` (lo que consume `<img src>`).
+ * Filas legadas sin id de Cloudflare caen a `media_url` tal cual.
+ */
+function storyMediaUrl(row: DbStory): string {
+  if (row.cloudflare_stream_uid) {
+    return `https://iframe.videodelivery.net/${row.cloudflare_stream_uid}`;
+  }
+  if (row.cloudflare_image_id) {
+    try {
+      return imageUrl(row.cloudflare_image_id, 'public');
+    } catch {
+      // NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ausente — cae al valor legado.
+    }
+  }
+  return row.media_url ?? '';
+}
+
 function rowToStory(row: DbStory, views: DbStoryView[] = []): Story {
   return {
     id: row.id,
     userId: row.author_id,
-    mediaUrl: row.media_url,
-    s3Key: row.cloudflare_image_id ?? row.cloudflare_stream_uid ?? row.media_url,
+    mediaUrl: storyMediaUrl(row),
+    s3Key: row.cloudflare_image_id ?? row.cloudflare_stream_uid ?? row.media_url ?? '',
     type: row.media_type,
     status: new Date(row.expires_at).getTime() > Date.now() ? 'active' : 'expired',
     createdAt: row.created_at,
@@ -126,12 +148,13 @@ class StoryService {
     const upload = await uploadService.uploadFile(file);
     const isVideo = upload.type === 'video';
 
+    // id-first: solo persistimos el id de Cloudflare; `media_url` (nullable)
+    // queda sin escribir y la URL de entrega se reconstruye en rowToStory.
     const { data: inserted, error } = await supabase
       .from('stories')
       .insert([
         {
           author_id: userId,
-          media_url: upload.url,
           media_type: options.type,
           content: options.caption ?? null,
           background_color: options.backgroundColor ?? null,

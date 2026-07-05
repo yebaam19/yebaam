@@ -20,7 +20,7 @@ import {
   createPostSchema,
   type CreatePostInput,
 } from '../validators/post.schemas';
-import type { PostFeeling, PostLocation, PostGif } from '../interfaces/post.interfaces';
+import type { PostFeeling, PostLocation, PostGif, UpdatePostDTO } from '../interfaces/post.interfaces';
 
 import { useRef } from 'react';
 import { useUpdatePost } from '../hooks/usePosts';
@@ -198,16 +198,7 @@ export default function EditPostModal() {
       // Validar backgroundColor antes de enviar
       const isValidBgColor = backgroundColor && /^#[0-9A-Fa-f]{6}$/.test(backgroundColor);
       
-      let mediaFiles: Array<{
-        s3Key: string;
-        url: string;
-        type: 'image' | 'video';
-        size: number;
-        mimeType: string;
-        duration?: number;
-        streamUid?: string;
-        thumbnailUrl?: string;
-      }> = [];
+      let mediaFiles: NonNullable<UpdatePostDTO['mediaFiles']> = [];
 
       // Subir nuevos archivos si hay archivos seleccionados
       if (selectedFiles.length > 0) {
@@ -224,16 +215,25 @@ export default function EditPostModal() {
           }
         );
 
-        mediaFiles = uploadResults.map(result => ({
-          s3Key: result.s3Key,
-          url: result.url,
-          type: result.type,
-          size: result.fileSize,
-          mimeType: result.fileType,
-          duration: result.duration,
-          streamUid: result.streamUid,
-          thumbnailUrl: result.thumbnailUrl,
-        }));
+        // Persistencia id-first (misma forma que buildPostData en
+        // CreatePostModal): solo el id de Cloudflare viaja al backend; las
+        // URLs de entrega se reconstruyen al renderizar.
+        mediaFiles = uploadResults.map(result =>
+          result.type === 'video'
+            ? {
+                type: 'video' as const,
+                streamUid: result.streamUid ?? result.s3Key,
+                size: result.fileSize,
+                mimeType: result.fileType,
+                duration: result.duration,
+              }
+            : {
+                type: 'image' as const,
+                cfImageId: result.s3Key,
+                size: result.fileSize,
+                mimeType: result.fileType,
+              }
+        );
 
         toast.success(t('editModal.uploadedCount', { count: selectedFiles.length }));
       }

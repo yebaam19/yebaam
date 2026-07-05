@@ -77,7 +77,7 @@ type DbPhoto = {
   album_id: string | null;
   storage_bucket: string;
   storage_key: string;
-  url: string;
+  url: string | null;
   caption: string | null;
   width: number | null;
   height: number | null;
@@ -95,7 +95,7 @@ type DbVideo = {
   album_id: string | null;
   storage_bucket: string;
   storage_key: string;
-  url: string;
+  url: string | null;
   thumbnail_url: string | null;
   caption: string | null;
   duration_seconds: number | null;

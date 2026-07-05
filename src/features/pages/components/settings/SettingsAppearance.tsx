@@ -7,6 +7,7 @@ import { PhotoIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { Page } from '../../types/page.types';
 import { usePageImageUpload } from '../../hooks/usePageImageUpload';
 import { useUpdatePage } from '../../hooks/usePages';
+import { resolveImageRef } from '@/lib/media/urls';
 import { toast } from 'sonner';
 
 interface SettingsAppearanceProps {
@@ -15,8 +16,14 @@ interface SettingsAppearanceProps {
 
 export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
   const t = useTranslations('pages.settings.appearance');
-  const [profileImage, setProfileImage] = useState<string | null>(page.profileImageUrl || null);
-  const [coverImage, setCoverImage] = useState<string | null>(page.coverImageUrl || null);
+  // id-first: la DB guarda el id de Cloudflare desnudo; la URL de entrega se
+  // reconstruye al renderizar (resolveImageRef tolera URLs completas legadas).
+  const [profileImage, setProfileImage] = useState<string | null>(
+    resolveImageRef(page.profileImageUrl, 'avatar')
+  );
+  const [coverImage, setCoverImage] = useState<string | null>(
+    resolveImageRef(page.coverImageUrl, 'cover')
+  );
 
   const profileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -27,12 +34,12 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
     isUploading: isUploadingProfile,
     progress: profileProgress
   } = usePageImageUpload(page.id, 'avatar', {
-    onSuccess: (fileUrl) => {
-      setProfileImage(fileUrl);
-      // Update page with new profile image
+    onSuccess: ({ id, url }) => {
+      setProfileImage(url);
+      // id-first: se persiste el id desnudo, no la URL de entrega.
       updatePage.mutate({
         pageId: page.id,
-        data: { avatarUrl: fileUrl }
+        data: { profileImageUrl: id }
       });
     },
     onError: (error) => {
@@ -46,12 +53,12 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
     isUploading: isUploadingCover,
     progress: coverProgress
   } = usePageImageUpload(page.id, 'cover', {
-    onSuccess: (fileUrl) => {
-      setCoverImage(fileUrl);
-      // Update page with new cover image
+    onSuccess: ({ id, url }) => {
+      setCoverImage(url);
+      // id-first: se persiste el id desnudo, no la URL de entrega.
       updatePage.mutate({
         pageId: page.id,
-        data: { coverImageUrl: fileUrl }
+        data: { coverImageUrl: id }
       });
     },
     onError: (error) => {
@@ -104,13 +111,13 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
         setProfileImage(null);
         updatePage.mutate({
           pageId: page.id,
-          data: { avatarUrl: '' }
+          data: { profileImageUrl: null }
         });
       } else {
         setCoverImage(null);
         updatePage.mutate({
           pageId: page.id,
-          data: { coverImageUrl: '' }
+          data: { coverImageUrl: null }
         });
       }
       toast.success(type === 'profile' ? t('success.profileRemoved') : t('success.coverRemoved'));

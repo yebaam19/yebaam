@@ -14,8 +14,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { uploadService } from '@/lib/service/upload.service'
-import { Article, UpdateArticleData } from '../interfaces'
-import { articleService } from '../services'
+import { Article, ArticleVisibility } from '../interfaces'
+import { updateArticleAction } from '../actions/articles.actions'
 import { CoverImageArea } from './CoverImageArea'
 import { EditableTitle } from './EditableTitle'
 import { EditArticleFormHeader } from './EditArticleFormHeader'
@@ -100,19 +100,26 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
     setIsUpdating(true)
 
     try {
-      // TODO: In real implementation, upload cover image to server first if changed
-      const headerImageUrl = coverImageUrl || undefined
-
-      const updateData: UpdateArticleData = {
-        title: title.trim(),
-        content,
-        headerImageUrl,
-        visibility: article.visibility,
+      // Portada: undefined = sin cambios; id de Cloudflare = reemplazar; null = quitar.
+      // Si hay archivo nuevo se sube a Cloudflare Images y se envía solo el id.
+      let cfImageId: string | null | undefined
+      if (coverImageFile) {
+        const uploaded = await uploadService.uploadImage(coverImageFile)
+        cfImageId = uploaded.id
+      } else if (!coverImageUrl && article.headerImageUrl) {
+        cfImageId = null
       }
 
-      const result = await articleService.updateArticle(article.id, updateData, user.id)
+      const result = await updateArticleAction(article.id, {
+        title: title.trim(),
+        subtitle: article.subtitle ?? undefined,
+        content,
+        tags: article.tags,
+        visibility: article.visibility === ArticleVisibility.PRIVATE ? 'private' : 'public',
+        cfImageId,
+      })
 
-      if (result.success) {
+      if (result.ok) {
         setShowSuccessDialog(true)
       } else {
         alert(t('updateError', { message: result.error || t('unknownError') }))

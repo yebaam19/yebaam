@@ -5,9 +5,10 @@ import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import type {
   CreateProfessionalProfileDTO,
   ProfessionalProfile,
-  ProfessionalProfileVisibility,
   UpdateProfessionalProfileDTO,
 } from '@/features/professional-profile/interfaces/professional-profile.interfaces';
+import { extractImageId } from '@/lib/media/urls';
+import { type ProfileRow, toProfile } from './profile.mappers';
 import { listPublicProfiles } from './profile.server';
 
 type ActionResult<T = undefined> =
@@ -26,28 +27,6 @@ function revalidateFeed() {
   revalidatePath('/feed/professional-profile/[username]', 'page');
 }
 
-function mapCreatedRow(row: {
-  id: string;
-  user_id: string;
-  visibility: ProfessionalProfileVisibility;
-  avatar_url: string | null;
-  cover_url: string | null;
-  bio: string | null;
-  created_at: string;
-  updated_at: string;
-}): ProfessionalProfile {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    visibility: row.visibility,
-    avatarUrl: row.avatar_url,
-    coverUrl: row.cover_url,
-    bio: row.bio,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
 export async function createProfileAction(
   data: CreateProfessionalProfileDTO,
 ): Promise<ActionResult<ProfessionalProfile>> {
@@ -63,7 +42,7 @@ export async function createProfileAction(
   if (error || !row) return { ok: false, error: error?.message ?? 'No se pudo crear el perfil' };
 
   revalidateFeed();
-  return { ok: true, data: mapCreatedRow(row as Parameters<typeof mapCreatedRow>[0]) };
+  return { ok: true, data: toProfile(row as ProfileRow) };
 }
 
 export async function updateProfileAction(
@@ -76,21 +55,45 @@ export async function updateProfileAction(
   const db = getServiceClient();
   const update: Record<string, unknown> = {};
   if (data.visibility !== undefined) update.visibility = data.visibility;
-  if (data.avatarUrl !== undefined) update.avatar_url = data.avatarUrl || null;
-  if (data.coverUrl !== undefined) update.cover_url = data.coverUrl || null;
+  // Dual-write: la columna id-first (*_cloudflare_id) es la fuente de verdad;
+  // avatar_url/cover_url se siguen escribiendo para lectores aún no migrados.
+  // Retirar la escritura de URL es el follow-up una vez aplicada la migración.
+  if (data.avatarUrl !== undefined) {
+    update.avatar_url = data.avatarUrl || null;
+    update.avatar_cloudflare_id = data.avatarCloudflareId ?? extractImageId(data.avatarUrl) ?? null;
+  }
+  if (data.coverUrl !== undefined) {
+    update.cover_url = data.coverUrl || null;
+    update.cover_cloudflare_id = data.coverCloudflareId ?? extractImageId(data.coverUrl) ?? null;
+  }
   if (data.bio !== undefined) update.bio = data.bio || null;
 
-  const { data: row, error } = await db
-    .from('professional_profiles')
-    .update(update)
-    .eq('id', profileId)
-    .eq('user_id', userId)
-    .select('*')
-    .maybeSingle();
+  const runUpdate = (payload: Record<string, unknown>) =>
+    db
+      .from('professional_profiles')
+      .update(payload)
+      .eq('id', profileId)
+      .eq('user_id', userId)
+      .select('*')
+      .maybeSingle();
+
+  let { data: row, error } = await runUpdate(update);
+  // Pre-migración: si las columnas *_cloudflare_id no existen aún, reintenta
+  // escribiendo solo las columnas legadas de URL. PostgREST reporta la columna
+  // desconocida del payload como PGRST204 (schema cache) o 42703 (Postgres).
+  if (
+    (error?.code === 'PGRST204' || error?.code === '42703') &&
+    ('avatar_cloudflare_id' in update || 'cover_cloudflare_id' in update)
+  ) {
+    const legacyUpdate = { ...update };
+    delete legacyUpdate.avatar_cloudflare_id;
+    delete legacyUpdate.cover_cloudflare_id;
+    ({ data: row, error } = await runUpdate(legacyUpdate));
+  }
   if (error || !row) return { ok: false, error: error?.message ?? 'No se pudo actualizar el perfil' };
 
   revalidateFeed();
-  return { ok: true, data: mapCreatedRow(row as Parameters<typeof mapCreatedRow>[0]) };
+  return { ok: true, data: toProfile(row as ProfileRow) };
 }
 
 export async function deleteProfileAction(profileId: string): Promise<ActionResult> {

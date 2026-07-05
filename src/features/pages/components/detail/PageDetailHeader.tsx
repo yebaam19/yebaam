@@ -17,6 +17,7 @@ import {
 import { BellIcon as BellSolidIcon } from '@/components/icons/heroicons-shim';
 import type { Page } from '../../types/page.types';
 import { formatFollowersCount } from '../../utils/pageHelpers';
+import { resolveImageRef } from '@/lib/media/urls';
 import { useFollowPage, useUnfollowPage } from '../../hooks/usePages';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import PageMessengerPanel from '../messages/PageMessengerPanel';
@@ -104,13 +105,18 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
     }
   };
 
+  // id-first: la DB guarda el id de Cloudflare desnudo; resolveImageRef lo
+  // convierte en URL de entrega (las URLs completas legadas pasan intactas).
+  const coverSrc = resolveImageRef(page.coverImageUrl, 'hero');
+  const profileSrc = resolveImageRef(page.profileImageUrl, 'avatar');
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow">
       {/* Cover Image */}
       <div className="relative h-72 sm:h-96 w-full overflow-hidden">
-        {page.coverImageUrl ? (
+        {coverSrc ? (
           <Image
-            src={page.coverImageUrl}
+            src={coverSrc}
             alt={t('coverAlt', { name: page.name })}
             fill
             sizes="100vw"
@@ -132,9 +138,9 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
             {/* Avatar */}
             <div className="relative">
               <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-700 shadow-xl">
-                {page.profileImageUrl ? (
+                {profileSrc ? (
                   <Image
-                    src={page.profileImageUrl}
+                    src={profileSrc}
                     alt={page.name}
                     width={160}
                     height={160}

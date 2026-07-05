@@ -1,21 +1,15 @@
 /**
  * Edit Article Page
  *
- * Page for editing an existing article (only accessible by the author)
+ * Server component: loads the authenticated user and the real article from
+ * Supabase. Only the author may edit — anyone else is bounced to the detail.
  */
 
-import { EditArticleForm, articleService } from '@/features/article'
-import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
+import { EditArticleForm } from '@/features/article'
+import { getArticleById } from '@/features/article/server/articles.server'
+import { resolveImageRef } from '@/lib/media/urls'
+import { getServerClient } from '@/utils/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import { Suspense } from 'react'
-
-// TODO: Replace with actual auth when available
-const MOCK_USER = {
-  id: 'user-1',
-  avatarUrl: 'https://i.pravatar.cc/150?u=user1',
-  displayName: 'Usuario Demo',
-  username: 'demo_user',
-}
 
 interface EditArticlePageProps {
   params: Promise<{
@@ -23,41 +17,47 @@ interface EditArticlePageProps {
   }>
 }
 
-async function EditArticleContent({ articleId }: { articleId: string }) {
-  const user = MOCK_USER
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  const result = await articleService.getArticleById(articleId)
-
-  if (!result.success || !result.article) {
-    notFound()
-  }
-
-  // Check if current user is the author
-  if (result.article.authorId !== user.id) {
-    redirect(`/feed/article/${articleId}`)
-  }
-
-  return <EditArticleForm article={result.article} user={user} />
-}
-
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
   const { articleId } = await params
 
-  return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center bg-white dark:bg-neutral-900">
-          <ArrowPathIcon className="h-8 w-8 animate-spin text-neutral-400" />
-        </div>
-      }
-    >
-      <EditArticleContent articleId={articleId} />
-    </Suspense>
-  )
+  const [article, client] = await Promise.all([getArticleById(articleId), getServerClient()])
+
+  const {
+    data: { user },
+  } = await client.auth.getUser()
+
+  if (!user) {
+    redirect(`/login?redirect=/feed/article/${articleId}/edit`)
+  }
+
+  if (!article) {
+    notFound()
+  }
+
+  if (article.authorId !== user.id) {
+    redirect(`/feed/article/${articleId}`)
+  }
+
+  const { data: profile } = await client
+    .from('profiles')
+    .select('id, username, display_name, first_name, last_name, avatar_url, avatar_cloudflare_id')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const displayName =
+    profile?.display_name ??
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ??
+    profile?.username ??
+    'Usuario'
+
+  const formUser = {
+    id: user.id,
+    avatarUrl: resolveImageRef(profile?.avatar_url ?? profile?.avatar_cloudflare_id, 'avatar'),
+    displayName: displayName || 'Usuario',
+    username: profile?.username ?? '',
+  }
+
+  return <EditArticleForm article={article} user={formUser} />
 }
 
 export const metadata = {

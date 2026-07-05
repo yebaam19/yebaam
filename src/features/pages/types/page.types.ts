@@ -122,8 +122,10 @@ export interface UpdatePageDto {
   description?: string;
   category?: PageCategory;
   subcategory?: string;
-  avatarUrl?: string;
-  coverImageUrl?: string;
+  // id-first: se envía el id de Cloudflare Images desnudo (null para quitar).
+  // El route handler PUT /api/pages/[idOrSlug] lee exactamente estas claves.
+  profileImageUrl?: string | null;
+  coverImageUrl?: string | null;
   contact?: PageContact;
   privacy?: PagePrivacy;
 }

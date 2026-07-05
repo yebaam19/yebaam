@@ -15,10 +15,8 @@ const POST_TO_GALLERY_VISIBILITY: Record<string, 'public' | 'friends' | 'private
  * duration" are delegated to `fromPostMedia` from `src/lib/media/parse.ts`.
  *
  * id-first: `storage_key` (the Cloudflare id) is the source of truth and the
- * readers rebuild delivery URLs from it at render time. We no longer persist
- * delivery URLs — but the `url` column is NOT NULL in the (frozen) schema, so
- * we write an empty-string sentinel until the queued batch migration relaxes
- * it. `thumbnail_url` is nullable and derivable from the Stream uid → null.
+ * readers rebuild delivery URLs from it at render time (media-url.helpers).
+ * `url` and `thumbnail_url` are nullable and never persisted here.
  */
 export async function mirrorMediaToProfileGallery(
   client: SupabaseClient,
@@ -44,8 +42,6 @@ export async function mirrorMediaToProfileGallery(
         user_id: userId,
         storage_bucket: 'cloudflare-stream',
         storage_key: item.cfId,
-        url: '',
-        thumbnail_url: null,
         duration_seconds:
           typeof item.durationSeconds === 'number' ? Math.round(item.durationSeconds) : null,
         size_bytes: size,
@@ -57,7 +53,6 @@ export async function mirrorMediaToProfileGallery(
         user_id: userId,
         storage_bucket: 'cloudflare-images',
         storage_key: item.cfId,
-        url: '',
         size_bytes: size,
         mime_type: item.mimeType ?? null,
         visibility,

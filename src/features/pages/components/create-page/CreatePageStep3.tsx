@@ -1,6 +1,7 @@
 import { FC, useState, useRef } from 'react';
 import type { CreatePageDto } from '../../types/page.types';
 import { uploadService } from '@/lib/service/upload.service';
+import { resolveImageRef } from '@/lib/media/urls';
 import { ImageUploadPreview } from './ImageUploadPreview';
 import { UploadingIndicator } from './UploadingIndicator';
 import { StepNavigationButtons } from './StepNavigationButtons';
@@ -16,8 +17,14 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(data.profileImageUrl || null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(data.coverImageUrl || null);
+  // data.profileImageUrl/coverImageUrl guardan el id de Cloudflare desnudo si
+  // el usuario ya subió en una visita previa a este paso — resolver para el preview.
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    resolveImageRef(data.profileImageUrl, 'avatar')
+  );
+  const [coverPreview, setCoverPreview] = useState<string | null>(
+    resolveImageRef(data.coverImageUrl, 'cover')
+  );
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -69,11 +76,14 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
     }
   };
 
+  // id-first: devolvemos el id de Cloudflare Images desnudo — es lo que se
+  // persiste en pages.profile_image_url / cover_image_url; la URL de entrega
+  // se reconstruye al renderizar con resolveImageRef().
   const uploadProfileImage = async (file: File): Promise<string> => {
     try {
       setUploadingAvatar(true);
-      const { url } = await uploadService.uploadImage(file);
-      return url;
+      const { id } = await uploadService.uploadImage(file);
+      return id;
     } catch (error) {
       console.error('Error uploading profile image:', error);
       throw new Error('No se pudo subir la imagen de perfil');
@@ -85,8 +95,8 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
   const uploadCoverImage = async (file: File): Promise<string> => {
     try {
       setUploadingCover(true);
-      const { url } = await uploadService.uploadImage(file);
-      return url;
+      const { id } = await uploadService.uploadImage(file);
+      return id;
     } catch (error) {
       console.error('Error uploading cover image:', error);
       throw new Error('No se pudo subir la imagen de portada');
@@ -112,7 +122,7 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
         updates.coverImageUrl = await uploadCoverImage(coverFile);
       }
 
-      // Actualizar formData con las URLs de CloudFront
+      // Actualizar formData con los ids de Cloudflare Images (id-first)
       if (Object.keys(updates).length > 0) {
         onUpdate(updates);
       }
@@ -156,7 +166,7 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
           className="hidden"
         />
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          {uploadingCover ? 'Subiendo imagen...' : 'Las imágenes se subirán a CloudFront'}
+          {uploadingCover ? 'Subiendo imagen...' : 'Las imágenes se subirán a Cloudflare'}
         </p>
       </div>
 
@@ -180,7 +190,7 @@ export const CreatePageStep3: FC<CreatePageStep3Props> = ({ data, onUpdate, onNe
           className="hidden"
         />
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
-          {uploadingAvatar ? 'Subiendo imagen...' : 'Las imágenes se subirán a CloudFront'}
+          {uploadingAvatar ? 'Subiendo imagen...' : 'Las imágenes se subirán a Cloudflare'}
         </p>
       </div>
 

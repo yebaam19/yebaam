@@ -14,14 +14,19 @@ export interface CreatePostDTO {
   // IMPORTANTE: El backend espera privacy como string simple, no como objeto
   privacy?: 'public' | 'friends' | 'private';
 
-  // Media files - formato que espera el backend (con s3Key, url, type, size, mimeType)
+  // Media files — persistencia id-first: solo viaja el id de Cloudflare
+  // (cfImageId para imágenes, streamUid para videos). Las URLs de entrega se
+  // reconstruyen al renderizar (normalizeMedia en src/lib/api/posts.ts) y
+  // nunca se persisten completas.
   mediaFiles?: Array<{
-    s3Key: string;         // Clave en S3 (ej: 'images/posts/user-id/file.jpg')
-    url: string;           // CloudFront URL completa
     type: 'image' | 'video';
-    size: number;          // Tamaño en bytes
-    duration?: number;     // Duración en segundos (para videos)
-    mimeType: string;      // Tipo MIME (ej: 'image/jpeg')
+    /** Cloudflare Images id (imágenes). */
+    cfImageId?: string;
+    /** Cloudflare Stream uid (videos). */
+    streamUid?: string;
+    size?: number;          // Tamaño en bytes
+    mimeType?: string;      // Tipo MIME (ej: 'image/jpeg')
+    duration?: number;      // Duración en segundos (para videos)
   }>;
 
   // Nuevos campos de Facebook
@@ -94,12 +99,15 @@ export interface UpdatePostDTO {
     height: number;
     source: 'GIPHY' | 'TENOR';
   } | null; // null para remover
+  // id-first — misma forma que CreatePostDTO.mediaFiles.
   mediaFiles?: Array<{
-    s3Key: string;
-    url: string;
     type: 'image' | 'video';
-    size: number;
-    mimeType: string;
+    /** Cloudflare Images id (imágenes). */
+    cfImageId?: string;
+    /** Cloudflare Stream uid (videos). */
+    streamUid?: string;
+    size?: number;
+    mimeType?: string;
     duration?: number;
   }>;
 }

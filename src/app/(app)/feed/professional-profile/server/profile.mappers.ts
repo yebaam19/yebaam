@@ -2,6 +2,7 @@ import type {
   ProfessionalProfile,
   ProfessionalProfileVisibility,
 } from '@/features/professional-profile/interfaces/professional-profile.interfaces';
+import { imageUrl, resolveImageRef } from '@/lib/media/urls';
 
 export type ProfileRow = {
   id: string;
@@ -9,6 +10,10 @@ export type ProfileRow = {
   visibility: ProfessionalProfileVisibility;
   avatar_url: string | null;
   cover_url: string | null;
+  // Optional: only exist after the id-first migration adds them. All reads use
+  // select('*'), so pre-migration rows simply come back without these keys.
+  avatar_cloudflare_id?: string | null;
+  cover_cloudflare_id?: string | null;
   bio: string | null;
   created_at: string;
   updated_at: string;
@@ -31,8 +36,15 @@ export function toProfile(row: ProfileRow, user?: UserProfileRow | null): Profes
     id: row.id,
     userId: row.user_id,
     visibility: row.visibility,
-    avatarUrl: row.avatar_url,
-    coverUrl: row.cover_url,
+    // id-first: prefer the bare Cloudflare id; fall back to the legacy URL
+    // column (which resolveImageRef passes through, or wraps if it ever holds
+    // a bare id) until the URL columns are dropped.
+    avatarUrl: row.avatar_cloudflare_id
+      ? imageUrl(row.avatar_cloudflare_id, 'avatar')
+      : resolveImageRef(row.avatar_url, 'avatar'),
+    coverUrl: row.cover_cloudflare_id
+      ? imageUrl(row.cover_cloudflare_id, 'cover')
+      : resolveImageRef(row.cover_url, 'cover'),
     bio: row.bio,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -42,7 +54,9 @@ export function toProfile(row: ProfileRow, user?: UserProfileRow | null): Profes
           firstName: user.first_name ?? '',
           lastName: user.last_name ?? '',
           username: user.username ?? '',
-          avatar: user.avatar_url,
+          // profiles.avatar_url is legacy full-URL today; resolveImageRef
+          // tolerates both that and a future bare-id value.
+          avatar: resolveImageRef(user.avatar_url, 'avatar'),
           identityVerified: user.is_verified === true,
           identityVerifiedAt: user.verified_at,
         }
