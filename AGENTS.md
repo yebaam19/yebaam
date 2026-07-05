@@ -96,7 +96,12 @@ Realtime publication membership is configured per table — currently enabled on
 All uploads MUST go through `uploadService` ([src/lib/service/upload.service.ts](src/lib/service/upload.service.ts)):
 - `uploadService.uploadImage(file)` → Cloudflare Images via `/api/upload/image-url` → returns `{ id, url }` where `url = https://imagedelivery.net/{NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH}/{id}/public`.
 - `uploadService.uploadVideo(file)` → Cloudflare Stream via `/api/upload/video-url` → polls `/api/upload/video-status/[uid]` until `readyToStream`, then returns `{ uid, duration, thumbnail }`.
+- `uploadService.uploadAudio(file)` → Cloudflare R2 via `/api/upload/audio-url` (presigned PUT with the declared size bound into the signature; retries once with a fresh URL) → returns `{ key, durationSeconds }`.
 - `uploadService.uploadFile(file)` dispatches to image or video based on MIME.
+
+**Enforced by lint** (`eslint.config.mjs`): `supabase.storage.from(...).upload(...)` and `new XMLHttpRequest()` are ESLint **errors** everywhere except `upload.service.ts` itself. If the rule fires on you, you are building an upload path in the wrong place — route it through `uploadService`.
+
+**Documents (PDFs and other non-media user files)** also belong on Cloudflare — on **R2**, following the same presigned-PUT pattern as audio (auth + MIME allowlist + size cap in the signing route). Store the R2 `key` in the DB (e.g. `cv_cf_file_id`) and serve it via a short-TTL presigned GET.
 
 Direct-upload signing helpers live in [src/lib/cloudflare/images.ts](src/lib/cloudflare/images.ts) and [src/lib/cloudflare/stream.ts](src/lib/cloudflare/stream.ts) — these are the only places that talk to the Cloudflare API. Persist the Cloudflare `id` / `uid` in your DB; never persist a delivery URL — derive it from the id at render time.
 
