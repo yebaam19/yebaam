@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getServerClient } from '@/utils/supabase/server'
+import { isAtLeast18 } from '@/lib/age'
 
 /**
  * User-facing Server Actions for the badge request + acceptance flow.
@@ -51,6 +52,20 @@ export async function requestBadge(input: {
   if (!badge.requestable) return { ok: false, error: 'not_requestable' }
   if (badge.evidence_required && supporting.length === 0) {
     return { ok: false, error: 'evidence_required' }
+  }
+  // Contrato cl.9: minors need verifiable parental consent before a platform
+  // can compel document upload (ID/diploma). That consent flow doesn't exist
+  // yet, so the safe default is to block credential-badge requests for anyone
+  // not provably 18+ rather than collect a minor's documents unsupervised.
+  if (badge.evidence_required) {
+    const { data: requester } = await client
+      .from('profiles')
+      .select('birth_date')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (!isAtLeast18(requester?.birth_date ?? null)) {
+      return { ok: false, error: 'evidence_requires_adult' }
+    }
   }
 
   // Block duplicate pending requests + existing accepted grants.

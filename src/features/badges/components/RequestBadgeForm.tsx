@@ -69,7 +69,11 @@ export function RequestBadgeForm({ badgeSlug, badgeName, evidenceRequired = fals
         supportingCfImageIds: docs.map((d) => d.cfImageId),
       })
       if (!res.ok) {
-        setError(res.error)
+        setError(
+          res.error === 'evidence_requires_adult'
+            ? 'Esta insignia exige documentos de identidad/credenciales y, por protección a menores, solo está disponible para mayores de 18 años con fecha de nacimiento verificada en su perfil.'
+            : res.error,
+        )
         return
       }
       setDone(true)

@@ -35,6 +35,12 @@ export function isUnder13(birthDate: string | Date | null | undefined): boolean 
   return !isAtLeast13(birthDate);
 }
 
+/** True only when we can prove the user is 18 or older. Null/unknown ⇒ false. */
+export function isAtLeast18(birthDate: string | Date | null | undefined): boolean {
+  const age = getAge(birthDate);
+  return age !== null && age >= 18;
+}
+
 /**
  * Resolve whether a user may receive anonymous conversations.
  *
