@@ -190,9 +190,11 @@ export function useEditServiceForm(
       if (FEATURE_FLAGS.SERVICES_CV_UPLOAD && !cvError) {
         updateData.cvUrl = uploadedCvUrl ?? undefined;
       }
-      // NOTE: portfolioProjects no se envía — no existe la columna
-      // `portfolio_projects` todavía; el tab está apagado vía
-      // FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO hasta la migración.
+      if (FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO) {
+        // La columna `portfolio_projects` (jsonb) ya existe; el server action
+        // la sanea (sanitizePortfolioProjects) antes de escribirla.
+        updateData.portfolioProjects = portfolioProjects;
+      }
 
       // El hook de mutación está tipado con el DTO base; el cast habilita los
       // `null` de limpieza de tarifas que `updateServiceAction` sí acepta

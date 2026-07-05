@@ -45,10 +45,9 @@ const FEATURE_FLAGS_BASE = {
   // PDFs y no hay bucket de Storage para CVs de servicios). Reactivar cuando exista
   // la infraestructura de documentos.
   SERVICES_CV_UPLOAD: false, // Subir CV (PDF) para profesionales
-  // Apagado: pendiente la columna `portfolio_projects` (jsonb) en
-  // `professional_services` — sin ella los proyectos se pierden en silencio al
-  // guardar. Reactivar cuando llegue la migración de persistencia.
-  SERVICES_PROJECTS_PORTFOLIO: false, // Portafolio de proyectos con URLs
+  // La columna `portfolio_projects` (jsonb) ya existe en `professional_services`:
+  // el tab de proyectos persiste y se muestra en el perfil (SectionTabs).
+  SERVICES_PROJECTS_PORTFOLIO: true, // Portafolio de proyectos con URLs
 
   // ============================================================================
   // DIRECTORIOS Y NEGOCIOS

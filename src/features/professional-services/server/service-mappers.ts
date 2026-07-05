@@ -3,6 +3,7 @@ import 'server-only'
 import { streamThumb } from '@/lib/media/urls'
 import { findCategoryById } from '../data/service-categories-taxonomy'
 import {
+  PortfolioProject,
   ProfessionalService,
   ProfessionalServiceBasic,
   ProfessionalServiceMedia,
@@ -144,8 +145,45 @@ export function mapBasic(row: ServiceRow, owner: ProfileRow | undefined): Profes
   }
 }
 
+/** Fila de detalle: `ServiceRow` + columnas que solo lee la vista de detalle. */
+export type DetailServiceRow = ServiceRow & {
+  /** jsonb `portfolio_projects` — se valida en `mapPortfolioProjects`. */
+  portfolio_projects?: unknown
+}
+
+/**
+ * Valida el jsonb `portfolio_projects` de vuelta al dominio: solo entradas con
+ * título string no vacío y claves conocidas de `PortfolioProject`. Devuelve
+ * `undefined` (no `[]`) cuando no hay proyectos para que la UI feature-flagueada
+ * se oculte igual que antes de la columna.
+ */
+export function mapPortfolioProjects(raw: unknown): PortfolioProject[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const asText = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v : undefined)
+  const projects: PortfolioProject[] = []
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
+    const p = entry as Record<string, unknown>
+    const title = asText(p.title)
+    if (!title) continue
+    projects.push({
+      title,
+      description: asText(p.description),
+      url: asText(p.url),
+      githubUrl: asText(p.githubUrl),
+      imageUrl: asText(p.imageUrl),
+      technologies: Array.isArray(p.technologies)
+        ? p.technologies.filter((t): t is string => typeof t === 'string' && t.trim().length > 0)
+        : undefined,
+      startDate: asText(p.startDate),
+      endDate: asText(p.endDate),
+    })
+  }
+  return projects.length > 0 ? projects : undefined
+}
+
 export function mapFull(
-  row: ServiceRow,
+  row: DetailServiceRow,
   owner: ProfileRow | undefined,
   subcategories: SubcategoryRow[],
   media: MediaRow[],
@@ -182,6 +220,7 @@ export function mapFull(
     availableForHire: row.available_for_hire,
     workType: row.work_type ?? undefined,
     cvUrl: cfImage(row.cv_cf_file_id) ?? undefined,
+    portfolioProjects: mapPortfolioProjects(row.portfolio_projects),
     userId: row.user_id,
     cityId: row.city_id ?? '',
     categoryId: row.category_id ?? undefined,

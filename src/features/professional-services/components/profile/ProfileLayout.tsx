@@ -2,8 +2,12 @@
 
 import { useState } from 'react'
 import { ProfessionalService } from '../../interfaces/professional-service.interfaces'
+import type { ServiceOffering } from '../../server/offerings.server'
+import type { OwnerArticleCard, OwnerPostCard } from '../../server/owner-content.server'
+import type { ServiceQuestion } from '../../server/questions.server'
 import { ServiceCoverImage } from '../header/ServiceCoverImage'
 import { EditServiceModal } from './EditServiceModal'
+import { OfferingsSection } from './offerings/OfferingsSection'
 import { ContactCard } from './profile-v2/ContactCard'
 import { DetailsCard } from './profile-v2/DetailsCard'
 import { FeaturedReel } from './profile-v2/FeaturedReel'
@@ -12,11 +16,17 @@ import { PostsFeed } from './profile-v2/PostsFeed'
 import { ProfileNameHeader } from './profile-v2/ProfileNameHeader'
 import { ProfilePhotoCard } from './profile-v2/ProfilePhotoCard'
 import { SectionTabs } from './profile-v2/SectionTabs'
+import { QASection } from './questions/QASection'
 import { ServiceBusinessCard } from './ServiceBusinessCard'
 
 interface ProfileLayoutProps {
   service: ProfessionalService
-  currentUserId?: string
+  /** Sesión del visitante leída en el servidor (null = anónimo). */
+  viewerId: string | null
+  offerings: ServiceOffering[]
+  questions: ServiceQuestion[]
+  posts: OwnerPostCard[]
+  articles: OwnerArticleCard[]
 }
 
 /**
@@ -28,9 +38,16 @@ interface ProfileLayoutProps {
  * pequeñas colapsa a una columna con el orden: portada → nombre → riel →
  * detalles → feed.
  */
-export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
+export function ProfileLayout({
+  service,
+  viewerId,
+  offerings,
+  questions,
+  posts,
+  articles,
+}: ProfileLayoutProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const isOwner = Boolean(currentUserId && currentUserId === service.userId)
+  const isOwner = viewerId !== null && viewerId === service.userId
 
   return (
     <div className="py-6">
@@ -60,12 +77,22 @@ export function ProfileLayout({ service, currentUserId }: ProfileLayoutProps) {
           <DetailsCard service={service} />
         </div>
 
-        {/* Columna derecha — Nombre/Badges, pestañas, Foto o Reel, Posts y Consulta. 3º en móvil. */}
+        {/* Columna derecha — Nombre/Badges, pestañas, Foto o Reel, Servicios,
+            Posts, Preguntas y Consulta. 3º en móvil. Los anclajes #servicios y
+            #preguntas son el destino del riel de acciones. */}
         <div className="order-3 space-y-6 lg:col-start-3 lg:row-start-2 lg:order-0">
           <ProfileNameHeader service={service} />
-          <SectionTabs service={service} />
+          <SectionTabs service={service} articles={articles} />
           <FeaturedReel media={service.media} serviceName={service.name} />
-          <PostsFeed />
+          <OfferingsSection serviceId={service.id} isOwner={isOwner} initialOfferings={offerings} />
+          <PostsFeed posts={posts} />
+          <QASection
+            serviceId={service.id}
+            ownerId={service.userId}
+            viewerId={viewerId}
+            isOwner={isOwner}
+            initialQuestions={questions}
+          />
           <ContactCard service={service} inline />
           <ServiceBusinessCard service={service} isOwner={isOwner} />
         </div>

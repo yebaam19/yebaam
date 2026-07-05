@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 import {
   ProfileLayoutWrapper,
   ServiceActions,
   ServiceBreadcrumb,
 } from '@/features/professional-services'
+import { listServiceOfferings } from '@/features/professional-services/server/offerings.server'
+import { getOwnerPublicPosts, getOwnerPublishedArticles } from '@/features/professional-services/server/owner-content.server'
+import { listServiceQuestions } from '@/features/professional-services/server/questions.server'
 import { getServiceById, getServiceBySlug } from '@/features/professional-services/server/services.server'
 
 interface ProfessionalServicePageProps {
@@ -62,6 +66,17 @@ export default async function ProfessionalServicePage({ params }: ProfessionalSe
 
   const { service } = response
 
+  // Lecturas del perfil en paralelo (todas cache()adas por request): sesión del
+  // visitante, sub-servicios, Q&A y el contenido público del dueño (posts +
+  // artículos). RLS ya filtra lo que cada sesión puede ver.
+  const [viewer, offerings, questions, posts, articles] = await Promise.all([
+    getCachedAuthUser(),
+    listServiceOfferings(service.id),
+    listServiceQuestions(service.id),
+    getOwnerPublicPosts(service.userId, 3),
+    getOwnerPublishedArticles(service.userId, 6),
+  ])
+
   return (
     <div className="mx-auto max-w-7xl px-4 pt-6">
       {/* Breadcrumb & Actions */}
@@ -71,7 +86,14 @@ export default async function ProfessionalServicePage({ params }: ProfessionalSe
       </div>
 
       {/* Perfil de servicio — distribución de 3 columnas (mockup pág. 9) */}
-      <ProfileLayoutWrapper service={service} />
+      <ProfileLayoutWrapper
+        service={service}
+        viewerId={viewer?.id ?? null}
+        offerings={offerings}
+        questions={questions}
+        posts={posts}
+        articles={articles}
+      />
     </div>
   )
 }

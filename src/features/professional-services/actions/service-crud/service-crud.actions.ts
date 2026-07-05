@@ -39,9 +39,8 @@ export async function createServiceAction(
     const { userId, client } = await requireSession()
 
     // Art. 12 (Manual de Convivencia): sin la declaración de autonomía del
-    // prestador no se publica. Persistir `provider_declaration_accepted_at`
-    // queda pendiente de la migración en cola (schema congelado en este pase);
-    // por ahora solo se valida.
+    // prestador no se publica. La aceptación se persiste con su timestamp en
+    // `provider_declaration_accepted_at` (ver payload más abajo).
     if (dto.providerDeclarationAccepted !== true) {
       return {
         ok: false,
@@ -62,7 +61,11 @@ export async function createServiceAction(
 
     if (!dto.name?.trim()) return { ok: false, error: 'El nombre del servicio es obligatorio.' }
 
-    const payload = buildServiceInsertPayload(userId, eligibility.professionalProfileId, dto)
+    const payload = {
+      ...buildServiceInsertPayload(userId, eligibility.professionalProfileId, dto),
+      // La declaración ya fue validada arriba — aquí siempre es `true`.
+      provider_declaration_accepted_at: new Date().toISOString(),
+    }
 
     let slug = await uniqueServiceSlug(client, dto.name)
     let serviceId = ''

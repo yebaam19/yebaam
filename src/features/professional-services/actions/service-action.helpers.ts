@@ -1,5 +1,6 @@
 import type {
   CreateProfessionalServiceDTO,
+  PortfolioProject,
   UpdateProfessionalServiceDTO,
 } from '../interfaces/professional-service.interfaces'
 
@@ -16,9 +17,8 @@ export type ServiceActionResult<T> = { ok: true; data: T } | { ok: false; error:
 export type CreateServiceActionInput = CreateProfessionalServiceDTO & {
   /**
    * Art. 12 (Manual de Convivencia): el prestador declara autonomía técnica y
-   * administrativa antes de publicar. Por ahora solo se valida en el servidor —
-   * persistir `provider_declaration_accepted_at` queda pendiente de la
-   * migración en cola (el schema está congelado en este pase).
+   * administrativa antes de publicar. Se valida en el servidor y se persiste
+   * como `provider_declaration_accepted_at` (timestamp de aceptación).
    */
   providerDeclarationAccepted?: boolean
 }
@@ -142,10 +142,43 @@ export function buildServiceUpdatePatch(dto: UpdateServicePatchInput): Record<st
   if (dto.coverUrl !== undefined) update.cover_cf_image_id = extractCfImageId(dto.coverUrl)
   if (dto.adImageUrl !== undefined) update.ad_cf_image_id = extractCfImageId(dto.adImageUrl)
   if (dto.cvUrl !== undefined) update.cv_cf_file_id = extractCfImageId(dto.cvUrl)
-  // NOTE: dto.portfolioProjects NO se mapea a propósito — todavía no existe la
-  // columna `portfolio_projects` (jsonb). El tab de proyectos está apagado vía
-  // FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO hasta que llegue esa migración.
+  if (dto.portfolioProjects !== undefined) {
+    update.portfolio_projects = sanitizePortfolioProjects(dto.portfolioProjects)
+  }
   return update
+}
+
+const MAX_PORTFOLIO_PROJECTS = 20
+
+/**
+ * Normaliza el portafolio antes de escribirlo en `portfolio_projects` (jsonb):
+ * solo claves conocidas de `PortfolioProject`, título obligatorio, strings
+ * recortados y tecnologías filtradas — así el JSON guardado nunca arrastra
+ * campos extra del formulario.
+ */
+export function sanitizePortfolioProjects(projects: PortfolioProject[]): Record<string, unknown>[] {
+  const cleanText = (value: string | undefined): string | undefined => {
+    const trimmed = value?.trim()
+    return trimmed ? trimmed : undefined
+  }
+  return (projects ?? [])
+    .filter((p) => typeof p?.title === 'string' && p.title.trim().length > 0)
+    .slice(0, MAX_PORTFOLIO_PROJECTS)
+    .map((p) => {
+      const technologies = (p.technologies ?? [])
+        .filter((t): t is string => typeof t === 'string')
+        .map((t) => t.trim())
+        .filter(Boolean)
+      const project: Record<string, unknown> = { title: p.title.trim() }
+      if (cleanText(p.description)) project.description = cleanText(p.description)
+      if (cleanText(p.url)) project.url = cleanText(p.url)
+      if (cleanText(p.githubUrl)) project.githubUrl = cleanText(p.githubUrl)
+      if (cleanText(p.imageUrl)) project.imageUrl = cleanText(p.imageUrl)
+      if (cleanText(p.startDate)) project.startDate = cleanText(p.startDate)
+      if (cleanText(p.endDate)) project.endDate = cleanText(p.endDate)
+      if (technologies.length > 0) project.technologies = technologies
+      return project
+    })
 }
 
 export interface AddServiceMediaInput {

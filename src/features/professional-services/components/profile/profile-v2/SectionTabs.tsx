@@ -5,15 +5,20 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { useState } from 'react'
 import { ProfessionalService, ServiceMediaType } from '../../../interfaces/professional-service.interfaces'
+import type { OwnerArticleCard } from '../../../server/owner-content.server'
 import { ServiceCV } from '../../ServiceCV'
+import { ServicePortfolio } from '../../ServicePortfolio'
 import { AboutService } from '../AboutService'
 import { ServiceMediaGallery } from '../ServiceMediaGallery'
 import { ServiceReviews } from '../ServiceReviews'
+import { ArticlesPanel } from './ArticlesPanel'
 
 type TabId = 'about' | 'professional' | 'videos' | 'photos' | 'articles' | 'reviews'
 
 interface SectionTabsProps {
   service: ProfessionalService
+  /** Artículos públicos del dueño, leídos en el RSC (getOwnerPublishedArticles). */
+  articles: OwnerArticleCard[]
 }
 
 const TABS: { id: TabId; label: string }[] = [
@@ -30,7 +35,7 @@ const TABS: { id: TabId; label: string }[] = [
  * "Foto o Reel" y el feed de posts se renderizan de forma persistente debajo
  * (en `ProfileLayout`).
  */
-export function SectionTabs({ service }: SectionTabsProps) {
+export function SectionTabs({ service, articles }: SectionTabsProps) {
   const [active, setActive] = useState<TabId>('about')
 
   const photos = service.media.filter((m) => m.type === ServiceMediaType.IMAGE)
@@ -86,9 +91,7 @@ export function SectionTabs({ service }: SectionTabsProps) {
             <EmptyPanel title="Fotos" message="Este servicio aún no tiene fotos." />
           ))}
 
-        {active === 'articles' && (
-          <ComingSoonPanel title="Artículos" message="Pronto este profesional podrá publicar artículos." />
-        )}
+        {active === 'articles' && <ArticlesPanel articles={articles} />}
 
         {active === 'reviews' && (
           <ServiceReviews
@@ -129,6 +132,9 @@ function ProfessionalProfilePanel({ service }: { service: ProfessionalService })
 
       {/* CV descargable (se oculta solo si no hay archivo o el flag está apagado) */}
       {service.cvUrl && <ServiceCV cvUrl={service.cvUrl} serviceName={service.name} />}
+
+      {/* Portafolio de proyectos — se oculta solo (flag apagado o sin proyectos). */}
+      <ServicePortfolio projects={service.portfolioProjects} serviceName={service.name} />
     </div>
   )
 }
@@ -138,16 +144,6 @@ function EmptyPanel({ title, message }: { title: string; message: string }) {
     <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-neutral-800">
       <h2 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">{title}</h2>
       <p className="text-sm text-neutral-500 dark:text-neutral-400">{message}</p>
-    </div>
-  )
-}
-
-function ComingSoonPanel({ title, message }: { title: string; message: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center dark:border-neutral-700">
-      <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-400">Próximamente</p>
-      <h2 className="mt-1 font-semibold text-neutral-900 dark:text-neutral-100">{title}</h2>
-      <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{message}</p>
     </div>
   )
 }

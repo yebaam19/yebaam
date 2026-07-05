@@ -8,20 +8,23 @@ import { mapFull } from './service-mappers'
 import {
   type MediaRow,
   type ReviewRow,
-  type ServiceRow,
   type SubcategoryRow,
   CITY_EMBED,
   SERVICE_COLUMNS,
   fetchProfiles,
 } from './_shared'
+import type { DetailServiceRow } from './service-mappers'
 import type {
   ProfessionalService,
   ProfessionalServiceDetailResponse,
 } from '../interfaces/professional-service.interfaces'
 
+/** Columnas extra que solo necesita la vista de detalle (no los listados). */
+const DETAIL_COLUMNS = `${SERVICE_COLUMNS}, portfolio_projects`
+
 /** Fetch a service's children (owner, subcategories, media, reviews) and map to
  *  the full domain shape. */
-async function hydrate(client: SupabaseClient, row: ServiceRow): Promise<ProfessionalService> {
+async function hydrate(client: SupabaseClient, row: DetailServiceRow): Promise<ProfessionalService> {
   const [ownerMap, subcatRes, mediaRes, reviewRes] = await Promise.all([
     fetchProfiles(client, [row.user_id]),
     client.from('professional_service_subcategories').select('service_id, subcategory_id, subcategory_name, category_id').eq('service_id', row.id),
@@ -45,12 +48,12 @@ export const getServiceBySlug = cache(
     const client = await getServerClient()
     const { data, error } = await client
       .from('professional_services')
-      .select(`${SERVICE_COLUMNS}, ${CITY_EMBED}`)
+      .select(`${DETAIL_COLUMNS}, ${CITY_EMBED}`)
       .eq('slug', slug)
       .maybeSingle()
     if (error) console.error('[professional-services] getServiceBySlug read failed:', error.message)
     if (!data) return null
-    return { service: await hydrate(client, data as unknown as ServiceRow) }
+    return { service: await hydrate(client, data as unknown as DetailServiceRow) }
   },
 )
 
@@ -59,11 +62,11 @@ export const getServiceById = cache(
     const client = await getServerClient()
     const { data, error } = await client
       .from('professional_services')
-      .select(`${SERVICE_COLUMNS}, ${CITY_EMBED}`)
+      .select(`${DETAIL_COLUMNS}, ${CITY_EMBED}`)
       .eq('id', id)
       .maybeSingle()
     if (error) console.error('[professional-services] getServiceById read failed:', error.message)
     if (!data) return null
-    return { service: await hydrate(client, data as unknown as ServiceRow) }
+    return { service: await hydrate(client, data as unknown as DetailServiceRow) }
   },
 )
