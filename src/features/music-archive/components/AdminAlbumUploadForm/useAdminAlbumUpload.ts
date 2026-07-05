@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
-import { uploadService } from '@/lib/service/upload.service';
+import { detectAudioDuration, uploadService } from '@/lib/service/upload.service';
+import { mapWithConcurrency } from '@/lib/map-with-concurrency';
+import { MAX_AUDIO_BYTES, formatBytes } from '@/lib/upload-limits';
 import { createAlbum } from '../../actions/albums.actions';
 import { createTracksBatchAction } from '../../actions/tracks.actions';
 import { findOrCreateArtistAction } from '../../actions/artists.actions';
@@ -44,46 +46,51 @@ export function useAdminAlbumUpload() {
 
   const [tracks, setTracks] = useState<TrackDraft[]>([]);
 
-  const onFilesPicked = useCallback((filesList: FileList | null) => {
-    if (!filesList) return;
-    const newTracks: TrackDraft[] = Array.from(filesList)
-      .filter((f) => f.type.startsWith('audio/'))
-      .map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        title: titleFromFilename(file.name),
-        side: '' as const,
-        durationSeconds: null,
-        uploadProgress: null,
-        r2Key: null,
-      }));
-    setTracks((prev) => [...prev, ...newTracks]);
-  }, []);
+  /** Album row created by a previous submit attempt. A failed publish keeps it
+   *  so retrying doesn't create a duplicate album (or re-upload the images). */
+  const [createdAlbum, setCreatedAlbum] = useState<{ id: string; slug: string } | null>(null);
+
+  const onFilesPicked = useCallback(
+    (filesList: FileList | null) => {
+      if (!filesList) return;
+      const picked = Array.from(filesList).filter((f) => f.type.startsWith('audio/'));
+      // Reject oversized files at pick time — the server enforces the same cap
+      // after the upload, so letting them in only wastes a long upload.
+      const oversized = picked.filter((f) => f.size > MAX_AUDIO_BYTES);
+      if (oversized.length > 0) {
+        setError(
+          t('adminUpload.errFilesTooBig', {
+            files: oversized.map((f) => `"${f.name}" (${formatBytes(f.size)})`).join(', '),
+            max: formatBytes(MAX_AUDIO_BYTES),
+          }),
+        );
+      }
+      const newTracks: TrackDraft[] = picked
+        .filter((f) => f.size <= MAX_AUDIO_BYTES)
+        .map((file) => ({
+          id: crypto.randomUUID(),
+          file,
+          title: titleFromFilename(file.name),
+          side: '' as const,
+          durationSeconds: null,
+          uploadProgress: null,
+          r2Key: null,
+        }));
+      setTracks((prev) => [...prev, ...newTracks]);
+    },
+    [t],
+  );
 
   // Detect duration client-side for newly added tracks, in parallel.
+  // detectAudioDuration is time-bounded, so a throttled background tab can't
+  // leave rows on "Calculando…" forever.
   useEffect(() => {
     const pending = tracks.filter((t) => t.durationSeconds === null);
     if (pending.length === 0) return;
     let cancelled = false;
     void Promise.all(
-      pending.map(
-        (t) =>
-          new Promise<{ id: string; duration: number }>((resolve) => {
-            const url = URL.createObjectURL(t.file);
-            const audio = new Audio();
-            audio.preload = 'metadata';
-            audio.src = url;
-            const cleanup = () => URL.revokeObjectURL(url);
-            audio.addEventListener('loadedmetadata', () => {
-              const d = Number.isFinite(audio.duration) ? Math.round(audio.duration) : 0;
-              cleanup();
-              resolve({ id: t.id, duration: d });
-            });
-            audio.addEventListener('error', () => {
-              cleanup();
-              resolve({ id: t.id, duration: 0 });
-            });
-          }),
+      pending.map((t) =>
+        detectAudioDuration(t.file).then((duration) => ({ id: t.id, duration })),
       ),
     ).then((results) => {
       if (cancelled) return;
@@ -135,88 +142,117 @@ export function useAdminAlbumUpload() {
 
     startTransition(async () => {
       try {
-        // 1) Cloudflare Images (parallel).
-        setStep('images');
-        const [photoRes, frontRes, backRes, labelRes] = await Promise.all([
-          fields.artistPhoto ? uploadService.uploadImage(fields.artistPhoto) : Promise.resolve(null),
-          uploadService.uploadImage(coverFront),
-          fields.coverBack ? uploadService.uploadImage(fields.coverBack) : Promise.resolve(null),
-          fields.labelImage ? uploadService.uploadImage(fields.labelImage) : Promise.resolve(null),
-        ]);
+        // Steps 1-2 only run once: a retry after a failed upload/insert reuses
+        // the album row created on the previous attempt instead of duplicating it.
+        let album = createdAlbum;
+        if (!album) {
+          // 1) Cloudflare Images (parallel).
+          setStep('images');
+          const [photoRes, frontRes, backRes, labelRes] = await Promise.all([
+            fields.artistPhoto
+              ? uploadService.uploadImage(fields.artistPhoto)
+              : Promise.resolve(null),
+            uploadService.uploadImage(coverFront),
+            fields.coverBack ? uploadService.uploadImage(fields.coverBack) : Promise.resolve(null),
+            fields.labelImage ? uploadService.uploadImage(fields.labelImage) : Promise.resolve(null),
+          ]);
 
-        // 2) Artist + label rows.
-        setStep('rows');
-        const artistResult = await findOrCreateArtistAction({
-          name: fields.artist.name.trim(),
-          country: fields.artistCountry || undefined,
-          bornYear: fields.artistBornYear ? Number(fields.artistBornYear) : undefined,
-          diedYear: fields.artistDiedYear ? Number(fields.artistDiedYear) : undefined,
-          photoCfImageId: photoRes?.id,
-        });
-        if (!artistResult.ok) throw new Error(artistResult.error);
-
-        let labelId: string | undefined = fields.label.existingId ?? undefined;
-        if (!labelId && fields.label.name.trim()) {
-          const lr = await findOrCreateLabelAction({
-            name: fields.label.name.trim(),
-            country: fields.albumCountry || undefined,
+          // 2) Artist + label rows.
+          setStep('rows');
+          const artistResult = await findOrCreateArtistAction({
+            name: fields.artist.name.trim(),
+            country: fields.artistCountry || undefined,
+            bornYear: fields.artistBornYear ? Number(fields.artistBornYear) : undefined,
+            diedYear: fields.artistDiedYear ? Number(fields.artistDiedYear) : undefined,
+            photoCfImageId: photoRes?.id,
           });
-          if (lr.ok) labelId = lr.data.id;
+          if (!artistResult.ok) throw new Error(artistResult.error);
+
+          let labelId: string | undefined = fields.label.existingId ?? undefined;
+          if (!labelId && fields.label.name.trim()) {
+            const lr = await findOrCreateLabelAction({
+              name: fields.label.name.trim(),
+              country: fields.albumCountry || undefined,
+            });
+            if (lr.ok) labelId = lr.data.id;
+          }
+
+          const albumResult = await createAlbum({
+            artistId: artistResult.data.id,
+            labelId,
+            title: fields.albumTitle.trim(),
+            year: fields.albumYear ? Number(fields.albumYear) : undefined,
+            country: fields.albumCountry || undefined,
+            format: fields.albumFormat,
+            coverCfImageId: frontRes.id,
+            backCoverCfImageId: backRes?.id,
+            labelCfImageId: labelRes?.id,
+            catalogNumber: fields.catalogNumber || undefined,
+            notes: fields.albumNotes || undefined,
+          });
+          if (!albumResult.ok) throw new Error(albumResult.error);
+          album = { id: albumResult.data.id, slug: albumResult.data.slug };
+          setCreatedAlbum(album);
         }
 
-        const albumResult = await createAlbum({
-          artistId: artistResult.data.id,
-          labelId,
-          title: fields.albumTitle.trim(),
-          year: fields.albumYear ? Number(fields.albumYear) : undefined,
-          country: fields.albumCountry || undefined,
-          format: fields.albumFormat,
-          coverCfImageId: frontRes.id,
-          backCoverCfImageId: backRes?.id,
-          labelCfImageId: labelRes?.id,
-          catalogNumber: fields.catalogNumber || undefined,
-          notes: fields.albumNotes || undefined,
-        });
-        if (!albumResult.ok) throw new Error(albumResult.error);
-
-        // 3) R2 audio uploads — parallel, with per-row progress.
+        // 3) R2 audio uploads — max 3 at a time so a home uplink isn't split
+        // across 15 crawling transfers. Tracks uploaded by a previous attempt
+        // (r2Key already set) are skipped.
         setStep('audio');
-        const uploaded = await Promise.all(
-          tracks.map(async (t) => {
-            const result = await uploadService.uploadAudio(t.file, (p) =>
-              updateTrack(t.id, { uploadProgress: p }),
-            );
-            updateTrack(t.id, { r2Key: result.key });
-            return { draft: t, result };
-          }),
-        );
-
-        // 4) Track rows (batch insert + audit).
-        setStep('tracks');
-        const items: CreateTrackBatchItem[] = uploaded.map(({ draft, result }, idx) => ({
-          position: idx + 1,
-          side: draft.side || null,
-          title: draft.title.trim(),
-          durationSeconds: result.durationSeconds || draft.durationSeconds || null,
-          r2Key: result.key,
-          format: trackFormatFromMime(draft.file.type),
-          sourceMedia: fields.sourceMedia,
-          copyrightStatus: fields.copyrightStatus,
-          restoredByNote: null,
-        }));
-        const batch = await createTracksBatchAction(albumResult.data.id, items);
-        if (!batch.ok) throw new Error(batch.error);
-        if (batch.data.failed.length > 0) {
-          throw new Error(
-            t('adminUpload.tracksFailed', {
-              failed: batch.data.failed.length,
-              total: items.length,
-              details: batch.data.failed.map((f) => f.error).join('; '),
-            }),
+        const uploaded = await mapWithConcurrency(tracks, 3, async (tr) => {
+          if (tr.r2Key) {
+            return { draft: tr, r2Key: tr.r2Key, durationSeconds: tr.durationSeconds ?? 0 };
+          }
+          const result = await uploadService.uploadAudio(tr.file, (p) =>
+            updateTrack(tr.id, { uploadProgress: p }),
           );
+          updateTrack(tr.id, { r2Key: result.key });
+          return { draft: tr, r2Key: result.key, durationSeconds: result.durationSeconds };
+        });
+
+        // 4) Track rows (batch insert + audit). Positions come from the full
+        // list; already-published drafts are excluded so a retry after a
+        // partial failure doesn't insert them twice.
+        setStep('tracks');
+        const pendingItems = uploaded
+          .map(({ draft, r2Key, durationSeconds }, idx) => ({
+            draft,
+            item: {
+              position: idx + 1,
+              side: draft.side || null,
+              title: draft.title.trim(),
+              durationSeconds: durationSeconds || draft.durationSeconds || null,
+              r2Key,
+              format: trackFormatFromMime(draft.file.type),
+              sourceMedia: fields.sourceMedia,
+              copyrightStatus: fields.copyrightStatus,
+              restoredByNote: null,
+            } satisfies CreateTrackBatchItem,
+          }))
+          .filter(({ draft }) => !draft.published);
+
+        if (pendingItems.length > 0) {
+          const batch = await createTracksBatchAction(
+            album.id,
+            pendingItems.map(({ item }) => item),
+          );
+          if (!batch.ok) throw new Error(batch.error);
+          const failedPositions = new Set(batch.data.failed.map((f) => f.position));
+          for (const { draft, item } of pendingItems) {
+            if (!failedPositions.has(item.position)) updateTrack(draft.id, { published: true });
+          }
+          if (batch.data.failed.length > 0) {
+            throw new Error(
+              t('adminUpload.tracksFailed', {
+                failed: batch.data.failed.length,
+                total: pendingItems.length,
+                details: batch.data.failed.map((f) => f.error).join('; '),
+              }),
+            );
+          }
         }
 
-        router.push(`/musica/albumes/${albumResult.data.slug}` as Route);
+        router.push(`/musica/albumes/${album.slug}` as Route);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('adminUpload.errPublish'));
         setStep('idle');

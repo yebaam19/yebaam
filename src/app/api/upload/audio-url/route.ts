@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { getPresignedUploadUrl } from '@/lib/cloudflare/r2';
+import { MAX_AUDIO_BYTES } from '@/lib/upload-limits';
 
 const ALLOWED_MIMES = new Set([
   'audio/mpeg',
@@ -34,9 +35,13 @@ export async function POST(request: NextRequest) {
   }
 
   let contentType: string;
+  let sizeBytes: number | undefined;
   try {
-    const body = (await request.json()) as { contentType?: string } | null;
+    const body = (await request.json()) as { contentType?: string; sizeBytes?: number } | null;
     contentType = body?.contentType ?? '';
+    if (typeof body?.sizeBytes === 'number' && Number.isFinite(body.sizeBytes)) {
+      sizeBytes = Math.floor(body.sizeBytes);
+    }
   } catch {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
@@ -48,18 +53,37 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Rate limit: count tracks created in the last hour by this user.
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { count } = await client
-    .from('music_tracks')
-    .select('id', { count: 'exact', head: true })
-    .eq('contributed_by', userData.user.id)
-    .gte('created_at', oneHourAgo);
-  if ((count ?? 0) >= RATE_LIMIT_PER_HOUR) {
+  // Reject oversized files before any upload happens. The declared size is
+  // also bound into the presigned URL below, so the client can't lie about it.
+  if (sizeBytes !== undefined && (sizeBytes <= 0 || sizeBytes > MAX_AUDIO_BYTES)) {
     return NextResponse.json(
-      { error: `Has alcanzado el límite de ${RATE_LIMIT_PER_HOUR} subidas por hora. Intenta más tarde.` },
-      { status: 429 },
+      { error: `El archivo supera el tamaño máximo permitido (${Math.round(MAX_AUDIO_BYTES / (1024 * 1024))} MB).` },
+      { status: 400 },
     );
+  }
+
+  // Platform admins (the archive curators) upload whole albums back-to-back —
+  // the abuse rate limit only applies to regular contributors.
+  const { data: adminRow } = await client
+    .from('platform_admins')
+    .select('user_id')
+    .eq('user_id', userData.user.id)
+    .maybeSingle();
+
+  if (!adminRow) {
+    // Rate limit: count tracks created in the last hour by this user.
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count } = await client
+      .from('music_tracks')
+      .select('id', { count: 'exact', head: true })
+      .eq('contributed_by', userData.user.id)
+      .gte('created_at', oneHourAgo);
+    if ((count ?? 0) >= RATE_LIMIT_PER_HOUR) {
+      return NextResponse.json(
+        { error: `Has alcanzado el límite de ${RATE_LIMIT_PER_HOUR} subidas por hora. Intenta más tarde.` },
+        { status: 429 },
+      );
+    }
   }
 
   const ext = MIME_TO_EXT[contentType];
@@ -68,7 +92,9 @@ export async function POST(request: NextRequest) {
   const key = `tracks/${year}/${uuid}.${ext}`;
 
   try {
-    const { url } = await getPresignedUploadUrl(key, contentType, 300);
+    // 15 min TTL: enough slack for slow devices between signing and the PUT
+    // actually starting; expiry is only checked when the request starts.
+    const { url } = await getPresignedUploadUrl(key, contentType, 900, sizeBytes);
     return NextResponse.json({ success: true, data: { url, key } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'No se pudo firmar la URL';

@@ -640,6 +640,7 @@
     "errNoTracks": "Add at least one track.",
     "errTracksNeedTitles": "All tracks need a title.",
     "errAttestation": "Confirm you have the right to publish this record.",
+    "errFilesTooBig": "These files exceed the {max} per-track limit and were not added: {files}",
     "errPublish": "Publication failed.",
     "stepImages": "Uploading covers to Cloudflare Images…",
     "stepRows": "Saving artist and album…",

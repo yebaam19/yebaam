@@ -116,9 +116,12 @@ export async function createTracksBatchAction(
 
   // Validate every R2 object exists before inserting any row. If a single
   // file is missing, we fail the whole batch — half-published albums are worse
-  // than retrying the upload.
-  for (const it of items) {
-    const head = await headAudio(it.r2Key);
+  // than retrying the upload. HEADs run in parallel: a 20-track album would
+  // otherwise burn 20 serial round trips against the function duration limit.
+  const heads = await Promise.all(
+    items.map(async (it) => ({ it, head: await headAudio(it.r2Key) })),
+  );
+  for (const { it, head } of heads) {
     if (!head.exists) {
       return {
         ok: false,
@@ -133,40 +136,44 @@ export async function createTracksBatchAction(
     }
   }
 
+  // Insert rows in parallel too, keeping the per-row failure reporting.
+  const inserted = await Promise.all(
+    items.map(async (it) => {
+      const title = it.title.trim();
+      if (!title) return { it, id: null, error: 'Título vacío.' };
+      const { data, error } = await session.client
+        .from('music_tracks')
+        .insert({
+          album_id: albumId,
+          position: it.position,
+          side: it.side ?? null,
+          title,
+          duration_seconds: it.durationSeconds ?? null,
+          r2_key: it.r2Key,
+          format: it.format,
+          source_media: it.sourceMedia ?? null,
+          copyright_status: it.copyrightStatus,
+          contributor_attestation: true,
+          contributed_by: session.userId,
+          restored_by_note: it.restoredByNote?.trim() || null,
+        })
+        .select('id')
+        .single();
+      if (error) return { it, id: null, error: error.message };
+      return { it, id: (data as { id: string }).id, error: null };
+    }),
+  );
+
   const trackIds: string[] = [];
   const r2KeysByTrackId: string[] = [];
   const failed: Array<{ position: number; error: string }> = [];
-
-  for (const it of items) {
-    const title = it.title.trim();
-    if (!title) {
-      failed.push({ position: it.position, error: 'Título vacío.' });
-      continue;
+  for (const r of inserted) {
+    if (r.id) {
+      trackIds.push(r.id);
+      r2KeysByTrackId.push(r.it.r2Key);
+    } else {
+      failed.push({ position: r.it.position, error: r.error ?? 'Error desconocido.' });
     }
-    const { data, error } = await session.client
-      .from('music_tracks')
-      .insert({
-        album_id: albumId,
-        position: it.position,
-        side: it.side ?? null,
-        title,
-        duration_seconds: it.durationSeconds ?? null,
-        r2_key: it.r2Key,
-        format: it.format,
-        source_media: it.sourceMedia ?? null,
-        copyright_status: it.copyrightStatus,
-        contributor_attestation: true,
-        contributed_by: session.userId,
-        restored_by_note: it.restoredByNote?.trim() || null,
-      })
-      .select('id')
-      .single();
-    if (error) {
-      failed.push({ position: it.position, error: error.message });
-      continue;
-    }
-    trackIds.push((data as { id: string }).id);
-    r2KeysByTrackId.push(it.r2Key);
   }
 
   fireTrackAuditAfter(

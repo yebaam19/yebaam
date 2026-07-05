@@ -640,6 +640,7 @@
     "errNoTracks": "Agrega al menos una canción.",
     "errTracksNeedTitles": "Todas las canciones necesitan título.",
     "errAttestation": "Confirma que tienes derecho a publicar este disco.",
+    "errFilesTooBig": "Estos archivos superan el máximo de {max} por canción y no se agregaron: {files}",
     "errPublish": "Error al publicar.",
     "stepImages": "Subiendo carátulas a Cloudflare Images…",
     "stepRows": "Guardando artista y álbum…",

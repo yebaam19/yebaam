@@ -1,3 +1,10 @@
+import {
+  MAX_AUDIO_BYTES,
+  MAX_IMAGE_BYTES,
+  MAX_VIDEO_BYTES,
+  formatBytes,
+} from '@/lib/upload-limits';
+
 export interface UploadUrlRequestDTO {
   fileName: string;
   fileType: string;
@@ -73,6 +80,10 @@ async function uploadToCloudflare(
       }
     });
     xhr.addEventListener('error', () => reject(new Error('Network error during Cloudflare upload')));
+    // Without these the promise never settles on an interrupted request and
+    // the calling form spins forever.
+    xhr.addEventListener('abort', () => reject(new Error('Cloudflare upload was interrupted')));
+    xhr.addEventListener('timeout', () => reject(new Error('Cloudflare upload timed out')));
     xhr.open('POST', uploadURL);
     xhr.send(form);
   });
@@ -96,28 +107,42 @@ async function putToR2(
       else reject(new Error(`R2 upload failed (${xhr.status})`));
     });
     xhr.addEventListener('error', () => reject(new Error('Network error during R2 upload')));
+    // Without these the promise never settles on an interrupted request and
+    // the calling form spins forever.
+    xhr.addEventListener('abort', () => reject(new Error('R2 upload was interrupted')));
+    xhr.addEventListener('timeout', () => reject(new Error('R2 upload timed out')));
     xhr.open('PUT', presignedUrl);
     xhr.setRequestHeader('Content-Type', file.type);
     xhr.send(file);
   });
 }
 
-async function detectAudioDuration(file: File): Promise<number> {
+/**
+ * Best-effort duration probe. Chrome throttles media loading in background
+ * tabs, so `loadedmetadata` may never fire — the timeout guarantees this
+ * promise ALWAYS settles. Duration is optional metadata; it must never be
+ * able to hang an upload pipeline (that freeze looked like "uploads stopped
+ * working" to users who switched tabs while a big file uploaded).
+ */
+export async function detectAudioDuration(file: File, timeoutMs = 8000): Promise<number> {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
     const audio = new Audio();
-    audio.preload = 'metadata';
-    audio.src = url;
-    const cleanup = () => URL.revokeObjectURL(url);
-    audio.addEventListener('loadedmetadata', () => {
-      const d = Number.isFinite(audio.duration) ? Math.round(audio.duration) : 0;
-      cleanup();
+    let settled = false;
+    const settle = (d: number) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      URL.revokeObjectURL(url);
       resolve(d);
-    });
-    audio.addEventListener('error', () => {
-      cleanup();
-      resolve(0);
-    });
+    };
+    const timer = setTimeout(() => settle(0), timeoutMs);
+    audio.preload = 'metadata';
+    audio.addEventListener('loadedmetadata', () =>
+      settle(Number.isFinite(audio.duration) ? Math.round(audio.duration) : 0),
+    );
+    audio.addEventListener('error', () => settle(0));
+    audio.src = url;
   });
 }
 
@@ -140,6 +165,12 @@ export class UploadService {
   ): Promise<CloudflareImageUploadResult> {
     if (!file.type.startsWith('image/')) {
       throw new Error('uploadImage called with a non-image file');
+    }
+    // Cloudflare Images rejects files over 10 MB — fail here, before uploading.
+    if (file.size > MAX_IMAGE_BYTES) {
+      throw new Error(
+        `La imagen "${file.name}" pesa ${formatBytes(file.size)} y supera el máximo de ${formatBytes(MAX_IMAGE_BYTES)}. Redúcela e inténtalo de nuevo.`,
+      );
     }
 
     const signRes = await fetch('/api/upload/image-url', {
@@ -183,6 +214,12 @@ export class UploadService {
   ): Promise<CloudflareStreamUploadResult> {
     if (!file.type.startsWith('video/')) {
       throw new Error('uploadVideo called with a non-video file');
+    }
+    // Cloudflare Stream basic (non-tus) direct uploads cap at 200 MB.
+    if (file.size > MAX_VIDEO_BYTES) {
+      throw new Error(
+        `El video "${file.name}" pesa ${formatBytes(file.size)} y supera el máximo de ${formatBytes(MAX_VIDEO_BYTES)}. Comprímelo e inténtalo de nuevo.`,
+      );
     }
 
     const signRes = await fetch('/api/upload/video-url', {
@@ -243,30 +280,54 @@ export class UploadService {
     if (!file.type.startsWith('audio/')) {
       throw new Error('uploadAudio called with a non-audio file');
     }
-
-    const signRes = await fetch('/api/upload/audio-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contentType: file.type }),
-    });
-    const signPayload = await signRes.json().catch(() => null);
-    if (!signRes.ok || !signPayload?.data?.url) {
-      throw new Error(signPayload?.error || 'No se pudo generar la URL de subida de audio');
+    // The server rejects >200 MB after the upload (R2 HEAD) — fail here first,
+    // so the user doesn't wait out a long upload only to get the same error.
+    if (file.size > MAX_AUDIO_BYTES) {
+      throw new Error(
+        `"${file.name}" pesa ${formatBytes(file.size)} y supera el máximo de ${formatBytes(MAX_AUDIO_BYTES)} por canción.`,
+      );
     }
-    const { url, key } = signPayload.data as { url: string; key: string };
 
-    // Detect duration in parallel with the upload start (cheap).
-    const [, durationSeconds] = await Promise.all([
-      putToR2(url, file, onProgress),
-      detectAudioDuration(file),
-    ]);
+    // Detect duration in parallel with the upload. It can only delay
+    // completion by a short grace period after the PUT finishes — never hang it.
+    const durationPromise = detectAudioDuration(file);
 
-    return {
-      key,
-      durationSeconds,
-      sizeBytes: file.size,
-      contentType: file.type,
-    };
+    // Long uploads on slow connections can drop mid-flight; retry the PUT once
+    // with a freshly signed URL. Sign-endpoint errors (401/429/500) are not
+    // transient upload failures — surface those immediately.
+    const maxAttempts = 2;
+    let lastError: unknown = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const signRes = await fetch('/api/upload/audio-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentType: file.type, sizeBytes: file.size }),
+      });
+      const signPayload = await signRes.json().catch(() => null);
+      if (!signRes.ok || !signPayload?.data?.url) {
+        throw new Error(signPayload?.error || 'No se pudo generar la URL de subida de audio');
+      }
+      const { url, key } = signPayload.data as { url: string; key: string };
+
+      try {
+        await putToR2(url, file, onProgress);
+        const durationSeconds = await Promise.race([
+          durationPromise,
+          new Promise<number>((r) => setTimeout(() => r(0), 1500)),
+        ]);
+        return {
+          key,
+          durationSeconds,
+          sizeBytes: file.size,
+          contentType: file.type,
+        };
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError instanceof Error
+      ? lastError
+      : new Error('No se pudo subir el audio. Revisa tu conexión e inténtalo de nuevo.');
   }
 
   async getUploadUrl(_data: UploadUrlRequestDTO): Promise<UploadUrlResponse> {

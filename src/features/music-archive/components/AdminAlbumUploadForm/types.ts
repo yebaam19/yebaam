@@ -11,4 +11,7 @@ export interface TrackDraft {
   durationSeconds: number | null;
   uploadProgress: number | null;
   r2Key: string | null;
+  /** Set once the track row is inserted, so a retry after a partial batch
+   *  failure doesn't insert this track a second time. */
+  published?: boolean;
 }

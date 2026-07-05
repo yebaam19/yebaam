@@ -9,7 +9,7 @@ export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string
 
 export type Session = { userId: string; client: SupabaseClient };
 
-export const MAX_AUDIO_BYTES = 200 * 1024 * 1024;
+export { MAX_AUDIO_BYTES } from '@/lib/upload-limits';
 
 /** Revalidate a club's detail + members pages after a membership change.
  *  Shared by the club members + moderation actions. */

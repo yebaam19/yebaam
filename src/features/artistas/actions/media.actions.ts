@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getServerClient } from '@/utils/supabase/server'
+import { headAudio } from '@/lib/cloudflare/r2'
+import { MAX_AUDIO_BYTES } from '@/lib/upload-limits'
 import type { MediaAsset } from '../types'
 
 async function requireSession() {
@@ -39,6 +41,11 @@ export async function saveArtistVideo(artistProfileId: string, cfVideoUid: strin
 
 export async function saveArtistAudio(artistProfileId: string, cfAudioKey: string, portfolioItemId?: string) {
   const { userId, client } = await requireSession()
+  // Same defense as createTrack: the key must reference a real, size-compliant
+  // R2 object — otherwise a caller could claim an arbitrary key.
+  const head = await headAudio(cfAudioKey)
+  if (!head.exists) throw new Error('El audio no se encontró en el almacenamiento.')
+  if (head.sizeBytes > MAX_AUDIO_BYTES) throw new Error('El archivo supera 200 MB.')
   const { data, error } = await client.rpc('artistas_save_audio', {
     p_uploader_id:       userId,
     p_artist_profile_id: artistProfileId,
