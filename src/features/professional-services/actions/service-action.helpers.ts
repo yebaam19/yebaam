@@ -1,3 +1,4 @@
+import { headFile } from '@/lib/cloudflare/r2'
 import type {
   CreateProfessionalServiceDTO,
   PortfolioProject,
@@ -105,7 +106,17 @@ export function buildServiceInsertPayload(
   }
 }
 
-export function buildServiceUpdatePatch(dto: UpdateServicePatchInput): Record<string, unknown> {
+/** Forma exacta de las claves que firma /api/upload/file-url (`cvs/AAAA/uuid.pdf`).
+ *  Valida ANTES de persistir: bloquea inyección de claves de otros prefijos
+ *  (p. ej. `tracks/…` o `chat-audio/…` de otros usuarios). */
+const CV_KEY_PATTERN = /^cvs\/\d{4}\/[0-9a-f-]{36}\.pdf$/
+
+/** Async por la verificación HEAD en R2 del CV (precedente: createTrack/headAudio).
+ *  Lanza en input inválido — updateServiceAction lo atrapa y lo devuelve como
+ *  `{ ok:false, error }`. */
+export async function buildServiceUpdatePatch(
+  dto: UpdateServicePatchInput,
+): Promise<Record<string, unknown>> {
   const update: Record<string, unknown> = {}
   // `undefined` = "no tocar": solo se escriben las claves que el caller envió
   // explícitamente, así una actualización parcial nunca borra datos que no
@@ -141,7 +152,27 @@ export function buildServiceUpdatePatch(dto: UpdateServicePatchInput): Record<st
   if (dto.logoUrl !== undefined) update.logo_cf_image_id = extractCfImageId(dto.logoUrl)
   if (dto.coverUrl !== undefined) update.cover_cf_image_id = extractCfImageId(dto.coverUrl)
   if (dto.adImageUrl !== undefined) update.ad_cf_image_id = extractCfImageId(dto.adImageUrl)
-  if (dto.cvUrl !== undefined) update.cv_cf_file_id = extractCfImageId(dto.cvUrl)
+  if (dto.cvKey !== undefined) {
+    if (dto.cvKey === '') {
+      // Limpieza explícita del CV guardado.
+      update.cv_cf_file_id = null
+    } else {
+      if (!CV_KEY_PATTERN.test(dto.cvKey)) {
+        throw new Error('La referencia del CV no es válida. Vuelve a subir el archivo.')
+      }
+      // Confirmar en R2 que el objeto existe y es un PDF antes de persistir la
+      // clave — el cliente solo pudo obtenerla vía /api/upload/file-url, pero
+      // el PUT pudo no haberse completado.
+      const head = await headFile(dto.cvKey)
+      if (!head.exists) {
+        throw new Error('El CV no se encontró en el almacenamiento. Vuelve a subir el archivo.')
+      }
+      if (head.contentType !== 'application/pdf') {
+        throw new Error('El archivo subido como CV no es un PDF válido.')
+      }
+      update.cv_cf_file_id = dto.cvKey
+    }
+  }
   if (dto.portfolioProjects !== undefined) {
     update.portfolio_projects = sanitizePortfolioProjects(dto.portfolioProjects)
   }

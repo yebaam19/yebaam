@@ -113,7 +113,8 @@ export async function updateServiceAction(
   try {
     const { userId, client } = await requireSession()
 
-    const update = buildServiceUpdatePatch(dto)
+    // Async: valida el cvKey contra R2 (HEAD) antes de armar el patch.
+    const update = await buildServiceUpdatePatch(dto)
 
     if (Object.keys(update).length > 0) {
       const { error } = await client

@@ -78,13 +78,15 @@ export function useCreateBlogForm(onClose: () => void) {
 
     try {
       // Upload to Cloudflare Images (every image in the app goes to Cloudflare).
+      // House rule: persist the bare Cloudflare id, never the delivery URL —
+      // readers rebuild the URL at render time via resolveImageRef().
       if (avatarFile) {
         setUploadingImages(true)
-        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).url
+        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).id
       }
       if (coverFile) {
         setUploadingImages(true)
-        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).url
+        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).id
       }
     } finally {
       setUploadingImages(false)

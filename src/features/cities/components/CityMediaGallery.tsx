@@ -3,12 +3,14 @@
 import { HeartIcon, PhotoIcon } from '@/components/icons/heroicons-shim'
 import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { CityMedia, MediaType } from '../interfaces/city.interfaces'
 import { CityMediaDialog } from './CityMediaDialog'
 import { CityMediaUploader } from './CityMediaUploader'
 
 interface CityMediaGalleryProps {
+  cityId: string
   media: CityMedia[]
   emptyMessage?: string
   cityName: string
@@ -20,11 +22,13 @@ interface CityMediaGalleryProps {
  * Incluye uploader y dialog para ver en detalle
  */
 export function CityMediaGallery({
+  cityId,
   media,
   emptyMessage = 'No hay contenido disponible',
   cityName,
   mediaType = MediaType.IMAGE,
 }: CityMediaGalleryProps) {
+  const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -34,12 +38,9 @@ export function CityMediaGallery({
   }
 
   const handleUploadComplete = () => {
-    // En un caso real, aquí refrescaríamos los datos del servidor
-    console.log('[CityMediaGallery] Upload completed, would refresh data')
+    // La Server Action ya revalidó la ruta; refresh trae los datos nuevos del servidor
+    router.refresh()
   }
-
-  // Extraer un cityId del primer media, o usar un placeholder
-  const cityId = media[0]?.cityId || 'mock-city-id'
 
   return (
     <div className="space-y-4">

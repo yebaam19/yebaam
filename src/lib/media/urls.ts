@@ -82,6 +82,47 @@ export function resolveImage(
   return row.url ?? row.avatar_url ?? row.cover_photo_url ?? row.media_url ?? null;
 }
 
+/** True when the stored value is already a URL-ish reference (legacy full
+ *  delivery URLs, or local `data:`/`blob:` previews) rather than a bare
+ *  Cloudflare Images id. */
+function isUrlRef(value: string): boolean {
+  return /^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:');
+}
+
+/**
+ * Format-agnostic resolver for columns that historically stored full delivery
+ * URLs and now store bare Cloudflare Images ids (clubs/blogs/groups/pages
+ * covers & avatars during the data-freeze transition). Full URLs (and
+ * `data:`/`blob:` previews) pass through untouched; bare ids are wrapped with
+ * `imageUrl(id, variant)`.
+ */
+export function resolveImageRef(
+  value: string | null | undefined,
+  variant: ImageVariant = 'public',
+): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return isUrlRef(trimmed) ? trimmed : imageUrl(trimmed, variant);
+}
+
+const IMAGE_DELIVERY_ID_RE = /imagedelivery\.net\/[^/]+\/([^/?#]+)/;
+
+/**
+ * Bare Cloudflare Images id from either storage format: bare ids come back
+ * as-is, full `imagedelivery.net/<hash>/<id>/<variant>` URLs are reduced to
+ * their id, and non-Cloudflare URLs (old Unsplash/S3 rows) return null so
+ * callers can skip Cloudflare-only operations like deleteImage().
+ */
+export function extractImageId(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!isUrlRef(trimmed)) return trimmed;
+  const match = trimmed.match(IMAGE_DELIVERY_ID_RE);
+  return match ? match[1] : null;
+}
+
 export function resolveVideoUid(
   row:
     | {

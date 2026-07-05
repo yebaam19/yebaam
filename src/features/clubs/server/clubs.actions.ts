@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { extractImageId } from '@/lib/media/urls';
 import { ensureClubPublicChat } from '@/lib/api/clubs';
 import type { UpdateClubDto } from '@/features/clubs/types/club.types';
 import type { ClubPostKind } from './clubs.server';
@@ -413,9 +414,13 @@ export async function updateClubImagesAction(
     return { ok: false, error: 'Solo el propietario puede cambiar las imágenes' };
   }
 
+  // House rule: persist the bare Cloudflare Images id, never the delivery URL.
+  // Older callers sent full imagedelivery.net URLs — reduce those to their id;
+  // anything else (non-Cloudflare URL) is stored verbatim as a legacy value.
+  const toStoredRef = (value: string): string => extractImageId(value) ?? value;
   const patch: Record<string, string | null> = { updated_at: new Date().toISOString() };
-  if (fields.profileImageUrl !== undefined) patch.profile_image_url = fields.profileImageUrl;
-  if (fields.coverImageUrl !== undefined) patch.cover_image_url = fields.coverImageUrl;
+  if (fields.profileImageUrl !== undefined) patch.profile_image_url = toStoredRef(fields.profileImageUrl);
+  if (fields.coverImageUrl !== undefined) patch.cover_image_url = toStoredRef(fields.coverImageUrl);
   if (Object.keys(patch).length === 1) {
     return { ok: false, error: 'No hay cambios para guardar' };
   }

@@ -11,8 +11,8 @@ import {
   XMarkIcon,
 } from '@/components/icons/heroicons-shim'
 import { Fragment, useRef, useState } from 'react'
-import { MediaType } from '../interfaces/city.interfaces'
-import { cityService } from '../services/city.service'
+import { uploadService } from '@/lib/service/upload.service'
+import { submitCityPhoto } from '../actions/media.actions'
 
 interface CityPhotoUploadDialogProps {
   open: boolean
@@ -77,34 +77,37 @@ export function CityPhotoUploadDialog({
     setUploadProgress(0)
     setError(null)
 
-    // Simular progreso de subida
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval)
-          return prev
-        }
-        return prev + 10
-      })
-    }, 100)
-
     try {
-      const result = await cityService.uploadCityMedia(cityId, selectedFile, MediaType.IMAGE)
+      // 1. Binario a Cloudflare Images (progreso real del XHR)
+      const res = await uploadService.uploadImage(selectedFile, (p) => setUploadProgress(p))
 
-      if (result) {
-        setUploadProgress(100)
-        console.log('[CityPhotoUploadDialog] Upload successful:', result)
-
-        // Pequeña pausa para mostrar el 100%
-        setTimeout(() => {
-          onUploadComplete?.()
-          handleClose()
-        }, 500)
+      // 2. Persistir solo el id de Cloudflare vía Server Action (RLS: uploader_id = auth.uid())
+      const out = await submitCityPhoto({ cityId, cfImageId: res.id })
+      if (!out.ok) {
+        setError(
+          out.error === 'unauthenticated'
+            ? 'Debes iniciar sesión para subir fotos.'
+            : 'Error al subir la imagen. Por favor, intenta de nuevo.'
+        )
+        setIsUploading(false)
+        setUploadProgress(0)
+        return
       }
+
+      setUploadProgress(100)
+      // Pequeña pausa para mostrar el 100%
+      setTimeout(() => {
+        setIsUploading(false)
+        onUploadComplete?.()
+        handleClose()
+      }, 500)
     } catch (err) {
       console.error('[CityPhotoUploadDialog] Upload failed:', err)
-      setError('Error al subir la imagen. Por favor, intenta de nuevo.')
-      clearInterval(progressInterval)
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Error al subir la imagen. Por favor, intenta de nuevo.'
+      )
       setIsUploading(false)
       setUploadProgress(0)
     }
@@ -201,8 +204,8 @@ export function CityPhotoUploadDialog({
                       <ShieldCheckIcon className="h-5 w-5 shrink-0 text-primary-600 dark:text-primary-400" />
                       <div className="text-sm text-primary-700 dark:text-primary-300">
                         <p>
-                          Las imágenes subidas serán <strong>revisadas y validadas</strong> por el equipo de Yebaam
-                          antes de mostrarse públicamente en el portal.
+                          Las imágenes se publican de inmediato en el portal. El equipo de Yebaam puede{' '}
+                          <strong>retirar</strong> las que incumplan las normas de contenido.
                         </p>
                       </div>
                     </div>

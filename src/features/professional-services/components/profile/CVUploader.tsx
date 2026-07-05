@@ -8,6 +8,7 @@
  */
 
 import { ArrowUpTrayIcon, DocumentArrowDownIcon, DocumentIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import { MAX_DOCUMENT_BYTES, formatBytes } from '@/lib/upload-limits'
 import { useCallback, useState } from 'react'
 
 interface CVUploaderProps {
@@ -36,10 +37,9 @@ export function CVUploader({
       return 'Solo se permiten archivos PDF'
     }
 
-    // Máximo 10MB
-    const maxSize = 10 * 1024 * 1024 // 10MB
-    if (file.size > maxSize) {
-      return 'El archivo no debe superar los 10MB'
+    // Mismo límite que el servidor (/api/upload/file-url) — no puede divergir.
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      return `El archivo no debe superar los ${formatBytes(MAX_DOCUMENT_BYTES)}`
     }
 
     return null
@@ -121,7 +121,9 @@ export function CVUploader({
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Currículum Vitae (PDF)</h3>
-          <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">Sube tu CV en formato PDF. Máximo 10MB.</p>
+          <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+            Sube tu CV en formato PDF. Máximo {formatBytes(MAX_DOCUMENT_BYTES)}.
+          </p>
         </div>
       </div>
 
@@ -215,7 +217,9 @@ export function CVUploader({
               <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                 Arrastra tu CV aquí o haz clic para seleccionar
               </p>
-              <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">PDF, máximo 10MB</p>
+              <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                PDF, máximo {formatBytes(MAX_DOCUMENT_BYTES)}
+              </p>
             </div>
           </div>
         </div>

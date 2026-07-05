@@ -1,10 +1,9 @@
-import { FC, Fragment, useState, useEffect, useRef, useCallback } from 'react';
+import { FC, Fragment, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PhotoIcon, CloudArrowUpIcon } from '@/components/icons/heroicons-shim';
+import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { useCreatePromotion, useUpdatePromotion } from '../../hooks/usePagePromotions';
 import { PagePromotion, PromotionType, CreatePromotionInput } from '../../interfaces/page-promotion.interface';
-import Image from 'next/image';
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -23,7 +22,6 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
   const isEditMode = !!promotion;
   const createMutation = useCreatePromotion(pageId);
   const updateMutation = useUpdatePromotion(pageId, promotion?.id || '');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [formData, setFormData] = useState<CreatePromotionInput>({
@@ -39,9 +37,6 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
     isFeatured: false,
   });
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Initialize form with promotion data in edit mode
@@ -60,75 +55,8 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
         isFeatured: promotion.isFeatured,
         usageLimit: promotion.usageLimit || undefined,
       });
-      
-      // Set existing image preview
-      if (promotion.imageUrl) {
-        setPreviewUrl(promotion.imageUrl);
-      }
     }
   }, [promotion]);
-
-  const handleFileSelect = useCallback((file: File) => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert(t('invalidType'));
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      alert(t('tooLarge'));
-      return;
-    }
-
-    setSelectedFile(file);
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(false);
-
-      const file = e.dataTransfer.files[0];
-      if (file) {
-        handleFileSelect(file);
-      }
-    },
-    [handleFileSelect]
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  };
-
-  const removeImage = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -475,17 +403,11 @@ export const CreatePromotionModal: FC<CreatePromotionModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Image Upload - TODO: Implementar upload a S3 */}
-                  {/* 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Imagen de la promoción (opcional)
-                    </label>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      La funcionalidad de subir imágenes estará disponible próximamente
-                    </p>
-                  </div>
-                  */}
+                  {/* Imagen de la promoción: sin campo por ahora. El backend de
+                      promociones no está migrado (POST /api/pages/[id]/promotions
+                      responde 501), así que no hay dónde persistirla. Cuando exista
+                      soporte end-to-end: subir con uploadService.uploadImage y
+                      persistir SOLO el id de Cloudflare (nunca la URL completa). */}
 
                   {/* Usage Limit */}
                   <div>

@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { FEATURE_FLAGS } from '@/config/features-flag';
+import { uploadService } from '@/lib/service/upload.service';
 import { useUpdateService } from '../../../hooks/useServices';
 import { useUploadServiceImages } from '../../../hooks/useUploadServiceImages';
 import type { UpdateServicePatchInput } from '../../../actions/service-action.helpers';
@@ -22,9 +23,9 @@ export type { EditServiceFields, EditServiceSetters, UseEditServiceForm };
 
 /**
  * View-model for `EditServiceModal`. Owns the ~20 form-state pieces, the
- * four Cloudflare upload hooks, the submit pipeline, and the derived
- * `isBusy` flag the shell + footer buttons gate on. The return-contract types
- * live in `./edit-service-form.types`.
+ * three Cloudflare Images upload hooks + the R2 CV upload state, the submit
+ * pipeline, and the derived `isBusy` flag the shell + footer buttons gate on.
+ * The return-contract types live in `./edit-service-form.types`.
  *
  * Tabs read their slice off the returned object — the modal shell wires
  * everything together and chooses which tabs render.
@@ -41,7 +42,12 @@ export function useEditServiceForm(
   const coverUpload = useUploadServiceImages();
   const logoUpload = useUploadServiceImages();
   const adImageUpload = useUploadServiceImages();
-  const cvUpload = useUploadServiceImages();
+  // El CV es un PDF → va a R2 vía uploadService.uploadDocument, no por el hook
+  // de Cloudflare Images. Estado local mínimo para la barra de progreso del tab.
+  const [cvUploadState, setCvUploadState] = useState<{ isUploading: boolean; progress: number }>({
+    isUploading: false,
+    progress: 0,
+  });
 
   // Basic
   const [name, setName] = useState(service.name);
@@ -127,7 +133,9 @@ export function useEditServiceForm(
       let uploadedLogoUrl = logoUrl;
       let uploadedCoverUrl = coverUrl;
       let uploadedAdImageUrl = adImageUrl;
-      let uploadedCvUrl = cvUrl;
+      // `undefined` = el CV no cambió (no viaja el campo); `''` = limpiar;
+      // `cvs/AAAA/uuid.pdf` = clave R2 desnuda recién subida.
+      let cvKeyPatch: string | undefined;
       let cvError: string | null = null;
 
       if (selectedLogoFile) {
@@ -142,17 +150,25 @@ export function useEditServiceForm(
         uploadedAdImageUrl = await adImageUpload.uploadImage(selectedAdImageFile);
         setAdImageUrl(uploadedAdImageUrl);
       }
-      if (FEATURE_FLAGS.SERVICES_CV_UPLOAD && selectedCvFile) {
-        // El CV se aísla del resto del guardado: hoy no existe ruta de subida
-        // de documentos PDF (Cloudflare Images los rechaza), así que su fallo
-        // solo marca este campo y deja que los demás cambios se guarden.
-        try {
-          uploadedCvUrl = await cvUpload.uploadImage(selectedCvFile);
-          setCvUrl(uploadedCvUrl);
-        } catch {
-          cvError =
-            'No se pudo subir el CV: la subida de documentos PDF aún no está disponible. El resto de los cambios sí se guardó.';
-          uploadedCvUrl = cvUrl; // conserva el CV anterior; no tocamos cv_cf_file_id
+      if (FEATURE_FLAGS.SERVICES_CV_UPLOAD) {
+        if (selectedCvFile) {
+          // El CV se aísla del resto del guardado: si su subida a R2 falla,
+          // solo se marca este campo y los demás cambios sí se guardan.
+          try {
+            setCvUploadState({ isUploading: true, progress: 0 });
+            const { key } = await uploadService.uploadDocument(selectedCvFile, (progress) =>
+              setCvUploadState({ isUploading: true, progress }),
+            );
+            cvKeyPatch = key;
+            setCvUploadState({ isUploading: false, progress: 100 });
+          } catch (err) {
+            setCvUploadState({ isUploading: false, progress: 0 });
+            const detail = err instanceof Error && err.message ? ` ${err.message}` : '';
+            cvError = `No se pudo subir el CV.${detail} El resto de los cambios sí se guardó.`;
+          }
+        } else if (cvUrl === null && service.cvUrl) {
+          // El usuario quitó el CV existente → limpieza explícita ('' → NULL).
+          cvKeyPatch = '';
         }
       }
 
@@ -187,8 +203,10 @@ export function useEditServiceForm(
         adImageUrl: uploadedAdImageUrl ?? undefined,
       };
 
-      if (FEATURE_FLAGS.SERVICES_CV_UPLOAD && !cvError) {
-        updateData.cvUrl = uploadedCvUrl ?? undefined;
+      if (FEATURE_FLAGS.SERVICES_CV_UPLOAD && !cvError && cvKeyPatch !== undefined) {
+        // Solo viaja cuando el CV cambió: clave R2 desnuda o '' para limpiar.
+        // Nunca se reenvía la URL firmada resuelta (pisaría cv_cf_file_id).
+        updateData.cvKey = cvKeyPatch;
       }
       if (FEATURE_FLAGS.SERVICES_PROJECTS_PORTFOLIO) {
         // La columna `portfolio_projects` (jsonb) ya existe; el server action
@@ -225,7 +243,7 @@ export function useEditServiceForm(
     coverUpload.isUploading ||
     logoUpload.isUploading ||
     adImageUpload.isUploading ||
-    cvUpload.isUploading;
+    cvUploadState.isUploading;
 
   return {
     fields: {
@@ -283,7 +301,7 @@ export function useEditServiceForm(
     cv: { cvUrl, onCvSelect, onCvUrlChange },
     portfolio: { projects: portfolioProjects, setProjects: setPortfolioProjects },
     rates: { toggleWorkType },
-    uploads: { cover: coverUpload, logo: logoUpload, adImage: adImageUpload, cv: cvUpload },
+    uploads: { cover: coverUpload, logo: logoUpload, adImage: adImageUpload, cv: cvUploadState },
     status: { isBusy, isPending, saveSuccess, error },
     handleSubmit,
   };

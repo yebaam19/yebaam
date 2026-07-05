@@ -14,7 +14,6 @@ import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/re
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { Fragment } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
-import IdentificationTab from './IdentificationTab'
 import PersonalTab from './tabs/PersonalTab'
 import BiographyTab from './tabs/BiographyTab'
 import LocationTab from './tabs/LocationTab'
@@ -28,7 +27,6 @@ interface PersonalDialogProps {
 
 export default function PersonalDialog({ user, open, onOpenChange }: PersonalDialogProps) {
   const {
-    profile,
     bio,
     setBio,
     websiteUrl,
@@ -49,7 +47,6 @@ export default function PersonalDialog({ user, open, onOpenChange }: PersonalDia
     setBirthCity,
     isSubmitting,
     saveSuccess,
-    identificationUpload,
     handleSubmit,
   } = usePersonalForm(user)
 
@@ -107,7 +104,6 @@ export default function PersonalDialog({ user, open, onOpenChange }: PersonalDia
                     <TabsTrigger>Personal</TabsTrigger>
                     <TabsTrigger>Biografía</TabsTrigger>
                     <TabsTrigger>Ubicación</TabsTrigger>
-                    <TabsTrigger>Identificación</TabsTrigger>
                   </TabsList>
 
                   {/* Tab Personal */}
@@ -143,14 +139,6 @@ export default function PersonalDialog({ user, open, onOpenChange }: PersonalDia
                       setResidenceCity={setResidenceCity}
                       birthCity={birthCity}
                       setBirthCity={setBirthCity}
-                    />
-                  </TabsContent>
-
-                  {/* Tab Identificación */}
-                  <TabsContent>
-                    <IdentificationTab 
-                      currentIdDocumentUrl={profile.idDocumentUrl} 
-                      uploadHook={identificationUpload}
                     />
                   </TabsContent>
                 </Tabs>

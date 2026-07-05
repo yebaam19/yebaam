@@ -5,6 +5,7 @@ import Avatar from '@/ui/Avatar'
 import { CheckBadgeIcon, PencilIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
+import { resolveImageRef } from '@/lib/media/urls'
 import type { Blog } from '../types/blog.types'
 import { getCategoryColor, getCategoryLabel } from '../utils/blogHelpers'
 
@@ -23,12 +24,14 @@ export const BlogHeader = ({ blog, onEdit, onFollowToggle, isFollowLoading }: Bl
 
   if (!user) return null
   const userAvatar = user.avatarUrl || user.avatar
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(blog.coverImageUrl, 'hero')
   return (
     <>
       {/* Cover Image */}
       <div className="relative h-64 bg-linear-to-r from-secondary-700 via-secondary-800 to-secondary-900 md:h-80">
-        {blog.coverImageUrl && (
-          <Image src={blog.coverImageUrl} alt={blog.name} fill sizes="100vw" className="object-cover" unoptimized priority />
+        {coverSrc && (
+          <Image src={coverSrc} alt={blog.name} fill sizes="100vw" className="object-cover" unoptimized priority />
         )}
       </div>
 

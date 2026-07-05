@@ -33,11 +33,14 @@ class PagePhotosService {
   ): Promise<PagePhoto> {
     const { file, caption } = input;
 
-    const { id, url } = await uploadService.uploadImage(file);
+    const { id } = await uploadService.uploadImage(file);
     const aspectRatio = await this.determineAspectRatio(file);
 
+    // House rule: persist the bare Cloudflare Images id, never the delivery
+    // URL. The `url` column carries the id going forward (legacy rows keep
+    // their full URL); readers resolve both via resolveImageRef().
     const photoDto: CreatePagePhotoDto = {
-      url,
+      url: id,
       s3Key: id,
       caption,
       aspectRatio,

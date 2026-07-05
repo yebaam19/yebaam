@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { getPublicFileUrl } from '@/lib/cloudflare/r2'
 import { getServerClient } from '@/utils/supabase/server'
 import { mapFull } from './service-mappers'
 import {
@@ -33,7 +34,7 @@ async function hydrate(client: SupabaseClient, row: DetailServiceRow): Promise<P
   ])
   const reviews = (reviewRes.data ?? []) as ReviewRow[]
   const reviewAuthors = await fetchProfiles(client, reviews.map((r) => r.user_id))
-  return mapFull(
+  const service = mapFull(
     row,
     ownerMap.get(row.user_id),
     (subcatRes.data ?? []) as SubcategoryRow[],
@@ -41,6 +42,16 @@ async function hydrate(client: SupabaseClient, row: DetailServiceRow): Promise<P
     reviews,
     reviewAuthors,
   )
+  // El CV vive en R2 (clave `cvs/…` en cv_cf_file_id): se firma una URL GET de
+  // 1 h en cada lectura. Filas legacy con URL completa pasan tal cual; si R2 no
+  // está configurado el CV simplemente no se muestra.
+  const cvRef = row.cv_cf_file_id
+  if (cvRef) {
+    service.cvUrl = cvRef.startsWith('http')
+      ? cvRef
+      : await getPublicFileUrl(cvRef, 3600).catch(() => undefined)
+  }
+  return service
 }
 
 export const getServiceBySlug = cache(

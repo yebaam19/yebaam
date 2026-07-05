@@ -41,10 +41,11 @@ const FEATURE_FLAGS_BASE = {
   // ============================================================================
   
   PERFIL_PROFESIONAL_ENABLED: true, // Perfil Profesional - Funcional 
-  // Apagado: no existe ruta de subida de documentos PDF (Cloudflare Images rechaza
-  // PDFs y no hay bucket de Storage para CVs de servicios). Reactivar cuando exista
-  // la infraestructura de documentos.
-  SERVICES_CV_UPLOAD: false, // Subir CV (PDF) para profesionales
+  // Los CVs (PDF) suben a Cloudflare R2 vía /api/upload/file-url +
+  // uploadService.uploadDocument; la DB guarda la clave desnuda
+  // (`cvs/AAAA/uuid.pdf`) en cv_cf_file_id y la URL GET firmada se resuelve al
+  // leer (services-detail.server.ts).
+  SERVICES_CV_UPLOAD: true, // Subir CV (PDF) para profesionales
   // La columna `portfolio_projects` (jsonb) ya existe en `professional_services`:
   // el tab de proyectos persiste y se muestra en el perfil (SectionTabs).
   SERVICES_PROJECTS_PORTFOLIO: true, // Portafolio de proyectos con URLs

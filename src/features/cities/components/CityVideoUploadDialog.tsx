@@ -11,8 +11,8 @@ import {
   XMarkIcon,
 } from '@/components/icons/heroicons-shim'
 import { Fragment, useRef, useState } from 'react'
-import { MediaType } from '../interfaces/city.interfaces'
-import { cityService } from '../services/city.service'
+import { uploadService } from '@/lib/service/upload.service'
+import { submitCityVideo } from '../actions/media.actions'
 
 interface CityVideoUploadDialogProps {
   open: boolean
@@ -38,6 +38,7 @@ export function CityVideoUploadDialog({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [isTranscoding, setIsTranscoding] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const MAX_FILE_SIZE = 64 * 1024 * 1024 // 64MB
@@ -75,38 +76,48 @@ export function CityVideoUploadDialog({
 
     setIsUploading(true)
     setUploadProgress(0)
+    setIsTranscoding(false)
     setError(null)
 
-    // Simular progreso de subida (más lento para videos)
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval)
-          return prev
-        }
-        return prev + 5
-      })
-    }, 150)
-
     try {
-      const result = await cityService.uploadCityMedia(cityId, selectedFile, MediaType.VIDEO)
+      // 1. Binario a Cloudflare Stream (progreso real del XHR + polling de transcodificación)
+      const res = await uploadService.uploadVideo(selectedFile, {
+        onProgress: (p) => setUploadProgress(p),
+        onTranscode: () => setIsTranscoding(true),
+      })
 
-      if (result) {
-        setUploadProgress(100)
-        console.log('[CityVideoUploadDialog] Upload successful:', result)
-
-        // Pequeña pausa para mostrar el 100%
-        setTimeout(() => {
-          onUploadComplete?.()
-          handleClose()
-        }, 500)
+      // 2. Persistir solo el uid de Stream vía Server Action (RLS: uploader_id = auth.uid())
+      const out = await submitCityVideo({ cityId, cfVideoUid: res.uid })
+      if (!out.ok) {
+        setError(
+          out.error === 'unauthenticated'
+            ? 'Debes iniciar sesión para subir videos.'
+            : 'Error al subir el video. Por favor, intenta de nuevo.'
+        )
+        setIsUploading(false)
+        setUploadProgress(0)
+        setIsTranscoding(false)
+        return
       }
+
+      setUploadProgress(100)
+      // Pequeña pausa para mostrar el 100%
+      setTimeout(() => {
+        setIsUploading(false)
+        setIsTranscoding(false)
+        onUploadComplete?.()
+        handleClose()
+      }, 500)
     } catch (err) {
       console.error('[CityVideoUploadDialog] Upload failed:', err)
-      setError('Error al subir el video. Por favor, intenta de nuevo.')
-      clearInterval(progressInterval)
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Error al subir el video. Por favor, intenta de nuevo.'
+      )
       setIsUploading(false)
       setUploadProgress(0)
+      setIsTranscoding(false)
     }
   }
 
@@ -210,8 +221,8 @@ export function CityVideoUploadDialog({
                       <ShieldCheckIcon className="h-5 w-5 shrink-0 text-primary-600 dark:text-primary-400" />
                       <div className="text-sm text-primary-700 dark:text-primary-300">
                         <p>
-                          Los videos subidos serán <strong>revisados y validados</strong> por el equipo de Yebaam antes
-                          de mostrarse públicamente en el portal.
+                          Los videos se publican de inmediato en el portal. El equipo de Yebaam puede{' '}
+                          <strong>retirar</strong> los que incumplan las normas de contenido.
                         </p>
                       </div>
                     </div>
@@ -261,7 +272,9 @@ export function CityVideoUploadDialog({
                   {isUploading && (
                     <div className="mt-4">
                       <div className="mb-1 flex justify-between text-sm">
-                        <span className="text-neutral-600 dark:text-neutral-400">Subiendo video...</span>
+                        <span className="text-neutral-600 dark:text-neutral-400">
+                          {isTranscoding ? 'Procesando video...' : 'Subiendo video...'}
+                        </span>
                         <span className="font-medium text-primary-600">{uploadProgress}%</span>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">

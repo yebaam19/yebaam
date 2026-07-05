@@ -240,34 +240,10 @@ class CityServiceMock {
     return { success: true }
   }
 
-  /**
-   * Sube un nuevo media a la ciudad
-   */
-  async uploadCityMedia(cityId: string, file: File, type: MediaType): Promise<CityMedia | null> {
-    await simulateNetworkDelay(500)
-
-    // En el mock, simulamos la subida
-    console.log(`[MOCK] Uploading ${type} to city: ${cityId}`)
-
-    const mockMedia: CityMedia = {
-      id: `media-${Date.now()}`,
-      cityId,
-      userId: 'current-user',
-      url: URL.createObjectURL(file),
-      type,
-      createdAt: new Date().toISOString(),
-      likesCount: 0,
-      isLikedByUser: false,
-      user: {
-        id: 'current-user',
-        username: 'currentuser',
-        firstName: 'Usuario',
-        lastName: 'Actual',
-      },
-    }
-
-    return mockMedia
-  }
+  // NOTE: uploadCityMedia was removed — it faked uploads (simulateNetworkDelay +
+  // URL.createObjectURL) and discarded the user's file. Real uploads now go
+  // through `uploadService` (Cloudflare) + the `submitCityPhoto` /
+  // `submitCityVideo` Server Actions in `../actions/media.actions.ts`.
 
   /**
    * Obtiene las estadísticas globales de la plataforma

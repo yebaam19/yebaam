@@ -14,6 +14,11 @@ export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 /** Cloudflare Stream direct-creator-upload cap per file (basic uploads). */
 export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
+/** Max PDF document size (CVs de servicios profesionales → R2 presigned PUT).
+ *  Enforced client-side (uploadDocument), at pre-sign (/api/upload/file-url)
+ *  and bound into the presigned URL's ContentLength. */
+export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+
 export function formatBytes(bytes: number): string {
   if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`;

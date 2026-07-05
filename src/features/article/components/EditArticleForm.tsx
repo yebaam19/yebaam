@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { uploadService } from '@/lib/service/upload.service'
 import { Article, UpdateArticleData } from '../interfaces'
 import { articleService } from '../services'
 import { CoverImageArea } from './CoverImageArea'
@@ -74,6 +75,17 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
     }
   }, [coverImageUrl])
 
+  // Las imágenes insertadas en el editor se suben a Cloudflare de inmediato;
+  // sin este handler quedarían como blob: URLs muertas tras recargar.
+  const handleEditorImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const { url } = await uploadService.uploadImage(file)
+      return url
+    } catch {
+      return null
+    }
+  }
+
   const handleUpdate = async () => {
     if (!title.trim()) {
       alert(t('titleRequired'))
@@ -131,7 +143,14 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
         onUpdate={handleUpdate}
         onCancel={handleCancel}
         isUpdating={isUpdating}
-        toolbarSlot={<RichTextEditor content={content} onChange={setContent} isHeaderMode={true} />}
+        toolbarSlot={
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
+            isHeaderMode={true}
+            onImageUpload={handleEditorImageUpload}
+          />
+        }
       />
 
       {/* Main content area */}
@@ -145,7 +164,12 @@ export function EditArticleForm({ article, user }: EditArticleFormProps) {
         <EditableTitle title={title} onTitleChange={setTitle} placeholder={t('titlePlaceholder')} />
 
         <div>
-          <RichTextEditor content={content} onChange={setContent} isHeaderMode={false} />
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
+            isHeaderMode={false}
+            onImageUpload={handleEditorImageUpload}
+          />
         </div>
       </div>
 

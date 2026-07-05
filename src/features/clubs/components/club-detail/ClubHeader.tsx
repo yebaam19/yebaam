@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { Club } from '@/features/clubs/types/club.types';
+import { resolveImageRef } from '@/lib/media/urls';
 import { getCategoryColor, getCategoryLabel } from '@/features/clubs/utils/clubHelpers';
 import {
   CheckBadgeIcon,
@@ -50,14 +51,17 @@ export function ClubHeader({
   const t = useTranslations('clubes');
   const PrivIcon = privacyIcon(club.privacy);
   const privLabel = t(`detail.privacy.${privacyKey(club.privacy)}`);
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(club.coverImageUrl, 'hero');
+  const profileSrc = resolveImageRef(club.profileImageUrl, 'avatar');
 
   return (
     <div className="relative">
       {/* Cover */}
       <div className="relative h-40 w-full overflow-hidden bg-linear-to-br from-blue-500 via-indigo-500 to-purple-600 sm:h-52 md:h-64">
-        {club.coverImageUrl && (
+        {coverSrc && (
           <Image
-            src={club.coverImageUrl}
+            src={coverSrc}
             alt={t('detail.coverAlt', { name: club.name })}
             fill
             sizes="100vw"
@@ -79,9 +83,9 @@ export function ClubHeader({
         <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 sm:pb-5">
           {/* Avatar — the only element that overlaps the cover */}
           <div className="relative -mt-10 h-20 w-20 shrink-0 overflow-hidden rounded-xl border-4 border-white bg-white shadow-md sm:-mt-12 sm:h-24 sm:w-24 dark:border-gray-800 dark:bg-gray-700">
-            {club.profileImageUrl ? (
+            {profileSrc ? (
               <Image
-                src={club.profileImageUrl}
+                src={profileSrc}
                 alt={club.name}
                 fill
                 sizes="96px"

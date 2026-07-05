@@ -12,6 +12,7 @@ import {
   Cog6ToothIcon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim';
+import { resolveImageRef } from '@/lib/media/urls';
 import type { Group } from '@/features/groups/types/group.types';
 import { GroupDetailTabs, type GroupDetailTab } from './GroupDetailTabs';
 
@@ -35,14 +36,16 @@ export function GroupDetailHero({
   showCreator = true,
 }: Props) {
   const t = useTranslations('grupos');
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(group.coverImageUrl, 'hero');
 
   return (
     <>
       {/* Cover Image */}
       <div className="relative h-44 min-h-[11rem] bg-linear-to-br from-blue-500 to-purple-600 sm:h-64">
-        {group.coverImageUrl ? (
+        {coverSrc ? (
           <Image
-            src={group.coverImageUrl}
+            src={coverSrc}
             alt={group.name}
             fill
             sizes="100vw"

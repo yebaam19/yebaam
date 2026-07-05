@@ -104,11 +104,7 @@ class ProfileService {
     return mapDbToProfile(updated as DbProfile, userData?.user?.email ?? undefined);
   }
 
-  async uploadImage(file: File, type: 'avatar' | 'cover' | 'idDocument'): Promise<UploadImageResponse> {
-    if (type === 'idDocument') {
-      throw new Error('ID document upload not yet supported — no storage bucket');
-    }
-
+  async uploadImage(file: File, type: 'avatar' | 'cover'): Promise<UploadImageResponse> {
     const { id, url } = await uploadService.uploadImage(file);
 
     const userId = await getCurrentUserId();

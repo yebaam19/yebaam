@@ -38,7 +38,9 @@ export interface UpdateProfessionalServiceDTO extends Partial<CreateProfessional
   logoUrl?: string
   coverUrl?: string
   adImageUrl?: string
-  cvUrl?: string // Feature flag: SERVICES_CV_UPLOAD
+  /** Clave R2 desnuda (`cvs/AAAA/uuid.pdf`) devuelta por uploadService.uploadDocument;
+   *  `''` limpia el CV guardado. Nunca una URL. Feature flag: SERVICES_CV_UPLOAD */
+  cvKey?: string
   portfolioProjects?: PortfolioProject[] // Feature flag: SERVICES_PROJECTS_PORTFOLIO
 }
 

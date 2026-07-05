@@ -1,5 +1,6 @@
 import {
   MAX_AUDIO_BYTES,
+  MAX_DOCUMENT_BYTES,
   MAX_IMAGE_BYTES,
   MAX_VIDEO_BYTES,
   formatBytes,
@@ -53,6 +54,12 @@ export interface R2AudioUploadResult {
   contentType: string;
 }
 
+export interface R2DocumentUploadResult {
+  key: string;
+  sizeBytes: number;
+  contentType: string;
+}
+
 async function uploadToCloudflare(
   uploadURL: string,
   file: File,
@@ -89,10 +96,14 @@ async function uploadToCloudflare(
   });
 }
 
-/** R2 expects a raw PUT, not multipart. Different shape from CF Images. */
+/** R2 expects a raw PUT, not multipart. Different shape from CF Images.
+ *  Acepta File o Blob (las notas de voz llegan como Blob del MediaRecorder);
+ *  el Content-Type viaja por parámetro porque debe coincidir con el mime que
+ *  firmó el endpoint (un Blob puede traer `;codecs=` en su `type`). */
 async function putToR2(
   presignedUrl: string,
-  file: File,
+  body: File | Blob,
+  contentType: string,
   onProgress?: (progress: number) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -112,9 +123,24 @@ async function putToR2(
     xhr.addEventListener('abort', () => reject(new Error('R2 upload was interrupted')));
     xhr.addEventListener('timeout', () => reject(new Error('R2 upload timed out')));
     xhr.open('PUT', presignedUrl);
-    xhr.setRequestHeader('Content-Type', file.type);
-    xhr.send(file);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.send(body);
   });
+}
+
+/**
+ * Transporte compartido para PUTs a URLs prefirmadas de R2 (el XHR vive solo
+ * en este archivo — regla ESLint). abort/timeout/error siempre asientan la
+ * promesa: un `fetch` crudo sin timeout fue la clase de cuelgue del incidente
+ * de subida de álbumes.
+ */
+export async function uploadToPresignedUrl(
+  presignedUrl: string,
+  body: File | Blob,
+  contentType: string,
+  onProgress?: (progress: number) => void,
+): Promise<void> {
+  return putToR2(presignedUrl, body, contentType, onProgress);
 }
 
 /**
@@ -310,7 +336,7 @@ export class UploadService {
       const { url, key } = signPayload.data as { url: string; key: string };
 
       try {
-        await putToR2(url, file, onProgress);
+        await putToR2(url, file, file.type, onProgress);
         const durationSeconds = await Promise.race([
           durationPromise,
           new Promise<number>((r) => setTimeout(() => r(0), 1500)),
@@ -328,6 +354,56 @@ export class UploadService {
     throw lastError instanceof Error
       ? lastError
       : new Error('No se pudo subir el audio. Revisa tu conexión e inténtalo de nuevo.');
+  }
+
+  /**
+   * Sube un documento PDF (CV de servicios profesionales) a Cloudflare R2 vía
+   * URL prefirmada de /api/upload/file-url. Devuelve la clave R2 desnuda
+   * (`cvs/AAAA/uuid.pdf`) — el caller guarda la CLAVE en DB, nunca la URL
+   * firmada (la URL de lectura se resuelve al renderizar).
+   */
+  async uploadDocument(
+    file: File,
+    onProgress?: (progress: number) => void,
+  ): Promise<R2DocumentUploadResult> {
+    if (file.type !== 'application/pdf') {
+      throw new Error('Solo se permiten documentos PDF.');
+    }
+    // El servidor rechaza >10 MB al firmar — fallar aquí primero, con el
+    // mismo mensaje formateado, evita el roundtrip.
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      throw new Error(
+        `"${file.name}" pesa ${formatBytes(file.size)} y supera el máximo de ${formatBytes(MAX_DOCUMENT_BYTES)} por documento.`,
+      );
+    }
+
+    // Misma disciplina que uploadAudio (sin sonda de duración): un PUT caído
+    // se reintenta UNA vez con URL recién firmada; los errores del endpoint de
+    // firma (401/403/429/500) no son transitorios y se lanzan de inmediato.
+    const maxAttempts = 2;
+    let lastError: unknown = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const signRes = await fetch('/api/upload/file-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentType: file.type, sizeBytes: file.size }),
+      });
+      const signPayload = await signRes.json().catch(() => null);
+      if (!signRes.ok || !signPayload?.data?.url) {
+        throw new Error(signPayload?.error || 'No se pudo generar la URL de subida del documento');
+      }
+      const { url, key } = signPayload.data as { url: string; key: string };
+
+      try {
+        await putToR2(url, file, file.type, onProgress);
+        return { key, sizeBytes: file.size, contentType: file.type };
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError instanceof Error
+      ? lastError
+      : new Error('No se pudo subir el documento. Revisa tu conexión e inténtalo de nuevo.');
   }
 
   async getUploadUrl(_data: UploadUrlRequestDTO): Promise<UploadUrlResponse> {

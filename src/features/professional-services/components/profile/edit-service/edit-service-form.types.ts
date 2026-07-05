@@ -19,7 +19,9 @@ export interface UseEditServiceForm {
     cover: ReturnType<typeof useUploadServiceImages>;
     logo: ReturnType<typeof useUploadServiceImages>;
     adImage: ReturnType<typeof useUploadServiceImages>;
-    cv: ReturnType<typeof useUploadServiceImages>;
+    /** El CV (PDF) sube a R2 vía uploadService.uploadDocument, no por el hook
+     *  de Cloudflare Images — solo expone el estado de progreso. */
+    cv: { isUploading: boolean; progress: number };
   };
   status: {
     isBusy: boolean;

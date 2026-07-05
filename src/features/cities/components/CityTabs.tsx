@@ -7,6 +7,7 @@ import { CategoriesGrid } from './CategoriesGrid'
 import { CityMediaGallery } from './CityMediaGallery'
 
 interface CityTabsProps {
+  cityId: string
   cityName: string
   citySlug: string
   photos: CityMedia[]
@@ -25,7 +26,7 @@ interface Tab {
 /**
  * Tabs de navegación para la ciudad
  */
-export function CityTabs({ cityName, citySlug, photos, videos }: CityTabsProps) {
+export function CityTabs({ cityId, cityName, citySlug, photos, videos }: CityTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>('explore')
 
   const tabs: Tab[] = [
@@ -78,6 +79,7 @@ export function CityTabs({ cityName, citySlug, photos, videos }: CityTabsProps) 
 
         {activeTab === 'photos' && (
           <CityMediaGallery
+            cityId={cityId}
             media={photos}
             emptyMessage="Aún no hay fotos de esta ciudad. ¡Sé el primero en compartir!"
             cityName={cityName}
@@ -87,6 +89,7 @@ export function CityTabs({ cityName, citySlug, photos, videos }: CityTabsProps) 
 
         {activeTab === 'videos' && (
           <CityMediaGallery
+            cityId={cityId}
             media={videos}
             emptyMessage="Aún no hay videos de esta ciudad. ¡Sé el primero en compartir!"
             cityName={cityName}

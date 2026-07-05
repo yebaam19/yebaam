@@ -92,6 +92,17 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
     }
   }, [coverImageUrl])
 
+  // Las imágenes insertadas en el editor se suben a Cloudflare de inmediato;
+  // sin este handler quedarían como blob: URLs muertas tras recargar.
+  const handleEditorImageUpload = useCallback(async (file: File): Promise<string | null> => {
+    try {
+      const { url } = await uploadService.uploadImage(file)
+      return url
+    } catch {
+      return null
+    }
+  }, [])
+
   const handlePublish = async () => {
     if (!title.trim()) {
       alert(t('titleRequired'))
@@ -171,7 +182,12 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
 
             {/* Toolbar in header */}
             <div className="max-w-md flex-1">
-              <RichTextEditor content={content} onChange={setContent} isHeaderMode={true} />
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
+                isHeaderMode={true}
+                onImageUpload={handleEditorImageUpload}
+              />
             </div>
 
             <Button color="primary" onClick={handlePublish} className="shrink-0" disabled={isPublishing}>
@@ -207,7 +223,12 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
 
             {/* Toolbar for mobile */}
             <div className="flex justify-center">
-              <RichTextEditor content={content} onChange={setContent} isHeaderMode={true} />
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
+                isHeaderMode={true}
+                onImageUpload={handleEditorImageUpload}
+              />
             </div>
           </div>
         </div>
@@ -224,7 +245,12 @@ export function CreateArticleForm({ user }: CreateArticleFormProps) {
         <EditableTitle title={title} onTitleChange={setTitle} placeholder={t('titlePlaceholder')} />
 
         <div>
-          <RichTextEditor content={content} onChange={setContent} isHeaderMode={false} />
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
+            isHeaderMode={false}
+            onImageUpload={handleEditorImageUpload}
+          />
         </div>
       </div>
 

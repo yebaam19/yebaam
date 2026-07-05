@@ -10,6 +10,7 @@ import {
   GlobeAltIcon,
   LockClosedIcon,
 } from '@/components/icons/heroicons-shim';
+import { resolveImageRef } from '@/lib/media/urls';
 import type { Club } from '../types/club.types';
 import {
   getCategoryLabel,
@@ -49,15 +50,18 @@ export const ClubCard: FC<ClubCardProps> = ({ club }) => {
   // gets the lock badge rather than falling through to "Público".
   const isPrivate = club.privacy !== 'PUBLIC';
   const avatarGradient = pickAvatarGradient(club.id || club.slug || club.name);
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(club.coverImageUrl, 'cover');
+  const profileSrc = resolveImageRef(club.profileImageUrl, 'avatar');
 
   return (
     <Link href={`/feed/clubs/${club.slug}`} className="group block h-full">
       <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:ring-emerald-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-700 dark:hover:ring-emerald-900/40">
         {/* Cover */}
         <div className="relative h-32 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500">
-          {club.coverImageUrl ? (
+          {coverSrc ? (
             <Image
-              src={club.coverImageUrl}
+              src={coverSrc}
               alt=""
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -85,9 +89,9 @@ export const ClubCard: FC<ClubCardProps> = ({ club }) => {
           {/* Profile image */}
           <div className="absolute -bottom-6 left-4">
             <div className="relative h-16 w-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md dark:border-neutral-900 dark:bg-neutral-800">
-              {club.profileImageUrl ? (
+              {profileSrc ? (
                 <Image
-                  src={club.profileImageUrl}
+                  src={profileSrc}
                   alt={club.name}
                   fill
                   sizes="64px"

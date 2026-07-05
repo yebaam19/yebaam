@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { FC } from 'react'
 import { useTranslations } from 'next-intl'
+import { resolveImageRef } from '@/lib/media/urls'
 import type { Blog } from '../types/blog.types'
 import { formatFollowersCount, formatViewsCount, getCategoryColor, getCategoryLabel } from '../utils/blogHelpers'
 
@@ -21,6 +22,8 @@ interface BlogCardProps {
 
 export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoading = false, basePath = '/feed/blogs' }) => {
   const t = useTranslations('blogs.card')
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(blog.coverImageUrl, 'cover')
   const handleFollowClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -39,9 +42,9 @@ export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoad
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
         {/* Cover */}
         <div className="relative h-32 overflow-hidden bg-linear-to-br from-secondary-600 via-secondary-700 to-secondary-900">
-          {blog.coverImageUrl ? (
+          {coverSrc ? (
             <Image
-              src={blog.coverImageUrl}
+              src={coverSrc}
               alt={blog.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"

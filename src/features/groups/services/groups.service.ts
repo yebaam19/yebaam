@@ -41,9 +41,11 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   return payload as T;
 }
 
+/** House rule: persist the bare Cloudflare Images id, never the delivery URL —
+ *  readers rebuild the URL at render time via resolveImageRef(). */
 async function uploadCover(file: File): Promise<string> {
-  const { url } = await uploadService.uploadImage(file);
-  return url;
+  const { id } = await uploadService.uploadImage(file);
+  return id;
 }
 
 class GroupsService {

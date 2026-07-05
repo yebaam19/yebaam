@@ -66,7 +66,7 @@ interface ProfileState {
   updatePersonalInfo: (data: UpdatePersonalInfoDTO) => Promise<void>
   updateSocialLinks: (data: UpdateSocialLinksDTO) => Promise<void>
   updateInterests: (data: UpdateInterestsDTO) => Promise<void>
-  uploadImage: (file: File, type: 'avatar' | 'cover' | 'idDocument') => Promise<string>
+  uploadImage: (file: File, type: 'avatar' | 'cover') => Promise<string>
 
   // Posts
   fetchUserPosts: (userId: string, reset?: boolean) => Promise<void>
@@ -289,9 +289,9 @@ export const useProfileStore = create<ProfileState>()(
       },
 
       /**
-       * Subir imagen (avatar, cover o idDocument)
+       * Subir imagen (avatar o cover)
        */
-      uploadImage: async (file: File, type: 'avatar' | 'cover' | 'idDocument') => {
+      uploadImage: async (file: File, type: 'avatar' | 'cover') => {
         try {
           const result = await profileService.uploadImage(file, type)
           return result.url

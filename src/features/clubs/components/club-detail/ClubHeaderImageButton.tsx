@@ -40,10 +40,11 @@ export function ClubHeaderImageButton({
     setUploading(true);
     setError(null);
     try {
-      const { url } = await uploadService.uploadImage(file);
+      // House rule: persist the bare Cloudflare Images id, never the delivery URL.
+      const { id } = await uploadService.uploadImage(file);
       const result = await updateClubImagesAction(
         clubId,
-        target === 'cover' ? { coverImageUrl: url } : { profileImageUrl: url },
+        target === 'cover' ? { coverImageUrl: id } : { profileImageUrl: id },
       );
       if (!result.ok) {
         setError(result.error);

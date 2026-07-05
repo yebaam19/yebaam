@@ -2,7 +2,7 @@
 
 import { CheckBadgeIcon, StarIcon, StarSolidIcon, TrophyIcon } from '@/components/icons/heroicons-shim'
 import Avatar from '@/ui/Avatar'
-import { imageUrl } from '@/lib/media/urls'
+import { imageUrl, resolveImageRef } from '@/lib/media/urls'
 import type { Blog } from '../../types/blog.types'
 import { formatFollowersCount } from '../../utils/blogHelpers'
 import { followerEmblem } from '../../utils/emblem'
@@ -28,7 +28,7 @@ export const BlogIdentityBar = ({ blog, stars }: BlogIdentityBarProps) => {
       <div className="shrink-0">
         <Avatar
           className="-mt-10 h-20 w-20 border-4 border-white shadow-md sm:-mt-16 sm:h-28 sm:w-28 dark:border-neutral-900"
-          src={blog.profileImageUrl}
+          src={resolveImageRef(blog.profileImageUrl, 'avatar')}
           alt={blog.name}
         />
       </div>

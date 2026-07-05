@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { useDeleteBlog, useUpdateBlog } from '../hooks/useBlogs'
 import { uploadService } from '@/lib/service/upload.service'
+import { resolveImageRef } from '@/lib/media/urls'
 import { type ArtistSelection } from '@/features/music-archive/components/upload/ArtistAutocomplete'
 import type { Blog } from '../types/blog.types'
 import { BlogFormFields, type BlogFormData } from './BlogFormFields'
@@ -67,8 +68,8 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
       facebook: blog.social?.facebook || '',
       twitter: blog.social?.twitter || '',
     })
-    setAvatarPreview(blog.profileImageUrl || null)
-    setCoverPreview(blog.coverImageUrl || null)
+    setAvatarPreview(resolveImageRef(blog.profileImageUrl, 'avatar'))
+    setCoverPreview(resolveImageRef(blog.coverImageUrl, 'cover'))
     setArtist({ existingId: blog.musicArtistId ?? null, name: blog.musicArtist?.name ?? '' })
   }, [blog])
 
@@ -96,12 +97,12 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
 
   const handleAvatarRemove = () => {
     setAvatarFile(null)
-    setAvatarPreview(blog.profileImageUrl || null)
+    setAvatarPreview(resolveImageRef(blog.profileImageUrl, 'avatar'))
   }
 
   const handleCoverRemove = () => {
     setCoverFile(null)
-    setCoverPreview(blog.coverImageUrl || null)
+    setCoverPreview(resolveImageRef(blog.coverImageUrl, 'cover'))
   }
 
   const uploadImages = async (): Promise<{ profileImageUrl?: string; coverImageUrl?: string }> => {
@@ -109,13 +110,15 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
 
     try {
       // Upload to Cloudflare Images (every image in the app goes to Cloudflare).
+      // House rule: persist the bare Cloudflare id, never the delivery URL —
+      // readers rebuild the URL at render time via resolveImageRef().
       if (avatarFile) {
         setUploadingImages(true)
-        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).url
+        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).id
       }
       if (coverFile) {
         setUploadingImages(true)
-        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).url
+        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).id
       }
     } finally {
       setUploadingImages(false)

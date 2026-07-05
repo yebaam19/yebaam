@@ -4,6 +4,7 @@ import { PhotoIcon } from '@/components/icons/heroicons-shim'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { FC, useState } from 'react'
+import { resolveImageRef } from '@/lib/media/urls'
 import { useUploadClubImage } from '../../hooks/useClubs'
 import type { CreateClubDto } from '../../types/club.types'
 
@@ -16,8 +17,13 @@ interface CreateClubStep3Props {
 
 export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNext, onBack }) => {
   const t = useTranslations('clubes.create.step3')
-  const [profileImageUrl, setProfileImageUrl] = useState<string>(data.profileImage ?? '')
-  const [coverImageUrl, setCoverImageUrl] = useState<string>(data.coverImage ?? '')
+  // Holds the bare Cloudflare Images id going forward (legacy drafts may still
+  // carry a full URL — resolveImageRef renders both). The id is what persists.
+  const [profileImageRef, setProfileImageRef] = useState<string>(data.profileImage ?? '')
+  const [coverImageRef, setCoverImageRef] = useState<string>(data.coverImage ?? '')
+
+  const profilePreviewUrl = resolveImageRef(profileImageRef, 'avatar')
+  const coverPreviewUrl = resolveImageRef(coverImageRef, 'cover')
 
   const uploadProfileImage = useUploadClubImage('profile')
   const uploadCoverImage = useUploadClubImage('cover')
@@ -28,7 +34,7 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
 
     try {
       const result = await uploadProfileImage.mutateAsync(file)
-      setProfileImageUrl(result.fileUrl)
+      setProfileImageRef(result.id)
     } catch (error) {
       console.error('Error uploading profile image:', error)
     }
@@ -40,7 +46,7 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
 
     try {
       const result = await uploadCoverImage.mutateAsync(file)
-      setCoverImageUrl(result.fileUrl)
+      setCoverImageRef(result.id)
     } catch (error) {
       console.error('Error uploading cover image:', error)
     }
@@ -51,8 +57,8 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
 
   const handleNext = () => {
     onUpdate({
-      profileImage: profileImageUrl || undefined,
-      coverImage: coverImageUrl || undefined,
+      profileImage: profileImageRef || undefined,
+      coverImage: coverImageRef || undefined,
     })
     onNext()
   }
@@ -70,9 +76,9 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
           {t('profileLabel')} <span className="text-xs text-gray-400">{t('optional')}</span>
         </label>
         <div className="flex items-center gap-4">
-          {profileImageUrl ? (
+          {profilePreviewUrl ? (
             <div className="relative h-24 w-24 overflow-hidden rounded-full">
-              <Image src={profileImageUrl} alt={t('profilePreviewAlt')} fill sizes="96px" className="object-cover" />
+              <Image src={profilePreviewUrl} alt={t('profilePreviewAlt')} fill sizes="96px" className="object-cover" />
             </div>
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
@@ -105,9 +111,9 @@ export const CreateClubStep3: FC<CreateClubStep3Props> = ({ data, onUpdate, onNe
           {t('coverLabel')} <span className="text-xs text-gray-400">{t('optional')}</span>
         </label>
         <div className="space-y-3">
-          {coverImageUrl ? (
+          {coverPreviewUrl ? (
             <div className="relative h-48 w-full overflow-hidden rounded-lg">
-              <Image src={coverImageUrl} alt={t('coverPreviewAlt')} fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
+              <Image src={coverPreviewUrl} alt={t('coverPreviewAlt')} fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
             </div>
           ) : (
             <div className="flex h-48 w-full items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">

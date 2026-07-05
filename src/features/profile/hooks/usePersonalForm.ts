@@ -6,7 +6,6 @@
 
 import { useState } from 'react'
 import { useProfileStore } from '../store/profile.store'
-import { useIdentificationUpload } from '../hooks/useIdentificationUpload'
 import type { UserProfile } from '../interfaces/profile.interfaces'
 
 const formatBirthdate = (date?: string | Date | null) => {
@@ -19,9 +18,6 @@ export function usePersonalForm(user: UserProfile) {
   const updateProfile = useProfileStore((state) => state.updateProfile)
   const fetchMyProfile = useProfileStore((state) => state.fetchMyProfile)
   const currentProfile = useProfileStore((state) => state.currentProfile)
-
-  const identificationUpload = useIdentificationUpload()
-  const { idDocument, uploadDocument } = identificationUpload
 
   /** Solo usar currentProfile si es el mismo usuario que el pasado por props */
   const profile = currentProfile?.userId === user.userId ? currentProfile : user
@@ -44,18 +40,6 @@ export function usePersonalForm(user: UserProfile) {
     setSaveSuccess(false)
 
     try {
-      let idDocumentUrl: string | undefined
-      if (idDocument) {
-        const uploadedUrl = await uploadDocument()
-
-        if (!uploadedUrl) {
-          console.error('[usePersonalForm] Error al subir documento - URL vacía')
-          return
-        }
-
-        idDocumentUrl = uploadedUrl
-      }
-
       const profileData = {
         bio: bio || undefined,
         websiteUrl: websiteUrl || undefined,
@@ -66,7 +50,6 @@ export function usePersonalForm(user: UserProfile) {
         birthDate: birthdate || undefined,
         residenceCity: residenceCity || undefined,
         birthCity: birthCity || undefined,
-        ...(idDocumentUrl && { idDocumentUrl }),
       }
 
       await updateProfile(profileData)
@@ -106,7 +89,6 @@ export function usePersonalForm(user: UserProfile) {
     setBirthCity,
     isSubmitting,
     saveSuccess,
-    identificationUpload,
     handleSubmit,
   }
 }

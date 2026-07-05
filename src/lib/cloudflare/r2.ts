@@ -60,21 +60,28 @@ export async function getPresignedUploadUrl(
   return { url, key };
 }
 
-/** Generate a presigned GET URL for streaming the audio. TTL 1h covers a long
- *  listening session. When a custom public domain is configured later, this
- *  function can switch to returning an unsigned URL. */
-export async function getPublicAudioUrl(key: string, ttlSeconds = 3600): Promise<string> {
+/** Generate a presigned GET URL for any stored object (audio, PDF documents).
+ *  TTL 1h covers a long listening/reading session. When a custom public domain
+ *  is configured later, this function can switch to returning an unsigned URL. */
+export async function getPublicFileUrl(key: string, ttlSeconds = 3600): Promise<string> {
   const client = getR2Client();
   const bucket = getR2Bucket();
   const cmd = new GetObjectCommand({ Bucket: bucket, Key: key });
   return getSignedUrl(client, cmd, { expiresIn: ttlSeconds });
 }
 
-export async function deleteAudio(key: string): Promise<void> {
+/** Alias histórico: los call sites de audio (música, chat) siguen usando el
+ *  nombre audio-*; la implementación es genérica por clave R2. */
+export const getPublicAudioUrl = getPublicFileUrl;
+
+export async function deleteFile(key: string): Promise<void> {
   const client = getR2Client();
   const bucket = getR2Bucket();
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
+
+/** Alias histórico — ver nota en getPublicAudioUrl. */
+export const deleteAudio = deleteFile;
 
 /** Stream a remote audio file directly into R2. Used by the music importer
  *  when bringing in tracks from archive.org / loc.gov / etc. The MP3 never
@@ -120,9 +127,10 @@ export async function uploadAudioFromUrl(
   return { key, sizeBytes: finalLength };
 }
 
-/** HEAD an audio object to confirm it exists and capture size + content-type.
- *  Used by createTrack to validate the upload before persisting the row. */
-export async function headAudio(
+/** HEAD an object to confirm it exists and capture size + content-type.
+ *  Used by createTrack (audio) and by the professional-services CV patch
+ *  (PDF) to validate the upload before persisting the row. */
+export async function headFile(
   key: string,
 ): Promise<{ exists: true; sizeBytes: number; contentType: string | null } | { exists: false }> {
   const client = getR2Client();
@@ -138,3 +146,6 @@ export async function headAudio(
     return { exists: false };
   }
 }
+
+/** Alias histórico — ver nota en getPublicAudioUrl. */
+export const headAudio = headFile;

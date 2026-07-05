@@ -224,7 +224,9 @@ export function useRemoveMember() {
 export function useUploadClubImage(_type: 'profile' | 'cover') {
   return useAsyncAction(async (file: File) => {
     const { uploadService } = await import('@/lib/service/upload.service');
-    const { url } = await uploadService.uploadImage(file);
-    return { fileUrl: url };
+    // House rule: `id` is what gets persisted (bare Cloudflare Images id);
+    // `fileUrl` is only for immediate previews.
+    const { id, url } = await uploadService.uploadImage(file);
+    return { id, fileUrl: url };
   });
 }

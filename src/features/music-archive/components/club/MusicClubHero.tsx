@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
-import { imageUrl } from '@/lib/media/urls';
+import { resolveImageRef } from '@/lib/media/urls';
 import type { MusicClubRow } from '../../server/clubs.server';
 
 interface Props {
@@ -13,12 +13,13 @@ interface Props {
 
 /** Reusable hero block + back link, rendered above every club sub-route. Keeps
  *  the visual chrome identical across tabs so the user feels they stay in the
- *  same place. When the admin has uploaded a banner (`cover_image_url` holds a
- *  Cloudflare image id despite the column name) it fills the hero; otherwise we
- *  fall back to the original pastel gradient. */
+ *  same place. When the admin has uploaded a banner it fills the hero; otherwise
+ *  we fall back to the original pastel gradient. `cover_image_url` holds a bare
+ *  Cloudflare image id on new rows but a full URL on legacy ones —
+ *  resolveImageRef renders both. */
 export function MusicClubHero({ club }: Props) {
   const t = useTranslations('musica');
-  const bannerUrl = club.cover_image_url ? imageUrl(club.cover_image_url, 'hero') : null;
+  const bannerUrl = resolveImageRef(club.cover_image_url, 'hero');
 
   return (
     <>

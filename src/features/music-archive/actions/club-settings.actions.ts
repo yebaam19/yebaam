@@ -3,6 +3,7 @@
 import { after } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { deleteImage } from '@/lib/cloudflare/images';
+import { extractImageId } from '@/lib/media/urls';
 import { ensureClubForumSpace, generateUniqueClubSlug } from '@/lib/api/clubs';
 import { getServiceClient } from '@/utils/supabase/server';
 import { adminGate, type ActionResult } from './_shared';
@@ -209,9 +210,12 @@ export async function adminDeleteMusicClub(
 
   // Best-effort cover image cleanup. CDN orphan is recoverable later; DB
   // integrity already succeeded, so don't fail the response on this.
-  if (c.cover_image_url) {
+  // deleteImage expects a bare Cloudflare id: legacy rows stored the full
+  // delivery URL, so reduce it to its id — and skip non-Cloudflare values.
+  const coverImageId = extractImageId(c.cover_image_url);
+  if (coverImageId) {
     after(async () => {
-      await deleteImage(c.cover_image_url!).catch(() => {});
+      await deleteImage(coverImageId).catch(() => {});
     });
   }
 

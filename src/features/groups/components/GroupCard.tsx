@@ -10,6 +10,7 @@ import {
   LockClosedIcon,
   PlusIcon,
 } from '@/components/icons/heroicons-shim';
+import { resolveImageRef } from '@/lib/media/urls';
 import type { Group } from '../types/group.types';
 import { useJoinGroup } from '../hooks/useGroups';
 import { useGroupsUIStore } from '../store/groupsUIStore';
@@ -31,13 +32,16 @@ export function GroupCard({ group }: GroupCardProps) {
     addRecentlyViewed(group.id);
   };
 
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(group.coverImageUrl, 'cover');
+
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg transition-shadow">
       {/* Cover Image */}
       <div className="relative h-32 bg-linear-to-br from-blue-500 to-purple-600">
-        {group.coverImageUrl ? (
+        {coverSrc ? (
           <Image
-            src={group.coverImageUrl}
+            src={coverSrc}
             alt={group.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

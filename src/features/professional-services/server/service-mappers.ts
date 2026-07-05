@@ -219,7 +219,10 @@ export function mapFull(
     currency: row.currency,
     availableForHire: row.available_for_hire,
     workType: row.work_type ?? undefined,
-    cvUrl: cfImage(row.cv_cf_file_id) ?? undefined,
+    // `cvUrl` NO se resuelve aquí: `cv_cf_file_id` guarda una clave R2
+    // (`cvs/…`), no un id de Cloudflare Images — construir un imagedelivery
+    // URL con ella daba un enlace muerto. La URL GET firmada se resuelve en
+    // services-detail.server.ts (hydrate), que es async.
     portfolioProjects: mapPortfolioProjects(row.portfolio_projects),
     userId: row.user_id,
     cityId: row.city_id ?? '',

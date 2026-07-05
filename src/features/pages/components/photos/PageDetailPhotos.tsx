@@ -6,6 +6,7 @@ import { PlusIcon, PhotoIcon, TrashIcon } from '@/components/icons/heroicons-shi
 import { usePagePhotos, useDeletePagePhoto } from '../../hooks/usePagePhotos';
 import { PagePhoto } from '../../interfaces/page-photo.interface';
 import { UploadPhotoModal } from './UploadPhotoModal';
+import { resolveImageRef } from '@/lib/media/urls';
 import Image from 'next/image';
 
 interface PageDetailPhotosProps {
@@ -138,9 +139,9 @@ export const PageDetailPhotos: FC<PageDetailPhotosProps> = ({
             onClick={() => handlePhotoClick(photo)}
             className="group relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
           >
-            {/* Photo */}
+            {/* Photo — rows store either a bare Cloudflare id (new) or a full URL (legacy) */}
             <Image
-              src={photo.url}
+              src={resolveImageRef(photo.url) ?? photo.url}
               alt={photo.caption || t('photos.photoAlt')}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"

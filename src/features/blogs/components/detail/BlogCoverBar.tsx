@@ -11,6 +11,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import { blogsService } from '@/features/blogs/services/blogs.service'
 import { formatFollowersCount } from '@/features/blogs/utils/blogHelpers'
+import { resolveImageRef } from '@/lib/media/urls'
 import Image from 'next/image'
 import { useState } from 'react'
 import type { Blog } from '../../types/blog.types'
@@ -53,10 +54,13 @@ export const BlogCoverBar = ({ blog, stars, onFollowToggle, isFollowLoading }: B
     }
   }
 
+  // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
+  const coverSrc = resolveImageRef(blog.coverImageUrl, 'hero')
+
   return (
     <div className="relative h-48 overflow-hidden rounded-b-2xl bg-linear-to-r from-secondary-700 via-secondary-800 to-secondary-900 sm:h-64 md:h-80">
-      {blog.coverImageUrl && (
-        <Image src={blog.coverImageUrl} alt={blog.name} fill sizes="100vw" className="object-cover" unoptimized priority />
+      {coverSrc && (
+        <Image src={coverSrc} alt={blog.name} fill sizes="100vw" className="object-cover" unoptimized priority />
       )}
 
       <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-black/20" />

@@ -82,13 +82,18 @@ function HeaderToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
     }
   }
 
+  // Sin manejador de subida NO se insertan imágenes: un blob: URL solo vive en
+  // esta sesión y quedaría persistido en el contenido, roto tras recargar.
+  const canUploadImages = !!onImageUpload
+
   const handleImageClick = () => {
+    if (!canUploadImages) return
     fileInputRef.current?.click()
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0 || !onImageUpload) return
 
     for (const file of Array.from(files)) {
       if (!file.type.startsWith('image/')) {
@@ -100,19 +105,11 @@ function HeaderToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         continue
       }
 
-      // Create blob URL for preview
-      const blobUrl = URL.createObjectURL(file)
-
-      // If there's an upload handler, use it
-      if (onImageUpload) {
-        const uploadedUrl = await onImageUpload(file)
-        if (uploadedUrl) {
-          articleEditor.chain().focus().setImage({ src: uploadedUrl, alt: file.name }).run()
-        } else {
-          articleEditor.chain().focus().setImage({ src: blobUrl, alt: file.name }).run()
-        }
+      const uploadedUrl = await onImageUpload(file)
+      if (uploadedUrl) {
+        articleEditor.chain().focus().setImage({ src: uploadedUrl, alt: file.name }).run()
       } else {
-        articleEditor.chain().focus().setImage({ src: blobUrl, alt: file.name }).run()
+        alert(`No se pudo subir ${file.name}. Inténtalo de nuevo.`)
       }
     }
 
@@ -174,21 +171,26 @@ function HeaderToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
     onClick,
     isActive,
     title,
+    disabled,
     children,
   }: {
     onClick: () => void
     isActive?: boolean
     title: string
+    disabled?: boolean
     children: React.ReactNode
   }) => (
     <button
       type="button"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       className={`flex h-8 w-8 items-center justify-center rounded transition-colors ${
-        isActive
-          ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
-          : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700'
+        disabled
+          ? 'cursor-not-allowed text-neutral-300 dark:text-neutral-600'
+          : isActive
+            ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
+            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700'
       }`}
     >
       {children}
@@ -249,7 +251,11 @@ function HeaderToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
           <CodeBracketIcon className="h-4 w-4" />
         </ToolbarButton>
 
-        <ToolbarButton onClick={handleImageClick} title="Imagen">
+        <ToolbarButton
+          onClick={handleImageClick}
+          title={canUploadImages ? 'Imagen' : 'Imagen (no disponible)'}
+          disabled={!canUploadImages}
+        >
           <PhotoIcon className="h-4 w-4" />
         </ToolbarButton>
 
