@@ -4,6 +4,7 @@ import { ArrowLeftIcon, ShareIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 
 import { PROFESSIONAL_SERVICES_PATH } from '../constants/routes'
+import { ReportServiceDialog } from './ReportServiceDialog'
 
 interface ServiceBreadcrumbProps {
   cityName: string
@@ -84,6 +85,7 @@ export function ServiceActions({ serviceId, serviceName }: ServiceActionsProps) 
       >
         <ShareIcon className="h-5 w-5" />
       </button>
+      <ReportServiceDialog serviceId={serviceId} serviceName={serviceName} />
     </div>
   )
 }
