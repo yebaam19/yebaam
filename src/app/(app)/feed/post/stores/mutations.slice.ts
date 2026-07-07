@@ -10,6 +10,7 @@ import type {
 } from '../interfaces/post.interfaces';
 import { postService } from '../services/post.service';
 import { updateCached } from '@/lib/hooks/cacheStore';
+import { businessPostsUpdater } from '../hooks/usePosts';
 import type { MutationsSlice, PostState } from './post-store.types';
 
 const TIMELINE_CACHE_KEY = 'posts::timeline';
@@ -142,6 +143,15 @@ export const createMutationsSlice: StateCreator<PostState, [], [], MutationsSlic
         fetchedAt: Date.now(),
       }));
 
+      // Same mirror, scoped to the business wall — fixes PRA-002: a post created from
+      // the admin panel now appears immediately in BusinessSocialFeed (useBusinessPosts),
+      // without that component needing its own independent fetch/state.
+      if (postForCache.businessId) {
+        businessPostsUpdater(postForCache.businessId, (posts) =>
+          posts ? [postForCache, ...posts] : [postForCache]
+        );
+      }
+
       toast.success('Post creado exitosamente');
       return newPost;
     } catch (error) {
@@ -184,6 +194,10 @@ export const createMutationsSlice: StateCreator<PostState, [], [], MutationsSlic
    */
   deletePost: async (postId: string) => {
     try {
+      // Capture businessId before removal — needed to mirror the deletion
+      // into that business's wall cache below.
+      const deletedBusinessId = get().posts.find((p) => p.id === postId)?.businessId;
+
       await postService.delete(postId);
 
       get().removePostFromList(postId);
@@ -193,6 +207,12 @@ export const createMutationsSlice: StateCreator<PostState, [], [], MutationsSlic
         data: record?.data ? record.data.filter((p) => p.id !== postId) : [],
         fetchedAt: Date.now(),
       }));
+
+      if (deletedBusinessId) {
+        businessPostsUpdater(deletedBusinessId, (posts) =>
+          posts ? posts.filter((p) => p.id !== postId) : []
+        );
+      }
 
       toast.success('Post eliminado');
     } catch (error) {

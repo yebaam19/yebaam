@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { createProduct, updateProduct, deactivateProduct } from '../../actions/product.actions'
 import type { MenuWithCategories, Product } from '../../types'
-import { Pencil, Trash2, Plus, X } from 'lucide-react'
+import { Pencil, Trash2, Plus, X, ImagePlus } from 'lucide-react'
+import { CategoryQuickCreate } from './product/CategoryQuickCreate'
+import { uploadService } from '@/lib/service/upload.service'
+import { cfImageUrl } from '@/lib/cloudflare'
 
 interface Props {
   businessId: string
@@ -32,8 +35,27 @@ function ProductFormFields({
   const [name, setName] = useState(editing?.name ?? '')
   const [slug, setSlug] = useState(editing?.slug ?? '')
   const [slugEdited, setSlugEdited] = useState(!!editing?.slug)
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [cfImageId, setCfImageId] = useState<string | null>(editing?.cf_image_id ?? null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const allCategories = menus.flatMap((m) => m.categories)
+
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploadingImage(true)
+    try {
+      const { id } = await uploadService.uploadImage(file)
+      setCfImageId(id)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al subir la imagen')
+    } finally {
+      setIsUploadingImage(false)
+      if (imageInputRef.current) imageInputRef.current.value = ''
+    }
+  }
 
   function handleNameChange(v: string) {
     setName(v)
@@ -45,6 +67,7 @@ function ProductFormFields({
     const fd = new FormData(e.currentTarget)
     fd.set('business_id', businessId)
     fd.set('slug', slug)
+    if (cfImageId) fd.set('cf_image_id', cfImageId)
     startTransition(async () => {
       try {
         if (editing) {
@@ -73,13 +96,65 @@ function ProductFormFields({
       </div>
 
       <div>
-        <label htmlFor="prod-category" className={LABEL}>Categoría de menú <span className="text-red-500">*</span></label>
-        <select id="prod-category" name="category_id" defaultValue={editing?.category_id ?? ''} required className={INPUT}>
-          <option value="">Seleccionar categoría…</option>
-          {allCategories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+        <div className="flex items-center justify-between">
+          <label htmlFor="prod-category" className={LABEL}>Categoría de menú <span className="text-red-500">*</span></label>
+          <button
+            type="button"
+            onClick={() => setShowNewCategory((v) => !v)}
+            className="mb-1.5 text-xs font-medium text-primary-600 hover:text-primary-700"
+          >
+            {showNewCategory ? 'Cancelar' : '+ Nueva categoría'}
+          </button>
+        </div>
+        {showNewCategory ? (
+          <CategoryQuickCreate
+            businessId={businessId}
+            compact
+            onCreated={() => setShowNewCategory(false)}
+          />
+        ) : (
+          <select id="prod-category" name="category_id" defaultValue={editing?.category_id ?? ''} required className={INPUT}>
+            <option value="">Seleccionar categoría…</option>
+            {allCategories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div>
+        <label className={LABEL}>Foto del producto</label>
+        <div className="flex items-center gap-4">
+          {cfImageId ? (
+            <img
+              src={cfImageUrl(cfImageId) ?? ''}
+              alt=""
+              className="h-20 w-20 shrink-0 rounded-xl border border-neutral-200 object-cover"
+            />
+          ) : (
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 text-neutral-300">
+              <ImagePlus size={22} aria-hidden />
+            </div>
+          )}
+          <div>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              disabled={isUploadingImage}
+              className="hidden"
+              id="prod-image-input"
+            />
+            <label
+              htmlFor="prod-image-input"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+            >
+              {isUploadingImage ? 'Subiendo…' : cfImageId ? 'Cambiar foto' : 'Subir foto'}
+            </label>
+            <p className="mt-1 text-xs text-neutral-400">Opcional. JPG o PNG.</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -124,12 +199,6 @@ function ProductFormFields({
       >
         {isPending ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear producto'}
       </button>
-
-      {allCategories.length === 0 && (
-        <p className="text-center text-xs text-amber-600">
-          ⚠ El menú no tiene categorías. Crea una categoría de menú primero.
-        </p>
-      )}
     </form>
   )
 }
@@ -140,6 +209,7 @@ export function ProductForm({ businessId, menus }: Props) {
   const [isPending, startTransition] = useTransition()
 
   const allProducts = menus.flatMap((m) => m.categories.flatMap((c) => c.products ?? []))
+  const allCategories = menus.flatMap((m) => m.categories)
 
   function handleDeactivate(productId: string, productName: string) {
     if (!confirm(`¿Desactivar "${productName}"? Dejará de aparecer en el menú público.`)) return
@@ -166,6 +236,17 @@ export function ProductForm({ businessId, menus }: Props) {
           <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white divide-y divide-neutral-100">
             {allProducts.map((product) => (
               <div key={product.id} className="flex items-center gap-4 px-5 py-4">
+                {product.cf_image_id ? (
+                  <img
+                    src={cfImageUrl(product.cf_image_id) ?? ''}
+                    alt=""
+                    className="h-11 w-11 shrink-0 rounded-lg border border-neutral-200 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-200 text-neutral-300">
+                    <ImagePlus size={16} aria-hidden />
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-neutral-900">{product.name}</p>
                   <p className="mt-0.5 text-xs text-neutral-500">
@@ -206,8 +287,12 @@ export function ProductForm({ businessId, menus }: Props) {
         </div>
       )}
 
-      {/* Formulario create/edit */}
-      {isEditing ? (
+      {/* Sin categorías de menú, no hay nada que el formulario de producto pueda
+          guardar — se muestra la creación rápida de categoría en su lugar,
+          nunca anidada dentro de un <form> de producto. */}
+      {allCategories.length === 0 ? (
+        <CategoryQuickCreate businessId={businessId} />
+      ) : isEditing ? (
         <ProductFormFields
           businessId={businessId}
           menus={menus}

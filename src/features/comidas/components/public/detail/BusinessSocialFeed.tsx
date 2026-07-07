@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { PostCard } from '@/features/post'
-import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store'
+import { useBusinessPosts } from '@/app/(app)/feed/post/hooks/usePosts'
 
 interface Props {
   businessId: string
@@ -12,39 +12,22 @@ interface Props {
   adminBusinessId?: string
 }
 
+/**
+ * Reads through the same cache-store mechanism as the global feed
+ * (useFetch/cacheStore). createPost (mutations.slice.ts) mirrors new posts
+ * into this exact cache entry, so this component re-renders immediately
+ * after a post is published from the admin panel — no independent fetch,
+ * no separate source of truth (fixes PRA-002).
+ */
 export function BusinessSocialFeed({ businessId, onCountLoaded, adminBusinessId }: Props) {
   const openCreateModal = usePostStore((s) => s.openCreateModal)
-  const [posts, setPosts] = useState<Post[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useBusinessPosts(businessId)
+  const posts = data ?? []
 
   useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const res = await fetch(`/api/posts?scope=business&businessId=${businessId}&limit=20`)
-        const json = await res.json() as { success?: boolean; data?: Post[]; error?: string }
-        if (!cancelled) {
-          if (json.success && Array.isArray(json.data)) {
-            setPosts(json.data)
-            onCountLoaded?.(json.data.length)
-          } else {
-            setError(json.error ?? 'Error al cargar publicaciones')
-          }
-        }
-      } catch {
-        if (!cancelled) setError('Error al cargar publicaciones')
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    void load()
-    return () => { cancelled = true }
-  }, [businessId])
+    if (!isLoading) onCountLoaded?.(posts.length)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [posts.length, isLoading])
 
   if (isLoading) {
     return (
@@ -58,7 +41,7 @@ export function BusinessSocialFeed({ businessId, onCountLoaded, adminBusinessId 
 
   if (error) {
     return (
-      <p className="py-8 text-center text-sm text-red-500">{error}</p>
+      <p className="py-8 text-center text-sm text-red-500">{error.message || 'Error al cargar publicaciones'}</p>
     )
   }
 

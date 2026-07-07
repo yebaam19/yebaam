@@ -113,6 +113,12 @@ export class PostService {
     return Array.isArray(payload.data) ? payload.data : [];
   }
 
+  async getBusinessPosts(businessId: string, filters?: GetPostsFilters): Promise<Post[]> {
+    const qs = buildQuery(filters, { scope: 'business', businessId });
+    const payload = await jsonFetch<{ data: Post[] }>(`/api/posts${qs}`);
+    return Array.isArray(payload.data) ? payload.data : [];
+  }
+
   async getPagePosts(_pageId: string, _limit: number = 20): Promise<Post[]> {
     return [];
   }

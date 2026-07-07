@@ -1,13 +1,16 @@
+import { cfImageUrl } from '@/lib/cloudflare'
 import type { Product } from '../../../types'
 
-interface MenuItemCardProps {
+interface Props {
   product: Product
-  businessName: string
+  businessName?: string
   onOpenProduct?: () => void
+  /** Legacy prop — kept for caller compatibility, currently unused.
+   *  Ordering flows through the business WhatsApp contact, not per-item. */
   onOrder?: () => void
 }
 
-function formatMenuPrice(price: number, currency = 'COP') {
+function formatPrice(price: number, currency = 'COP') {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency,
@@ -15,8 +18,15 @@ function formatMenuPrice(price: number, currency = 'COP') {
   }).format(price)
 }
 
-export function MenuItemCard({ product, businessName, onOpenProduct, onOrder }: MenuItemCardProps) {
+/** Horizontal layout: description + price left, image right.
+ *  Mirrors DoorDash / Uber Eats menu item pattern — shows more items
+ *  per scroll height without sacrificing visual identity. */
+export function MenuItemCard({ product, businessName, onOpenProduct }: Props) {
+  const imgUrl = cfImageUrl(product.cf_image_id)
+  const price = formatPrice(Number(product.price), product.currency ?? 'COP')
+
   return (
+<<<<<<< Updated upstream
     <article className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-neutral-200 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="relative overflow-hidden bg-neutral-100">
         {product.cf_image_id ? (
@@ -31,51 +41,76 @@ export function MenuItemCard({ product, businessName, onOpenProduct, onOrder }: 
           <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-primary-50 to-neutral-100">
             <span className="text-3xl">🍽️</span>
           </div>
+=======
+    <article
+      onClick={onOpenProduct}
+      role={onOpenProduct ? 'button' : undefined}
+      tabIndex={onOpenProduct ? 0 : undefined}
+      onKeyDown={onOpenProduct ? (e) => e.key === 'Enter' && onOpenProduct() : undefined}
+      aria-label={`${product.name} — ${price}`}
+      className={[
+        'group flex gap-4 rounded-2xl bg-white p-4',
+        'ring-1 ring-neutral-950/5 shadow-[0_1px_6px_rgba(0,0,0,0.06)]',
+        'transition-all duration-150',
+        onOpenProduct
+          ? 'cursor-pointer hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-0.5'
+          : '',
+      ].join(' ')}
+    >
+      {/* Left: text content */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        {/* Badges row */}
+        <div className="flex flex-wrap gap-1.5">
+          {product.is_featured && (
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+              ✦ Destacado
+            </span>
+          )}
+          {!product.is_active && (
+            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-500">
+              No disponible
+            </span>
+          )}
+        </div>
+
+        {/* Name */}
+        <h4 className="line-clamp-1 text-base font-semibold text-neutral-950 group-hover:text-primary-700 transition-colors">
+          {product.name}
+        </h4>
+
+        {/* Description */}
+        {(product.short_description ?? product.description) && (
+          <p className="line-clamp-2 text-sm leading-relaxed text-neutral-500">
+            {product.short_description ?? product.description}
+          </p>
+>>>>>>> Stashed changes
         )}
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-          <div className="flex flex-wrap gap-2">
-            {product.is_featured && (
-              <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-primary-700 shadow-sm">
-                Destacado
-              </span>
-            )}
-          </div>
-          <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-neutral-900 shadow-sm backdrop-blur">
-            {formatMenuPrice(product.price, product.currency ?? 'COP')}
+
+        {/* Footer: price + optional category context */}
+        <div className="mt-auto flex items-center gap-2 pt-2">
+          <span className="text-base font-bold text-neutral-950">
+            {price}
           </span>
+          {businessName && (
+            <span className="text-xs text-neutral-400">· {businessName}</span>
+          )}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <div className="space-y-2">
-          <h4 className="line-clamp-1 text-base font-semibold tracking-tight text-neutral-950">{product.name}</h4>
-          <p className="line-clamp-2 text-sm leading-6 text-neutral-600">
-            {product.short_description ?? product.description ?? 'Un plato disponible en la carta.'}
-          </p>
-        </div>
-        <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-neutral-400">{businessName}</p>
-        <div className="mt-auto pt-4">
-          <div className="grid gap-2 sm:grid-cols-2">
-            {onOpenProduct && (
-              <button
-                type="button"
-                onClick={onOpenProduct}
-                className="rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
-              >
-                Ver detalle
-              </button>
-            )}
-            {onOrder && (
-              <button
-                type="button"
-                onClick={onOrder}
-                className="rounded-2xl bg-primary-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-primary-800"
-              >
-                Pedir ahora
-              </button>
-            )}
+      {/* Right: image or placeholder */}
+      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:h-28 sm:w-28">
+        {imgUrl ? (
+          <img
+            src={imgUrl}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-50 to-neutral-100">
+            <span className="text-2xl opacity-50" aria-hidden="true">🍽️</span>
           </div>
-        </div>
+        )}
       </div>
     </article>
   )
