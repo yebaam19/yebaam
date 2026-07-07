@@ -26,22 +26,6 @@ export function MenuItemCard({ product, businessName, onOpenProduct }: Props) {
   const price = formatPrice(Number(product.price), product.currency ?? 'COP')
 
   return (
-<<<<<<< Updated upstream
-    <article className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-neutral-200 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="relative overflow-hidden bg-neutral-100">
-        {product.cf_image_id ? (
-          <img
-            src={`https://imagedelivery.net/${process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH}/${product.cf_image_id}/thumbnail`}
-            alt={product.name}
-            className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-primary-50 to-neutral-100">
-            <span className="text-3xl">🍽️</span>
-          </div>
-=======
     <article
       onClick={onOpenProduct}
       role={onOpenProduct ? 'button' : undefined}
@@ -83,7 +67,6 @@ export function MenuItemCard({ product, businessName, onOpenProduct }: Props) {
           <p className="line-clamp-2 text-sm leading-relaxed text-neutral-500">
             {product.short_description ?? product.description}
           </p>
->>>>>>> Stashed changes
         )}
 
         {/* Footer: price + optional category context */}
