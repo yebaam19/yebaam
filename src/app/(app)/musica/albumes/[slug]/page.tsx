@@ -14,6 +14,7 @@ import { AlbumTracklist } from '@/features/music-archive/components/AlbumTrackli
 import { AlbumNotes } from '@/features/music-archive/components/AlbumNotes';
 import { AlbumGenreTags } from '@/features/music-archive/components/AlbumGenreTags';
 import { AlbumMetaField } from '@/features/music-archive/components/AlbumMetaField';
+import { AlbumCoverHero } from '@/features/music-archive/components/AlbumCoverHero';
 import { AlbumExtraImages } from '@/features/music-archive/components/AlbumExtraImages';
 import { AlbumReactionsBar } from '@/features/music-archive/components/club/AlbumReactionsBar';
 import { MusicMediaGrid } from '@/features/music-archive/components/media/MusicMediaGrid';
@@ -80,8 +81,6 @@ export default async function AlbumPage({
     audioEntries.filter(([, url]) => url !== ''),
   ) as Record<string, string>;
 
-  const cover = album.cover_cf_image_id ? imageUrl(album.cover_cf_image_id, 'cover') : null;
-
   const albumJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'MusicAlbum',
@@ -116,13 +115,8 @@ export default async function AlbumPage({
           their own full-width block below so they don't squeeze this row. */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(200px,280px)_1fr] sm:gap-8">
         <div className="mx-auto w-full max-w-xs overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800 sm:mx-0 sm:max-w-none">
-          {cover ? (
-            <img
-              src={cover}
-              alt={t('album.coverAlt', { title: album.title })}
-              fetchPriority="high"
-              className="aspect-square w-full object-cover"
-            />
+          {album.cover_cf_image_id ? (
+            <AlbumCoverHero coverCfImageId={album.cover_cf_image_id} title={album.title} />
           ) : (
             <div className="flex aspect-square items-center justify-center">
               <MusicalNoteIcon className="h-16 w-16 text-zinc-400" />

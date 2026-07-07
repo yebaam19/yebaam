@@ -21,7 +21,11 @@ export const getSchoolBySlug = cache(async (slug: string): Promise<SchoolDetail 
   const client = await getServerClient()
   const { data, error } = await client.rpc('get_school_by_slug', { p_slug: slug })
   if (error) throw new Error(error.message)
-  return data as SchoolDetail | null
+  // get_school_by_slug is declared `RETURNS SETOF escuelas.schools`, so PostgREST
+  // hands back an array of rows — not a single object. Unwrap the first match
+  // (or null when the slug matches nothing) instead of casting the array itself.
+  const row = Array.isArray(data) ? (data[0] ?? null) : (data ?? null)
+  return row as SchoolDetail | null
 })
 
 export const getSchoolById = cache(async (id: string): Promise<School | null> => {

@@ -29,7 +29,7 @@ export function SchoolInstructorsTab({ instructors }: Props) {
 
 function InstructorCard({ instructor }: { instructor: Instructor }) {
   const photoUrl = cfImageUrl(instructor.photo_cf_image_id)
-  const initials = instructor.name.charAt(0).toUpperCase()
+  const initials = instructor.name?.charAt(0)?.toUpperCase() ?? '?'
 
   return (
     <article className="rounded-xl border border-primary-100 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">

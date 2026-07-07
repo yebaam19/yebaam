@@ -64,7 +64,7 @@ export function SchoolHero({ school, onLeadForm, onTrialForm }: Props) {
                 {profileUrl ? (
                   <Image src={profileUrl} alt={school.name} fill className="object-cover" sizes="80px" />
                 ) : (
-                  school.name.charAt(0)
+                  school.name?.charAt(0) ?? '?'
                 )}
               </div>
               {school.is_verified && (
