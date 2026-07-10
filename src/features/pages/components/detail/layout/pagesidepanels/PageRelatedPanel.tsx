@@ -28,7 +28,7 @@ export const PageRelatedPanel: FC<{ pageId: string }> = ({ pageId }) => {
         {(data ?? []).map((p) => (
           <Link
             key={p.id}
-            href={`/feed/paginas/${p.slug}` as Route}
+            href={`/paginas/${p.slug}` as Route}
             className="rounded-lg bg-white dark:bg-gray-800 p-4 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700/60"
           >
             <p className="font-semibold text-gray-900 dark:text-white">{p.name}</p>

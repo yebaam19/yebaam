@@ -42,7 +42,7 @@ export function AdminPagesTable({
             >
               <td className="px-4 py-3">
                 <Link
-                  href={`/feed/paginas/${p.slug}` as Route}
+                  href={`/paginas/${p.slug}` as Route}
                   className="font-medium text-primary-700 hover:underline dark:text-primary-300"
                 >
                   {p.name}

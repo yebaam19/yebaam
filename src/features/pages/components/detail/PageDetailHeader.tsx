@@ -3,6 +3,7 @@
 import { FC, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import {
   CheckBadgeIcon,
@@ -25,7 +26,7 @@ import { usePageConversations } from '../../hooks/usePageMessages';
 import { toast } from 'sonner';
 
 /**
- * Este header se renderiza en TODAS las visitas a /feed/paginas/[slug]. El panel
+ * Este header se renderiza en TODAS las visitas a /paginas/[slug]. El panel
  * de mensajería arrastra `PageMessengerChatView → usePageMessagesWebSocket →
  * socket.io-client`, así que importarlo estáticamente metía socket.io en el
  * bundle inicial de la ruta para cualquier visitante anónimo. Se carga al abrirlo.
@@ -187,7 +188,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                   <>
                     {/* Admin actions */}
                     <Link
-                      href={`/feed/paginas/${page.slug}/settings`}
+                      href={`/paginas/${page.slug}/settings` as Route}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     >
                       <Cog6ToothIcon className="w-5 h-5" />

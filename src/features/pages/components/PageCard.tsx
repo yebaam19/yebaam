@@ -2,6 +2,7 @@
 
 import { FC } from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import Image from 'next/image';
 import { CheckBadgeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim';
 import { useTranslations } from 'next-intl';
@@ -35,7 +36,7 @@ export const PageCard: FC<PageCardProps> = ({
   const profileSrc = resolveImageRef(page.profileImageUrl, 'avatar');
 
   return (
-    <Link href={`/feed/paginas/${page.slug}`}>
+    <Link href={`/paginas/${page.slug}` as Route}>
       <div className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* Cover Image */}
         {coverSrc && (

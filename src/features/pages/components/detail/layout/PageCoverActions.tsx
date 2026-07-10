@@ -2,6 +2,7 @@
 
 import { FC, useRef, useState } from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -187,7 +188,7 @@ export const PageCoverActions: FC<PageCoverActionsProps> = ({
       <div className="flex items-center gap-2">
         {isOwnerOrAdmin && (
           <Link
-            href={`/feed/paginas/${page.slug}/settings`}
+            href={`/paginas/${page.slug}/settings` as Route}
             title={t('settings')}
             className="flex-1 inline-flex items-center justify-center p-2 rounded-lg bg-white/90 text-gray-900 hover:bg-white dark:bg-gray-800/90 dark:text-white"
           >

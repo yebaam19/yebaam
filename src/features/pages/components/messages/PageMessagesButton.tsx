@@ -7,7 +7,7 @@ import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim';
 /**
  * El panel arrastra `PageMessengerChatView → usePageMessagesWebSocket → socket.io-client`.
  * Importado estáticamente, ese árbol entraba en el bundle inicial de
- * /feed/paginas/[slug] para TODO visitante, aunque el panel sólo lo abre el
+ * /paginas/[slug] para TODO visitante, aunque el panel sólo lo abre el
  * propietario. Cargarlo bajo demanda lo saca de la ruta. `ssr: false` porque
  * abre un WebSocket: no hay nada que prerrenderizar.
  */

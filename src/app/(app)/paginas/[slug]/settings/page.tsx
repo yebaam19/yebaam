@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { usePageBySlug } from '@/features/pages/hooks/usePages';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { 
@@ -62,7 +63,7 @@ export default function PageSettingsPage() {
             La página que buscas no existe o ha sido eliminada.
           </p>
           <Link
-            href="/feed/paginas"
+            href="/paginas"
             className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
           >
             Ir a páginas
@@ -88,7 +89,7 @@ export default function PageSettingsPage() {
             No tienes permisos para acceder a la configuración de esta página.
           </p>
           <Link
-            href={`/feed/paginas/${page.slug}`}
+            href={`/paginas/${page.slug}` as Route}
             className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
           >
             Volver a la página
@@ -105,7 +106,7 @@ export default function PageSettingsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link
-              href={`/feed/paginas/${page.slug}`}
+              href={`/paginas/${page.slug}` as Route}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />

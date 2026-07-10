@@ -105,6 +105,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
     firstSegment === 'cities' ||
     firstSegment === 'insignias' ||
     firstSegment === 'professional-services' ||
+    firstSegment === 'paginas' ||
     (segments.length === 1 && !!firstSegment && !RESERVED_TOP_LEVEL.has(firstSegment))
 
   if (hasOwnChrome) {

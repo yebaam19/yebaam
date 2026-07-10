@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { Cog6ToothIcon } from '@/components/icons/heroicons-shim';
 import { PublicProductsCatalog } from '@/components/products/PublicProductsCatalog';
 import { OwnerProductsList } from '@/components/products/OwnerProductsList';
@@ -31,7 +32,7 @@ export const PageDetailProducts: FC<PageDetailProductsProps> = ({
 
         {isOwner && (
           <Link
-            href={`/feed/paginas/${pageSlug}/settings?section=products`}
+            href={`/paginas/${pageSlug}/settings?section=products` as Route}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium shadow-sm hover:shadow-md"
           >
             <Cog6ToothIcon className="w-5 h-5" />

@@ -46,7 +46,7 @@ export async function notifyPageOwner(input: {
     related_type: 'page',
     related_id: input.pageId,
     message: input.message,
-    link: slug ? `/feed/paginas/${slug}` : null,
+    link: slug ? `/paginas/${slug}` : null,
   })
   if (error) console.error('[notifyPageOwner]', error.message)
 }

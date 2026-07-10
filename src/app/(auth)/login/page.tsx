@@ -69,7 +69,7 @@ const Page = async () => {
           </div>
           {/* Create Page Link */}
           <p className="mt-6 text-center text-sm text-white">
-            <Link href="/feed/paginas" className="font-semibold hover:underline">
+            <Link href="/paginas" className="font-semibold hover:underline">
               {t('login.createPageLink')}
             </Link>{' '}
             {t('login.createPageAfter')}

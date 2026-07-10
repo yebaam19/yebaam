@@ -12,7 +12,7 @@ import type { ActionResult } from '../_shared'
  *  grant/revoke (the public strip reads active grants for that page). */
 function revalidatePageBadgeSurfaces(pageSlug: string): void {
   revalidatePath('/admin/paginas')
-  revalidatePath(`/feed/paginas/${pageSlug}`)
+  revalidatePath(`/paginas/${pageSlug}`)
 }
 
 export async function grantBadge(input: {

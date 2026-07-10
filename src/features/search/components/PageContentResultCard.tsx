@@ -68,11 +68,11 @@ export function PageContentResultCard({ kind, item, className = '' }: PageConten
 
   const href: Route | null =
     kind === 'post'
-      ? `/feed/post/${item.id}`
+      ? (`/feed/post/${item.id}` as Route)
       : item.page
         ? kind === 'article'
-          ? `/feed/paginas/${item.page.slug}?tab=articulos`
-          : `/feed/paginas/${item.page.slug}?seccion=${kind === 'event' ? 'eventos' : 'audiciones'}`
+          ? (`/paginas/${item.page.slug}?tab=articulos` as Route)
+          : (`/paginas/${item.page.slug}?seccion=${kind === 'event' ? 'eventos' : 'audiciones'}` as Route)
         : null;
 
   const body = (

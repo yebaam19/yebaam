@@ -32,7 +32,7 @@ export const SettingsDangerZone: FC<SettingsDangerZoneProps> = ({ page }) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsDeleting(false);
     // Redirect to pages list
-    window.location.href = '/feed/paginas';
+    window.location.href = '/paginas';
   };
 
   const isOwner = page.userRole === 'OWNER';

@@ -9,6 +9,7 @@ import { useCreatePage } from '../hooks/usePages';
 
 import type { CreatePageDto } from '../types/page.types';
 import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
 import {
   CreatePageStep1,
   CreatePageStep2,
@@ -53,7 +54,7 @@ export const CreatePageModal = () => {
       closeCreateModal();
       resetModal();
       // Navegar a la página recién creada usando el slug
-      router.push(`/feed/paginas/${page.slug}`);
+      router.push(`/paginas/${page.slug}` as Route);
     } catch (error) {
       console.error('Error creating page:', error);
     }

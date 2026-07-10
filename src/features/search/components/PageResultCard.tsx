@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { CheckBadgeIcon, FlagIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
@@ -16,7 +17,7 @@ interface PageResultCardProps {
 /**
  * Card de resultado de Página (facet `pages` de /api/search).
  * Muestra: avatar, nombre, verificación, descripción y seguidores.
- * Enlaza a /feed/paginas/[slug].
+ * Enlaza a /paginas/[slug].
  *
  * @example
  * <PageResultCard page={pageResult} />
@@ -27,7 +28,7 @@ export function PageResultCard({ page, className = '' }: PageResultCardProps) {
 
   return (
     <Link
-      href={`/feed/paginas/${page.slug}`}
+      href={`/paginas/${page.slug}` as Route}
       className={cn(
         'flex items-center gap-3 p-4 rounded-lg',
         'hover:bg-gray-50 dark:hover:bg-neutral-800/50',

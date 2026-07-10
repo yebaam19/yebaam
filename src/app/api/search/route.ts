@@ -39,7 +39,7 @@ type AuditionRow = {
   page_id: string;
 };
 
-/** Summary of the owning page, attached to child rows so the UI can link to /feed/paginas/[slug]. */
+/** Summary of the owning page, attached to child rows so the UI can link to /paginas/[slug]. */
 type PageRef = { id: string; slug: string; name: string; profile_image_url: string | null };
 
 export async function GET(request: NextRequest) {
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
   const auditions = (auditionsRes.data ?? []) as AuditionRow[];
 
   // Child rows only carry page_id; resolve slug/name once so the client can
-  // build /feed/paginas/[slug] links without N extra requests. Pages the
+  // build /paginas/[slug] links without N extra requests. Pages the
   // viewer cannot see simply don't resolve (page: null).
   const refIds = Array.from(
     new Set(

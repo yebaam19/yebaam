@@ -10,6 +10,7 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   EnvelopeIcon,
+  FlagIcon,
   GlobeAmericasIcon,
   HeartIcon,
   HomeIcon,
@@ -126,6 +127,11 @@ export const menuConfig: Record<string, any[]> = {
           labelKey: 'items.communities',
           href: '{basePath}/comunidades',
           featureFlag: 'COMUNIDADES_ENABLED' as FeatureFlag,
+        },
+        {
+          icon: FlagIcon,
+          labelKey: 'items.paginas',
+          href: '/paginas',
         },
         {
           icon: ChatBubbleLeftRightIcon,
