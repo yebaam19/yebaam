@@ -38,7 +38,8 @@
     "friends": "Amigos",
     "friendsDescription": "Solo tus amigos",
     "private": "Solo yo",
-    "privateDescription": "Solo tú"
+    "privateDescription": "Solo tú",
+    "wallForced": "Las publicaciones de página siempre son públicas."
   },
   "privacyLabel": {
     "public": "público",
@@ -55,7 +56,8 @@
     "menu": {
       "edit": "Editar publicación",
       "delete": "Eliminar publicación",
-      "report": "Reportar publicación"
+      "report": "Reportar publicación",
+      "reportUnavailable": "Canal de denuncia en preparación"
     },
     "actions": {
       "like": "Me gusta",

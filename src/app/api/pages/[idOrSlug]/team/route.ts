@@ -1,21 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import { getServerClient } from '@/utils/supabase/server';
+import { resolvePage } from '@/lib/api/page-authz';
 import type { ProfileLite } from '@/lib/api/pages';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-async function resolvePageId(
-  client: Awaited<ReturnType<typeof getServerClient>>,
-  idOrSlug: string
-): Promise<string | null> {
-  if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client
-    .from('pages')
-    .select('id')
-    .eq('slug', idOrSlug)
-    .maybeSingle();
-  return (data as { id: string } | null)?.id ?? null;
-}
 
 export async function GET(
   _request: NextRequest,
@@ -23,8 +9,13 @@ export async function GET(
 ) {
   const { idOrSlug } = await context.params;
   const client = await getServerClient();
-  const pageId = await resolvePageId(client, idOrSlug);
-  if (!pageId) return NextResponse.json([], { status: 404 });
+
+  // El roster de equipo es público por diseño (PDF §4 "Equipo de Trabajo"), pero
+  // `resolvePage` corre bajo el cliente con sesión del llamante: una página
+  // restringida que el viewer no puede ver resuelve a null → 404, no fuga.
+  const page = await resolvePage(client, idOrSlug);
+  if (!page) return NextResponse.json([], { status: 404 });
+  const pageId = page.id;
 
   const { data, error } = await client
     .from('page_team_members')
@@ -38,7 +29,7 @@ export async function GET(
   const { data: profiles } = userIds.length
     ? await client
         .from('profiles')
-        .select('id,username,first_name,last_name,avatar_url')
+        .select('id,username,first_name,last_name,avatar_url,bio')
         .in('id', userIds)
     : { data: [] as ProfileLite[] };
 
@@ -54,6 +45,7 @@ export async function GET(
         firstName: p?.first_name ?? '',
         lastName: p?.last_name ?? '',
         avatarUrl: p?.avatar_url ?? undefined,
+        bio: p?.bio ?? undefined,
         role: r.role,
         joinedAt: r.assigned_at,
       };

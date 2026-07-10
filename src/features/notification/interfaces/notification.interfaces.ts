@@ -43,6 +43,14 @@ export enum NotificationType {
   // Club de coleccionistas
   MUSIC_ARTICLE_PUBLISHED = 'MUSIC_ARTICLE_PUBLISHED', // Nuevo artículo en un club al que perteneces
 
+  // Páginas (PDF §10)
+  PAGE_FOLLOW = 'PAGE_FOLLOW',
+  PAGE_RECOMMEND = 'PAGE_RECOMMEND',
+  PAGE_LIKE = 'PAGE_LIKE',
+  PAGE_MESSAGE = 'PAGE_MESSAGE',
+  PAGE_AUDITION = 'PAGE_AUDITION',
+  PAGE_EVENT = 'PAGE_EVENT',
+
   // Sistema
   SYSTEM = 'SYSTEM',                       // Notificación del sistema
   ANNOUNCEMENT = 'ANNOUNCEMENT',           // Anuncio importante

@@ -9,6 +9,7 @@ import {
 } from '@/components/icons/heroicons-shim';
 import type { Page } from '../../types/page.types';
 import { getCategoryLabel, formatRelativeDate } from '../../utils/pageHelpers';
+import { SOCIAL_NETWORKS } from '../settings/general/social-networks';
 
 interface PageDetailAboutProps {
   page: Page;
@@ -68,10 +69,15 @@ export const PageDetailAbout: FC<PageDetailAboutProps> = ({ page }) => {
       {/* Información de contacto */}
       {page.contact && Object.keys(page.contact).length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             Información de contacto
           </h3>
-          
+          {/* Transparencia (Contrato de Usuario cl.21 / Ley 1581): datos aportados
+              por el titular de la página, no recolectados de terceros. */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Datos de contacto publicados por la página.
+          </p>
+
           <div className="space-y-4">
             {/* Email */}
             {page.contact.email && (
@@ -157,6 +163,29 @@ export const PageDetailAbout: FC<PageDetailAboutProps> = ({ page }) => {
           </div>
         </div>
       )}
+
+      {/* Redes sociales (§3) — usa la misma config que el editor para no divergir */}
+      {page.contact?.social &&
+        SOCIAL_NETWORKS.some((n) => page.contact?.social?.[n.key]) && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Redes sociales
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {SOCIAL_NETWORKS.filter((n) => page.contact?.social?.[n.key]).map((n) => (
+                <a
+                  key={n.key}
+                  href={n.href(page.contact!.social![n.key] as string)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  {n.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
       {/* Estadísticas */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

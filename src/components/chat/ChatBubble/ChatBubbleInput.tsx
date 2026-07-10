@@ -18,6 +18,7 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
     cameraOpen,
     setCameraOpen,
     selectedFile,
+    selectedKind,
     previewUrl,
     fileInputRef,
     textareaRef,
@@ -25,6 +26,8 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
     uploadProgress,
     trimmedEmpty,
     handleFileSelect,
+    handleAudioSelect,
+    handleDocSelect,
     handlePaste,
     handleRemoveFile,
     handleInputChange,
@@ -34,7 +37,6 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
     handleCameraCapture,
     handleThumb,
     handleSendVoice,
-    stubSoon,
   } = useChatBubbleInput(props);
 
   return (
@@ -42,14 +44,17 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
       onSubmit={handleSubmit}
       className="border-t border-neutral-200 bg-[#f0f2f5] px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900"
     >
-      {previewUrl && (
+      {selectedFile && (
         <AttachmentPreview
           previewUrl={previewUrl}
+          kind={selectedKind}
+          fileName={selectedFile.name}
+          fileSize={selectedFile.size}
           isUploading={isUploading}
           isSending={isSending}
           uploadProgress={uploadProgress}
           onRemove={handleRemoveFile}
-          labels={{ previewAlt: t('previewAlt'), removeImage: t('removeImage') }}
+          labels={{ previewAlt: t('previewAlt'), removeAttachment: t('removeAttachment') }}
         />
       )}
 
@@ -58,13 +63,16 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
           fileInputRef={fileInputRef}
           isUploading={isUploading}
           isSending={isSending}
-          onMore={stubSoon}
           onOpenCamera={() => setCameraOpen(true)}
           onFileSelect={handleFileSelect}
+          onAudioSelect={handleAudioSelect}
+          onDocSelect={handleDocSelect}
           labels={{
             more: t('more'),
             cameraPhoto: t('cameraPhoto'),
             attachImage: t('attachImage'),
+            attachAudio: t('attachAudio'),
+            attachFile: t('attachFile'),
           }}
         />
 

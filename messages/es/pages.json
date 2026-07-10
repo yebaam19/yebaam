@@ -408,6 +408,8 @@
       "follow": "Seguir",
       "notificationsOn": "Notificaciones activadas",
       "notificationsEnable": "Activar notificaciones",
+      "recommend": "Recomendar",
+      "like": "Me gusta",
       "message": "Mensaje",
       "sharePage": "Compartir página",
       "moreOptions": "Más opciones",
@@ -454,6 +456,14 @@
       "cancel": "Cancelar",
       "searchPlaceholder": "Buscar usuario por nombre o @usuario...",
       "searchHint": "Busca usuarios para agregarlos como miembros del equipo",
+      "searching": "Buscando…",
+      "noResults": "Sin resultados para “{query}”.",
+      "permissionDenied": "No tienes permisos para gestionar el equipo de esta página.",
+      "errors": {
+        "changeRole": "No se pudo cambiar el rol.",
+        "addMember": "No se pudo añadir al integrante.",
+        "removeMember": "No se pudo retirar al integrante."
+      },
       "membersHeading": "Miembros del equipo ({count})",
       "joinedSince": "Desde",
       "removeMember": "Eliminar miembro",
@@ -466,30 +476,33 @@
       },
       "permissions": {
         "OWNER": [
-          "Control total de la página",
+          "Control total de la página (Administrador / Empresa titular)",
           "Transferir propiedad",
           "Eliminar la página",
-          "Gestionar todos los roles",
-          "Modificar configuración",
-          "Publicar y eliminar contenido"
+          "Gestionar todos los roles del equipo",
+          "Modificar configuración y apariencia",
+          "Publicar y eliminar contenido",
+          "Administrar audiciones, eventos y AskMe"
         ],
         "ADMIN": [
           "Gestionar roles (excepto propietario)",
           "Modificar configuración",
           "Publicar y eliminar contenido",
-          "Moderar comentarios",
-          "Ver estadísticas"
+          "Moderar comentarios y Chat Público",
+          "Ver estadísticas",
+          "Responder AskMe y mensajes"
         ],
         "EDITOR": [
-          "Publicar contenido",
-          "Editar publicaciones",
+          "Publicar contenido (Artista / Productor / Promotor editor)",
+          "Editar publicaciones, videos y artículos",
           "Responder comentarios",
           "Ver estadísticas básicas"
         ],
         "MODERATOR": [
-          "Moderar comentarios",
-          "Responder mensajes",
-          "Reportar contenido inapropiado"
+          "Moderar comentarios y reportes",
+          "Responder mensajes de la página",
+          "Reportar contenido inapropiado",
+          "Ayudar en AskMe y comunidad"
         ]
       }
     },

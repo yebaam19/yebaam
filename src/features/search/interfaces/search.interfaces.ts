@@ -3,9 +3,36 @@
  */
 
 /**
- * Tipos de resultados de búsqueda
+ * Tipos de resultados de búsqueda.
+ * `hashtags` / `groups` quedan sólo por compatibilidad con entradas viejas del
+ * historial (localStorage) — no tienen backend y ya no se ofrecen como filtro.
  */
-export type SearchResultType = 'all' | 'users' | 'posts' | 'hashtags' | 'groups';
+export type SearchResultType =
+  | 'all'
+  | 'users'
+  | 'pages'
+  | 'posts'
+  | 'articles'
+  | 'events'
+  | 'auditions'
+  | 'hashtags'
+  | 'groups';
+
+export const SEARCH_RESULT_TYPES: readonly SearchResultType[] = [
+  'all',
+  'users',
+  'pages',
+  'posts',
+  'articles',
+  'events',
+  'auditions',
+  'hashtags',
+  'groups',
+];
+
+export function isSearchResultType(value: string): value is SearchResultType {
+  return (SEARCH_RESULT_TYPES as readonly string[]).includes(value);
+}
 
 /**
  * Sort options para búsqueda (compatible con backend)
@@ -156,6 +183,78 @@ export interface GlobalSearchResponse {
   hashtags?: GlobalSearchSection<GlobalSearchHashtagResult>;
   comments?: GlobalSearchSection<string>;
   metadata: GlobalSearchMetadata;
+}
+
+// ==========================================
+// BÚSQUEDA AGREGADA (/api/search + /api/search/users)
+// ==========================================
+
+/**
+ * Página propietaria de un resultado hijo (post/artículo/evento/audición).
+ * `null` cuando la página no es visible para el viewer.
+ */
+export interface SearchPageRef {
+  id: string;
+  slug: string;
+  name: string;
+  profileImageUrl: string | null;
+}
+
+/** Página en resultados de búsqueda (facet `pages` de /api/search). */
+export interface PageSearchResult {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  category: string;
+  profileImageUrl?: string;
+  isVerified: boolean;
+  followerCount: number;
+}
+
+/** Publicación de página (facet `posts` de /api/search). */
+export interface PagePostSearchResult {
+  id: string;
+  content: string;
+  createdAt: string;
+  page: SearchPageRef | null;
+}
+
+/** Artículo de página (facet `articles`). */
+export interface PageArticleSearchResult {
+  id: string;
+  title: string;
+  description: string | null;
+  publishedAt: string | null;
+  page: SearchPageRef | null;
+}
+
+/** Evento de página (facet `events`). */
+export interface PageEventSearchResult {
+  id: string;
+  title: string;
+  place: string | null;
+  startsAt: string;
+  page: SearchPageRef | null;
+}
+
+/** Audición de página (facet `auditions`). */
+export interface PageAuditionSearchResult {
+  id: string;
+  title: string;
+  city: string | null;
+  startsAt: string | null;
+  page: SearchPageRef | null;
+}
+
+/** Resultado combinado que consume la página /search. */
+export interface AggregatedSearchResults {
+  users: UserSearchResult[];
+  pages: PageSearchResult[];
+  posts: PagePostSearchResult[];
+  articles: PageArticleSearchResult[];
+  events: PageEventSearchResult[];
+  auditions: PageAuditionSearchResult[];
 }
 
 // ==========================================

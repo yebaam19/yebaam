@@ -24,7 +24,9 @@ export const CreatePageModal = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<CreatePageDto>>({
-    privacy: 'public', // Backend usa 'public' en minúscula
+    // Privacidad por Defecto (Macro Reglamento Art. 2): la página nace restringida;
+    // abrirla al público es una elección explícita del titular en el paso final.
+    privacy: 'restricted',
   });
 
   const totalSteps = 4;
@@ -59,7 +61,7 @@ export const CreatePageModal = () => {
 
   const resetModal = () => {
     setCurrentStep(1);
-    setFormData({ privacy: 'public' });
+    setFormData({ privacy: 'restricted' });
   };
 
   const handleClose = () => {

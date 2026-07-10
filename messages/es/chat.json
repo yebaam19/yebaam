@@ -36,18 +36,21 @@
       "more": "Más",
       "cameraPhoto": "Foto desde cámara",
       "attachImage": "Adjuntar imagen",
+      "attachAudio": "Adjuntar audio",
+      "attachFile": "Adjuntar archivo",
       "emoji": "Emoji",
       "sendLike": "Enviar Me gusta",
       "send": "Enviar",
       "previewAlt": "Vista previa",
-      "removeImage": "Quitar imagen",
+      "removeAttachment": "Quitar adjunto",
       "errors": {
         "invalidImage": "Por favor selecciona una imagen",
         "imageTooLarge": "La imagen no puede superar 10MB",
-        "uploadFailed": "Error al subir la imagen"
-      },
-      "toasts": {
-        "soon": "Pronto"
+        "invalidAudio": "Formato de audio no compatible",
+        "audioTooLarge": "El audio no puede superar 25MB",
+        "invalidFile": "Tipo de archivo no compatible. Permitidos: PDF, Word, Excel, PowerPoint, TXT, ZIP",
+        "fileTooLarge": "El archivo no puede superar 25MB",
+        "uploadFailed": "Error al subir el adjunto"
       }
     },
     "messages": {
@@ -202,6 +205,11 @@
     "denied": "No se pudo acceder al micrófono.",
     "tooShort": "Mantén pulsado para grabar una nota de voz.",
     "failed": "No se pudo enviar la nota de voz."
+  },
+  "file": {
+    "download": "Descargar archivo",
+    "downloadFailed": "No se pudo descargar el archivo",
+    "fallbackName": "Archivo"
   },
   "call": {
     "videoCall": "Videollamada",

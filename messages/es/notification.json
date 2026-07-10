@@ -47,6 +47,12 @@
     "EVENT_REMINDER": "Recordatorio de evento",
     "NEW_MESSAGE": "te envió un mensaje",
     "MUSIC_ARTICLE_PUBLISHED": "publicó un nuevo artículo",
+    "PAGE_FOLLOW": "empezó a seguir tu página",
+    "PAGE_RECOMMEND": "recomendó tu página",
+    "PAGE_LIKE": "le gustó tu página",
+    "PAGE_MESSAGE": "envió un mensaje a tu página",
+    "PAGE_AUDITION": "se postuló a una audición de tu página",
+    "PAGE_EVENT": "confirmó asistencia a un evento de tu página",
     "SYSTEM": "Notificación del sistema",
     "ANNOUNCEMENT": "Anuncio"
   },

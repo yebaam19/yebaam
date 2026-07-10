@@ -20,9 +20,20 @@ import { formatFollowersCount } from '../../utils/pageHelpers';
 import { resolveImageRef } from '@/lib/media/urls';
 import { useFollowPage, useUnfollowPage } from '../../hooks/usePages';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import PageMessengerPanel from '../messages/PageMessengerPanel';
+import dynamic from 'next/dynamic';
 import { usePageConversations } from '../../hooks/usePageMessages';
 import { toast } from 'sonner';
+
+/**
+ * Este header se renderiza en TODAS las visitas a /feed/paginas/[slug]. El panel
+ * de mensajería arrastra `PageMessengerChatView → usePageMessagesWebSocket →
+ * socket.io-client`, así que importarlo estáticamente metía socket.io en el
+ * bundle inicial de la ruta para cualquier visitante anónimo. Se carga al abrirlo.
+ * `ssr: false` porque abre un WebSocket: no hay nada que prerrenderizar.
+ */
+const PageMessengerPanel = dynamic(() => import('../messages/PageMessengerPanel'), {
+  ssr: false,
+});
 
 interface PageDetailHeaderProps {
   page: Page;
@@ -289,12 +300,16 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
         </div>
       </div>
 
-      {/* Messenger Modal - Available for both owners and visitors */}
-      <PageMessengerPanel
-        pageId={page.id}
-        isOpen={isMessengerOpen}
-        onClose={() => setIsMessengerOpen(false)}
-      />
+      {/* Messenger Modal - Available for both owners and visitors.
+          Montado sólo al abrirlo: el panel ya hacía `if (!isOpen) return null`,
+          así que el comportamiento es idéntico y el chunk no se descarga antes. */}
+      {isMessengerOpen && (
+        <PageMessengerPanel
+          pageId={page.id}
+          isOpen
+          onClose={() => setIsMessengerOpen(false)}
+        />
+      )}
     </div>
   );
 };

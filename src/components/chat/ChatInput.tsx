@@ -1,5 +1,11 @@
 import { useState, useRef } from 'react';
-import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
+import { useUploadChatMedia, toMessageMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
+import {
+  CHAT_AUDIO_MAX_BYTES,
+  CHAT_FILE_MAX_BYTES,
+  chatDocMime,
+  normalizeChatAudioMime,
+} from '@/features/chat/lib/chatR2Upload';
 import type { MessageMedia } from '@/features/chat/types';
 import { AttachmentPreview } from './ChatInput/AttachmentPreview';
 import { AttachButtons } from './ChatInput/AttachButtons';
@@ -21,6 +27,8 @@ export default function ChatInput({
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Pipeline del adjunto seleccionado (imagen/audio/archivo).
+  const [selectedKind, setSelectedKind] = useState<MediaType>(MediaType.IMAGE);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +69,7 @@ export default function ChatInput({
     }
 
     setSelectedFile(file);
+    setSelectedKind(MediaType.IMAGE);
 
     // Crear preview
     const reader = new FileReader();
@@ -73,6 +82,42 @@ export default function ChatInput({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) applyImageFile(file);
+  };
+
+  // Audio/documento: validar contra lo que aceptan las rutas de firma del chat
+  // y retener el archivo como chip (sin preview de imagen) hasta el envío.
+  const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!normalizeChatAudioMime(file.type)) {
+      alert('Formato de audio no compatible');
+      return;
+    }
+    if (file.size > CHAT_AUDIO_MAX_BYTES) {
+      alert('El audio no puede superar 25MB');
+      return;
+    }
+    setSelectedFile(file);
+    setSelectedKind(MediaType.AUDIO);
+    setPreviewUrl(null);
+  };
+
+  const handleDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!chatDocMime(file.name)) {
+      alert('Tipo de archivo no compatible. Permitidos: PDF, Word, Excel, PowerPoint, TXT, ZIP');
+      return;
+    }
+    if (file.size > CHAT_FILE_MAX_BYTES) {
+      alert('El archivo no puede superar 25MB');
+      return;
+    }
+    setSelectedFile(file);
+    setSelectedKind(MediaType.FILE);
+    setPreviewUrl(null);
   };
 
   // Paste a screenshot (or any copied image) directly into the message box.
@@ -97,6 +142,7 @@ export default function ChatInput({
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
+    setSelectedKind(MediaType.IMAGE);
     setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -146,20 +192,15 @@ export default function ChatInput({
       if (selectedFile) {
         const uploadResult = await uploadMedia({
           file: selectedFile,
-          mediaType: MediaType.IMAGE,
+          mediaType: selectedKind,
         });
 
         if (!uploadResult) {
-          alert('Error al subir la imagen');
+          alert('Error al subir el adjunto');
           return;
         }
 
-        mediaData = {
-          type: uploadResult.type,
-          cf_image_id: uploadResult.s3Key,
-          size: uploadResult.size,
-          filename: uploadResult.filename,
-        };
+        mediaData = toMessageMedia(uploadResult);
       }
 
       onTypingStop();
@@ -194,10 +235,13 @@ export default function ChatInput({
 
   return (
     <div className="p-4 border-t border-neutral-200 dark:border-neutral-800">
-      {/* Preview de imagen seleccionada */}
-      {previewUrl && (
+      {/* Preview del adjunto seleccionado (imagen o chip de audio/archivo) */}
+      {selectedFile && (
         <AttachmentPreview
           previewUrl={previewUrl}
+          kind={selectedKind}
+          fileName={selectedFile.name}
+          fileSize={selectedFile.size}
           isUploading={isUploading}
           uploadProgress={uploadProgress}
           error={error}
@@ -211,6 +255,8 @@ export default function ChatInput({
           isUploading={isUploading}
           emojiOpen={emojiOpen}
           onFileSelect={handleFileSelect}
+          onAudioSelect={handleAudioSelect}
+          onDocSelect={handleDocSelect}
           onToggleEmoji={() => setEmojiOpen((v) => !v)}
           onCloseEmoji={() => setEmojiOpen(false)}
           onSelectEmoji={handleEmojiSelect}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { cacheKey, getCached, setCached, subscribe } from './cacheStore';
+import { cacheKey, getCached, getVersion, setCached, subscribe } from './cacheStore';
 
 interface UseFetchOptions<T> {
   /** Skip the fetch entirely when false. */
@@ -59,6 +59,15 @@ export function useFetch<T>(
     () => undefined
   );
 
+  // `invalidate()` sube este contador. Va en las deps del efecto de abajo: es lo
+  // único que hace que un hook YA MONTADO vuelva a pedir (flatKey y enabled no
+  // cambian en una invalidación).
+  const version = useSyncExternalStore(
+    (listener) => subscribe(flatKey, listener),
+    () => getVersion(flatKey),
+    () => 0
+  );
+
   const [error, setError] = useState<Error | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(enabled && !cached);
@@ -111,8 +120,10 @@ export function useFetch<T>(
     const controller = new AbortController();
     void run(controller.signal);
     return () => controller.abort();
+    // `version` fuerza el refetch tras invalidate(); `cached` queda fuera a
+    // propósito — entra en cada setCached y provocaría un bucle de fetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flatKey, enabled]);
+  }, [flatKey, enabled, version]);
 
   const refetch = useCallback(async () => {
     const controller = new AbortController();

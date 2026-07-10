@@ -4,7 +4,17 @@ import type { FormEvent, KeyboardEvent } from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { useUploadChatMedia, MediaType } from '@/features/chat/hooks/useUploadChatMedia';
+import {
+  useUploadChatMedia,
+  toMessageMedia,
+  MediaType,
+} from '@/features/chat/hooks/useUploadChatMedia';
+import {
+  CHAT_AUDIO_MAX_BYTES,
+  CHAT_FILE_MAX_BYTES,
+  chatDocMime,
+  normalizeChatAudioMime,
+} from '@/features/chat/lib/chatR2Upload';
 import type { MessageMedia } from '@/features/chat/types';
 
 export interface ChatBubbleInputProps {
@@ -45,6 +55,8 @@ export function useChatBubbleInput({
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Which upload pipeline the selected attachment goes through (image/audio/file).
+  const [selectedKind, setSelectedKind] = useState<MediaType>(MediaType.IMAGE);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useAutoResizeTextArea(message, 120, 1);
@@ -62,6 +74,7 @@ export function useChatBubbleInput({
       return;
     }
     setSelectedFile(file);
+    setSelectedKind(MediaType.IMAGE);
     const reader = new FileReader();
     reader.onloadend = () => setPreviewUrl(reader.result as string);
     reader.readAsDataURL(file);
@@ -70,6 +83,42 @@ export function useChatBubbleInput({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) applyImageFile(file);
+  };
+
+  // Audio/document attach: validate against what the chat sign routes accept,
+  // then hold the file as a chip (no image preview) until send.
+  const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!normalizeChatAudioMime(file.type)) {
+      toast.error(t('errors.invalidAudio'));
+      return;
+    }
+    if (file.size > CHAT_AUDIO_MAX_BYTES) {
+      toast.error(t('errors.audioTooLarge'));
+      return;
+    }
+    setSelectedFile(file);
+    setSelectedKind(MediaType.AUDIO);
+    setPreviewUrl(null);
+  };
+
+  const handleDocSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!chatDocMime(file.name)) {
+      toast.error(t('errors.invalidFile'));
+      return;
+    }
+    if (file.size > CHAT_FILE_MAX_BYTES) {
+      toast.error(t('errors.fileTooLarge'));
+      return;
+    }
+    setSelectedFile(file);
+    setSelectedKind(MediaType.FILE);
+    setPreviewUrl(null);
   };
 
   // Paste a screenshot (or any copied image) straight into the message box —
@@ -95,6 +144,7 @@ export function useChatBubbleInput({
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
+    setSelectedKind(MediaType.IMAGE);
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -137,18 +187,13 @@ export function useChatBubbleInput({
 
     let mediaData: MessageMedia | undefined;
     if (selectedFile) {
-      const result = await uploadMedia({ file: selectedFile, mediaType: MediaType.IMAGE });
+      const result = await uploadMedia({ file: selectedFile, mediaType: selectedKind });
       if (!result) {
         toast.error(t('errors.uploadFailed'));
         setIsSending(false);
         return;
       }
-      mediaData = {
-        type: result.type,
-        cf_image_id: result.s3Key,
-        size: result.size,
-        filename: result.filename,
-      };
+      mediaData = toMessageMedia(result);
     }
 
     setMessage('');
@@ -171,8 +216,6 @@ export function useChatBubbleInput({
     }
   };
 
-  const stubSoon = useCallback(() => toast.info(t('toasts.soon')), [t]);
-
   // Camera capture → upload (same path as the photo attach) → send.
   const handleCameraCapture = async (file: File) => {
     const result = await uploadMedia({ file, mediaType: MediaType.IMAGE });
@@ -181,12 +224,7 @@ export function useChatBubbleInput({
       return;
     }
     setCameraOpen(false);
-    await onSendMessage(undefined, {
-      type: result.type,
-      cf_image_id: result.s3Key,
-      size: result.size,
-      filename: result.filename,
-    });
+    await onSendMessage(undefined, toMessageMedia(result));
   };
 
   const trimmedEmpty = message.trim() === '';
@@ -214,6 +252,7 @@ export function useChatBubbleInput({
     cameraOpen,
     setCameraOpen,
     selectedFile,
+    selectedKind,
     previewUrl,
     fileInputRef,
     textareaRef,
@@ -221,6 +260,8 @@ export function useChatBubbleInput({
     uploadProgress,
     trimmedEmpty,
     handleFileSelect,
+    handleAudioSelect,
+    handleDocSelect,
     handlePaste,
     handleRemoveFile,
     handleInputChange,
@@ -230,6 +271,5 @@ export function useChatBubbleInput({
     handleCameraCapture,
     handleThumb,
     handleSendVoice,
-    stubSoon,
   };
 }

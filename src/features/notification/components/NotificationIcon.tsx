@@ -4,15 +4,18 @@
  * Componente para mostrar el avatar con el badge del tipo de notificación
  */
 
-import { 
-  HeartIcon, 
-  ChatBubbleLeftIcon, 
+import {
+  HeartIcon,
+  ChatBubbleLeftIcon,
   ArrowPathRoundedSquareIcon,
   UserPlusIcon,
   UserGroupIcon,
   CalendarIcon,
   EnvelopeIcon,
   BellIcon,
+  StarIcon,
+  HandThumbUpIcon,
+  MicrophoneIcon,
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
@@ -58,8 +61,24 @@ const getNotificationIcon = (type: NotificationType) => {
       return <CalendarIcon className={cn(iconClass, 'text-pink-500')} />;
     
     case 'NEW_MESSAGE':
+    case 'PAGE_MESSAGE':
       return <EnvelopeIcon className={cn(iconClass, 'text-indigo-500')} />;
-    
+
+    case 'PAGE_FOLLOW':
+      return <UserPlusIcon className={cn(iconClass, 'text-teal-500')} />;
+
+    case 'PAGE_RECOMMEND':
+      return <StarIcon className={cn(iconClass, 'text-yellow-500')} />;
+
+    case 'PAGE_LIKE':
+      return <HandThumbUpIcon className={cn(iconClass, 'text-sky-500')} />;
+
+    case 'PAGE_AUDITION':
+      return <MicrophoneIcon className={cn(iconClass, 'text-violet-500')} />;
+
+    case 'PAGE_EVENT':
+      return <CalendarIcon className={cn(iconClass, 'text-pink-500')} />;
+
     default:
       return <BellIcon className={cn(iconClass, 'text-neutral-500')} />;
   }
@@ -98,8 +117,24 @@ const getIconBackgroundColor = (type: NotificationType) => {
       return 'bg-pink-100 dark:bg-pink-900/20';
     
     case 'NEW_MESSAGE':
+    case 'PAGE_MESSAGE':
       return 'bg-indigo-100 dark:bg-indigo-900/20';
-    
+
+    case 'PAGE_FOLLOW':
+      return 'bg-teal-100 dark:bg-teal-900/20';
+
+    case 'PAGE_RECOMMEND':
+      return 'bg-yellow-100 dark:bg-yellow-900/20';
+
+    case 'PAGE_LIKE':
+      return 'bg-sky-100 dark:bg-sky-900/20';
+
+    case 'PAGE_AUDITION':
+      return 'bg-violet-100 dark:bg-violet-900/20';
+
+    case 'PAGE_EVENT':
+      return 'bg-pink-100 dark:bg-pink-900/20';
+
     default:
       return 'bg-neutral-100 dark:bg-neutral-800';
   }

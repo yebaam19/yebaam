@@ -144,16 +144,27 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
                 </MenuItem>
               </>
             ) : (
-              <MenuItem>
-                {({ focus }) => (
+              // El canal de denuncia todavía no existe (no hay tabla post_reports
+              // ni endpoint). Este control se mostraba habilitado y sin onClick:
+              // al pulsarlo el menú se cerraba y no se presentaba nada. Anunciar
+              // un remedio inexistente es peor que no ofrecerlo (Manual de
+              // Convivencia Art. 5/9/17, Safe Harbor). Queda deshabilitado y
+              // rotulado hasta que exista el backend.
+              <MenuItem disabled>
+                {() => (
                   <button
+                    type="button"
+                    disabled
                     className={cn(
-                      'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-neutral-700 transition-colors dark:text-neutral-200',
-                      focus && 'bg-neutral-100 dark:bg-neutral-700',
+                      'flex w-full cursor-not-allowed items-start gap-3 px-4 py-2.5 text-left text-sm',
+                      'text-neutral-400 dark:text-neutral-500',
                     )}
                   >
-                    <FlagIcon className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-                    {t('post.menu.report')}
+                    <FlagIcon className="h-5 w-5 shrink-0" />
+                    <span className="flex flex-col">
+                      <span>{t('post.menu.report')}</span>
+                      <span className="text-xs">{t('post.menu.reportUnavailable')}</span>
+                    </span>
                   </button>
                 )}
               </MenuItem>

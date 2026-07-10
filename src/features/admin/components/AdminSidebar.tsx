@@ -34,6 +34,9 @@ const NAV_LABEL_TO_KEY: Record<string, string> = {
   'Credenciales Profesionales': 'professionalCredentials',
   'Insignias': 'insignias',
   'Solicitudes de insignias': 'badgeRequests',
+  'Páginas': 'paginas',
+  'Blog del Músico': 'blogs',
+  'Servicios Profesionales': 'professionalServices',
   'Club de coleccionistas': 'musicClub',
   'Ajustes': 'ajustes',
 }

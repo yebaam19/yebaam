@@ -1,5 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, type NextRequest, after } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import { notifyPageOwner } from '@/lib/api/page-notifications';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -59,6 +60,14 @@ export async function POST(
       .insert({ page_id: pageId, user_id: userId });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     await refreshFollowerCount(client, pageId);
+    after(async () => {
+      await notifyPageOwner({
+        pageId,
+        type: 'page_follow',
+        actorId: userId,
+        message: 'empezó a seguir tu página',
+      });
+    });
   }
 
   return NextResponse.json({ success: true });

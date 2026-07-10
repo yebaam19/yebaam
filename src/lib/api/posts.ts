@@ -18,6 +18,7 @@ export type PostRow = {
   updated_at: string;
   blog_id?: string | null;
   business_id?: string | null;
+  page_id?: string | null;
   // Extra columns returned only by get_timeline_posts RPC (NULL for personal posts)
   business_name?: string | null;
   business_slug?: string | null;

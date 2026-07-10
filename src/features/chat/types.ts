@@ -17,13 +17,16 @@ export interface MessageMedia {
   type: MediaType;
   cf_image_id?: string;
   cf_stream_uid?: string;
-  /** Cloudflare R2 object key for audio (voice notes / audio files). */
+  /** Cloudflare R2 object key for audio (`chat-audio/…`: voice notes / audio
+   *  files) and documents (`chat-files/…`). Exchanged for a presigned URL via
+   *  the conversation's membership-checked audio/file routes. */
   r2_key?: string;
   /** Audio duration in seconds. */
   duration?: number;
-  /** Base MIME type of the audio (e.g. audio/webm), for playback hints. */
+  /** Base MIME type (e.g. audio/webm, application/pdf), for playback/download hints. */
   mime?: string;
   size?: number;
+  /** Original filename — documents use it as the download name. */
   filename?: string;
 }
 

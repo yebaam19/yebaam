@@ -113,8 +113,11 @@ export class PostService {
     return Array.isArray(payload.data) ? payload.data : [];
   }
 
-  async getPagePosts(_pageId: string, _limit: number = 20): Promise<Post[]> {
-    return [];
+  async getPagePosts(pageId: string, limit: number = 20): Promise<Post[]> {
+    if (!pageId) return [];
+    const qs = buildQuery({ limit }, { scope: 'page', pageId });
+    const payload = await jsonFetch<{ data: Post[] }>(`/api/posts${qs}`);
+    return Array.isArray(payload.data) ? payload.data : [];
   }
 
   async update(postId: string, data: UpdatePostDTO): Promise<Post> {

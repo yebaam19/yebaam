@@ -6,7 +6,6 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  PhotoIcon,
 } from '@/components/icons/heroicons-shim';
 import { PagePromotion, PromotionType } from '../../interfaces/page-promotion.interface';
 import { format } from 'date-fns';
@@ -93,7 +92,14 @@ export const PromotionCard: FC<PromotionCardProps> = ({
                 {promotion.title}
               </h3>
             </div>
-            {getStatusBadge()}
+            <div className="flex flex-wrap items-center gap-2">
+              {getStatusBadge()}
+              {/* Marcador de publicidad (Manual de Convivencia Art. 5/13): el
+                  contenido comercial debe ser identificable como tal. */}
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                Publicidad
+              </span>
+            </div>
           </div>
 
           {canManage && (

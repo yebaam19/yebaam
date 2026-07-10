@@ -160,6 +160,7 @@ export default function MessageBubble({
               content={contentText}
               media={message.media}
               isOwn={isOwn}
+              conversationId={message.conversationId}
               onImageClick={() => setIsImageModalOpen(true)}
             />
             <div className="flex items-center gap-1">

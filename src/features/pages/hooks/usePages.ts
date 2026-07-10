@@ -123,6 +123,10 @@ export function useUpdatePage() {
             fetchedAt: Date.now(),
           })
         );
+        // La vista de detalle vive bajo la clave por slug ('pages::detail::slug::<slug>'),
+        // que el updateCached de arriba no toca — sin esto el hero destacado se
+        // quedaba obsoleto tras guardar. invalidate = stale-while-revalidate.
+        invalidate('pages::detail');
         invalidate('pages::my-pages');
         invalidate('pages::list');
       },
@@ -168,6 +172,20 @@ export function useUnfollowPage() {
         invalidate('pages::followed');
         invalidate('pages::suggested');
         invalidate('pages::my-pages');
+      },
+    }
+  );
+}
+
+export function usePageReaction() {
+  return useAsyncAction(
+    ({ pageId, type, active }: { pageId: string; type: 'recommend' | 'like'; active: boolean }) =>
+      active
+        ? pagesService.reactToPage(pageId, type)
+        : pagesService.unreactToPage(pageId, type),
+    {
+      onSuccess: () => {
+        invalidate('pages::detail');
       },
     }
   );

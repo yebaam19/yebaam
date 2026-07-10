@@ -18,6 +18,21 @@ export type PageRole = 'OWNER' | 'ADMIN' | 'EDITOR' | 'MODERATOR';
 
 export type PagePrivacy = 'PUBLIC' | 'PRIVATE';
 
+/**
+ * Enlaces a redes sociales de la Página (§3 Información del Perfil, §7 Contacto).
+ * `whatsapp` guarda el número en formato internacional (solo dígitos) para
+ * construir un deep-link wa.me al renderizar — nunca la URL completa.
+ */
+export interface PageSocialLinks {
+  facebook?: string;
+  instagram?: string;
+  youtube?: string;
+  tiktok?: string;
+  x?: string;
+  spotify?: string;
+  whatsapp?: string;
+}
+
 export interface PageContact {
   email?: string;
   phone?: string;
@@ -29,6 +44,7 @@ export interface PageContact {
     country?: string;
     zipCode?: string;
   };
+  social?: PageSocialLinks;
 }
 
 export interface PageStats {
@@ -44,6 +60,7 @@ export interface PageMember {
   firstName: string;
   lastName: string;
   avatarUrl?: string;
+  bio?: string;
   role: PageRole;
   joinedAt: string;
 }
@@ -68,12 +85,35 @@ export interface Page {
   followerCount: number;
   isFollowing?: boolean;
   isVerified: boolean;
+
+  /** PDF §1.3 — denormalized counters + viewer flags from page_reactions */
+  recommendCount?: number;
+  likeCount?: number;
+  hasRecommended?: boolean;
+  hasLiked?: boolean;
+
+  /** PDF §5 — contenido destacado */
+  featuredType?: 'reel' | 'video' | 'image' | null;
+  featuredPostId?: string | null;
+  featuredCfImageId?: string | null;
+  featuredAutoplay?: boolean;
+
+  /**
+   * PDF §7 — vínculo a la sala de Chat Público / espacio de Foro propios de la
+   * página. Las rutas de ambos módulos son por slug, así que el backend expone
+   * id + slug; slug null ⇒ sala/espacio inexistente o archivado (enlace genérico).
+   */
+  chatPublicoRoomId?: string | null;
+  chatPublicoRoomSlug?: string | null;
+  foroSpaceId?: string | null;
+  foroSpaceSlug?: string | null;
   
   // Ownership
   ownerId: string;
   ownerName?: string;
   ownerUsername?: string;
   ownerAvatar?: string;
+  ownerBio?: string;
   
   // User's role in page - Backend usa lowercase 'owner', 'admin', etc
   userRole?: string;
@@ -91,6 +131,16 @@ export interface Page {
   privacy: string; // Backend usa lowercase 'public', 'restricted'
   createdAt: string;
   updatedAt: string;
+}
+
+export type PageReactionType = 'recommend' | 'like';
+
+export interface PageReactionResult {
+  success: boolean;
+  type: PageReactionType;
+  active: boolean;
+  recommendCount: number;
+  likeCount: number;
 }
 
 export interface CreatePageDto {
@@ -128,6 +178,11 @@ export interface UpdatePageDto {
   coverImageUrl?: string | null;
   contact?: PageContact;
   privacy?: PagePrivacy;
+  /** PDF §5 — null clears featured content */
+  featuredType?: 'reel' | 'video' | 'image' | null;
+  featuredPostId?: string | null;
+  featuredCfImageId?: string | null;
+  featuredAutoplay?: boolean;
 }
 
 export interface SearchPagesParams {

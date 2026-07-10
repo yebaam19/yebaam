@@ -16,6 +16,13 @@ interface PostUserInfoProps {
   userName: string;
   selectedVisibility: 'public' | 'friends' | 'private';
   onVisibilityChange: (visibility: 'public' | 'friends' | 'private') => void;
+  /**
+   * Muro de página / blog / negocio. El servidor fuerza `public` para estos posts
+   * (api/posts/route.ts: `effectivePrivacy`), así que ofrecer un selector de
+   * visibilidad sería mentirle al usuario: elija lo que elija, se descarta.
+   * Mostramos el estado real (Contrato de Usuario cl.21 — transparencia).
+   */
+  isWallContext?: boolean;
 }
 
 export default function PostUserInfo({
@@ -23,11 +30,29 @@ export default function PostUserInfo({
   userName,
   selectedVisibility,
   onVisibilityChange,
+  isWallContext = false,
 }: PostUserInfoProps) {
   const t = useTranslations('feed');
   const initials = getUserInitials(userName);
   const selectedOption = VISIBILITY_OPTIONS.find(opt => opt.value === selectedVisibility) || VISIBILITY_OPTIONS[0];
   const SelectedIcon = selectedOption.icon;
+
+  if (isWallContext) {
+    return (
+      <div className="flex items-center gap-3">
+        <Avatar src={userAvatar} initials={initials} className="h-12 w-12" />
+        <div className="flex-1">
+          <p className="font-semibold text-neutral-900 dark:text-white">
+            {userName}
+          </p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            <GlobeAltIcon className="h-3.5 w-3.5 shrink-0" />
+            {t('visibility.wallForced')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3">

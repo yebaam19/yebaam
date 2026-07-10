@@ -36,18 +36,21 @@
       "more": "More",
       "cameraPhoto": "Photo from camera",
       "attachImage": "Attach image",
+      "attachAudio": "Attach audio",
+      "attachFile": "Attach file",
       "emoji": "Emoji",
       "sendLike": "Send like",
       "send": "Send",
       "previewAlt": "Preview",
-      "removeImage": "Remove image",
+      "removeAttachment": "Remove attachment",
       "errors": {
         "invalidImage": "Please choose an image",
         "imageTooLarge": "The image cannot exceed 10MB",
-        "uploadFailed": "Failed to upload image"
-      },
-      "toasts": {
-        "soon": "Soon"
+        "invalidAudio": "Unsupported audio format",
+        "audioTooLarge": "The audio cannot exceed 25MB",
+        "invalidFile": "Unsupported file type. Allowed: PDF, Word, Excel, PowerPoint, TXT, ZIP",
+        "fileTooLarge": "The file cannot exceed 25MB",
+        "uploadFailed": "Failed to upload the attachment"
       }
     },
     "messages": {
@@ -202,6 +205,11 @@
     "denied": "Couldn't access the microphone.",
     "tooShort": "Hold to record a voice note.",
     "failed": "Couldn't send the voice note."
+  },
+  "file": {
+    "download": "Download file",
+    "downloadFailed": "Could not download the file",
+    "fallbackName": "File"
   },
   "call": {
     "videoCall": "Video call",

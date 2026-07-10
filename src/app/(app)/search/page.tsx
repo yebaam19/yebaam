@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SearchPageContent } from './SearchPageContent';
+import { isSearchResultType } from '@/features/search/interfaces/search.interfaces';
 
 /**
  * Página de búsqueda principal
@@ -26,7 +27,9 @@ export default function SearchPage() {
 function SearchPageWrapper() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
-  const type = (searchParams.get('type') || 'all') as any;
+  const rawType = searchParams.get('type') || 'all';
+  // Un ?type= desconocido cae a 'all' en vez de colarse con un cast.
+  const type = isSearchResultType(rawType) ? rawType : 'all';
 
   return <SearchPageContent initialQuery={query} initialType={type} />;
 }

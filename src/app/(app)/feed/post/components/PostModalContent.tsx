@@ -23,6 +23,8 @@ interface PostModalContentProps {
   // Customization
   selectedVisibility: 'public' | 'friends' | 'private'
   onVisibilityChange: (visibility: 'public' | 'friends' | 'private') => void
+  /** Muro de página/blog/negocio: el servidor fuerza `public`. */
+  isWallContext?: boolean
   backgroundColor?: string
   selectedFeeling: PostFeeling | null
   onRemoveFeeling: () => void
@@ -43,6 +45,7 @@ export default function PostModalContent({
   onRemoveFile,
   selectedVisibility,
   onVisibilityChange,
+  isWallContext,
   backgroundColor,
   selectedFeeling,
   onRemoveFeeling,
@@ -60,6 +63,7 @@ export default function PostModalContent({
         userName={userName}
         selectedVisibility={selectedVisibility}
         onVisibilityChange={onVisibilityChange}
+        isWallContext={isWallContext}
       />
 
       {/* Content Textarea */}

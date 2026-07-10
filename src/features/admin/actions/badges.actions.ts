@@ -3,7 +3,9 @@
  * `requireAdminWithUser()` (which redirects a non-admin before any mutation)
  * and returns the acting user id. RLS on badges/user_badges/badge_requests/
  * badge_audit_log already grants writes to `platform_admins`, so the queries
- * use the caller's session.
+ * use the caller's session. Exception: `page_badge_grants` is SELECT-only
+ * under RLS, so the page-badge grant/revoke actions mutate via the service
+ * client after the gate.
  *
  * This file is a plain barrel over the per-domain `'use server'` modules under
  * `./badges/`. Splitting keeps each action module small and single-purpose

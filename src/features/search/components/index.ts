@@ -10,6 +10,11 @@ export { SearchFilters } from './SearchFilters';
 export { UserResultCard } from './UserResultCard';
 export { PostResultCard } from './PostResultCard';
 export { HashtagResultCard } from './HashtagResultCard';
+export { PageResultCard } from './PageResultCard';
+export { PageContentResultCard } from './PageContentResultCard';
+
+// Results list (facets agregados de /api/search)
+export { SearchResultsList } from './SearchResultsList';
 
 // Skeleton loaders
 export {

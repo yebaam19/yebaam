@@ -29,13 +29,17 @@ export default function NotificationItem({
   const { user } = useAuthStore();
   const t = useTranslations('notification.item');
 
-  const isFriendRequest = notification.type === NotificationType.FRIEND_REQUEST || 
-                          (notification.type as string).toUpperCase() === 'FRIEND_REQUEST';
+  // `String(... ?? '')` — a malformed row can arrive with `type` undefined;
+  // calling .toUpperCase() on it would crash the whole notification list.
+  const isFriendRequest = notification.type === NotificationType.FRIEND_REQUEST ||
+                          String(notification.type ?? '').toUpperCase() === 'FRIEND_REQUEST';
   
   // Intentar obtener el friendshipId de múltiples fuentes (priorizar friendshipId)
-  const requestId = (notification.metadata as any)?.friendshipId ||
-                    (notification.metadata as any)?.requestId || 
-                    (notification.metadata as any)?.friendRequestId as string | undefined;
+  const meta = notification.metadata as
+    | (typeof notification.metadata & { requestId?: string; friendRequestId?: string })
+    | undefined;
+  const requestId: string | undefined =
+    meta?.friendshipId || meta?.requestId || meta?.friendRequestId;
 
   // Para solicitudes de amistad: el actor es quien ENVIÓ la solicitud (requester)
   // El usuario actual (userId) debería ser el destinatario (addressee) para poder aceptar

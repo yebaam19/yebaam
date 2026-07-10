@@ -4,9 +4,11 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import type { SearchResultType } from '../interfaces/search.interfaces';
 import {
-  UserGroupIcon,
+  CalendarDaysIcon,
   DocumentTextIcon,
-  HashtagIcon,
+  FlagIcon,
+  MicrophoneIcon,
+  NewspaperIcon,
   Squares2X2Icon,
   UserIcon,
 } from '@/components/icons/heroicons-shim';
@@ -14,16 +16,12 @@ import {
 interface SearchFiltersProps {
   activeFilter: SearchResultType;
   onFilterChange: (filter: SearchResultType) => void;
-  counts?: {
-    all: number;
-    users: number;
-    posts: number;
-    hashtags: number;
-    groups: number;
-  };
+  counts?: Partial<Record<SearchResultType, number>>;
   className?: string;
 }
 
+// Facets con backend real: personas (/api/search/users) + los cinco facets
+// agregados de /api/search. hashtags/groups quedaron fuera hasta tener datos.
 const FILTERS = [
   {
     value: 'all' as SearchResultType,
@@ -36,19 +34,29 @@ const FILTERS = [
     icon: UserIcon,
   },
   {
+    value: 'pages' as SearchResultType,
+    labelKey: 'pages',
+    icon: FlagIcon,
+  },
+  {
     value: 'posts' as SearchResultType,
     labelKey: 'posts',
     icon: DocumentTextIcon,
   },
   {
-    value: 'hashtags' as SearchResultType,
-    labelKey: 'hashtags',
-    icon: HashtagIcon,
+    value: 'articles' as SearchResultType,
+    labelKey: 'articles',
+    icon: NewspaperIcon,
   },
   {
-    value: 'groups' as SearchResultType,
-    labelKey: 'groups',
-    icon: UserGroupIcon,
+    value: 'events' as SearchResultType,
+    labelKey: 'events',
+    icon: CalendarDaysIcon,
+  },
+  {
+    value: 'auditions' as SearchResultType,
+    labelKey: 'auditions',
+    icon: MicrophoneIcon,
   },
 ] as const;
 

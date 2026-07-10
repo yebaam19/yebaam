@@ -10,9 +10,7 @@ import {
   SearchSuggestions,
   SearchEmptyState,
   SearchResultsSkeleton,
-  UserResultCard,
-  PostResultCard,
-  HashtagResultCard,
+  SearchResultsList,
 } from '@/features/search/components';
 import { useSearch } from '@/features/search/hooks/useSearch';
 import { useSearchHistory } from '@/features/search/hooks/useSearchHistory';
@@ -24,8 +22,17 @@ interface SearchPageContentProps {
 }
 
 /**
+ * hashtags/groups sólo sobreviven en entradas viejas del historial: no tienen
+ * backend, así que cualquier click sobre ellas cae al filtro "all".
+ */
+function sanitizeFilter(type: SearchResultType): SearchResultType {
+  return type === 'hashtags' || type === 'groups' ? 'all' : type;
+}
+
+/**
  * Contenido principal de la página de búsqueda
- * Maneja estado, filtros, y renderizado de resultados
+ * Maneja estado, filtros, y renderizado de resultados (facets de /api/search
+ * + personas de /api/search/users vía useSearch)
  */
 export function SearchPageContent({
   initialQuery,
@@ -33,7 +40,9 @@ export function SearchPageContent({
 }: SearchPageContentProps) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
-  const [activeFilter, setActiveFilter] = useState<SearchResultType>(initialType);
+  const [activeFilter, setActiveFilter] = useState<SearchResultType>(() =>
+    sanitizeFilter(initialType)
+  );
 
   const { addToHistory } = useSearchHistory();
   const {
@@ -49,9 +58,21 @@ export function SearchPageContent({
   // Ejecutar búsqueda inicial si hay query en URL
   useEffect(() => {
     if (initialQuery && initialQuery !== searchQuery) {
-      search(initialQuery, initialType !== 'all' ? { type: initialType } : undefined);
+      const type = sanitizeFilter(initialType);
+      search(initialQuery, type !== 'all' ? { type } : undefined);
     }
   }, [initialQuery, initialType]);
+
+  // Búsqueda en vivo mientras se teclea — el hook debouncea el fetch. Enter,
+  // historial y sugerencias siguen pasando por handleSearch (historial + URL).
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+    if (!value.trim()) {
+      clear();
+      return;
+    }
+    search(value, activeFilter !== 'all' ? { type: activeFilter } : undefined);
+  };
 
   const handleSearch = (newQuery: string, type?: SearchResultType) => {
     if (!newQuery.trim()) {
@@ -61,15 +82,17 @@ export function SearchPageContent({
       return;
     }
 
+    const safeType = type ? sanitizeFilter(type) : undefined;
     setQuery(newQuery);
-    search(newQuery, type && type !== 'all' ? { type } : undefined);
-    addToHistory(newQuery, type);
+    if (safeType) setActiveFilter(safeType);
+    search(newQuery, safeType && safeType !== 'all' ? { type: safeType } : undefined);
+    addToHistory(newQuery, safeType);
 
     // Actualizar URL
     const params = new URLSearchParams();
     params.set('q', newQuery);
-    if (type && type !== 'all') {
-      params.set('type', type);
+    if (safeType && safeType !== 'all') {
+      params.set('type', safeType);
     }
     router.push(`/search?${params.toString()}`);
   };
@@ -77,7 +100,7 @@ export function SearchPageContent({
   const handleFilterChange = (type: SearchResultType) => {
     setActiveFilter(type);
     if (query) {
-      handleSearch(query, type !== 'all' ? type : undefined);
+      search(query, type !== 'all' ? { type } : undefined);
     }
   };
 
@@ -90,9 +113,9 @@ export function SearchPageContent({
   // Determinar qué mostrar
   const showHistory = !query && !loading;
   const showResults = query && results && !loading;
-  const showEmpty = query && !loading && results && !hasResults(results, activeFilter);
+  const showEmpty = query && !loading && results && getCountByType(activeFilter) === 0;
   // Solo mostrar error si hay error Y no hay resultados
-  const showError = error !== null && (!results || !hasResults(results, activeFilter));
+  const showError = error !== null && (!results || getCountByType(activeFilter) === 0);
 
   return (
     <div className="min-h-dvh min-w-0 bg-white dark:bg-neutral-900">
@@ -111,9 +134,10 @@ export function SearchPageContent({
           <div className="flex-1">
             <SearchInput
               value={query}
-              onChange={setQuery}
+              onChange={handleQueryChange}
               onSearch={handleSearch}
               onClear={handleClear}
+              loading={loading}
               autoFocus
             />
           </div>
@@ -128,9 +152,11 @@ export function SearchPageContent({
               counts={{
                 all: getCountByType('all'),
                 users: getCountByType('users'),
+                pages: getCountByType('pages'),
                 posts: getCountByType('posts'),
-                hashtags: getCountByType('hashtags'),
-                groups: getCountByType('groups'),
+                articles: getCountByType('articles'),
+                events: getCountByType('events'),
+                auditions: getCountByType('auditions'),
               }}
             />
           </div>
@@ -140,7 +166,13 @@ export function SearchPageContent({
         {loading && (
           <SearchResultsSkeleton
             count={6}
-            type={activeFilter === 'users' ? 'user' : activeFilter === 'posts' ? 'post' : 'hashtag'}
+            type={
+              activeFilter === 'users' || activeFilter === 'pages'
+                ? 'user'
+                : activeFilter === 'posts'
+                  ? 'post'
+                  : 'hashtag'
+            }
           />
         )}
 
@@ -148,7 +180,7 @@ export function SearchPageContent({
         {showError && <SearchEmptyState type="error" />}
 
         {/* Empty state - No results */}
-        {showEmpty && <SearchEmptyState type="no-results" query={query} />}
+        {!showError && showEmpty && <SearchEmptyState type="no-results" query={query} />}
 
         {/* History & Suggestions */}
         {showHistory && (
@@ -159,33 +191,7 @@ export function SearchPageContent({
         )}
 
         {/* Results */}
-        {showResults && (
-          <div className="space-y-3">
-            {/* Users */}
-            {(activeFilter === 'all' || activeFilter === 'users') &&
-              results.users?.map((user) => (
-                <UserResultCard key={user.id} user={user} />
-              ))}
-
-            {/* Posts */}
-            {(activeFilter === 'all' || activeFilter === 'posts') &&
-              results.posts?.map((post) => (
-                <PostResultCard key={post.id} post={post} />
-              ))}
-
-            {/* Hashtags */}
-            {(activeFilter === 'all' || activeFilter === 'hashtags') &&
-              results.hashtags?.map((hashtag) => (
-                <HashtagResultCard key={hashtag.name} hashtag={hashtag} />
-              ))}
-
-            {/* Groups - TODO: Implementar cuando tengas GroupResultCard */}
-            {/* {(activeFilter === 'all' || activeFilter === 'groups') &&
-              results.groups?.map((group) => (
-                <GroupResultCard key={group.id} group={group} />
-              ))} */}
-          </div>
-        )}
+        {showResults && <SearchResultsList results={results} activeFilter={activeFilter} />}
 
         {/* Empty state - No query yet */}
         {!query && !results && !loading && (
@@ -194,21 +200,4 @@ export function SearchPageContent({
       </div>
     </div>
   );
-}
-
-/**
- * Helper: Verificar si hay resultados para el filtro activo
- */
-function hasResults(results: any, filter: SearchResultType): boolean {
-  if (filter === 'all') {
-    return (
-      (results.users?.length || 0) +
-      (results.posts?.length || 0) +
-      (results.hashtags?.length || 0) +
-      (results.groups?.length || 0) >
-      0
-    );
-  }
-
-  return (results[filter]?.length || 0) > 0;
 }

@@ -27,6 +27,10 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
     website?: string;
   }>({});
 
+  // Privacidad por Defecto (Macro Reglamento Art. 2): nace 'restricted'; abrir al
+  // público es una elección explícita y consciente del titular aquí.
+  const privacy = data.privacy ?? 'restricted';
+
   const handleSimpleChange = (field: 'email' | 'phone' | 'website', value: string) => {
     const newContact = { ...contact, [field]: value };
     setContact(newContact);
@@ -223,6 +227,58 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
         </div>
       </div>
 
+      {/* Privacidad (Macro Reglamento Art. 2): la página nace restringida; hacerla
+          pública es una decisión explícita del titular. */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          ¿Quién puede ver esta página?
+        </label>
+        <div className="space-y-2">
+          {(
+            [
+              {
+                value: 'restricted' as const,
+                title: 'Restringida (recomendada)',
+                desc: 'Solo tú y tu equipo pueden verla mientras la preparas.',
+              },
+              {
+                value: 'public' as const,
+                title: 'Pública',
+                desc: 'Cualquiera puede encontrarla y ver su contenido y datos de contacto.',
+              },
+            ]
+          ).map((opt) => {
+            const selected = privacy === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onUpdate({ privacy: opt.value })}
+                className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
+                  selected
+                    ? 'border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                    selected ? 'border-blue-600' : 'border-gray-400'
+                  }`}
+                >
+                  {selected && <span className="h-2 w-2 rounded-full bg-blue-600" />}
+                </span>
+                <span>
+                  <span className="block text-sm font-medium text-gray-900 dark:text-white">
+                    {opt.title}
+                  </span>
+                  <span className="block text-xs text-gray-500 dark:text-gray-400">{opt.desc}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
         <p className="text-sm font-medium text-green-900 dark:text-green-200 mb-2">
           {t('summaryHeading')}
@@ -235,6 +291,7 @@ export const CreatePageStep4: FC<CreatePageStep4Props> = ({
           {(contact.email || contact.phone || contact.website || contact.address) && (
             <p>{t('summaryContact')}</p>
           )}
+          <p>{privacy === 'public' ? '🌐 Pública' : '🔒 Restringida'}</p>
         </div>
       </div>
 

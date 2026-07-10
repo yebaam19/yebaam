@@ -140,25 +140,3 @@ export function formatRelativeDate(dateString: string): string {
     day: 'numeric',
   });
 }
-
-// Obtener color de badge según rol
-export function getRoleColor(role: string): string {
-  const colors: Record<string, string> = {
-    OWNER: 'bg-purple-100 text-purple-800',
-    ADMIN: 'bg-red-100 text-red-800',
-    EDITOR: 'bg-blue-100 text-blue-800',
-    MODERATOR: 'bg-green-100 text-green-800',
-  };
-  return colors[role] || 'bg-gray-100 text-gray-800';
-}
-
-// Obtener etiqueta de rol en español
-export function getRoleLabel(role: string): string {
-  const labels: Record<string, string> = {
-    OWNER: 'Propietario',
-    ADMIN: 'Administrador',
-    EDITOR: 'Editor',
-    MODERATOR: 'Moderador',
-  };
-  return labels[role] || role;
-}

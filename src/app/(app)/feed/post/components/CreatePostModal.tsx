@@ -5,8 +5,9 @@ import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/re
 import { useTranslations } from 'next-intl'
 import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'sonner'
-import { invalidate } from '@/lib/hooks/cacheStore'
+import { cacheKey, invalidate, updateCached } from '@/lib/hooks/cacheStore'
 
+import type { Post } from '../interfaces/post.interfaces'
 import { usePostStore } from '../stores/post.store'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useCreatePostForm } from '../hooks/useCreatePostForm'
@@ -120,7 +121,13 @@ export default function CreatePostModal() {
         postData.businessId = contextBusinessId
       }
 
-      await createPost(postData)
+      const newPost = await createPost(postData)
+
+      // `createPost` NO relanza: atrapa el error, muestra su propio toast y
+      // devuelve null. Sin esta guarda seguíamos al camino de éxito — el usuario
+      // veía un toast de error Y uno de éxito, y el modal se cerraba perdiendo
+      // el borrador.
+      if (!newPost) return
 
       // Timeline cache is updated in-place by the store (prepends the new
       // post) — do NOT invalidate it here, invalidate() deletes the entry and
@@ -131,7 +138,19 @@ export default function CreatePostModal() {
       }
 
       if (contextPageId) {
-        invalidate(`pages::${contextPageId}::posts`)
+        // El muro de la página lee `useFetch(['page-posts', pageId])`, cuya clave
+        // plana es `page-posts::<id>` — el viejo `invalidate('pages::<id>::posts')`
+        // no casaba con NINGUNA clave, así que el post recién creado no aparecía.
+        // Y un invalidate() correcto tampoco serviría: borra la entrada y deja la
+        // lista montada en vacío sin refetch. Insertamos en caché, como hace el
+        // store con el timeline.
+        updateCached<{ data: Post[]; fetchedAt: number }>(
+          cacheKey('page-posts', contextPageId),
+          (record) => ({
+            data: record?.data ? [newPost, ...record.data] : [newPost],
+            fetchedAt: Date.now(),
+          })
+        )
       }
 
       resetForm()
@@ -181,6 +200,7 @@ export default function CreatePostModal() {
                   onRemoveFile={removeFile}
                   selectedVisibility={selectedVisibility}
                   onVisibilityChange={setSelectedVisibility}
+                  isWallContext={Boolean(contextPageId || contextBlogId || contextBusinessId)}
                   backgroundColor={backgroundColor}
                   selectedFeeling={selectedFeeling}
                   onRemoveFeeling={() => setSelectedFeeling(null)}

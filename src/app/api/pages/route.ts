@@ -7,11 +7,21 @@ export async function GET() {
   const { data: me } = await client.auth.getUser();
   const viewerId = me?.user?.id ?? null;
 
-  const { data, error } = await client
+  // Privacidad por Defecto (Macro Reglamento Art. 2), defensa en profundidad:
+  // el listado sólo trae páginas públicas (y las propias del viewer). La reja
+  // autoritativa sigue siendo la policy RLS; este filtro evita fugas si la policy
+  // fuese permisiva. Las páginas 'restricted' de las que el viewer es sólo team
+  // se acceden por enlace directo, no en este listado abierto.
+  let query = client
     .from('pages')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(50);
+  query = viewerId
+    ? query.or(`privacy.eq.public,owner_id.eq.${viewerId}`)
+    : query.eq('privacy', 'public');
+
+  const { data, error } = await query;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -63,7 +73,10 @@ export async function POST(request: NextRequest) {
       profile_image_url: typeof body.profileImageUrl === 'string' ? body.profileImageUrl : null,
       cover_image_url: typeof body.coverImageUrl === 'string' ? body.coverImageUrl : null,
       contact: (body.contact ?? {}) as Record<string, unknown>,
-      privacy: typeof body.privacy === 'string' ? body.privacy : 'public',
+      // Privacidad por Defecto (Macro Reglamento Art. 2): una página nace en el
+      // estado más restringido; abrirla al público es una acción explícita del
+      // titular desde ajustes, nunca el default.
+      privacy: typeof body.privacy === 'string' ? body.privacy : 'restricted',
     })
     .select('*')
     .maybeSingle();

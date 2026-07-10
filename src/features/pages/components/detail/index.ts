@@ -11,3 +11,8 @@ export { PageDetailPromotions } from '../promotions/PageDetailPromotions';
 export { PageDetailProducts } from './PageDetailProducts';
 export { PageDetailBadges } from './PageDetailBadges';
 export { PageDetailReels } from './PageDetailReels';
+export { PageDetailTeam } from './PageDetailTeam';
+export { PageDetailVideos } from './PageDetailVideos';
+export { PageDetailArtists } from './PageDetailArtists';
+export { PageDetailArticles } from './PageDetailArticles';
+export { PageComingSoon } from './PageComingSoon';

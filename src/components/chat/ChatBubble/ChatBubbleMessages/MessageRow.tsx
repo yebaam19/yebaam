@@ -4,6 +4,7 @@ import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import MessageImage from '../../MessageImage';
 import AudioMessage from '../../AudioMessage';
+import FileMessage from '../../FileMessage';
 import type { MessageMedia } from '@/features/chat/types';
 import { CheckIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { MessageActionsMenu } from '../MessageActionsMenu';
@@ -192,6 +193,8 @@ export function MessageRow({
               msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);
             const hasAudio =
               msg.media?.type === 'audio' && Boolean(msg.media?.r2_key);
+            const hasFile =
+              msg.media?.type === 'file' && Boolean(msg.media?.r2_key);
             return (
               <div
                 className={cn(
@@ -210,6 +213,12 @@ export function MessageRow({
                 )}
                 {hasAudio && (
                   <AudioMessage
+                    media={msg.media as MessageMedia}
+                    conversationId={msg.conversationId}
+                  />
+                )}
+                {hasFile && (
+                  <FileMessage
                     media={msg.media as MessageMedia}
                     conversationId={msg.conversationId}
                   />

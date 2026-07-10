@@ -408,6 +408,8 @@
       "follow": "Follow",
       "notificationsOn": "Notifications enabled",
       "notificationsEnable": "Enable notifications",
+      "recommend": "Recommend",
+      "like": "Like",
       "message": "Message",
       "sharePage": "Share page",
       "moreOptions": "More options",
@@ -454,6 +456,14 @@
       "cancel": "Cancel",
       "searchPlaceholder": "Search user by name or @username...",
       "searchHint": "Search for users to add them as team members",
+      "searching": "Searching…",
+      "noResults": "No results for “{query}”.",
+      "permissionDenied": "You don't have permission to manage this page's team.",
+      "errors": {
+        "changeRole": "Could not change the role.",
+        "addMember": "Could not add the member.",
+        "removeMember": "Could not remove the member."
+      },
       "membersHeading": "Team members ({count})",
       "joinedSince": "Since",
       "removeMember": "Remove member",
@@ -466,30 +476,33 @@
       },
       "permissions": {
         "OWNER": [
-          "Full control of the page",
+          "Full control of the page (Administrator / owning Empresa)",
           "Transfer ownership",
           "Delete the page",
-          "Manage all roles",
-          "Modify settings",
-          "Publish and delete content"
+          "Manage all team roles",
+          "Modify settings and appearance",
+          "Publish and delete content",
+          "Manage auditions, events and AskMe"
         ],
         "ADMIN": [
           "Manage roles (except owner)",
           "Modify settings",
           "Publish and delete content",
-          "Moderate comments",
-          "View statistics"
+          "Moderate comments and public chat",
+          "View statistics",
+          "Answer AskMe and messages"
         ],
         "EDITOR": [
-          "Publish content",
-          "Edit posts",
+          "Publish content (Artist / Producer / Promoter editor)",
+          "Edit posts, videos and articles",
           "Reply to comments",
           "View basic statistics"
         ],
         "MODERATOR": [
-          "Moderate comments",
-          "Reply to messages",
-          "Report inappropriate content"
+          "Moderate comments and reports",
+          "Reply to page messages",
+          "Report inappropriate content",
+          "Help with AskMe and community"
         ]
       }
     },

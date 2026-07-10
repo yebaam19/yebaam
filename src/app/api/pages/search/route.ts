@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
 
   if (query) q = q.ilike('name', `%${query}%`);
   if (category) q = q.eq('category', category);
+  // Privacidad por Defecto (Macro Reglamento Art. 2), defensa en profundidad:
+  // la búsqueda sólo expone páginas públicas (y las propias del viewer).
+  q = viewerId
+    ? q.or(`privacy.eq.public,owner_id.eq.${viewerId}`)
+    : q.eq('privacy', 'public');
 
   const { data, error, count } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -42,14 +42,23 @@ interface PageDetailSidebarProps {
   isOwner?: boolean; // New prop to determine if user is owner
 }
 
+/**
+ * `count` se rellena abajo con el conteo REAL de cada sección. `preguntas` e
+ * `insignias` no lo llevan: sus paneles (`PageDetailFAQ`, `PageDetailBadges`)
+ * siguen siendo datos mock, así que no existe un conteo verdadero que mostrar.
+ * Antes traían `count: 6` y `count: 8` fijos —las longitudes de los arrays
+ * mock— y el `.map()` de abajo nunca los sobrescribía, de modo que TODA página
+ * anunciaba 6 preguntas y 8 insignias que no tenía. Sin conteo, la píldora no
+ * se pinta (`item.count !== undefined`); es preferible no decir nada a mentir.
+ */
 const sidebarItems: SidebarItem[] = [
   { id: 'fotos', label: 'Fotos', icon: PhotoIcon },
   { id: 'comunidad', label: 'Comunidad', icon: UsersIcon },
   { id: 'valoraciones', label: 'Valoraciones', icon: StarIcon },
-  { id: 'preguntas', label: 'Preguntas frecuentes', icon: QuestionMarkCircleIcon, count: 6 },
+  { id: 'preguntas', label: 'Preguntas frecuentes', icon: QuestionMarkCircleIcon },
   { id: 'promociones', label: 'Promociones', icon: TagIcon },
   { id: 'productos', label: 'Productos', icon: ShoppingBagIcon },
-  { id: 'insignias', label: 'Insignias', icon: TrophyIcon, count: 8 },
+  { id: 'insignias', label: 'Insignias', icon: TrophyIcon },
   { id: 'mensajes', label: 'Mensajes', icon: ChatBubbleLeftRightIcon, ownerOnly: true },
 ];
 

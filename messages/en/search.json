@@ -6,13 +6,17 @@
   "filters": {
     "all": "All",
     "users": "Users",
+    "pages": "Pages",
     "posts": "Posts",
+    "articles": "Articles",
+    "events": "Events",
+    "auditions": "Auditions",
     "hashtags": "Hashtags",
     "groups": "Groups"
   },
   "empty": {
     "noQueryTitle": "Search Yebaam",
-    "noQueryDescription": "Find people, posts, hashtags, and groups",
+    "noQueryDescription": "Find people, pages, posts, articles, events, and auditions",
     "noResultsTitle": "No results found",
     "noResultsWithQuery": "No results for \"{query}\". Try different keywords.",
     "noResultsGeneric": "Try searching for something else",
@@ -30,6 +34,13 @@
     "hoursAgo": "{n}h ago",
     "daysAgo": "{n}d ago",
     "mediaAlt": "Post media"
+  },
+  "content": {
+    "post": "Post",
+    "article": "Article",
+    "event": "Event",
+    "audition": "Audition",
+    "onPage": "on {name}"
   },
   "hashtag": {
     "posts": "{count, plural, =1 {# post} other {# posts}}",

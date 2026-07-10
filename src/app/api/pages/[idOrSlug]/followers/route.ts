@@ -1,21 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
+import { resolvePage } from '@/lib/api/page-authz';
 import type { ProfileLite } from '@/lib/api/pages';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-async function resolvePageId(
-  client: Awaited<ReturnType<typeof getServerClient>>,
-  idOrSlug: string
-): Promise<string | null> {
-  if (UUID_RE.test(idOrSlug)) return idOrSlug;
-  const { data } = await client
-    .from('pages')
-    .select('id')
-    .eq('slug', idOrSlug)
-    .maybeSingle();
-  return (data as { id: string } | null)?.id ?? null;
-}
 
 export async function GET(
   _request: NextRequest,
@@ -23,8 +9,28 @@ export async function GET(
 ) {
   const { idOrSlug } = await context.params;
   const client = await getServerClient();
-  const pageId = await resolvePageId(client, idOrSlug);
-  if (!pageId) return NextResponse.json([], { status: 404 });
+  const page = await resolvePage(client, idOrSlug);
+  if (!page) return NextResponse.json([], { status: 404 });
+  const pageId = page.id;
+
+  // El roster de seguidores es dato personal (Macro Reglamento Art. 2/5): la lista
+  // con identidad completa sólo se entrega al titular o su equipo. Para el resto
+  // (incl. anónimos) se devuelve una lista vacía; el CONTEO público sigue
+  // disponible vía el followerCount que expone mapPage. No unir `profiles` salvo
+  // que el llamante esté autorizado.
+  const { data: auth } = await client.auth.getUser();
+  const viewerId = auth?.user?.id ?? null;
+  let isPrivileged = viewerId != null && viewerId === page.ownerId;
+  if (viewerId && !isPrivileged) {
+    const { data: teamRow } = await client
+      .from('page_team_members')
+      .select('role')
+      .eq('page_id', pageId)
+      .eq('user_id', viewerId)
+      .maybeSingle();
+    isPrivileged = Boolean(teamRow);
+  }
+  if (!isPrivileged) return NextResponse.json([]);
 
   const { data: follows, error } = await client
     .from('page_followers')

@@ -6,13 +6,17 @@
   "filters": {
     "all": "Todo",
     "users": "Usuarios",
+    "pages": "Páginas",
     "posts": "Publicaciones",
+    "articles": "Artículos",
+    "events": "Eventos",
+    "auditions": "Audiciones",
     "hashtags": "Hashtags",
     "groups": "Grupos"
   },
   "empty": {
     "noQueryTitle": "Busca en Yebaam",
-    "noQueryDescription": "Encuentra personas, publicaciones, hashtags y grupos",
+    "noQueryDescription": "Encuentra personas, páginas, publicaciones, artículos, eventos y audiciones",
     "noResultsTitle": "No se encontraron resultados",
     "noResultsWithQuery": "No hay resultados para \"{query}\". Intenta con otras palabras clave.",
     "noResultsGeneric": "Intenta buscar algo diferente",
@@ -30,6 +34,13 @@
     "hoursAgo": "hace {n}h",
     "daysAgo": "hace {n}d",
     "mediaAlt": "Multimedia de la publicación"
+  },
+  "content": {
+    "post": "Publicación",
+    "article": "Artículo",
+    "event": "Evento",
+    "audition": "Audición",
+    "onPage": "en {name}"
   },
   "hashtag": {
     "posts": "{count, plural, =1 {# publicación} other {# publicaciones}}",

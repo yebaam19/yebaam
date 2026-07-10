@@ -26,10 +26,16 @@ type DbNotification = {
     | 'mention'
     | 'friend_request'
     | 'friend_accept'
-    | 'music_article';
+    | 'music_article'
+    | 'page_follow'
+    | 'page_recommend'
+    | 'page_like'
+    | 'page_message'
+    | 'page_audition'
+    | 'page_event';
   recipient_id: string;
   actor_id: string | null;
-  related_type: 'post' | 'comment' | 'story' | 'music_article' | null;
+  related_type: 'post' | 'comment' | 'story' | 'music_article' | 'page' | null;
   related_id: string | null;
   message: string | null;
   link: string | null;
@@ -71,6 +77,23 @@ function mapDbTypeToClient(
       return NotificationType.FRIEND_SUGGESTION;
     case 'music_article':
       return NotificationType.MUSIC_ARTICLE_PUBLISHED;
+    case 'page_follow':
+      return NotificationType.PAGE_FOLLOW;
+    case 'page_recommend':
+      return NotificationType.PAGE_RECOMMEND;
+    case 'page_like':
+      return NotificationType.PAGE_LIKE;
+    case 'page_message':
+      return NotificationType.PAGE_MESSAGE;
+    case 'page_audition':
+      return NotificationType.PAGE_AUDITION;
+    case 'page_event':
+      return NotificationType.PAGE_EVENT;
+    default:
+      // A row whose type this build doesn't know yet (new producer deployed
+      // before the client) must never surface as `undefined` — downstream
+      // renderers assume `type` is always a string.
+      return NotificationType.SYSTEM;
   }
 }
 
@@ -94,6 +117,18 @@ function mapClientTypeToDb(type?: NotificationType): DbNotification['type'] | nu
       return 'message';
     case NotificationType.MUSIC_ARTICLE_PUBLISHED:
       return 'music_article';
+    case NotificationType.PAGE_FOLLOW:
+      return 'page_follow';
+    case NotificationType.PAGE_RECOMMEND:
+      return 'page_recommend';
+    case NotificationType.PAGE_LIKE:
+      return 'page_like';
+    case NotificationType.PAGE_MESSAGE:
+      return 'page_message';
+    case NotificationType.PAGE_AUDITION:
+      return 'page_audition';
+    case NotificationType.PAGE_EVENT:
+      return 'page_event';
     default:
       return null;
   }

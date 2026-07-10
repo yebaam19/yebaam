@@ -1,8 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import PageMessengerPanel from './PageMessengerPanel';
+import dynamic from 'next/dynamic';
 import { ChatBubbleLeftRightIcon } from '@/components/icons/heroicons-shim';
+
+/**
+ * El panel arrastra `PageMessengerChatView → usePageMessagesWebSocket → socket.io-client`.
+ * Importado estáticamente, ese árbol entraba en el bundle inicial de
+ * /feed/paginas/[slug] para TODO visitante, aunque el panel sólo lo abre el
+ * propietario. Cargarlo bajo demanda lo saca de la ruta. `ssr: false` porque
+ * abre un WebSocket: no hay nada que prerrenderizar.
+ */
+const PageMessengerPanel = dynamic(() => import('./PageMessengerPanel'), {
+  ssr: false,
+});
 
 interface PageMessagesButtonProps {
   pageId: string;
@@ -32,12 +43,16 @@ export function PageMessagesButton({ pageId, unreadCount = 0 }: PageMessagesButt
         )}
       </button>
 
-      {/* Modal de mensajería */}
-      <PageMessengerPanel
-        pageId={pageId}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-      />
+      {/* Modal de mensajería — sólo se descarga al abrirlo. El panel ya hacía
+          `if (!isOpen) return null`, así que montarlo condicionalmente no cambia
+          el comportamiento. */}
+      {isOpen && (
+        <PageMessengerPanel
+          pageId={pageId}
+          isOpen
+          onClose={() => setIsOpen(false)}
+        />
+      )}
     </>
   );
 }

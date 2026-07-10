@@ -1,6 +1,7 @@
 import { FC, useState } from 'react';
 import { ChevronDownIcon } from '@/components/icons/heroicons-shim';
 import type { CreatePageDto } from '../../types/page.types';
+import { PAGE_CATEGORY_OPTIONS } from '../../config/page-categories';
 
 interface CreatePageStep2Props {
   data: Partial<CreatePageDto>;
@@ -9,24 +10,10 @@ interface CreatePageStep2Props {
   onBack: () => void;
 }
 
-// Categorías en formato del backend
-const CATEGORIES = [
-  { value: 'Local Business', label: 'Negocio Local' },
-  { value: 'Company & Organization', label: 'Empresa y Organización' },
-  { value: 'Brand or Product', label: 'Marca o Producto' },
-  { value: 'Artist, Band or Public Figure', label: 'Artista, Banda o Figura Pública' },
-  { value: 'Entertainment', label: 'Entretenimiento' },
-  { value: 'Cause or Community', label: 'Causa o Comunidad' },
-  { value: 'Sports & Recreation', label: 'Deportes y Recreación' },
-  { value: 'Education', label: 'Educación' },
-  { value: 'Non-Profit Organization', label: 'Organización Sin Fines de Lucro' },
-  { value: 'Religious Organization', label: 'Organización Religiosa' },
-  { value: 'Health & Wellness', label: 'Salud y Bienestar' },
-  { value: 'Personal Blog', label: 'Blog Personal' },
-  { value: 'Shopping & Retail', label: 'Compras y Ventas' },
-  { value: 'Travel & Transportation', label: 'Viajes y Transporte' },
-  { value: 'Other', label: 'Otro' },
-];
+// Fuente única: config/page-categories.ts. El `value` que aquí se elige es lo
+// que se persiste en `pages.category`, y `getPageTabs` lo canonicaliza para
+// decidir el set de pestañas — por eso las dos listas no pueden vivir separadas.
+const CATEGORIES = PAGE_CATEGORY_OPTIONS;
 
 export const CreatePageStep2: FC<CreatePageStep2Props> = ({ data, onUpdate, onNext, onBack }) => {
   const [category, setCategory] = useState<string>(data.category || '');

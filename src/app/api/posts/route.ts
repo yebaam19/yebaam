@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
   const userIdFilter = searchParams.get('userId');
   const blogIdFilter = searchParams.get('blogId');
   const businessIdFilter = searchParams.get('businessId');
+  const pageIdFilter = searchParams.get('pageId');
   const limit = parseIntParam(searchParams.get('limit'), 20);
   const page = parseIntParam(searchParams.get('page'), 1);
   const offset = (page - 1) * limit;
@@ -50,7 +51,22 @@ export async function GET(request: NextRequest) {
     if (rpcError) {
       return NextResponse.json({ error: rpcError.message }, { status: 500 });
     }
-    const rows = (rpcRows ?? []) as PostRow[];
+    let rows = (rpcRows ?? []) as PostRow[];
+    // Defense-in-depth: page-wall posts must never surface in the personal
+    // timeline (same rule as blog/business walls). get_timeline_posts predates
+    // page_id; drop any tagged rows here. Preferred zero-cost fix once approved:
+    // add `AND p.page_id IS NULL` to the RPC's friend_posts CTE, then delete this.
+    if (rows.length) {
+      const { data: tagged } = await client
+        .from('posts')
+        .select('id')
+        .in('id', rows.map((r) => r.id))
+        .not('page_id', 'is', null);
+      if (tagged && tagged.length) {
+        const drop = new Set((tagged as Array<{ id: string }>).map((t) => t.id));
+        rows = rows.filter((r) => !drop.has(r.id));
+      }
+    }
     const profiles = await loadProfilesForPosts(client, rows);
     const myReactions = await loadMyReactions(client, rows.map((r) => r.id), userId);
     const posts = rows.map((r) => mapPost(r, profiles, myReactions.get(r.id) ?? null));
@@ -76,10 +92,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: [] });
     }
     query = query.eq('business_id', businessIdFilter);
+  } else if (scope === 'page') {
+    // Public Página (org-page) wall: posts tagged with this page_id.
+    if (!pageIdFilter) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+    query = query.eq('page_id', pageIdFilter);
   } else {
-    // Every non-blog, non-business scope excludes wall posts so they never leak
-    // into the global feed, the personal timeline, or profile posts.
-    query = query.is('blog_id', null).is('business_id', null);
+    // Every non-wall scope excludes blog/business/page wall posts so they never
+    // leak into the global feed, the personal timeline, or profile posts.
+    query = query.is('blog_id', null).is('business_id', null).is('page_id', null);
 
     if (scope === 'mine' && userId) {
       query = query.eq('author_id', userId);
@@ -174,12 +196,25 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const effectivePrivacy = (blogId || businessId) ? 'public' : privacy;
+  // Page-wall post (Páginas org-page): tag with page_id and force `public`.
+  // Only the page owner or a team ADMIN/EDITOR may post to a page wall.
+  const pageId = typeof body.pageId === 'string' && body.pageId ? body.pageId : null;
+  if (pageId) {
+    const { data: isAdmin, error: adminCheckError } = await client.rpc('check_page_admin', {
+      p_page_id: pageId,
+    });
+    if (adminCheckError || !isAdmin) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
+  const effectivePrivacy = (blogId || businessId || pageId) ? 'public' : privacy;
 
   const insertRow = {
     author_id: userId,
     blog_id: blogId,
     business_id: businessId,
+    page_id: pageId,
     content: typeof body.content === 'string' ? body.content : '',
     background_color: typeof body.backgroundColor === 'string' ? body.backgroundColor : null,
     // id-first: persist only the bare Cloudflare id + metadata per entry —
@@ -207,9 +242,9 @@ export async function POST(request: NextRequest) {
 
   const row = data as PostRow;
 
-  // Mirror media into the profile gallery tables. Wall posts (blog or business)
+  // Mirror media into the profile gallery tables. Wall posts (blog/business/page)
   // are skipped — their media belongs to the wall, not the author's profile gallery.
-  if (!blogId && !businessId) {
+  if (!blogId && !businessId && !pageId) {
     await mirrorMediaToProfileGallery(client, userId, effectivePrivacy, insertRow.media_files);
   }
 

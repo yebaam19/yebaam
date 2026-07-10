@@ -9,6 +9,8 @@ import type {
   PageFollower,
   PageMember,
   AssignRoleDto,
+  PageReactionType,
+  PageReactionResult,
 } from '../types/page.types';
 
 const API_BASE = '/api/pages';
@@ -87,6 +89,20 @@ export const pagesService = {
   async unfollowPage(pageId: string): Promise<void> {
     const axios = getAxiosInstance();
     await axios.delete(`${API_BASE}/${pageId}/followers/unfollow`);
+  },
+
+  async reactToPage(pageId: string, type: PageReactionType): Promise<PageReactionResult> {
+    const axios = getAxiosInstance();
+    const { data } = await axios.post(`${API_BASE}/${pageId}/reactions`, { type });
+    return data;
+  },
+
+  async unreactToPage(pageId: string, type: PageReactionType): Promise<PageReactionResult> {
+    const axios = getAxiosInstance();
+    const { data } = await axios.delete(`${API_BASE}/${pageId}/reactions`, {
+      params: { type },
+    });
+    return data;
   },
 
   // Followers
