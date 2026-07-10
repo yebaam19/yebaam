@@ -1,6 +1,8 @@
 import { requirePlatformAdmin } from '@/features/admin/server/auth'
 import { listAdminPages } from '@/features/admin/server/pages.server'
+import { listAdminBadges } from '@/features/admin/server/badges.server'
 import { AdminPagesTable } from '@/features/admin/components/pages/AdminPagesTable'
+import type { PageBadgeCatalogItem } from '@/features/admin/components/pages/badges/PageBadgesDialog'
 
 export const metadata = { title: 'Admin · Páginas' }
 
@@ -12,7 +14,19 @@ export default async function AdminPaginasPage({ searchParams }: PageProps) {
   await requirePlatformAdmin()
   const sp = await searchParams
   const search = sp.q?.trim() ?? ''
-  const pages = await listAdminPages(search)
+
+  const [{ pages, total }, { items: badges }] = await Promise.all([
+    listAdminPages(search),
+    listAdminBadges({ pageSize: 100 }),
+  ])
+
+  const badgeCatalog: PageBadgeCatalogItem[] = badges.map((b) => ({
+    id: b.id,
+    slug: b.slug,
+    name: b.name,
+    tier: b.tier,
+    iconUrl: b.iconUrl,
+  }))
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
@@ -20,12 +34,12 @@ export default async function AdminPaginasPage({ searchParams }: PageProps) {
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Páginas</h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Modera páginas de artista/negocio: verificación, privacidad y acceso rápido al perfil
-            público. Insignias de página se otorgan desde Insignias.
+            Modera páginas de artista/negocio: verificación, privacidad, insignias y acceso rápido al
+            perfil público.
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-          {pages.length.toLocaleString('es-ES')} páginas
+          {total.toLocaleString('es-ES')} páginas
         </span>
       </header>
 
@@ -40,7 +54,7 @@ export default async function AdminPaginasPage({ searchParams }: PageProps) {
       </form>
 
       <section className="min-w-0 rounded-xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <AdminPagesTable pages={pages} />
+        <AdminPagesTable pages={pages} badgeCatalog={badgeCatalog} />
       </section>
     </div>
   )
