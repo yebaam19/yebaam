@@ -157,6 +157,26 @@ export async function GET(request: NextRequest) {
   }
 
   const rows = (data ?? []) as PostRow[];
+
+  // public.posts has no business_name/slug/image columns — get_timeline_posts
+  // (the friends-feed RPC) joins comidas.businesses for those, but this plain
+  // `select('*')` path never did. Without this, every business-wall post
+  // rendered as if posted by the admin's personal profile once the page was
+  // reloaded (PostCardHeader's isBusiness check needs businessName, not just
+  // businessId). comidas isn't PostgREST-exposed, so go through the same RPC
+  // the rest of the admin panel uses.
+  if (scope === 'business' && businessIdFilter && rows.length > 0) {
+    const { data: biz } = await client.rpc('get_business_by_id', { p_id: businessIdFilter });
+    const business = biz as { name?: string; slug?: string; profile_cf_image_id?: string } | null;
+    if (business) {
+      for (const row of rows) {
+        row.business_name = business.name ?? null;
+        row.business_slug = business.slug ?? null;
+        row.business_cf_image_id = business.profile_cf_image_id ?? null;
+      }
+    }
+  }
+
   const profiles = await loadProfilesForPosts(client, rows);
   const myReactions = await loadMyReactions(
     client,

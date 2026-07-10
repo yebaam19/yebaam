@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { getServerClient } from '@/utils/supabase/server'
 import type { Business, BusinessDetail, BusinessAdmin, BusinessFilters } from '../types'
 
@@ -79,7 +80,13 @@ export async function isUserBusinessAdmin(businessId: string): Promise<boolean> 
     p_business_id: businessId,
   })
   if (error) {
-    console.error('[isUserBusinessAdmin] RPC error:', error.message)
+    // Fail-closed by design (PRA-004): a transient RPC failure must never
+    // grant access, so we deny here. But silently denying a legitimate
+    // owner during an infra blip is its own incident — report it so SRE
+    // sees a real alert instead of a confused "I lost access" support ticket.
+    Sentry.captureException(error, {
+      tags: { rpc: 'check_business_admin', businessId },
+    })
     return false
   }
   return Boolean(data)

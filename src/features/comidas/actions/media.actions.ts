@@ -1,10 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getServerClient, getServiceClient } from '@/utils/supabase/server'
+import { getServerClient } from '@/utils/supabase/server'
 import { z } from 'zod'
 import type { MediaAsset } from '../types'
 import { isUserBusinessAdmin } from '../server/business.server'
+import { revalidateBusinessAdmin } from '../lib/revalidate-admin'
 
 async function requireSession() {
   const client = await getServerClient()
@@ -44,6 +45,7 @@ export async function saveBusinessImage(input: z.infer<typeof ImageAssetSchema>)
   })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]/galeria', 'page')
+  revalidateBusinessAdmin(parsed.business_id, 'media')
   return data as MediaAsset
 }
 
@@ -58,6 +60,7 @@ export async function saveBusinessVideo(input: z.infer<typeof VideoAssetSchema>)
   })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]/galeria', 'page')
+  revalidateBusinessAdmin(parsed.business_id, 'media')
   return data as MediaAsset
 }
 
@@ -71,23 +74,25 @@ export async function setPrimaryMedia(mediaId: string, businessId: string) {
   })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]', 'page')
+  revalidateBusinessAdmin(businessId, 'media')
 }
 
 export async function deleteMedia(mediaId: string) {
   const { client } = await requireSession()
 
-  // Lookup the asset's business_id server-side — never trust client for ownership scope
-  const sc = getServiceClient()
-  const { data: asset } = await sc
-    .schema('comidas')
-    .from('media_assets')
-    .select('business_id')
-    .eq('id', mediaId)
-    .maybeSingle()
-  if (!asset) throw new Error('Archivo no encontrado')
-  await requireBusinessAdmin(asset.business_id as string)
+  // Lookup the asset's business_id server-side — never trust client for ownership
+  // scope. comidas isn't exposed via PostgREST, so go through an RPC instead of
+  // a direct schema-scoped REST query (which fails with PGRST106).
+  const { data: ownerBusinessId, error: lookupError } = await client.rpc('get_media_business_id', {
+    p_media_id: mediaId,
+  })
+  if (lookupError) throw new Error(`Error al buscar el archivo: ${lookupError.message} (code: ${lookupError.code})`)
+  if (!ownerBusinessId) throw new Error('Archivo no encontrado')
+  const businessId = ownerBusinessId as string
+  await requireBusinessAdmin(businessId)
 
   const { error } = await client.rpc('comidas_delete_media', { p_media_id: mediaId })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]/galeria', 'page')
+  revalidateBusinessAdmin(businessId, 'media')
 }

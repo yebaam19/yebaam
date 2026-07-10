@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Heart, UserCheck, UserPlus, Users } from 'lucide-react'
+import { Heart, ShoppingBag, Bell, BellOff } from 'lucide-react'
 import { toggleFollow, toggleLike, toggleCustomer } from '../../../actions/engagement.actions'
 
 interface Props {
@@ -16,6 +16,12 @@ interface Props {
 }
 
 type Kind = 'follow' | 'like' | 'customer'
+
+function fmt(n: number): string {
+  if (n === 0) return ''
+  if (n >= 1000) return ` ${(n / 1000).toFixed(1)}K`
+  return ` ${n}`
+}
 
 export function BusinessEngagementBar({
   businessId,
@@ -39,7 +45,7 @@ export function BusinessEngagementBar({
     if (loading) return
     setLoading(kind)
 
-    const prev = { isFollowing, isLiked, isCustomer, followersCount, likesCount, customersCount }
+    const snapshot = { isFollowing, isLiked, isCustomer, followersCount, likesCount, customersCount }
 
     try {
       if (kind === 'follow') {
@@ -65,86 +71,112 @@ export function BusinessEngagementBar({
         setCustomersCount(r.customers_count)
       }
     } catch {
-      setIsFollowing(prev.isFollowing)
-      setIsLiked(prev.isLiked)
-      setIsCustomer(prev.isCustomer)
-      setFollowersCount(prev.followersCount)
-      setLikesCount(prev.likesCount)
-      setCustomersCount(prev.customersCount)
+      setIsFollowing(snapshot.isFollowing)
+      setIsLiked(snapshot.isLiked)
+      setIsCustomer(snapshot.isCustomer)
+      setFollowersCount(snapshot.followersCount)
+      setLikesCount(snapshot.likesCount)
+      setCustomersCount(snapshot.customersCount)
     } finally {
       setLoading(null)
     }
   }
 
+  const isPending = loading !== null
+
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={`Acciones para ${businessName}`}>
-      {/* Follow — dominant CTA: connects business to user's feed */}
+    <div
+      className="flex flex-wrap gap-2"
+      role="group"
+      aria-label={`Acciones sociales para ${businessName}`}
+    >
+      {/* Follow — primary, dominant CTA */}
       <button
         type="button"
-        disabled={!!loading}
+        disabled={isPending}
         onClick={() => void handleToggle('follow')}
         aria-pressed={isFollowing}
-        title={isFollowing ? 'Dejar de seguir' : 'Seguir para ver novedades en tu feed'}
+        aria-label={isFollowing ? `Dejar de seguir ${businessName}` : `Seguir ${businessName} para ver novedades`}
         className={[
-          'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition',
-          'focus:outline-none focus:ring-2 focus:ring-primary-700/20 disabled:cursor-not-allowed disabled:opacity-70',
+          'inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'disabled:pointer-events-none disabled:opacity-60',
           loading !== 'follow' && 'hover:-translate-y-px hover:shadow-md',
           isFollowing
-            ? 'border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100'
-            : 'bg-primary-700 text-white hover:bg-primary-800',
+            ? 'bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-200 hover:bg-primary-100 focus-visible:ring-primary-500'
+            : 'bg-primary-700 text-white shadow-sm hover:bg-primary-800 hover:shadow-primary-700/25 focus-visible:ring-primary-500',
         ].filter(Boolean).join(' ')}
       >
-        {isFollowing ? <UserCheck size={15} aria-hidden="true" /> : <UserPlus size={15} aria-hidden="true" />}
+        {isFollowing
+          ? <BellOff size={15} aria-hidden="true" className="shrink-0" />
+          : <Bell size={15} aria-hidden="true" className="shrink-0" />}
         <span>{isFollowing ? 'Siguiendo' : 'Seguir'}</span>
         {followersCount > 0 && (
-          <span className={['text-xs', isFollowing ? 'opacity-60' : 'opacity-75'].join(' ')}>
-            · {followersCount}
+          <span className={['text-xs tabular-nums', isFollowing ? 'opacity-50' : 'opacity-70'].join(' ')}>
+            {fmt(followersCount)}
           </span>
         )}
       </button>
 
+      {/* Divider between primary and secondary */}
+      <div className="self-stretch py-0.5">
+        <div className="h-full w-px bg-neutral-200" aria-hidden="true" />
+      </div>
+
       {/* Like */}
       <button
         type="button"
-        disabled={!!loading}
+        disabled={isPending}
         onClick={() => void handleToggle('like')}
         aria-pressed={isLiked}
-        title={isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+        aria-label={isLiked ? 'Quitar de favoritos' : 'Guardar en favoritos'}
         className={[
-          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium shadow-sm transition',
-          'focus:outline-none focus:ring-2 focus:ring-primary-700/20 disabled:cursor-not-allowed disabled:opacity-70',
-          loading !== 'like' && 'hover:-translate-y-px hover:shadow',
+          'inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150',
+          'ring-1 ring-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'disabled:pointer-events-none disabled:opacity-60',
+          loading !== 'like' && 'hover:-translate-y-px',
           isLiked
-            ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
-            : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50',
+            ? 'bg-rose-50 text-rose-600 ring-rose-200 hover:bg-rose-100 focus-visible:ring-rose-400'
+            : 'bg-white text-neutral-600 ring-neutral-200 hover:bg-neutral-50 focus-visible:ring-neutral-400',
         ].filter(Boolean).join(' ')}
       >
         <Heart
           size={14}
           aria-hidden="true"
-          className={isLiked ? 'fill-rose-500 text-rose-500' : ''}
+          className={isLiked ? 'fill-rose-500 text-rose-500 shrink-0' : 'shrink-0'}
         />
-        <span>{likesCount > 0 ? `${likesCount} me gusta` : 'Me gusta'}</span>
+        <span className="hidden sm:inline">{isLiked ? 'Guardado' : 'Guardar'}</span>
+        {likesCount > 0 && (
+          <span className="text-xs tabular-nums opacity-60">{fmt(likesCount)}</span>
+        )}
       </button>
 
       {/* Customer */}
       <button
         type="button"
-        disabled={!!loading}
+        disabled={isPending}
         onClick={() => void handleToggle('customer')}
         aria-pressed={isCustomer}
-        title={isCustomer ? 'Quitar como cliente frecuente' : 'Marcar como cliente frecuente'}
+        aria-label={isCustomer ? 'Quitar marca de cliente frecuente' : 'Marcarme como cliente frecuente'}
         className={[
-          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium shadow-sm transition',
-          'focus:outline-none focus:ring-2 focus:ring-primary-700/20 disabled:cursor-not-allowed disabled:opacity-70',
-          loading !== 'customer' && 'hover:-translate-y-px hover:shadow',
+          'inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150',
+          'ring-1 ring-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'disabled:pointer-events-none disabled:opacity-60',
+          loading !== 'customer' && 'hover:-translate-y-px',
           isCustomer
-            ? 'border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100'
-            : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50',
+            ? 'bg-amber-50 text-amber-700 ring-amber-200 hover:bg-amber-100 focus-visible:ring-amber-400'
+            : 'bg-white text-neutral-600 ring-neutral-200 hover:bg-neutral-50 focus-visible:ring-neutral-400',
         ].filter(Boolean).join(' ')}
       >
-        <Users size={14} aria-hidden="true" />
-        <span>{isCustomer ? 'Cliente frecuente' : 'Soy cliente'}</span>
+        <ShoppingBag
+          size={14}
+          aria-hidden="true"
+          className={isCustomer ? 'text-amber-600 shrink-0' : 'shrink-0'}
+        />
+        <span className="hidden sm:inline">{isCustomer ? 'Soy cliente' : 'Soy cliente'}</span>
+        {customersCount > 0 && (
+          <span className="text-xs tabular-nums opacity-60">{fmt(customersCount)}</span>
+        )}
       </button>
     </div>
   )

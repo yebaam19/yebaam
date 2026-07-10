@@ -117,6 +117,13 @@ export default function CreatePostModal() {
         contextPageId,
       })
 
+      toast.info(
+        contextBusinessId
+          ? `DIAGNÓSTICO: se va a publicar como negocio (${contextBusinessId.slice(0, 8)}…)`
+          : 'DIAGNÓSTICO: se va a publicar como TU PERFIL PERSONAL (sin negocio detectado)',
+        { duration: 8000 }
+      )
+
       if (contextBusinessId) {
         postData.businessId = contextBusinessId
       }
@@ -158,6 +165,7 @@ export default function CreatePostModal() {
       toast.success(t('composer.createSuccess'))
     } catch (error) {
       console.error('Error creating post:', error)
+      toast.error(error instanceof Error ? error.message : 'No se pudo crear la publicación')
     }
   })
 

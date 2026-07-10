@@ -1,15 +1,22 @@
 'use client'
 
-export type BusinessTab = 'menu' | 'promociones' | 'fotos' | 'reseñas' | 'comunidad' | 'novedades' | 'detalles'
+export type BusinessTab =
+  | 'menu'
+  | 'promociones'
+  | 'fotos'
+  | 'reseñas'
+  | 'comunidad'
+  | 'novedades'
+  | 'detalles'
 
-const TABS: { id: BusinessTab; label: string }[] = [
-  { id: 'menu', label: 'Carta' },
-  { id: 'novedades', label: 'Novedades' },
-  { id: 'promociones', label: 'Ofertas' },
-  { id: 'fotos', label: 'Fotos' },
-  { id: 'reseñas', label: 'Reseñas' },
-  { id: 'comunidad', label: 'Comunidad' },
-  { id: 'detalles', label: 'Datos útiles' },
+const TABS: { id: BusinessTab; label: string; emoji: string }[] = [
+  { id: 'menu',       label: 'Carta',       emoji: '🍽️' },
+  { id: 'novedades',  label: 'Novedades',   emoji: '📣' },
+  { id: 'promociones',label: 'Ofertas',     emoji: '🏷️' },
+  { id: 'fotos',      label: 'Fotos',       emoji: '📸' },
+  { id: 'reseñas',    label: 'Reseñas',     emoji: '⭐' },
+  { id: 'comunidad',  label: 'Comunidad',   emoji: '👥' },
+  { id: 'detalles',   label: 'Datos útiles',emoji: 'ℹ️' },
 ]
 
 interface Props {
@@ -21,35 +28,67 @@ interface Props {
 export function BusinessTabNav({ active, onChange, counts }: Props) {
   return (
     <nav
-      className="sticky top-0 z-30 flex gap-1 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur-md sm:px-6 lg:px-8 hide-scrollbar"
+      className="sticky top-0 z-30 border-b border-neutral-200/80 bg-white/95 backdrop-blur-md"
       aria-label="Secciones del negocio"
     >
-      {TABS.map((tab) => {
-        const count = counts?.[tab.id]
-        const isActive = active === tab.id
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onChange(tab.id)}
-            aria-current={isActive ? 'page' : undefined}
-            className={[
-              'whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition duration-150',
-              isActive
-                ? 'bg-primary-700 text-white shadow-sm'
-                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
-            ].join(' ')}
-          >
-            {tab.label}
-            {count !== undefined && count > 0 && (
-              <span className={['ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold',
-                isActive ? 'bg-white/25' : 'bg-neutral-100 text-neutral-500'].join(' ')}>
-                {count}
-              </span>
-            )}
-          </button>
-        )
-      })}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div
+          className="no-scrollbar flex gap-0 overflow-x-auto"
+          role="tablist"
+        >
+          {TABS.map((tab) => {
+            const count = counts?.[tab.id]
+            const isActive = active === tab.id
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`tab-panel-${tab.id}`}
+                id={`tab-${tab.id}`}
+                onClick={() => onChange(tab.id)}
+                className={[
+                  'relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-4 py-3.5 text-sm font-medium transition-colors duration-150',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500',
+                  isActive
+                    ? 'text-primary-700'
+                    : 'text-neutral-500 hover:text-neutral-800',
+                ].join(' ')}
+              >
+                {/* Active indicator — bottom border pill */}
+                {isActive && (
+                  <span
+                    className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary-700"
+                    aria-hidden="true"
+                  />
+                )}
+
+                <span className="text-base leading-none" aria-hidden="true">
+                  {tab.emoji}
+                </span>
+
+                <span>{tab.label}</span>
+
+                {/* Count badge */}
+                {count !== undefined && count > 0 && (
+                  <span
+                    className={[
+                      'rounded-full px-1.5 py-px text-[10px] font-bold tabular-nums',
+                      isActive
+                        ? 'bg-primary-100 text-primary-700'
+                        : 'bg-neutral-100 text-neutral-500',
+                    ].join(' ')}
+                  >
+                    {count > 99 ? '99+' : count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </nav>
   )
 }

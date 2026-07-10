@@ -17,11 +17,26 @@ const POSTS_PREFIX = 'posts';
 
 type CachedRecord<T> = { data: T; fetchedAt: number };
 
-function timelineUpdater(updater: (prev: Post[] | undefined) => Post[]) {
-  updateCached<CachedRecord<Post[]>>(TIMELINE_KEY, (record) => ({
+/** Mirrors a list mutation into any posts-list cache entry (timeline, business wall, etc.). */
+function postListUpdater(key: string, updater: (prev: Post[] | undefined) => Post[]) {
+  updateCached<CachedRecord<Post[]>>(key, (record) => ({
     data: updater(record?.data),
     fetchedAt: Date.now(),
   }));
+}
+
+function timelineUpdater(updater: (prev: Post[] | undefined) => Post[]) {
+  postListUpdater(TIMELINE_KEY, updater);
+}
+
+export function businessPostsCacheKey(businessId: string): string {
+  return cacheKey('posts', 'business', businessId);
+}
+
+/** Mirrors a list mutation into one business's wall cache. Plain function (not a hook) so
+ *  it can be called from the Zustand mutations slice, which isn't a component. */
+export function businessPostsUpdater(businessId: string, updater: (prev: Post[] | undefined) => Post[]) {
+  postListUpdater(businessPostsCacheKey(businessId), updater);
 }
 
 export function usePost(postId: string, options?: { enabled?: boolean }) {
@@ -46,6 +61,20 @@ export function useSuggestedPosts(options?: { enabled?: boolean }) {
     ['posts', 'suggestions'],
     () => postService.getSuggestedPosts({ limit: 10 }),
     { enabled: options?.enabled ?? true, staleTime: 60_000 }
+  );
+}
+
+/**
+ * Posts wall for one business — same cache-store mechanism as `usePosts()`.
+ * `createPost` (mutations.slice.ts) mirrors new business posts into this same
+ * cache entry, so any component using this hook re-renders immediately,
+ * with no extra wiring on the caller's side.
+ */
+export function useBusinessPosts(businessId: string, options?: { enabled?: boolean }) {
+  return useFetch<Post[]>(
+    ['posts', 'business', businessId],
+    () => postService.getBusinessPosts(businessId, { limit: 20 }),
+    { enabled: (options?.enabled ?? true) && Boolean(businessId), staleTime: 15_000 }
   );
 }
 

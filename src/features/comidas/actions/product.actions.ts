@@ -1,10 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getServerClient, getServiceClient } from '@/utils/supabase/server'
+import { getServerClient } from '@/utils/supabase/server'
 import { z } from 'zod'
 import type { Product } from '../types'
 import { isUserBusinessAdmin } from '../server/business.server'
+import { revalidateBusinessAdmin } from '../lib/revalidate-admin'
 
 async function requireSession() {
   const client = await getServerClient()
@@ -43,22 +44,24 @@ export async function createProduct(formData: FormData) {
   const { data, error } = await client.rpc('comidas_create_product', { p_data: parsed.data })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]/menu', 'page')
+  revalidateBusinessAdmin(parsed.data.business_id, 'productos')
   return data as Product
 }
 
 export async function updateProduct(productId: string, formData: FormData) {
   const { client } = await requireSession()
 
-  // Lookup actual business_id server-side — the form sets it but we verify against the DB
-  const sc = getServiceClient()
-  const { data: prod } = await sc
-    .schema('comidas')
-    .from('products')
-    .select('business_id')
-    .eq('id', productId)
-    .maybeSingle()
-  if (!prod) throw new Error('Producto no encontrado')
-  await requireBusinessAdmin(prod.business_id as string)
+  // Lookup actual business_id server-side — the form sets it but we verify against
+  // the DB. comidas isn't exposed via PostgREST, so this goes through an RPC
+  // (whose SQL body can reference comidas.* directly) instead of a direct
+  // schema-scoped REST query, which fails with PGRST106.
+  const { data: ownerBusinessId, error: lookupError } = await client.rpc('get_product_business_id', {
+    p_product_id: productId,
+  })
+  if (lookupError) throw new Error(`Error al buscar el producto: ${lookupError.message} (code: ${lookupError.code})`)
+  if (!ownerBusinessId) throw new Error(`Producto no encontrado (id recibido: "${productId}")`)
+  const businessId = ownerBusinessId as string
+  await requireBusinessAdmin(businessId)
 
   const parsed = ProductSchema.partial().safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
@@ -69,24 +72,24 @@ export async function updateProduct(productId: string, formData: FormData) {
   })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]/menu', 'page')
+  revalidateBusinessAdmin(businessId, 'productos')
   return data as Product
 }
 
 export async function deactivateProduct(productId: string) {
   const { client } = await requireSession()
 
-  // Lookup actual business_id server-side
-  const sc = getServiceClient()
-  const { data: prod } = await sc
-    .schema('comidas')
-    .from('products')
-    .select('business_id')
-    .eq('id', productId)
-    .maybeSingle()
-  if (!prod) throw new Error('Producto no encontrado')
-  await requireBusinessAdmin(prod.business_id as string)
+  // Lookup actual business_id server-side — see comment in updateProduct above.
+  const { data: ownerBusinessId, error: lookupError } = await client.rpc('get_product_business_id', {
+    p_product_id: productId,
+  })
+  if (lookupError) throw new Error(`Error al buscar el producto: ${lookupError.message} (code: ${lookupError.code})`)
+  if (!ownerBusinessId) throw new Error(`Producto no encontrado (id recibido: "${productId}")`)
+  const businessId = ownerBusinessId as string
+  await requireBusinessAdmin(businessId)
 
   const { error } = await client.rpc('comidas_deactivate_product', { p_id: productId })
   if (error) throw new Error(error.message)
   revalidatePath('/negocios/[slug]/menu', 'page')
+  revalidateBusinessAdmin(businessId, 'productos')
 }

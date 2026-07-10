@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
-import { MapPin, Star, MessageCircle, Flame } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { MapPin, Star, MessageCircle, Heart } from 'lucide-react'
 import type { Business } from '../../types'
 import { toggleFollow } from '../../actions/engagement.actions'
 import { cfImageUrl } from '@/lib/cloudflare'
@@ -12,13 +12,31 @@ function sanitizeWhatsApp(value: string) {
   return value.replace(/[^\d]/g, '')
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  RESTAURANT: '🍽️',
-  CAFE: '☕',
-  BAKERY: '🥐',
-  ICE_CREAM: '🍦',
-  BAR: '🍸',
-  PIZZA: '🍕',
+/** Human-readable category labels — never show raw enum to users. */
+const CATEGORY_LABELS: Record<string, string> = {
+  RESTAURANT:  'Restaurante',
+  CAFE:        'Café',
+  BAKERY:      'Panadería',
+  ICE_CREAM:   'Heladería',
+  BAR:         'Bar',
+  PIZZA:       'Pizzería',
+  FAST_FOOD:   'Comida rápida',
+  SEAFOOD:     'Mariscos',
+  SUSHI:       'Sushi',
+  VEGAN:       'Vegano',
+}
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  RESTAURANT:  '🍽️',
+  CAFE:        '☕',
+  BAKERY:      '🥐',
+  ICE_CREAM:   '🍦',
+  BAR:         '🍸',
+  PIZZA:       '🍕',
+  FAST_FOOD:   '🍔',
+  SEAFOOD:     '🦞',
+  SUSHI:       '🍱',
+  VEGAN:       '🥗',
 }
 
 interface Props {
@@ -32,14 +50,20 @@ export function BusinessCard({ business, isFollowed = false, isAuthenticated = f
   const [isPending, setIsPending] = useState(false)
 
   const imgUrl = cfImageUrl(business.profile_cf_image_id)
-  const icon = CATEGORY_ICONS[business.category] ?? '🍽️'
+  const emoji = CATEGORY_EMOJI[business.category] ?? '🍽️'
+  const categoryLabel = CATEGORY_LABELS[business.category] ?? business.category
   const rating = Number(business.avg_rating ?? 0)
   const reviews = business.review_count ?? 0
   const hasRating = reviews > 0
 
-  async function handleFollow(e: React.MouseEvent) {
+  const whatsappUrl = business.whatsapp
+    ? `https://wa.me/${sanitizeWhatsApp(business.whatsapp)}?text=${encodeURIComponent(`Hola, vi tu negocio en Yebaam. ¿Puedo hacer un pedido?`)}`
+    : null
+
+  const handleFollow = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault()
-    if (isPending) return
+    e.stopPropagation()
+    if (isPending || !isAuthenticated) return
     setIsPending(true)
     setFollowing((prev) => !prev)
     try {
@@ -50,148 +74,165 @@ export function BusinessCard({ business, isFollowed = false, isAuthenticated = f
     } finally {
       setIsPending(false)
     }
-  }
-
-  const whatsappUrl = business.whatsapp
-    ? `https://wa.me/${sanitizeWhatsApp(business.whatsapp)}?text=${encodeURIComponent(`Hola, quiero pedir en ${business.name}.`)}`
-    : null
+  }, [business.id, isAuthenticated, isPending])
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg">
+    <article className="group relative overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] ring-1 ring-neutral-950/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+
+      {/* Entire card is the link for maximum clickability */}
+      <Link href={`/negocios/${business.slug}` as never} className="absolute inset-0 z-10" aria-label={`Ver ${business.name}`} />
+
       {/* Cover image */}
-      <div className="relative h-56 bg-primary-50 overflow-hidden">
+      <div className="relative h-48 overflow-hidden bg-linear-to-br from-primary-50 to-primary-100 sm:h-52">
         {imgUrl ? (
           <Image
             src={imgUrl}
             alt={business.name}
             fill
-            className="object-cover transition duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
-            <span className="text-5xl" aria-hidden="true">{icon}</span>
+          <div className="flex h-full w-full items-center justify-center">
+            <span className="text-5xl opacity-60" aria-hidden="true">{emoji}</span>
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/70 via-transparent to-transparent" />
+        {/* Gradient scrim */}
+        <div className="absolute inset-0 bg-linear-to-t from-neutral-950/60 via-neutral-950/10 to-transparent" />
 
-        {/* Badges top-left */}
-        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-700 backdrop-blur-sm">
-            {business.category}
+        {/* Category badge — top left */}
+        <div className="absolute left-3 top-3 flex items-center gap-1.5">
+          <span className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-neutral-700 backdrop-blur-sm shadow-sm">
+            <span aria-hidden="true">{emoji}</span>
+            {categoryLabel}
           </span>
           {business.is_verified && (
-            <span className="rounded-full bg-primary-700 px-3 py-1 text-xs font-semibold text-white">
-              ✓ Verificado
+            <span className="flex items-center gap-1 rounded-full bg-primary-700 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+              ✓
             </span>
           )}
         </div>
 
+        {/* Follow heart — top right, z above the card link */}
+        {isAuthenticated && (
+          <button
+            type="button"
+            onClick={handleFollow}
+            disabled={isPending}
+            aria-label={following ? `Dejar de seguir ${business.name}` : `Seguir ${business.name}`}
+            aria-pressed={following}
+            className={[
+              'absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-150',
+              'shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white',
+              following
+                ? 'bg-primary-700 text-white hover:bg-primary-800'
+                : 'bg-white/90 text-neutral-400 hover:text-red-500',
+              isPending && 'opacity-60',
+            ].join(' ')}
+          >
+            <Heart
+              size={15}
+              aria-hidden="true"
+              className={following ? 'fill-current' : ''}
+            />
+          </button>
+        )}
 
-        {/* Name + city over gradient */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <h2 className="truncate text-xl font-semibold text-white">{business.name}</h2>
-              {business.city && (
-                <p className="mt-1 flex items-center gap-1 text-sm text-white/80">
-                  <MapPin size={13} aria-hidden="true" />
-                  <span className="truncate">{business.city}</span>
-                </p>
-              )}
-            </div>
-            {hasRating && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-700 backdrop-blur-sm shrink-0">
-                <Star size={11} className="text-secondary-700" aria-hidden="true" />
-                {rating.toFixed(1)}
-              </span>
-            )}
+        {/* Rating — bottom right */}
+        {hasRating && (
+          <div className="absolute bottom-3 right-3">
+            <span className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-neutral-800 backdrop-blur-sm shadow-sm">
+              <Star size={11} className="fill-amber-400 text-amber-400" aria-hidden="true" />
+              {rating.toFixed(1)}
+            </span>
           </div>
+        )}
+
+        {/* Name + city — bottom left */}
+        <div className="absolute bottom-3 left-3 right-14 min-w-0">
+          <h2 className="truncate text-lg font-bold leading-tight text-white drop-shadow-sm">
+            {business.name}
+          </h2>
+          {business.city && (
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-white/80">
+              <MapPin size={11} aria-hidden="true" />
+              <span className="truncate">{business.city}</span>
+            </p>
+          )}
         </div>
       </div>
 
       {/* Body */}
-      <div className="space-y-4 p-5">
+      <div className="p-4">
         {business.description ? (
-          <p className="line-clamp-2 text-sm leading-6 text-neutral-600">{business.description}</p>
+          <p className="line-clamp-2 text-sm leading-6 text-neutral-500">
+            {business.description}
+          </p>
         ) : (
-          <p className="text-sm text-neutral-400 italic">Este negocio está preparando su presentación.</p>
+          <p className="text-sm italic text-neutral-400">
+            Explorá su carta y novedades.
+          </p>
         )}
 
-        <div className="flex flex-wrap gap-2 text-xs text-neutral-500">
-          <span className="rounded-full bg-neutral-100 px-3 py-1">
-            {hasRating ? `${reviews} reseña${reviews !== 1 ? 's' : ''}` : 'Sin reseñas aún'}
-          </span>
+        {/* Meta tags row */}
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
+          {hasRating && (
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-700">
+              {reviews} reseña{reviews !== 1 ? 's' : ''}
+            </span>
+          )}
           {business.address && (
-            <span className="rounded-full bg-neutral-100 px-3 py-1">Dirección disponible</span>
+            <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-neutral-500">
+              Con dirección
+            </span>
+          )}
+          {business.instagram && (
+            <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-neutral-500">
+              Instagram
+            </span>
           )}
         </div>
 
-        {/* CTAs */}
-        <div className="flex flex-col gap-2">
-          {isAuthenticated && (
-            <button
-              onClick={handleFollow}
-              disabled={isPending}
-              aria-label={following ? `Dejar de seguir ${business.name}` : `Seguir ${business.name}`}
-              className={[
-                'w-full inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition disabled:cursor-wait disabled:opacity-70',
-                following
-                  ? 'border border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100'
-                  : 'bg-primary-700 text-white hover:bg-primary-800',
-              ].join(' ')}
+        {/* Footer action row */}
+        <div className="mt-4 flex items-center gap-2">
+          {/* "Ver menú" — primary CTA that's visually distinct */}
+          <span className="relative z-20 inline-flex flex-1 items-center justify-center rounded-xl bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800">
+            Ver menú
+          </span>
+
+          {/* WhatsApp — only rendered when available */}
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Contactar ${business.name} por WhatsApp`}
+              className="relative z-20 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 text-neutral-600 transition hover:border-green-300 hover:bg-green-50 hover:text-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
             >
-              {following ? '✓ Siguiendo' : '+ Seguir este negocio'}
-            </button>
+              <MessageCircle size={16} aria-hidden="true" />
+            </a>
           )}
-
-          <div className="grid grid-cols-2 gap-2">
-            <Link
-              href={`/negocios/${business.slug}` as never}
-              className="inline-flex items-center justify-center rounded-2xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
-            >
-              Ver perfil
-            </Link>
-
-            {whatsappUrl ? (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
-              >
-                <MessageCircle size={14} aria-hidden="true" />
-                WhatsApp
-              </a>
-            ) : (
-              <span className="inline-flex items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm font-semibold text-neutral-400">
-                Sin WhatsApp
-              </span>
-            )}
-          </div>
         </div>
       </div>
     </article>
   )
 }
 
-/** Skeleton usado mientras carga el filtro client-side */
 export function BusinessCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div className="h-56 animate-pulse bg-neutral-200" />
-      <div className="space-y-3 p-5">
-        <div className="h-5 w-2/3 animate-pulse rounded bg-neutral-200" />
-        <div className="h-4 w-1/3 animate-pulse rounded bg-neutral-200" />
-        <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="h-11 animate-pulse rounded-2xl bg-neutral-200" />
-          <div className="h-11 animate-pulse rounded-2xl bg-neutral-200" />
+    <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-neutral-950/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+      <div className="h-48 animate-pulse bg-neutral-100 sm:h-52" />
+      <div className="space-y-3 p-4">
+        <div className="h-4 w-3/4 animate-pulse rounded-lg bg-neutral-100" />
+        <div className="h-4 w-full animate-pulse rounded-lg bg-neutral-100" />
+        <div className="h-4 w-1/2 animate-pulse rounded-lg bg-neutral-100" />
+        <div className="mt-4 flex gap-2">
+          <div className="h-10 flex-1 animate-pulse rounded-xl bg-neutral-100" />
+          <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-100" />
         </div>
       </div>
     </div>
   )
 }
-
-export { Flame }

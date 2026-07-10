@@ -9,6 +9,7 @@ import {
 import { AdminBusinessNav } from '@/features/comidas/components/admin/AdminBusinessNav'
 import { BusinessSwitcher } from '@/features/comidas/components/admin/BusinessSwitcher'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { CreatePostModal } from '@/features/post'
 
 interface Props {
   children: React.ReactNode
@@ -68,6 +69,13 @@ export default async function AdminBusinessLayout({ children, params }: Props) {
 
       {/* Page content */}
       {children}
+
+      {/* CreateBusinessPostButton / BusinessSocialFeed's empty-state CTA both call
+          usePostStore().openCreateModal() — but that only flips shared Zustand
+          state. Without this mounted somewhere in the admin tree, nothing was
+          ever rendering in response: clicking "Nueva publicación" did nothing
+          visible, with zero console output, because there was no modal to open. */}
+      <CreatePostModal />
     </div>
   )
 }
