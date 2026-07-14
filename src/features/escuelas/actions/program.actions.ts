@@ -4,16 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { getServerClient } from '@/utils/supabase/server'
 import { z } from 'zod'
 import type { Program } from '../types'
-
-async function requireSession() {
-  const client = await getServerClient()
-  const { data } = await client.auth.getUser()
-  if (!data.user) throw new Error('No autenticado')
-  return { client }
-}
+import { assertSchoolAdmin } from '../server/school.server'
 
 const ProgramSchema = z.object({
-  school_id:              z.string().min(1),
+  school_id:              z.string().uuid(),
   discipline_id:          z.string().min(1),
   campus_id:              z.string().min(1).optional(),
   instructor_id:          z.string().min(1).optional(),
@@ -37,34 +31,37 @@ const ProgramSchema = z.object({
 })
 
 export async function createProgram(formData: FormData) {
-  const { client } = await requireSession()
   const parsed = ProgramSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
-
+  await assertSchoolAdmin(parsed.data.school_id)
+  const client = await getServerClient()
   const { data, error } = await client.rpc('escuelas_create_program', { p_data: parsed.data })
   if (error) throw new Error(error.message)
-  revalidatePath('/programas')
+  revalidatePath(`/escuelas/admin/${parsed.data.school_id}/programas`)
   revalidatePath('/escuelas/[slug]', 'page')
   return data as Program
 }
 
-export async function updateProgram(programId: string, formData: FormData) {
-  const { client } = await requireSession()
-  const parsed = ProgramSchema.partial().safeParse(Object.fromEntries(formData))
+export async function updateProgram(schoolId: string, programId: string, formData: FormData) {
+  await assertSchoolAdmin(schoolId)
+  const parsed = ProgramSchema.partial().omit({ school_id: true }).safeParse(Object.fromEntries(formData))
   if (!parsed.success) throw new Error('Datos inválidos: ' + parsed.error.message)
-
+  const client = await getServerClient()
   const { data, error } = await client.rpc('escuelas_update_program', {
     p_id:   programId,
     p_data: parsed.data,
   })
   if (error) throw new Error(error.message)
-  revalidatePath('/programas')
+  revalidatePath(`/escuelas/admin/${schoolId}/programas`)
+  revalidatePath('/escuelas/[slug]', 'page')
   return data as Program
 }
 
-export async function deactivateProgram(programId: string) {
-  const { client } = await requireSession()
+export async function deactivateProgram(programId: string, schoolId: string) {
+  await assertSchoolAdmin(schoolId)
+  const client = await getServerClient()
   const { error } = await client.rpc('escuelas_deactivate_program', { p_id: programId })
   if (error) throw new Error(error.message)
-  revalidatePath('/programas')
+  revalidatePath(`/escuelas/admin/${schoolId}/programas`)
+  revalidatePath('/escuelas/[slug]', 'page')
 }

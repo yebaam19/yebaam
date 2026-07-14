@@ -1,13 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Monitor, GraduationCap, Star, CheckCircle, ArrowLeft } from 'lucide-react'
+import { MapPin, Monitor, GraduationCap, Star, CheckCircle, ArrowLeft, Settings } from 'lucide-react'
+import { cfImageUrl } from '@/lib/cloudflare'
 import type { SchoolDetail } from '../../../types'
-
-const CF_HASH = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? ''
-export function cfImageUrl(id: string | null): string | null {
-  if (!id) return null
-  return `https://imagedelivery.net/${CF_HASH}/${id}/public`
-}
 
 const MODALITY_MAP: Record<string, string> = {
   PRESENTIAL: 'Presencial', VIRTUAL: 'Virtual', HYBRID: 'Híbrido',
@@ -15,15 +10,17 @@ const MODALITY_MAP: Record<string, string> = {
 
 interface Props {
   school: SchoolDetail
+  isAdmin?: boolean
   onLeadForm: () => void
   onTrialForm: () => void
 }
 
-export function SchoolHero({ school, onLeadForm, onTrialForm }: Props) {
-  const coverUrl = cfImageUrl(school.cover_cf_image_id)
-  const profileUrl = cfImageUrl(school.profile_cf_image_id)
+export function SchoolHero({ school, isAdmin = false, onLeadForm, onTrialForm }: Props) {
+  const coverUrl = cfImageUrl(school.cover_cf_image_id, 'public')
+  const profileUrl = cfImageUrl(school.profile_cf_image_id, 'public')
   const programs = school.programs ?? []
   const reviews = school.reviews ?? []
+  const hasTrialPrograms = programs.some((p) => p.trial_class_available && p.is_active !== false)
   const avgRating = reviews.length
     ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
     : null
@@ -103,15 +100,27 @@ export function SchoolHero({ school, onLeadForm, onTrialForm }: Props) {
 
           {/* CTAs */}
           <div className="flex flex-wrap gap-2 lg:justify-end">
-            <button onClick={onLeadForm}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800">
-              {school.primary_cta_label || 'Más información'}
-            </button>
-            {school.trial_class_message && (
-              <button onClick={onTrialForm}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-primary-200 bg-white px-5 text-sm font-bold text-neutral-950 transition hover:border-primary-700 hover:text-primary-700">
-                {school.secondary_cta_label || 'Clase de prueba'}
-              </button>
+            {isAdmin ? (
+              <Link
+                href={`/escuelas/admin/${school.id}` as never}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-5 text-sm font-bold text-white transition hover:bg-neutral-700"
+              >
+                <Settings size={15} aria-hidden="true" />
+                Administrar escuela
+              </Link>
+            ) : (
+              <>
+                <button onClick={onLeadForm}
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800">
+                  {school.primary_cta_label || 'Más información'}
+                </button>
+                {hasTrialPrograms && (
+                  <button onClick={onTrialForm}
+                    className="inline-flex h-10 items-center justify-center rounded-xl border border-primary-200 bg-white px-5 text-sm font-bold text-neutral-950 transition hover:border-primary-700 hover:text-primary-700">
+                    {school.secondary_cta_label || 'Clase de prueba'}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

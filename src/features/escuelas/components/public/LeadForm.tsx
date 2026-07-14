@@ -29,26 +29,26 @@ export function LeadForm({ schoolId, programId }: Props) {
   }
 
   return (
-    <div className="border border-border rounded-xl p-5">
+    <div className="border border-neutral-200 rounded-xl p-5">
       <h2 className="font-semibold mb-4">Solicitar información</h2>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className="block text-sm font-medium mb-1">Nombre *</label>
-          <input name="name" required className="w-full border border-border rounded-lg px-3 py-2 text-sm" />
+          <input name="name" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">Email *</label>
-            <input name="email" type="email" required className="w-full border border-border rounded-lg px-3 py-2 text-sm" />
+            <input name="email" type="email" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Teléfono *</label>
-            <input name="phone" required className="w-full border border-border rounded-lg px-3 py-2 text-sm" />
+            <input name="phone" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Medio de contacto preferido *</label>
-          <select name="preferred_contact_method" required className="w-full border border-border rounded-lg px-3 py-2 text-sm">
+          <select name="preferred_contact_method" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm">
             <option value="WHATSAPP">WhatsApp</option>
             <option value="PHONE">Llamada</option>
             <option value="EMAIL">Email</option>
@@ -56,9 +56,9 @@ export function LeadForm({ schoolId, programId }: Props) {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Mensaje</label>
-          <textarea name="message" rows={3} className="w-full border border-border rounded-lg px-3 py-2 text-sm" />
+          <textarea name="message" rows={3} className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm" />
         </div>
-        <button type="submit" disabled={isPending} className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60">
+        <button type="submit" disabled={isPending} className="w-full py-2 rounded-lg bg-primary text-white text-sm font-medium disabled:opacity-60">
           {isPending ? 'Enviando…' : 'Solicitar información'}
         </button>
       </form>

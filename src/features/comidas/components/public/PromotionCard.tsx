@@ -2,14 +2,12 @@ import Image from 'next/image'
 import type { Promotion } from '../../types'
 import { cfImageUrl } from '@/lib/cloudflare'
 
-/** Promotion color themes — gradient per "mood" so cards without a photo
- *  don't fall back to a blank grey box. */
 const PROMO_THEMES = [
-  { gradient: 'from-amber-500 via-orange-500 to-red-500',    emoji: '🔥' },
-  { gradient: 'from-emerald-500 via-teal-500 to-cyan-500',   emoji: '✨' },
+  { gradient: 'from-amber-500 via-orange-500 to-red-500',     emoji: '🔥' },
+  { gradient: 'from-emerald-500 via-teal-500 to-cyan-500',    emoji: '✨' },
   { gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',emoji: '💜' },
-  { gradient: 'from-rose-500 via-pink-500 to-orange-400',    emoji: '🎉' },
-  { gradient: 'from-blue-500 via-indigo-500 to-violet-500',  emoji: '🌟' },
+  { gradient: 'from-rose-500 via-pink-500 to-orange-400',     emoji: '🎉' },
+  { gradient: 'from-blue-500 via-indigo-500 to-violet-500',   emoji: '🌟' },
 ]
 
 function pickTheme(id: string) {
@@ -29,9 +27,7 @@ function formatExpiry(isoDate: string) {
   return `Hasta el ${d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}`
 }
 
-interface Props {
-  promotion: Promotion
-}
+interface Props { promotion: Promotion }
 
 export function PromotionCard({ promotion }: Props) {
   const imgUrl = cfImageUrl(promotion.cf_image_id)
@@ -40,25 +36,11 @@ export function PromotionCard({ promotion }: Props) {
   const isExpired = expiry === 'Venció'
 
   return (
-    <article
-      className={[
-        'group relative overflow-hidden rounded-2xl',
-        'shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-neutral-950/5',
-        'transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.14)]',
-        isExpired ? 'opacity-60 grayscale' : '',
-      ].join(' ')}
-    >
-      {/* Image or gradient background */}
+    <article className={['group relative overflow-hidden rounded-2xl', 'shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-neutral-950/5', 'transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.14)]', isExpired ? 'opacity-60 grayscale' : ''].join(' ')}>
       <div className="relative overflow-hidden">
         {imgUrl ? (
           <div className="relative aspect-video">
-            <Image
-              src={imgUrl}
-              alt={promotion.title}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, 400px"
-            />
+            <Image src={imgUrl} alt={promotion.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 400px" />
             <div className="absolute inset-0 bg-linear-to-t from-neutral-950/70 via-transparent to-transparent" />
           </div>
         ) : (
@@ -67,44 +49,21 @@ export function PromotionCard({ promotion }: Props) {
             <div className="absolute inset-0 bg-linear-to-t from-neutral-950/40 via-transparent to-transparent" />
           </div>
         )}
-
-        {/* Expiry badge */}
         {expiry && (
           <div className="absolute left-3 top-3">
-            <span className={[
-              'rounded-full px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur-sm',
-              isExpired
-                ? 'bg-neutral-900/80 text-neutral-300'
-                : 'bg-white/95 text-amber-700',
-            ].join(' ')}>
+            <span className={['rounded-full px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur-sm', isExpired ? 'bg-neutral-900/80 text-neutral-300' : 'bg-white/95 text-amber-700'].join(' ')}>
               {expiry}
             </span>
           </div>
         )}
       </div>
-
-      {/* Content */}
       <div className="bg-white p-4">
-        <h3 className="text-base font-bold leading-snug text-neutral-950 line-clamp-1">
-          {promotion.title}
-        </h3>
-
+        <h3 className="text-base font-bold leading-snug text-neutral-950 line-clamp-1">{promotion.title}</h3>
         {promotion.description && (
-          <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-neutral-500">
-            {promotion.description}
-          </p>
+          <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-neutral-500">{promotion.description}</p>
         )}
-
         {promotion.cta_label && promotion.cta_url && !isExpired && (
-          <a
-            href={promotion.cta_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={[
-              'mt-4 inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all',
-              `bg-linear-to-r ${theme.gradient} hover:opacity-90 hover:shadow-md`,
-            ].join(' ')}
-          >
+          <a href={promotion.cta_url} target="_blank" rel="noopener noreferrer" className={['mt-4 inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all', `bg-linear-to-r ${theme.gradient} hover:opacity-90 hover:shadow-md`].join(' ')}>
             {promotion.cta_label}
             <span aria-hidden="true">→</span>
           </a>

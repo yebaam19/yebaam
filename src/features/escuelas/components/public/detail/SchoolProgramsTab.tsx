@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { GraduationCap, Clock, Star } from 'lucide-react'
-import { cfImageUrl } from './SchoolHero'
+import { cfImageUrl } from '@/lib/cloudflare'
 import type { Program } from '../../../types'
 
 const MODALITY_MAP: Record<string, string> = {
@@ -15,9 +15,9 @@ function formatPrice(p: Program) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: p.currency, maximumFractionDigits: 0 }).format(p.monthly_price)
 }
 
-interface Props { programs: Program[]; schoolId: string }
+interface Props { programs: Program[] }
 
-export function SchoolProgramsTab({ programs, schoolId }: Props) {
+export function SchoolProgramsTab({ programs }: Props) {
   const active = programs.filter((p) => p.is_active !== false)
   if (active.length === 0) {
     return (

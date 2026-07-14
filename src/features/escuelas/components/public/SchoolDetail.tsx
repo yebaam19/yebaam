@@ -15,9 +15,9 @@ import { LeadFormModal, TrialClassFormModal } from './detail/SchoolForms'
 
 type FormKind = 'lead' | 'trial' | null
 
-interface Props { school: TSchoolDetail }
+interface Props { school: TSchoolDetail; isAdmin?: boolean }
 
-export function SchoolDetail({ school }: Props) {
+export function SchoolDetail({ school, isAdmin = false }: Props) {
   const [activeTab, setActiveTab] = useState<SchoolTab>('programas')
   const [activeForm, setActiveForm] = useState<FormKind>(null)
   const currentUser = useOptionalCurrentUser()
@@ -43,6 +43,7 @@ export function SchoolDetail({ school }: Props) {
         {/* Hero */}
         <SchoolHero
           school={school}
+          isAdmin={isAdmin}
           onLeadForm={() => setActiveForm('lead')}
           onTrialForm={() => setActiveForm('trial')}
         />
@@ -70,7 +71,7 @@ export function SchoolDetail({ school }: Props) {
         {/* Tab content */}
         <div className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:px-8">
           {activeTab === 'programas' && (
-            <SchoolProgramsTab programs={school.programs ?? []} schoolId={school.id} />
+            <SchoolProgramsTab programs={school.programs ?? []} />
           )}
           {activeTab === 'instructores' && (
             <SchoolInstructorsTab instructors={school.instructors ?? []} />
