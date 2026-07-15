@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import type { Route } from 'next';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -10,16 +8,15 @@ import {
   type MusicAlbumFormat,
   type MusicAlbumRow,
   type MusicArtistRow,
-  type MusicLabelRow,
 } from '../../../types/music.types';
 import { COUNTRIES, FORMATS, inputCls, sortCountryCodesByLabel } from '../../upload/constants';
+import { LabelAutocomplete } from '../../upload/LabelAutocomplete';
 import { CoverField } from './CoverField';
 import type { AlbumFieldsSetters, AlbumFieldsValues } from './useAlbumFields';
 
 interface Props {
   album: MusicAlbumRow;
   artist: MusicArtistRow | null;
-  label: MusicLabelRow | null;
   fields: AlbumFieldsValues;
   setters: AlbumFieldsSetters;
   saving: boolean;
@@ -36,7 +33,7 @@ const DECADES: number[] = (() => {
  *  scalar plus the three cover slots. The parent owns state (via
  *  `useAlbumEditor`) so a single Save button submits everything in one
  *  updateAlbum call. */
-export function AlbumFieldsForm({ album, artist, label, fields, setters, saving, onSave }: Props) {
+export function AlbumFieldsForm({ album, artist, fields, setters, saving, onSave }: Props) {
   const t = useTranslations('musica');
   const sortedCountries = useMemo(
     () => sortCountryCodesByLabel(COUNTRIES, (code) => t(`countries.${code}` as const)),
@@ -142,18 +139,7 @@ export function AlbumFieldsForm({ album, artist, label, fields, setters, saving,
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.labelField')}</label>
-          {label ? (
-            <Link
-              href={`/musica/sellos/${label.slug}` as Route}
-              className="block rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-amber-700 hover:underline dark:border-zinc-800 dark:bg-zinc-900 dark:text-amber-400"
-            >
-              {label.name}
-            </Link>
-          ) : (
-            <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-              {t('upload.fieldEmpty')}
-            </p>
-          )}
+          <LabelAutocomplete value={fields.label} onChange={setters.setLabel} />
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium">{t('admin.albumEditor.catalogNumberField')}</label>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { uploadService } from '@/lib/service/upload.service';
 import { getAlbumForAdminEdit, updateAlbum } from '../../../actions/albums.actions';
+import { findOrCreateLabelAction } from '../../../actions/labels.actions';
 import {
   createTrack,
   deleteTrack,
@@ -14,7 +15,6 @@ import type {
   MusicAlbumRow,
   MusicArtistRow,
   MusicCopyrightStatus,
-  MusicLabelRow,
   MusicSourceMedia,
   MusicTrackRow,
   MusicTrackSide,
@@ -40,7 +40,6 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
   const [error, setError] = useState<string | null>(null);
   const [album, setAlbum] = useState<MusicAlbumRow | null>(null);
   const [artist, setArtist] = useState<MusicArtistRow | null>(null);
-  const [label, setLabel] = useState<MusicLabelRow | null>(null);
   const [tracks, setTracks] = useState<MusicTrackRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [deletingTrack, setDeletingTrack] = useState<MusicTrackRow | null>(null);
@@ -58,9 +57,8 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
       }
       setAlbum(res.data.album);
       setArtist(res.data.artist);
-      setLabel(res.data.label);
       setTracks(res.data.tracks);
-      hydrate(res.data.album);
+      hydrate(res.data.album, res.data.label);
     });
     return () => {
       cancelled = true;
@@ -83,6 +81,17 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
         condition: fields.condition === '' ? null : fields.condition,
         forTrade: fields.forTrade,
       };
+      let labelId: string | null = fields.label.existingId;
+      const labelName = fields.label.name.trim();
+      if (!labelId && labelName) {
+        const lr = await findOrCreateLabelAction({ name: labelName });
+        if (!lr.ok) {
+          setError(lr.error);
+          return;
+        }
+        labelId = lr.data.id;
+      }
+      updates.labelId = labelId;
       if (fields.coverFront) {
         const r = await uploadService.uploadImage(fields.coverFront);
         updates.coverCfImageId = r.id;
@@ -101,6 +110,7 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
         return;
       }
       setAlbum(res.data);
+      setters.setLabel({ existingId: labelId, name: labelId ? labelName : '' });
       resetCovers();
       onSaved?.(res.data);
     } finally {
@@ -179,7 +189,6 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
     error,
     album,
     artist,
-    label,
     tracks,
     saving,
     deletingTrack,

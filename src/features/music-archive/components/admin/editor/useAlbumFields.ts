@@ -5,10 +5,12 @@ import type {
   AlbumCondition,
   MusicAlbumFormat,
   MusicAlbumRow,
+  MusicLabelRow,
 } from '../../../types/music.types';
+import type { LabelSelection } from '../../upload/LabelAutocomplete';
 
-/** The 13 album-level editable field values, bundled so the form takes one
- *  prop instead of 13. Produced by {@link useAlbumFields}, consumed by `AlbumFieldsForm`. */
+/** The album-level editable field values, bundled so the form takes one
+ *  prop instead of one per field. Produced by {@link useAlbumFields}, consumed by `AlbumFieldsForm`. */
 export interface AlbumFieldsValues {
   title: string;
   year: string;
@@ -20,6 +22,7 @@ export interface AlbumFieldsValues {
   notes: string;
   condition: AlbumCondition | '';
   forTrade: boolean;
+  label: LabelSelection;
   coverFront: File | null;
   coverBack: File | null;
   labelImage: File | null;
@@ -37,6 +40,7 @@ export interface AlbumFieldsSetters {
   setNotes: (v: string) => void;
   setCondition: (v: AlbumCondition | '') => void;
   setForTrade: (v: boolean) => void;
+  setLabel: (v: LabelSelection) => void;
   setCoverFront: (f: File | null) => void;
   setCoverBack: (f: File | null) => void;
   setLabelImage: (f: File | null) => void;
@@ -45,14 +49,14 @@ export interface AlbumFieldsSetters {
 export interface UseAlbumFields {
   fields: AlbumFieldsValues;
   setters: AlbumFieldsSetters;
-  /** Populate every field from a freshly loaded album row. */
-  hydrate: (album: MusicAlbumRow) => void;
+  /** Populate every field from a freshly loaded album row (+ its label row, if any). */
+  hydrate: (album: MusicAlbumRow, label: MusicLabelRow | null) => void;
   /** Clear the three pending cover `File` selections after a successful save. */
   resetCovers: () => void;
 }
 
 /**
- * Owns the album-editor's 13 editable field states and exposes them as the
+ * Owns the album-editor's editable field states and exposes them as the
  * `fields`/`setters` bundles `AlbumFieldsForm` consumes. `useAlbumEditor`
  * composes this and layers the load/save/track-operation logic on top.
  */
@@ -67,11 +71,12 @@ export function useAlbumFields(): UseAlbumFields {
   const [notes, setNotes] = useState('');
   const [condition, setCondition] = useState<AlbumCondition | ''>('');
   const [forTrade, setForTrade] = useState(false);
+  const [label, setLabel] = useState<LabelSelection>({ existingId: null, name: '' });
   const [coverFront, setCoverFront] = useState<File | null>(null);
   const [coverBack, setCoverBack] = useState<File | null>(null);
   const [labelImage, setLabelImage] = useState<File | null>(null);
 
-  const hydrate = useCallback((album: MusicAlbumRow) => {
+  const hydrate = useCallback((album: MusicAlbumRow, labelRow: MusicLabelRow | null) => {
     setTitle(album.title);
     setYear(album.year?.toString() ?? '');
     setDecade(album.decade?.toString() ?? '');
@@ -82,6 +87,7 @@ export function useAlbumFields(): UseAlbumFields {
     setNotes(album.notes ?? '');
     setCondition(album.condition ?? '');
     setForTrade(Boolean(album.for_trade));
+    setLabel({ existingId: labelRow?.id ?? null, name: labelRow?.name ?? '' });
   }, []);
 
   const resetCovers = useCallback(() => {
@@ -101,6 +107,7 @@ export function useAlbumFields(): UseAlbumFields {
     notes,
     condition,
     forTrade,
+    label,
     coverFront,
     coverBack,
     labelImage,
@@ -117,6 +124,7 @@ export function useAlbumFields(): UseAlbumFields {
     setNotes,
     setCondition,
     setForTrade,
+    setLabel,
     setCoverFront,
     setCoverBack,
     setLabelImage,

@@ -26,7 +26,6 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
     error,
     album,
     artist,
-    label,
     tracks,
     saving,
     deletingTrack,
@@ -67,7 +66,6 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
             <AlbumFieldsForm
               album={album}
               artist={artist}
-              label={label}
               fields={fields}
               setters={setters}
               saving={saving}
