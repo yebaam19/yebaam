@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react'
-import { cfImageUrl } from './SchoolHero'
+import { cfImageUrl } from '@/lib/cloudflare'
 import type { MediaAsset } from '../../../types'
 
 interface Props { assets: MediaAsset[] }

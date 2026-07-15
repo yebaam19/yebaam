@@ -41,10 +41,10 @@ export function CampaignCard({ campaign: c }: { campaign: SchoolCampaign }) {
       {imageUrl ? (
         <div className="relative h-40 overflow-hidden bg-[#eaf3ea]">
           <Image src={imageUrl} alt={c.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
         </div>
       ) : (
-        <div className="flex h-24 items-center justify-center bg-gradient-to-br from-[#e8f5ec] to-[#d4edda]">
+        <div className="flex h-24 items-center justify-center bg-linear-to-br from-[#e8f5ec] to-[#d4edda]">
           <span className="text-4xl" aria-hidden="true">{config.icon}</span>
         </div>
       )}

@@ -29,28 +29,28 @@ export function TrialClassForm({ schoolId, programId }: Props) {
   }
 
   return (
-    <div className="border border-border rounded-xl p-5 bg-muted/30">
+    <div className="border border-neutral-200 rounded-xl p-5 bg-neutral-50">
       <h2 className="font-semibold mb-4">Solicitar clase de prueba gratuita</h2>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className="block text-sm font-medium mb-1">Nombre *</label>
-          <input name="name" required className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background" />
+          <input name="name" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-background" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">Email *</label>
-            <input name="email" type="email" required className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background" />
+            <input name="email" type="email" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-background" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Teléfono *</label>
-            <input name="phone" required className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background" />
+            <input name="phone" required className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-background" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Fecha preferida *</label>
-          <input name="preferred_date" type="date" required min={new Date().toISOString().split('T')[0]} className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background" />
+          <input name="preferred_date" type="date" required min={new Date().toISOString().split('T')[0]} className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-background" />
         </div>
-        <button type="submit" disabled={isPending} className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60">
+        <button type="submit" disabled={isPending} className="w-full py-2 rounded-lg bg-primary text-white text-sm font-medium disabled:opacity-60">
           {isPending ? 'Enviando…' : 'Reservar clase de prueba'}
         </button>
       </form>

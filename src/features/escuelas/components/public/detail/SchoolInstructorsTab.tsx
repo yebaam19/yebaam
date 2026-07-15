@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { Users } from 'lucide-react'
-import { cfImageUrl } from './SchoolHero'
+import { cfImageUrl } from '@/lib/cloudflare'
 import type { Instructor } from '../../../types'
 
 interface Props { instructors: Instructor[] }

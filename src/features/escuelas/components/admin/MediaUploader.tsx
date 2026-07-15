@@ -44,13 +44,13 @@ export function MediaUploader({ schoolId, existing }: Props) {
       <div>
         <label className="block text-sm font-medium mb-2">Subir imagen o video</label>
         <input ref={fileRef} type="file" accept="image/*,video/*" onChange={handleFileChange} disabled={isPending} className="text-sm" />
-        {isPending && <p className="text-xs text-muted-foreground mt-1">Subiendo…</p>}
+        {isPending && <p className="text-xs text-neutral-500 mt-1">Subiendo…</p>}
       </div>
 
       {existing.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {existing.map((asset) => (
-            <div key={asset.id} className="relative group rounded-xl overflow-hidden border border-border">
+            <div key={asset.id} className="relative group rounded-xl overflow-hidden border border-neutral-200">
               {asset.cf_image_id ? (
                 <div className="relative aspect-square">
                   <Image
@@ -62,26 +62,26 @@ export function MediaUploader({ schoolId, existing }: Props) {
                   />
                 </div>
               ) : (
-                <div className="aspect-square bg-muted flex items-center justify-center text-muted-foreground text-xs">Video</div>
+                <div className="aspect-square bg-neutral-100 flex items-center justify-center text-neutral-500 text-xs">Video</div>
               )}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                 {!asset.is_primary && (
                   <button
                     onClick={() => startTransition(async () => { await setPrimaryMedia(asset.id, schoolId); toast.success('Principal') })}
-                    className="text-xs text-white bg-primary/80 px-2 py-1 rounded"
+                    className="text-xs text-white bg-primary-700/80 px-2 py-1 rounded"
                   >
                     Principal
                   </button>
                 )}
                 <button
-                  onClick={() => startTransition(async () => { await deleteMedia(asset.id); toast.success('Eliminado') })}
-                  className="text-xs text-white bg-destructive/80 px-2 py-1 rounded"
+                  onClick={() => startTransition(async () => { await deleteMedia(asset.id, schoolId); toast.success('Eliminado') })}
+                  className="text-xs text-white bg-red-600/80 px-2 py-1 rounded"
                 >
                   Eliminar
                 </button>
               </div>
               {asset.is_primary && (
-                <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded">Principal</span>
+                <span className="absolute top-1 left-1 bg-primary-700 text-white text-xs px-1.5 py-0.5 rounded">Principal</span>
               )}
             </div>
           ))}
