@@ -7,6 +7,7 @@ import {
 } from '@/utils/supabase/middleware';
 import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config';
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
+import { hasAdminViewParam } from '@/lib/auth/admin-view';
 
 const PUBLIC_ROUTES = [
   '/',
@@ -155,11 +156,16 @@ export async function proxy(request: NextRequest) {
 
     const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
 
-    if (isPlatformAdmin && !isAdminRoute && !isPublicRoute && !isAuthAllowedPublic) {
+    // Explicit "ver como público" link from the admin panel (e.g. the user
+    // detail's "Ver perfil público"). Without this the corral below would bounce
+    // the admin straight back into /admin, so the profile never rendered.
+    const isAdminView = isPlatformAdmin && hasAdminViewParam(request.nextUrl.searchParams);
+
+    if (isPlatformAdmin && !isAdminView && !isAdminRoute && !isPublicRoute && !isAuthAllowedPublic) {
       return redirectWithCookies(new URL('/admin/foros', request.url), client);
     }
 
-    if (isPlatformAdmin && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
+    if (isPlatformAdmin && !isAdminView && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
       return redirectWithCookies(new URL('/admin/foros', request.url), client);
     }
 

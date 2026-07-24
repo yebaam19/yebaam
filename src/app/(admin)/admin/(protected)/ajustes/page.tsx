@@ -8,6 +8,7 @@ import {
 import { listPlatformAdmins } from '@/app/(app)/foro/server/admin.server'
 import UserAvatar from '@/features/foro/components/UserAvatar'
 import ThemeSettings from '@/features/admin/components/ThemeSettings'
+import { withAdminView } from '@/lib/auth/admin-view'
 import { getTranslations } from 'next-intl/server'
 
 export const metadata = { title: 'Admin · Ajustes' }
@@ -90,7 +91,9 @@ export default async function AdminAjustesPage() {
                       <div className="truncate text-xs text-neutral-500">@{admin.username}</div>
                     </div>
                     <Link
-                      href={`/${admin.username}` as Route}
+                      href={withAdminView(`/${admin.username}`) as Route}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
                     >
                       {t('viewProfile')}

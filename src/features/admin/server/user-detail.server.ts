@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
-import { getServerClient } from '@/utils/supabase/server';
+import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { isPlatformAdmin } from '@/app/(app)/foro/server/roles.server';
 
 export interface AdminUserDetail {
   id: string;
@@ -90,3 +91,42 @@ export const getAdminUserDetailByUsername = cache(async (username: string): Prom
     lastActiveAt: (r.last_active_at as string | null) ?? null,
   };
 });
+
+export interface AdminUserAuthIdentity {
+  email: string | null;
+  emailConfirmedAt: string | null;
+  lastSignInAt: string | null;
+  phone: string | null;
+  provider: string | null;
+}
+
+/**
+ * Registration identity (email, confirmación, último acceso). It lives in
+ * `auth.users`, not in `profiles`, so it needs the service-role client.
+ *
+ * Why the extra guard: it is PII, and the `/admin/(protected)` layout also lets
+ * forum moderators in — only platform admins get to see the email a user
+ * registered with.
+ */
+export const getAdminUserAuthIdentity = cache(
+  async (userId: string): Promise<AdminUserAuthIdentity | null> => {
+    if (!(await isPlatformAdmin())) return null;
+    try {
+      const { data, error } = await getServiceClient().auth.admin.getUserById(userId);
+      if (error || !data?.user) return null;
+      const u = data.user;
+      return {
+        email: u.email ?? null,
+        emailConfirmedAt: u.email_confirmed_at ?? null,
+        lastSignInAt: u.last_sign_in_at ?? null,
+        phone: u.phone ?? null,
+        provider: (u.app_metadata?.provider as string | undefined) ?? null,
+      };
+    } catch (err) {
+      // Missing SUPABASE_SERVICE_ROLE_KEY (or a transient Auth API failure)
+      // must not take down the whole user-detail page.
+      console.error('[admin] getAdminUserAuthIdentity failed:', err);
+      return null;
+    }
+  },
+);

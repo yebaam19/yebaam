@@ -2,11 +2,16 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
 import UserAvatar from '@/features/foro/components/UserAvatar'
-import { getAdminUserDetailByUsername } from '@/features/admin/server/user-detail.server'
+import {
+  getAdminUserAuthIdentity,
+  getAdminUserDetailByUsername,
+} from '@/features/admin/server/user-detail.server'
 import { getOccupationDistribution } from '@/features/admin/server/occupation-stats.server'
 import { OccupationContextChart } from '@/features/admin/components/charts/OccupationContextChart'
 import { WorkVerificationToggle } from '@/features/admin/components/users/WorkVerificationToggle'
-import { CheckBadgeIcon } from '@/components/icons/heroicons-shim'
+import { CopyableText } from '@/features/admin/components/users/CopyableText'
+import { ArrowTopRightOnSquareIcon, CheckBadgeIcon } from '@/components/icons/heroicons-shim'
+import { withAdminView } from '@/lib/auth/admin-view'
 import { occupationLabel } from '@/features/auth/constants/occupations'
 
 export const metadata = { title: 'Admin · Detalle de usuario' }
@@ -43,6 +48,12 @@ function genderLabel(g: string | null): string {
   if (!g) return '—'
   const map: Record<string, string> = { FEMALE: 'Mujer', MALE: 'Hombre', OTHER: 'Otro' }
   return map[g.toUpperCase()] ?? g
+}
+
+function providerLabel(p: string | null): string {
+  if (!p) return '—'
+  const map: Record<string, string> = { email: 'Email y contraseña', google: 'Google', phone: 'Teléfono' }
+  return map[p] ?? p
 }
 
 function verificationLabel(v: string | null): { label: string; tone: string } {
@@ -82,6 +93,10 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
     getOccupationDistribution(),
   ])
   if (!user) notFound()
+
+  // Registration email lives in `auth.users` and is platform-admin-only, so it
+  // is fetched separately (returns null for forum moderators).
+  const authIdentity = await getAdminUserAuthIdentity(user.id)
 
   const fullName = [user.firstName, user.middleName, user.lastName, user.secondLastName]
     .filter(Boolean)
@@ -128,11 +143,17 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             )}
           </div>
         </div>
+        {/* `?adminView=1` is the proxy's escape hatch: without it an admin
+            session gets bounced back to /admin/* on any non-admin route.
+            Opens in a new tab so the admin keeps this detail page open. */}
         <Link
-          href={`/${user.username ?? ''}` as Route}
-          className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+          href={withAdminView(`/${user.username ?? ''}`) as Route}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
         >
           Ver perfil público
+          <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
         </Link>
       </header>
 
@@ -195,6 +216,37 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             Cuenta
           </h2>
           <dl className="grid grid-cols-1 gap-4">
+            {authIdentity && (
+              <>
+                <Field
+                  label="Email de registro"
+                  value={
+                    authIdentity.email ? (
+                      <CopyableText
+                        value={authIdentity.email}
+                        href={`mailto:${authIdentity.email}`}
+                        label="Copiar email"
+                      />
+                    ) : null
+                  }
+                />
+                <Field
+                  label="Email confirmado"
+                  value={
+                    authIdentity.emailConfirmedAt ? (
+                      formatDateTime(authIdentity.emailConfirmedAt)
+                    ) : (
+                      <span className="text-amber-600 dark:text-amber-400">Sin confirmar</span>
+                    )
+                  }
+                />
+                <Field label="Método de acceso" value={providerLabel(authIdentity.provider)} />
+                <Field
+                  label="Último inicio de sesión"
+                  value={formatDateTime(authIdentity.lastSignInAt)}
+                />
+              </>
+            )}
             <Field label="Alta" value={formatDate(user.createdAt)} />
             <Field label="Última actividad" value={formatDateTime(user.lastActiveAt)} />
             <Field label="Términos aceptados" value={formatDateTime(user.termsAcceptedAt)} />

@@ -3,6 +3,7 @@ import type { Route } from 'next'
 import Image from 'next/image'
 import { listBadgeGrants } from '@/features/admin/server/badges.server'
 import { RevokeButton } from './RevokeButton'
+import { withAdminView } from '@/lib/auth/admin-view'
 
 interface Props {
   badgeId: string
@@ -37,7 +38,9 @@ export async function GrantsList({ badgeId }: Props) {
             <td className="px-3 py-2">
               {g.username ? (
                 <Link
-                  href={`/${g.username}` as Route}
+                  href={withAdminView(`/${g.username}`) as Route}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:underline"
                 >
                   {g.avatarUrl ? (

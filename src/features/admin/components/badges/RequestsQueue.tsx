@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import type { BadgeRequestRow } from '@/features/admin/types/badges.types'
 import { RequestReviewDialog } from './RequestReviewDialog'
+import { withAdminView } from '@/lib/auth/admin-view'
 
 export function RequestsQueue({ requests }: { requests: BadgeRequestRow[] }) {
   const [open, setOpen] = useState<BadgeRequestRow | null>(null)
@@ -32,7 +33,12 @@ export function RequestsQueue({ requests }: { requests: BadgeRequestRow[] }) {
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">
                   {r.username ? (
-                    <Link href={`/${r.username}` as Route} className="hover:underline">
+                    <Link
+                      href={withAdminView(`/${r.username}`) as Route}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
                       {r.displayName ?? r.username}
                     </Link>
                   ) : (
