@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
+import { getAuthClaimsUser } from '@/utils/supabase/claims';
 import { withImageVariant } from '@/lib/media/urls';
 
 export interface User {
@@ -20,14 +21,27 @@ type ProfileRow = {
   avatar_url: string | null;
 };
 
-// Raw Supabase auth user, memoized per request. Every server caller that only
-// needs the user id (forum-role checks, post queries, the layout) should use
-// THIS — supabase.auth.getUser() is a GoTrue network round-trip, and cache()
-// collapses the several per-request calls on heavy routes (/feed) into one.
+// Caller's identity, memoized per request. Every server caller that only needs
+// the user id (forum-role checks, post queries, the layout) should use THIS.
+//
+// Resolved from the access token's claims (`getClaims()`), which this project
+// can verify locally because it uses asymmetric ES256 signing keys — no GoTrue
+// round-trip, unlike `getUser()`. `cache()` still collapses the several
+// per-request calls on heavy routes (/feed) into one, and the underlying
+// session load keeps rotating the `sb-*` cookies exactly as before.
+//
+// The returned object is an `AuthClaimsUser`, NOT a full Supabase `User`: it
+// carries what is actually in the JWT (`id`, `email`, `phone`, `role`,
+// `sessionId`, `isAnonymous`, `appMetadata`, `userMetadata`, `expiresAt`).
+// A caller that needs an `auth.users` column that is not a claim — e.g.
+// `created_at`, `identities`, `email_confirmed_at`, `last_sign_in_at` — must
+// call `client.auth.getUser()` directly. So must anything that has to observe a
+// deletion/ban within the same access-token lifetime; see the trade-off note in
+// `@/utils/supabase/claims`.
 export const getCachedAuthUser = cache(async () => {
   const client = await getServerClient();
-  const { data } = await client.auth.getUser();
-  return data?.user ?? null;
+  const { user } = await getAuthClaimsUser(client);
+  return user;
 });
 
 // Memoized per request: layout + page data fns need the enriched app user.

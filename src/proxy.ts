@@ -5,6 +5,7 @@ import {
   isInvalidRefreshTokenError,
   redirectWithCookies,
 } from '@/utils/supabase/middleware';
+import { getAuthClaimsUser, type AuthClaimsUser } from '@/utils/supabase/claims';
 import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config';
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 import { hasAdminViewParam } from '@/lib/auth/admin-view';
@@ -89,24 +90,36 @@ export async function proxy(request: NextRequest) {
   const client = createClient(request);
   const { supabase, clearAuthCookies } = client;
 
-  // `getUser()` can throw (or return an AuthApiError) when the stored refresh
-  // token is stale — common in dev after swapping Supabase projects or when
-  // a user was signed out elsewhere. Treat that as "anonymous" and expire the
+  // Identity comes from `getClaims()`, not `getUser()`: this project signs
+  // access tokens with an asymmetric ES256 key, so the token is verified with
+  // WebCrypto in-process and the proxy no longer pays a GoTrue round-trip on
+  // every page/RSC request. Session refresh is preserved — `getClaims()` loads
+  // the session through the same `__loadSession()` path `getUser()` used, which
+  // still rotates the token (and therefore the `sb-*` cookies, via the SSR
+  // client's `setAll`) when it is within 90 s of expiry. See the module doc in
+  // `@/utils/supabase/claims` for the evidence and the revocation trade-off.
+  //
+  // Error handling is unchanged: a stale refresh token — common in dev after
+  // swapping Supabase projects, or when a user was signed out elsewhere — can
+  // still be thrown or returned, and we treat it as "anonymous" plus expire the
   // bad cookies so the browser stops resending them.
-  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  let user: AuthClaimsUser | null = null;
   try {
-    const { data, error } = await supabase.auth.getUser();
+    const { user: claimsUser, error } = await getAuthClaimsUser(supabase);
     if (error) {
       if (isInvalidRefreshTokenError(error)) {
         clearAuthCookies();
       } else if (isAnonymousSessionError(error)) {
         // Normal case: no cookies → no user. Not an error, do not log.
+        // (`getClaims()` usually reports this as `{ user: null, error: null }`
+        // rather than an "Auth session missing!" error, so it stays silent
+        // without even reaching this branch.)
       } else if (error.status && error.status !== 401) {
         // Genuine unexpected failure — surface it but don't crash the request.
-        console.warn('[proxy] supabase.auth.getUser error:', error.message);
+        console.warn('[proxy] supabase.auth.getClaims error:', error.message);
       }
     } else {
-      user = data.user;
+      user = claimsUser;
     }
   } catch (err) {
     if (isInvalidRefreshTokenError(err)) {
@@ -114,7 +127,7 @@ export async function proxy(request: NextRequest) {
     } else if (isAnonymousSessionError(err)) {
       // Normal case: no cookies → no user. Not an error, do not log.
     } else {
-      console.warn('[proxy] supabase.auth.getUser threw:', err);
+      console.warn('[proxy] supabase.auth.getClaims threw:', err);
     }
   }
 
@@ -184,9 +197,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Every matched request costs a GoTrue `getUser()` round-trip plus, for
-    // signed-in users, two role queries — so anything that isn't a page must be
-    // excluded. The previous pattern only covered six image extensions, which
+    // Every matched request costs a local JWT verification (`getClaims()`)
+    // plus, for signed-in users, two role queries — so anything that isn't a
+    // page must be excluded. (Before the `getClaims()` migration this was a
+    // full GoTrue `getUser()` network round-trip per request; the role queries
+    // are still real DB calls, so the exclusions below still matter.)
+    // The previous pattern only covered six image extensions, which
     // left `.pdf`, `.avif`, `.ico`, `.woff2`, `.mp3`, `.mp4`, `.xml`, `.txt`
     // and `.json` paying full auth cost. Worse, `/sitemap.xml` and
     // `/robots.txt` aren't in PUBLIC_ROUTES, so crawlers were being 307'd to
