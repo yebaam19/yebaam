@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
-import { extractImageId } from '@/lib/media/urls';
+import { extractImageId, withImageVariant } from '@/lib/media/urls';
 import { ensureClubPublicChat } from '@/lib/api/clubs';
 import type { UpdateClubDto } from '@/features/clubs/types/club.types';
 import type { ClubPostKind } from './clubs.server';
@@ -343,7 +343,7 @@ export async function searchClubMemberCandidatesAction(
         [row.first_name, row.last_name].filter(Boolean).join(' ') ||
         row.username ||
         'Sin nombre',
-      avatarUrl: row.avatar_url,
+      avatarUrl: row.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : null,
       studyPlace: row.study_place,
     }));
 

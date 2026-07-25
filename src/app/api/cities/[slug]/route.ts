@@ -46,23 +46,26 @@ export async function GET(
   if (!data) return NextResponse.json({ error: 'City not found' }, { status: 404 });
 
   const row = data as unknown as CityRow;
-  return NextResponse.json({
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description ?? '',
-    coverImageUrl: cfImageUrl(row.cover_cf_image_id),
-    logoUrl: cfImageUrl(row.logo_cf_image_id),
-    isFeatured: Boolean(row.is_featured),
-    location: {
-      country: row.country?.name ?? 'Colombia',
-      state: row.state?.name ?? undefined,
+  return NextResponse.json(
+    {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      description: row.description ?? '',
+      coverImageUrl: cfImageUrl(row.cover_cf_image_id),
+      logoUrl: cfImageUrl(row.logo_cf_image_id),
+      isFeatured: Boolean(row.is_featured),
+      location: {
+        country: row.country?.name ?? 'Colombia',
+        state: row.state?.name ?? undefined,
+      },
+      stats: {
+        followerCount: row.follower_count ?? 0,
+        photoCount: row.photo_count ?? 0,
+        videoCount: row.video_count ?? 0,
+        postCount: row.post_count ?? 0,
+      },
     },
-    stats: {
-      followerCount: row.follower_count ?? 0,
-      photoCount: row.photo_count ?? 0,
-      videoCount: row.video_count ?? 0,
-      postCount: row.post_count ?? 0,
-    },
-  });
+    { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' } }
+  );
 }

@@ -129,6 +129,7 @@ export const PageFeatured: FC<PageFeaturedProps> = ({ page, isOwner }) => {
             fill
             sizes="(min-width: 1024px) 700px, 100vw"
             className="object-cover"
+            unoptimized
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-200 dark:border-gray-700">
@@ -215,7 +216,7 @@ export const PageFeatured: FC<PageFeaturedProps> = ({ page, isOwner }) => {
                   >
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img} alt="" className="h-full w-full object-cover" />
+                      <img src={img} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
                     ) : (
                       <PlayIcon className="absolute inset-0 m-auto h-6 w-6 text-white" />
                     )}
@@ -254,6 +255,7 @@ export const PageFeatured: FC<PageFeaturedProps> = ({ page, isOwner }) => {
                 fill
                 className="object-contain"
                 sizes="100vw"
+                unoptimized
               />
             )}
           </div>

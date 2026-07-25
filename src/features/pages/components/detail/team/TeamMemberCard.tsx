@@ -39,6 +39,7 @@ export const TeamMemberCard: FC<TeamMemberCardProps> = ({
             width={56}
             height={56}
             className="w-full h-full object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-400 dark:text-gray-500">

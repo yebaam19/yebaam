@@ -2,7 +2,7 @@ import 'server-only';
 
 import { getServerClient } from '@/utils/supabase/server';
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
-import { imageUrl } from '@/lib/media/urls';
+import { imageUrl, withImageVariant } from '@/lib/media/urls';
 import type {
   CommunityArticle,
   CommunityArticleAuthor,
@@ -52,7 +52,7 @@ function toAuthor(row: ProfileRow | undefined): CommunityArticleAuthor {
     id: row.id,
     username: row.username ?? 'usuario',
     name,
-    avatar: row.avatar_url,
+    avatar: row.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : null,
   };
 }
 

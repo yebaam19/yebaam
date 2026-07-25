@@ -16,7 +16,11 @@ export function ServiceInfo({ name, isVerified, categoryName, averageRating, rev
     <div className="mb-4">
       <div className="flex items-center gap-2">
         <h1 className="text-xl font-bold text-neutral-900 sm:text-2xl dark:text-neutral-100">{name}</h1>
-        {isVerified && <CheckBadgeIcon className="h-5 w-5 text-primary-500 sm:h-6 sm:w-6" title="Verificado" />}
+        {isVerified && (
+          <span title="Verificado" className="inline-flex shrink-0">
+            <CheckBadgeIcon className="h-5 w-5 text-primary-500 sm:h-6 sm:w-6" />
+          </span>
+        )}
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">

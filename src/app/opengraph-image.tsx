@@ -44,7 +44,7 @@ export default async function OpengraphImage() {
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logoSrc} width={760} height={236} alt="Yebaam" />
+          <img src={logoSrc} width={760} height={236} alt="Yebaam" decoding="async" loading="lazy" />
         </div>
         <div
           style={{

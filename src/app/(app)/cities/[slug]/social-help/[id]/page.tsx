@@ -77,6 +77,8 @@ export default async function HelpDetailPage({ params }: Props) {
             src={item.imageUrl}
             alt={item.title}
             className="w-full object-cover"
+            decoding="async"
+            loading="lazy"
           />
         </div>
       )}

@@ -162,6 +162,7 @@ export default function MediaCommentsSection({
             width={40}
             height={40}
             className="rounded-full"
+            unoptimized
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
@@ -285,6 +286,7 @@ export default function MediaCommentsSection({
               width={40}
               height={40}
               className="rounded-full"
+              unoptimized
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">

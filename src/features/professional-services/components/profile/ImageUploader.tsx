@@ -159,7 +159,7 @@ export function ImageUploader({
           {/* Preview o estado inicial */}
           {preview ? (
             <div className={`relative h-full w-full ${aspectClass}`}>
-              <Image src={preview} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" />
+              <Image src={preview} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" unoptimized />
               {!isUploading && (
                 <button
                   onClick={(e) => {
@@ -227,7 +227,7 @@ export function ImageUploader({
               className={`relative ${heightClass} w-full overflow-hidden rounded-lg border-2 border-neutral-300 dark:border-neutral-600`}
             >
               <div className={`relative h-full w-full ${aspectClass}`}>
-                <Image src={preview} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" />
+                <Image src={preview} alt={t('previewAlt')} fill sizes="(max-width: 768px) 100vw, 400px" className="rounded-lg object-cover" unoptimized />
                 <button
                   onClick={handleRemove}
                   className="absolute top-2 right-2 rounded-full bg-red-500 p-1.5 text-white shadow-lg transition-colors hover:bg-red-600"

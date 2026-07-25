@@ -51,6 +51,7 @@ export function GroupDetailHero({
             sizes="100vw"
             className="object-cover"
             priority
+            unoptimized
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -89,6 +90,7 @@ export function GroupDetailHero({
                           fill
                           sizes="32px"
                           className="object-cover"
+                          unoptimized
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-sm font-medium text-neutral-600 dark:text-neutral-400">

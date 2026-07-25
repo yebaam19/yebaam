@@ -91,7 +91,7 @@ export function ServiceBusinessCard({ service, isOwner }: ServiceBusinessCardPro
 
       {cardUrl ? (
         <div className="relative mb-4 aspect-16/9 w-full overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-700">
-          <Image src={cardUrl} alt={`Tarjeta de ${service.name}`} fill className="object-contain" sizes="(max-width: 1024px) 100vw, 33vw" />
+          <Image src={cardUrl} alt={`Tarjeta de ${service.name}`} fill className="object-contain" sizes="(max-width: 1024px) 100vw, 33vw" unoptimized />
         </div>
       ) : (
         <p className="mb-4 text-sm text-neutral-500 dark:text-neutral-400">

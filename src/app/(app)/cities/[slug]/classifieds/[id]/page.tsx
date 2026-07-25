@@ -98,6 +98,7 @@ export default async function ClassifiedDetailPage({ params }: Props) {
                 alt={`${item.title} ${i + 1}`}
                 className="h-full w-full object-cover"
                 loading={i === 0 ? 'eager' : 'lazy'}
+                decoding="async"
               />
             </div>
           ))}

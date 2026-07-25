@@ -72,6 +72,7 @@ export function ArticleView({ article, currentUserId }: ArticleViewProps) {
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
             priority
+            unoptimized
           />
         </div>
       )}

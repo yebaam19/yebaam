@@ -46,6 +46,7 @@ export function GroupCard({ group }: GroupCardProps) {
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover"
+            unoptimized
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -88,6 +89,7 @@ export function GroupCard({ group }: GroupCardProps) {
                   fill
                   sizes="24px"
                   className="object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center text-xs font-medium text-neutral-600 dark:text-neutral-400">

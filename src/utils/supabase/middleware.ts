@@ -1,8 +1,23 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
+import { PATHNAME_HEADER } from '@/i18n/route-namespaces';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+/**
+ * Snapshot the request headers plus the pathname, so `src/i18n/request.ts` can
+ * load only the message namespaces this route needs (see `route-namespaces.ts`).
+ *
+ * Must be called *after* any `request.cookies.set()`, because that mutates the
+ * request's `cookie` header — snapshotting earlier would drop a token rotation
+ * on its way to the render pass.
+ */
+const buildRequestHeaders = (request: NextRequest) => {
+  const headers = new Headers(request.headers);
+  headers.set(PATHNAME_HEADER, request.nextUrl.pathname);
+  return headers;
+};
 
 /**
  * Shape returned by `createClient`. `response` is the latest `NextResponse`
@@ -13,7 +28,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 export const createClient = (request: NextRequest) => {
   let supabaseResponse = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: buildRequestHeaders(request),
     },
   });
 
@@ -24,7 +39,7 @@ export const createClient = (request: NextRequest) => {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        supabaseResponse = NextResponse.next({ request });
+        supabaseResponse = NextResponse.next({ request: { headers: buildRequestHeaders(request) } });
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options),
         );

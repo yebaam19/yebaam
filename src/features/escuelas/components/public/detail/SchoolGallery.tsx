@@ -50,6 +50,7 @@ export function SchoolGallery({ assets }: Props) {
                 fill
                 className="aspect-[4/3] h-full w-full object-cover transition duration-500 group-hover:scale-105"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                unoptimized
               />
               <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/35" />
               <Maximize2 size={16} className="absolute right-3 top-3 text-white opacity-0 transition group-hover:opacity-100" />
@@ -84,7 +85,7 @@ export function SchoolGallery({ assets }: Props) {
             <div className="relative max-h-[85vh] max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
               {imgUrl ? (
                 <Image src={imgUrl} alt={asset?.caption ?? 'Imagen'} width={1400} height={900}
-                  className="mx-auto max-h-[80vh] w-auto rounded-2xl object-contain" />
+                  className="mx-auto max-h-[80vh] w-auto rounded-2xl object-contain" unoptimized />
               ) : (
                 <div className="flex h-64 items-center justify-center rounded-2xl bg-neutral-800 text-white/50">Sin preview</div>
               )}

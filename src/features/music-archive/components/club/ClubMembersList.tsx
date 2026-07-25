@@ -81,7 +81,7 @@ export function ClubMembersList({ clubId, members, viewerRole, viewerId }: Props
               <li key={m.user_id} className="flex items-center gap-3 p-3">
                 <div className="h-10 w-10 flex-none overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                   {photo ? (
-                    <img src={photo} alt="" className="h-full w-full object-cover" />
+                    <img src={photo} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <UserIcon className="h-5 w-5 text-zinc-400" />

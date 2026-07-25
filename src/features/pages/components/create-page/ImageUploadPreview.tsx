@@ -23,6 +23,8 @@ export const ImageUploadPreview: FC<ImageUploadPreviewProps> = ({
           src={preview}
           alt="Cover preview"
           className="w-full h-full object-cover"
+          decoding="async"
+          loading="lazy"
         />
         <button
           onClick={onRemove}
@@ -56,6 +58,8 @@ export const ImageUploadPreview: FC<ImageUploadPreviewProps> = ({
         src={preview}
         alt="Avatar preview"
         className="w-full h-full object-cover"
+        decoding="async"
+        loading="lazy"
       />
       <button
         onClick={onRemove}

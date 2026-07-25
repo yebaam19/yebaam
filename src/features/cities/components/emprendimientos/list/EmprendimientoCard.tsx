@@ -35,6 +35,7 @@ export async function EmprendimientoCard({ citySlug, item }: Props) {
             alt={item.name}
             className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div

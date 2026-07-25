@@ -35,6 +35,7 @@ export function ServiceCoverImage({ coverUrl, serviceName, isOwner, onEdit, size
           priority
           quality={95}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+          unoptimized
         />
       )}
       <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />

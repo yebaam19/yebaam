@@ -10,6 +10,8 @@ import type { MusicAlbumRow } from '../types/music.types';
 interface Props {
   album: MusicAlbumRow;
   artistName?: string;
+  /** First card of a grid: it is the LCP element, so don't lazy-load it. */
+  isLcp?: boolean;
 }
 
 const WAVEFORM_BARS = [
@@ -32,7 +34,7 @@ function WaveformFallback() {
   );
 }
 
-export function AlbumCoverCard({ album, artistName }: Props) {
+export function AlbumCoverCard({ album, artistName, isLcp = false }: Props) {
   const t = useTranslations('musica');
   const cover = album.cover_cf_image_id ? imageUrl(album.cover_cf_image_id, 'thumbnail') : null;
   return (
@@ -47,7 +49,10 @@ export function AlbumCoverCard({ album, artistName }: Props) {
               src={cover}
               alt={t('albumCard.coverAlt', { title: album.title })}
               className="h-full w-full object-cover transition group-hover:scale-[1.02]"
-              loading="lazy"
+              {...(isLcp
+                ? { loading: 'eager' as const, fetchPriority: 'high' as const }
+                : { loading: 'lazy' as const })}
+              decoding="async"
             />
           ) : (
             <>

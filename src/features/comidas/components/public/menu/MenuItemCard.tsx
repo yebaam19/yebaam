@@ -88,6 +88,7 @@ export function MenuItemCard({ product, businessName, onOpenProduct }: Props) {
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-50 to-neutral-100">

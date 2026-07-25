@@ -82,6 +82,7 @@ export function CoverImageArea({ coverImageUrl, onCoverUpload, onCoverRemove }: 
             fill
             className="rounded-lg object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+            unoptimized
           />
           {/* Overlay gradient for better button visibility */}
           <div className="absolute inset-0 rounded-lg bg-linear-to-t from-black/40 via-transparent to-transparent" />

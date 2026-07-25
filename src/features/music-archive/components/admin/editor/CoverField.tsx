@@ -24,6 +24,8 @@ export function CoverField({
           src={imageUrl(currentId, 'thumbnail')}
           alt=""
           className="mb-2 h-20 w-20 rounded-md border border-zinc-200 object-cover dark:border-zinc-800"
+          decoding="async"
+          loading="lazy"
         />
       )}
       <CoverDropZone file={file} onChange={onChange} />

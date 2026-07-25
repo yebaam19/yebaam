@@ -142,7 +142,7 @@ export function HeaderSearchDropdown() {
                         <div className="h-9 w-9 shrink-0 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
                           {user.avatarUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
                           ) : (
                             (user.fullName || user.username || '?').charAt(0).toUpperCase()
                           )}

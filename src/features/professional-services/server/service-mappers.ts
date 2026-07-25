@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { streamThumb } from '@/lib/media/urls'
+import { streamThumb, withImageVariant } from '@/lib/media/urls'
 import { findCategoryById } from '../data/service-categories-taxonomy'
 import {
   PortfolioProject,
@@ -39,7 +39,9 @@ export function mapOwner(p: ProfileRow | undefined): ServiceOwner | undefined {
     username: p.username ?? '',
     firstName: p.first_name ?? '',
     lastName: p.last_name ?? '',
-    avatarUrl: cfImage(p.avatar_cloudflare_id, 'avatar') ?? p.avatar_url ?? undefined,
+    avatarUrl:
+      cfImage(p.avatar_cloudflare_id, 'avatar') ??
+      (p.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined),
     coverUrl: cfImage(p.cover_cloudflare_id, 'cover') ?? undefined,
     isVerified: Boolean(p.is_verified),
   }
@@ -105,7 +107,9 @@ export function mapReviews(
         username: a?.username ?? '',
         firstName: a?.first_name ?? '',
         lastName: a?.last_name ?? '',
-        avatarUrl: cfImage(a?.avatar_cloudflare_id, 'avatar') ?? a?.avatar_url ?? undefined,
+        avatarUrl:
+          cfImage(a?.avatar_cloudflare_id, 'avatar') ??
+          (a?.avatar_url ? withImageVariant(a.avatar_url, 'avatar') : undefined),
       },
     }
   })
@@ -137,7 +141,9 @@ export function mapBasic(row: ServiceRow, owner: ProfileRow | undefined): Profes
           username: owner.username ?? '',
           firstName: owner.first_name ?? '',
           lastName: owner.last_name ?? '',
-          avatarUrl: cfImage(owner.avatar_cloudflare_id, 'avatar') ?? owner.avatar_url ?? undefined,
+          avatarUrl:
+            cfImage(owner.avatar_cloudflare_id, 'avatar') ??
+            (owner.avatar_url ? withImageVariant(owner.avatar_url, 'avatar') : undefined),
         }
       : undefined,
     _count: { reviews: row.review_count, media: row.media_count },

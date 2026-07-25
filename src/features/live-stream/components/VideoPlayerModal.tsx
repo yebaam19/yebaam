@@ -290,6 +290,8 @@ export default function VideoPlayerModal({ isOpen, onClose, stream }: VideoPlaye
                   src={stream.author.avatar}
                   alt={getAuthorDisplayName(stream.author)}
                   className="h-12 w-12 rounded-full object-cover"
+                  decoding="async"
+                  loading="lazy"
                 />
               ) : (
                 <div className="h-12 w-12 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">

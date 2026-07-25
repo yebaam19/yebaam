@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -49,7 +50,11 @@ function mapPhoto(row: PhotoRow, uploader?: ProfileLite) {
       username: uploader?.username ?? '',
       firstName: uploader?.first_name ?? '',
       lastName: uploader?.last_name ?? '',
-      avatar: uploader?.avatar_url ?? undefined,
+      // Uploader chip is small; `row.url` below is the photo itself and stays
+      // at its stored variant.
+      avatar: uploader?.avatar_url
+        ? withImageVariant(uploader.avatar_url, 'avatar')
+        : undefined,
     },
     url: row.url,
     s3Key: row.s3_key ?? '',

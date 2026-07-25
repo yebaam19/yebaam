@@ -56,7 +56,7 @@ export function ProductDetailHero({
       <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="relative h-72 overflow-hidden bg-neutral-100 md:h-96">
           {imageUrl ? (
-            <Image src={imageUrl} alt={name} fill priority className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" />
+            <Image src={imageUrl} alt={name} fill priority className="object-cover" sizes="(max-width: 1024px) 100vw, 55vw" unoptimized />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-50 to-neutral-100">
               <span className="text-5xl">🍽️</span>

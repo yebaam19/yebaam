@@ -99,8 +99,9 @@ export function FriendSuggestions() {
                     src={suggestion.avatar}
                     alt={`${suggestion.firstName} ${suggestion.lastName}`}
                     fill
-                    sizes="(max-width: 640px) 100vw, 50vw"
+                    sizes="200px"
                     className="object-cover"
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">

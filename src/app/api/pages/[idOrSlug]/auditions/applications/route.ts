@@ -3,6 +3,7 @@ import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { resolvePage } from '@/lib/api/page-authz';
 import { canManagePage } from '@/lib/api/page-team';
 import { getUserDisplayName } from '@/lib/user-helpers';
+import { withImageVariant } from '@/lib/media/urls';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -102,7 +103,8 @@ export async function GET(
             displayName: p?.display_name,
             username: p?.username,
           }),
-          avatarUrl: p?.avatar_url ?? null,
+          // Applicant chip is small — ship the `avatar` variant.
+          avatarUrl: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
         },
       };
     }),

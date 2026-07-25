@@ -82,6 +82,8 @@ export default function EphemeralMedia({ media }: { media: AnonMediaPayload }) {
         alt=""
         draggable={false}
         className="pointer-events-none max-h-60 max-w-[15rem] rounded-lg object-cover"
+        decoding="async"
+        loading="lazy"
       />
       <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
         {t('expiresIn', { seconds: remaining })}

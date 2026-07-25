@@ -64,6 +64,9 @@ export const getForumGlobalRole = cache(async (): Promise<'admin' | 'moderator' 
 })
 
 export async function canAccessForumAdmin(): Promise<boolean> {
-  if (await isPlatformAdmin()) return true
-  return (await getForumGlobalRole()) !== null
+  // Run both checks in parallel: sequencing them cost two round-trips for the
+  // (overwhelmingly common) non-admin case on every authenticated render. Both
+  // helpers are `cache()`-wrapped, so this adds no extra queries.
+  const [admin, role] = await Promise.all([isPlatformAdmin(), getForumGlobalRole()])
+  return admin || role !== null
 }

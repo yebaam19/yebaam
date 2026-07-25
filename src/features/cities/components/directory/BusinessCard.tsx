@@ -73,6 +73,7 @@ export function BusinessCard({ business }: BusinessCardProps) {
         fill
         className="object-cover transition-transform duration-300 group-hover:scale-105"
         sizes="(max-width: 640px) 288px, 320px"
+        unoptimized
       />
 
       {/* Overlay gradient */}

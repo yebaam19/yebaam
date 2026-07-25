@@ -76,7 +76,7 @@ export function StoryPreview({
           )}
 
           {storyType === 'image' && previewUrl && (
-            <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
+            <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" decoding="async" loading="lazy" />
           )}
 
           {storyType === 'video' && previewUrl && (

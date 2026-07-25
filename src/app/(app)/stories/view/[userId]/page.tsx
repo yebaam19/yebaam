@@ -99,7 +99,7 @@ export default function ViewStoryPage() {
       <div className="flex h-full w-full items-center justify-center">
         <div className="relative h-full w-full max-w-md">
           {currentStory.type === 'image' && (
-            <img src={currentStory.mediaUrl} alt="Story" className="h-full w-full object-cover" />
+            <img src={currentStory.mediaUrl} alt="Story" className="h-full w-full object-cover" decoding="async" loading="lazy" />
           )}
 
           {currentStory.type === 'video' && (

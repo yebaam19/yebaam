@@ -22,5 +22,8 @@ export async function GET(
 
   const row = data as ClubRow;
   const ctx = await loadClubContext(client, [row], viewerId);
+  // NOTE: deliberately NOT CDN-cacheable — this route reads the session above and
+  // threads `viewerId` through `mapClub` (isMember/isOwner flags), on top of
+  // `clubs` RLS being `privacy = 'PUBLIC' OR owner OR member`.
   return NextResponse.json(mapClub(row, { userId: viewerId, ...ctx }, ctx.owners.get(row.owner_id)));
 }

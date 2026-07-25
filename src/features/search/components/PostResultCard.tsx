@@ -97,6 +97,7 @@ export function PostResultCard({
             width={400}
             height={300}
             className="w-full h-48 object-cover"
+            unoptimized
           />
           {post.mediaFiles.length > 1 && (
             <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">

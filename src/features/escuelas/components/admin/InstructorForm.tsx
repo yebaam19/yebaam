@@ -83,7 +83,7 @@ export function InstructorForm({ schoolId, instructors }: Props) {
                 >
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-primary-50">
                     {instPhotoUrl ? (
-                      <Image src={instPhotoUrl} alt="" fill className="object-cover" sizes="40px" />
+                      <Image src={instPhotoUrl} alt="" fill className="object-cover" sizes="40px" unoptimized />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-primary-600">
                         <User size={18} aria-hidden="true" />
@@ -133,7 +133,7 @@ export function InstructorForm({ schoolId, instructors }: Props) {
                 className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 transition hover:border-primary-400 disabled:cursor-wait"
               >
                 {photoUrl ? (
-                  <Image src={photoUrl} alt="" fill className="object-cover" sizes="64px" />
+                  <Image src={photoUrl} alt="" fill className="object-cover" sizes="64px" unoptimized />
                 ) : (
                   <User size={22} className="text-neutral-300" aria-hidden="true" />
                 )}

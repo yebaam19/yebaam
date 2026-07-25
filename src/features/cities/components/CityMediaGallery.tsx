@@ -128,6 +128,7 @@ function MediaCard({ media, onClick }: { media: CityMedia; onClick: () => void }
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          unoptimized
         />
       ) : (
         <video src={media.url} className="h-full w-full object-cover" muted />
@@ -147,6 +148,7 @@ function MediaCard({ media, onClick }: { media: CityMedia; onClick: () => void }
                 width={24}
                 height={24}
                 className="rounded-full"
+                unoptimized
               />
             ) : (
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500 text-xs font-medium text-white">

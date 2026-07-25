@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { resolvePage } from '@/lib/api/page-authz';
 import type { ProfileLite } from '@/lib/api/pages';
+import { withImageVariant } from '@/lib/media/urls';
 
 export async function GET(
   _request: NextRequest,
@@ -36,6 +37,10 @@ export async function GET(
   const profileMap = new Map<string, ProfileLite>();
   for (const p of (profiles ?? []) as ProfileLite[]) profileMap.set(p.id, p);
 
+  // NOTE: deliberately NOT CDN-cacheable. `resolvePage` runs under RLS
+  // (`pages.privacy = 'public' OR owner OR team member`), so a private page is a
+  // 200 for its team and a 404 for everyone else; and the `profiles` join is
+  // itself viewer-dependent (public OR self OR friends).
   return NextResponse.json(
     rows.map((r) => {
       const p = profileMap.get(r.user_id);
@@ -44,7 +49,8 @@ export async function GET(
         username: p?.username ?? '',
         firstName: p?.first_name ?? '',
         lastName: p?.last_name ?? '',
-        avatarUrl: p?.avatar_url ?? undefined,
+        // Team-roster avatars render small — ship the `avatar` variant.
+        avatarUrl: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
         bio: p?.bio ?? undefined,
         role: r.role,
         joinedAt: r.assigned_at,

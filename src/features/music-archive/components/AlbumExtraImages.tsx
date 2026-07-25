@@ -37,6 +37,7 @@ export async function AlbumExtraImages({ backCoverCfImageId, labelCfImageId }: P
               alt={img.alt}
               className="aspect-square w-full object-cover"
               loading="lazy"
+              decoding="async"
             />
           </a>
         ))}

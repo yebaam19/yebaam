@@ -45,7 +45,7 @@ export const BlogFeaturedPhotos = ({ posts }: BlogFeaturedPhotosProps) => {
             href={`/feed/post/${tile.postId}`}
             className="group relative aspect-4/3 overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-800"
           >
-            <Image src={tile.url} alt="Foto destacada" fill sizes="(max-width: 1024px) 100vw, 300px" className="object-cover" />
+            <Image src={tile.url} alt="Foto destacada" fill sizes="(max-width: 1024px) 100vw, 300px" className="object-cover" unoptimized />
             <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-linear-to-t from-black/70 to-transparent px-2 py-1.5 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100">
               <HeartIcon className="h-3.5 w-3.5" /> {tile.likes}
             </div>

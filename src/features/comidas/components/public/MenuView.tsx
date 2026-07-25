@@ -34,7 +34,7 @@ export function MenuView({ business, menus }: Props) {
                       <li key={product.id} className="flex gap-3 border-b border-border pb-3">
                         {imgUrl && (
                           <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                            <Image src={imgUrl} alt={product.name} fill className="object-cover" sizes="64px" />
+                            <Image src={imgUrl} alt={product.name} fill className="object-cover" sizes="64px" unoptimized />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">

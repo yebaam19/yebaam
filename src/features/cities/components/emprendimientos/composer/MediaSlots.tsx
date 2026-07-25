@@ -83,7 +83,7 @@ export function MediaSlots({ items, onChange, disabled }: Props) {
               key={`${item.cfImageId ?? item.cfStreamUid}-${index}`}
               className="relative aspect-square overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
             >
-              {url && <img src={url} alt="" className="h-full w-full object-cover" />}
+              {url && <img src={url} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />}
               {item.type === 'VIDEO' && (
                 <span className="absolute bottom-1 left-1 rounded-full bg-black/60 p-1 text-white">
                   <VideoCameraIcon className="h-3.5 w-3.5" />

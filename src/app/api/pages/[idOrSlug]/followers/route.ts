@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { resolvePage } from '@/lib/api/page-authz';
 import type { ProfileLite } from '@/lib/api/pages';
+import { withImageVariant } from '@/lib/media/urls';
 
 export async function GET(
   _request: NextRequest,
@@ -60,7 +61,8 @@ export async function GET(
         username: p?.username ?? '',
         firstName: p?.first_name ?? '',
         lastName: p?.last_name ?? '',
-        avatarUrl: p?.avatar_url ?? undefined,
+        // Follower-roster avatars render small — ship the `avatar` variant.
+        avatarUrl: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
         followedAt: r.created_at,
       };
     })

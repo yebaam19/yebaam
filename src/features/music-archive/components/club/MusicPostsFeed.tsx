@@ -150,7 +150,7 @@ function PostCard({
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 flex-none overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
           {avatar ? (
-            <img src={avatar} alt="" className="h-full w-full object-cover" />
+            <img src={avatar} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <UserIcon className="h-4 w-4 text-zinc-400" />

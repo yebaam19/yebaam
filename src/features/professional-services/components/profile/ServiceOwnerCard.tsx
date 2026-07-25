@@ -33,7 +33,7 @@ export function ServiceOwnerCard({ owner }: ServiceOwnerCardProps) {
         {/* Avatar */}
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
           {owner.avatarUrl ? (
-            <Image src={owner.avatarUrl} alt={displayName} fill sizes="64px" className="object-cover" />
+            <Image src={owner.avatarUrl} alt={displayName} fill sizes="64px" className="object-cover" unoptimized />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xl font-semibold text-neutral-500">
               {initials}
@@ -47,7 +47,11 @@ export function ServiceOwnerCard({ owner }: ServiceOwnerCardProps) {
             <h3 className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
               {displayName}
             </h3>
-            {owner.isVerified && <CheckBadgeIcon className="h-5 w-5 shrink-0 text-primary-500" title="Verificado" />}
+            {owner.isVerified && (
+              <span title="Verificado" className="inline-flex shrink-0">
+                <CheckBadgeIcon className="h-5 w-5 text-primary-500" />
+              </span>
+            )}
           </div>
 
           <p className="text-sm text-neutral-500 dark:text-neutral-400">@{displayUsername}</p>

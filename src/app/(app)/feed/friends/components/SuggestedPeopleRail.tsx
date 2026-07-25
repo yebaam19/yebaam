@@ -62,6 +62,8 @@ function SuggestionCard({
             src={suggestion.avatar}
             alt={fullName}
             className="h-full w-full object-cover"
+            decoding="async"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

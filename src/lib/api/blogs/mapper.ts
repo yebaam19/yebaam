@@ -1,4 +1,5 @@
 import 'server-only';
+import { withImageVariant } from '@/lib/media/urls';
 import type { BlogRow, BlogBadgeJoined, OwnerProfile } from './types';
 
 export function mapBlog(
@@ -17,7 +18,7 @@ export function mapBlog(
     id: row.owner_id,
     name: [owner?.first_name, owner?.last_name].filter(Boolean).join(' ') || (owner?.username ?? ''),
     username: owner?.username ?? '',
-    avatar: owner?.avatar_url ?? undefined,
+    avatar: owner?.avatar_url ? withImageVariant(owner.avatar_url, 'avatar') : undefined,
   };
 
   const legacyStats = (row.stats ?? {}) as Record<string, unknown>;

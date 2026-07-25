@@ -14,7 +14,7 @@ import { useMediaPlayerStore } from './mediaPlayerStore';
  *  layout — appears whenever the media-player store flips to `'lightbox'`,
  *  so it works on any route (including expand-from-mini-player). */
 export function MusicMediaLightbox() {
-  const t = useTranslations('musica.lightbox');
+  const t = useTranslations('player.lightbox');
   const item = useMediaPlayerStore((s) => s.item);
   const mode = useMediaPlayerStore((s) => s.mode);
   const close = useMediaPlayerStore((s) => s.close);
@@ -138,6 +138,8 @@ function MediaPreview({
         src={imageUrl(item.cf_image_id, 'public')}
         alt={item.caption ?? ''}
         className="mx-auto max-h-[70dvh] w-full bg-zinc-950 object-contain sm:max-h-[80dvh]"
+        decoding="async"
+        loading="lazy"
       />
     );
   }

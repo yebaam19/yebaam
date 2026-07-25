@@ -59,6 +59,7 @@ export function MediaUploader({ schoolId, existing }: Props) {
                     fill
                     className="object-cover"
                     sizes="200px"
+                    unoptimized
                   />
                 </div>
               ) : (

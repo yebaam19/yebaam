@@ -162,11 +162,12 @@ export default async function MusicArchiveLandingPage({
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {albums.map((a) => (
+            {albums.map((a, index) => (
               <AlbumCoverCard
                 key={a.id}
                 album={a}
                 artistName={artistsById.get(a.artist_id)}
+                isLcp={index === 0}
               />
             ))}
           </div>

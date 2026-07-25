@@ -1,4 +1,5 @@
 import 'server-only';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type BusinessRow = {
   id: string;
@@ -137,7 +138,7 @@ export function mapBusinessBasic(row: BusinessRow, refs: Refs) {
           username: owner.username ?? '',
           firstName: owner.first_name ?? '',
           lastName: owner.last_name ?? '',
-          avatarUrl: owner.avatar_url ?? undefined,
+          avatarUrl: owner.avatar_url ? withImageVariant(owner.avatar_url, 'avatar') : undefined,
         }
       : undefined,
     _count: {
@@ -194,7 +195,7 @@ export function mapBusinessDetail(
           username: owner.username ?? '',
           firstName: owner.first_name ?? '',
           lastName: owner.last_name ?? '',
-          avatarUrl: owner.avatar_url ?? undefined,
+          avatarUrl: owner.avatar_url ? withImageVariant(owner.avatar_url, 'avatar') : undefined,
         }
       : {
           id: row.owner_id,
@@ -256,7 +257,7 @@ export function mapBusinessDetail(
         username: r.author?.username ?? '',
         firstName: r.author?.first_name ?? '',
         lastName: r.author?.last_name ?? '',
-        avatarUrl: r.author?.avatar_url ?? undefined,
+        avatarUrl: r.author?.avatar_url ? withImageVariant(r.author.avatar_url, 'avatar') : undefined,
       },
     })),
     _count: basic._count,

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useCommentSocket } from '../hooks/useCommentSocket'
 import { useCommentStore } from '../store/comment.store'
+import { useReactionStore } from '@/app/(app)/feed/reacions/store/reaction.store'
 import { CommentInput } from './CommentInput'
 import { CommentItem } from './CommentItem'
 import { CommentListSkeleton } from './CommentSkeleton'
@@ -46,6 +47,18 @@ export function CommentList({ postId, showInput = true, maxHeight, className = '
 
   const comments = commentsByPost[postId] || []
   const isLoading = loadingStates[postId]?.isLoading || false
+
+  // Una sola petición de reacciones para todo el hilo. Antes cada `CommentItem`
+  // pedía las suyas por separado, así que un hilo de 50 comentarios disparaba
+  // ~100 queries a `reactions` al abrirse.
+  const visibleCommentIds = comments.length > 0 ? comments.map((c) => c.id).join(',') : ''
+  useEffect(() => {
+    if (!visibleCommentIds) return
+    const ids = visibleCommentIds.split(',')
+    const { fetchMyReactionsForComments, fetchCountsForComments } = useReactionStore.getState()
+    void fetchMyReactionsForComments(ids)
+    void fetchCountsForComments(ids)
+  }, [visibleCommentIds])
 
   return (
     <div className={`flex flex-col bg-neutral-50 dark:bg-neutral-900/50 ${className}`}>

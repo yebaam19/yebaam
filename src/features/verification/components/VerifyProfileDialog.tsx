@@ -367,7 +367,7 @@ function PhotosTab({
             >
               {url ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={url} alt={slotLabels[slot - 1]} className="h-full w-full object-cover" />
+                <img src={url} alt={slotLabels[slot - 1]} className="h-full w-full object-cover" decoding="async" loading="lazy" />
               ) : (
                 <div className="flex flex-col items-center gap-1 px-2 text-center">
                   <span className="font-semibold">{slotLabels[slot - 1]}</span>
@@ -526,6 +526,8 @@ function IdDocumentTab({
                 src={docUrl}
                 alt={t('sentDocAlt')}
                 className="max-h-64 w-full rounded-md border border-neutral-200 object-contain dark:border-neutral-700"
+                decoding="async"
+                loading="lazy"
               />
             </a>
             <p className="mt-1 text-[10px] text-neutral-500">{t('openFullSize')}</p>
@@ -587,6 +589,8 @@ function IdDocumentTab({
               src={previewUrl}
               alt={t('previewAlt')}
               className="max-h-48 w-auto rounded-md border border-neutral-200 object-contain dark:border-neutral-600"
+              decoding="async"
+              loading="lazy"
             />
             <p className="text-xs text-neutral-600 dark:text-neutral-300">
               <span className="font-semibold">{file?.name}</span>

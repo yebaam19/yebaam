@@ -30,18 +30,21 @@ export async function GET(
   if (!data) return NextResponse.json({ error: 'Category not found' }, { status: 404 });
 
   const row = data as CityCategoryRow;
-  return NextResponse.json({
-    category: {
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description ?? '',
-      icon: row.icon ?? '',
-      color: row.color ?? '#16A44C',
-      order: row.sort_order ?? 0,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+  return NextResponse.json(
+    {
+      category: {
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        description: row.description ?? '',
+        icon: row.icon ?? '',
+        color: row.color ?? '#16A44C',
+        order: row.sort_order ?? 0,
+        isActive: row.is_active,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      },
     },
-  });
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+  );
 }

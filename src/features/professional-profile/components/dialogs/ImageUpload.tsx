@@ -120,7 +120,7 @@ export function ImageUpload({ currentImageUrl, onImageChange, label, imageType, 
         >
           {previewUrl ? (
             <>
-              <Image src={previewUrl} alt="Preview" fill sizes="(max-width: 768px) 128px, 400px" className="object-cover" />
+              <Image src={previewUrl} alt="Preview" fill sizes="(max-width: 768px) 128px, 400px" className="object-cover" unoptimized />
               {!isUploading && (
                 <button
                   type="button"

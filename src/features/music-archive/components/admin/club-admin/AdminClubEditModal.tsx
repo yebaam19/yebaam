@@ -136,6 +136,8 @@ export function AdminClubEditModal({ club, genres, onClose, onSaved }: Props) {
                     src={newCoverPreview ?? currentCoverUrl ?? ''}
                     alt={newCoverPreview ? t('newCoverAlt') : t('currentCoverAlt')}
                     className="h-full w-full object-cover"
+                    decoding="async"
+                    loading="lazy"
                   />
                 </div>
                 <p className="text-xs text-zinc-500">

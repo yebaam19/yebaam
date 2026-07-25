@@ -184,6 +184,17 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|monitoring|_next/static|_next/image|favicon.ico|icon.png|opengraph-image|twitter-image|apple-icon|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.webp|.*\\.svg).*)',
+    // Every matched request costs a GoTrue `getUser()` round-trip plus, for
+    // signed-in users, two role queries — so anything that isn't a page must be
+    // excluded. The previous pattern only covered six image extensions, which
+    // left `.pdf`, `.avif`, `.ico`, `.woff2`, `.mp3`, `.mp4`, `.xml`, `.txt`
+    // and `.json` paying full auth cost. Worse, `/sitemap.xml` and
+    // `/robots.txt` aren't in PUBLIC_ROUTES, so crawlers were being 307'd to
+    // /login and neither file was ever served.
+    //
+    // Extensions are anchored with `$` (the old pattern was unanchored, so a
+    // real page at `/x.png/edit` would have skipped the proxy) and `_next`
+    // replaces `_next/static|_next/image` to also cover `_next/data` and HMR.
+    '/((?!api|monitoring|_next|favicon\\.ico|icon\\.png|icon\\.ico|opengraph-image|twitter-image|apple-icon|manifest\\.json|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:png|jpe?g|gif|webp|svg|avif|ico|bmp|pdf|txt|xml|json|webmanifest|mp3|mp4|webm|mov|woff|woff2|ttf|otf|eot|map|ai|zip|csv)$).*)',
   ],
 };

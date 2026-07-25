@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { withImageVariant } from '@/lib/media/urls';
 import {
   type DbFriendSettings,
   type DbFriendship,
@@ -66,7 +67,7 @@ async function loadFriendships(
       firstName: p?.first_name ?? undefined,
       lastName: p?.last_name ?? undefined,
       username: p?.username ?? `User-${fid.slice(0, 8)}`,
-      avatar: p?.avatar_url ?? undefined,
+      avatar: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
     };
   });
 
@@ -142,7 +143,7 @@ async function updateFriendConfig(friendId: string, config: UpdateFriendConfigDt
     firstName: p?.first_name ?? undefined,
     lastName: p?.last_name ?? undefined,
     username: p?.username ?? '',
-    avatar: p?.avatar_url ?? undefined,
+    avatar: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
   };
 }
 

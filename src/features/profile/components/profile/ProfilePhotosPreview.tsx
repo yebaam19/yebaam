@@ -76,6 +76,7 @@ export default function ProfilePhotosPreview({ userId, username }: ProfilePhotos
                 fill
                 className="object-cover object-center transition-opacity group-hover:opacity-95"
                 sizes="(max-width: 1024px) 33vw, 120px"
+                unoptimized
               />
             </Link>
           ))}

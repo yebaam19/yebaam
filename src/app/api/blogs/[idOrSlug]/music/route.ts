@@ -76,22 +76,30 @@ export async function GET(
   );
   const audioUrlByTrackId = new Map(signed);
 
-  return NextResponse.json({
-    artist: { id: artist.id, name: artist.name, slug: artist.slug },
-    albums: albums.map((a) => ({
-      id: a.id,
-      title: a.title,
-      slug: a.slug,
-      year: a.year,
-      coverCfImageId: a.cover_cf_image_id,
-      tracks: (tracksByAlbum.get(a.id) ?? []).map((tr) => ({
-        id: tr.id,
-        title: tr.title,
-        position: tr.position,
-        side: tr.side,
-        durationSeconds: tr.duration_seconds,
-        audioUrl: audioUrlByTrackId.get(tr.id) ?? null,
+  // Cacheable: every table read here (`blogs`, `music_artists`, `music_albums`,
+  // `music_tracks`) is `select ... using (true)` under RLS, so the payload is the
+  // same for every caller. Max staleness (60 + 600 s) stays well inside the 1 h
+  // TTL of the pre-signed audio URLs above, so a cached copy never serves a dead
+  // signature.
+  return NextResponse.json(
+    {
+      artist: { id: artist.id, name: artist.name, slug: artist.slug },
+      albums: albums.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        year: a.year,
+        coverCfImageId: a.cover_cf_image_id,
+        tracks: (tracksByAlbum.get(a.id) ?? []).map((tr) => ({
+          id: tr.id,
+          title: tr.title,
+          position: tr.position,
+          side: tr.side,
+          durationSeconds: tr.duration_seconds,
+          audioUrl: audioUrlByTrackId.get(tr.id) ?? null,
+        })),
       })),
-    })),
-  });
+    },
+    { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600' } }
+  );
 }

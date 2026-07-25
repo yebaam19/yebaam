@@ -40,6 +40,8 @@ export function GeneralTab({
                 src={coverPreview}
                 alt={t('coverPreviewAlt')}
                 className="w-full h-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500" />

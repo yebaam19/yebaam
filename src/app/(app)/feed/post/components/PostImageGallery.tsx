@@ -77,12 +77,17 @@ export default function PostImageGallery({ images, lcpCandidate = false }: PostI
               )}
               onClick={() => openLightbox(index)}
             >
+              {/* `unoptimized`: Cloudflare already content-negotiates AVIF at the
+                  edge, so Vercel's optimizer would decode and re-encode AVIF→AVIF
+                  — pure added latency (seconds on a cold transform) and a second
+                  lossy pass, for zero byte savings. This is the feed's LCP image. */}
               <Image
                 src={image.url}
                 alt={`Imagen ${index + 1}`}
                 fill
+                unoptimized
                 className="object-contain object-center transition-opacity group-hover:opacity-95"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, 590px"
                 priority={isLcp}
                 loading={isLcp ? undefined : 'lazy'}
               />

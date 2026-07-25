@@ -90,7 +90,7 @@ function MediaThumb({ media }: { media: OwnerPostMedia }) {
 
   return (
     <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-200 sm:h-24 sm:w-24 dark:bg-neutral-700">
-      <Image src={src} alt="" fill className="object-cover" sizes="96px" />
+      <Image src={src} alt="" fill className="object-cover" sizes="96px" unoptimized />
       {media.kind === 'video' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/25">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90">

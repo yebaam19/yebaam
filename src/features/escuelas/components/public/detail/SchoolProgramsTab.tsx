@@ -41,7 +41,7 @@ export function SchoolProgramsTab({ programs }: Props) {
           <div className="grid md:grid-cols-[0.85fr_1fr]">
             <div className="relative min-h-72 bg-primary-50">
               {cfImageUrl(featured.cf_image_id) ? (
-                <Image src={cfImageUrl(featured.cf_image_id)!} alt={featured.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 40vw" />
+                <Image src={cfImageUrl(featured.cf_image_id)!} alt={featured.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 40vw" unoptimized />
               ) : (
                 <div className="flex h-full min-h-72 items-center justify-center bg-primary-50">
                   <GraduationCap size={48} className="text-primary-300" />
@@ -82,7 +82,7 @@ export function SchoolProgramsTab({ programs }: Props) {
               className="grid grid-cols-[88px_1fr] gap-4 overflow-hidden rounded-xl border border-primary-100 bg-white p-3 shadow-sm transition hover:border-primary-700">
               <div className="relative h-24 w-full overflow-hidden rounded-lg bg-primary-50">
                 {cfImageUrl(program.cf_image_id) ? (
-                  <Image src={cfImageUrl(program.cf_image_id)!} alt={program.name} fill className="object-cover" sizes="88px" />
+                  <Image src={cfImageUrl(program.cf_image_id)!} alt={program.name} fill className="object-cover" sizes="88px" unoptimized />
                 ) : (
                   <div className="flex h-full items-center justify-center"><GraduationCap size={24} className="text-primary-300" /></div>
                 )}

@@ -47,5 +47,9 @@ export async function GET(
     };
   });
 
+  // NOTE: deliberately NOT CDN-cacheable. `resolvePage` runs under RLS
+  // (`pages.privacy = 'public' OR owner OR team member`), so whether this is a 200
+  // or a 404 depends on the caller; and `badges` additionally exposes non-public
+  // rows to platform admins.
   return NextResponse.json({ badges });
 }

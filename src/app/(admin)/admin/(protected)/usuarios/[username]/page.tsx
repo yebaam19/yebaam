@@ -175,7 +175,9 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
                   <span className="inline-flex items-center gap-1">
                     {user.workPlace}
                     {user.workVerified && (
-                      <CheckBadgeIcon className="h-4 w-4 text-sky-500" title="Empleo autenticado" />
+                      <span title="Empleo autenticado" className="inline-flex shrink-0">
+                        <CheckBadgeIcon className="h-4 w-4 text-sky-500" />
+                      </span>
                     )}
                   </span>
                 ) : null

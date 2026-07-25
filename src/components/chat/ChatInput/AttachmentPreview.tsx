@@ -39,6 +39,7 @@ export function AttachmentPreview({
             fill
             sizes="160px"
             className="object-cover"
+            unoptimized
           />
           <button
             type="button"

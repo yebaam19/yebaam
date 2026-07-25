@@ -19,7 +19,9 @@ export function ProfileNameHeader({ service }: ProfileNameHeaderProps) {
       <div className="flex items-center gap-2">
         <h1 className="text-xl font-bold text-neutral-900 sm:text-2xl dark:text-neutral-100">{name}</h1>
         {user?.isVerified && (
-          <CheckBadgeIcon className="h-6 w-6 shrink-0 text-primary-500" title="Verificado" />
+          <span title="Verificado" className="inline-flex shrink-0">
+            <CheckBadgeIcon className="h-6 w-6 text-primary-500" />
+          </span>
         )}
       </div>
 

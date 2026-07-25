@@ -49,6 +49,7 @@ export function ProductCard({ product, onQuickAction }: ProductCardProps) {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 33vw"
+            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-50 to-neutral-100">

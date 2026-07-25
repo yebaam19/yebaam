@@ -21,6 +21,8 @@ function Player({ item }: { item: MusicMediaItem }) {
         src={imageUrl(item.cf_image_id, 'public')}
         alt={item.caption ?? ''}
         className="max-h-[70vh] w-full object-contain"
+        decoding="async"
+        loading="lazy"
       />
     );
   }

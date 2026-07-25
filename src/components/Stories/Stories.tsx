@@ -8,14 +8,13 @@ import { useAuth } from '@/features/auth/context/auth-context';
 import { useStoryStore } from '@/app/(app)/stories/store/story.store';
 import { useStorySocket } from '@/app/(app)/stories/hooks/useStorySocket';
 import type { Story } from '@/app/(app)/stories/services/story.service';
-import { streamThumb } from '@/lib/media/urls';
+import { streamThumb, withImageVariant } from '@/lib/media/urls';
 import Avatar from '@/ui/Avatar';
 
 /** Los tiles del carrusel miden 120x200 — la variante `thumbnail` de Cloudflare
- *  (~20KB vs ~87KB de `/public`) basta de sobra. URLs no-Cloudflare pasan intactas. */
+ *  (~15KB vs ~60-115KB de `/public`) basta de sobra. */
 function toThumbnailVariant(src: string): string {
-  if (!src.startsWith('https://imagedelivery.net/')) return src;
-  return src.replace(/\/public$/, '/thumbnail');
+  return withImageVariant(src, 'thumbnail');
 }
 
 function storyPreviewSrc(story: Story): string | null {

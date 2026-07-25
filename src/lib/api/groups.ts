@@ -1,5 +1,6 @@
 import 'server-only';
 import type { getServerClient } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type GroupRow = {
   id: string;
@@ -49,7 +50,7 @@ export function mapGroup(row: GroupRow, viewer: Viewer) {
     creatorId: row.creator_id,
     creatorName,
     creatorUsername: creator?.username ?? undefined,
-    creatorAvatar: creator?.avatar_url ?? undefined,
+    creatorAvatar: creator?.avatar_url ? withImageVariant(creator.avatar_url, 'avatar') : undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

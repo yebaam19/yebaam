@@ -72,6 +72,8 @@ export default function PostSelectedItems({
             src={gif.url} 
             alt={gif.title || 'GIF'}
             className="w-full h-auto"
+            decoding="async"
+            loading="lazy"
           />
           {onRemoveGif && (
             <button

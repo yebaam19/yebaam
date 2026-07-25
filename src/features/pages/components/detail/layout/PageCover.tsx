@@ -40,6 +40,7 @@ export const PageCover: FC<PageCoverProps> = ({ page, isOwnerOrAdmin, unreadCoun
           sizes="100vw"
           className="object-cover"
           priority
+          unoptimized
         />
       ) : (
         <div className="w-full h-full bg-linear-to-r from-blue-500 to-purple-600" />

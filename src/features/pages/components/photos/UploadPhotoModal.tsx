@@ -203,6 +203,7 @@ export const UploadPhotoModal: FC<UploadPhotoModalProps> = ({
                             fill
                             sizes="(max-width: 768px) 100vw, 600px"
                             className="object-contain"
+                            unoptimized
                           />
                         )}
                         <button

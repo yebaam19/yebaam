@@ -134,6 +134,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
             sizes="100vw"
             className="object-cover"
             priority
+            unoptimized
           />
         ) : (
           <div className="w-full h-full bg-linear-to-r from-blue-500 to-purple-600" />
@@ -157,6 +158,7 @@ export const PageDetailHeader: FC<PageDetailHeaderProps> = ({ page }) => {
                     width={160}
                     height={160}
                     className="object-cover"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-gray-400 dark:text-gray-500">

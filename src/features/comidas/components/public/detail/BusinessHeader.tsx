@@ -41,7 +41,7 @@ export function BusinessHeader({
     <section className="overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-sm">
       <div className="relative h-64 overflow-hidden bg-primary-50 md:h-80">
         {coverUrl ? (
-          <Image src={coverUrl} alt={name} fill priority className="object-cover" sizes="100vw" />
+          <Image src={coverUrl} alt={name} fill priority className="object-cover" sizes="100vw" unoptimized />
         ) : (
           <div
             className="h-full w-full"

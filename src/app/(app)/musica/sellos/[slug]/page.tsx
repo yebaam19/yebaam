@@ -80,8 +80,8 @@ export default async function LabelPage({
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {label.albums.map((album) => (
-              <AlbumCoverCard key={album.id} album={album} />
+            {label.albums.map((album, index) => (
+              <AlbumCoverCard key={album.id} album={album} isLcp={index === 0} />
             ))}
           </div>
         )}

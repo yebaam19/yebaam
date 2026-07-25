@@ -48,6 +48,8 @@ export const BlogIdentityBar = ({ blog, stars }: BlogIdentityBarProps) => {
                     src={imageUrl(badge.iconCfImageId, 'public')}
                     alt={badge.name}
                     className="h-full w-full object-cover"
+                    decoding="async"
+                    loading="lazy"
                   />
                 ) : (
                   <TrophyIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

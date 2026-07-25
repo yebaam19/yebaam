@@ -16,6 +16,7 @@ export function TimelinePhotoCard({ photo }: { photo: FamilyPhotoRow }) {
           alt={photo.caption ?? ''}
           className="max-h-[480px] w-full object-cover"
           loading="lazy"
+          decoding="async"
         />
       </a>
       <div className="p-4 sm:p-5">

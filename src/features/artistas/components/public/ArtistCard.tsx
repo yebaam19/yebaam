@@ -42,6 +42,7 @@ export function ArtistCard({ artist }: Props) {
             fill
             className="object-cover transition duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            unoptimized
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-primary-50 to-primary-100" aria-hidden="true" />
@@ -65,6 +66,7 @@ export function ArtistCard({ artist }: Props) {
                 fill
                 className="object-cover"
                 sizes="64px"
+                unoptimized
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-primary-50 text-lg font-black text-primary-700">

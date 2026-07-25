@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
+import { withImageVariant } from '@/lib/media/urls';
 import { useCommentStore } from '../store/comment.store';
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store';
 import type { Comment, CommentAuthor } from '../interfaces/comment.interfaces';
@@ -49,7 +50,7 @@ async function getAuthor(userId: string): Promise<CommentAuthor> {
     username: row?.username ?? '',
     firstName: row?.first_name ?? '',
     lastName: row?.last_name ?? '',
-    avatar: row?.avatar_url ?? null,
+    avatar: row?.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : null,
   };
   profileCache.set(userId, author);
   return author;

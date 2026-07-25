@@ -29,6 +29,8 @@ export function PetCoverWithStrip({ petName, coverCfImageId, photos, onOpen }: P
             alt=""
             aria-hidden
             className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+            decoding="async"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
@@ -52,6 +54,8 @@ export function PetCoverWithStrip({ petName, coverCfImageId, photos, onOpen }: P
                 alt=""
                 aria-hidden
                 className="h-full w-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             </button>
           ))}

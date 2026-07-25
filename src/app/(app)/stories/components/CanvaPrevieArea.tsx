@@ -224,6 +224,8 @@ const CanvaPrevieArea = () => {
                    src={previewUrl}
                    alt="Story preview"
                    className="h-full w-full object-contain"
+                   decoding="async"
+                   loading="lazy"
                  />
                )}
                {storyType === 'video' && previewUrl && (

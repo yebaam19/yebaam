@@ -59,6 +59,7 @@ export const TeamMemberRow: FC<TeamMemberRowProps> = ({
             width={48}
             height={48}
             className="w-12 h-12 rounded-full object-cover"
+            unoptimized
           />
         ) : (
           <UserCircleIcon className="w-12 h-12 text-gray-400" />

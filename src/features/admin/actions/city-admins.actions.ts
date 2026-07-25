@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { withImageVariant } from '@/lib/media/urls'
 import {
   type ActionResult,
   requireAdmin,
@@ -109,7 +110,7 @@ export async function lookupUserByUsername(
       id: row.id,
       username: row.username,
       displayName: display,
-      avatarUrl: row.avatar_url,
+      avatarUrl: row.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : null,
     },
   }
 }

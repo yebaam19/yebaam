@@ -154,7 +154,7 @@ export function AdminClubCreateModal({ genres, genreSlugById, onClose, onCreated
             </label>
             {coverPreview && (
               <div className="mb-2 h-20 w-32 overflow-hidden rounded-md border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
-                <img src={coverPreview} alt={t('previewAlt')} className="h-full w-full object-cover" />
+                <img src={coverPreview} alt={t('previewAlt')} className="h-full w-full object-cover" decoding="async" loading="lazy" />
               </div>
             )}
             <input

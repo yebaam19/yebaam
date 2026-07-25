@@ -6,12 +6,20 @@ import path from 'node:path'
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 const nextConfig: NextConfig = {
-  experimental: process.env.NODE_ENV === 'development'
-    ? {
-        // Default true in Next 16; can race with chunk serving during long compiles (ChunkLoadError in dev).
-        turbopackFileSystemCacheForDev: false,
-      }
-    : {},
+  experimental: {
+    // Rewrites `import { Foo } from 'pkg'` into per-icon deep imports so a route
+    // only bundles the glyphs/components it renders. Matters most for the icon
+    // packages: without it a single named import can pull the whole set.
+    optimizePackageImports: [
+      'lucide-react',
+      '@hugeicons/react',
+      '@hugeicons/core-free-icons',
+      'date-fns',
+      'recharts',
+    ],
+    // Default true in Next 16; can race with chunk serving during long compiles (ChunkLoadError in dev).
+    ...(process.env.NODE_ENV === 'development' ? { turbopackFileSystemCacheForDev: false } : {}),
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },

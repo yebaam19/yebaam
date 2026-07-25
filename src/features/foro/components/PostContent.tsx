@@ -50,6 +50,8 @@ function renderNodes(
           src={n.src}
           alt=""
           className="my-2 max-h-96 max-w-full rounded-lg border border-neutral-200 object-contain dark:border-neutral-800"
+          decoding="async"
+          loading="lazy"
         />
       )
     if (n.kind === 'inline') {

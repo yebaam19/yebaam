@@ -100,8 +100,15 @@ export const createCommentsReactionSlice: StateCreator<
 
   fetchCountsForComments: async (commentIds) => {
     if (commentIds.length === 0) return;
+    // Same `missing` guard as fetchMyReactionsForComments: without it every
+    // re-render of a thread re-queried counts for comments already in the
+    // store. Live changes still arrive through the optimistic `bumpCount`
+    // path and the comment realtime subscription.
+    const cached = get().countsByComment;
+    const missing = commentIds.filter((id) => !(id in cached));
+    if (missing.length === 0) return;
     try {
-      const counts = await reactionService.getCountsForComments(commentIds);
+      const counts = await reactionService.getCountsForComments(missing);
       set((state) => ({
         countsByComment: { ...state.countsByComment, ...counts },
       }));

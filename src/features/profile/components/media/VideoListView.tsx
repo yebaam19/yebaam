@@ -47,6 +47,7 @@ export default function VideoListView({ video, onVideoClick, formatDuration }: V
             fill
             className="object-cover"
             sizes="128px"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

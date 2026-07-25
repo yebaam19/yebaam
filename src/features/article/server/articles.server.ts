@@ -2,6 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 import { getServerClient } from '@/utils/supabase/server'
+import { withImageVariant } from '@/lib/media/urls'
 import {
   ArticleContextType,
   ArticleVisibility,
@@ -77,7 +78,7 @@ function mapAuthor(row: DbProfileRow | null, fallbackId: string): ArticleAuthor 
     id: row.id,
     username: row.username ?? '',
     displayName: displayName || row.username || '',
-    avatarUrl: row.avatar_url ?? null,
+    avatarUrl: row.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : null,
     isVerified: row.is_verified === true,
   }
 }

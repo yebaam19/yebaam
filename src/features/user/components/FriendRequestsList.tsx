@@ -223,6 +223,7 @@ export function FriendRequestsList() {
                         fill
                         sizes="56px"
                         className="object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">

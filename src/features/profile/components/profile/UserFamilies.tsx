@@ -109,6 +109,8 @@ function FamilyMiniCard({ family }: { family: FamilyWithViewer }) {
             alt=""
             className="h-full w-full object-cover"
             aria-hidden
+            decoding="async"
+            loading="lazy"
           />
         ) : (
           <HomeIcon className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />

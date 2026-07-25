@@ -24,6 +24,8 @@ export async function FamilyCard({ family }: { family: FamilyWithViewer }) {
             src={cover}
             alt={family.name}
             className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+            decoding="async"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

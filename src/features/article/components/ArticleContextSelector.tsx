@@ -251,7 +251,7 @@ function ContextMenuContent({
                 >
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-neutral-100 sm:h-8 sm:w-8 dark:bg-neutral-700">
                     {blog.imageUrl ? (
-                      <img src={blog.imageUrl} alt={blog.name} className="h-full w-full rounded object-cover" />
+                      <img src={blog.imageUrl} alt={blog.name} className="h-full w-full rounded object-cover" decoding="async" loading="lazy" />
                     ) : (
                       <BookOpenIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                     )}
@@ -291,7 +291,7 @@ function ContextMenuContent({
                 >
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-neutral-100 sm:h-8 sm:w-8 dark:bg-neutral-700">
                     {club.imageUrl ? (
-                      <img src={club.imageUrl} alt={club.name} className="h-full w-full rounded object-cover" />
+                      <img src={club.imageUrl} alt={club.name} className="h-full w-full rounded object-cover" decoding="async" loading="lazy" />
                     ) : (
                       <UserGroupIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                     )}

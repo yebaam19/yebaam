@@ -54,6 +54,7 @@ export default function VideoModal({ video, user, onClose }: VideoModalProps) {
                   width={48}
                   height={48}
                   className="rounded-full"
+                  unoptimized
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">

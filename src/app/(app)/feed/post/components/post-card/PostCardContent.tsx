@@ -80,6 +80,7 @@ export function PostCardContent({ post }: Props) {
               alt={post.gif.title || 'GIF'}
               className="h-full w-full bg-neutral-100 object-contain dark:bg-neutral-800"
               loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

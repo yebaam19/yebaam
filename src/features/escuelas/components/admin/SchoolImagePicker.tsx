@@ -56,7 +56,7 @@ export function SchoolImagePicker({ schoolId, variant, currentCfImageId, schoolN
           aria-label="Cambiar foto de portada"
         >
           {imgUrl ? (
-            <Image src={imgUrl} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 672px" />
+            <Image src={imgUrl} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 672px" unoptimized />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-neutral-400">
               <Camera size={28} />
@@ -96,7 +96,7 @@ export function SchoolImagePicker({ schoolId, variant, currentCfImageId, schoolN
         aria-label="Cambiar foto de perfil"
       >
         {imgUrl ? (
-          <Image src={imgUrl} alt="" fill className="object-cover" sizes="96px" />
+          <Image src={imgUrl} alt="" fill className="object-cover" sizes="96px" unoptimized />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-neutral-400">
             {schoolName[0]?.toUpperCase() ?? '?'}

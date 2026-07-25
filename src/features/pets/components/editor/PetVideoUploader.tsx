@@ -76,6 +76,8 @@ export function PetVideoUploader({ videos, onAdd, onRemove }: PetVideoUploaderPr
               src={streamThumb(v.cf_stream_uid, { width: 480 })}
               alt={v.caption ?? ''}
               className="h-full w-full object-cover"
+              decoding="async"
+              loading="lazy"
             />
             <button
               type="button"

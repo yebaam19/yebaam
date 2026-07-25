@@ -159,7 +159,7 @@ export const BlogMediaGrid = ({ posts, type }: BlogMediaGridProps) => {
                     </video>
                   )
                 ) : (
-                  <Image src={selectedMedia.url} alt="Media" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain" />
+                  <Image src={selectedMedia.url} alt="Media" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain" unoptimized />
                 )}
               </div>
 
@@ -174,6 +174,7 @@ export const BlogMediaGrid = ({ posts, type }: BlogMediaGridProps) => {
                       width={40}
                       height={40}
                       className="rounded-full"
+                      unoptimized
                     />
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-300 dark:bg-neutral-600">

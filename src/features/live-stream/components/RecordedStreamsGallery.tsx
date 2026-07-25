@@ -200,6 +200,8 @@ export default function RecordedStreamsGallery({ onPlayStream }: RecordedStreams
                       src={stream.author.avatar}
                       alt={getAuthorDisplayName(stream.author)}
                       className="h-6 w-6 rounded-full object-cover"
+                      decoding="async"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="h-6 w-6 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">

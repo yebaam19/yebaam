@@ -55,6 +55,8 @@ export function FamilyTreeNodeCard({ data }: NodeProps) {
               isClaimed ? 'ring-2 ring-blue-300 dark:ring-blue-700' : ''
             } ${isDeceased ? 'opacity-80 grayscale' : ''}`}
             aria-hidden
+            decoding="async"
+            loading="lazy"
           />
         ) : (
           <div

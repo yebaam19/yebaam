@@ -46,6 +46,7 @@ export function SchoolCard({ school }: Props) {
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

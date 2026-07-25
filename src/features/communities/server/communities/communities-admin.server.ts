@@ -2,6 +2,7 @@ import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { ProfileLite } from '@/lib/api/communities';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type PendingJoinRequest = {
   id: string;
@@ -54,7 +55,7 @@ export async function getPendingJoinRequests(communityId: string): Promise<Pendi
       userId: r.user_id,
       username: p?.username ?? '',
       name: display,
-      avatar: p?.avatar_url ?? null,
+      avatar: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
       message: r.message,
       createdAt: r.created_at,
     };

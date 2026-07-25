@@ -133,6 +133,8 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
                     src={imageUrl(album.coverCfImageId, 'public')}
                     alt={album.title}
                     className="h-full w-full object-cover"
+                    decoding="async"
+                    loading="lazy"
                   />
                 ) : (
                   <MusicalNoteIcon className="m-3 h-6 w-6 text-neutral-400" />

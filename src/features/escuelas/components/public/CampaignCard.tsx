@@ -40,7 +40,7 @@ export function CampaignCard({ campaign: c }: { campaign: SchoolCampaign }) {
     <article className="flex flex-col overflow-hidden rounded-[1.5rem] border border-[#dfeadf] bg-white shadow-sm transition hover:shadow-[0_8px_28px_rgba(29,65,35,0.10)]">
       {imageUrl ? (
         <div className="relative h-40 overflow-hidden bg-[#eaf3ea]">
-          <Image src={imageUrl} alt={c.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+          <Image src={imageUrl} alt={c.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" unoptimized />
           <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
         </div>
       ) : (

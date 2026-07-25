@@ -180,6 +180,8 @@ export default function ProfileVideosFull({ username, videos, totalVideos, isOwn
                   src={video.thumbnailUrl}
                   alt={video.title || 'Video'}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
                 {/* Play overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300">
@@ -239,6 +241,8 @@ export default function ProfileVideosFull({ username, videos, totalVideos, isOwn
                     src={video.thumbnailUrl}
                     alt={video.title || 'Video'}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    decoding="async"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-200 flex items-center justify-center">
                     <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">

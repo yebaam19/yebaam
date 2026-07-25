@@ -151,6 +151,7 @@ export function CityMediaDialog({ cityName, media, open, onClose, initialIndex =
                         className="object-contain"
                         sizes="(max-width: 1536px) 100vw, 1536px"
                         priority
+                        unoptimized
                       />
                     ) : (
                       <video src={currentMedia.url} className="h-full w-full object-contain" controls autoPlay />

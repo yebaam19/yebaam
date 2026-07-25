@@ -20,7 +20,7 @@ export default function EvidenceThumbnail({ evidenceUrl }: Props) {
             className={`relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-neutral-100 ring-2 ring-amber-400 dark:bg-neutral-700 dark:ring-amber-500 ${evidenceUrl ? 'cursor-zoom-in hover:opacity-90' : 'cursor-not-allowed opacity-50'}`}
           >
             {evidenceUrl ? (
-              <img src={evidenceUrl} alt="Diploma" className="h-full w-full object-cover" />
+              <img src={evidenceUrl} alt="Diploma" className="h-full w-full object-cover" decoding="async" loading="lazy" />
             ) : (
               <span className="text-[10px] text-neutral-500">Sin archivo</span>
             )}
@@ -41,6 +41,8 @@ export default function EvidenceThumbnail({ evidenceUrl }: Props) {
             alt="Vista ampliada"
             className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
             onClick={(e) => e.stopPropagation()}
+            decoding="async"
+            loading="lazy"
           />
           <button
             type="button"

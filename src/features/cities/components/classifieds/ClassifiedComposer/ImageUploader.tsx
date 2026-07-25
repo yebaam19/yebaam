@@ -92,7 +92,7 @@ export function ImageUploader({ cfImageIds, onChange, disabled }: ImageUploaderP
               className="relative aspect-square overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
             >
               {url ? (
-                <img src={url} alt="" className="h-full w-full object-cover" />
+                <img src={url} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-neutral-400">
                   <PhotoIcon className="h-6 w-6" />

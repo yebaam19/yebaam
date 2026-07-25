@@ -29,7 +29,7 @@ export function ArtistHeader({ artist }: Props) {
       {/* Cover */}
       <div className="relative h-56 overflow-hidden bg-linear-to-br from-primary-800 via-primary-700 to-neutral-900 md:h-72">
         {coverUrl && (
-          <Image src={coverUrl} alt={`Portada de ${artist.stage_name}`} fill className="object-cover" sizes="100vw" priority />
+          <Image src={coverUrl} alt={`Portada de ${artist.stage_name}`} fill className="object-cover" sizes="100vw" priority unoptimized />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-neutral-950/80 via-neutral-950/30 to-transparent" />
         {/* Back link */}
@@ -46,7 +46,7 @@ export function ArtistHeader({ artist }: Props) {
             {/* Avatar */}
             <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-primary-50 text-lg font-black text-primary-700 shadow-xl ring-2 ring-primary-700/20 sm:h-28 sm:w-28">
               {profileUrl ? (
-                <Image src={profileUrl} alt={artist.stage_name} fill className="object-cover" sizes="112px" />
+                <Image src={profileUrl} alt={artist.stage_name} fill className="object-cover" sizes="112px" unoptimized />
               ) : (
                 <span>{initials}</span>
               )}

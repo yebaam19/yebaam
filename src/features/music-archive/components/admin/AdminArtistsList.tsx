@@ -109,6 +109,8 @@ export function AdminArtistsList({ initialArtists }: Props) {
                         src={imageUrl(a.photo_cf_image_id, 'avatar')}
                         alt=""
                         className="h-8 w-8 rounded-full object-cover"
+                        decoding="async"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700" />

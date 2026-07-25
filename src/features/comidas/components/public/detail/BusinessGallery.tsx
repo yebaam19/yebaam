@@ -52,6 +52,7 @@ export function BusinessGallery({ assets }: Props) {
                     src={imgUrl} alt={item.alt_text || item.title || 'Foto del negocio'} fill
                     className="object-cover transition duration-300 group-hover:scale-[1.02]"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-4xl bg-primary-50">
@@ -121,6 +122,7 @@ export function BusinessGallery({ assets }: Props) {
                 <Image
                   src={imgUrl} alt={item?.title || 'Imagen'} width={1200} height={800}
                   className="max-h-[85vh] w-auto mx-auto rounded-2xl object-contain"
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-64 w-full items-center justify-center rounded-2xl bg-neutral-800 text-white/60">

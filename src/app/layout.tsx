@@ -12,7 +12,6 @@ import { ThemeSync } from '@/components/settings/ThemeSync';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import OfflineIndicator from '@/components/OfflineIndicator';
-import { SocketProvider } from '@/providers/socket-provider';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -93,11 +92,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <NextIntlClientProvider locale={locale} messages={messages}>
             <ThemeSync />
             <AuthProvider>
-              <SocketProvider>
-                <OfflineIndicator />
-                <div className="min-w-0">{children}</div>
-                <Toaster position="top-center" richColors />
-              </SocketProvider>
+              <OfflineIndicator />
+              <div className="min-w-0">{children}</div>
+              <Toaster position="top-center" richColors />
             </AuthProvider>
           </NextIntlClientProvider>
         </ErrorBoundary>

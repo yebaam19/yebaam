@@ -48,6 +48,9 @@ export async function GET(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // NOTE: deliberately NOT CDN-cacheable — `business_media` RLS resolves through
+  // `businesses.visibility = 'PUBLIC' OR owner_id = auth.uid()`, so a private
+  // business returns its media to the owner and nothing to everyone else.
   return NextResponse.json(((data ?? []) as BusinessMediaRow[]).map(mapMedia));
 }
 

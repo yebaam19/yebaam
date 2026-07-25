@@ -114,7 +114,7 @@ export default function PostModalContent({
       {/* Selected GIF */}
       {selectedGif && (
         <div className="relative overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
-          <img src={selectedGif.url} alt={selectedGif.title} className="h-auto w-full" />
+          <img src={selectedGif.url} alt={selectedGif.title} className="h-auto w-full" decoding="async" loading="lazy" />
           <button
             type="button"
             onClick={onRemoveGif}

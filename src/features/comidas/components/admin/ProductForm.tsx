@@ -130,6 +130,8 @@ function ProductFormFields({
               src={cfImageUrl(cfImageId) ?? ''}
               alt=""
               className="h-20 w-20 shrink-0 rounded-xl border border-neutral-200 object-cover"
+              decoding="async"
+              loading="lazy"
             />
           ) : (
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 text-neutral-300">
@@ -241,6 +243,8 @@ export function ProductForm({ businessId, menus }: Props) {
                     src={cfImageUrl(product.cf_image_id) ?? ''}
                     alt=""
                     className="h-11 w-11 shrink-0 rounded-lg border border-neutral-200 object-cover"
+                    decoding="async"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-200 text-neutral-300">

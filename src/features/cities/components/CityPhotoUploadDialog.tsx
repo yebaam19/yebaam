@@ -228,7 +228,7 @@ export function CityPhotoUploadDialog({
                       {/* Preview de imagen */}
                       <div className="aspect-video relative bg-neutral-100 dark:bg-neutral-700">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={previewUrl || ''} alt="Vista previa" className="h-full w-full object-contain" />
+                        <img src={previewUrl || ''} alt="Vista previa" className="h-full w-full object-contain" decoding="async" loading="lazy" />
                         {/* Botón para remover */}
                         {!isUploading && (
                           <button

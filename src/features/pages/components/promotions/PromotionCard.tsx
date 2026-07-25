@@ -140,6 +140,7 @@ export const PromotionCard: FC<PromotionCardProps> = ({
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
                 onError={() => setImageError(true)}
+                unoptimized
               />
             </div>
           </div>

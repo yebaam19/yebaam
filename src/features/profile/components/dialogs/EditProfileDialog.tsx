@@ -254,6 +254,7 @@ export default function EditProfileDialog({ user, open, onOpenChange }: EditProf
                               offsetY: coverOffsetY,
                               zoom: coverZoom,
                             })}
+                            unoptimized
                           />
                         </div>
                       )}

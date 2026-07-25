@@ -19,6 +19,8 @@ export function Lightbox({ url, onClose }: Props) {
         alt={t('lightboxAlt')}
         className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
         onClick={(e) => e.stopPropagation()}
+        decoding="async"
+        loading="lazy"
       />
       <button
         type="button"

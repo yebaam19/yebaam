@@ -74,6 +74,8 @@ export default function UserProfile({
         <div className="relative overflow-hidden rounded-lg">
           <div className="relative h-56 w-full sm:h-72 md:h-80 lg:h-96">
             {coverSrc ? (
+              // LCP of the profile page. Cloudflare already content-negotiates AVIF, so the
+              // Vercel optimizer would only add a cold-transform round trip for zero savings.
               <Image
                 src={coverSrc}
                 alt="Cover"
@@ -85,7 +87,8 @@ export default function UserProfile({
                   zoom: user.coverZoom ?? 100,
                 })}
                 priority
-                sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1280px"
+                sizes="(max-width: 640px) 100vw, 1024px"
+                unoptimized
               />
             ) : (
               <GradientCover />

@@ -33,7 +33,7 @@ export function ProfileCard({ profile }: ProfileCardProps) {
       <div className="mb-4 flex items-start gap-4">
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-linear-to-br from-primary-400 to-primary-600 ring-2 ring-primary-100 dark:ring-primary-900/30">
           {avatar ? (
-            <img src={avatar} alt={displayName} className="h-full w-full object-cover" />
+            <img src={avatar} alt={displayName} className="h-full w-full object-cover" decoding="async" loading="lazy" />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <UserIcon className="h-8 w-8 text-white" />

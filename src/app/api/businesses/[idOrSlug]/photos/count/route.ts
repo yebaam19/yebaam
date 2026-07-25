@@ -28,5 +28,8 @@ export async function GET(
     .select('id', { count: 'exact', head: true })
     .eq('business_id', businessId);
 
+  // NOTE: deliberately NOT CDN-cacheable — `business_media` RLS resolves through
+  // `businesses.visibility = 'PUBLIC' OR owner_id = auth.uid()`, so the count of a
+  // private business is non-zero only for its owner.
   return NextResponse.json({ count: count ?? 0 });
 }

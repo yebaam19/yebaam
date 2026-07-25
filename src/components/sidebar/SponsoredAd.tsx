@@ -17,6 +17,8 @@ export default function SponsoredAd() {
         src="https://via.placeholder.com/300x150"
         alt={t('sponsoredAdAlt')}
         className="mb-2 w-full rounded-lg"
+        decoding="async"
+        loading="lazy"
       />
       <p className="text-sm font-medium text-neutral-900 dark:text-white">
         {t('sponsoredTitle')}

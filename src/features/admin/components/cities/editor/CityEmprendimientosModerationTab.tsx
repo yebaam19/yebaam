@@ -71,7 +71,7 @@ export async function CityEmprendimientosModerationTab({ city, statusFilter, pag
             <li key={e.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4">
               <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800">
                 {e.heroImageUrl ? (
-                  <img src={e.heroImageUrl} alt="" className="h-full w-full object-cover" />
+                  <img src={e.heroImageUrl} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
                 ) : (
                   <div className="h-full w-full bg-gradient-to-br from-primary-500 to-primary-800" />
                 )}

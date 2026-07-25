@@ -34,7 +34,7 @@ export function ProgramCard({ program }: Props) {
     >
       <div className="relative aspect-video overflow-hidden bg-primary-50">
         {imgUrl ? (
-          <Image src={imgUrl} alt={program.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 350px" />
+          <Image src={imgUrl} alt={program.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 350px" unoptimized />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-50 to-neutral-100">
             <span className="text-3xl opacity-40" aria-hidden="true">🎓</span>

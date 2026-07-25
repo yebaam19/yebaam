@@ -1,6 +1,7 @@
 import 'server-only'
 import { getServerClient } from '@/utils/supabase/server'
 import { cfImageUrl } from '@/features/cities/server/cf'
+import { withImageVariant } from '@/lib/media/urls'
 
 /**
  * Shared infrastructure for the admin city reads: the pagination envelope and
@@ -47,8 +48,10 @@ export function profileToDisplay(p: ProfileLite | undefined | null): string | nu
   return p.username
 }
 
+// Admin tables render this in ~32 px cells, so retarget the 128x128 `avatar`
+// variant instead of the full-size `/public` original (~60-115 KB per row).
 export function profileToAvatar(p: ProfileLite | undefined | null): string | null {
   if (!p) return null
-  if (p.avatar_cloudflare_id) return cfImageUrl(p.avatar_cloudflare_id) ?? p.avatar_url
-  return p.avatar_url
+  const raw = (p.avatar_cloudflare_id ? cfImageUrl(p.avatar_cloudflare_id) : null) ?? p.avatar_url
+  return raw ? withImageVariant(raw, 'avatar') : null
 }

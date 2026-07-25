@@ -22,6 +22,8 @@ export function MusicArticleCard({ article, clubSlug }: Props) {
             src={hero}
             alt=""
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            decoding="async"
+            loading="lazy"
           />
         </div>
       )}

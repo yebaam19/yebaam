@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { withImageVariant } from '@/lib/media/urls';
 import type { FriendSuggestion } from './friendships.types';
 
 async function getFriendSuggestions(limit: number = 10): Promise<FriendSuggestion[]> {
@@ -26,7 +27,7 @@ async function getFriendSuggestions(limit: number = 10): Promise<FriendSuggestio
     username: row.username ?? '',
     firstName: row.first_name ?? '',
     lastName: row.last_name ?? '',
-    avatar: row.avatar_url ?? undefined,
+    avatar: row.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : undefined,
     mutualFriends: row.mutual_friends,
     reason: 'Usuario sugerido',
   }));

@@ -76,6 +76,8 @@ export default async function ArtistPage({
               src={photo}
               alt={artist.name}
               className="aspect-square w-full object-cover"
+              decoding="async"
+              loading="lazy"
             />
           ) : (
             <div className="flex aspect-square items-center justify-center">
@@ -109,8 +111,13 @@ export default async function ArtistPage({
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {artist.albums.map((album) => (
-              <AlbumCoverCard key={album.id} album={album} artistName={artist.name} />
+            {artist.albums.map((album, index) => (
+              <AlbumCoverCard
+                key={album.id}
+                album={album}
+                artistName={artist.name}
+                isLcp={index === 0}
+              />
             ))}
           </div>
         )}

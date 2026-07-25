@@ -6,6 +6,7 @@ import {
   fromProfileVideoRow,
   type ProfileVideoRow as ProfileVideoMediaRow,
 } from '@/lib/media/parse';
+import { withImageVariant } from '@/lib/media/urls';
 import type { MediaItem } from '@/lib/media/types';
 
 export type WatchVideoSource = 'post' | 'profile_video' | 'community_post';
@@ -85,7 +86,7 @@ function buildAuthor(row: ProfileRow | undefined, fallbackId: string): WatchVide
     username: row?.username ?? '',
     firstName: row?.first_name ?? '',
     lastName: row?.last_name ?? '',
-    avatar: row?.avatar_url ?? undefined,
+    avatar: row?.avatar_url ? withImageVariant(row.avatar_url, 'avatar') : undefined,
     isVerified: row?.is_verified ?? undefined,
   };
 }

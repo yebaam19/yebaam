@@ -45,6 +45,8 @@ export default function FilePreviews({ previewUrls, selectedFiles, onRemove }: F
                 src={url}
                 alt={`Preview ${index + 1}`}
                 className="h-full w-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             )}
 

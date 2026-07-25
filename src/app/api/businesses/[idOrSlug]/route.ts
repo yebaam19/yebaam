@@ -101,6 +101,11 @@ export async function GET(
   const row = await loadBusiness(client, idOrSlug);
   if (!row) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
   const business = await detailResponse(client, row);
+  // NOTE: deliberately NOT CDN-cacheable. `businesses` RLS is
+  // `visibility = 'PUBLIC' OR owner_id = auth.uid()`, and the payload joins
+  // `profiles` (RLS: public OR self OR friends), so this response varies per
+  // viewer. A shared `public, s-maxage` cache would serve an owner's private
+  // business — and friends-only names — to anonymous callers.
   return NextResponse.json({ business });
 }
 

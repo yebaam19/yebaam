@@ -43,6 +43,7 @@ export function FeaturedReel({ media, serviceName }: FeaturedReelProps) {
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 1024px) 100vw, 60vw"
           priority
+          unoptimized
         />
 
         {isVideo && (

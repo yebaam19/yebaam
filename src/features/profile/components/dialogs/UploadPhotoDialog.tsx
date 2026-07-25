@@ -172,6 +172,7 @@ export default function UploadPhotoDialog({ open, onOpenChange }: UploadPhotoDia
                               fill
                               sizes="(max-width: 640px) 33vw, 200px"
                               className="object-cover"
+                              unoptimized
                             />
                             <button
                               onClick={() => removeFile(index)}

@@ -40,7 +40,7 @@ export function PromotionCard({ promotion }: Props) {
       <div className="relative overflow-hidden">
         {imgUrl ? (
           <div className="relative aspect-video">
-            <Image src={imgUrl} alt={promotion.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 400px" />
+            <Image src={imgUrl} alt={promotion.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 400px" unoptimized />
             <div className="absolute inset-0 bg-linear-to-t from-neutral-950/70 via-transparent to-transparent" />
           </div>
         ) : (

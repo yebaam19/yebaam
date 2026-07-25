@@ -34,13 +34,18 @@ export function imageUrl(id: string, variant: ImageVariant = 'public'): string {
   return `https://imagedelivery.net/${ACCOUNT_HASH}/${id}/${variant}`;
 }
 
+/**
+ * Poster frame for a Stream video. Without `width`, Cloudflare returns the
+ * frame at the *source* resolution — a 1080p/4K JPEG (150-400 KB) behind a
+ * player that hasn't started yet. 640 is wide enough for every poster surface
+ * in the app; pass an explicit width for anything larger (lightboxes).
+ */
 export function streamThumb(uid: string, opts?: { time?: number; width?: number; height?: number }): string {
   const params = new URLSearchParams();
   if (opts?.time) params.set('time', `${opts.time}s`);
-  if (opts?.width) params.set('width', String(opts.width));
+  params.set('width', String(opts?.width ?? 640));
   if (opts?.height) params.set('height', String(opts.height));
-  const qs = params.toString();
-  return `https://videodelivery.net/${uid}/thumbnails/thumbnail.jpg${qs ? `?${qs}` : ''}`;
+  return `https://videodelivery.net/${uid}/thumbnails/thumbnail.jpg?${params.toString()}`;
 }
 
 export function streamHlsUrl(uid: string): string {
@@ -79,7 +84,8 @@ export function resolveImage(
     row.cover_image_id ??
     null;
   if (id) return imageUrl(id, variant);
-  return row.url ?? row.avatar_url ?? row.cover_photo_url ?? row.media_url ?? null;
+  const legacy = row.url ?? row.avatar_url ?? row.cover_photo_url ?? row.media_url ?? null;
+  return legacy ? withImageVariant(legacy, variant) : null;
 }
 
 /** True when the stored value is already a URL-ish reference (legacy full
@@ -87,6 +93,28 @@ export function resolveImage(
  *  Cloudflare Images id. */
 function isUrlRef(value: string): boolean {
   return /^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:');
+}
+
+const CF_IMAGE_ORIGIN = 'https://imagedelivery.net/';
+
+/**
+ * Retarget an already-built Cloudflare Images URL at a different variant.
+ *
+ * Columns like `profiles.avatar_url` still store a full `.../<id>/public` URL
+ * (1366x768, ~60-115 KB). Asking for the `avatar` variant used to be a silent
+ * no-op for those rows, so a list of 10 people shipped ~700 KB of full-size
+ * photos to render 40 px circles. Rewriting the trailing segment gets the same
+ * row down to ~4 KB.
+ *
+ * Non-Cloudflare URLs and `data:`/`blob:` previews pass through untouched. So
+ * do URLs carrying a query string: `signImageDeliveryUrl()` signs the full
+ * path, so swapping the variant there would invalidate the signature.
+ */
+export function withImageVariant(url: string, variant: ImageVariant): string {
+  if (!url.startsWith(CF_IMAGE_ORIGIN) || url.includes('?')) return url;
+  const [hash, id] = url.slice(CF_IMAGE_ORIGIN.length).split('/');
+  if (!hash || !id) return url;
+  return `${CF_IMAGE_ORIGIN}${hash}/${id}/${variant}`;
 }
 
 /**
@@ -103,7 +131,7 @@ export function resolveImageRef(
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
-  return isUrlRef(trimmed) ? trimmed : imageUrl(trimmed, variant);
+  return isUrlRef(trimmed) ? withImageVariant(trimmed, variant) : imageUrl(trimmed, variant);
 }
 
 const IMAGE_DELIVERY_ID_RE = /imagedelivery\.net\/[^/]+\/([^/?#]+)/;

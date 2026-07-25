@@ -18,7 +18,7 @@ export function ProgramDetail({ program }: Props) {
     <main className="container mx-auto px-4 py-8 max-w-3xl">
       {imgUrl && (
         <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-neutral-100 mb-6">
-          <Image src={imgUrl} alt={program.name} fill className="object-cover" sizes="768px" priority />
+          <Image src={imgUrl} alt={program.name} fill className="object-cover" sizes="768px" priority unoptimized />
         </div>
       )}
       <h1 className="text-2xl font-bold mb-2">{program.name}</h1>

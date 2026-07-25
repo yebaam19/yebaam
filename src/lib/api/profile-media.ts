@@ -1,4 +1,5 @@
 import 'server-only';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type ProfileMediaType = 'photos' | 'videos';
 
@@ -33,6 +34,6 @@ export function mapProfileUser(p: ProfileLite | undefined | null, fallbackId: st
     username: p?.username ?? '',
     firstName: p?.first_name ?? undefined,
     lastName: p?.last_name ?? undefined,
-    avatar: p?.avatar_url ?? undefined,
+    avatar: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
   };
 }

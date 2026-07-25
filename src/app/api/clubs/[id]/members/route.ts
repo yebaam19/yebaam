@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import type { ClubMemberRow, ProfileLite } from '@/lib/api/clubs';
+import { withImageVariant } from '@/lib/media/urls';
 
 export async function GET(
   request: NextRequest,
@@ -42,7 +43,8 @@ export async function GET(
       userId: r.user_id,
       username: p?.username ?? '',
       name: [p?.first_name, p?.last_name].filter(Boolean).join(' ') || p?.username || '',
-      avatar: p?.avatar_url ?? undefined,
+      // Member-list avatars render small — ship the `avatar` variant.
+      avatar: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
       role: r.role,
       membershipTier: r.membership_tier,
       joinedAt: r.joined_at,
@@ -50,6 +52,10 @@ export async function GET(
   });
 
   const total = count ?? members.length;
+  // NOTE: deliberately NOT CDN-cacheable. `club_members` RLS is
+  // `user_id = auth.uid() OR is_club_viewable(club_id, auth.uid())`, so a private
+  // club's roster is visible only to members; the `profiles` join is viewer-
+  // dependent too (public OR self OR friends).
   return NextResponse.json({
     members,
     total,

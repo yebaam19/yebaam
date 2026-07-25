@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import React, { forwardRef } from 'react'
 import { TouchTarget } from './Button'
 import { Link } from './link'
+import { withImageVariant } from '@/lib/media/urls'
 
 type AvatarProps = {
   src?: string | null
@@ -13,13 +14,12 @@ type AvatarProps = {
 }
 
 /**
- * Profiles store the full-size Cloudflare `/public` delivery URL (~87KB); the
- * named `avatar` variant (~5.8KB) is live on the account. Rewrite at render
- * time so stored URLs stay untouched. Non-Cloudflare URLs pass through as-is.
+ * Profiles store the full-size Cloudflare `/public` delivery URL (~60-115KB);
+ * the named `avatar` variant (~4KB) is live on the account. Rewrite at render
+ * time so stored URLs stay untouched.
  */
 export function toAvatarVariant(src: string): string {
-  if (!src.startsWith('https://imagedelivery.net/')) return src
-  return src.replace(/\/public$/, '/avatar')
+  return withImageVariant(src, 'avatar')
 }
 
 export default function Avatar({

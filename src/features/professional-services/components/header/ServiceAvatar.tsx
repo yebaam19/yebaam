@@ -20,6 +20,7 @@ export function ServiceAvatar({ logoUrl, serviceName }: ServiceAvatarProps) {
             className="object-cover"
             quality={95}
             sizes="(max-width: 640px) 112px, 144px"
+            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-primary-100 text-4xl font-bold text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">

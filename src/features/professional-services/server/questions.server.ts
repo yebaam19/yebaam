@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 
 import { getServerClient } from '@/utils/supabase/server'
+import { withImageVariant } from '@/lib/media/urls'
 import { cfImage, fetchProfiles } from './_shared'
 
 /**
@@ -76,7 +77,9 @@ export const listServiceQuestions = cache(
               firstName: a.first_name ?? '',
               lastName: a.last_name ?? '',
               username: a.username ?? '',
-              avatarUrl: cfImage(a.avatar_cloudflare_id, 'avatar') ?? a.avatar_url ?? undefined,
+              avatarUrl:
+                cfImage(a.avatar_cloudflare_id, 'avatar') ??
+                (a.avatar_url ? withImageVariant(a.avatar_url, 'avatar') : undefined),
             }
           : undefined,
       }

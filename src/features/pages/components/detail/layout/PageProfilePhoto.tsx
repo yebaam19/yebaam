@@ -30,6 +30,7 @@ export const PageProfilePhoto: FC<PageProfilePhotoProps> = ({ page, isOwnerOrAdm
             sizes="(min-width: 1280px) 240px, (min-width: 1024px) 200px, 100vw"
             className="object-cover"
             priority
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-gray-400 dark:text-gray-500">

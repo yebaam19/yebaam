@@ -96,7 +96,7 @@ export function InstructorEditModal({ instructor, schoolId, onClose }: Props) {
                   className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 transition hover:border-primary-400 disabled:cursor-wait"
                 >
                   {photoUrl ? (
-                    <Image src={photoUrl} alt="" fill className="object-cover" sizes="64px" />
+                    <Image src={photoUrl} alt="" fill className="object-cover" sizes="64px" unoptimized />
                   ) : (
                     <span className="text-xl font-bold text-neutral-300">
                       {instructor.name[0]?.toUpperCase() ?? '?'}

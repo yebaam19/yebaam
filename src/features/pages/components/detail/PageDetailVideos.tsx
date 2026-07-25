@@ -198,6 +198,8 @@ export const PageDetailVideos: FC<PageDetailVideosProps> = ({ pageId, isOwner = 
                       src={emb.thumbnailUrl}
                       alt={emb.title || emb.provider}
                       className="h-full w-full object-cover"
+                      decoding="async"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-sm text-gray-500">

@@ -35,7 +35,7 @@ export function SchoolHero({ school, isAdmin = false, onLeadForm, onTrialForm }:
       {/* Cover */}
       <div className="relative h-48 overflow-hidden rounded-b-lg bg-primary-100 sm:h-64 lg:h-72">
         {coverUrl ? (
-          <Image src={coverUrl} alt={`Portada de ${school.name}`} fill className="object-cover" sizes="100vw" priority />
+          <Image src={coverUrl} alt={`Portada de ${school.name}`} fill className="object-cover" sizes="100vw" priority unoptimized />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-800 to-primary-700">
             <GraduationCap size={48} className="text-white/40" />
@@ -59,7 +59,7 @@ export function SchoolHero({ school, isAdmin = false, onLeadForm, onTrialForm }:
             <div className="relative shrink-0">
               <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-primary-50 bg-primary-50 text-xl font-black text-primary-700 sm:h-20 sm:w-20">
                 {profileUrl ? (
-                  <Image src={profileUrl} alt={school.name} fill className="object-cover" sizes="80px" />
+                  <Image src={profileUrl} alt={school.name} fill className="object-cover" sizes="80px" unoptimized />
                 ) : (
                   school.name?.charAt(0) ?? '?'
                 )}

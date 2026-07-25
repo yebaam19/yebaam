@@ -41,7 +41,7 @@ export function PetCoverField({ value, onChange }: PetCoverFieldProps) {
       </label>
       <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800">
         {preview ? (
-          <img src={preview} alt="" aria-hidden className="h-full w-full object-cover" />
+          <img src={preview} alt="" aria-hidden className="h-full w-full object-cover" decoding="async" loading="lazy" />
         ) : (
           <div className="text-center text-zinc-400">
             <PhotoIcon className="mx-auto h-10 w-10" />

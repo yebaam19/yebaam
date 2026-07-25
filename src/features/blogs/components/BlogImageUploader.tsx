@@ -46,6 +46,8 @@ export const BlogImageUploader = ({
               src={preview}
               alt={`${label} preview`}
               className={`h-full w-full rounded-lg object-cover ${isAvatar ? 'rounded-full' : ''}`}
+              decoding="async"
+              loading="lazy"
             />
             {file && (
               <button

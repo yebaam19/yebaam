@@ -40,6 +40,7 @@ export function BusinessSwitcher({ currentBusinessId, businesses }: Props) {
             width={24}
             height={24}
             className="h-6 w-6 shrink-0 rounded object-cover"
+            unoptimized
           />
         ) : (
           <span aria-hidden className="text-base leading-none">🍽️</span>
@@ -66,6 +67,7 @@ export function BusinessSwitcher({ currentBusinessId, businesses }: Props) {
             width={24}
             height={24}
             className="h-6 w-6 shrink-0 rounded object-cover"
+            unoptimized
           />
         ) : (
           <span aria-hidden className="text-base leading-none">🍽️</span>
@@ -107,6 +109,7 @@ export function BusinessSwitcher({ currentBusinessId, businesses }: Props) {
                     width={28}
                     height={28}
                     className="h-7 w-7 shrink-0 rounded object-cover"
+                    unoptimized
                   />
                 ) : (
                   <span aria-hidden className="text-lg leading-none">🍽️</span>

@@ -41,7 +41,7 @@ export function ClubArtistsList({ artists }: Props) {
             >
               <div className="h-12 w-12 flex-none overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                 {photo ? (
-                  <img src={photo} alt={a.name} className="h-full w-full object-cover" />
+                  <img src={photo} alt={a.name} className="h-full w-full object-cover" decoding="async" loading="lazy" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
                     <MusicalNoteIcon className="h-5 w-5 text-zinc-400" />

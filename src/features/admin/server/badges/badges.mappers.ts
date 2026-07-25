@@ -1,4 +1,5 @@
 import { cfImageUrl } from '@/features/badges/server/cf'
+import { withImageVariant } from '@/lib/media/urls'
 import type {
   AdminBadgeRow,
   AdminUserLookup,
@@ -108,7 +109,7 @@ export function mapGrantRow(r: GrantRow): UserBadgeGrant {
     displayName:
       r.recipient?.display_name ??
       fullName(r.recipient?.first_name, r.recipient?.last_name),
-    avatarUrl: r.recipient?.avatar_url ?? null,
+    avatarUrl: r.recipient?.avatar_url ? withImageVariant(r.recipient.avatar_url, 'avatar') : null,
     awardedBy: r.awarded_by,
     awardedByUsername: r.granter?.username ?? null,
     awardedAt: r.awarded_at,
@@ -172,7 +173,7 @@ export function mapUserLookup(r: UserLookupRow): AdminUserLookup {
     displayName:
       r.display_name ??
       (fullName(r.first_name, r.last_name, r.username) || ''),
-    avatarUrl: r.avatar_url,
+    avatarUrl: r.avatar_url ? withImageVariant(r.avatar_url, 'avatar') : null,
   }
 }
 
@@ -220,7 +221,7 @@ export function mapRequestRow(r: RequestListRow): BadgeRequestRow {
     displayName:
       r.requester?.display_name ??
       fullName(r.requester?.first_name, r.requester?.last_name),
-    avatarUrl: r.requester?.avatar_url ?? null,
+    avatarUrl: r.requester?.avatar_url ? withImageVariant(r.requester.avatar_url, 'avatar') : null,
     reason: r.reason,
     supportingCfImageIds: r.supporting_cf_image_ids ?? [],
     createdAt: r.created_at,

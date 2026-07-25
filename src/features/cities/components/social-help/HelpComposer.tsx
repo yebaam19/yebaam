@@ -189,7 +189,7 @@ export function HelpComposer({
         <div className="flex items-center gap-2">
           {previewUrl ? (
             <div className="relative h-24 w-24 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
-              <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+              <img src={previewUrl} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
               <button
                 type="button"
                 onClick={() => setCfImageId(null)}

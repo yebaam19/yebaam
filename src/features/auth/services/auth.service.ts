@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/client';
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 import { parseISODate } from '@/lib/utils/date';
+import { withImageVariant } from '@/lib/media/urls';
 import {
   signupWithOtpAction,
   verifyOtpAction,
@@ -41,6 +42,11 @@ function mapProfileToAuthUser(
   const birth = parseISODate(profile?.birth_date);
   const email = authUser.email ?? '';
   const usernameFallback = email.split('@')[0] || 'user';
+  // `profiles.avatar_url` stores a full-size `/public` delivery URL; the header
+  // and menus render it in <=40 px circles, so retarget the 128x128 variant.
+  // `cover_photo_url` is left on `/public` on purpose — the profile cover is
+  // user-framed (pan/zoom) and the `cover` variant is a hard 1200x400 crop.
+  const avatar = profile?.avatar_url ? withImageVariant(profile.avatar_url, 'avatar') : undefined;
   return {
     id: authUser.id,
     email,
@@ -48,8 +54,8 @@ function mapProfileToAuthUser(
     status: 'ACTIVE',
     emailVerified: Boolean(authUser.email_confirmed_at),
     profileCompleted: profile?.profile_completed ?? false,
-    avatarUrl: profile?.avatar_url ?? undefined,
-    avatar: profile?.avatar_url ?? undefined,
+    avatarUrl: avatar,
+    avatar,
     coverPhotoUrl: profile?.cover_photo_url ?? undefined,
     createdAt: profile?.created_at ?? new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),

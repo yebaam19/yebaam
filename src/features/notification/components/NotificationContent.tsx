@@ -56,6 +56,8 @@ export default function NotificationContent({ notification }: NotificationConten
             src={notification.metadata.postImageUrl}
             alt="Preview"
             className="h-16 w-16 rounded-lg object-cover"
+            decoding="async"
+            loading="lazy"
           />
         </div>
       )}

@@ -18,6 +18,7 @@ export async function GET(
 
   const rows = (data ?? []) as BusinessCityRow[];
   return NextResponse.json(
-    rows.map((c) => ({ id: c.id, name: c.name, slug: c.slug, stateId: c.state_id }))
+    rows.map((c) => ({ id: c.id, name: c.name, slug: c.slug, stateId: c.state_id })),
+    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
   );
 }

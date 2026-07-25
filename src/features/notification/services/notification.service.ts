@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { withImageVariant } from '@/lib/media/urls';
 import {
   markAllNotificationsRead as markAllNotificationsReadAction,
   markNotificationsRead as markNotificationsReadAction,
@@ -147,7 +148,7 @@ function profileToActor(profile: DbProfile | undefined, fallbackId: string): Not
     id: profile.id,
     username: profile.username ?? '',
     displayName,
-    avatar: profile.avatar_url ?? undefined,
+    avatar: profile.avatar_url ? withImageVariant(profile.avatar_url, 'avatar') : undefined,
     isVerified: profile.is_verified ?? false,
   };
 }

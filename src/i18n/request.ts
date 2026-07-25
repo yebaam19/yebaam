@@ -1,48 +1,12 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from './locales';
+import { PATHNAME_HEADER, namespacesForPath, type Namespace } from './route-namespaces';
 
-const MESSAGE_NAMESPACES = [
-  'avatar',
-  'common',
-  'header',
-  'nav',
-  'auth',
-  'musica',
-  'feed',
-  'communities',
-  'familias',
-  'clubes',
-  'profile',
-  'profiles',
-  'search',
-  'verification',
-  'landing',
-  'foro',
-  'chat',
-  'grupos',
-  'admin',
-  'blogs',
-  'article',
-  'pages',
-  'businesses',
-  'cities',
-  'portals',
-  'professional',
-  'liveStream',
-  'watch',
-  'askme',
-  'notification',
-  'friendships',
-  'settings',
-  'stories',
-  'legal',
-] as const;
-
-async function loadMessages(locale: Locale) {
+async function loadMessages(locale: Locale, namespaces: readonly Namespace[]) {
   const messages: Record<string, unknown> = {};
   await Promise.all(
-    MESSAGE_NAMESPACES.map(async (ns) => {
+    namespaces.map(async (ns) => {
       try {
         const mod = await import(`../../messages/${locale}/${ns}.json`);
         messages[ns] = mod.default;
@@ -55,9 +19,17 @@ async function loadMessages(locale: Locale) {
 }
 
 export default getRequestConfig(async () => {
-  const cookieStore = await cookies();
+  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
+
   const raw = cookieStore.get(LOCALE_COOKIE)?.value;
   const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
-  const messages = await loadMessages(locale);
-  return { locale, messages };
+
+  // Only load the namespaces this route can actually reach. The full catalog is
+  // ~290 KB and `app/layout.tsx` passes whatever lands here straight into
+  // `NextIntlClientProvider`, so every unused namespace is dead weight
+  // serialized into the page's HTML. Missing header (static generation, or a
+  // path the proxy doesn't match) falls back to the full catalog.
+  const namespaces = namespacesForPath(headerStore.get(PATHNAME_HEADER));
+
+  return { locale, messages: await loadMessages(locale, namespaces) };
 });

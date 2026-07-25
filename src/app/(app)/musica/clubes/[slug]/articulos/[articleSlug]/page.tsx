@@ -66,6 +66,8 @@ export default async function ClubArticleDetailPage({
           src={hero}
           alt=""
           className="aspect-[16/9] w-full rounded-2xl border border-zinc-200 object-cover dark:border-zinc-800"
+          decoding="async"
+          loading="lazy"
         />
       )}
 

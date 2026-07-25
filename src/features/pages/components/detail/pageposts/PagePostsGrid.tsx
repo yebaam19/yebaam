@@ -60,6 +60,7 @@ export const PagePostsGrid: FC<PagePostsGridProps> = ({ posts }) => {
                 alt=""
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                decoding="async"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gray-800">

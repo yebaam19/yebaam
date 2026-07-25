@@ -66,6 +66,7 @@ export function MediaStrip({ items }: Props) {
                   alt={item.caption ?? ''}
                   className="h-full w-full object-cover"
                   loading="lazy"
+                  decoding="async"
                 />
                 <span className="absolute inset-0 flex items-center justify-center">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform group-hover:scale-105">
@@ -91,6 +92,7 @@ export function MediaStrip({ items }: Props) {
                 alt={item.caption ?? ''}
                 className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
                 loading="lazy"
+                decoding="async"
               />
             </button>
           );

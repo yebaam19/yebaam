@@ -1,7 +1,7 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
 import { uploadService } from '@/lib/service/upload.service';
-import { imageUrl } from '@/lib/media/urls';
+import { imageUrl, withImageVariant } from '@/lib/media/urls';
 
 export interface StoryView {
   userId: string;
@@ -257,7 +257,7 @@ class StoryService {
       result.push({
         userId: authorId,
         username: p?.username ?? '',
-        avatarUrl: p?.avatar_url ?? undefined,
+        avatarUrl: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
         fullName: [p?.first_name, p?.last_name].filter(Boolean).join(' '),
         stories: authorStories,
         unviewedCount: authorStories.filter((s) => !viewedIds.has(s.id)).length,

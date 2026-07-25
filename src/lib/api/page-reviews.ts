@@ -1,5 +1,6 @@
 import 'server-only';
 import type { getServerClient } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type ReviewRow = {
   id: string;
@@ -56,7 +57,7 @@ export function mapReview(
         [author?.first_name, author?.last_name].filter(Boolean).join(' ') ||
         author?.username ||
         '',
-      profilePicture: author?.avatar_url ?? null,
+      profilePicture: author?.avatar_url ? withImageVariant(author.avatar_url, 'avatar') : null,
       isVerified: false,
     },
     rating: row.rating,

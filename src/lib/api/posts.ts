@@ -1,7 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { fromPostMedia } from '@/lib/media/parse';
-import { imageUrl, streamHlsUrl, streamThumb } from '@/lib/media/urls';
+import { imageUrl, streamHlsUrl, streamThumb, withImageVariant } from '@/lib/media/urls';
 
 export type PostRow = {
   id: string;
@@ -185,7 +185,9 @@ export function mapPost(row: PostRow, profilesById: Map<string, ProfileLite>, my
       firstName: author?.first_name ?? '',
       lastName: author?.last_name ?? '',
       // id-first: prefer avatar_cloudflare_id; legacy rows fall back to avatar_url.
-      avatar: safeImageUrl(author?.avatar_cloudflare_id, 'avatar') ?? author?.avatar_url ?? undefined,
+      avatar:
+        safeImageUrl(author?.avatar_cloudflare_id, 'avatar') ??
+        (author?.avatar_url ? withImageVariant(author.avatar_url, 'avatar') : undefined),
     },
     reactionsCount: normalizeReactionsCount(row.reactions_count),
     commentsCount: row.comments_count ?? 0,

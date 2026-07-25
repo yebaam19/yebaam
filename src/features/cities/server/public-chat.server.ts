@@ -2,6 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 /**
  * Server-side reads + provisioning for the city-anchored public chat.
@@ -98,11 +99,14 @@ function pickAuthor(row: MessageRow): ProfileJoin | null {
 
 function toAuthorDto(row: ProfileJoin | null): PublicChatAuthor | null {
   if (!row) return null;
+  // Chat bubbles render this at ~32 px — ask for the 128x128 `avatar` variant
+  // instead of the full-size `/public` original.
+  const rawAvatar = cfImageUrl(row.avatar_cloudflare_id) ?? row.avatar_url ?? null;
   return {
     id: row.id,
     displayName: row.display_name ?? row.username ?? 'Usuario',
     username: row.username,
-    avatarUrl: cfImageUrl(row.avatar_cloudflare_id) ?? row.avatar_url ?? null,
+    avatarUrl: rawAvatar ? withImageVariant(rawAvatar, 'avatar') : null,
   };
 }
 

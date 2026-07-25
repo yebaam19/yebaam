@@ -1,5 +1,6 @@
 import 'server-only'
 import { getServerClient } from '@/utils/supabase/server'
+import { withImageVariant } from '@/lib/media/urls'
 import type { AskmeAsker, AskmeQuestion, AskmeStats, AskmeStatus } from '../types'
 
 type QuestionRow = {
@@ -34,7 +35,7 @@ function toAsker(p: ProfileRow | undefined | null): AskmeAsker | null {
     id: p.id,
     username: p.username ?? 'usuario',
     displayName,
-    avatarUrl: p.avatar_url,
+    avatarUrl: p.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
   }
 }
 

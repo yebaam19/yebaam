@@ -151,7 +151,7 @@ export const PageDetailArtists: FC<PageDetailArtistsProps> = ({ page, isOwner })
             <>
               <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 shrink-0">
                 {a.photoUrl ? (
-                  <Image src={a.photoUrl} alt="" width={56} height={56} className="object-cover" />
+                  <Image src={a.photoUrl} alt="" width={56} height={56} className="object-cover" unoptimized />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-400">
                     {a.displayName.charAt(0).toUpperCase()}

@@ -1,0 +1,27 @@
+{
+  "bar": {
+    "playAria": "Reproducir",
+    "pauseAria": "Pausar",
+    "previousAria": "Pista anterior",
+    "nextAria": "Siguiente",
+    "seekAria": "Posición",
+    "volumeAria": "Volumen",
+    "closeAria": "Cerrar reproductor"
+  },
+  "lightbox": {
+    "noCaption": "Sin descripción",
+    "minimizeAria": "Minimizar a mini reproductor",
+    "minimizeTitle": "Minimizar (seguir viendo mientras navegas)",
+    "closeAria": "Cerrar",
+    "videoTitle": "Video",
+    "unavailable": "Contenido no disponible"
+  },
+  "miniPlayer": {
+    "regionAria": "Mini reproductor de video",
+    "noCaption": "Sin descripción",
+    "expandAria": "Expandir a vista completa",
+    "closeAria": "Cerrar mini reproductor",
+    "videoTitleFallback": "Video",
+    "unavailable": "Contenido no disponible"
+  }
+}

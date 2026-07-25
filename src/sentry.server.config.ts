@@ -8,6 +8,8 @@ Sentry.init({
   environment: process.env.NEXT_PUBLIC_ENV ?? process.env.NODE_ENV,
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   sendDefaultPii: true,
-  includeLocalVariables: true,
+  // Dev-only: attaching the V8 Inspector to capture stack-frame locals runs for ALL
+  // execution (not just sampled traces) and lengthens serverless cold starts.
+  includeLocalVariables: process.env.NODE_ENV !== 'production',
   enableLogs: true,
 });

@@ -90,6 +90,8 @@ export function MediaLightbox({ images, index, onIndexChange, onClose }: Props) 
         alt={current.caption ?? ''}
         className="max-h-[85vh] max-w-full rounded-xl object-contain"
         onClick={(e) => e.stopPropagation()}
+        decoding="async"
+        loading="lazy"
       />
     </div>
   );

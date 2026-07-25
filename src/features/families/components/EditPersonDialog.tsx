@@ -195,6 +195,8 @@ export function EditPersonDialog({ person, onClose }: Props) {
                 src={imageUrl(person.avatar_cf_image_id, 'avatar')}
                 alt=""
                 className="mb-2 h-16 w-16 rounded-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             )}
             <input

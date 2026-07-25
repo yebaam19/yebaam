@@ -77,7 +77,7 @@ export default async function MusicSearchPage({
                       >
                         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
                           {cover ? (
-                            <img src={cover} alt="" className="h-full w-full object-cover" />
+                            <img src={cover} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
                           ) : (
                             <MusicalNoteIcon className="h-4 w-4 text-zinc-400" />
                           )}
@@ -104,8 +104,8 @@ export default async function MusicSearchPage({
                 {t('search.albumsHeading', { count: result.albums.length })}
               </h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {result.albums.map((album) => (
-                  <AlbumCoverCard key={album.id} album={album} />
+                {result.albums.map((album, index) => (
+                  <AlbumCoverCard key={album.id} album={album} isLcp={index === 0} />
                 ))}
               </div>
             </section>

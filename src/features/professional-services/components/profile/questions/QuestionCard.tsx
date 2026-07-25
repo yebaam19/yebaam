@@ -53,7 +53,7 @@ export function QuestionCard({ question, viewerId, isOwner }: QuestionCardProps)
         {/* Avatar del autor */}
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
           {question.asker?.avatarUrl ? (
-            <Image src={question.asker.avatarUrl} alt={displayName} fill sizes="40px" className="object-cover" />
+            <Image src={question.asker.avatarUrl} alt={displayName} fill sizes="40px" className="object-cover" unoptimized />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm font-medium text-neutral-500">
               {getUserInitials(displayName)}

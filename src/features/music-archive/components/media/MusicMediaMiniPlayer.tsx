@@ -8,7 +8,7 @@ import { usePlayerStore } from '../PlayerStore';
 import { useMediaPlayerStore } from './mediaPlayerStore';
 
 function Frame({ item }: { item: MusicMediaItem }) {
-  const t = useTranslations('musica.media.miniPlayer');
+  const t = useTranslations('player.miniPlayer');
   if (item.source === 'cf_stream' && item.cf_stream_uid) {
     return (
       <iframe
@@ -43,7 +43,7 @@ function Frame({ item }: { item: MusicMediaItem }) {
 }
 
 export function MusicMediaMiniPlayer() {
-  const t = useTranslations('musica.media.miniPlayer');
+  const t = useTranslations('player.miniPlayer');
   const item = useMediaPlayerStore((s) => s.item);
   const mode = useMediaPlayerStore((s) => s.mode);
   const expand = useMediaPlayerStore((s) => s.expand);

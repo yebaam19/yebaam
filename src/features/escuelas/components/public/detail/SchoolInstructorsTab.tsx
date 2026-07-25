@@ -36,7 +36,7 @@ function InstructorCard({ instructor }: { instructor: Instructor }) {
       {/* Photo */}
       <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-primary-50">
         {photoUrl ? (
-          <Image src={photoUrl} alt={instructor.name} width={80} height={80} className="h-full w-full object-cover" />
+          <Image src={photoUrl} alt={instructor.name} width={80} height={80} className="h-full w-full object-cover" unoptimized />
         ) : (
           <span className="text-xl font-black text-primary-700">{initials}</span>
         )}

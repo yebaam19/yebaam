@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import type { BusinessReviewRow, ProfileLite } from '@/lib/api/businesses';
+import { withImageVariant } from '@/lib/media/urls';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -82,7 +83,10 @@ export async function GET(
           username: author?.username ?? '',
           firstName: author?.first_name ?? '',
           lastName: author?.last_name ?? '',
-          avatarUrl: author?.avatar_url ?? undefined,
+          // Review author chip is ~40 px — request the `avatar` variant.
+          avatarUrl: author?.avatar_url
+            ? withImageVariant(author.avatar_url, 'avatar')
+            : undefined,
         },
       };
     }),

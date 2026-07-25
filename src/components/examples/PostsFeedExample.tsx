@@ -125,6 +125,8 @@ export function PostsFeedExample() {
                     src={post.author.avatarUrl}
                     alt={post.author.firstName}
                     className="w-10 h-10 rounded-full"
+                    decoding="async"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
@@ -152,6 +154,8 @@ export function PostsFeedExample() {
                           src={media.url}
                           alt="Post media"
                           className="w-full h-full object-cover"
+                          decoding="async"
+                          loading="lazy"
                         />
                       ) : media.type === 'video' ? (
                         <video

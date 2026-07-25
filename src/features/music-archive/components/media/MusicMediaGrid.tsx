@@ -63,6 +63,7 @@ export function MusicMediaGrid({ items, emptyText }: Props) {
                     alt={item.caption ?? ''}
                     loading="lazy"
                     className="h-full w-full object-cover transition group-hover:scale-105"
+                    decoding="async"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">

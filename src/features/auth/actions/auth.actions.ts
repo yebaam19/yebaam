@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 export interface User {
   id: string;
@@ -57,7 +58,7 @@ export const getAuthUser = cache(async (): Promise<User | null> => {
     id: userId,
     username: p?.username ?? fallbackName,
     displayName,
-    avatarUrl: p?.avatar_url ?? null,
+    avatarUrl: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
     email,
   };
 });

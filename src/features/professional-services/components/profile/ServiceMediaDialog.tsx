@@ -115,6 +115,7 @@ export function ServiceMediaDialog({ media, selectedIndex, onClose, serviceName,
                 className="object-contain"
                 sizes="100vw"
                 priority
+                unoptimized
               />
             )}
           </div>

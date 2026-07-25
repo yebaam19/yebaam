@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getServerClient } from '@/utils/supabase/server'
+import { withImageVariant } from '@/lib/media/urls'
 import type { ForoAuthor, ForoRoleType, OwnerType, SpaceVisibility } from '@/features/foro/types'
 import {
   slugify,
@@ -144,7 +145,7 @@ export async function grantForumStaffByUsername(
       id: p.id,
       username: p.username ?? 'usuario',
       displayName,
-      avatarUrl: p.avatar_url,
+      avatarUrl: p.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
     },
   }
 }

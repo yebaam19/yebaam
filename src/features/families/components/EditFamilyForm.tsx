@@ -104,6 +104,8 @@ export function EditFamilyForm({ family }: { family: FamilyWithViewer }) {
             src={currentCover}
             alt=""
             className="mb-2 h-28 w-full rounded-lg object-cover"
+            decoding="async"
+            loading="lazy"
           />
         )}
         <input

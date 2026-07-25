@@ -108,15 +108,22 @@ export function useFetch<T>(
       return;
     }
 
+    // Read the live cache rather than `cached`. `cached` comes from
+    // useSyncExternalStore, whose server snapshot is `undefined`, so during the
+    // hydration pass it is always empty — even when a parent seeded the entry
+    // from server-rendered data moments earlier (FeedTimeline does exactly
+    // that). Closing over it made `fresh` false and fired a duplicate fetch of
+    // data already on screen, on every RSC-seeded page in the app.
+    const live = getCached<CachedRecord<T>>(flatKey);
+
     // Skip the fetch if the cached value is still within `staleTime`.
-    const fresh =
-      cached && staleTime > 0 ? Date.now() - cached.fetchedAt < staleTime : false;
+    const fresh = live && staleTime > 0 ? Date.now() - live.fetchedAt < staleTime : false;
     if (fresh) {
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(!cached);
+    setIsLoading(!live);
     const controller = new AbortController();
     void run(controller.signal);
     return () => controller.abort();

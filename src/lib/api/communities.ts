@@ -1,5 +1,5 @@
 import 'server-only';
-import { imageUrl } from '@/lib/media/urls';
+import { imageUrl, withImageVariant } from '@/lib/media/urls';
 import { fromCommunityMedia } from '@/lib/media/parse';
 import {
   Community,
@@ -181,7 +181,7 @@ export function buildOwnerMember(
     username: ownerProfile?.username ?? '',
     name: profileDisplayName(ownerProfile),
     avatar: ownerProfile?.avatar_url
-      ? ownerProfile.avatar_url
+      ? withImageVariant(ownerProfile.avatar_url, 'avatar')
       : undefined,
     role: CommunityRole.OWNER,
     joinedAt: ownerMembership?.joined_at ?? row.created_at,
@@ -234,7 +234,7 @@ export function mapMember(
     userId: row.user_id,
     username: profile?.username ?? '',
     name: profileDisplayName(profile ?? null),
-    avatar: profile?.avatar_url ?? undefined,
+    avatar: profile?.avatar_url ? withImageVariant(profile.avatar_url, 'avatar') : undefined,
     role: row.role,
     joinedAt: row.joined_at,
     isVerified: false,
@@ -278,7 +278,7 @@ export function mapPost(
     communityId: row.community_id,
     authorId: row.author_id,
     authorName: profileDisplayName(author ?? null),
-    authorAvatar: author?.avatar_url ?? undefined,
+    authorAvatar: author?.avatar_url ? withImageVariant(author.avatar_url, 'avatar') : undefined,
     content,
     images: images.length > 0 ? images : undefined,
     media: media.length > 0 ? media : undefined,

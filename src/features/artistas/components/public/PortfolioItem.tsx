@@ -19,6 +19,7 @@ export function PortfolioItem({ item }: Props) {
             className="object-contain"
             sizes="(max-width: 768px) 100vw, 768px"
             priority
+            unoptimized
           />
         </div>
       )}

@@ -1,5 +1,6 @@
 import 'server-only';
 import type { getServerClient } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type PageRow = {
   id: string;
@@ -97,7 +98,7 @@ export function mapPage(row: PageRow, viewer: Viewer) {
     ownerId: row.owner_id,
     ownerName,
     ownerUsername: owner?.username ?? undefined,
-    ownerAvatar: owner?.avatar_url ?? undefined,
+    ownerAvatar: owner?.avatar_url ? withImageVariant(owner.avatar_url, 'avatar') : undefined,
     ownerBio: owner?.bio ?? undefined,
     userRole:
       viewer.userId === row.owner_id

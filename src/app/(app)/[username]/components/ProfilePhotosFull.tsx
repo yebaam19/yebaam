@@ -164,6 +164,8 @@ export default function ProfilePhotosFull({
                       src={album.coverPhotoUrl}
                       alt={album.name}
                       className="w-full h-full object-cover"
+                      decoding="async"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -214,6 +216,8 @@ export default function ProfilePhotosFull({
                   src={photo.url}
                   alt={photo.alt || 'Photo'}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  decoding="async"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                 
@@ -245,6 +249,8 @@ export default function ProfilePhotosFull({
                       src={photo.url}
                       alt={photo.alt || 'Photo'}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      decoding="async"
+                      loading="lazy"
                     />
                   </div>
                   <div className="flex-1">

@@ -43,7 +43,7 @@ export function PortfolioGridView({ items }: { items: PortfolioItemSummary[] }) 
           <article key={item.id} className="overflow-hidden rounded-[1.5rem] border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div className="relative h-52 overflow-hidden bg-primary-50">
               {thumbnailUrl ? (
-                <Image src={thumbnailUrl} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                <Image src={thumbnailUrl} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" unoptimized />
               ) : (
                 <div className="flex h-full items-center justify-center">
                   <span className="text-3xl">🎵</span>

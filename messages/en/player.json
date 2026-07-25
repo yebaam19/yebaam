@@ -1,0 +1,27 @@
+{
+  "bar": {
+    "playAria": "Play",
+    "pauseAria": "Pause",
+    "previousAria": "Previous track",
+    "nextAria": "Next track",
+    "seekAria": "Position",
+    "volumeAria": "Volume",
+    "closeAria": "Close player"
+  },
+  "lightbox": {
+    "noCaption": "No caption",
+    "minimizeAria": "Minimize to mini player",
+    "minimizeTitle": "Minimize (keep watching while you browse)",
+    "closeAria": "Close",
+    "videoTitle": "Video",
+    "unavailable": "Content unavailable"
+  },
+  "miniPlayer": {
+    "regionAria": "Video mini player",
+    "noCaption": "No caption",
+    "expandAria": "Expand to full view",
+    "closeAria": "Close mini player",
+    "videoTitleFallback": "Video",
+    "unavailable": "Content unavailable"
+  }
+}

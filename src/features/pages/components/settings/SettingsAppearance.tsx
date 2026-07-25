@@ -172,6 +172,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
               fill
               sizes="(max-width: 768px) 100vw, 600px"
               className="object-cover"
+              unoptimized
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -240,6 +241,7 @@ export const SettingsAppearance: FC<SettingsAppearanceProps> = ({ page }) => {
                 fill
                 sizes="128px"
                 className="object-cover"
+                unoptimized
               />
             ) : (
               <div className="flex items-center justify-center h-full">

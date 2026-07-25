@@ -24,7 +24,10 @@ function formatTime(seconds: number): string {
 }
 
 export function PlayerBar() {
-  const t = useTranslations('musica.player.bar');
+  // `player`, not `musica`: this bar is mounted by `(app)/layout.tsx` on every
+  // signed-in route, so keying it off the 46 KB `musica` catalog forced that
+  // catalog into the message payload of every page in the app for ~7 strings.
+  const t = useTranslations('player.bar');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playCountFiredRef = useRef<Set<string>>(new Set());
 
@@ -111,7 +114,7 @@ export function PlayerBar() {
         >
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
             {cover ? (
-              <img src={cover} alt="" className="h-full w-full object-cover" aria-hidden />
+              <img src={cover} alt="" className="h-full w-full object-cover" aria-hidden decoding="async" loading="lazy" />
             ) : (
               <MusicalNoteIcon className="h-5 w-5 text-zinc-400" />
             )}

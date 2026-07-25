@@ -60,7 +60,7 @@ export function PortfolioUploader({ profileId, items }: Props) {
               <div key={item.id} className="group relative rounded-xl overflow-hidden border border-border">
                 <div className="aspect-square bg-muted flex items-center justify-center">
                   {url ? (
-                    <Image src={url} alt={item.title} fill className="object-cover" sizes="200px" />
+                    <Image src={url} alt={item.title} fill className="object-cover" sizes="200px" unoptimized />
                   ) : (
                     <span className="text-muted-foreground text-xs">{item.media_type}</span>
                   )}

@@ -109,6 +109,8 @@ export function PersonInfoPanel({
                   className={`h-16 w-16 rounded-full object-cover ${
                     isClaimed ? 'ring-2 ring-blue-400' : ''
                   }`}
+                  decoding="async"
+                  loading="lazy"
                 />
               ) : (
                 <div

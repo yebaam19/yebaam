@@ -76,6 +76,7 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            unoptimized
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -150,6 +151,7 @@ export function ServiceListCard({ service, className }: ServiceListCardProps) {
                   width={24}
                   height={24}
                   className="h-6 w-6 rounded-full object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 dark:bg-neutral-700">

@@ -77,7 +77,7 @@ export function SingleImageField({
       >
         {url ? (
           <>
-            <img src={url} alt="" className="h-full w-full object-cover" />
+            <img src={url} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
             <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white">
               {changeText}
             </span>

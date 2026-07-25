@@ -50,7 +50,7 @@ export function ArtistPortfolio({ items }: Props) {
                 {imgUrl ? (
                   <Image src={imgUrl} alt={item.title} fill
                     className="object-cover transition duration-300 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, 50vw" />
+                    sizes="(max-width: 640px) 100vw, 50vw" unoptimized />
                 ) : (
                   <div className="flex h-full items-center justify-center bg-primary-50">
                     <Music size={32} className="text-primary-700" />
@@ -112,7 +112,7 @@ export function ArtistPortfolio({ items }: Props) {
             <div className="relative max-h-[85vh] max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
               {imgUrl ? (
                 <Image src={imgUrl} alt={item?.title || 'Pieza'} width={1200} height={800}
-                  className="mx-auto max-h-[75vh] w-auto rounded-2xl object-contain" />
+                  className="mx-auto max-h-[75vh] w-auto rounded-2xl object-contain" unoptimized />
               ) : (
                 <div className="flex h-64 items-center justify-center rounded-2xl bg-neutral-800 text-white/60">
                   Sin preview disponible

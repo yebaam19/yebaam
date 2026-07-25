@@ -27,7 +27,7 @@ function UserItem({ user }: { user: CommunityUser }) {
     <div className="flex items-center gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-100 text-sm font-medium text-neutral-600">
         {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+          <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" decoding="async" loading="lazy" />
         ) : (
           getInitials(user.name)
         )}

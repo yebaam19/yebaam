@@ -1,6 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServiceClient } from '@/utils/supabase/server';
+import { withImageVariant } from '@/lib/media/urls';
 
 export type ClubRow = {
   id: string;
@@ -117,7 +118,7 @@ export function mapClub(
     ownerName: owner
       ? [owner.first_name, owner.last_name].filter(Boolean).join(' ') || owner.username || undefined
       : undefined,
-    ownerAvatar: owner?.avatar_url ?? undefined,
+    ownerAvatar: owner?.avatar_url ? withImageVariant(owner.avatar_url, 'avatar') : undefined,
     rules: row.rules ?? [],
     location: row.location ?? undefined,
     website: row.website ?? undefined,

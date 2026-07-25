@@ -24,6 +24,8 @@ export function PersonAvatarChip({ person, size = 'sm' }: Props) {
           alt=""
           className={`${dimensions} flex-shrink-0 rounded-full object-cover`}
           aria-hidden
+          decoding="async"
+          loading="lazy"
         />
       ) : (
         <span

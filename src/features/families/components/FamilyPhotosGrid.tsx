@@ -35,6 +35,7 @@ export function FamilyPhotosGrid({ photos }: { photos: FamilyPhotoRow[] }) {
               alt={p.caption ?? 'Foto familiar'}
               className="aspect-square w-full object-cover transition group-hover:scale-[1.02]"
               loading="lazy"
+              decoding="async"
             />
           </a>
           <figcaption className="p-2">

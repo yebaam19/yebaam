@@ -97,6 +97,7 @@ export function OwnerProductCard({
                 product.isActive ? 'group-hover:scale-105' : 'grayscale'
               }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              unoptimized
             />
             
             {/* Image Navigation - Only show if multiple images */}

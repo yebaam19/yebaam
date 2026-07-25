@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { blogKey } from '@/lib/api/blogs';
+import { withImageVariant } from '@/lib/media/urls';
 
 type ProfileRow = {
   id: string;
@@ -53,12 +54,19 @@ export async function GET(
       id,
       name: [p?.first_name, p?.last_name].filter(Boolean).join(' ') || (p?.username ?? 'Usuario'),
       username: p?.username ?? '',
-      avatar: p?.avatar_url ?? null,
+      // Renders as a small circle in the follower list — ship the `avatar`
+      // variant, not the ~60-115 KB `/public` original stored in the column.
+      avatar: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
       followedAt: followedAt ?? null,
     };
   };
 
   const total = count ?? followRows.length;
+  // NOTE: deliberately NOT CDN-cacheable. `blogs`/`blog_follows` are world-readable,
+  // but the `profiles` join is not: its RLS is
+  // `profile_visibility = 'public' OR id = auth.uid() OR (friends AND are_friends(...))`,
+  // so a friend of a follower sees their real name where a stranger sees the
+  // 'Usuario' fallback. A shared cache would leak friends-only names.
   return NextResponse.json({
     owner: toAuthor(blogRow.owner_id),
     followers: followRows.map((f) => toAuthor(f.user_id, f.created_at)),

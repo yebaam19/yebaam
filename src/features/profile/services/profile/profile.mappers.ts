@@ -1,4 +1,5 @@
 import { parseISODate } from '@/lib/utils/date';
+import { withImageVariant } from '@/lib/media/urls';
 import type { ProfileBadge } from '@/features/badges/types/badges.types';
 import type {
   UpdateProfileDTO,
@@ -48,7 +49,13 @@ export function mapDbToProfile(
     lastName: row.last_name ?? undefined,
     secondLastName: row.second_last_name ?? undefined,
     displayName,
-    avatarUrl: row.avatar_url ?? null,
+    // The profile header renders this up to 150 CSS px (and the edit dialog at
+    // 160), so `avatar` (128x128) would be under-resolution on retina —
+    // `thumbnail` (300x300, ~15 KB) is the smallest variant that still covers
+    // it, vs ~60-115 KB for the stored full-size `/public` URL.
+    avatarUrl: row.avatar_url ? withImageVariant(row.avatar_url, 'thumbnail') : null,
+    // Cover stays on `/public`: it is user-framed (offset/zoom below) and the
+    // `cover` variant is a hard 1200x400 crop that would break the framing.
     coverPhotoUrl: row.cover_photo_url ?? null,
     coverUrl: row.cover_photo_url ?? null,
     coverOffsetX: row.cover_offset_x ?? 50,

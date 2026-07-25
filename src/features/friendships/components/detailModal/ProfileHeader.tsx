@@ -17,6 +17,8 @@ export function ProfileHeader({ profile, timeAgo }: ProfileHeaderProps) {
             src={profile.avatar}
             alt={profile.username}
             className="w-24 h-24 rounded-full object-cover border-4 border-primary-100 dark:border-primary-900"
+            decoding="async"
+            loading="lazy"
           />
         ) : (
           <div className="w-24 h-24 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center border-4 border-primary-100 dark:border-primary-900">

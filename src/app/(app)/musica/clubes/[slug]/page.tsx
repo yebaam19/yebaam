@@ -50,8 +50,13 @@ export default async function MusicClubDetailPage({
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {albums.map((album) => (
-            <AlbumCoverCard key={album.id} album={album} artistName={album.artist_name} />
+          {albums.map((album, index) => (
+            <AlbumCoverCard
+              key={album.id}
+              album={album}
+              artistName={album.artist_name}
+              isLcp={index === 0}
+            />
           ))}
         </div>
       )}

@@ -41,6 +41,8 @@ export function CoverDropZone({ file, onChange, showPreview = true }: Props) {
           src={previewUrl}
           alt={t('upload.previewAlt')}
           className="mt-2 h-24 w-24 rounded-md border border-zinc-200 object-cover dark:border-zinc-800"
+          decoding="async"
+          loading="lazy"
         />
       )}
     </div>

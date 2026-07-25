@@ -92,6 +92,8 @@ export default function FeedProfilePage() {
                 src={profile.coverUrl}
                 alt="Cover"
                 className="w-full h-full object-cover"
+                decoding="async"
+                loading="lazy"
               />
             )}
           </div>

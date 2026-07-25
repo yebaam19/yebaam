@@ -57,6 +57,8 @@ export async function FamilyMembersList({
                 alt=""
                 className="h-10 w-10 rounded-full object-cover"
                 aria-hidden
+                decoding="async"
+                loading="lazy"
               />
             ) : (
               <div

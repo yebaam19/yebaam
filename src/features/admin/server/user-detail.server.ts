@@ -2,6 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { isPlatformAdmin } from '@/app/(app)/foro/server/roles.server';
+import { withImageVariant } from '@/lib/media/urls';
 
 export interface AdminUserDetail {
   id: string;
@@ -61,7 +62,7 @@ export const getAdminUserDetailByUsername = cache(async (username: string): Prom
     lastName: (r.last_name as string | null) ?? null,
     secondLastName: (r.second_last_name as string | null) ?? null,
     displayName: (r.display_name as string | null) ?? null,
-    avatarUrl: (r.avatar_url as string | null) ?? null,
+    avatarUrl: r.avatar_url ? withImageVariant(r.avatar_url as string, 'avatar') : null,
     bio: (r.bio as string | null) ?? null,
     birthDate: (r.birth_date as string | null) ?? null,
     gender: (r.gender as string | null) ?? null,

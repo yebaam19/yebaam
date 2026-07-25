@@ -1,3 +1,4 @@
+import { withImageVariant } from '@/lib/media/urls';
 import {
   ReactionType,
   type Reaction,
@@ -46,7 +47,7 @@ export function rowToReaction(row: DbReaction, users: Map<string, DbProfile>): R
           username: profile.username ?? '',
           firstName: profile.first_name ?? '',
           lastName: profile.last_name ?? '',
-          avatar: profile.avatar_url ?? undefined,
+          avatar: profile.avatar_url ? withImageVariant(profile.avatar_url, 'avatar') : undefined,
         }
       : undefined,
   };

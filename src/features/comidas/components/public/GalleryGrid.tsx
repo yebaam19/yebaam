@@ -32,7 +32,7 @@ export function GalleryGrid({ business, media }: Props) {
               const url = cfImageUrl(asset.cf_image_id)!
               return (
                 <div key={asset.id} className="relative aspect-square rounded-xl overflow-hidden bg-muted">
-                  <Image src={url} alt={asset.alt_text ?? ''} fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" />
+                  <Image src={url} alt={asset.alt_text ?? ''} fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" unoptimized />
                 </div>
               )
             })}

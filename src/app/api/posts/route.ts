@@ -56,19 +56,26 @@ export async function GET(request: NextRequest) {
     // timeline (same rule as blog/business walls). get_timeline_posts predates
     // page_id; drop any tagged rows here. Preferred zero-cost fix once approved:
     // add `AND p.page_id IS NULL` to the RPC's friend_posts CTE, then delete this.
-    if (rows.length) {
-      const { data: tagged } = await client
-        .from('posts')
-        .select('id')
-        .in('id', rows.map((r) => r.id))
-        .not('page_id', 'is', null);
-      if (tagged && tagged.length) {
-        const drop = new Set((tagged as Array<{ id: string }>).map((t) => t.id));
-        rows = rows.filter((r) => !drop.has(r.id));
-      }
+    // All three reads are independent, so they run as one round-trip instead of
+    // three. Hydrating a page-wall row that the filter then drops is cheap and
+    // far rarer than paying two extra sequential hops on every feed request.
+    const ids = rows.map((r) => r.id);
+    const [tagged, profiles, myReactions] = await Promise.all([
+      ids.length
+        ? client
+            .from('posts')
+            .select('id')
+            .in('id', ids)
+            .not('page_id', 'is', null)
+            .then(({ data }) => (data ?? []) as Array<{ id: string }>)
+        : Promise.resolve([] as Array<{ id: string }>),
+      loadProfilesForPosts(client, rows),
+      loadMyReactions(client, ids, userId),
+    ]);
+    if (tagged.length) {
+      const drop = new Set(tagged.map((t) => t.id));
+      rows = rows.filter((r) => !drop.has(r.id));
     }
-    const profiles = await loadProfilesForPosts(client, rows);
-    const myReactions = await loadMyReactions(client, rows.map((r) => r.id), userId);
     const posts = rows.map((r) => mapPost(r, profiles, myReactions.get(r.id) ?? null));
     return NextResponse.json({ success: true, data: posts });
   }

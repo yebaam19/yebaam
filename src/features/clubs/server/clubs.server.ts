@@ -4,7 +4,7 @@ import { getServerClient } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
 import { getSpaceBoard } from '@/app/(app)/foro/server/foro.server';
 import { fromCommunityMedia } from '@/lib/media/parse';
-import { imageUrl } from '@/lib/media/urls';
+import { imageUrl, withImageVariant } from '@/lib/media/urls';
 import type { ForoCategory, ForoSpace } from '@/features/foro/types';
 import type { Club, ClubPostMedia } from '../types/club.types';
 
@@ -196,7 +196,7 @@ async function attachAuthors(
         p.display_name ||
         [p.first_name, p.last_name].filter(Boolean).join(' ') ||
         p.username,
-      avatarUrl: p.avatar_url,
+      avatarUrl: p.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
     });
   }
   return map;
@@ -337,7 +337,7 @@ export async function getClubMembers(
           p.display_name ||
           [p.first_name, p.last_name].filter(Boolean).join(' ') ||
           p.username,
-        avatarUrl: p.avatar_url,
+        avatarUrl: p.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
       },
     ]),
   );

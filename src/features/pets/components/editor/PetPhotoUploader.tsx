@@ -74,6 +74,8 @@ export function PetPhotoUploader({ photos, onAdd, onRemove }: PetPhotoUploaderPr
               src={imageUrl(ph.cf_image_id, 'public')}
               alt={ph.caption ?? ''}
               className="h-full w-full object-cover"
+              decoding="async"
+              loading="lazy"
             />
             <button
               type="button"

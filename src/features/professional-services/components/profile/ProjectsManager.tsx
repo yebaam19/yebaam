@@ -158,7 +158,7 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                 {/* Imagen del proyecto */}
                 {project.imageUrl ? (
                   <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg">
-                    <img src={project.imageUrl} alt={project.title} className="h-full w-full object-cover" />
+                    <img src={project.imageUrl} alt={project.title} className="h-full w-full object-cover" decoding="async" loading="lazy" />
                   </div>
                 ) : (
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-700">
@@ -378,6 +378,8 @@ export function ProjectsManager({ projects, onChange }: ProjectsManagerProps) {
                             onError={(e) => {
                               e.currentTarget.style.display = 'none'
                             }}
+                            decoding="async"
+                            loading="lazy"
                           />
                         </div>
                       )}

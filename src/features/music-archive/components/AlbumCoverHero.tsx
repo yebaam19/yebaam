@@ -49,6 +49,7 @@ export function AlbumCoverHero({ coverCfImageId, title }: Props) {
           alt={coverAlt}
           fetchPriority="high"
           className="aspect-square w-full object-contain"
+          decoding="async"
         />
       </button>
 
@@ -74,6 +75,8 @@ export function AlbumCoverHero({ coverCfImageId, title }: Props) {
             alt={coverAlt}
             className="max-h-[85vh] max-w-full rounded-xl object-contain"
             onClick={(e) => e.stopPropagation()}
+            decoding="async"
+            loading="lazy"
           />
         </div>
       )}

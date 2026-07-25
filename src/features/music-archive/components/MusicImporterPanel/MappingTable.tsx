@@ -64,6 +64,8 @@ export function MappingTable({ merged, confirming, onFieldChange, onCancel, onCo
             src={merged.cover_image_url}
             alt=""
             className="mt-1 h-32 w-32 rounded-md border border-zinc-200 object-cover dark:border-zinc-700"
+            decoding="async"
+            loading="lazy"
           />
         </div>
       )}

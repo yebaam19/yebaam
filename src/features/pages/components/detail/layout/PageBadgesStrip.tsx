@@ -83,6 +83,7 @@ export const PageBadgesStrip: FC<PageBadgesStripProps> = ({ pageId, isOwner }) =
                 width={24}
                 height={24}
                 className="rounded-full"
+                unoptimized
               />
             ) : (
               <TrophyIcon className="w-5 h-5 text-amber-500" />

@@ -63,7 +63,7 @@ function Thumb({
         className={`relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-neutral-100 ${ringCls} dark:bg-neutral-700 ${url ? 'cursor-zoom-in hover:opacity-90' : 'cursor-not-allowed opacity-50'}`}
       >
         {url ? (
-          <img src={url} alt={label} className="h-full w-full object-cover" />
+          <img src={url} alt={label} className="h-full w-full object-cover" decoding="async" loading="lazy" />
         ) : (
           <span className="text-[10px] text-neutral-500">{t('noFile')}</span>
         )}

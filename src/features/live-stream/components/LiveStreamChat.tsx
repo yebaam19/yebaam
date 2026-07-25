@@ -143,6 +143,8 @@ export function LiveStreamChat({ streamId, className = '' }: LiveStreamChatProps
                     src={comment.user.avatar}
                     alt={comment.user.username}
                     className="w-8 h-8 rounded-full"
+                    decoding="async"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">

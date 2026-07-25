@@ -66,6 +66,7 @@ export const AuditionApplications: FC<Props> = ({ pageId, auditionId }) => {
                 width={32}
                 height={32}
                 className="w-8 h-8 rounded-full object-cover shrink-0"
+                unoptimized
               />
             ) : (
               <UserCircleIcon className="w-8 h-8 text-gray-400 shrink-0" />

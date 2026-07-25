@@ -81,6 +81,8 @@ export function AlbumsTable({
                       src={imageUrl(a.cover_cf_image_id, 'thumbnail')}
                       alt=""
                       className="h-10 w-10 rounded object-cover"
+                      decoding="async"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="h-10 w-10 rounded bg-zinc-200 dark:bg-zinc-700" />

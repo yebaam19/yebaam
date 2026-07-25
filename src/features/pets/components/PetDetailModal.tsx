@@ -171,6 +171,8 @@ function PetDetailBody({ pet }: { pet: PetWithMedia }) {
           src={cover}
           alt={pet.name}
           className="mb-5 h-48 w-full rounded-xl object-cover sm:h-64"
+          decoding="async"
+          loading="lazy"
         />
       )}
 
@@ -188,6 +190,8 @@ function PetDetailBody({ pet }: { pet: PetWithMedia }) {
                 src={imageUrl(ph.cf_image_id, 'public')}
                 alt={ph.caption ?? ''}
                 className="aspect-square w-full rounded-lg object-cover"
+                decoding="async"
+                loading="lazy"
               />
             ))}
           </div>

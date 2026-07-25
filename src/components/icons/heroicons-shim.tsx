@@ -1,328 +1,169 @@
 /**
- * Heroicons → Iconify (Lucide) compatibility shim.
+ * Heroicons → Lucide compatibility shim.
  *
- * Re-exports every heroicon name used in the codebase as a thin wrapper
- * around `@iconify/react` pointing at the equivalent Lucide icon. Existing
- * call sites like `<ChevronRightIcon className="h-5 w-5" />` keep working
- * without any JSX changes — we only sed the import path from
- * `@/components/icons/heroicons-shim` (and `/24/solid`) to this module.
+ * Re-exports every heroicon name used in the codebase as a direct alias of the
+ * equivalent `lucide-react` icon, so call sites like
+ * `<ChevronRightIcon className="h-5 w-5" />` keep working unchanged across the
+ * 612 files that import from here.
  *
- * To switch the entire app to a different Iconify collection later (e.g.
- * `phosphor`, `tabler`, `mdi`), change the `PREFIX` constant below.
+ * Why a plain `export { X as YIcon }` and not a wrapper component: these are
+ * static re-exports, so bundlers tree-shake down to only the icons a route
+ * actually renders. The previous implementation wrapped `@iconify/react`,
+ * which fetched every glyph at runtime from api.iconify.design — that meant a
+ * third-party DNS+TLS+RTT on the critical path and a visible blank-icon flash
+ * on every cold load. Lucide ships the SVG paths in the bundle, so icons paint
+ * with the first frame and work offline.
+ *
+ * Adding an icon: find the Lucide name (https://lucide.dev/icons), then add a
+ * `LucideName as SomethingIcon` line below, keeping the list alphabetical by
+ * the exported alias where practical.
  */
 
-import { Icon, type IconProps } from '@iconify/react'
-import type { ComponentType, SVGProps } from 'react'
-
-const PREFIX = 'lucide'
-
-type HeroiconProps = Omit<SVGProps<SVGSVGElement>, 'ref'> & {
-  // heroicons accepts these extra props that Iconify's <Icon> also honors
-  title?: string
-  titleId?: string
-}
-
-function make(name: string): ComponentType<HeroiconProps> {
-  const IconComponent = (props: HeroiconProps) => (
-    <Icon {...(props as unknown as IconProps)} icon={`${PREFIX}:${name}`} />
-  )
-  IconComponent.displayName = `Heroicon(${name})`
-  return IconComponent
-}
-
-// prettier-ignore
-const MAP = {
-  AcademicCapIcon: 'graduation-cap',
-  AdjustmentsHorizontalIcon: 'sliders-horizontal',
-  ArrowLeftIcon: 'arrow-left',
-  ArrowPathIcon: 'rotate-cw',
-  ArrowRightIcon: 'arrow-right',
-  ArrowTopRightOnSquareIcon: 'external-link',
-  ArrowUpTrayIcon: 'upload',
-  ArrowsPointingOutIcon: 'maximize',
-  Bars3Icon: 'menu',
-  BeakerIcon: 'flask-conical',
-  BellIcon: 'bell',
-  BellSolidIcon: 'bell',
-  BookOpenIcon: 'book-open',
-  BookmarkIcon: 'bookmark',
-  BriefcaseIcon: 'briefcase',
-  BuildingStorefrontIcon: 'store',
-  CakeIcon: 'cake',
-  CalendarIcon: 'calendar',
-  CameraIcon: 'camera',
-  ChartBarIcon: 'bar-chart-3',
-  ChatBubbleLeftIcon: 'message-circle',
-  ChatBubbleLeftRightIcon: 'messages-square',
-  ChatBubbleOvalLeftIcon: 'message-circle',
-  CheckBadgeIcon: 'badge-check',
-  CheckCircleIcon: 'check-circle-2',
-  CheckIcon: 'check',
-  ChevronDownIcon: 'chevron-down',
-  ChevronLeftIcon: 'chevron-left',
-  ChevronRightIcon: 'chevron-right',
-  ChevronUpIcon: 'chevron-up',
-  ClipboardDocumentIcon: 'clipboard',
-  ClockIcon: 'clock',
-  CloudArrowUpIcon: 'cloud-upload',
-  CodeBracketIcon: 'code',
-  Cog6ToothIcon: 'settings',
-  CurrencyDollarIcon: 'dollar-sign',
-  DocumentArrowDownIcon: 'file-down',
-  DocumentIcon: 'file',
-  DocumentTextIcon: 'file-text',
-  EllipsisHorizontalCircleIcon: 'more-horizontal',
-  EllipsisHorizontalIcon: 'more-horizontal',
-  EllipsisVerticalIcon: 'more-vertical',
-  EnvelopeIcon: 'mail',
-  ExclamationCircleIcon: 'alert-circle',
-  ExclamationTriangleIcon: 'alert-triangle',
-  EyeIcon: 'eye',
-  EyeSlashIcon: 'eye-off',
-  FaceFrownIcon: 'frown',
-  FaceSmileIcon: 'smile',
-  FireIcon: 'flame',
-  FolderIcon: 'folder',
-  FolderPlusIcon: 'folder-plus',
-  FunnelIcon: 'filter',
-  GifIcon: 'image',
-  GlobeAltIcon: 'globe',
-  GlobeAmericasIcon: 'globe-2',
-  HandThumbUpIcon: 'thumbs-up',
-  HashtagIcon: 'hash',
-  HeartIcon: 'heart',
-  HeartSolidIcon: 'heart',
-  HomeIcon: 'home',
-  InformationCircleIcon: 'info',
-  LanguageIcon: 'languages',
-  LightBulbIcon: 'lightbulb',
-  LinkIcon: 'link',
-  ListBulletIcon: 'list',
-  LockClosedIcon: 'lock',
-  LockOpenIcon: 'lock-open',
-  MagnifyingGlassIcon: 'search',
-  MagnifyingGlassMinusIcon: 'zoom-out',
-  MagnifyingGlassPlusIcon: 'zoom-in',
-  MapIcon: 'map',
-  MapPinIcon: 'map-pin',
-  MicrophoneIcon: 'mic',
-  MinusIcon: 'minus',
-  MoonIcon: 'moon',
-  MusicalNoteIcon: 'music',
-  NewspaperIcon: 'newspaper',
-  PaperAirplaneIcon: 'send',
-  PencilIcon: 'pencil',
-  PencilSquareIcon: 'square-pen',
-  PhoneIcon: 'phone',
-  PhotoIcon: 'image',
-  PlayIcon: 'play',
-  PlusIcon: 'plus',
-  ShareIcon: 'share-2',
-  ShieldCheckIcon: 'shield-check',
-  SignalIcon: 'signal',
-  SignalSlashIcon: 'signal-zero',
-  SparklesIcon: 'sparkles',
-  Squares2X2Icon: 'grid-2x2',
-  StarIcon: 'star',
-  StarSolidIcon: 'star',
-  SunIcon: 'sun',
-  TableCellsIcon: 'table',
-  TagIcon: 'tag',
-  TrashIcon: 'trash-2',
-  TrophyIcon: 'trophy',
-  UserCircleIcon: 'user-circle',
-  UserGroupIcon: 'users',
-  UserIcon: 'user',
-  UserMinusIcon: 'user-minus',
-  UserPlusIcon: 'user-plus',
-  UsersIcon: 'users',
-  VideoCameraIcon: 'video',
-  WifiIcon: 'wifi',
-  XCircleIcon: 'x-circle',
-  XMarkIcon: 'x',
-  ArrowDownTrayIcon: 'download',
-  ArrowPathRoundedSquareIcon: 'rotate-ccw-square',
-  ArrowTrendingUpIcon: 'trending-up',
-  BoldIcon: 'bold',
-  BoltIcon: 'zap',
-  BuildingLibraryIcon: 'library',
-  BuildingOffice2Icon: 'building-2',
-  BuildingOfficeIcon: 'building',
-  CalendarDaysIcon: 'calendar-days',
-  ChatBubbleBottomCenterTextIcon: 'message-square-text',
-  ComputerDesktopIcon: 'monitor',
-  DevicePhoneMobileIcon: 'smartphone',
-  FilmIcon: 'film',
-  FlagIcon: 'flag',
-  HandRaisedIcon: 'hand',
-  HomeModernIcon: 'home',
-  InboxArrowDownIcon: 'inbox',
-  ItalicIcon: 'italic',
-  LifebuoyIcon: 'life-buoy',
-  MegaphoneIcon: 'megaphone',
-  PaintBrushIcon: 'paintbrush',
-  PauseIcon: 'pause',
-  QuestionMarkCircleIcon: 'help-circle',
-  QueueListIcon: 'list-ordered',
-  RectangleStackIcon: 'layers',
-  RocketLaunchIcon: 'rocket',
-  ScaleIcon: 'scale',
-  ServerIcon: 'server',
-  ShoppingBagIcon: 'shopping-bag',
-  SpeakerWaveIcon: 'volume-2',
-  SpeakerXMarkIcon: 'volume-x',
-  StopIcon: 'square',
-  TicketIcon: 'ticket',
-  TvIcon: 'tv',
-  WrenchScrewdriverIcon: 'wrench',
-  PhoneXMarkIcon: 'phone-off',
-  MicrophoneSlashIcon: 'mic-off',
-  VideoCameraSlashIcon: 'video-off',
-} as const
-
-export const AcademicCapIcon = make(MAP.AcademicCapIcon)
-export const AdjustmentsHorizontalIcon = make(MAP.AdjustmentsHorizontalIcon)
-export const ArrowLeftIcon = make(MAP.ArrowLeftIcon)
-export const ArrowPathIcon = make(MAP.ArrowPathIcon)
-export const ArrowRightIcon = make(MAP.ArrowRightIcon)
-export const ArrowTopRightOnSquareIcon = make(MAP.ArrowTopRightOnSquareIcon)
-export const ArrowUpTrayIcon = make(MAP.ArrowUpTrayIcon)
-export const ArrowsPointingOutIcon = make(MAP.ArrowsPointingOutIcon)
-export const Bars3Icon = make(MAP.Bars3Icon)
-export const BeakerIcon = make(MAP.BeakerIcon)
-export const BellIcon = make(MAP.BellIcon)
-export const BellSolidIcon = make(MAP.BellSolidIcon)
-export const BookOpenIcon = make(MAP.BookOpenIcon)
-export const BookmarkIcon = make(MAP.BookmarkIcon)
-export const BriefcaseIcon = make(MAP.BriefcaseIcon)
-export const BuildingStorefrontIcon = make(MAP.BuildingStorefrontIcon)
-export const CakeIcon = make(MAP.CakeIcon)
-export const CalendarIcon = make(MAP.CalendarIcon)
-export const CameraIcon = make(MAP.CameraIcon)
-export const ChartBarIcon = make(MAP.ChartBarIcon)
-export const ChatBubbleLeftIcon = make(MAP.ChatBubbleLeftIcon)
-export const ChatBubbleLeftRightIcon = make(MAP.ChatBubbleLeftRightIcon)
-export const ChatBubbleOvalLeftIcon = make(MAP.ChatBubbleOvalLeftIcon)
-export const CheckBadgeIcon = make(MAP.CheckBadgeIcon)
-export const CheckCircleIcon = make(MAP.CheckCircleIcon)
-export const CheckIcon = make(MAP.CheckIcon)
-export const ChevronDownIcon = make(MAP.ChevronDownIcon)
-export const ChevronLeftIcon = make(MAP.ChevronLeftIcon)
-export const ChevronRightIcon = make(MAP.ChevronRightIcon)
-export const ChevronUpIcon = make(MAP.ChevronUpIcon)
-export const ClipboardDocumentIcon = make(MAP.ClipboardDocumentIcon)
-export const ClockIcon = make(MAP.ClockIcon)
-export const CloudArrowUpIcon = make(MAP.CloudArrowUpIcon)
-export const CodeBracketIcon = make(MAP.CodeBracketIcon)
-export const Cog6ToothIcon = make(MAP.Cog6ToothIcon)
-export const CurrencyDollarIcon = make(MAP.CurrencyDollarIcon)
-export const DocumentArrowDownIcon = make(MAP.DocumentArrowDownIcon)
-export const DocumentIcon = make(MAP.DocumentIcon)
-export const DocumentTextIcon = make(MAP.DocumentTextIcon)
-export const EllipsisHorizontalCircleIcon = make(MAP.EllipsisHorizontalCircleIcon)
-export const EllipsisHorizontalIcon = make(MAP.EllipsisHorizontalIcon)
-export const EllipsisVerticalIcon = make(MAP.EllipsisVerticalIcon)
-export const EnvelopeIcon = make(MAP.EnvelopeIcon)
-export const ExclamationCircleIcon = make(MAP.ExclamationCircleIcon)
-export const ExclamationTriangleIcon = make(MAP.ExclamationTriangleIcon)
-export const EyeIcon = make(MAP.EyeIcon)
-export const EyeSlashIcon = make(MAP.EyeSlashIcon)
-export const FaceFrownIcon = make(MAP.FaceFrownIcon)
-export const FaceSmileIcon = make(MAP.FaceSmileIcon)
-export const FireIcon = make(MAP.FireIcon)
-export const FolderIcon = make(MAP.FolderIcon)
-export const FolderPlusIcon = make(MAP.FolderPlusIcon)
-export const FunnelIcon = make(MAP.FunnelIcon)
-export const GifIcon = make(MAP.GifIcon)
-export const GlobeAltIcon = make(MAP.GlobeAltIcon)
-export const GlobeAmericasIcon = make(MAP.GlobeAmericasIcon)
-export const HandThumbUpIcon = make(MAP.HandThumbUpIcon)
-export const HashtagIcon = make(MAP.HashtagIcon)
-export const HeartIcon = make(MAP.HeartIcon)
-export const HeartSolidIcon = make(MAP.HeartSolidIcon)
-export const HomeIcon = make(MAP.HomeIcon)
-export const InformationCircleIcon = make(MAP.InformationCircleIcon)
-export const LanguageIcon = make(MAP.LanguageIcon)
-export const LightBulbIcon = make(MAP.LightBulbIcon)
-export const LinkIcon = make(MAP.LinkIcon)
-export const ListBulletIcon = make(MAP.ListBulletIcon)
-export const LockClosedIcon = make(MAP.LockClosedIcon)
-export const LockOpenIcon = make(MAP.LockOpenIcon)
-export const MagnifyingGlassIcon = make(MAP.MagnifyingGlassIcon)
-export const MagnifyingGlassMinusIcon = make(MAP.MagnifyingGlassMinusIcon)
-export const MagnifyingGlassPlusIcon = make(MAP.MagnifyingGlassPlusIcon)
-export const MapIcon = make(MAP.MapIcon)
-export const MapPinIcon = make(MAP.MapPinIcon)
-export const MicrophoneIcon = make(MAP.MicrophoneIcon)
-export const MinusIcon = make(MAP.MinusIcon)
-export const MoonIcon = make(MAP.MoonIcon)
-export const MusicalNoteIcon = make(MAP.MusicalNoteIcon)
-export const NewspaperIcon = make(MAP.NewspaperIcon)
-export const PaperAirplaneIcon = make(MAP.PaperAirplaneIcon)
-export const PencilIcon = make(MAP.PencilIcon)
-export const PencilSquareIcon = make(MAP.PencilSquareIcon)
-export const PhoneIcon = make(MAP.PhoneIcon)
-export const PhotoIcon = make(MAP.PhotoIcon)
-export const PlayIcon = make(MAP.PlayIcon)
-export const PlusIcon = make(MAP.PlusIcon)
-export const ShareIcon = make(MAP.ShareIcon)
-export const ShieldCheckIcon = make(MAP.ShieldCheckIcon)
-export const SignalIcon = make(MAP.SignalIcon)
-export const SignalSlashIcon = make(MAP.SignalSlashIcon)
-export const SparklesIcon = make(MAP.SparklesIcon)
-export const Squares2X2Icon = make(MAP.Squares2X2Icon)
-export const StarIcon = make(MAP.StarIcon)
-export const StarSolidIcon = make(MAP.StarSolidIcon)
-export const SunIcon = make(MAP.SunIcon)
-export const TableCellsIcon = make(MAP.TableCellsIcon)
-export const TagIcon = make(MAP.TagIcon)
-export const TrashIcon = make(MAP.TrashIcon)
-export const TrophyIcon = make(MAP.TrophyIcon)
-export const UserCircleIcon = make(MAP.UserCircleIcon)
-export const UserGroupIcon = make(MAP.UserGroupIcon)
-export const UserIcon = make(MAP.UserIcon)
-export const UserMinusIcon = make(MAP.UserMinusIcon)
-export const UserPlusIcon = make(MAP.UserPlusIcon)
-export const UsersIcon = make(MAP.UsersIcon)
-export const VideoCameraIcon = make(MAP.VideoCameraIcon)
-export const WifiIcon = make(MAP.WifiIcon)
-export const XCircleIcon = make(MAP.XCircleIcon)
-export const XMarkIcon = make(MAP.XMarkIcon)
-export const ArrowDownTrayIcon = make(MAP.ArrowDownTrayIcon)
-export const ArrowPathRoundedSquareIcon = make(MAP.ArrowPathRoundedSquareIcon)
-export const ArrowTrendingUpIcon = make(MAP.ArrowTrendingUpIcon)
-export const BoldIcon = make(MAP.BoldIcon)
-export const BoltIcon = make(MAP.BoltIcon)
-export const BuildingLibraryIcon = make(MAP.BuildingLibraryIcon)
-export const BuildingOffice2Icon = make(MAP.BuildingOffice2Icon)
-export const BuildingOfficeIcon = make(MAP.BuildingOfficeIcon)
-export const CalendarDaysIcon = make(MAP.CalendarDaysIcon)
-export const ChatBubbleBottomCenterTextIcon = make(MAP.ChatBubbleBottomCenterTextIcon)
-export const ComputerDesktopIcon = make(MAP.ComputerDesktopIcon)
-export const DevicePhoneMobileIcon = make(MAP.DevicePhoneMobileIcon)
-export const FilmIcon = make(MAP.FilmIcon)
-export const FlagIcon = make(MAP.FlagIcon)
-export const HandRaisedIcon = make(MAP.HandRaisedIcon)
-export const HomeModernIcon = make(MAP.HomeModernIcon)
-export const InboxArrowDownIcon = make(MAP.InboxArrowDownIcon)
-export const ItalicIcon = make(MAP.ItalicIcon)
-export const LifebuoyIcon = make(MAP.LifebuoyIcon)
-export const MegaphoneIcon = make(MAP.MegaphoneIcon)
-export const PaintBrushIcon = make(MAP.PaintBrushIcon)
-export const PauseIcon = make(MAP.PauseIcon)
-export const QuestionMarkCircleIcon = make(MAP.QuestionMarkCircleIcon)
-export const QueueListIcon = make(MAP.QueueListIcon)
-export const RectangleStackIcon = make(MAP.RectangleStackIcon)
-export const RocketLaunchIcon = make(MAP.RocketLaunchIcon)
-export const ScaleIcon = make(MAP.ScaleIcon)
-export const ServerIcon = make(MAP.ServerIcon)
-export const ShoppingBagIcon = make(MAP.ShoppingBagIcon)
-export const SpeakerWaveIcon = make(MAP.SpeakerWaveIcon)
-export const SpeakerXMarkIcon = make(MAP.SpeakerXMarkIcon)
-export const StopIcon = make(MAP.StopIcon)
-export const TicketIcon = make(MAP.TicketIcon)
-export const TvIcon = make(MAP.TvIcon)
-export const WrenchScrewdriverIcon = make(MAP.WrenchScrewdriverIcon)
-export const PhoneXMarkIcon = make(MAP.PhoneXMarkIcon)
-export const MicrophoneSlashIcon = make(MAP.MicrophoneSlashIcon)
-export const VideoCameraSlashIcon = make(MAP.VideoCameraSlashIcon)
+export {
+  GraduationCap as AcademicCapIcon,
+  SlidersHorizontal as AdjustmentsHorizontalIcon,
+  ArrowLeft as ArrowLeftIcon,
+  RotateCw as ArrowPathIcon,
+  ArrowRight as ArrowRightIcon,
+  ExternalLink as ArrowTopRightOnSquareIcon,
+  Upload as ArrowUpTrayIcon,
+  Maximize as ArrowsPointingOutIcon,
+  Menu as Bars3Icon,
+  FlaskConical as BeakerIcon,
+  Bell as BellIcon,
+  Bell as BellSolidIcon,
+  BookOpen as BookOpenIcon,
+  Bookmark as BookmarkIcon,
+  Briefcase as BriefcaseIcon,
+  Store as BuildingStorefrontIcon,
+  Cake as CakeIcon,
+  Calendar as CalendarIcon,
+  Camera as CameraIcon,
+  BarChart3 as ChartBarIcon,
+  MessageCircle as ChatBubbleLeftIcon,
+  MessagesSquare as ChatBubbleLeftRightIcon,
+  MessageCircle as ChatBubbleOvalLeftIcon,
+  BadgeCheck as CheckBadgeIcon,
+  CheckCircle2 as CheckCircleIcon,
+  Check as CheckIcon,
+  ChevronDown as ChevronDownIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  ChevronUp as ChevronUpIcon,
+  Clipboard as ClipboardDocumentIcon,
+  Clock as ClockIcon,
+  CloudUpload as CloudArrowUpIcon,
+  Code as CodeBracketIcon,
+  Settings as Cog6ToothIcon,
+  DollarSign as CurrencyDollarIcon,
+  FileDown as DocumentArrowDownIcon,
+  File as DocumentIcon,
+  FileText as DocumentTextIcon,
+  MoreHorizontal as EllipsisHorizontalCircleIcon,
+  MoreHorizontal as EllipsisHorizontalIcon,
+  MoreVertical as EllipsisVerticalIcon,
+  Mail as EnvelopeIcon,
+  AlertCircle as ExclamationCircleIcon,
+  AlertTriangle as ExclamationTriangleIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeSlashIcon,
+  Frown as FaceFrownIcon,
+  Smile as FaceSmileIcon,
+  Flame as FireIcon,
+  Folder as FolderIcon,
+  FolderPlus as FolderPlusIcon,
+  Filter as FunnelIcon,
+  Image as GifIcon,
+  Globe as GlobeAltIcon,
+  Globe2 as GlobeAmericasIcon,
+  ThumbsUp as HandThumbUpIcon,
+  Hash as HashtagIcon,
+  Heart as HeartIcon,
+  Heart as HeartSolidIcon,
+  Home as HomeIcon,
+  Info as InformationCircleIcon,
+  Languages as LanguageIcon,
+  Lightbulb as LightBulbIcon,
+  Link as LinkIcon,
+  List as ListBulletIcon,
+  Lock as LockClosedIcon,
+  LockOpen as LockOpenIcon,
+  Search as MagnifyingGlassIcon,
+  ZoomOut as MagnifyingGlassMinusIcon,
+  ZoomIn as MagnifyingGlassPlusIcon,
+  Map as MapIcon,
+  MapPin as MapPinIcon,
+  Mic as MicrophoneIcon,
+  Minus as MinusIcon,
+  Moon as MoonIcon,
+  Music as MusicalNoteIcon,
+  Newspaper as NewspaperIcon,
+  Send as PaperAirplaneIcon,
+  Pencil as PencilIcon,
+  SquarePen as PencilSquareIcon,
+  Phone as PhoneIcon,
+  Image as PhotoIcon,
+  Play as PlayIcon,
+  Plus as PlusIcon,
+  Share2 as ShareIcon,
+  ShieldCheck as ShieldCheckIcon,
+  Signal as SignalIcon,
+  SignalZero as SignalSlashIcon,
+  Sparkles as SparklesIcon,
+  Grid2x2 as Squares2X2Icon,
+  Star as StarIcon,
+  Star as StarSolidIcon,
+  Sun as SunIcon,
+  Table as TableCellsIcon,
+  Tag as TagIcon,
+  Trash2 as TrashIcon,
+  Trophy as TrophyIcon,
+  UserCircle as UserCircleIcon,
+  Users as UserGroupIcon,
+  User as UserIcon,
+  UserMinus as UserMinusIcon,
+  UserPlus as UserPlusIcon,
+  Users as UsersIcon,
+  Video as VideoCameraIcon,
+  Wifi as WifiIcon,
+  XCircle as XCircleIcon,
+  X as XMarkIcon,
+  Download as ArrowDownTrayIcon,
+  RotateCcwSquare as ArrowPathRoundedSquareIcon,
+  TrendingUp as ArrowTrendingUpIcon,
+  Bold as BoldIcon,
+  Zap as BoltIcon,
+  Library as BuildingLibraryIcon,
+  Building2 as BuildingOffice2Icon,
+  Building as BuildingOfficeIcon,
+  CalendarDays as CalendarDaysIcon,
+  MessageSquareText as ChatBubbleBottomCenterTextIcon,
+  Monitor as ComputerDesktopIcon,
+  Smartphone as DevicePhoneMobileIcon,
+  Film as FilmIcon,
+  Flag as FlagIcon,
+  Hand as HandRaisedIcon,
+  Home as HomeModernIcon,
+  Inbox as InboxArrowDownIcon,
+  Italic as ItalicIcon,
+  LifeBuoy as LifebuoyIcon,
+  Megaphone as MegaphoneIcon,
+  Paintbrush as PaintBrushIcon,
+  Pause as PauseIcon,
+  HelpCircle as QuestionMarkCircleIcon,
+  ListOrdered as QueueListIcon,
+  Layers as RectangleStackIcon,
+  Rocket as RocketLaunchIcon,
+  Scale as ScaleIcon,
+  Server as ServerIcon,
+  ShoppingBag as ShoppingBagIcon,
+  Volume2 as SpeakerWaveIcon,
+  VolumeX as SpeakerXMarkIcon,
+  Square as StopIcon,
+  Ticket as TicketIcon,
+  Tv as TvIcon,
+  Wrench as WrenchScrewdriverIcon,
+  PhoneOff as PhoneXMarkIcon,
+  MicOff as MicrophoneSlashIcon,
+  VideoOff as VideoCameraSlashIcon,
+} from 'lucide-react'

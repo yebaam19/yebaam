@@ -40,6 +40,7 @@ export const PageVideosGrid: FC<PageVideosGridProps> = ({ posts, onSelect }) => 
                 alt=""
                 loading="lazy"
                 className="h-full w-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
+                decoding="async"
               />
             ) : (
               <div className="h-full w-full" />

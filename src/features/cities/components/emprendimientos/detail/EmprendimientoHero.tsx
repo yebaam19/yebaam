@@ -34,6 +34,7 @@ export function EmprendimientoHero({ name, heroImageUrl, zone, category, verifie
               alt={name}
               className="h-full w-full object-cover"
               fetchPriority="high"
+              decoding="async"
             />
           ) : (
             <div

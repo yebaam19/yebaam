@@ -96,6 +96,7 @@ function MediaSurface({
           alt={item.caption ?? ''}
           loading="lazy"
           className="mx-auto max-h-[70vh] w-full object-contain"
+          decoding="async"
         />
       </button>
     );
@@ -166,6 +167,7 @@ function VideoSurface({
           alt=""
           loading="lazy"
           className="h-full w-full object-cover opacity-90 transition group-hover:opacity-100"
+          decoding="async"
         />
       ) : (
         <div className="h-full w-full bg-zinc-900" />

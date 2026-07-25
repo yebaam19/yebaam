@@ -42,7 +42,7 @@ export function CampaignsListView({ campaigns }: { campaigns: CampaignSummary[] 
       >
         <div className="relative h-40 overflow-hidden bg-primary-50">
           {imageUrl ? (
-            <Image src={imageUrl} alt={item.title} fill className="object-cover transition group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" />
+            <Image src={imageUrl} alt={item.title} fill className="object-cover transition group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" unoptimized />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <span className="text-3xl">⚡</span>

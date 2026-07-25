@@ -10,7 +10,7 @@ export async function FamilyHeader({ family }: { family: FamilyWithViewer }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="relative h-44 w-full bg-gradient-to-br from-emerald-200 to-teal-300 dark:from-emerald-900 dark:to-teal-800">
-        {cover && <img src={cover} alt={family.name} className="h-full w-full object-cover" />}
+        {cover && <img src={cover} alt={family.name} className="h-full w-full object-cover" decoding="async" loading="lazy" />}
         <Link
           href="/feed/familias"
           className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 text-xs font-medium text-white backdrop-blur hover:bg-black/60"

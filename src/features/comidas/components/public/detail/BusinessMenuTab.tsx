@@ -68,6 +68,7 @@ export function BusinessMenuTab({ menus, businessName }: Props) {
                             src={imgUrl} alt={product.name} fill
                             className="object-cover transition duration-500 group-hover:scale-105"
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            unoptimized
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-4xl">🍽️</div>

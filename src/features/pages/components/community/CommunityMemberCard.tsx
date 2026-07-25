@@ -37,6 +37,7 @@ export const CommunityMemberCard: FC<CommunityMemberCardProps> = ({
               width={48}
               height={48}
               className="rounded-full object-cover"
+              unoptimized
             />
           ) : (
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">

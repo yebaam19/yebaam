@@ -16,7 +16,7 @@ export function CampaignCard({ campaign }: Props) {
     <div className="rounded-xl border border-border overflow-hidden">
       {imgUrl && (
         <div className="relative aspect-video bg-muted">
-          <Image src={imgUrl} alt={campaign.title} fill className="object-cover" sizes="400px" />
+          <Image src={imgUrl} alt={campaign.title} fill className="object-cover" sizes="400px" unoptimized />
         </div>
       )}
       <div className="p-4">

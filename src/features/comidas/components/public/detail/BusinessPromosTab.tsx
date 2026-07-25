@@ -39,6 +39,7 @@ export function BusinessPromosTab({ promotions, businessName }: Props) {
                 src={cfImageUrl(featured.cf_image_id)!} alt={featured.title} fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 40vw"
+                unoptimized
               />
             ) : (
               <div className="flex h-full min-h-48 items-center justify-center bg-gradient-to-br from-secondary-50 to-secondary-100 text-5xl">
@@ -88,7 +89,7 @@ export function BusinessPromosTab({ promotions, businessName }: Props) {
               >
                 <div className="relative h-48 bg-primary-50">
                   {imgUrl ? (
-                    <Image src={imgUrl} alt={promo.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                    <Image src={imgUrl} alt={promo.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" unoptimized />
                   ) : (
                     <div className="flex h-full items-center justify-center text-4xl">🎁</div>
                   )}

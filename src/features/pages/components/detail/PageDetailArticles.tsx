@@ -161,7 +161,7 @@ export const PageDetailArticles: FC<PageDetailArticlesProps> = ({ page, isOwner 
           >
             {a.coverUrl && (
               <div className="relative w-24 h-24 shrink-0 overflow-hidden rounded-md">
-                <Image src={a.coverUrl} alt="" fill className="object-cover" sizes="96px" />
+                <Image src={a.coverUrl} alt="" fill className="object-cover" sizes="96px" unoptimized />
               </div>
             )}
             <div className="min-w-0 flex-1">

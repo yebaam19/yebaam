@@ -57,6 +57,7 @@ export default async function AdminEscuelaLayout({ children, params }: Props) {
                     width={24}
                     height={24}
                     className="h-6 w-6 shrink-0 rounded-lg object-cover"
+                    unoptimized
                   />
                 ) : (
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-primary-700 text-[10px] font-bold text-white">

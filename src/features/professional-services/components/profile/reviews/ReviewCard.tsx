@@ -43,7 +43,7 @@ export function ReviewCard({ review }: { review: ProfessionalServiceReview }) {
         {/* Avatar */}
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
           {review.user.avatarUrl ? (
-            <Image src={review.user.avatarUrl} alt={displayName} fill sizes="40px" className="object-cover" />
+            <Image src={review.user.avatarUrl} alt={displayName} fill sizes="40px" className="object-cover" unoptimized />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm font-medium text-neutral-500">
               {getUserInitials(displayName)}

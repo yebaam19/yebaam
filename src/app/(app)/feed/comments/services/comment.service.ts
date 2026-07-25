@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
+import { withImageVariant } from '@/lib/media/urls';
 import type {
   Comment,
   CommentAuthor,
@@ -46,7 +47,7 @@ function profileToAuthor(profile: DbProfile | undefined, fallbackId: string): Co
     username: profile.username ?? '',
     firstName: profile.first_name ?? '',
     lastName: profile.last_name ?? '',
-    avatar: profile.avatar_url ?? null,
+    avatar: profile.avatar_url ? withImageVariant(profile.avatar_url, 'avatar') : null,
   };
 }
 

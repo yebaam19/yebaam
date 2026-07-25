@@ -59,7 +59,7 @@ export function BusinessHero({ business, engagement, isAdmin }: Props) {
       {/* ── Cover ─────────────────────────────────────────────────── */}
       <div className="relative h-56 overflow-hidden sm:h-72">
         {coverUrl
-          ? <Image src={coverUrl} alt={business.name} fill priority className="object-cover" sizes="100vw" />
+          ? <Image src={coverUrl} alt={business.name} fill priority className="object-cover" sizes="100vw" unoptimized />
           : <BusinessPlaceholderCover />}
 
         {/* Progressive scrim for text legibility */}
@@ -114,6 +114,7 @@ export function BusinessHero({ business, engagement, isAdmin }: Props) {
                 width={112}
                 height={112}
                 className="h-full w-full object-cover"
+                unoptimized
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-600 to-primary-800 text-2xl font-black text-white">

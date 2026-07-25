@@ -1,5 +1,6 @@
 import 'server-only'
 import { getServerClient } from '@/utils/supabase/server'
+import { withImageVariant } from '@/lib/media/urls'
 import type { ForoAuthor } from '@/features/foro/types'
 
 /**
@@ -31,7 +32,7 @@ export function toAuthor(p: ProfileRow | undefined | null): ForoAuthor {
     id: p.id,
     username: p.username ?? 'usuario',
     displayName,
-    avatarUrl: p.avatar_url,
+    avatarUrl: p.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : null,
   }
 }
 

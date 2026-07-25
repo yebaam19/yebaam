@@ -92,7 +92,7 @@ export default function RequestSummary({ request, profile, title, study, fullNam
   return (
     <div className="flex flex-1 items-start gap-3">
       {profile?.avatar_url ? (
-        <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+        <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" decoding="async" loading="lazy" />
       ) : (
         <div className="h-12 w-12 rounded-full bg-neutral-200" />
       )}

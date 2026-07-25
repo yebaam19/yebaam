@@ -21,7 +21,7 @@ export async function EntrepreneurCard({ ownerName, ownerPhotoUrl, cityName, ver
     <div className="self-start rounded-2xl border border-neutral-200 bg-white p-4 text-center shadow-sm md:sticky md:top-24 dark:border-neutral-700 dark:bg-neutral-800">
       <div className="mx-auto aspect-square w-full max-w-[220px] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-900">
         {ownerPhotoUrl ? (
-          <img src={ownerPhotoUrl} alt={ownerName} className="h-full w-full object-cover" />
+          <img src={ownerPhotoUrl} alt={ownerName} className="h-full w-full object-cover" decoding="async" loading="lazy" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-500 to-primary-800 text-4xl font-black text-white">
             {initials || '?'}

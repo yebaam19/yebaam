@@ -30,6 +30,7 @@ export default function ProfileCover({ coverPhoto, isOwnProfile }: ProfileCoverP
               minHeight: '100%',
               minWidth: '100%',
             }}
+            decoding="async"
           />
           {/* Overlay para mejorar contraste con botones */}
           <div className="absolute inset-0 bg-black/5" />

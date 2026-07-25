@@ -113,6 +113,8 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
                     src={previewUrl}
                     alt="Preview"
                     className="w-full h-full object-cover"
+                    decoding="async"
+                    loading="lazy"
                   />
                   <button
                     type="button"

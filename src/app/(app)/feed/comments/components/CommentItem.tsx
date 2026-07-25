@@ -50,14 +50,18 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
     setLocalComment(comment)
   }, [comment])
 
-  // Cargar reacciones del comentario (mi reacción + contadores) — la fuente
-  // de verdad es la tabla `reactions` en Supabase. El store cachea por id.
+  // Las reacciones de ESTE comentario las pide `CommentList` en un solo lote
+  // para todo el hilo (antes cada fila disparaba 2 queries: 50 comentarios =
+  // 100 peticiones). Aquí solo cubrimos las replies, que se cargan aparte y
+  // bajo demanda — también en lote.
+  const replyIds = replies.length > 0 ? replies.map((r) => r.id).join(',') : ''
   useEffect(() => {
-    const fetchMy = useReactionStore.getState().fetchMyReactionsForComments
-    const fetchCounts = useReactionStore.getState().fetchCountsForComments
-    void fetchMy([localComment.id])
-    void fetchCounts([localComment.id])
-  }, [localComment.id])
+    if (!replyIds) return
+    const ids = replyIds.split(',')
+    const { fetchMyReactionsForComments, fetchCountsForComments } = useReactionStore.getState()
+    void fetchMyReactionsForComments(ids)
+    void fetchCountsForComments(ids)
+  }, [replyIds])
 
   // Escuchar actualizaciones en tiempo real de este comentario y sus replies
   useEffect(() => {
