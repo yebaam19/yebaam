@@ -1,7 +1,7 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from './locales';
-import { PATHNAME_HEADER, namespacesForPath, type Namespace } from './route-namespaces';
+import { ALL_NAMESPACES, type Namespace } from './route-namespaces';
 
 async function loadMessages(locale: Locale, namespaces: readonly Namespace[]) {
   const messages: Record<string, unknown> = {};
@@ -18,18 +18,23 @@ async function loadMessages(locale: Locale, namespaces: readonly Namespace[]) {
   return messages;
 }
 
+// NOTE — do not re-introduce per-route namespace loading here without also
+// moving the provider. `namespacesForPath()` (route-namespaces.ts) trims the
+// ~290 KB catalog to just what a route needs, and measured -86% off the RSC
+// payload. But `app/layout.tsx` mounts `NextIntlClientProvider`, and the App
+// Router does NOT re-render a shared layout on client-side navigation — so
+// after a soft nav from /feed into /[username], the page still held /feed's
+// namespaces and `useTranslations('profile')` threw MISSING_MESSAGE. A hard
+// reload of the same URL was fine, which is why it survived server-side checks.
+//
+// To land this properly the provider has to sit somewhere that re-renders per
+// navigation (an `(app)/template.tsx` holding a nested provider, or per-page
+// providers), with the root keeping only the always-constant shell namespaces.
 export default getRequestConfig(async () => {
-  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
+  const cookieStore = await cookies();
 
   const raw = cookieStore.get(LOCALE_COOKIE)?.value;
   const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
 
-  // Only load the namespaces this route can actually reach. The full catalog is
-  // ~290 KB and `app/layout.tsx` passes whatever lands here straight into
-  // `NextIntlClientProvider`, so every unused namespace is dead weight
-  // serialized into the page's HTML. Missing header (static generation, or a
-  // path the proxy doesn't match) falls back to the full catalog.
-  const namespaces = namespacesForPath(headerStore.get(PATHNAME_HEADER));
-
-  return { locale, messages: await loadMessages(locale, namespaces) };
+  return { locale, messages: await loadMessages(locale, ALL_NAMESPACES) };
 });

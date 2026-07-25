@@ -30,10 +30,34 @@ async function getFriendSettingsMap(
   return map;
 }
 
+// Several components on /feed mount `useFriends()` independently (RightSidebar
+// contacts, SuggestedPeopleRail, the composer's audience picker…), and each one
+// ran its own `friendships` read plus a `hydrateProfiles` fan-out. A live /feed
+// load showed 9 identical `friendships?select=*` and 7 `profiles` requests.
+// Same guard as `getAllPendingRequests` in requests.service.ts: collapse
+// concurrent callers into one round-trip, then clear so the next mount (or a
+// refetch after accepting/removing a friend) still reads fresh rows.
+const friendshipsInFlight = new Map<string, Promise<FriendsListResponse>>();
+
 /** Shared read for both "my friends" and "someone else's friends". `settings`
  *  is only loaded for the viewer's own list (close-friend / restricted / nickname
  *  are per-owner and irrelevant when viewing another user). */
-async function loadFriendships(
+function loadFriendships(
+  userId: string,
+  withSettings: boolean,
+): Promise<FriendsListResponse> {
+  const key = `${userId}:${withSettings}`;
+  const pending = friendshipsInFlight.get(key);
+  if (pending) return pending;
+
+  const run = loadFriendshipsUncached(userId, withSettings).finally(() => {
+    friendshipsInFlight.delete(key);
+  });
+  friendshipsInFlight.set(key, run);
+  return run;
+}
+
+async function loadFriendshipsUncached(
   userId: string,
   withSettings: boolean,
 ): Promise<FriendsListResponse> {
