@@ -104,7 +104,9 @@ function MediaSurface({
   if (item.kind === 'video' && item.source === 'cf_stream' && item.cf_stream_uid) {
     return (
       <VideoSurface
-        thumb={streamThumb(item.cf_stream_uid, { width: 1280 })}
+        // 640, not 1280: measured 76 KB vs 203 KB on real clips (6x the native
+        // frame) for a poster that is replaced by the player on first click.
+        thumb={streamThumb(item.cf_stream_uid, { width: 640 })}
         iframeSrc={`https://iframe.videodelivery.net/${item.cf_stream_uid}?autoplay=true`}
         title={item.caption ?? 'Video'}
       />

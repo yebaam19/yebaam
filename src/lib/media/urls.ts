@@ -35,17 +35,22 @@ export function imageUrl(id: string, variant: ImageVariant = 'public'): string {
 }
 
 /**
- * Poster frame for a Stream video. Without `width`, Cloudflare returns the
- * frame at the *source* resolution — a 1080p/4K JPEG (150-400 KB) behind a
- * player that hasn't started yet. 640 is wide enough for every poster surface
- * in the app; pass an explicit width for anything larger (lightboxes).
+ * Poster frame for a Stream video.
+ *
+ * Do NOT add a default `width`. Cloudflare already returns a modestly sized
+ * frame (measured 16-33 KB), and `width` sets the output's *width* — so on the
+ * portrait phone clips that make up this library it UPSCALES: a previous
+ * `width: 640` default measured 2.0-2.3x the bytes of no width at all
+ * (33,303 -> 75,994 / 18,978 -> 43,311). Pass an explicit width only where a
+ * surface genuinely renders larger than the native frame.
  */
 export function streamThumb(uid: string, opts?: { time?: number; width?: number; height?: number }): string {
   const params = new URLSearchParams();
   if (opts?.time) params.set('time', `${opts.time}s`);
-  params.set('width', String(opts?.width ?? 640));
+  if (opts?.width) params.set('width', String(opts.width));
   if (opts?.height) params.set('height', String(opts.height));
-  return `https://videodelivery.net/${uid}/thumbnails/thumbnail.jpg?${params.toString()}`;
+  const qs = params.toString();
+  return `https://videodelivery.net/${uid}/thumbnails/thumbnail.jpg${qs ? `?${qs}` : ''}`;
 }
 
 export function streamHlsUrl(uid: string): string {
