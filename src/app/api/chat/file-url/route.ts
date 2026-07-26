@@ -1,13 +1,16 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerAccessToken } from '@/utils/supabase/server';
+import { getVerifiedUserId } from '@/utils/supabase/server';
 import { getPresignedUploadUrl } from '@/lib/cloudflare/r2';
+import { MAX_CHAT_FILE_BYTES as CHAT_FILE_MAX_BYTES } from '@/lib/upload-limits';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 
 // Chat document attachments. Separate from /api/upload/file-url (which gates on
 // owning a professional service and mints `cvs/…` PDF-only keys): any
 // authenticated user can attach a document to a chat, under the `chat-files/…`
 // prefix that the conversation-scoped read route is locked to.
-// Keep in sync with CHAT_FILE_MAX_BYTES in src/features/chat/lib/chatR2Upload.ts.
-const CHAT_FILE_MAX_BYTES = 25 * 1024 * 1024;
+
+/** Attaching documents is a human-paced action; this only stops a signing loop. */
+const SIGN_LIMIT = { limit: 60, windowMs: 60 * 60 * 1000 };
 
 const ALLOWED = new Set([
   'application/pdf',
@@ -36,8 +39,16 @@ const EXT: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
-  const token = await getServerAccessToken();
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = await getVerifiedUserId();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const rate = checkRateLimit(`chat:file-url:${userId}`, SIGN_LIMIT);
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: 'Too many upload requests' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rate.resetAt - Date.now()) / 1000)) } },
+    );
+  }
 
   let contentType = '';
   let size: number | undefined;

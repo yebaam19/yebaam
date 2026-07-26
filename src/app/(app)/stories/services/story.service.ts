@@ -145,7 +145,13 @@ class StoryService {
     const userId = await getCurrentUserId();
     if (!userId) throw new Error('Not authenticated');
 
-    const upload = await uploadService.uploadFile(file);
+    // `source: 'story'` is stamped into Cloudflare's metadata server-side (with
+    // the uploader's verified id) by /api/upload/image-url. The story-cleanup
+    // cron reads it back before deleting an asset: this row's media id is
+    // client-written under an RLS policy that only constrains `author_id`, so
+    // without that provenance check the cron would delete whatever id the row
+    // names — including another user's avatar or a KYC document.
+    const upload = await uploadService.uploadFile(file, undefined, undefined, { source: 'story' });
     const isVideo = upload.type === 'video';
 
     // id-first: solo persistimos el id de Cloudflare; `media_url` (nullable)

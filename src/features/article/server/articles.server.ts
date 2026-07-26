@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import { getServerClient } from '@/utils/supabase/server'
 import { withImageVariant } from '@/lib/media/urls'
+import { sanitizeRichText } from '@/lib/html/sanitize-rich-text'
 import {
   ArticleContextType,
   ArticleVisibility,
@@ -84,13 +85,17 @@ function mapAuthor(row: DbProfileRow | null, fallbackId: string): ArticleAuthor 
 }
 
 function mapRowToArticle(row: DbArticleRow, author: ArticleAuthor): Article {
+  // Sanitized on write too (normalizeArticleFields). Repeated here because this
+  // is the value handed to dangerouslySetInnerHTML, and rows predating the
+  // write-side sanitizer would otherwise still execute.
+  const content = sanitizeRichText(row.content)
   return {
     id: row.id,
     title: row.title,
     subtitle: row.subtitle,
     headerImageUrl: cfImageUrl(row.cf_image_id),
-    content: row.content,
-    summary: buildSummary(row.content),
+    content,
+    summary: buildSummary(content),
     authorId: row.author_id,
     contextType: mapContextType(row.context_type),
     contextId: row.context_id,

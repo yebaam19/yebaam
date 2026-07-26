@@ -55,7 +55,17 @@ export async function POST(request: NextRequest) {
 
   // Reject oversized files before any upload happens. The declared size is
   // also bound into the presigned URL below, so the client can't lie about it.
-  if (sizeBytes !== undefined && (sizeBytes <= 0 || sizeBytes > MAX_AUDIO_BYTES)) {
+  //
+  // `sizeBytes` is mandatory. While it was optional this whole check was
+  // guarded by `!== undefined`, so a body of `{"contentType":"audio/mpeg"}`
+  // skipped the cap *and* left ContentLength out of the signature — an
+  // unlimited-size write credential. The hourly limiter below does not cover
+  // that case either: it counts music_tracks rows, and an attacker who signs
+  // without ever calling createTrack keeps a count of zero forever.
+  if (sizeBytes === undefined) {
+    return NextResponse.json({ error: 'sizeBytes required' }, { status: 400 });
+  }
+  if (sizeBytes <= 0 || sizeBytes > MAX_AUDIO_BYTES) {
     return NextResponse.json(
       { error: `El archivo supera el tamaño máximo permitido (${Math.round(MAX_AUDIO_BYTES / (1024 * 1024))} MB).` },
       { status: 400 },

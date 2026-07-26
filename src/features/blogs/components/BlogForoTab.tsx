@@ -14,13 +14,12 @@ import SpaceBoard from '@/features/foro/components/SpaceBoard'
 
 interface Props {
   blogId: string
-  blogSlug: string
+  /** Display only — the forum's own name/slug/owner are resolved server-side. */
   blogName: string
-  blogOwnerId: string
   isOwner?: boolean
 }
 
-export function BlogForoTab({ blogId, blogSlug, blogName, blogOwnerId, isOwner }: Props) {
+export function BlogForoTab({ blogId, blogName, isOwner }: Props) {
   const queryKey = ['foro', 'space-by-owner', 'blog', blogId]
   const { data, isLoading, error } = useFetch(
     queryKey,
@@ -33,12 +32,9 @@ export function BlogForoTab({ blogId, blogSlug, blogName, blogOwnerId, isOwner }
   const handleActivate = () => {
     setActivationError(null)
     startActivation(async () => {
-      const result = await ensureBlogForumSpaceAction({
-        id: blogId,
-        name: blogName,
-        slug: blogSlug,
-        ownerId: blogOwnerId,
-      })
+      // Only the id travels: the action resolves name, slug and owner from the
+      // blog row, so none of them can be spoofed by a hand-made call.
+      const result = await ensureBlogForumSpaceAction(blogId)
       if (!result) {
         setActivationError('No se pudo activar el foro. Inténtalo de nuevo más tarde.')
         return

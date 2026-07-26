@@ -1,10 +1,10 @@
 import { uploadToPresignedUrl } from '@/lib/service/upload.service';
 
-/** Client-side limits for chat attachments. The file cap mirrors the
- *  server-side check in /api/chat/file-url (which also binds the declared size
- *  into the presigned PUT's signature). */
-export const CHAT_AUDIO_MAX_BYTES = 25 * 1024 * 1024;
-export const CHAT_FILE_MAX_BYTES = 25 * 1024 * 1024;
+/** Client-side limits for chat attachments. Re-exported from the shared
+ *  upload-limits module so the browser pre-check and the presign routes
+ *  (/api/chat/audio-url, /api/chat/file-url) enforce one number — both bind the
+ *  declared size into the presigned PUT's signature. */
+export { MAX_CHAT_AUDIO_BYTES as CHAT_AUDIO_MAX_BYTES, MAX_CHAT_FILE_BYTES as CHAT_FILE_MAX_BYTES } from '@/lib/upload-limits';
 
 // Base mimes accepted by /api/chat/audio-url. Browsers report a few aliases
 // (Chrome gives .m4a files as audio/x-m4a) — normalize before signing.

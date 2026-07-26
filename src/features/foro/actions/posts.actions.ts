@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { getServerClient } from '@/utils/supabase/server'
 import { lookupTopicPath } from './_helpers'
+import { MAX_POST_CONTENT_CHARS } from '../lib/post-bbcode'
+
+/** Shared message for both write paths, so the bound reads the same either way. */
+const TOO_LONG = `El mensaje supera el máximo de ${MAX_POST_CONTENT_CHARS} caracteres.`
 
 export async function createPost(input: {
   topicId: string
@@ -10,6 +14,9 @@ export async function createPost(input: {
 }): Promise<{ ok: boolean; error?: string }> {
   const content = input.content.trim()
   if (!content) return { ok: false, error: 'El mensaje no puede estar vacío.' }
+  // Unbounded content is what let one post make a topic page un-renderable for
+  // every visitor — see MAX_POST_CONTENT_CHARS.
+  if (content.length > MAX_POST_CONTENT_CHARS) return { ok: false, error: TOO_LONG }
 
   const client = await getServerClient()
   const { data: auth } = await client.auth.getUser()
@@ -36,6 +43,7 @@ export async function editPost(input: {
 }): Promise<{ ok: boolean; error?: string; editedAt?: string }> {
   const content = input.content.trim()
   if (!content) return { ok: false, error: 'El mensaje no puede estar vacío.' }
+  if (content.length > MAX_POST_CONTENT_CHARS) return { ok: false, error: TOO_LONG }
 
   const client = await getServerClient()
   const { data: auth } = await client.auth.getUser()

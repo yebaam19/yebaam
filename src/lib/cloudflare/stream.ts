@@ -82,9 +82,27 @@ export async function copyStreamFromUrl(options: {
   return unwrap<StreamVideo>(res);
 }
 
+/** Cloudflare Stream uids are 32 lowercase hex characters. */
+const STREAM_UID = /^[a-f0-9]{32}$/i;
+
+export const isStreamUid = (value: unknown): value is string =>
+  typeof value === 'string' && STREAM_UID.test(value);
+
+/**
+ * Same reasoning as `assertImageId` in `./images`: the uid lands in an
+ * account-scoped API path carried by the account-wide `CLOUDFLARE_API_TOKEN`,
+ * and `fetch()` normalises dot-segments while a percent-encoded `?` would open
+ * a query string on the upstream call. `/api/upload/video-status/[uid]` takes
+ * this straight from a URL segment, so it is caller-controlled.
+ */
+function assertStreamUid(uid: string): string {
+  if (!STREAM_UID.test(uid)) throw new Error('Invalid Cloudflare Stream uid');
+  return encodeURIComponent(uid);
+}
+
 export async function getStreamVideo(uid: string): Promise<StreamVideo> {
   const { accountId, apiToken } = creds();
-  const res = await fetch(`${API_BASE}/accounts/${accountId}/stream/${uid}`, {
+  const res = await fetch(`${API_BASE}/accounts/${accountId}/stream/${assertStreamUid(uid)}`, {
     headers: { Authorization: `Bearer ${apiToken}` },
   });
   return unwrap<StreamVideo>(res);
@@ -92,7 +110,7 @@ export async function getStreamVideo(uid: string): Promise<StreamVideo> {
 
 export async function deleteStreamVideo(uid: string): Promise<void> {
   const { accountId, apiToken } = creds();
-  const res = await fetch(`${API_BASE}/accounts/${accountId}/stream/${uid}`, {
+  const res = await fetch(`${API_BASE}/accounts/${accountId}/stream/${assertStreamUid(uid)}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${apiToken}` },
   });

@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server'
+import { sanitizeRichText } from '@/lib/html/sanitize-rich-text'
 
 /**
  * Shared helpers for the personal-article server actions. Article persistence
@@ -67,7 +68,10 @@ export function normalizeArticleFields(input: {
 }): { ok: true; fields: NormalizedFields } | { ok: false; error: string } {
   const title = (input.title ?? '').trim()
   const subtitle = (input.subtitle ?? '').trim()
-  const content = (input.content ?? '').trim()
+  // Sanitize before the length/emptiness checks so the bounds apply to what is
+  // actually stored, and a body that is nothing but stripped markup is caught
+  // by the MIN_CONTENT check rather than saved as an empty article.
+  const content = sanitizeRichText((input.content ?? '').trim())
   const tags = (input.tags ?? [])
     .map((t) => t.trim())
     .filter(Boolean)

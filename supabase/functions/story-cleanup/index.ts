@@ -32,6 +32,10 @@ type DeletedRow = {
   // Present only once the extended cleanup_expired_stories() migration is applied.
   deleted_image_id?: string | null;
   deleted_stream_uid?: string | null;
+  // Added by 20260725_story_cleanup_author_id.sql. Until that migration is
+  // applied this is undefined, and every Cloudflare delete is skipped as
+  // unverified rather than performed blind — see assetBelongsToAuthor().
+  deleted_author_id?: string | null;
 };
 
 const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
@@ -53,6 +57,49 @@ function json(status: number, body: unknown): Response {
 /** Legacy Supabase Storage keys look like 'userId/file.ext' — never a full URL. */
 function isLegacyStoragePath(key: string): boolean {
   return key.includes('/') && !/^https?:\/\//i.test(key);
+}
+
+/**
+ * Confirm an asset was uploaded for a story, by the story's own author, before
+ * deleting it.
+ *
+ * `stories.cloudflare_image_id` / `cloudflare_stream_uid` are written by the
+ * BROWSER with the anon key, under an RLS policy (`stories_insert_own`) that
+ * only constrains `author_id` — it does not check that the media id belongs to
+ * the author. Cloudflare image ids are public: they appear verbatim in every
+ * `imagedelivery.net/<hash>/<id>/<variant>` URL the site renders. So without
+ * this check a user could insert a story row naming somebody else's avatar,
+ * post photo or ID document, and this cron would permanently delete it with the
+ * account API token.
+ *
+ * The provenance comes from metadata stamped server-side at upload time
+ * (`/api/upload/image-url`, `/api/upload/video-url`), which a client cannot
+ * forge. Fails CLOSED: anything we cannot positively attribute to this author
+ * and to the story surface is left in place. That orphans assets uploaded
+ * before the stamping existed, which is the right trade — an orphan costs
+ * storage, a wrong delete is unrecoverable.
+ */
+async function assetBelongsToAuthor(
+  url: string,
+  token: string,
+  authorId: string | null,
+  label: string,
+): Promise<boolean> {
+  if (!authorId) {
+    console.warn(`[story-cleanup] no author id for ${label} asset — skipping delete`);
+    return false;
+  }
+  try {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.status === 404) return true; // already gone; deleting is a no-op
+    if (!res.ok) return false;
+    const body = await res.json().catch(() => null);
+    const meta = body?.result?.meta ?? {};
+    return meta.uploadedBy === authorId && meta.source === 'story';
+  } catch (err) {
+    console.error(`[story-cleanup] provenance check failed for ${label}`, err);
+    return false;
+  }
 }
 
 /**
@@ -124,22 +171,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let legacyRemoved = 0;
   let skipped = 0;
   let failed = 0;
+  /** Assets left in place because provenance could not be confirmed. */
+  let unverified = 0;
 
   for (const row of deleted) {
     try {
       const streamUid = row.deleted_stream_uid ?? null;
       const imageId = row.deleted_image_id ?? null;
 
+      const authorId = row.deleted_author_id ?? null;
+
       if (streamUid) {
         if (!cfConfigured) {
           skipped++;
           continue;
         }
-        const ok = await cfDelete(
-          `${CF_API_BASE}/accounts/${cfAccountId}/stream/${encodeURIComponent(streamUid)}`,
-          cfApiToken,
-          'Stream',
-        );
+        const url = `${CF_API_BASE}/accounts/${cfAccountId}/stream/${encodeURIComponent(streamUid)}`;
+        if (!(await assetBelongsToAuthor(url, cfApiToken, authorId, 'Stream'))) {
+          unverified++;
+          continue;
+        }
+        const ok = await cfDelete(url, cfApiToken, 'Stream');
         if (ok) cfStreamDeleted++;
         else failed++;
         continue;
@@ -150,11 +202,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
           skipped++;
           continue;
         }
-        const ok = await cfDelete(
-          `${CF_API_BASE}/accounts/${cfAccountId}/images/v1/${encodeURIComponent(imageId)}`,
-          cfApiToken,
-          'Images',
-        );
+        const url = `${CF_API_BASE}/accounts/${cfAccountId}/images/v1/${encodeURIComponent(imageId)}`;
+        if (!(await assetBelongsToAuthor(url, cfApiToken, authorId, 'Images'))) {
+          unverified++;
+          continue;
+        }
+        const ok = await cfDelete(url, cfApiToken, 'Images');
         if (ok) cfImagesDeleted++;
         else failed++;
         continue;
@@ -190,6 +243,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     cfStreamDeleted,
     legacyRemoved,
     skipped,
+    // Watch this: a persistently high count means assets are accumulating in
+    // Cloudflare because their provenance predates server-side stamping.
+    unverified,
     failed,
   };
   console.log('[story-cleanup] done', summary);

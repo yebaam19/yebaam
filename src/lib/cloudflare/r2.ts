@@ -39,22 +39,31 @@ export function getR2Bucket(): string {
   return creds().bucket;
 }
 
-/** Generate a short-lived presigned PUT URL the browser uploads the audio file to.
- *  When `contentLength` is given it is bound into the signature, so the client
- *  cannot PUT a bigger file than it declared to the signing endpoint. */
+/** Generate a short-lived presigned PUT URL the browser uploads the file to.
+ *
+ *  `contentLength` is **required and bound into the signature**, so the client
+ *  cannot PUT a bigger object than it declared to the signing endpoint. It used
+ *  to be optional, and both audio signers omitted it — which minted credentials
+ *  authorising a write of any size, up to R2's per-PUT ceiling, to any caller
+ *  who could reach the route. `ttlSeconds` lost its default in the same change:
+ *  with two trailing numeric parameters, a default on the third would let a
+ *  call site silently skip the fourth again. */
 export async function getPresignedUploadUrl(
   key: string,
   contentType: string,
-  ttlSeconds = 300,
-  contentLength?: number,
+  ttlSeconds: number,
+  contentLength: number,
 ): Promise<{ url: string; key: string }> {
+  if (!Number.isInteger(contentLength) || contentLength <= 0) {
+    throw new Error('getPresignedUploadUrl requires a positive integer contentLength');
+  }
   const client = getR2Client();
   const bucket = getR2Bucket();
   const cmd = new PutObjectCommand({
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
-    ...(contentLength ? { ContentLength: contentLength } : {}),
+    ContentLength: contentLength,
   });
   const url = await getSignedUrl(client, cmd, { expiresIn: ttlSeconds });
   return { url, key };

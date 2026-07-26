@@ -43,6 +43,68 @@ async function unwrap<T>(res: Response): Promise<T> {
   return body.result;
 }
 
+/**
+ * Cloudflare hands out UUID ids for Direct Creator Uploads (36 chars); the
+ * wider `[A-Za-z0-9_-]` charset leaves room for that without admitting the
+ * three characters that matter: `/`, `.` and `%`.
+ */
+const CF_IMAGE_ID = /^[A-Za-z0-9_-]{20,64}$/;
+
+export const isCloudflareImageId = (value: unknown): value is string =>
+  typeof value === 'string' && CF_IMAGE_ID.test(value);
+
+/**
+ * Provenance stamped into Cloudflare's own image metadata at mint time, by the
+ * server, from the verified session. Some media — ephemeral anonymous-chat
+ * images above all — never gets a database row, so Cloudflare's metadata is the
+ * only place an ownership check can read from.
+ */
+export const CF_META_UPLOADED_BY = 'uploadedBy';
+export const CF_META_SOURCE = 'source';
+
+/** Marks an image as belonging to the ephemeral anonymous-chat surface. */
+export const CF_SOURCE_ANON_CHAT = 'anon-chat';
+
+export type CloudflareImageProvenance = {
+  uploadedBy: string | null;
+  source: string | null;
+};
+
+/**
+ * Read an image's server-stamped provenance back from Cloudflare. Returns null
+ * when the image does not exist (a deleted or invented id), which callers
+ * should treat exactly like "not yours".
+ */
+export async function getImageProvenance(id: string): Promise<CloudflareImageProvenance | null> {
+  const { accountId, apiToken } = creds();
+  const safeId = assertImageId(id);
+  const res = await fetch(`${API_BASE}/accounts/${accountId}/images/v1/${safeId}`, {
+    headers: { Authorization: `Bearer ${apiToken}` },
+  });
+  if (!res.ok) return null;
+  const image = await unwrap<ImageResult>(res).catch(() => null);
+  if (!image) return null;
+  return {
+    uploadedBy: image.meta?.[CF_META_UPLOADED_BY] ?? null,
+    source: image.meta?.[CF_META_SOURCE] ?? null,
+  };
+}
+
+/**
+ * Why an id is never interpolated raw: these functions splice it into an
+ * account-scoped API path called with the account-wide `CLOUDFLARE_API_TOKEN`,
+ * and `fetch()` resolves dot-segments during WHATWG URL parsing. An id of
+ * `../../stream/<uid>` collapses `/accounts/<id>/images/v1/../../stream/<uid>`
+ * to `/accounts/<id>/stream/<uid>` — the Stream delete endpoint — so an
+ * unvalidated id turns any Images call into a general-purpose request against
+ * whatever the token is scoped for. Validating *and* encoding is deliberate
+ * belt-and-braces: the regex is the contract, the encode is the backstop.
+ */
+function assertImageId(id: string): string {
+  if (!CF_IMAGE_ID.test(id)) throw new Error('Invalid Cloudflare image id');
+  return encodeURIComponent(id);
+}
+
 /** One-time URL the browser POSTs the file to (Direct Creator Upload). */
 export async function createImageDirectUploadUrl(options?: {
   metadata?: Record<string, string>;
@@ -137,7 +199,10 @@ export async function signImageDeliveryUrl(
   const expiry = Math.floor(Date.now() / 1000) + (options?.expirySeconds ?? 60 * 10);
 
   const key = await getSigningKey();
-  const path = `/${hash}/${imageId}/${variant}`;
+  // An unvalidated id could carry `/` and `?` into the path we HMAC — enough to
+  // append an attacker-chosen `exp` ahead of ours and make the effective expiry
+  // theirs rather than the server's.
+  const path = `/${hash}/${assertImageId(imageId)}/${variant}`;
   const stringToSign = `${path}?exp=${expiry}`;
 
   const { createHmac } = await import('node:crypto');
@@ -165,7 +230,8 @@ export async function uploadImageFromUrl(
 
 export async function deleteImage(id: string): Promise<void> {
   const { accountId, apiToken } = creds();
-  const res = await fetch(`${API_BASE}/accounts/${accountId}/images/v1/${id}`, {
+  const safeId = assertImageId(id);
+  const res = await fetch(`${API_BASE}/accounts/${accountId}/images/v1/${safeId}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${apiToken}` },
   });

@@ -1,14 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import puppeteer, { type Browser } from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
 import { getServerClient } from '@/utils/supabase/server';
+import { checkRateLimit, clientIp } from '@/lib/api/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const CERT_W = 1100;
 const CERT_H = 800;
+
+/**
+ * Each request forks a full Chromium and holds it for up to the navigation
+ * timeout, so this route is expensive in a way ordinary handlers are not: a few
+ * hundred concurrent requests exhaust the process (self-hosted) or the shared
+ * function instance. Two bounds, because they fail differently — the rate limit
+ * stops one caller looping, the semaphore stops many callers arriving at once.
+ */
+const PDF_RATE_LIMIT = { limit: 10, windowMs: 60 * 1000 };
+const MAX_CONCURRENT_BROWSERS = 2;
+let activeBrowsers = 0;
+
+/**
+ * The origin Chromium navigates to is a server-side constant, never derived
+ * from request headers.
+ *
+ * `x-forwarded-proto` / `x-forwarded-host` are attacker-controlled on any
+ * deployment whose edge does not overwrite them — which includes the
+ * self-hosted `next start` mode this file explicitly supports. Interpolating
+ * the host unencoded let a caller steer `page.goto()` at cloud
+ * instance-metadata endpoints, internal-only services, or their own domain, and
+ * the rendered response came back to them as a PDF: a full read SSRF.
+ */
+function certificateOrigin(): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
+  if (configured) return configured;
+  return process.env.NODE_ENV === 'production' ? 'https://yebaam.com' : 'http://localhost:3000';
+}
 
 interface RouteContext {
   params: Promise<{ code: string }>;
@@ -59,6 +87,21 @@ async function resolveExecutablePath(): Promise<string> {
 export async function GET(req: NextRequest, ctx: RouteContext) {
   const { code } = await ctx.params;
 
+  const rate = checkRateLimit(`cert-pdf:${clientIp(req)}`, PDF_RATE_LIMIT);
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rate.resetAt - Date.now()) / 1000)) } },
+    );
+  }
+
+  if (activeBrowsers >= MAX_CONCURRENT_BROWSERS) {
+    return NextResponse.json(
+      { error: 'Certificate export is busy, try again shortly' },
+      { status: 503, headers: { 'Retry-After': '5' } },
+    );
+  }
+
   // Validate the cert exists & is verified before spinning up Chromium
   const sb = await getServerClient();
   const { data } = await sb
@@ -71,15 +114,10 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: 'Certificate not found' }, { status: 404 });
   }
 
-  // Build the absolute URL to the cert page in print mode using the incoming
-  // request's host so it works in any environment without env vars.
-  const h = await headers();
-  const proto =
-    h.get('x-forwarded-proto') ?? (process.env.NODE_ENV === 'production' ? 'https' : 'http');
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
-  const certUrl = `${proto}://${host}/verification/certificate/${encodeURIComponent(code)}?print=1`;
+  const certUrl = `${certificateOrigin()}/verification/certificate/${encodeURIComponent(code)}?print=1`;
 
   let browser: Browser | undefined;
+  activeBrowsers += 1;
   try {
     const executablePath = await resolveExecutablePath();
     const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION);
@@ -95,14 +133,16 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
 
     const page = await browser.newPage();
 
-    // Forward the caller's auth cookie so getServerClient on the cert page sees the
-    // same session (RLS-friendly) when rendering for the export.
-    const cookieHeader = req.headers.get('cookie');
-    if (cookieHeader) {
-      await page.setExtraHTTPHeaders({ cookie: cookieHeader });
-    }
+    // No cookie forwarding. The certificate page is public — it is reachable
+    // unauthenticated at /verification/certificate/<code>, which is the whole
+    // point of a shareable certificate — so it needs no session, and
+    // `setExtraHTTPHeaders({ cookie })` attached the caller's `sb-*` cookies to
+    // *every* request the page made. Those cookies are not httpOnly, so pairing
+    // that with a caller-chosen origin handed the session to whatever host was
+    // named. If a session is ever genuinely required here, scope it with
+    // `page.setCookie()` against the known-good origin instead.
 
-    await page.goto(certUrl, { waitUntil: 'networkidle0', timeout: 30_000 });
+    await page.goto(certUrl, { waitUntil: 'networkidle0', timeout: 15_000 });
 
     // Wait for fonts so signatures/serif text are crisp in the PDF
     await page.evaluate(async () => {
@@ -132,6 +172,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       { status: 500 },
     );
   } finally {
+    activeBrowsers -= 1;
     if (browser) {
       await browser.close().catch(() => undefined);
     }

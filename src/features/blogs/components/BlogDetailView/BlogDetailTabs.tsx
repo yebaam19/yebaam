@@ -105,9 +105,7 @@ export function BlogDetailTabs({
       {activeTab === 'foro' && (
         <BlogForoTab
           blogId={blog.id}
-          blogSlug={blog.slug}
           blogName={blog.name}
-          blogOwnerId={blog.owner.id}
           isOwner={!!blog.isOwner}
         />
       )}

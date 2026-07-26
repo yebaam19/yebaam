@@ -19,6 +19,13 @@ export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
  *  and bound into the presigned URL's ContentLength. */
 export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
 
+/** Chat attachment caps (voice notes / audio files and documents, both R2).
+ *  Live here rather than in the chat feature because the presign routes must
+ *  enforce the same number the browser pre-checks — a client-only cap is not a
+ *  cap at all when the sign endpoint is reachable with a hand-made body. */
+export const MAX_CHAT_AUDIO_BYTES = 25 * 1024 * 1024;
+export const MAX_CHAT_FILE_BYTES = 25 * 1024 * 1024;
+
 export function formatBytes(bytes: number): string {
   if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`;

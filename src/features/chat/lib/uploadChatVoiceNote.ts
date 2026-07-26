@@ -18,7 +18,7 @@ export async function uploadChatVoiceNote(
 ): Promise<MessageMedia> {
   const { key, mime: storedMime } = await uploadToChatR2(
     '/api/chat/audio-url',
-    { contentType: mime },
+    { contentType: mime, size: blob.size },
     blob,
     mime,
   );

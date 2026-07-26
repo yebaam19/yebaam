@@ -9,10 +9,23 @@ import {
   hashCode,
   getRemoteIp,
   findUserByEmail,
+  consumeOtpAttempt,
+  resetOtpAttempts,
   OTP_TTL_MINUTES,
   MAX_ATTEMPTS,
 } from './_otp-shared';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 import type { AuthActionResult } from '../interfaces/auth.interfaces';
+
+/**
+ * Ceiling on reset attempts per email and per IP.
+ *
+ * `resetPasswordAction` has no CAPTCHA of its own (only the *request* step
+ * does), so before this it could be called as fast as the network allowed.
+ * Deliberately generous for a human who mistypes a code, and nowhere near
+ * enough to walk a 6-digit space.
+ */
+const RESET_ATTEMPT_LIMIT = { limit: 20, windowMs: 15 * 60 * 1000 };
 
 // Igual que en otp-signup.actions.ts: los errores esperados se devuelven
 // como { ok: false, error } porque Next.js redacta los mensajes lanzados
@@ -120,6 +133,15 @@ export async function resetPasswordAction(
       return { ok: false, error: passwordError };
     }
 
+    // Cheap pre-gate before findUserByEmail, which pages through listUsers and
+    // is what made the race window wide enough to exploit in the first place.
+    const ip = await getRemoteIp();
+    const byEmail = checkRateLimit(`pwreset:email:${email}`, RESET_ATTEMPT_LIMIT);
+    const byIp = ip ? checkRateLimit(`pwreset:ip:${ip}`, RESET_ATTEMPT_LIMIT) : { ok: true };
+    if (!byEmail.ok || !byIp.ok) {
+      return { ok: false, error: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' };
+    }
+
     const user = await findUserByEmail(email);
     if (!user) {
       return { ok: false, error: 'Código inválido' };
@@ -137,7 +159,18 @@ export async function resetPasswordAction(
       return { ok: false, error: 'El código expiró. Solicita uno nuevo.' };
     }
 
-    if ((reset.attempts ?? 0) >= MAX_ATTEMPTS) {
+    // Burn the attempt BEFORE comparing the code, atomically, so a batch of
+    // parallel guesses costs one attempt each rather than one between them.
+    const attempt = await consumeOtpAttempt(user.id, 'password_reset');
+    if (attempt.available) {
+      if (attempt.lockedOut) {
+        await clearPasswordResetMetadata(user.id, appMetadata);
+        await resetOtpAttempts(user.id, 'password_reset');
+        return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
+      }
+    } else if ((reset.attempts ?? 0) >= MAX_ATTEMPTS) {
+      // Fallback path: the atomic RPC is not deployed yet, so this is the old
+      // non-atomic check. Still bounds the sequential case.
       await clearPasswordResetMetadata(user.id, appMetadata);
       return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
     }
@@ -145,12 +178,14 @@ export async function resetPasswordAction(
     const admin = getServiceClient();
 
     if (reset.code_hash !== hashCode(otp)) {
-      await admin.auth.admin.updateUserById(user.id, {
-        app_metadata: {
-          ...appMetadata,
-          password_reset: { ...reset, attempts: (reset.attempts ?? 0) + 1 },
-        },
-      });
+      if (!attempt.available) {
+        await admin.auth.admin.updateUserById(user.id, {
+          app_metadata: {
+            ...appMetadata,
+            password_reset: { ...reset, attempts: (reset.attempts ?? 0) + 1 },
+          },
+        });
+      }
       return { ok: false, error: 'Código inválido' };
     }
 
@@ -163,6 +198,7 @@ export async function resetPasswordAction(
       return { ok: false, error: updateError.message || 'No se pudo actualizar la contraseña' };
     }
 
+    await resetOtpAttempts(user.id, 'password_reset');
     return { ok: true, message: 'Contraseña actualizada correctamente.' };
   } catch (err) {
     console.error('[password-recovery] unexpected error:', err);

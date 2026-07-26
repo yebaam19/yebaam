@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
+import { getServerClient } from '@/utils/supabase/server';
 import { withImageVariant } from '@/lib/media/urls';
+import { resolvePage } from '@/lib/api/page-authz';
+import { canManagePage } from '@/lib/api/page-team';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -106,9 +108,6 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ idOrSlug: string }> }
 ) {
-  const token = await getServerAccessToken();
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   const { idOrSlug } = await context.params;
   const body = (await request.json().catch(() => ({}))) as {
     url?: string;
@@ -125,13 +124,22 @@ export async function POST(
   const userId = me?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const pageId = await resolvePageId(client, idOrSlug);
-  if (!pageId) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+  // `resolvePage` (not `resolvePageId`) does a real lookup under RLS, so a page
+  // the caller may not see resolves to null rather than being accepted on the
+  // strength of the uuid alone. Then the same canManagePage gate every sibling
+  // page-content writer uses — articles:115, artists:97, events:125,
+  // auditions:122, video-embeds:108. This route was the one that skipped it,
+  // which let a non-member insert gallery rows into another page.
+  const page = await resolvePage(client, idOrSlug);
+  if (!page) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+  if (!(await canManagePage(client, page.id, userId, page.ownerId))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const { data, error } = await client
     .from('page_photos')
     .insert({
-      page_id: pageId,
+      page_id: page.id,
       uploaded_by: userId,
       url: body.url,
       s3_key: body.s3Key ?? null,

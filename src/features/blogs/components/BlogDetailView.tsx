@@ -104,12 +104,7 @@ export function BlogDetailView({ slug, embedded = false }: BlogDetailViewProps) 
     }
     if (item === 'chat') {
       if (blog.isOwner) {
-        const result = await ensureBlogChatTopicAction({
-          id: blog.id,
-          name: blog.name,
-          slug: blog.slug,
-          ownerId: blog.owner.id,
-        })
+        const result = await ensureBlogChatTopicAction(blog.id)
         if (result?.topicSlug) {
           router.push(`/feed/chat-publico/${result.topicSlug}` as Route)
           return

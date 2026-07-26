@@ -5,6 +5,7 @@ import {
   encryptChatContent,
   isPrivateConversation,
 } from '@/lib/server/chat-crypto';
+import { MAX_MESSAGE_CHARS } from '@/features/chat/constants';
 
 type MessageRow = {
   id: string;
@@ -130,6 +131,12 @@ export async function POST(
   const content = (body.content ?? '').trim();
   if (!content && !body.media) {
     return NextResponse.json({ error: 'content or media is required' }, { status: 400 });
+  }
+  if (content.length > MAX_MESSAGE_CHARS) {
+    return NextResponse.json(
+      { error: `El mensaje supera el máximo de ${MAX_MESSAGE_CHARS} caracteres.` },
+      { status: 413 },
+    );
   }
 
   const client = await getServerClient();

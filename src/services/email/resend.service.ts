@@ -17,9 +17,38 @@ function getClient(): Resend {
   return cached;
 }
 
+/**
+ * Escape a value before it is interpolated into an email's HTML body.
+ *
+ * `firstName` comes straight off the public signup form, and that same form
+ * chooses the recipient address — so without this, anyone can have a
+ * DKIM-signed, Yebaam-branded email carrying their own markup (a link, fake
+ * instructions, hidden text) delivered to an arbitrary third party. Mirrors the
+ * `esc()` helper in supabase/functions/send-email/index.ts, which already does
+ * this; the omission here was drift between two copies of the same idea.
+ */
+function esc(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Bound and clean the display name before it reaches a template. */
+function safeGreeting(firstName?: string | null): { html: string; text: string } {
+  const trimmed = (firstName ?? '').trim().slice(0, 80);
+  if (!trimmed) return { html: 'Hola', text: 'Hola' };
+  return { html: `Hola, ${esc(trimmed)}`, text: `Hola, ${trimmed}` };
+}
+
 function renderOtpEmail(code: string, firstName?: string | null): { html: string; text: string } {
-  const greeting = firstName ? `Hola, ${firstName}` : 'Hola';
-  const text = `${greeting}!\n\nTu código de verificación de Yebaam es: ${code}\n\nEste código expira en 10 minutos. Si no solicitaste esta cuenta, ignora este mensaje.`;
+  const g = safeGreeting(firstName);
+  const greeting = g.html;
+  // The plain-text part is not markup, so it takes the unescaped form —
+  // otherwise a name with an apostrophe would read as "Hola, O&#39;Brien".
+  const text = `${g.text}!\n\nTu código de verificación de Yebaam es: ${code}\n\nEste código expira en 10 minutos. Si no solicitaste esta cuenta, ignora este mensaje.`;
   const html = `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -71,8 +100,9 @@ export async function sendOtpEmail(params: {
 }
 
 function renderPasswordResetEmail(code: string, firstName?: string | null): { html: string; text: string } {
-  const greeting = firstName ? `Hola, ${firstName}` : 'Hola';
-  const text = `${greeting}!\n\nUsa este código para restablecer tu contraseña en Yebaam: ${code}\n\nEste código expira en 10 minutos. Si no solicitaste el cambio, ignora este correo y tu contraseña actual seguirá funcionando.`;
+  const g = safeGreeting(firstName);
+  const greeting = g.html;
+  const text = `${g.text}!\n\nUsa este código para restablecer tu contraseña en Yebaam: ${code}\n\nEste código expira en 10 minutos. Si no solicitaste el cambio, ignora este correo y tu contraseña actual seguirá funcionando.`;
   const html = `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">

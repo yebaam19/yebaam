@@ -5,6 +5,7 @@ import {
   encryptChatContent,
   isPrivateConversation,
 } from '@/lib/server/chat-crypto';
+import { MAX_MESSAGE_CHARS } from '@/features/chat/constants';
 
 type MessageRow = {
   id: string;
@@ -76,6 +77,13 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   const content = (body.content ?? '').trim();
   if (!content) {
     return NextResponse.json({ error: 'content is required' }, { status: 400 });
+  }
+  // Same bound as the POST path — an edit is another way to write the body.
+  if (content.length > MAX_MESSAGE_CHARS) {
+    return NextResponse.json(
+      { error: `El mensaje supera el máximo de ${MAX_MESSAGE_CHARS} caracteres.` },
+      { status: 413 },
+    );
   }
 
   const client = await getServerClient();

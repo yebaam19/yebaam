@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { getServiceClient } from '@/utils/supabase/server';
 import { slugifyCommunity } from '@/lib/api/communities';
 import { deleteImage as deleteCloudflareImage } from '@/lib/cloudflare/images';
+import { sanitizeRichText } from '@/lib/html/sanitize-rich-text';
 import { canManageCommunityArticle } from '../../server/community-articles.server';
 import type { ArticleFields, ManageableArticle } from './types';
 
@@ -39,7 +40,9 @@ export function normalizeArticleFields(input: {
 }): { ok: true; fields: ArticleFields } | { ok: false; error: string } {
   const title = (input.title ?? '').trim();
   const subtitle = (input.subtitle ?? '').trim();
-  const content = (input.content ?? '').trim();
+  // Same allowlist as personal articles — this HTML is rendered with
+  // dangerouslySetInnerHTML by CommunityArticleView.
+  const content = sanitizeRichText((input.content ?? '').trim());
   const tags = (input.tags ?? []).map((t) => t.trim()).filter(Boolean).slice(0, 12);
 
   if (!title) return { ok: false, error: 'El título es obligatorio.' };

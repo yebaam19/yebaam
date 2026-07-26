@@ -3,7 +3,13 @@
 import { getServiceClient } from '@/utils/supabase/server';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { validatePasswordPolicy } from '@/lib/auth/password-policy';
-import { hashCode, getRemoteIp, MAX_ATTEMPTS } from './_otp-shared';
+import {
+  hashCode,
+  getRemoteIp,
+  consumeOtpAttempt,
+  resetOtpAttempts,
+  MAX_ATTEMPTS,
+} from './_otp-shared';
 import {
   resolveCountryName,
   resolveStateName,
@@ -121,7 +127,20 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<Auth
       return { ok: false, error: 'El código expiró. Solicita uno nuevo.' };
     }
 
-    if (row.attempts >= MAX_ATTEMPTS) {
+    // Burn the attempt atomically BEFORE comparing the code. `otp_codes.attempts`
+    // was read here and written back as `attempts + 1` below, which PostgREST
+    // cannot do as a single statement — so concurrent verifications all read the
+    // same value and spent one increment between them, leaving a 6-digit code
+    // effectively unbounded against a parallel batch.
+    const attempt = await consumeOtpAttempt(row.user_id, 'signup');
+    if (attempt.available) {
+      if (attempt.lockedOut) {
+        await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
+        await resetOtpAttempts(row.user_id, 'signup');
+        return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
+      }
+    } else if (row.attempts >= MAX_ATTEMPTS) {
+      // Fallback while the atomic RPC is not deployed: the original check.
       await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
       return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
     }
@@ -138,11 +157,14 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<Auth
     }
 
     if (!match) {
-      await admin.from('otp_codes').update({ attempts: row.attempts + 1 }).eq('id', row.id);
+      if (!attempt.available) {
+        await admin.from('otp_codes').update({ attempts: row.attempts + 1 }).eq('id', row.id);
+      }
       return { ok: false, error: 'Código inválido' };
     }
 
     await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
+    await resetOtpAttempts(row.user_id, 'signup');
 
     const { error: confirmError } = await admin.auth.admin.updateUserById(row.user_id, {
       email_confirm: true,

@@ -187,6 +187,10 @@ export class UploadService {
       /** Required for KYC photos / ID documents. When true, the returned `url` is null
        *  (the image cannot be fetched without a server-minted signed URL). */
       requireSignedURLs?: boolean;
+      /** Surface this image belongs to, stamped server-side into Cloudflare's
+       *  metadata. Routes that act on an image with no DB row of its own (the
+       *  ephemeral anon-chat media endpoints) authorize against it. */
+      source?: string;
     },
   ): Promise<CloudflareImageUploadResult> {
     if (!file.type.startsWith('image/')) {
@@ -205,6 +209,7 @@ export class UploadService {
       body: JSON.stringify({
         metadata: { filename: file.name, ...(options?.metadata ?? {}) },
         requireSignedURLs: options?.requireSignedURLs === true,
+        ...(options?.source ? { source: options.source } : {}),
       }),
     });
     const signPayload = await signRes.json().catch(() => null);
@@ -426,6 +431,7 @@ export class UploadService {
     file: File,
     _postId?: string,
     onProgress?: (progress: number) => void,
+    options?: { source?: string },
   ): Promise<UploadResult> {
     if (file.type.startsWith('video/')) {
       const { uid, duration, thumbnail } = await this.uploadVideo(file, { onProgress });
@@ -442,7 +448,7 @@ export class UploadService {
       };
     }
 
-    const { id, url } = await this.uploadImage(file, onProgress);
+    const { id, url } = await this.uploadImage(file, onProgress, { source: options?.source });
     return {
       url,
       s3Key: id,

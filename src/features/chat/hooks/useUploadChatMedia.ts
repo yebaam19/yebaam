@@ -117,7 +117,7 @@ export function useUploadChatMedia() {
         const durationSeconds = await detectAudioDuration(file);
         const { key, mime: storedMime } = await uploadToChatR2(
           '/api/chat/audio-url',
-          { contentType: mime },
+          { contentType: mime, size: file.size },
           file,
           mime,
           (p) => setUploadProgress(p),

@@ -1,7 +1,7 @@
 'use server'
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server'
-import { ensureBlogChatTopic } from '@/lib/api/blogs'
+import { ensureBlogChatTopic, getBlogOwnerId } from '@/lib/api/blogs'
 import { getRoomIdentity } from '../lib/identity'
 import { hashSessionToken } from '../lib/session'
 import { capabilitiesFor } from '../lib/permissions'
@@ -10,18 +10,24 @@ import type { SendPublicMessageResult, SoftDeletePublicMessageResult } from '../
 /**
  * Provisions (or finds) the public-chat topic for a blog and returns its slug
  * so the caller can route to `/feed/chat-publico/<topicSlug>`.
- * Owner-gated to prevent random users from spawning topics.
+ *
+ * Takes only the blog id: ownership is decided against the blog row's own
+ * `owner_id`, and the topic's name/slug are derived from that row rather than
+ * from the caller, so a topic cannot be spawned for someone else's blog nor
+ * named by whoever calls the action.
  */
-export async function ensureBlogChatTopicAction(blog: {
-  id: string
-  name: string
-  slug: string
-  ownerId: string
-}): Promise<{ topicSlug: string } | null> {
+export async function ensureBlogChatTopicAction(
+  blogId: string,
+): Promise<{ topicSlug: string } | null> {
+  if (!blogId) return null
   const client = await getServerClient()
   const { data: auth } = await client.auth.getUser()
-  if (!auth?.user || auth.user.id !== blog.ownerId) return null
-  const result = await ensureBlogChatTopic({ id: blog.id, name: blog.name, slug: blog.slug })
+  if (!auth?.user) return null
+
+  const ownerId = await getBlogOwnerId(blogId)
+  if (!ownerId || ownerId !== auth.user.id) return null
+
+  const result = await ensureBlogChatTopic(blogId)
   if (!result) return null
   return { topicSlug: result.topicSlug }
 }

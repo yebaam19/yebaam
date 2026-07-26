@@ -2,19 +2,50 @@ import 'server-only';
 import { getServiceClient } from '@/utils/supabase/server';
 import { slugify } from './keys';
 
+type BlogIdentity = { id: string; name: string; slug: string; owner_id: string };
+
+/**
+ * Load a blog's identity from the database with the service client.
+ *
+ * Every function in this file runs privileged, RLS-bypassing writes, so none of
+ * them may take the blog's `name`, `slug` or `owner_id` from its caller: the
+ * only trustworthy source for "who owns blog X" is blog X's own row. Taking
+ * `owner_id` as a parameter is what let any user hand in a victim blog's id
+ * alongside their own uuid and be granted `forum_roles.role='admin'` on that
+ * blog's forum space.
+ */
+async function loadBlogIdentity(blogId: string): Promise<BlogIdentity | null> {
+  if (!blogId) return null;
+  const svc = getServiceClient();
+  const { data } = await svc
+    .from('blogs')
+    .select('id, name, slug, owner_id')
+    .eq('id', blogId)
+    .maybeSingle();
+  return (data as BlogIdentity | null) ?? null;
+}
+
+/** The blog's owner, read from the row. Callers gate on this, never on input. */
+export async function getBlogOwnerId(blogId: string): Promise<string | null> {
+  const blog = await loadBlogIdentity(blogId);
+  return blog?.owner_id ?? null;
+}
+
 /**
  * Provision (or top up) a `forum_spaces` row for a blog so the blog gets a
  * working forum out of the box — space + "General" category + default
  * "Discusión general" forum + owner admin role. Idempotent: safe to call
  * multiple times. Mirrors `ensureClubForumSpace` and uses the service-role
  * client because `forum_spaces` INSERT is gated to platform admins by RLS.
+ *
+ * Takes only a blog id: name, slug and owner are resolved from the row.
  */
-export async function ensureBlogForumSpace(blog: {
-  id: string;
-  name: string;
-  slug: string;
-  owner_id: string;
-}): Promise<{ spaceId: string; spaceSlug: string } | null> {
+export async function ensureBlogForumSpace(
+  blogId: string,
+): Promise<{ spaceId: string; spaceSlug: string } | null> {
+  const blog = await loadBlogIdentity(blogId);
+  if (!blog) return null;
+
   const svc = getServiceClient();
 
   const { data: existing } = await svc
@@ -127,11 +158,12 @@ export async function ensureBlogForumSpace(blog: {
  * the blog is deleted. Idempotent. Uses the service-role client because
  * `public_chat_topics` is read-only via RLS; INSERT is gated to service_role.
  */
-export async function ensureBlogChatTopic(blog: {
-  id: string;
-  name: string;
-  slug: string;
-}): Promise<{ topicId: string; topicSlug: string } | null> {
+export async function ensureBlogChatTopic(
+  blogId: string,
+): Promise<{ topicId: string; topicSlug: string } | null> {
+  const blog = await loadBlogIdentity(blogId);
+  if (!blog) return null;
+
   const svc = getServiceClient();
 
   const { data: existing } = await svc

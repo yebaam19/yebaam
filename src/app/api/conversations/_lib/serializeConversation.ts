@@ -2,6 +2,7 @@ import { resolvePeerDisplay, type PeerProfileRow } from '@/features/chat/lib/res
 import { groupAutoName } from '@/features/chat/lib/groupName';
 import { imageUrl } from '@/lib/media/urls';
 import { chatCryptoReady } from '@/lib/server/chat-crypto';
+import { INBOX_PREVIEW_CHARS } from '@/features/chat/constants';
 import type { ConversationRow, MessageRow, ParticipantRow } from './conversations.types';
 
 /**
@@ -90,8 +91,11 @@ export function serializeConversationRow(args: {
     participantIds: participants.map((p) => p.user_id),
     lastMessage: last
       ? {
+          // Truncated: this is an inbox preview, and the full body was
+          // previously shipped verbatim for every conversation on every
+          // app start.
+          content: last.content.slice(0, INBOX_PREVIEW_CHARS),
           id: last.id,
-          content: last.content,
           senderId: last.sender_id,
           createdAt: last.created_at,
           media: last.media ?? null,

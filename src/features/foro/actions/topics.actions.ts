@@ -9,12 +9,16 @@ import {
   type CreateTopicInput,
   type CreateTopicResult,
 } from './_helpers'
+import { MAX_POST_CONTENT_CHARS } from '../lib/post-bbcode'
 
 export async function createTopic(input: CreateTopicInput): Promise<CreateTopicResult> {
   const title = input.title.trim()
   const content = input.content.trim()
   if (!title) return { ok: false, error: 'El título es obligatorio.' }
   if (!content) return { ok: false, error: 'El contenido es obligatorio.' }
+  if (content.length > MAX_POST_CONTENT_CHARS) {
+    return { ok: false, error: `El contenido supera el máximo de ${MAX_POST_CONTENT_CHARS} caracteres.` }
+  }
 
   const client = await getServerClient()
   const { data: auth } = await client.auth.getUser()

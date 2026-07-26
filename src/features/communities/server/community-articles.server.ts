@@ -3,6 +3,7 @@ import 'server-only';
 import { getServerClient } from '@/utils/supabase/server';
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { imageUrl, withImageVariant } from '@/lib/media/urls';
+import { sanitizeRichText } from '@/lib/html/sanitize-rich-text';
 import type {
   CommunityArticle,
   CommunityArticleAuthor,
@@ -84,7 +85,9 @@ function toSummary(row: Omit<ArticleRow, 'content'>, author: CommunityArticleAut
 function toArticle(row: ArticleRow, author: CommunityArticleAuthor): CommunityArticle {
   return {
     ...toSummary(row, author),
-    content: row.content,
+    // Sanitized on write too; repeated here because this value reaches
+    // dangerouslySetInnerHTML and pre-existing rows never passed the writer.
+    content: sanitizeRichText(row.content),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
