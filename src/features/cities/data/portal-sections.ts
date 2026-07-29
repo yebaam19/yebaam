@@ -1,5 +1,10 @@
 /**
- * Single source of truth for the City Portal tile grid (PDF page 4).
+ * Single source of truth for every City Portal section (PDF page 4).
+ *
+ * NOTE: the PUBLIC portal (grid + mobile menu) renders only the
+ * `PORTAL_SHORTCUTS` subset defined at the bottom of this file — business
+ * directory categories + city history. The full array remains the registry
+ * for the admin editor, route validation, and under-construction pages.
  *
  * The portal detail page renders a 3-column wireframe: a left column of
  * communication/feed tiles, a center column with three media tiles on top
@@ -267,10 +272,34 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
   },
 ] as const;
 
+/**
+ * The ONLY sections the public portal surfaces as shortcuts (tile grid +
+ * mobile FAB menu): the business directory categories plus the city history.
+ *
+ * Product decision (2026-07-29, reglamento para menores de edad): the public
+ * portal must not link chat público, foros, or the other social sections.
+ * `PORTAL_SECTIONS` stays the full registry — the admin editor
+ * (CityFeatureLinks, DiscoveryThumbnailsManager), the `/directory/[category]`
+ * route validation, and the "En construcción" pages still read every entry.
+ */
+const SHORTCUT_IDS: ReadonlySet<string> = new Set([
+  'history',
+  'government',
+  'education',
+  'food',
+  'nightlife',
+  'lodging',
+  'religion',
+  'malls',
+  'sports',
+  'health',
+  'grocery',
+]);
+
+export const PORTAL_SHORTCUTS: readonly PortalSection[] = PORTAL_SECTIONS.filter(
+  (s) => SHORTCUT_IDS.has(s.id),
+);
+
 export function resolveHref(section: PortalSection, citySlug: string): string {
   return section.hrefTemplate.replace(':slug', citySlug);
-}
-
-export function sectionsByColumn(column: PortalColumn): PortalSection[] {
-  return PORTAL_SECTIONS.filter((s) => s.column === column);
 }

@@ -10,7 +10,6 @@ import { CityPortalSidebar } from '@/features/cities/components/portal/CityPorta
 import { CityPortalSidebarSkeleton } from '@/features/cities/components/portal/CityPortalSidebarSkeleton'
 import { getCityBySlug } from '@/features/cities/server/city.server'
 import { fetchIsFollowing } from '@/features/cities/server/followers.server'
-import { getCityPortalData } from '@/features/cities/server/portal-data.server'
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 import { getServerClient } from '@/utils/supabase/server'
 
@@ -43,8 +42,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  *  - Full-width cover up top (eager, no Suspense)
  *  - 2-column body:
  *      - main column (col-span-2): "Explora <city>" picture-card grid over
- *        every `PORTAL_SECTIONS` entry (Cloudflare thumbnail or brand
- *        gradient + icon fallback)
+ *        the `PORTAL_SHORTCUTS` subset — business directory categories +
+ *        city history (Cloudflare thumbnail or brand gradient + icon
+ *        fallback)
  *      - right rail (col-span-1): facts + trending (Suspense-streamed)
  *
  * The only client component on this page is `<FollowCityButton>` (inside the
@@ -78,7 +78,7 @@ export default async function CityPortalPage({ params }: Props) {
           </header>
 
           <Suspense fallback={<CityPortalGridSkeleton />} key={city.id}>
-            <PortalGridAsync cityId={city.id} citySlug={slug} />
+            <CityPortalGrid citySlug={slug} />
           </Suspense>
         </section>
 
@@ -88,15 +88,4 @@ export default async function CityPortalPage({ params }: Props) {
       </div>
     </div>
   )
-}
-
-async function PortalGridAsync({
-  cityId,
-  citySlug,
-}: {
-  cityId: string
-  citySlug: string
-}) {
-  const portalData = await getCityPortalData(cityId)
-  return <CityPortalGrid citySlug={citySlug} portalData={portalData} />
 }
