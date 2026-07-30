@@ -41,58 +41,62 @@ function emit(
 
 export function LocationFields({ country, state, city, onChange }: LocationFieldsProps) {
   const t = useTranslations('auth')
-  const [states, setStates] = useState<StateRow[]>([])
-  const [cities, setCities] = useState<CityRow[]>([])
-  const [isLoadingStates, setIsLoadingStates] = useState(false)
-  const [isLoadingCities, setIsLoadingCities] = useState(false)
+  // {key, rows} of the last completed load (success or failure); everything
+  // else (rows to show, loading flags) is derived from the current key match,
+  // so no state resets are needed when country/state change.
+  const [statesData, setStatesData] = useState<{ key: string; rows: StateRow[] }>({ key: '', rows: [] })
+  const [citiesData, setCitiesData] = useState<{ key: string; rows: CityRow[] }>({ key: '', rows: [] })
 
   useEffect(() => {
     if (!country) emit(onChange, 'country', 'CO')
   }, [country, onChange])
 
   useEffect(() => {
-    if (!country) {
-      setStates([])
-      return
-    }
+    if (!country) return
     let cancelled = false
-    setIsLoadingStates(true)
     loadStateModule()
       .then((State) => {
         if (cancelled) return
         const rows = State.getStatesOfCountry(country) as StateRow[]
         rows.sort((a, b) => a.name.localeCompare(b.name, 'es'))
-        setStates(rows)
+        setStatesData({ key: country, rows })
       })
-      .finally(() => {
-        if (!cancelled) setIsLoadingStates(false)
+      // Chunk load can fail (mobile network, stale deploy) — degrade to the
+      // free-text branch instead of leaving an unhandled rejection.
+      .catch(() => {
+        if (!cancelled) setStatesData({ key: country, rows: [] })
       })
     return () => {
       cancelled = true
     }
   }, [country])
 
+  const cityKey = `${country}|${state}`
+
   useEffect(() => {
-    if (!country || !state) {
-      setCities([])
-      return
-    }
+    if (!country || !state) return
     let cancelled = false
-    setIsLoadingCities(true)
     loadCityModule()
       .then((City) => {
         if (cancelled) return
         const rows = City.getCitiesOfState(country, state) as CityRow[]
         rows.sort((a, b) => a.name.localeCompare(b.name, 'es'))
-        setCities(rows)
+        setCitiesData({ key: `${country}|${state}`, rows })
       })
-      .finally(() => {
-        if (!cancelled) setIsLoadingCities(false)
+      .catch(() => {
+        if (!cancelled) setCitiesData({ key: `${country}|${state}`, rows: [] })
       })
     return () => {
       cancelled = true
     }
   }, [country, state])
+
+  const statesLoaded = statesData.key === country
+  const states = statesLoaded ? statesData.rows : []
+  const isLoadingStates = Boolean(country) && !statesLoaded
+  const citiesLoaded = citiesData.key === cityKey
+  const cities = citiesLoaded ? citiesData.rows : []
+  const isLoadingCities = Boolean(country && state) && !citiesLoaded
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onChange(e)
@@ -106,6 +110,9 @@ export function LocationFields({ country, state, city, onChange }: LocationField
   }
 
   const noStatesAvailable = !isLoadingStates && country && states.length === 0
+  // A `required` select with zero real options can never be satisfied and
+  // blocks the whole form — fall back to free text (dataset gap or failed load).
+  const noCitiesAvailable = citiesLoaded && Boolean(state) && cities.length === 0
 
   return (
     <div>
@@ -159,7 +166,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
         )}
 
         <label className="mb-2 block text-xs font-medium text-gray-600">{t('signup.cityLabel')}</label>
-        {noStatesAvailable ? (
+        {noStatesAvailable || noCitiesAvailable ? (
           <input
             type="text"
             name="city"
@@ -183,9 +190,7 @@ export function LocationFields({ country, state, city, onChange }: LocationField
                 ? t('signup.cityPlaceholderLoading')
                 : !state
                   ? t('signup.cityPlaceholderSelectState')
-                  : cities.length === 0
-                    ? t('signup.cityPlaceholderNoCities')
-                    : t('signup.cityPlaceholderSelect')}
+                  : t('signup.cityPlaceholderSelect')}
             </option>
             {cities.map((c) => (
               <option key={c.name} value={c.name}>
