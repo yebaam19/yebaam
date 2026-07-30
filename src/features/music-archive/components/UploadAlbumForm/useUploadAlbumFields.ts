@@ -5,16 +5,15 @@ import type {
   MusicAlbumFormat,
   MusicCopyrightStatus,
   MusicSourceMedia,
-  MusicTrackSide,
 } from '../../types/music.types';
 import { type ArtistSelection } from '../upload/ArtistAutocomplete';
 import { type LabelSelection } from '../upload/LabelAutocomplete';
 
 /**
- * Owns the public single-track upload form's editable field state: the artist
- * block, the album metadata + cover files, the track fields, and the legal
- * (source/copyright/attestation) block. `useUploadAlbumForm` composes this and
- * layers the publish pipeline on top.
+ * Owns the public upload form's editable field state: the artist block, the
+ * album metadata + cover files, and the legal (source/copyright/attestation)
+ * block. The track list itself lives in `useTrackDrafts`; `useUploadAlbumForm`
+ * composes both and layers the publish pipeline on top.
  */
 export function useUploadAlbumFields() {
   // Artist — autocomplete; if existingId is null we create on submit.
@@ -37,11 +36,7 @@ export function useUploadAlbumFields() {
   const [coverBack, setCoverBack] = useState<File | null>(null);
   const [labelImage, setLabelImage] = useState<File | null>(null);
 
-  // Track fields.
-  const [trackTitle, setTrackTitle] = useState('');
-  const [trackPosition, setTrackPosition] = useState('1');
-  const [trackSide, setTrackSide] = useState<MusicTrackSide | ''>('');
-  const [audioFile, setAudioFile] = useState<File | null>(null);
+  // Legal / provenance fields (apply to every track in the batch).
   const [sourceMedia, setSourceMedia] = useState<MusicSourceMedia>('78rpm');
   const [copyrightStatus, setCopyrightStatus] = useState<MusicCopyrightStatus>('public_domain');
   const [restoredByNote, setRestoredByNote] = useState('');
@@ -80,14 +75,6 @@ export function useUploadAlbumFields() {
     setCoverBack,
     labelImage,
     setLabelImage,
-    trackTitle,
-    setTrackTitle,
-    trackPosition,
-    setTrackPosition,
-    trackSide,
-    setTrackSide,
-    audioFile,
-    setAudioFile,
     sourceMedia,
     setSourceMedia,
     copyrightStatus,

@@ -1,9 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { TrackDraftList } from './upload/track-drafts/TrackDraftList';
 import { ArtistSection } from './UploadAlbumForm/ArtistSection';
 import { AlbumSection } from './UploadAlbumForm/AlbumSection';
-import { TrackSection } from './UploadAlbumForm/TrackSection';
 import { LegalSection } from './UploadAlbumForm/LegalSection';
 import { useUploadAlbumForm } from './UploadAlbumForm/useUploadAlbumForm';
 
@@ -47,13 +47,11 @@ export function UploadAlbumForm() {
     setCoverBack,
     labelImage,
     setLabelImage,
-    trackTitle,
-    setTrackTitle,
-    trackPosition,
-    setTrackPosition,
-    trackSide,
-    setTrackSide,
-    setAudioFile,
+    tracks,
+    onFilesPicked,
+    moveTrack,
+    removeTrack,
+    updateTrack,
     sourceMedia,
     setSourceMedia,
     copyrightStatus,
@@ -109,23 +107,23 @@ export function UploadAlbumForm() {
         onLabelImageChange={setLabelImage}
       />
 
-      <TrackSection
-        t={t}
-        trackTitle={trackTitle}
-        onTrackTitleChange={setTrackTitle}
-        trackPosition={trackPosition}
-        onTrackPositionChange={setTrackPosition}
-        trackSide={trackSide}
-        onTrackSideChange={setTrackSide}
-        sourceMedia={sourceMedia}
-        onSourceMediaChange={setSourceMedia}
-        onAudioFileChange={setAudioFile}
-        restoredByNote={restoredByNote}
-        onRestoredByNoteChange={setRestoredByNote}
+      <TrackDraftList
+        title={t('upload.sectionTracks')}
+        hint={t('upload.sectionTracksHint')}
+        tracks={tracks}
+        disabled={pending}
+        onFilesPicked={onFilesPicked}
+        onUpdateTrack={updateTrack}
+        onMoveTrack={moveTrack}
+        onRemoveTrack={removeTrack}
       />
 
       <LegalSection
         t={t}
+        sourceMedia={sourceMedia}
+        onSourceMediaChange={setSourceMedia}
+        restoredByNote={restoredByNote}
+        onRestoredByNoteChange={setRestoredByNote}
         copyrightStatus={copyrightStatus}
         onCopyrightStatusChange={setCopyrightStatus}
         attestation={attestation}

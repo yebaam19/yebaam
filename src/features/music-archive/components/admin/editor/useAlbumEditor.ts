@@ -6,7 +6,8 @@ import { uploadService } from '@/lib/service/upload.service';
 import { getAlbumForAdminEdit, updateAlbum } from '../../../actions/albums.actions';
 import { findOrCreateLabelAction } from '../../../actions/labels.actions';
 import {
-  createTrack,
+  adminInsertTrackAt,
+  adminMoveTrack,
   deleteTrack,
   replaceTrackAudio,
   updateTrack,
@@ -26,6 +27,18 @@ interface UseAlbumEditorOptions {
   albumId: string;
   onSaved?: (album: MusicAlbumRow) => void;
   onDeletedTrack?: (trackId: string) => void;
+}
+
+/** Mirror of the server's tracklist ordering (side ASC nulls-first, then
+ *  position) so tracks appear in the editor exactly where they'll land on the
+ *  public album page. */
+function sortTracks(tracks: MusicTrackRow[]): MusicTrackRow[] {
+  return [...tracks].sort((a, b) => {
+    const sideA = a.side ?? '';
+    const sideB = b.side ?? '';
+    if (sideA !== sideB) return sideA < sideB ? -1 : 1;
+    return a.position - b.position;
+  });
 }
 
 /**
@@ -57,7 +70,7 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
       }
       setAlbum(res.data.album);
       setArtist(res.data.artist);
-      setTracks(res.data.tracks);
+      setTracks(sortTracks(res.data.tracks));
       hydrate(res.data.album, res.data.label);
     });
     return () => {
@@ -119,10 +132,32 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
   }
 
   async function patchTrack(track: MusicTrackRow, patch: Partial<MusicTrackRow>) {
+    setError(null);
+    const newPosition = patch.position ?? track.position;
+    const newSide = (patch.side !== undefined ? patch.side : track.side) as MusicTrackSide | null;
+    const moved = newPosition !== track.position || newSide !== (track.side ?? null);
+
+    if (moved) {
+      // Repositioning is a list move: the server closes the old slot, opens the
+      // new one, and renumbers neighbors — a plain UPDATE would hit the UNIQUE
+      // (album_id, position, side) constraint whenever the slot is taken.
+      const res = await adminMoveTrack(track.id, {
+        position: newPosition,
+        side: newSide,
+        title: patch.title,
+        sourceMedia: patch.source_media as MusicSourceMedia | null | undefined,
+        copyrightStatus: patch.copyright_status as MusicCopyrightStatus | undefined,
+      });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      setTracks(sortTracks(res.data.tracks));
+      return;
+    }
+
     const res = await updateTrack(track.id, {
       title: patch.title,
-      position: patch.position,
-      side: patch.side as MusicTrackSide | null | undefined,
       sourceMedia: patch.source_media as MusicSourceMedia | null | undefined,
       copyrightStatus: patch.copyright_status as MusicCopyrightStatus | undefined,
     });
@@ -130,7 +165,7 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
       setError(res.error);
       return;
     }
-    setTracks((prev) => prev.map((x) => (x.id === track.id ? res.data : x)));
+    setTracks((prev) => sortTracks(prev.map((x) => (x.id === track.id ? res.data : x))));
   }
 
   async function replaceAudio(track: MusicTrackRow, file: File) {
@@ -155,7 +190,9 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
   async function addTrack(input: { title: string; position: number; side: MusicTrackSide | null; file: File }) {
     setError(null);
     const upload = await uploadService.uploadAudio(input.file);
-    const res = await createTrack({
+    // Insert-with-shift: if the chosen position is occupied, the rest of the
+    // side slides down instead of failing on the UNIQUE constraint.
+    const res = await adminInsertTrackAt({
       albumId,
       position: input.position,
       side: input.side ?? undefined,
@@ -170,7 +207,7 @@ export function useAlbumEditor({ albumId, onSaved, onDeletedTrack }: UseAlbumEdi
       setError(res.error);
       throw new Error(res.error);
     }
-    setTracks((prev) => [...prev, res.data]);
+    setTracks(sortTracks(res.data.tracks));
   }
 
   async function confirmDeleteTrack() {

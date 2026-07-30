@@ -1,12 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
-import { detectAudioDuration, uploadService } from '@/lib/service/upload.service';
+import { uploadService } from '@/lib/service/upload.service';
 import { mapWithConcurrency } from '@/lib/map-with-concurrency';
-import { MAX_AUDIO_BYTES, formatBytes } from '@/lib/upload-limits';
 import { createAlbum } from '../../actions/albums.actions';
 import { createTracksBatchAction } from '../../actions/tracks.actions';
 import { findOrCreateArtistAction } from '../../actions/artists.actions';
@@ -15,10 +14,9 @@ import type { CreateTrackBatchItem } from '../../types/music.types';
 import {
   COUNTRIES,
   sortCountryCodesByLabel,
-  titleFromFilename,
   trackFormatFromMime,
 } from '../upload/constants';
-import type { TrackDraft } from './types';
+import { pinDraftPositions, useTrackDrafts } from '../upload/track-drafts/useTrackDrafts';
 import { useAlbumUploadFields } from './useAlbumUploadFields';
 
 type Step = 'idle' | 'images' | 'rows' | 'audio' | 'tracks';
@@ -44,87 +42,13 @@ export function useAdminAlbumUpload() {
     [t],
   );
 
-  const [tracks, setTracks] = useState<TrackDraft[]>([]);
+  const { tracks, onFilesPicked, moveTrack, removeTrack, updateTrack } = useTrackDrafts({
+    onError: setError,
+  });
 
   /** Album row created by a previous submit attempt. A failed publish keeps it
    *  so retrying doesn't create a duplicate album (or re-upload the images). */
   const [createdAlbum, setCreatedAlbum] = useState<{ id: string; slug: string } | null>(null);
-
-  const onFilesPicked = useCallback(
-    (filesList: FileList | null) => {
-      if (!filesList) return;
-      const picked = Array.from(filesList).filter((f) => f.type.startsWith('audio/'));
-      // Reject oversized files at pick time — the server enforces the same cap
-      // after the upload, so letting them in only wastes a long upload.
-      const oversized = picked.filter((f) => f.size > MAX_AUDIO_BYTES);
-      if (oversized.length > 0) {
-        setError(
-          t('adminUpload.errFilesTooBig', {
-            files: oversized.map((f) => `"${f.name}" (${formatBytes(f.size)})`).join(', '),
-            max: formatBytes(MAX_AUDIO_BYTES),
-          }),
-        );
-      }
-      const newTracks: TrackDraft[] = picked
-        .filter((f) => f.size <= MAX_AUDIO_BYTES)
-        .map((file) => ({
-          id: crypto.randomUUID(),
-          file,
-          title: titleFromFilename(file.name),
-          side: '' as const,
-          durationSeconds: null,
-          uploadProgress: null,
-          r2Key: null,
-        }));
-      setTracks((prev) => [...prev, ...newTracks]);
-    },
-    [t],
-  );
-
-  // Detect duration client-side for newly added tracks, in parallel.
-  // detectAudioDuration is time-bounded, so a throttled background tab can't
-  // leave rows on "Calculando…" forever.
-  useEffect(() => {
-    const pending = tracks.filter((t) => t.durationSeconds === null);
-    if (pending.length === 0) return;
-    let cancelled = false;
-    void Promise.all(
-      pending.map((t) =>
-        detectAudioDuration(t.file).then((duration) => ({ id: t.id, duration })),
-      ),
-    ).then((results) => {
-      if (cancelled) return;
-      setTracks((prev) =>
-        prev.map((t) => {
-          const r = results.find((x) => x.id === t.id);
-          return r ? { ...t, durationSeconds: r.duration } : t;
-        }),
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [tracks]);
-
-  const moveTrack = useCallback((id: string, dir: -1 | 1) => {
-    setTracks((prev) => {
-      const idx = prev.findIndex((t) => t.id === id);
-      if (idx < 0) return prev;
-      const target = idx + dir;
-      if (target < 0 || target >= prev.length) return prev;
-      const next = [...prev];
-      [next[idx], next[target]] = [next[target]!, next[idx]!];
-      return next;
-    });
-  }, []);
-
-  const removeTrack = useCallback((id: string) => {
-    setTracks((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  const updateTrack = useCallback((id: string, patch: Partial<TrackDraft>) => {
-    setTracks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -197,9 +121,11 @@ export function useAdminAlbumUpload() {
 
         // 3) R2 audio uploads — max 3 at a time so a home uplink isn't split
         // across 15 crawling transfers. Tracks uploaded by a previous attempt
-        // (r2Key already set) are skipped.
+        // (r2Key already set) are skipped. Track numbers are pinned before
+        // uploading so retries keep them even if rows were reordered/removed.
         setStep('audio');
-        const uploaded = await mapWithConcurrency(tracks, 3, async (tr) => {
+        const pinned = pinDraftPositions(tracks, updateTrack);
+        const uploaded = await mapWithConcurrency(pinned, 3, async (tr) => {
           if (tr.r2Key) {
             return { draft: tr, r2Key: tr.r2Key, durationSeconds: tr.durationSeconds ?? 0 };
           }
@@ -215,10 +141,10 @@ export function useAdminAlbumUpload() {
         // partial failure doesn't insert them twice.
         setStep('tracks');
         const pendingItems = uploaded
-          .map(({ draft, r2Key, durationSeconds }, idx) => ({
+          .map(({ draft, r2Key, durationSeconds }) => ({
             draft,
             item: {
-              position: idx + 1,
+              position: draft.position!,
               side: draft.side || null,
               title: draft.title.trim(),
               durationSeconds: durationSeconds || draft.durationSeconds || null,

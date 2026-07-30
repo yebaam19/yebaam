@@ -81,7 +81,11 @@ export function AdminAlbumEditor({ albumId, onClose, onSaved, onDeletedTrack }: 
               <ul className="divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
                 {tracks.map((track) => (
                   <TrackRow
-                    key={track.id}
+                    // Position/side in the key: when a shift renumbers a row on
+                    // the server, its editor remounts with the fresh values —
+                    // otherwise its local position state goes stale and
+                    // "Guardar" would move the track right back.
+                    key={`${track.id}:${track.position}:${track.side ?? ''}`}
                     track={track}
                     onPatch={(patch) => patchTrack(track, patch)}
                     onReplaceAudio={(file) => replaceAudio(track, file)}

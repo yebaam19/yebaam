@@ -8,9 +8,9 @@ import {
   inputCls,
 } from './upload/constants';
 import { Field, Section } from './upload/primitives';
+import { TrackDraftList } from './upload/track-drafts/TrackDraftList';
 import { AlbumMetadataForm } from './AdminAlbumUploadForm/AlbumMetadataForm';
 import { CoverUpload } from './AdminAlbumUploadForm/CoverUpload';
-import { TrackList } from './AdminAlbumUploadForm/TrackList';
 import { useAdminAlbumUpload } from './AdminAlbumUploadForm/useAdminAlbumUpload';
 
 export function AdminAlbumUploadForm() {
@@ -104,8 +104,11 @@ export function AdminAlbumUploadForm() {
         onLabelImageChange={setLabelImage}
       />
 
-      <TrackList
+      <TrackDraftList
+        title={t('adminUpload.section4Title')}
+        hint={t('adminUpload.section4Hint')}
         tracks={tracks}
+        disabled={pending}
         onFilesPicked={onFilesPicked}
         onUpdateTrack={updateTrack}
         onMoveTrack={moveTrack}

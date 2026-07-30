@@ -52,16 +52,19 @@ export function AddTrackForm({ nextPosition, albumFormat, onAdd }: Props) {
     }
     setBusy(true);
     setError(null);
+    const submittedPos = Number(position) || nextPosition;
     try {
       await onAdd({
         title: title.trim(),
-        position: Number(position) || nextPosition,
+        position: submittedPos,
         side: side || null,
         file,
       });
-      // Reset for the next track. When single/78rpm, prefill side B for the
-      // typical "Lado A / Lado B" cadence.
-      const nextPos = Number(position) + 1;
+      // Reset for the next track, continuing from the position actually
+      // submitted (an emptied input must not reset to 1 — with insert-with-
+      // shift that would silently push the whole album down). When single/
+      // 78rpm, prefill side B for the typical "Lado A / Lado B" cadence.
+      const nextPos = submittedPos + 1;
       setFile(null);
       setTitle('');
       setPosition(nextPos.toString());
@@ -83,6 +86,7 @@ export function AddTrackForm({ nextPosition, albumFormat, onAdd }: Props) {
       <p className="mb-2 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         {t('admin.addTrack.heading')}
       </p>
+      <p className="mb-2 text-xs text-zinc-500">{t('admin.addTrack.shiftHint')}</p>
       <div className="grid grid-cols-12 items-center gap-2 text-sm">
         <input
           type="number"
