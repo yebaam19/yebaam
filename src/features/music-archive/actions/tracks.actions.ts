@@ -22,11 +22,14 @@ import {
 } from './_shared';
 
 /** The DB enforces UNIQUE (album_id, position, side). Surface that as a human
- *  sentence instead of the raw Postgres "duplicate key value" message. */
+ *  sentence instead of the raw Postgres "duplicate key value" message. Also
+ *  maps the sentinel messages raised by the placement RPCs. */
 function friendlyTrackError(error: { code?: string; message: string }): string {
   if (error.code === '23505') {
     return 'Ya hay una canción en esa posición del disco. Elige otra posición.';
   }
+  if (error.message.includes('TRACK_NOT_FOUND')) return 'Canción no encontrada.';
+  if (error.message.includes('ALBUM_NOT_FOUND')) return 'Álbum no encontrado.';
   return error.message;
 }
 
@@ -45,68 +48,6 @@ async function fetchAlbumTracksSorted(
     .order('position', { ascending: true });
   if (error) return { tracks: [], error: error.message };
   return { tracks: (data as MusicTrackRow[] | null) ?? [], error: null };
-}
-
-function sideFilter<T extends { side: MusicTrackSide | null }>(
-  rows: T[],
-  side: MusicTrackSide | null,
-): T[] {
-  return rows.filter((r) => (r.side ?? null) === side);
-}
-
-/** Apply `{id → position}` moves one row at a time in an order that never
- *  trips the UNIQUE (album_id, position, side) constraint mid-flight:
- *  downward moves ascending (each row slides into the slot just vacated),
- *  then upward moves descending (each row slides into the free slot above). */
-async function applyPositionMoves(
-  service: SupabaseClient,
-  moves: Array<{ id: string; from: number; to: number }>,
-): Promise<string | null> {
-  const down = moves.filter((m) => m.to < m.from).sort((a, b) => a.from - b.from);
-  const up = moves.filter((m) => m.to > m.from).sort((a, b) => b.from - a.from);
-  for (const m of [...down, ...up]) {
-    const { error } = await service
-      .from('music_tracks')
-      .update({ position: m.to })
-      .eq('id', m.id);
-    if (error) return friendlyTrackError(error);
-  }
-  return null;
-}
-
-/** Resequence every side group of an album to 1..n (keeping the current sort
- *  order). The shift actions are not transactional — a mid-sequence failure can
- *  leave a numbering hole or a track stranded at a park position — so both call
- *  this FIRST: whatever a previous failed attempt left behind is repaired before
- *  the new operation computes its moves. Returns the normalized board. */
-async function normalizeGroupPositions(
-  service: SupabaseClient,
-  albumId: string,
-): Promise<{ tracks: MusicTrackRow[]; error: string | null }> {
-  const { tracks, error } = await fetchAlbumTracksSorted(service, albumId);
-  if (error) return { tracks: [], error };
-  const moves: Array<{ id: string; from: number; to: number }> = [];
-  const sides = [...new Set(tracks.map((t) => t.side ?? null))];
-  for (const side of sides) {
-    sideFilter(tracks, side).forEach((t, i) => {
-      if (t.position !== i + 1) moves.push({ id: t.id, from: t.position, to: i + 1 });
-    });
-  }
-  if (moves.length > 0) {
-    const moveError = await applyPositionMoves(service, moves);
-    if (moveError) return { tracks: [], error: moveError };
-  }
-  const byId = new Map(moves.map((m) => [m.id, m.to]));
-  const normalized = tracks.map((t) =>
-    byId.has(t.id) ? { ...t, position: byId.get(t.id)! } : t,
-  );
-  normalized.sort((a, b) => {
-    const sa = a.side ?? '';
-    const sb = b.side ?? '';
-    if (sa !== sb) return sa < sb ? -1 : 1;
-    return a.position - b.position;
-  });
-  return { tracks: normalized, error: null };
 }
 
 /** HEAD-validate an already-uploaded R2 object before pointing a row at it.
@@ -397,8 +338,9 @@ export async function replaceTrackAudio(
  *  track of the same side at that position or below down by one — the "quiero
  *  ubicarla en el espacio que es" case the plain `createTrack` can't serve
  *  because of UNIQUE (album_id, position, side). Admin-only (it renumbers other
- *  contributors' rows). Returns the album's full re-sorted tracklist so the
- *  editor can replace its state wholesale. */
+ *  contributors' rows). The lock + normalize + shift + insert runs atomically
+ *  inside the `music_insert_track_at` Postgres function. Returns the album's
+ *  full re-sorted tracklist so the editor can replace its state wholesale. */
 export async function adminInsertTrackAt(
   dto: CreateTrackDto,
 ): Promise<ActionResult<{ track: MusicTrackRow; tracks: MusicTrackRow[] }>> {
@@ -411,44 +353,20 @@ export async function adminInsertTrackAt(
   const audioError = await validateAudioObject(dto.r2Key);
   if (audioError) return { ok: false, error: audioError };
 
-  const side = dto.side ?? null;
-  const position = Math.max(1, Math.floor(dto.position));
-  // Repair any hole / stranded park a previous failed attempt left, THEN plan
-  // the shift on the clean board — a retry heals instead of widening the gap.
-  const { tracks: existing, error: boardError } = await normalizeGroupPositions(
-    service,
-    dto.albumId,
-  );
-  if (boardError) return { ok: false, error: boardError };
-
-  // Open the gap: same-side tracks at or below the target slide down by one,
-  // processed bottom-up so no intermediate update collides with a live row.
-  const toShift = sideFilter(existing, side).filter((t) => t.position >= position);
-  const shiftError = await applyPositionMoves(
-    service,
-    toShift.map((t) => ({ id: t.id, from: t.position, to: t.position + 1 })),
-  );
-  if (shiftError) return { ok: false, error: shiftError };
-
-  const { data, error } = await service
-    .from('music_tracks')
-    .insert({
-      album_id: dto.albumId,
-      position,
-      side,
-      title,
-      duration_seconds: dto.durationSeconds ?? null,
-      r2_key: dto.r2Key,
-      format: dto.format,
-      bitrate_kbps: dto.bitrateKbps ?? null,
-      source_media: dto.sourceMedia ?? null,
-      copyright_status: dto.copyrightStatus,
-      contributor_attestation: true,
-      contributed_by: gate.userId,
-      restored_by_note: dto.restoredByNote?.trim() || null,
-    })
-    .select('*')
-    .single();
+  const { data, error } = await service.rpc('music_insert_track_at', {
+    p_album_id: dto.albumId,
+    p_position: Math.max(1, Math.floor(dto.position)),
+    p_side: dto.side ?? null,
+    p_title: title,
+    p_r2_key: dto.r2Key,
+    p_format: dto.format,
+    p_copyright_status: dto.copyrightStatus,
+    p_contributed_by: gate.userId,
+    p_duration_seconds: dto.durationSeconds ?? null,
+    p_bitrate_kbps: dto.bitrateKbps ?? null,
+    p_source_media: dto.sourceMedia ?? null,
+    p_restored_by_note: dto.restoredByNote?.trim() || null,
+  });
   if (error) return { ok: false, error: friendlyTrackError(error) };
   const track = data as MusicTrackRow;
 
@@ -472,8 +390,10 @@ export async function adminInsertTrackAt(
 /** Move an existing track to an exact (position, side) slot — list-move
  *  semantics: the old slot closes up, the new slot opens, and the track ends at
  *  exactly the requested position. Optional field patches ride along so the
- *  editor's "Guardar" stays one call. Admin-only. Returns the full re-sorted
- *  tracklist. */
+ *  editor's "Guardar" stays one call; they travel as jsonb so an explicit null
+ *  ("clear the note") stays distinguishable from "not provided". Admin-only.
+ *  The whole reshuffle runs atomically inside the `music_move_track` Postgres
+ *  function. Returns the full re-sorted tracklist. */
 export async function adminMoveTrack(
   trackId: string,
   dto: {
@@ -489,9 +409,6 @@ export async function adminMoveTrack(
   if (!gate.ok) return gate;
   const service = getServiceClient();
 
-  const targetPos = Math.max(1, Math.floor(dto.position));
-  const targetSide = dto.side ?? null;
-
   const fieldPatch: Record<string, unknown> = {};
   if (dto.title !== undefined) fieldPatch.title = dto.title.trim();
   if (dto.copyrightStatus !== undefined) fieldPatch.copyright_status = dto.copyrightStatus;
@@ -499,71 +416,17 @@ export async function adminMoveTrack(
   if (dto.restoredByNote !== undefined)
     fieldPatch.restored_by_note = dto.restoredByNote?.trim() || null;
 
-  const { data: movingRow, error: movingError } = await service
-    .from('music_tracks')
-    .select('*')
-    .eq('id', trackId)
-    .maybeSingle();
-  if (movingError) return { ok: false, error: movingError.message };
-  const found = movingRow as MusicTrackRow | null;
-  if (!found) return { ok: false, error: 'Canción no encontrada.' };
-
-  // Repair any hole / stranded park a previous failed attempt left, THEN plan
-  // this move on the clean board.
-  const { tracks: all, error: boardError } = await normalizeGroupPositions(
-    service,
-    found.album_id,
-  );
-  if (boardError) return { ok: false, error: boardError };
-  const moving = all.find((t) => t.id === trackId);
-  if (!moving) return { ok: false, error: 'Canción no encontrada.' };
-
-  const sameSlot = (moving.side ?? null) === targetSide && moving.position === targetPos;
-  if (!sameSlot) {
-    // Park the moving track above every real position so both shifts below run
-    // against a board with its old slot already free.
-    const parkPos = Math.max(...all.map((t) => t.position)) + 1000;
-    const { error: parkError } = await service
-      .from('music_tracks')
-      .update({ position: parkPos })
-      .eq('id', trackId);
-    if (parkError) return { ok: false, error: friendlyTrackError(parkError) };
-
-    // Close the gap it left, then open one at the destination. Different sides
-    // never interfere (the unique key is per side), and same-side moves are
-    // ordered safely inside applyPositionMoves.
-    const others = all.filter((t) => t.id !== trackId);
-    const closeGap = sideFilter(others, moving.side ?? null)
-      .filter((t) => t.position > moving.position)
-      .map((t) => ({ id: t.id, from: t.position, to: t.position - 1 }));
-    const afterClose = new Map(closeGap.map((m) => [m.id, m.to]));
-    const openGap = sideFilter(others, targetSide)
-      .map((t) => ({ ...t, position: afterClose.get(t.id) ?? t.position }))
-      .filter((t) => t.position >= targetPos)
-      .map((t) => ({ id: t.id, from: t.position, to: t.position + 1 }));
-
-    // Merge: a row touched by both shifts nets out to one final move.
-    const finalPos = new Map<string, { from: number; to: number }>();
-    for (const m of closeGap) finalPos.set(m.id, { from: m.from, to: m.to });
-    for (const m of openGap) {
-      const prior = finalPos.get(m.id);
-      finalPos.set(m.id, { from: prior?.from ?? m.from, to: m.to });
-    }
-    const moves = [...finalPos.entries()]
-      .map(([id, m]) => ({ id, ...m }))
-      .filter((m) => m.from !== m.to);
-    const shiftError = await applyPositionMoves(service, moves);
-    if (shiftError) return { ok: false, error: shiftError };
-  }
-
-  const { error } = await service
-    .from('music_tracks')
-    .update({ ...fieldPatch, position: targetPos, side: targetSide })
-    .eq('id', trackId);
+  const { data, error } = await service.rpc('music_move_track', {
+    p_track_id: trackId,
+    p_position: Math.max(1, Math.floor(dto.position)),
+    p_side: dto.side ?? null,
+    p_patch: fieldPatch,
+  });
   if (error) return { ok: false, error: friendlyTrackError(error) };
+  const moved = data as MusicTrackRow;
 
-  await revalidateAlbumById(service, moving.album_id);
-  const after_ = await fetchAlbumTracksSorted(service, moving.album_id);
+  await revalidateAlbumById(service, moved.album_id);
+  const after_ = await fetchAlbumTracksSorted(service, moved.album_id);
   if (after_.error) {
     return {
       ok: false,
