@@ -106,6 +106,16 @@ export function AlbumsTable({
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
+                  {/* Plain <a>, not next/link: the response is a streamed .zip
+                      attachment, so the browser must do a real navigation and
+                      hand it to the download manager. */}
+                  <a
+                    href={`/api/admin/music/albums/${a.id}/download`}
+                    title={t('downloadHint')}
+                    className="mr-2 rounded px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+                  >
+                    {t('download')}
+                  </a>
                   <button
                     type="button"
                     onClick={() => onEdit(a.id)}

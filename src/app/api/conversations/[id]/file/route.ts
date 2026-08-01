@@ -3,6 +3,7 @@ import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getServerClient } from '@/utils/supabase/server';
 import { getR2Client, getR2Bucket } from '@/lib/cloudflare/r2';
+import { attachmentDisposition } from '@/lib/http/content-disposition';
 
 /**
  * Presign a download URL for a chat document attachment, but ONLY for
@@ -10,19 +11,6 @@ import { getR2Client, getR2Bucket } from '@/lib/cloudflare/r2';
  * checked against conversation_participants before signing, and the key is
  * prefix-locked to `chat-files/` so this route can't leak other R2 objects.
  */
-
-/** Content-Disposition with an ASCII fallback + RFC 5987 UTF-8 name, so the
- *  browser saves the file under its original name instead of the R2 uuid.
- *  Built here because getPublicFileUrl() has no disposition parameter. */
-function contentDisposition(filename: string): string {
-  const clean = filename.replace(/[\r\n]/g, ' ').trim().slice(0, 200) || 'archivo';
-  const fallback = clean.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
-  const encoded = encodeURIComponent(clean).replace(
-    /['()*]/g,
-    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
-  );
-  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
-}
 
 export async function POST(
   request: NextRequest,
@@ -66,7 +54,7 @@ export async function POST(
     const cmd = new GetObjectCommand({
       Bucket: getR2Bucket(),
       Key: r2Key,
-      ...(filename ? { ResponseContentDisposition: contentDisposition(filename) } : {}),
+      ...(filename ? { ResponseContentDisposition: attachmentDisposition(filename) } : {}),
     });
     const url = await getSignedUrl(getR2Client(), cmd, { expiresIn: 3600 });
     return NextResponse.json({ url, filename: filename || null });

@@ -736,6 +736,8 @@
       "saving": "Saving…",
       "delete": "Delete",
       "deleteConfirm": "Delete track?",
+      "download": "Download",
+      "downloadHint": "Download this track's audio file",
       "currentAudio": "Current audio:",
       "uploadingAudio": "Uploading audio…",
       "replace": "Replace:"
@@ -979,6 +981,8 @@
       "empty": "No albums.",
       "fieldEmpty": "—",
       "tradeYes": "Yes",
+      "download": "Download",
+      "downloadHint": "Download the whole disc (audio + artwork + data sheet) as .zip",
       "edit": "Edit",
       "delete": "Delete",
       "deleteTitle": "Delete album \"{title}\"",

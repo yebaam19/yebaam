@@ -736,6 +736,8 @@
       "saving": "Guardando…",
       "delete": "Eliminar",
       "deleteConfirm": "¿Eliminar canción?",
+      "download": "Descargar",
+      "downloadHint": "Descargar el archivo de audio de esta pista",
       "currentAudio": "Audio actual:",
       "uploadingAudio": "Subiendo audio…",
       "replace": "Reemplazar:"
@@ -979,6 +981,8 @@
       "empty": "No hay álbumes.",
       "fieldEmpty": "—",
       "tradeYes": "Sí",
+      "download": "Descargar",
+      "downloadHint": "Descargar el disco completo (audio + carátulas + ficha) en .zip",
       "edit": "Editar",
       "delete": "Eliminar",
       "deleteTitle": "Eliminar álbum \"{title}\"",

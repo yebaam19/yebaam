@@ -7,6 +7,7 @@ import {
   HeadObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { attachmentDisposition } from '@/lib/http/content-disposition';
 
 let cachedClient: S3Client | null = null;
 
@@ -82,6 +83,43 @@ export async function getPublicFileUrl(key: string, ttlSeconds = 3600): Promise<
 /** Alias histórico: los call sites de audio (música, chat) siguen usando el
  *  nombre audio-*; la implementación es genérica por clave R2. */
 export const getPublicAudioUrl = getPublicFileUrl;
+
+/** Presigned GET that forces a download under `filename` instead of opening in
+ *  the tab under the object's uuid key. TTL is short: the URL is handed to the
+ *  browser as a redirect target and used immediately. */
+export async function getDownloadUrl(
+  key: string,
+  filename: string,
+  ttlSeconds = 900,
+): Promise<string> {
+  const client = getR2Client();
+  const bucket = getR2Bucket();
+  const cmd = new GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ResponseContentDisposition: attachmentDisposition(filename),
+  });
+  return getSignedUrl(client, cmd, { expiresIn: ttlSeconds });
+}
+
+/** Open an object for reading as a web `ReadableStream`, without buffering it.
+ *  Used by the admin album `.zip` export, which pipes R2 straight into the HTTP
+ *  response. Throws if the key does not exist. */
+export async function getFileStream(key: string): Promise<{
+  stream: ReadableStream<Uint8Array>;
+  sizeBytes: number | null;
+  contentType: string | null;
+}> {
+  const client = getR2Client();
+  const bucket = getR2Bucket();
+  const res = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+  if (!res.Body) throw new Error(`R2 object ${key} returned an empty body`);
+  return {
+    stream: res.Body.transformToWebStream() as ReadableStream<Uint8Array>,
+    sizeBytes: typeof res.ContentLength === 'number' ? res.ContentLength : null,
+    contentType: res.ContentType ?? null,
+  };
+}
 
 export async function deleteFile(key: string): Promise<void> {
   const client = getR2Client();

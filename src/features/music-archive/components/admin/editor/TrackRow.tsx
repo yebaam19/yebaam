@@ -118,6 +118,14 @@ export function TrackRow({ track, onPatch, onReplaceAudio, onDelete }: Props) {
       <div className="ml-[calc(8.333%)] flex items-center gap-2 text-[11px] text-zinc-500">
         <span>{t('admin.trackRow.currentAudio')}</span>
         <code className="truncate text-zinc-700 dark:text-zinc-300">{track.r2_key}</code>
+        {/* Real navigation to a presigned R2 URL — see the album .zip route. */}
+        <a
+          href={`/api/admin/music/tracks/${track.id}/download`}
+          title={t('admin.trackRow.downloadHint')}
+          className="shrink-0 rounded px-1.5 py-0.5 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+        >
+          {t('admin.trackRow.download')}
+        </a>
         <span className="ml-auto">{audioBusy ? t('admin.trackRow.uploadingAudio') : t('admin.trackRow.replace')}</span>
         <input
           type="file"
