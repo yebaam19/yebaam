@@ -17,7 +17,7 @@ mandate, partially present · **P2** = hardening, audit, or operational/legal ta
 
 | Gap | Rule | Current state | Proposed work |
 |---|---|---|---|
-| **Clickwrap consent at signup** | Contrato cl.2 · Manual Art.24 · Macro Art.42 | `src/features/auth/components/register-form/index.tsx` has **no terms/privacy acceptance control** and stores no acceptance record | Add an **unchecked** consent control linking the Contrato + privacy policy; block submit until checked; persist an acceptance record (`user_id`, `document_version`, `accepted_at`, `ip`) in a new `user_agreements` table. This is the evidentiary / *mérito ejecutivo* trail the documents require. |
+| **Clickwrap consent at signup** | Contrato cl.2 · Manual Art.24 · Macro Art.42 | *(updated 2026-08-11)* The UI half now exists: `register-form/index.tsx` renders an unchecked consent checkbox linking Contrato + privacy policy and blocks submit until checked. But `acceptedTerms` is **dropped server-side** — `signupWithOtpAction` never reads it and **no acceptance record is persisted** (no version, timestamp, or IP) | Enforce `acceptedTerms === true` server-side and persist an acceptance record (`user_id`, `document_version`, `accepted_at`, `ip`) in a new `user_agreements` table. This is the evidentiary / *mérito ejecutivo* trail the documents require. |
 | **`/normativa` legal pages** | Manual preamble ("alojado en la sección normativa de la plataforma") · Macro Art.45 | **No legal routes** exist in `src/app/**` | Public route group (e.g. `/normativa`) rendering `docs/legal/*` (contrato, manual, macro, privacidad), linkable from signup + footer. |
 | **Derecho al olvido / account deletion** | Macro Art.5 · Manual Art.20 · Contrato cl.24 | **No account-deletion / data-purge flow**; no Habeas Data / DPO channel | Build account deletion that irreversibly purges registration data, metadata, and usage records **within 10 business days**; expose an ARCO/Habeas Data request channel. |
 
@@ -50,6 +50,20 @@ mandate, partially present · **P2** = hardening, audit, or operational/legal ta
 |---|---|---|---|
 | **`get_escuelas_stats` — sin check de pertenencia** | Macro Art.2 (Privacy by Design/Default) | Cualquier usuario autenticado puede consultar los conteos de leads, clases de prueba y seguidores de cualquier escuela vía el RPC `get_escuelas_stats`. Hoy solo expone números agregados no PII. Riesgo bajo mientras el RPC no incluya métricas de negocio sensibles. | Agregar `escuelas.assert_school_admin(p_school_id)` al inicio del RPC cuando los stats incluyan ingresos, tasas de conversión, o datos sensibles del negocio. Origen: Hallazgo E, QA Audit 2026-07-12. |
 | **UI de edición pendiente** (deuda técnica, no normativa) | — | Las acciones `updateInstructor`, `updateCampus` y `updateProgram` están implementadas y testeadas en tipado pero sin call site en la UI. Ver TODO.md. | Implementar formularios de edición inline para instructores, sedes y programas. |
+
+## El Umbral (/umbral stunt) — governance review 2026-08-11
+
+Feature: marketing stunt per `clave-1.pdf` (angelic-alphabet clave page; attempts stored in
+`umbral_attempts`). Already mitigated at build time: on-page data-collection notice linking the
+privacy policy; attempt text AES-256-GCM at rest (chat-crypto helper, AAD `umbral:<user_id>`);
+DB-trigger 7/h rate limit; admin-scoped ARCO deletion policy; append-only for users. Residual:
+
+| Gap | Rule | Current state | Proposed work |
+|---|---|---|---|
+| **Retention window for `umbral_attempts`** | Macro Art.2 (minimización) · Manual Art.20 | Rows tied to `user_id` accumulate indefinitely; only account-deletion cascade purges them. A stunt's analytics value decays in weeks | Decide a TTL (e.g. 6–12 months) and add a `pg_cron` purge/anonymization job, or record an explicit retention decision here. |
+| **RNBD inventory entry** | Macro Art.8 (registro ante la SIC) | `umbral_attempts` is a new personal-data store (identified user + behavior + finality "analítica de marketing") not yet in the RNBD registration / privacy-policy data map | Add it to the RNBD inventory and the privacy-policy data map when the migration is applied (external/legal task). |
+| **Admin analytics reader (decrypt)** | Macro Art.8 | Attempts are ciphertext at rest; **no admin surface decrypts them**, so marketing analytics currently requires a service-role script using the chat-crypto helper | If marketing needs to read claves, build a small audited admin reader (mirror `/api/admin/compliance/chat-decrypt`); otherwise keep aggregate-only queries (counts, timestamps). |
+| **<13 signup age gate (pre-existing, amplified by this funnel)** | Contrato cl.9 · Macro Art.35 · COPPA | Signup collects birth date but **never validates ≥13** (year dropdown offers the current year; `signupWithOtpAction` writes it unchecked). The Umbral share-link funnel deliberately drives anonymous strangers into this signup | Server-side reject <13 in `signupWithOtpAction` (return-not-throw) + cap the `BirthDateFields` year list at `currentYear - 13`; parental-consent pathway for 13–17 stays on the roadmap. |
 
 ## How to use this file
 - The governance subagents reference this file when a rule needs enforcement that the code lacks.

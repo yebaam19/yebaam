@@ -1,4 +1,6 @@
 import { LoginForm } from '@/features/auth/components/login-form';
+import { UmbralSigil } from '@/features/umbral/components/UmbralSigil';
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 import BackgroundImage from '@/images/brand/Background-1.png';
 import LogoWhite from '@/images/brand/Logo-Yebaam_white.png';
 import { Metadata } from 'next';
@@ -15,8 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const Page = async () => {
+const Page = async ({ searchParams }: { searchParams: Promise<{ redirect?: string }> }) => {
   const t = await getTranslations('auth');
+  // Keep a pending post-auth destination (e.g. a shared /umbral link) alive
+  // when the visitor crosses to the signup page instead of signing in.
+  const { redirect } = await searchParams;
+  const redirectParam = redirect ? sanitizeRedirectPath(redirect) : null;
 
   return (
     <main className="relative flex min-h-screen w-full flex-col md:flex-row">
@@ -61,7 +67,10 @@ const Page = async () => {
             <div className="mt-6 border-t border-neutral-200 pt-4 text-center dark:border-neutral-700">
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 {t('login.noAccount')}{' '}
-                <Link href="/signup" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
+                <Link
+                  href={redirectParam ? { pathname: '/signup', query: { redirect: redirectParam } } : '/signup'}
+                  className="font-semibold text-green-600 transition-colors hover:text-amber-500"
+                >
                   {t('login.signupLink')}
                 </Link>
               </p>
@@ -76,6 +85,9 @@ const Page = async () => {
           </p>
         </div>
       </div>
+
+      {/* El Umbral — unlabeled doorway to the stunt page (clave-1.pdf). */}
+      <UmbralSigil className="absolute right-4 bottom-4 z-20" />
     </main>
   );
 };

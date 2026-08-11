@@ -74,10 +74,14 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
     } catch (err: unknown) {
       // Half-registered account: the email was never confirmed. Instead of a
       // dead-end error, route the user back into the verification flow where
-      // they can resend a fresh code and finish signing up.
+      // they can resend a fresh code and finish signing up. Keep ?redirect
+      // riding along so the verify → login chain still lands on the original
+      // destination (e.g. a shared /umbral link).
       if (isEmailNotConfirmedError(err)) {
         toast.info(t('login.needsVerificationToast'))
-        router.push(`/verify-email?email=${encodeURIComponent(identifier)}`)
+        const verifyParams = new URLSearchParams({ email: identifier })
+        if (searchParams.get('redirect')) verifyParams.set('redirect', redirectTo)
+        router.push(`/verify-email?${verifyParams.toString()}`)
         return
       }
       const message = err instanceof Error ? err.message : ''

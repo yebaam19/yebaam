@@ -118,6 +118,9 @@ const ROUTE_NAMESPACES: ReadonlyArray<readonly [string, Namespace[]]> = [
   ['/stories', shell('stories')],
   ['/watch', shell('watch', 'liveStream')],
 
+  // El Umbral (marketing stunt) — standalone page, all copy hardcoded es.
+  ['/umbral', ['common']],
+
   // Secondary platforms migrated in — their own layouts, no app shell.
   ['/negocios', ['feed', 'businesses', 'common']],
   ['/escuelas', ['common']],

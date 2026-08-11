@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { RegisterForm } from '@/features/auth/components/register-form';
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 import BackgroundImage from '@/images/brand/Background-1.png';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,8 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const Page = async () => {
+const Page = async ({ searchParams }: { searchParams: Promise<{ redirect?: string }> }) => {
   const t = await getTranslations('auth');
+  // Mirror of the login page: keep a pending post-auth destination alive
+  // when the visitor crosses to the login page instead of registering.
+  const { redirect } = await searchParams;
+  const redirectParam = redirect ? sanitizeRedirectPath(redirect) : null;
 
   return (
     <main className="relative flex min-h-screen w-full flex-col">
@@ -47,7 +52,10 @@ const Page = async () => {
           <div className="px-4 py-4 sm:px-6">
             <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
               {t('signup.haveAccount')}{' '}
-              <Link href="/login" className="font-semibold text-green-600 transition-colors hover:text-amber-500">
+              <Link
+                href={redirectParam ? { pathname: '/login', query: { redirect: redirectParam } } : '/login'}
+                className="font-semibold text-green-600 transition-colors hover:text-amber-500"
+              >
                 {t('signup.loginLink')}
               </Link>
             </p>

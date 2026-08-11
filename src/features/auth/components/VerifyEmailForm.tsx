@@ -10,6 +10,7 @@ import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { VerifyEmailFormData, verifyEmailSchema } from '../validators/auth.schemas'
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
 
 /**
  * STEP 2: Verificar Email con código OTP
@@ -19,6 +20,8 @@ export default function VerifyEmailForm() {
   const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const emailFromUrl = searchParams.get('email') || ''
+  // Post-login destination threaded from the signup form (e.g. /umbral).
+  const redirectParam = searchParams.get('redirect')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
@@ -41,13 +44,16 @@ export default function VerifyEmailForm() {
     setIsSubmitting(true)
 
     try {
-      const response = await authService.verifyEmail(data)
+      await authService.verifyEmail(data)
       toast.success(t('verifyEmail.successToast'))
 
       // Redirigir a login para que el usuario inicie sesión
-      router.push(`/login?email=${encodeURIComponent(data.email)}&verified=true`)
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || t('verifyEmail.invalidCodeError')
+      const loginParams = new URLSearchParams({ email: data.email, verified: 'true' })
+      if (redirectParam) loginParams.set('redirect', sanitizeRedirectPath(redirectParam))
+      router.push(`/login?${loginParams.toString()}`)
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      const errorMessage = err.response?.data?.message || err.message || t('verifyEmail.invalidCodeError')
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -62,8 +68,9 @@ export default function VerifyEmailForm() {
     try {
       await resendOtp({ email: emailFromUrl, captchaToken: captchaToken ?? undefined })
       toast.success(t('verifyEmail.resendSuccessToast'))
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || t('verifyEmail.resendError')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      const errorMessage = err.response?.data?.message || err.message || t('verifyEmail.resendError')
       toast.error(errorMessage)
     } finally {
       setCaptchaToken(null)

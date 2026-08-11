@@ -1,12 +1,13 @@
 'use client';
 
 import { useRef, useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '../../store/auth.store';
 import { toast } from 'sonner';
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget';
 import { validatePasswordPolicy } from '@/lib/auth/password-policy';
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
 import { NameFields } from './NameFields';
 import { BirthDateFields } from './BirthDateFields';
 import { GenderField } from './GenderField';
@@ -18,6 +19,11 @@ import { isOccupationSlug, type OccupationSlug } from '../../constants/occupatio
 export function RegisterForm() {
   const router = useRouter();
   const t = useTranslations('auth');
+  const searchParams = useSearchParams();
+  // Where to land after the whole signup → verify → login chain (e.g. a
+  // shared /umbral link). Threaded through /verify-email into /login, which
+  // already honors ?redirect after sign-in.
+  const redirectParam = searchParams.get('redirect');
   const { register, isLoading, error } = useAuthStore();
 
   // Estado del formulario
@@ -113,10 +119,12 @@ export function RegisterForm() {
       // pendingVerification: el email ya tenía un registro sin confirmar y se
       // reemitió el código — el mensaje del servidor explica esa situación.
       toast.success(response?.pendingVerification ? response.message : t('signup.successToast'));
-      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
-    } catch (err: any) {
+      const verifyParams = new URLSearchParams({ email: formData.email });
+      if (redirectParam) verifyParams.set('redirect', sanitizeRedirectPath(redirectParam));
+      router.push(`/verify-email?${verifyParams.toString()}`);
+    } catch (err) {
       console.error('[RegisterForm] Error en registro:', err);
-      toast.error(err.message || t('signup.genericError'));
+      toast.error((err instanceof Error && err.message) || t('signup.genericError'));
       setCaptchaToken(null);
       turnstileRef.current?.reset();
     }

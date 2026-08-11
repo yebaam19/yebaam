@@ -52,6 +52,9 @@ const PUBLIC_ROUTES = [
   // by design — must be readable by anyone (incl. from the signup consent links)
   // without an account, like a platform's Terms/Privacy pages.
   '/normativa',
+  // El Umbral (clave-1.pdf marketing stunt): the shared link must open for
+  // anyone; pronouncing a clave gates at the server-action layer.
+  '/umbral',
 ];
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
@@ -70,6 +73,7 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/oportunidades',
   '/promociones',
   '/normativa',
+  '/umbral',
 ];
 
 export async function proxy(request: NextRequest) {
