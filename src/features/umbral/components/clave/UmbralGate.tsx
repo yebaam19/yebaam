@@ -8,11 +8,13 @@ import {
 } from '../../constants';
 
 /**
- * Shown when an anonymous visitor tries to pronounce a clave. The redirect
+ * The profile obligation. Rendered full-page for anonymous visitors (no
+ * dismissal — crossing requires a profile) and by ClaveExperience when a
+ * session expires mid-visit (dismissable back to the form). The redirect
  * param rides the whole signup → verify-email → login chain, so after
  * creating a profile the visitor lands back at this exact door.
  */
-export function UmbralGate({ onDismiss }: { onDismiss: () => void }) {
+export function UmbralGate({ onDismiss }: { onDismiss?: () => void }) {
   return (
     <div className="animate-fade-in flex flex-col items-center gap-7 text-center">
       <h2 className="max-w-md text-2xl leading-snug text-neutral-100 sm:text-3xl">
@@ -35,13 +37,15 @@ export function UmbralGate({ onDismiss }: { onDismiss: () => void }) {
         </Link>
       </div>
 
-      <button
-        type="button"
-        onClick={onDismiss}
-        className="text-[10px] tracking-[0.4em] text-neutral-600 uppercase transition-colors hover:text-neutral-400"
-      >
-        No todavía
-      </button>
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="text-[10px] tracking-[0.4em] text-neutral-600 uppercase transition-colors hover:text-neutral-400"
+        >
+          No todavía
+        </button>
+      )}
     </div>
   );
 }

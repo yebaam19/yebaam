@@ -14,6 +14,7 @@ import {
   GlobeAmericasIcon,
   HeartIcon,
   HomeIcon,
+  KeyIcon,
   LifebuoyIcon,
   MegaphoneIcon,
   MusicalNoteIcon,
@@ -33,7 +34,23 @@ import { isFeatureEnabled } from './features-flag';
 /** Icon component rendered in the sidebar; heroicons-shim wrappers accept only `className`. */
 export type MenuIcon = ComponentType<{ className?: string }>;
 
-export const menuConfig: Record<string, any[]> = {
+/** A menu item as authored below, before `{basePath}`/`{badge*}` resolution. */
+interface MenuItemConfig {
+  icon: MenuIcon;
+  labelKey: string;
+  href: string;
+  badge?: string;
+  badgeKey?: string;
+  badgeHideOnMobile?: boolean;
+  featureFlag?: FeatureFlag;
+}
+
+interface MenuSectionConfig {
+  sectionKey: string;
+  items: MenuItemConfig[];
+}
+
+export const menuConfig: Record<string, MenuSectionConfig[]> = {
   USER: [
     {
       sectionKey: 'sections.principal',
@@ -45,6 +62,15 @@ export const menuConfig: Record<string, any[]> = {
           href: '{basePath}/profiles',
         },
         { icon: UserGroupIcon, labelKey: 'items.friends', href: '{basePath}/friends', badge: '{badgeFriendRequests}' },
+        {
+          // El Umbral (clave-1.pdf marketing stunt): the entry point members
+          // share from; the page itself carries the "Enviar este enlace" CTA.
+          icon: KeyIcon,
+          labelKey: 'items.umbral',
+          href: '/umbral',
+          badgeKey: 'badges.nuevo',
+          badgeHideOnMobile: true,
+        },
         {
           icon: GlobeAmericasIcon,
           labelKey: 'items.cities',
@@ -286,13 +312,13 @@ export function getMenuForUser(
     .map((section) => ({
       ...section,
       items: section.items
-        .filter((item: any) => {
+        .filter((item) => {
           if (item.featureFlag) {
             return isFeatureEnabled(item.featureFlag);
           }
           return true;
         })
-        .map((item: any) => {
+        .map((item) => {
           const href = item.href.replace('{basePath}', basePath).replace('{username}', username || '');
 
           // Resolver placeholders dinámicos de badges (números/contadores).

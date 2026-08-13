@@ -17,7 +17,8 @@ import { useMenuBadges } from './hooks/useMenuBadges'
 import { useSidebar } from './hooks/useSidebar'
 import { useSidebarExpanded } from './hooks/useSidebarExpanded'
 
-const MAX_VISIBLE_ITEMS = 10
+// 11 so the El Umbral entry fits without demoting Artistas below "Ver más".
+const MAX_VISIBLE_ITEMS = 11
 
 const isExternalHref = (href: string) => /^https?:\/\//i.test(href)
 

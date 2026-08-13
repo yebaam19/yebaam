@@ -82,6 +82,7 @@ export {
   Heart as HeartSolidIcon,
   Home as HomeIcon,
   Info as InformationCircleIcon,
+  KeyRound as KeyIcon,
   Languages as LanguageIcon,
   Lightbulb as LightBulbIcon,
   Link as LinkIcon,

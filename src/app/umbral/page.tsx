@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { CelestialAlphabetLegend, CelestialText } from '@/features/umbral/celestial/CelestialText';
 import { ClaveExperience } from '@/features/umbral/components/ClaveExperience';
+import { UmbralGate } from '@/features/umbral/components/clave/UmbralGate';
 import { ShareLink } from '@/features/umbral/components/ShareLink';
 import {
   UMBRAL_HEADING,
@@ -81,8 +82,12 @@ export default async function UmbralPage() {
           </p>
         </header>
 
+        {/* Entering obliges a profile: anonymous visitors get the gate, never
+            the clave form. The route stays public in the proxy so shared links
+            keep their OG preview and this lore shell — the obligation lives
+            here and in the pronounceClave action. */}
         <section className="mt-14 w-full">
-          <ClaveExperience isAuthenticated={Boolean(user)} />
+          {user ? <ClaveExperience /> : <UmbralGate />}
         </section>
 
         <section className="mt-16 flex flex-col items-center gap-4">

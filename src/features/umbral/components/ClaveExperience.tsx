@@ -14,11 +14,12 @@ type Phase = 'idle' | 'listening' | 'answered';
 
 /**
  * The interactive heart of El Umbral: type a clave, the door "listens",
- * a cryptic reply appears. Anonymous visitors hit the gate instead — the
- * stunt's whole conversion mechanic (clave-1.pdf: to pronounce the clave
- * you must create a profile).
+ * a cryptic reply appears. Only mounted for visitors with a profile — the
+ * page renders UmbralGate for anonymous ones (clave-1.pdf: entering the
+ * umbral requires creating a profile). The gate here covers the one gap
+ * the server can't: a session that expires between render and pronounce.
  */
-export function ClaveExperience({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function ClaveExperience() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [gateOpen, setGateOpen] = useState(false);
   const [value, setValue] = useState('');
@@ -29,11 +30,6 @@ export function ClaveExperience({ isAuthenticated }: { isAuthenticated: boolean 
   async function handleSubmit() {
     const attempt = value.trim();
     if (!attempt || phase === 'listening') return;
-
-    if (!isAuthenticated) {
-      setGateOpen(true);
-      return;
-    }
 
     setPhase('listening');
     setReply(null);
