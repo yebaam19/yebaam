@@ -108,7 +108,7 @@ export function useCommentSocket(postId: string | null | undefined) {
         if (payload.eventType === 'DELETE') {
           const row = payload.old as DbCommentRow;
           if (!row?.id) return;
-          removeComment(row.id, row.post_id);
+          removeComment(row.id, row.post_id, row.parent_comment_id ?? undefined);
           decrementCommentsCount(row.post_id);
         }
       },

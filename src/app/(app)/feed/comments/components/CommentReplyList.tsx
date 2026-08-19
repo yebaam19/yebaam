@@ -5,6 +5,7 @@ import { CommentItem } from './CommentItem'
 
 interface CommentReplyListProps {
   replies: Comment[]
+  onReplyDeleted?: (replyId: string) => void
   className?: string
 }
 
@@ -13,7 +14,7 @@ interface CommentReplyListProps {
  * Muestra todas las respuestas al mismo nivel (sin anidación)
  * El backend no permite replies a replies
  */
-export function CommentReplyList({ replies, className = '' }: CommentReplyListProps) {
+export function CommentReplyList({ replies, onReplyDeleted, className = '' }: CommentReplyListProps) {
   if (!replies || replies.length === 0) {
     return null
   }
@@ -27,7 +28,7 @@ export function CommentReplyList({ replies, className = '' }: CommentReplyListPr
 
           {/* Reply con padding izquierdo */}
           <div className="pl-8">
-            <CommentItem comment={reply} isReply={true} />
+            <CommentItem comment={reply} isReply={true} onDeleted={onReplyDeleted} />
           </div>
         </div>
       ))}

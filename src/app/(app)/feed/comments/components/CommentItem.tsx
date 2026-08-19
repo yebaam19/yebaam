@@ -3,7 +3,7 @@
 import { useAuth } from '@/features/auth'
 import { useSocket } from '@/providers/socket-provider'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Comment, CommentUpdatedPayload } from '../interfaces/comment.interfaces'
 import { commentService } from '../services/comment.service'
 import { useCommentStore } from '../store/comment.store'
@@ -16,6 +16,7 @@ interface CommentItemProps {
   comment: Comment
   isReply?: boolean
   onReplyCreated?: () => void // Callback para notificar al padre cuando se crea un reply
+  onDeleted?: (commentId: string) => void // Para replies: avisa al padre que se borró
   className?: string
 }
 
@@ -24,7 +25,7 @@ interface CommentItemProps {
  * Combina: Header + Content + Actions + Respuestas
  * Solo los comentarios raíz pueden tener respuestas (no hay replies anidados)
  */
-export function CommentItem({ comment, isReply = false, className = '' }: CommentItemProps) {
+export function CommentItem({ comment, isReply = false, onDeleted, className = '' }: CommentItemProps) {
   const t = useTranslations('feed')
   const { user } = useAuth()
   const { postsSocket } = useSocket()
@@ -57,16 +58,24 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
     setLocalRepliesCount(comment.repliesCount || 0)
   }, [comment.repliesCount])
 
-  // Respuestas nuevas que el store colgó del padre (`comment.replies`). Solo se
-  // mezclan si la lista ya está cargada; si no, `loadReplies` las trae de la DB.
+  // Respuestas que el store colgó del padre (`comment.replies`): las nuevas se
+  // mezclan solo si la lista ya está cargada (si no, `loadReplies` las trae de
+  // la DB); las que el store quitó (DELETE de realtime) se sacan de la lista.
+  const storeReplyIdsRef = useRef<Set<string>>(new Set())
   useEffect(() => {
-    const incoming = comment.replies
-    if (!incoming || incoming.length === 0) return
+    const incoming = comment.replies ?? []
+    const incomingIds = new Set(incoming.map((r) => r.id))
+    const removedIds = [...storeReplyIdsRef.current].filter((id) => !incomingIds.has(id))
+    storeReplyIdsRef.current = incomingIds
+    if (incoming.length === 0 && removedIds.length === 0) return
     setReplies((prev) => {
-      if (prev.length === 0) return prev
-      const known = new Set(prev.map((r) => r.id))
-      const fresh = incoming.filter((r) => !known.has(r.id))
-      return fresh.length > 0 ? [...prev, ...fresh] : prev
+      let next = removedIds.length > 0 ? prev.filter((r) => !removedIds.includes(r.id)) : prev
+      if (next.length > 0) {
+        const known = new Set(next.map((r) => r.id))
+        const fresh = incoming.filter((r) => !known.has(r.id))
+        if (fresh.length > 0) next = [...next, ...fresh]
+      }
+      return next
     })
   }, [comment.replies])
 
@@ -129,6 +138,10 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
     setShowReplies(!showReplies)
   }
 
+  const handleReplyDeleted = useCallback((replyId: string) => {
+    setReplies((prev) => prev.filter((r) => r.id !== replyId))
+  }, [])
+
   const handleReplyCreated = useCallback(async () => {
     // El contador ya lo subió el store en `createComment`; aquí solo se
     // recargan las respuestas para mostrar la nueva
@@ -162,7 +175,9 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
       await deleteComment({
         commentId: localComment.id,
         postId: localComment.postId,
+        parentId: localComment.parentId ?? null,
       })
+      onDeleted?.(localComment.id)
     } catch (error) {
       console.error('Error al eliminar:', error)
       setIsDeleting(false)
@@ -216,6 +231,7 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
         isReply={isReply}
         isLoadingReplies={isLoadingReplies}
         replies={replies}
+        onReplyDeleted={handleReplyDeleted}
       />
     </div>
   )

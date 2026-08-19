@@ -41,7 +41,7 @@ interface CommentActions {
   // Acciones directas (para WebSocket)
   addComment: (comment: Comment) => void;
   updateCommentInList: (comment: Comment) => void;
-  removeComment: (commentId: string, postId: string) => void;
+  removeComment: (commentId: string, postId: string, parentId?: string | null) => void;
   
   // Utilidades
   getCommentsByPost: (postId: string) => Comment[];
@@ -121,6 +121,58 @@ function withPreservedReplies(prev: Comment, next: Comment): Comment {
     ...next,
     replies: prev.replies,
     repliesCount: Math.max(prev.repliesCount ?? 0, next.repliesCount ?? 0),
+  };
+}
+
+/**
+ * Quita un comentario del estado (borrado propio o DELETE de realtime).
+ *
+ * - Raíz: se filtra de `commentsByPost[postId]` y baja 1 en `totalByPost`.
+ * - Respuesta: se busca al padre (por `parentId` si viene, si no por el que la
+ *   tenga en `replies`), se saca de `parent.replies` y baja `repliesCount`.
+ *   Nunca toca `totalByPost`.
+ *
+ * Devuelve `null` si no había nada que quitar.
+ */
+function removeCommentFromState(
+  state: CommentState,
+  commentId: string,
+  postId: string,
+  parentId?: string | null,
+): Pick<CommentState, 'commentsByPost' | 'totalByPost'> | null {
+  const currentComments = state.commentsByPost[postId] || [];
+
+  const remaining = currentComments.filter((c) => c.id !== commentId);
+  if (remaining.length !== currentComments.length) {
+    return {
+      commentsByPost: { ...state.commentsByPost, [postId]: remaining },
+      totalByPost: {
+        ...state.totalByPost,
+        [postId]: Math.max(0, (state.totalByPost[postId] || 0) - 1),
+      },
+    };
+  }
+
+  const parentIndex = currentComments.findIndex((c) =>
+    parentId ? c.id === parentId : (c.replies ?? []).some((r) => r.id === commentId),
+  );
+  if (parentIndex === -1) return null;
+  const parent = currentComments[parentIndex];
+  const nextParent: Comment = {
+    ...parent,
+    replies: (parent.replies ?? []).filter((r) => r.id !== commentId),
+    repliesCount: Math.max(0, (parent.repliesCount ?? 0) - 1),
+  };
+  return {
+    commentsByPost: {
+      ...state.commentsByPost,
+      [postId]: [
+        ...currentComments.slice(0, parentIndex),
+        nextParent,
+        ...currentComments.slice(parentIndex + 1),
+      ],
+    },
+    totalByPost: state.totalByPost,
   };
 }
 
@@ -320,7 +372,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
   // Eliminar comentario
   // ============================================
   deleteComment: async (data: DeleteCommentDTO) => {
-    const { postId, commentId } = data;
+    const { postId, commentId, parentId } = data;
     
     set((state) => ({
       loadingStates: {
@@ -335,21 +387,11 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
     try {
       await commentService.delete(data);
       
-      // Eliminar del store (las respuestas no viven en la lista raíz ni en el
-      // total, así que solo se descuenta si realmente se quitó una raíz)
+      // Eliminar del store (raíz o respuesta colgada de su padre)
       set((state) => {
-        const currentComments = state.commentsByPost[postId] || [];
-        const remaining = currentComments.filter((c) => c.id !== commentId);
-        const removedRoot = remaining.length !== currentComments.length;
+        const removed = removeCommentFromState(state, commentId, postId, parentId);
         return {
-          commentsByPost: {
-            ...state.commentsByPost,
-            [postId]: remaining,
-          },
-          totalByPost: {
-            ...state.totalByPost,
-            [postId]: Math.max(0, (state.totalByPost[postId] || 0) - (removedRoot ? 1 : 0)),
-          },
+          ...(removed ?? {}),
           loadingStates: {
             ...state.loadingStates,
             [postId]: {
@@ -402,22 +444,8 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
     });
   },
 
-  removeComment: (commentId: string, postId: string) => {
-    set((state) => {
-      const currentComments = state.commentsByPost[postId] || [];
-      const remaining = currentComments.filter((c) => c.id !== commentId);
-      const removedRoot = remaining.length !== currentComments.length;
-      return {
-        commentsByPost: {
-          ...state.commentsByPost,
-          [postId]: remaining,
-        },
-        totalByPost: {
-          ...state.totalByPost,
-          [postId]: Math.max(0, (state.totalByPost[postId] || 0) - (removedRoot ? 1 : 0)),
-        },
-      };
-    });
+  removeComment: (commentId: string, postId: string, parentId?: string | null) => {
+    set((state) => removeCommentFromState(state, commentId, postId, parentId) ?? state);
   },
 
   // ============================================

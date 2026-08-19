@@ -9,6 +9,7 @@ interface CommentRepliesSectionProps {
   isReply: boolean
   isLoadingReplies: boolean
   replies: Comment[]
+  onReplyDeleted?: (replyId: string) => void
 }
 
 export function CommentRepliesSection({
@@ -17,6 +18,7 @@ export function CommentRepliesSection({
   isReply,
   isLoadingReplies,
   replies,
+  onReplyDeleted,
 }: CommentRepliesSectionProps) {
   const t = useTranslations('feed')
 
@@ -28,7 +30,7 @@ export function CommentRepliesSection({
           {/* Línea vertical continua */}
           <div className="absolute top-0 bottom-2 left-4 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
 
-          {typeof window !== 'undefined' && replies.length > 0 && <CommentReplyListLazy replies={replies} />}
+          {typeof window !== 'undefined' && replies.length > 0 && <CommentReplyListLazy replies={replies} onReplyDeleted={onReplyDeleted} />}
         </div>
       )}
 

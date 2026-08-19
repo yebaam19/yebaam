@@ -62,6 +62,7 @@ export interface UpdateCommentDTO {
 export interface DeleteCommentDTO {
   commentId: string;
   postId: string;
+  parentId?: string | null; // Para respuestas: el store las quita del padre
 }
 
 /**
