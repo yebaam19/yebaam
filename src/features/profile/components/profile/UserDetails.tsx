@@ -27,6 +27,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import type { ComponentType, ReactNode } from 'react'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
+import { safeExternalHref } from '@/lib/safe-href'
 
 type DetailRowProps = {
   icon: ComponentType<{ className?: string }>
@@ -69,6 +70,7 @@ export default function UserDetails({ user }: UserDetailsProps) {
   // Usar el perfil actualizado del store si existe, sino usar el de props
   const { currentProfile } = useProfileStore()
   const displayUser = currentProfile && currentProfile.userId === user.userId ? currentProfile : user
+  const websiteHref = safeExternalHref(displayUser.websiteUrl)
 
   const residenceLocation = formatLocation(
     displayUser.residenceCity,
@@ -185,13 +187,13 @@ export default function UserDetails({ user }: UserDetailsProps) {
         {genderLabel && <DetailRow icon={UserIcon} label={t('gender')} value={genderLabel} />}
 
         {/* Website */}
-        {displayUser.websiteUrl && (
+        {websiteHref && (
           <DetailRow
             icon={LinkIcon}
             label={t('website')}
             value={
               <a
-                href={displayUser.websiteUrl}
+                href={websiteHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gray-700 hover:underline dark:hover:text-gray-200"

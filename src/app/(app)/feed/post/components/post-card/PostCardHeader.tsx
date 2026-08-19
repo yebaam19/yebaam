@@ -40,7 +40,7 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
     <div className="flex items-start justify-between px-4 pt-4 pb-3">
       <div className="flex min-w-0 flex-1 gap-3">
         {isBusiness ? (
-          <Link href={`/negocios/${post.businessSlug ?? post.businessId}`} className="shrink-0">
+          <Link href={`/negocios/${post.businessSlug ?? post.businessId}`} className="shrink-0" prefetch={false}>
             <Avatar
               src={post.businessAvatarUrl}
               initials={(post.businessName ?? '').slice(0, 2).toUpperCase()}
@@ -48,7 +48,7 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
             />
           </Link>
         ) : (
-          <Link href={`/${post.author.username}`} className="shrink-0">
+          <Link href={`/${post.author.username}`} className="shrink-0" prefetch={false}>
             <Avatar src={post.author.avatar} initials={authorInitials} className="h-10 w-10" />
           </Link>
         )}
@@ -58,6 +58,7 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
               <Link
                 href={`/negocios/${post.businessSlug ?? post.businessId}`}
                 className="font-semibold wrap-break-word text-neutral-900 hover:underline dark:text-white"
+                prefetch={false}
               >
                 {post.businessName}
               </Link>
@@ -65,6 +66,7 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
               <Link
                 href={`/${post.author.username}`}
                 className="font-semibold wrap-break-word text-neutral-900 hover:underline dark:text-white"
+                prefetch={false}
               >
                 {post.author.firstName} {post.author.lastName}
               </Link>
@@ -97,6 +99,7 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
                   : `/${post.author.username}/posts/${post.id}`
               }
               className="hover:underline"
+              prefetch={false}
             >
               {timeAgo}
             </Link>

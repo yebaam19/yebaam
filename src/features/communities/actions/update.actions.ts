@@ -1,6 +1,7 @@
 'use server';
 
 import { getServerClient } from '@/utils/supabase/server';
+import { isValidWebsite } from '@/lib/safe-href';
 import type { UpdateCommunityDto } from '../types/community.types';
 import {
   type ActionResult,
@@ -13,6 +14,10 @@ export async function updateCommunity(
 ): Promise<ActionResult<{ slug: string }>> {
   const userId = await requireUserId();
   if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
+
+  if (!isValidWebsite(dto.website)) {
+    return { ok: false, error: 'El sitio web debe ser una URL http(s) válida.' };
+  }
 
   const client = await getServerClient();
 

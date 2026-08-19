@@ -11,6 +11,7 @@ import type {
 } from '@/features/communities/server/communities.server';
 import type { Community, CommunityPost } from '@/features/communities/types/community.types';
 import { GlobeAltIcon } from '@/components/icons/heroicons-shim';
+import { safeExternalHref } from '@/lib/safe-href';
 
 interface CommunityHomeMainProps {
   community: Community;
@@ -29,6 +30,7 @@ export async function CommunityHomeMain({
   const isOwner = viewerState.kind === 'owner';
   const isMember = viewerState.kind === 'member' || viewerState.kind === 'owner' || c.isMember;
   const showComposer = isMember && (c.allowMemberPosts || isOwner);
+  const websiteHref = safeExternalHref(c.website);
 
   const videos = posts
     .flatMap((p) => p.media ?? [])
@@ -64,9 +66,9 @@ export async function CommunityHomeMain({
               <strong className="font-medium">{t('detail.locationLabel')}</strong> {c.location}
             </span>
           )}
-          {c.website && (
+          {websiteHref && (
             <a
-              href={c.website}
+              href={websiteHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"

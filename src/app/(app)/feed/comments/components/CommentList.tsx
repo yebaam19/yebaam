@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { useCommentSocket } from '../hooks/useCommentSocket'
 import { useCommentStore } from '../store/comment.store'
@@ -45,7 +45,13 @@ export function CommentList({ postId, showInput = true, maxHeight, className = '
     })
   }, [postId, fetchCommentsByPost, commentsByPost])
 
-  const comments = commentsByPost[postId] || []
+  // Solo raíces: el store ya no mete respuestas aquí, pero un `parentId`
+  // colado (p. ej. de una versión vieja en caché) no debe renderizarse como
+  // comentario de primer nivel.
+  const comments = useMemo(
+    () => (commentsByPost[postId] || []).filter((c) => !c.parentId),
+    [commentsByPost, postId],
+  )
   const isLoading = loadingStates[postId]?.isLoading || false
 
   // Una sola petición de reacciones para todo el hilo. Antes cada `CommentItem`

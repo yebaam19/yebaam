@@ -1,21 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { loadClubContext, mapClub, type ClubRow } from '@/lib/api/clubs';
-
-/**
- * A club website is optional. When provided it must be an absolute http(s) URL;
- * anything else (relative paths, javascript: URIs, garbage) is rejected.
- */
-function isValidWebsite(value: unknown): boolean {
-  if (value === null || value === undefined || value === '') return true;
-  if (typeof value !== 'string') return false;
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
+import { isValidWebsite } from '@/lib/safe-href';
 
 export async function GET(
   _request: NextRequest,

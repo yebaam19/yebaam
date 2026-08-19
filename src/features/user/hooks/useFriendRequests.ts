@@ -1,29 +1,36 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   friendRequestService,
   type FriendSuggestion,
   type FriendRequest,
-  type GetFriendRequestsResponse
 } from '../services/friend-request.service';
 import { FriendRequestBlockedError } from '@/features/friendships/services/friendships.service';
+import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { toast } from 'sonner';
 import { useSocket } from '@/providers/socket-provider';
 
 export function useFriendRequests() {
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
-  const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
   const [totalRequests, setTotalRequests] = useState(0);
-  
+
+  // Suggestions come from the shared friendships store (one friend_suggestions
+  // RPC per session, limit 10, fired by useFriendships()); consumers slice to
+  // the count they need. Issuing our own RPC here bypassed the store's
+  // in-flight guard and tripled the call on /feed.
+  const suggestions: FriendSuggestion[] = useFriendshipsStore((s) => s.suggestions);
+  const storeLoading = useFriendshipsStore((s) => s.isLoading);
+  const storeFetchSuggestions = useFriendshipsStore((s) => s.fetchSuggestions);
+  const isLoadingSuggestions = storeLoading && suggestions.length === 0;
+  const suggestionsError: Error | null = null;
+
   const [isLoadingRequests, setIsLoadingRequests] = useState(false);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   
   const [requestsError, setRequestsError] = useState<Error | null>(null);
-  const [suggestionsError, setSuggestionsError] = useState<Error | null>(null);
 
   // Obtener socket de usuarios para eventos en tiempo real
   const { usersSocket } = useSocket();
@@ -45,32 +52,24 @@ export function useFriendRequests() {
     }
   }, []); 
 
-  // Cargar sugerencias de amigos
+  // Cargar sugerencias de amigos (delegado al store; el guard in-flight dedupe)
   const fetchSuggestions = useCallback(async () => {
-    try {
-      setIsLoadingSuggestions(true);
-      setSuggestionsError(null);
-      const data = await friendRequestService.getFriendSuggestions(4);
-      setSuggestions(Array.isArray(data) ? data : []);
-    } catch (error) {
-      setSuggestionsError(error as Error);
-      setSuggestions([]); // Asegurar que siempre sea un array en caso de error
-      console.error('Error al cargar sugerencias:', error);
-    } finally {
-      setIsLoadingSuggestions(false);
-    }
-  }, []); 
+    await storeFetchSuggestions();
+  }, [storeFetchSuggestions]);
 
   // Enviar solicitud de amistad
   const sendRequest = useCallback(async (recipientId: string) => {
     try {
       setIsSending(true);
-      
-      //  Eliminación optimista: remover de sugerencias inmediatamente
-      setSuggestions((prev) => Array.isArray(prev) ? prev.filter((s) => s.id !== recipientId) : []);
-      
+
       const response = await friendRequestService.sendFriendRequest(recipientId);
       toast.success('Solicitud de amistad enviada');
+
+      // Remover de las sugerencias compartidas del store
+      useFriendshipsStore.setState((state) => ({
+        suggestions: state.suggestions.filter((s) => s.id !== recipientId),
+        suggestionsCount: Math.max(0, state.suggestionsCount - 1),
+      }));
       
       // Recargar datos manualmente para evitar dependencias circulares
       await friendRequestService.getFriendRequests().then(data => {
@@ -78,11 +77,6 @@ export function useFriendRequests() {
         setSentRequests(data.sent);
         setTotalRequests(data.total);
       });
-      
-      // No es necesario recargar sugerencias porque ya las filtramos optimistamente
-      // await friendRequestService.getFriendSuggestions(4).then(data => {
-      //   setSuggestions(data);
-      // });
       
       // RETORNAR la respuesta con requestId
       return response;
@@ -108,11 +102,6 @@ export function useFriendRequests() {
         const message = error?.message || error?.response?.data?.message || 'Error al enviar solicitud';
         toast.error(message);
       }
-
-      //  Si falla, recargar sugerencias para restaurar el estado
-      await friendRequestService.getFriendSuggestions(4).then(data => {
-        setSuggestions(Array.isArray(data) ? data : []);
-      });
 
       throw error;
     } finally {
@@ -182,9 +171,8 @@ export function useFriendRequests() {
         setTotalRequests(data.total);
       });
       
-      await friendRequestService.getFriendSuggestions(4).then(data => {
-        setSuggestions(Array.isArray(data) ? data : []);
-      });
+      // The cancelled person may become a suggestion again
+      await storeFetchSuggestions();
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error al cancelar solicitud';
       toast.error(message);
@@ -192,7 +180,7 @@ export function useFriendRequests() {
     } finally {
       setIsCanceling(false);
     }
-  }, []); // Sin dependencias
+  }, [storeFetchSuggestions]);
 
   // Escuchar eventos de WebSocket en tiempo real
   useEffect(() => {
@@ -263,10 +251,14 @@ export function useFriendRequests() {
     };
   }, [usersSocket]); // Solo depende de usersSocket
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales. Suggestions only if the store hasn't got them yet
+  // (useFriendships() in the app-shell rail normally loads them first; a
+  // concurrent call collapses into the store's in-flight promise).
   useEffect(() => {
     fetchRequests();
-    fetchSuggestions();
+    if (useFriendshipsStore.getState().suggestions.length === 0) {
+      fetchSuggestions();
+    }
   }, [fetchRequests, fetchSuggestions]);
 
   return {

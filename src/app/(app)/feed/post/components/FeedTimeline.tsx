@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { usePostSocketEvents } from '../hooks/usePostSocketEvents';
 import { useReactionSocket, useReactionStore } from '@/app/(app)/feed/reacions';
 import { useAuth } from '@/features/auth';
 import PostCard from './PostCard';
 import { usePosts, useSuggestedPosts } from '../hooks/usePosts';
-import { getCached, setCached } from '@/lib/hooks/cacheStore';
+import { setCached } from '@/lib/hooks/cacheStore';
 import type { Post } from '../interfaces/post.interfaces';
 
 interface FeedTimelineProps {
@@ -15,17 +15,26 @@ interface FeedTimelineProps {
 
 const TIMELINE_CACHE_KEY = 'posts::timeline';
 
+// The RSC payload last written into the cache. On back/forward navigation Next
+// restores the segment from its router cache, so FeedTimeline remounts with the
+// very same `initialPosts` array; by then the client cache may be newer
+// (createPost / reactions are mirrored into it), so that payload must not win.
+let lastSeededInitialPosts: Post[] | undefined;
+
 export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
-  // Seed the shared cache with server-rendered posts exactly once so that
-  // `usePosts` (which reads from the same cache via useSyncExternalStore) can
-  // pick up optimistic inserts from createPost and re-render instantly.
-  const seeded = useRef(false);
-  if (!seeded.current && initialPosts && initialPosts.length > 0) {
-    if (!getCached(TIMELINE_CACHE_KEY)) {
-      setCached(TIMELINE_CACHE_KEY, { data: initialPosts, fetchedAt: Date.now() });
-    }
-    seeded.current = true;
-  }
+  // Seed the shared cache with the server-rendered posts on every fresh visit:
+  // a new RSC payload is the source of truth over whatever the previous visit
+  // left cached, so `usePosts` (same cache via useSyncExternalStore) starts
+  // fresh and, within its staleTime, skips the client refetch. A layout effect
+  // runs before `useFetch`'s passive effect (which decides whether to fetch)
+  // and before paint; `setCached` does not bump the invalidate version, so
+  // re-seeding cannot loop the fetch. Until it runs, `posts` below falls back
+  // to `initialPosts` directly.
+  useLayoutEffect(() => {
+    if (!initialPosts?.length || lastSeededInitialPosts === initialPosts) return;
+    setCached(TIMELINE_CACHE_KEY, { data: initialPosts, fetchedAt: Date.now() });
+    lastSeededInitialPosts = initialPosts;
+  }, [initialPosts]);
 
   const query = usePosts({ enabled: true });
   const posts: Post[] = query.data ?? initialPosts ?? [];
@@ -41,10 +50,23 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
   usePostSocketEvents();
   useReactionSocket();
 
-  // Bulk-load the current user's reaction for every visible post in one query.
-  // Replaces the per-post fetchMyReaction effect that fired N requests on render.
   const { user } = useAuth();
+  const seedMyReactions = useReactionStore((s) => s.seedMyReactions);
   const fetchMyReactionsForPosts = useReactionStore((s) => s.fetchMyReactionsForPosts);
+
+  // The RSC already ships `post.currentUserReaction` for every initial post: seed
+  // the reaction store from it before paint (layout effect) so the Like buttons
+  // don't flash "not liked", and so the bulk fetch below has nothing to query.
+  useLayoutEffect(() => {
+    if (!user?.id || !initialPosts?.length) return;
+    seedMyReactions(
+      user.id,
+      initialPosts.map((p) => ({ postId: p.id, type: p.currentUserReaction ?? null })),
+    );
+  }, [user?.id, initialPosts, seedMyReactions]);
+
+  // Bulk-load my reaction for any visible post the seed didn't cover (posts that
+  // arrived through a client refetch) in one query; the store skips known ids.
   const visibleIds = posts.length > 0 ? posts.map((p) => p.id).join(',') : '';
   useEffect(() => {
     if (!user?.id || !visibleIds) return;

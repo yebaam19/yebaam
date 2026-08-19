@@ -1,6 +1,7 @@
 import { EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
 import type { Route } from 'next';
+import { safeExternalHref } from '@/lib/safe-href'
 
 interface ServiceContactInfoProps {
   address?: string
@@ -13,7 +14,8 @@ interface ServiceContactInfoProps {
  * Información de contacto del servicio profesional
  */
 export function ServiceContactInfo({ address, email, phone, website }: ServiceContactInfoProps) {
-  const hasContactInfo = address || email || phone || website
+  const websiteHref = safeExternalHref(website)
+  const hasContactInfo = address || email || phone || websiteHref
 
   if (!hasContactInfo) {
     return null
@@ -52,14 +54,14 @@ export function ServiceContactInfo({ address, email, phone, website }: ServiceCo
         </Link>
       )}
 
-      {website && (
+      {websiteHref && (
         <Link
-          href={website as Route}
+          href={websiteHref as Route}
           target="_blank"
           className="flex items-center gap-2 text-neutral-600 transition-colors hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400"
         >
           <GlobeAltIcon className="h-5 w-5 shrink-0" />
-          <span className="line-clamp-1">{new URL(website).hostname}</span>
+          <span className="line-clamp-1">{new URL(websiteHref).hostname}</span>
         </Link>
       )}
     </div>

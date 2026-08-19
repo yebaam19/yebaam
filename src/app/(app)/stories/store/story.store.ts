@@ -5,6 +5,13 @@ interface StoryState {
   // Stories del feed (agrupadas por usuario)
   friendsStories: UserStoriesDto[];
   myStories: Story[];
+  /** Per-fetcher flags — the two fetchers run in parallel, so a single toggled
+   *  flag would flip to `false` when the first one finished and briefly show
+   *  the "create your first story" hero before the second landed. */
+  isLoadingFriends: boolean;
+  isLoadingMine: boolean;
+  /** Derived: `isLoadingFriends || isLoadingMine`. Kept as a stored field so
+   *  existing consumers keep reading `isLoading`. */
   isLoading: boolean;
   error: string | null;
 
@@ -39,6 +46,8 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   // Estado inicial
   friendsStories: [],
   myStories: [],
+  isLoadingFriends: false,
+  isLoadingMine: false,
   isLoading: false,
   error: null,
   isCreating: false,
@@ -49,19 +58,21 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   fetchFriendsStories: async () => {
     if (friendsStoriesP) return friendsStoriesP;
     friendsStoriesP = (async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoadingFriends: true, isLoading: true, error: null });
     try {
       const stories = await storyService.getFriendsStories();
-      set({
+      set((state) => ({
         friendsStories: stories,
-        isLoading: false
-      });
+        isLoadingFriends: false,
+        isLoading: state.isLoadingMine,
+      }));
     } catch (error) {
       console.error('[STORY STORE] Error fetching friends stories:', error);
-      set({
+      set((state) => ({
         error: error instanceof Error ? error.message : 'Error al cargar historias',
-        isLoading: false
-      });
+        isLoadingFriends: false,
+        isLoading: state.isLoadingMine,
+      }));
     }
     })();
     try { await friendsStoriesP; } finally { friendsStoriesP = null; }
@@ -73,19 +84,21 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   fetchMyStories: async () => {
     if (myStoriesP) return myStoriesP;
     myStoriesP = (async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoadingMine: true, isLoading: true, error: null });
     try {
       const stories = await storyService.getMyStories();
-      set({
+      set((state) => ({
         myStories: stories,
-        isLoading: false
-      });
+        isLoadingMine: false,
+        isLoading: state.isLoadingFriends,
+      }));
     } catch (error) {
       console.error('[STORY STORE] Error fetching my stories:', error);
-      set({
+      set((state) => ({
         error: error instanceof Error ? error.message : 'Error al cargar mis historias',
-        isLoading: false
-      });
+        isLoadingMine: false,
+        isLoading: state.isLoadingFriends,
+      }));
     }
     })();
     try { await myStoriesP; } finally { myStoriesP = null; }

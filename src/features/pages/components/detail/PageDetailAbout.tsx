@@ -10,12 +10,14 @@ import {
 import type { Page } from '../../types/page.types';
 import { getCategoryLabel, formatRelativeDate } from '../../utils/pageHelpers';
 import { SOCIAL_NETWORKS } from '../settings/general/social-networks';
+import { safeExternalHref } from '@/lib/safe-href';
 
 interface PageDetailAboutProps {
   page: Page;
 }
 
 export const PageDetailAbout: FC<PageDetailAboutProps> = ({ page }) => {
+  const websiteHref = safeExternalHref(page.contact?.website);
   return (
     <div className="space-y-6">
       {/* Descripción */}
@@ -116,7 +118,7 @@ export const PageDetailAbout: FC<PageDetailAboutProps> = ({ page }) => {
             )}
 
             {/* Sitio web */}
-            {page.contact.website && (
+            {websiteHref && (
               <div className="flex items-start gap-3">
                 <GlobeAltIcon className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
                 <div>
@@ -124,7 +126,7 @@ export const PageDetailAbout: FC<PageDetailAboutProps> = ({ page }) => {
                     Sitio web
                   </p>
                   <a
-                    href={page.contact.website}
+                    href={websiteHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline"

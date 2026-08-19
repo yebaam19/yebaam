@@ -11,9 +11,10 @@ import { clearFriendRequestNotification } from '../friendships.notifications';
 
 /**
  * Request-lifecycle actions of the friendships store: send/accept/reject/cancel
- * plus the websocket handlers for each. Bodies are preserved verbatim — in
- * particular `acceptFriendRequest`/`rejectFriendRequest` keep their original
- * sequential ordering (fetchFriends → notification cleanup), not parallelized.
+ * plus the websocket handlers for each. `acceptFriendRequest`/`rejectFriendRequest`
+ * keep their original sequential ordering (fetchFriends → notification cleanup).
+ * None of the mutations touch the shared `isLoading` (initial-load flag) —
+ * flipping it remounted every `if (isLoading) <skeleton/>` consumer mid-action.
  */
 export function createRequestsActions(
   set: FriendshipsSet,
@@ -34,7 +35,7 @@ export function createRequestsActions(
      * Enviar solicitud de amistad
      */
     sendFriendRequest: async (data: SendFriendRequestDto) => {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       try {
         const request = await friendshipsService.sendFriendRequest(data);
 
@@ -43,13 +44,12 @@ export function createRequestsActions(
           sentRequests: [...state.sentRequests, request],
           suggestions: state.suggestions.filter((s) => s.id !== data.addresseeId),
           suggestionsCount: state.suggestionsCount - 1,
-          isLoading: false,
         }));
 
         toast.success('Solicitud de amistad enviada');
       } catch (error: any) {
         const errorMsg = error?.message || 'Error al enviar solicitud';
-        set({ error: errorMsg, isLoading: false });
+        set({ error: errorMsg });
 
         if (error instanceof FriendRequestBlockedError) {
           switch (error.reason) {
@@ -90,7 +90,7 @@ export function createRequestsActions(
      * Aceptar solicitud de amistad
      */
     acceptFriendRequest: async (requestId: string) => {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       try {
         await friendshipsService.acceptFriendRequest(requestId);
 
@@ -98,7 +98,6 @@ export function createRequestsActions(
         set((state) => ({
           pendingRequests: state.pendingRequests.filter((r) => r.id !== requestId),
           pendingCount: state.pendingCount - 1,
-          isLoading: false,
         }));
 
         // Recargar lista de amigos
@@ -109,7 +108,7 @@ export function createRequestsActions(
         toast.success('Solicitud aceptada');
       } catch (error) {
         const errorMsg = getErrorMessage(error, 'Error al aceptar solicitud');
-        set({ error: errorMsg, isLoading: false });
+        set({ error: errorMsg });
         toast.error(errorMsg);
         throw error;
       }
@@ -119,7 +118,7 @@ export function createRequestsActions(
      * Rechazar solicitud de amistad
      */
     rejectFriendRequest: async (requestId: string) => {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       try {
         await friendshipsService.rejectFriendRequest(requestId);
 
@@ -127,7 +126,6 @@ export function createRequestsActions(
         set((state) => ({
           pendingRequests: state.pendingRequests.filter((r) => r.id !== requestId),
           pendingCount: state.pendingCount - 1,
-          isLoading: false,
         }));
 
         await clearFriendRequestNotification(requestId);
@@ -135,7 +133,7 @@ export function createRequestsActions(
         toast.success('Solicitud rechazada');
       } catch (error) {
         const errorMsg = getErrorMessage(error, 'Error al rechazar solicitud');
-        set({ error: errorMsg, isLoading: false });
+        set({ error: errorMsg });
         toast.error(errorMsg);
         throw error;
       }
@@ -145,20 +143,19 @@ export function createRequestsActions(
      * Cancelar solicitud de amistad enviada
      */
     cancelFriendRequest: async (requestId: string) => {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       try {
         await friendshipsService.cancelFriendRequest(requestId);
 
         // Remover de solicitudes enviadas
         set((state) => ({
           sentRequests: state.sentRequests.filter((r) => r.id !== requestId),
-          isLoading: false,
         }));
 
         toast.success('Solicitud cancelada');
       } catch (error) {
         const errorMsg = getErrorMessage(error, 'Error al cancelar solicitud');
-        set({ error: errorMsg, isLoading: false });
+        set({ error: errorMsg });
         toast.error(errorMsg);
         throw error;
       }

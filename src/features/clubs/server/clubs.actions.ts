@@ -4,19 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { extractImageId, withImageVariant } from '@/lib/media/urls';
 import { ensureClubPublicChat } from '@/lib/api/clubs';
+import { sanitizePostgrestFilterTerm } from '@/lib/supabase-filter';
 import type { UpdateClubDto } from '@/features/clubs/types/club.types';
 import type { ClubPostKind } from './clubs.server';
-
-function isValidWebsite(value: unknown): boolean {
-  if (value === null || value === undefined || value === '') return true;
-  if (typeof value !== 'string') return false;
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
+import { isValidWebsite } from '@/lib/safe-href';
 
 export type ClubMemberCandidate = {
   id: string;
@@ -310,13 +301,13 @@ export async function searchClubMemberCandidatesAction(
     .from('profiles')
     .select('id, username, first_name, last_name, avatar_url, study_place');
 
+  // Service-role query + free text: strip PostgREST grammar chars and escape
+  // wildcards so the term can only ever be a literal substring.
   if (studyPlace) {
-    const escaped = studyPlace.replace(/[\\%_]/g, '\\$&');
-    q = q.ilike('study_place', `%${escaped}%`);
+    q = q.ilike('study_place', `%${sanitizePostgrestFilterTerm(studyPlace)}%`);
   }
   if (query.length >= 2) {
-    const escaped = query.replace(/[\\%_]/g, '\\$&');
-    const pattern = `%${escaped}%`;
+    const pattern = `%${sanitizePostgrestFilterTerm(query)}%`;
     q = q.or(
       `username.ilike.${pattern},first_name.ilike.${pattern},last_name.ilike.${pattern}`,
     );

@@ -23,7 +23,9 @@ export function FriendsTabView({
 }: FriendsTabViewProps) {
   const t = useTranslations('feed');
 
-  if (isLoading) {
+  // Skeleton only while there is nothing to show yet — a background refresh
+  // (realtime, remount) must not blank out an already-rendered list.
+  if (isLoading && (!friends || friends.length === 0)) {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (

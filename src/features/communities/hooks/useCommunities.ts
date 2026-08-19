@@ -56,7 +56,7 @@ export function useSuggestedCommunities(limit = 6, initial?: Community[]) {
   return useFetch(
     communitiesKeys.suggested(limit),
     () => communitiesService.getSuggestedCommunities(limit),
-    { initialData: listInitial(initial) },
+    { initialData: listInitial(initial), staleTime: 5 * 60_000 },
   );
 }
 

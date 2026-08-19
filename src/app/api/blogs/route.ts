@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapBlog, slugify, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
+import { isValidWebsite } from '@/lib/safe-href';
 
 async function loadOwners(
   client: Awaited<ReturnType<typeof getServerClient>>,
@@ -81,6 +82,9 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
+  if (!isValidWebsite(body.website)) {
+    return NextResponse.json({ error: 'website must be an http(s) URL' }, { status: 400 });
+  }
 
   const client = await getServerClient();
   const { data: me } = await client.auth.getUser();

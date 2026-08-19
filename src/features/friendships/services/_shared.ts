@@ -34,6 +34,10 @@ export type DbFriendSettings = {
 };
 
 export const PROFILE_COLUMNS = 'id, username, first_name, last_name, avatar_url';
+/** Exactly the {@link DbFriendship} fields — every mapper reads a subset of these. */
+export const FRIENDSHIP_COLUMNS = 'id, requester_id, recipient_id, status, created_at, accepted_at';
+/** Exactly the {@link DbFriendSettings} fields. */
+export const FRIEND_SETTINGS_COLUMNS = 'owner_id, friend_id, close_friend, restricted, nickname';
 
 /** Batch-load profiles by id into a Map (deduped); empty in → empty map, no query. */
 export async function hydrateProfiles(ids: string[]): Promise<Map<string, DbProfile>> {

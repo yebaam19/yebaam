@@ -5,6 +5,11 @@ import { getUserIdFromSession } from './_lib/session';
 import { loadConversationList } from './_lib/listConversations';
 import { serializeDirectConversation } from './_lib/serializeConversation';
 import type { ConversationRow } from './_lib/conversations.types';
+import { checkRateLimit } from '@/lib/api/rate-limit';
+import { isUuid } from '@/lib/supabase-filter';
+
+/** New-DM ceiling per user: plenty for a human, short of a spam fan-out loop. */
+const CREATE_CONVERSATION_LIMIT = { limit: 30, windowMs: 60 * 60 * 1000 };
 
 export async function GET() {
   const token = await getServerAccessToken();
@@ -35,11 +40,23 @@ export async function POST(request: NextRequest) {
   const userId = await getUserIdFromSession();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Everything below runs on the service client, so validate + throttle here.
+  const rate = checkRateLimit(`conversations:create:${userId}`, CREATE_CONVERSATION_LIMIT);
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rate.resetAt - Date.now()) / 1000)) } },
+    );
+  }
+
   const { participantId } = (await request.json().catch(() => ({}))) as {
-    participantId?: string;
+    participantId?: unknown;
   };
   if (!participantId) {
     return NextResponse.json({ error: 'participantId is required' }, { status: 400 });
+  }
+  if (!isUuid(participantId)) {
+    return NextResponse.json({ error: 'participantId must be a UUID' }, { status: 400 });
   }
   if (participantId === userId) {
     return NextResponse.json({ error: 'Cannot start a conversation with yourself' }, { status: 400 });
@@ -48,13 +65,18 @@ export async function POST(request: NextRequest) {
   const db = getServiceClient();
 
   // Peer profile for DIRECT name/avatar enrichment — fetched once and reused
-  // by both the "existing" and "newly created" branches below.
+  // by both the "existing" and "newly created" branches below. Also the
+  // existence check: no profile → no conversation.
+  // TODO(product): gate on friendship or DM setting
   const { data: peerProfile } = await db
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .eq('id', participantId)
     .maybeSingle();
-  const peerDisplay = resolvePeerDisplay((peerProfile ?? null) as PeerProfileRow | null, participantId);
+  if (!peerProfile) {
+    return NextResponse.json({ error: 'Participant not found' }, { status: 404 });
+  }
+  const peerDisplay = resolvePeerDisplay(peerProfile as PeerProfileRow, participantId);
 
   const { data: myParts } = await db
     .from('conversation_participants')

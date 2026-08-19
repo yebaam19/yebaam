@@ -1,5 +1,6 @@
 import { GlobeAltIcon } from '@/components/icons/heroicons-shim'
 import type { Blog } from '../types/blog.types'
+import { safeExternalHref } from '@/lib/safe-href'
 
 interface BlogAboutSectionProps {
   blog: Blog
@@ -19,18 +20,20 @@ const SOCIAL_BASE: Record<string, string> = {
   facebook: 'https://facebook.com/',
 }
 
-/** Build a link from either a full URL or a handle, per platform. */
-function toHref(key: string, value: string): string {
-  if (value.startsWith('http')) return value
+/** Build a link from either a full URL or a handle, per platform (http/https only). */
+function toHref(key: string, value: string): string | null {
+  if (value.startsWith('http')) return safeExternalHref(value)
   const handle = value.replace(/^@/, '')
   const base = SOCIAL_BASE[key]
-  return base ? base + handle : `https://${handle}`
+  return safeExternalHref(base ? base + handle : `https://${handle}`)
 }
 
 export const BlogAboutSection = ({ blog }: BlogAboutSectionProps) => {
-  const socialEntries = Object.entries((blog.social ?? {}) as Record<string, string>).filter(
-    ([, v]) => typeof v === 'string' && v.trim().length > 0
-  )
+  const socialEntries = Object.entries((blog.social ?? {}) as Record<string, string>)
+    .filter(([, v]) => typeof v === 'string' && v.trim().length > 0)
+    .map(([key, value]) => [key, toHref(key, value)] as const)
+    .filter((entry): entry is readonly [string, string] => entry[1] !== null)
+  const websiteHref = safeExternalHref(blog.website)
 
   return (
     <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-800">
@@ -46,11 +49,11 @@ export const BlogAboutSection = ({ blog }: BlogAboutSectionProps) => {
         </div>
       )}
 
-      {blog.website && (
+      {websiteHref && (
         <div className="mb-4">
           <h3 className="mb-1 text-sm font-medium text-neutral-500 dark:text-neutral-400">Sitio Web</h3>
           <a
-            href={blog.website}
+            href={websiteHref}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-primary-600 hover:underline dark:text-primary-400"
@@ -65,10 +68,10 @@ export const BlogAboutSection = ({ blog }: BlogAboutSectionProps) => {
         <div className="mb-4">
           <h3 className="mb-2 text-sm font-medium text-neutral-500 dark:text-neutral-400">Redes Sociales</h3>
           <div className="flex flex-wrap gap-2">
-            {socialEntries.map(([key, value]) => (
+            {socialEntries.map(([key, href]) => (
               <a
                 key={key}
-                href={toHref(key, value)}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full border border-neutral-200 px-3 py-1 text-sm font-medium text-primary-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-primary-400 dark:hover:bg-neutral-700/50"

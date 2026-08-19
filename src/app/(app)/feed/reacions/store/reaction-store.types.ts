@@ -35,6 +35,12 @@ export interface PostsReactionSlice {
   fetchMyReaction: (postId: string) => Promise<void>;
   fetchMyReactionsForPosts: (postIds: string[]) => Promise<void>;
   fetchCounts: (postId: string) => Promise<void>;
+  /** Fill `myReactionsByPost` from server-shipped `post.currentUserReaction`
+   *  (accepts the post module's enum values); never overwrites known ids. */
+  seedMyReactions: (
+    userId: string,
+    entries: ReadonlyArray<{ postId: string; type: `${ReactionType}` | null | undefined }>,
+  ) => void;
 
   // Acciones - WebSocket
   addReaction: (reaction: Reaction) => void;

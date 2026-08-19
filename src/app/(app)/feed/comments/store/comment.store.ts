@@ -53,6 +53,78 @@ interface CommentActions {
 type CommentStore = CommentState & CommentActions;
 
 /**
+ * Mezcla un comentario recién creado/recibido en el estado. Un mismo comentario
+ * llega por dos caminos (`createComment` para el autor + el INSERT de realtime
+ * para todos, incluido el autor), así que ambos pasan por aquí para que la
+ * dedupe por id y el conteo sean idénticos.
+ *
+ * - Raíz: se antepone a `commentsByPost[postId]` y suma 1 a `totalByPost`.
+ * - Respuesta (`parentId`): NUNCA entra a la lista raíz ni al total; se cuelga
+ *   del padre en `parent.replies` y sube `parent.repliesCount`.
+ *
+ * Devuelve `null` si no hay nada que cambiar (duplicado o padre no cargado).
+ */
+function mergeIncomingComment(
+  state: CommentState,
+  comment: Comment,
+): Pick<CommentState, 'commentsByPost' | 'totalByPost'> | null {
+  const { postId, parentId } = comment;
+  const currentComments = state.commentsByPost[postId] || [];
+
+  if (parentId) {
+    const parentIndex = currentComments.findIndex((c) => c.id === parentId);
+    if (parentIndex === -1) return null;
+    const parent = currentComments[parentIndex];
+    const knownReplies = parent.replies ?? [];
+    if (knownReplies.some((r) => r.id === comment.id)) return null;
+
+    const nextParent: Comment = {
+      ...parent,
+      replies: [...knownReplies, comment],
+      repliesCount: (parent.repliesCount ?? 0) + 1,
+    };
+    return {
+      commentsByPost: {
+        ...state.commentsByPost,
+        [postId]: [
+          ...currentComments.slice(0, parentIndex),
+          nextParent,
+          ...currentComments.slice(parentIndex + 1),
+        ],
+      },
+      totalByPost: state.totalByPost,
+    };
+  }
+
+  if (currentComments.some((c) => c.id === comment.id)) return null;
+
+  return {
+    commentsByPost: {
+      ...state.commentsByPost,
+      [postId]: [comment, ...currentComments], // Agregar al inicio
+    },
+    totalByPost: {
+      ...state.totalByPost,
+      [postId]: (state.totalByPost[postId] || 0) + 1,
+    },
+  };
+}
+
+/**
+ * Al reemplazar un comentario por su versión del servidor (edición propia o
+ * UPDATE de realtime) conservamos la contabilidad de respuestas que el store
+ * lleva en memoria: la fila de la DB no trae `replies` y su `replies_count`
+ * puede ir por detrás; sin esto se perdería la dedupe y el contador bajaría.
+ */
+function withPreservedReplies(prev: Comment, next: Comment): Comment {
+  return {
+    ...next,
+    replies: prev.replies,
+    repliesCount: Math.max(prev.repliesCount ?? 0, next.repliesCount ?? 0),
+  };
+}
+
+/**
  * Store de Zustand para comentarios
  * Sin devtools por rendimiento
  */
@@ -147,19 +219,13 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
 
     try {
       const newComment = await commentService.create(data);
-      
-      // Agregar comentario al store
+
+      // Agregar comentario al store (dedupe: el INSERT de realtime puede
+      // haber llegado antes que esta respuesta)
       set((state) => {
-        const currentComments = state.commentsByPost[postId] || [];
+        const merged = mergeIncomingComment(state, newComment);
         return {
-          commentsByPost: {
-            ...state.commentsByPost,
-            [postId]: [newComment, ...currentComments], // Agregar al inicio
-          },
-          totalByPost: {
-            ...state.totalByPost,
-            [postId]: (state.totalByPost[postId] || 0) + 1,
-          },
+          ...(merged ?? {}),
           loadingStates: {
             ...state.loadingStates,
             [postId]: {
@@ -215,7 +281,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
           if (index !== -1) {
             newCommentsByPost[postId] = [
               ...comments.slice(0, index),
-              updatedComment,
+              withPreservedReplies(comments[index], updatedComment),
               ...comments.slice(index + 1),
             ];
             break;
@@ -269,17 +335,20 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
     try {
       await commentService.delete(data);
       
-      // Eliminar del store
+      // Eliminar del store (las respuestas no viven en la lista raíz ni en el
+      // total, así que solo se descuenta si realmente se quitó una raíz)
       set((state) => {
         const currentComments = state.commentsByPost[postId] || [];
+        const remaining = currentComments.filter((c) => c.id !== commentId);
+        const removedRoot = remaining.length !== currentComments.length;
         return {
           commentsByPost: {
             ...state.commentsByPost,
-            [postId]: currentComments.filter((c) => c.id !== commentId),
+            [postId]: remaining,
           },
           totalByPost: {
             ...state.totalByPost,
-            [postId]: Math.max(0, (state.totalByPost[postId] || 0) - 1),
+            [postId]: Math.max(0, (state.totalByPost[postId] || 0) - (removedRoot ? 1 : 0)),
           },
           loadingStates: {
             ...state.loadingStates,
@@ -309,25 +378,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
   // Acciones directas (WebSocket)
   // ============================================
   addComment: (comment: Comment) => {
-    set((state) => {
-      const { postId } = comment;
-      const currentComments = state.commentsByPost[postId] || [];
-      
-      // Evitar duplicados
-      const exists = currentComments.some((c) => c.id === comment.id);
-      if (exists) return state;
-      
-      return {
-        commentsByPost: {
-          ...state.commentsByPost,
-          [postId]: [comment, ...currentComments],
-        },
-        totalByPost: {
-          ...state.totalByPost,
-          [postId]: (state.totalByPost[postId] || 0) + 1,
-        },
-      };
-    });
+    set((state) => mergeIncomingComment(state, comment) ?? state);
   },
 
   updateCommentInList: (comment: Comment) => {
@@ -337,13 +388,13 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
       const index = currentComments.findIndex((c) => c.id === comment.id);
       
       if (index === -1) return state;
-      
+
       return {
         commentsByPost: {
           ...state.commentsByPost,
           [postId]: [
             ...currentComments.slice(0, index),
-            comment,
+            withPreservedReplies(currentComments[index], comment),
             ...currentComments.slice(index + 1),
           ],
         },
@@ -354,14 +405,16 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
   removeComment: (commentId: string, postId: string) => {
     set((state) => {
       const currentComments = state.commentsByPost[postId] || [];
+      const remaining = currentComments.filter((c) => c.id !== commentId);
+      const removedRoot = remaining.length !== currentComments.length;
       return {
         commentsByPost: {
           ...state.commentsByPost,
-          [postId]: currentComments.filter((c) => c.id !== commentId),
+          [postId]: remaining,
         },
         totalByPost: {
           ...state.totalByPost,
-          [postId]: Math.max(0, (state.totalByPost[postId] || 0) - 1),
+          [postId]: Math.max(0, (state.totalByPost[postId] || 0) - (removedRoot ? 1 : 0)),
         },
       };
     });

@@ -12,6 +12,7 @@ import {
 import type { Page } from '../../../types/page.types';
 import { formatFollowersCount } from '../../../utils/pageHelpers';
 import { SOCIAL_NETWORKS } from '../../settings/general/social-networks';
+import { safeExternalHref } from '@/lib/safe-href';
 
 interface PageDetailsCardProps {
   page: Page;
@@ -30,6 +31,7 @@ export const PageDetailsCard: FC<PageDetailsCardProps> = ({ page }) => {
   const country = page.contact?.address?.country;
   const social = page.contact?.social;
   const socialLinks = social ? SOCIAL_NETWORKS.filter((n) => social[n.key]) : [];
+  const websiteHref = safeExternalHref(page.contact?.website);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-4">
@@ -81,15 +83,15 @@ export const PageDetailsCard: FC<PageDetailsCardProps> = ({ page }) => {
               {page.contact.phone}
             </a>
           )}
-          {page.contact?.website && (
+          {websiteHref && (
             <a
-              href={page.contact.website}
+              href={websiteHref}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline break-all"
             >
               <GlobeAltIcon className="w-4 h-4 shrink-0 text-gray-400" />
-              {page.contact.website}
+              {page.contact?.website}
             </a>
           )}
         </div>

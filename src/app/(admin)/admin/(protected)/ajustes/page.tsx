@@ -10,6 +10,7 @@ import UserAvatar from '@/features/foro/components/UserAvatar'
 import ThemeSettings from '@/features/admin/components/ThemeSettings'
 import { withAdminView } from '@/lib/auth/admin-view'
 import { getTranslations } from 'next-intl/server'
+import { requirePlatformAdmin } from '@/features/admin/server/auth'
 
 export const metadata = { title: 'Admin · Ajustes' }
 
@@ -40,6 +41,7 @@ function ShortcutCard({ href, label, description, icon: Icon }: ShortcutCardProp
 }
 
 export default async function AdminAjustesPage() {
+  await requirePlatformAdmin()
   const [admins, t] = await Promise.all([
     listPlatformAdmins(),
     getTranslations('admin.ajustes'),

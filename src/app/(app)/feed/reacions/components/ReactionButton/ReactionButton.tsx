@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/features/auth';
 import { useReactionStore } from '../../store/reaction.store';
 import { REACTION_CONFIGS, ReactionType } from '../../interfaces/reaction.interfaces';
 import { ReactionPicker } from '../ReactionPicker/ReactionPicker';
@@ -21,10 +20,12 @@ export function ReactionButton({ postId, className = '' }: ReactionButtonProps) 
   const longPressFiredRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useAuth();
-  const { myReactionsByPost, reactToPost, unreactToPost, updateReaction } =
-    useReactionStore();
-  const myReaction = myReactionsByPost[postId];
+  // Narrow selectors: subscribe to this post's entry + the stable actions only,
+  // so a reaction on any other post doesn't re-render every button in the feed.
+  const myReaction = useReactionStore((s) => s.myReactionsByPost[postId]);
+  const reactToPost = useReactionStore((s) => s.reactToPost);
+  const unreactToPost = useReactionStore((s) => s.unreactToPost);
+  const updateReaction = useReactionStore((s) => s.updateReaction);
 
   // Limpieza al desmontar
   useEffect(() => {

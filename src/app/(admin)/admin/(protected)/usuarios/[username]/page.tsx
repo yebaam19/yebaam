@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
+import { requirePlatformAdmin } from '@/features/admin/server/auth'
 import UserAvatar from '@/features/foro/components/UserAvatar'
 import {
   getAdminUserAuthIdentity,
@@ -87,6 +88,8 @@ function Field({ label, value }: FieldProps) {
 }
 
 export default async function AdminUserDetailPage({ params }: PageProps) {
+  // Renders phone, birth date, email, etc. — platform admin only.
+  await requirePlatformAdmin()
   const { username } = await params
   const [user, distribution] = await Promise.all([
     getAdminUserDetailByUsername(username),

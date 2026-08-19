@@ -18,6 +18,7 @@ import {
   recoverExistingAccount,
 } from './_signup-helpers';
 import { isOccupationSlug } from '../constants/occupations';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 import type {
   RegisterDTO,
   VerifyEmailRequest,
@@ -28,6 +29,15 @@ import type {
 // Los errores esperados se devuelven como { ok: false, error } en lugar de
 // lanzarse: Next.js redacta los mensajes de errores lanzados en Server
 // Actions en producción y el usuario solo vería un error genérico.
+
+/**
+ * Ceiling on OTP verification attempts per email and per IP. Mirrors
+ * `RESET_ATTEMPT_LIMIT` in password-recovery.actions.ts: `verifyOtpAction`
+ * has no CAPTCHA of its own (only the signup step does), so this cheap
+ * pre-gate bounds the call rate before any DB work. Generous for a human who
+ * mistypes a code, nowhere near enough to walk a 6-digit space.
+ */
+const VERIFY_ATTEMPT_LIMIT = { limit: 20, windowMs: 15 * 60 * 1000 };
 
 export async function signupWithOtpAction(userData: RegisterDTO): Promise<AuthActionResult> {
   try {
@@ -102,6 +112,19 @@ export async function signupWithOtpAction(userData: RegisterDTO): Promise<AuthAc
 
 export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<AuthActionResult> {
   try {
+    const emailKey = payload.email?.trim().toLowerCase();
+    if (!emailKey || !payload.otp) {
+      return { ok: false, error: 'Email y código son requeridos' };
+    }
+
+    // Cheap pre-gate before touching the DB — same shape as resetPasswordAction.
+    const ip = await getRemoteIp();
+    const byEmail = checkRateLimit(`otpverify:email:${emailKey}`, VERIFY_ATTEMPT_LIMIT);
+    const byIp = ip ? checkRateLimit(`otpverify:ip:${ip}`, VERIFY_ATTEMPT_LIMIT) : { ok: true };
+    if (!byEmail.ok || !byIp.ok) {
+      return { ok: false, error: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' };
+    }
+
     const admin = getServiceClient();
     const codeHash = hashCode(payload.otp);
 

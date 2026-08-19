@@ -50,6 +50,26 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
     setLocalComment(comment)
   }, [comment])
 
+  // El store es la fuente del contador de respuestas: `createComment` y el
+  // INSERT de realtime suben `repliesCount` en el padre (con dedupe), así que
+  // aquí solo se refleja — no se suma localmente.
+  useEffect(() => {
+    setLocalRepliesCount(comment.repliesCount || 0)
+  }, [comment.repliesCount])
+
+  // Respuestas nuevas que el store colgó del padre (`comment.replies`). Solo se
+  // mezclan si la lista ya está cargada; si no, `loadReplies` las trae de la DB.
+  useEffect(() => {
+    const incoming = comment.replies
+    if (!incoming || incoming.length === 0) return
+    setReplies((prev) => {
+      if (prev.length === 0) return prev
+      const known = new Set(prev.map((r) => r.id))
+      const fresh = incoming.filter((r) => !known.has(r.id))
+      return fresh.length > 0 ? [...prev, ...fresh] : prev
+    })
+  }, [comment.replies])
+
   // Las reacciones de ESTE comentario las pide `CommentList` en un solo lote
   // para todo el hilo (antes cada fila disparaba 2 queries: 50 comentarios =
   // 100 peticiones). Aquí solo cubrimos las replies, que se cargan aparte y
@@ -110,9 +130,8 @@ export function CommentItem({ comment, isReply = false, className = '' }: Commen
   }
 
   const handleReplyCreated = useCallback(async () => {
-    // Incrementar contador local
-    setLocalRepliesCount((prev) => prev + 1)
-    // Recargar las respuestas para mostrar la nueva
+    // El contador ya lo subió el store en `createComment`; aquí solo se
+    // recargan las respuestas para mostrar la nueva
     setShowReplies(true)
     await loadReplies()
   }, [loadReplies])

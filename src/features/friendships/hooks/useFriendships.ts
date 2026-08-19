@@ -1,19 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSocket } from '@/providers/socket-provider';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useFriendshipsStore } from '../store/friendships.store';
-import type { FriendRequest } from '../services/friendships.service';
+import { acquireFriendshipsRealtime } from '../store/friendships.realtime';
 
 /**
  * useFriendships Hook
- * 
+ *
  * Hook principal para gestionar amistades con:
  * - Estado global de Zustand
- * - Eventos de WebSocket en tiempo real
+ * - Refresco en tiempo real vía Supabase Realtime (ver friendships.realtime.ts)
  * - Acciones para send/accept/reject/cancel
- * 
+ *
  * @example
  * ```tsx
  * const {
@@ -25,7 +24,6 @@ import type { FriendRequest } from '../services/friendships.service';
  * ```
  */
 export function useFriendships() {
-  const { friendshipsSocket, isFriendshipsConnected } = useSocket();
   const { user, isAuthenticated, isInitialized: authInitialized } = useAuth();
 
   // Estado del store
@@ -51,91 +49,7 @@ export function useFriendships() {
     cancelFriendRequest,
     removeFriend,
     updateFriendConfig,
-    // WebSocket handlers
-    handleFriendRequestSent,
-    handleFriendRequestAccepted,
-    handleFriendRequestRejected,
-    handleFriendRequestCancelled,
-    handleFriendAdded,
-    handleFriendRemoved,
   } = useFriendshipsStore();
-
-  // ============================================================================
-  // WebSocket Listeners
-  // ============================================================================
-
-  useEffect(() => {
-    if (!friendshipsSocket || !isFriendshipsConnected) return;
-
-
-    const onFriendRequestSent = (data: FriendRequest) => {
-      handleFriendRequestSent(data);
-    };
-
-    const onFriendRequestAccepted = (data: FriendRequest) => {
-      handleFriendRequestAccepted(data);
-    };
-
-    const onFriendRequestRejected = (data: FriendRequest) => {
-      handleFriendRequestRejected(data);
-    };
-
-    const onFriendRequestCancelled = (data: FriendRequest) => {
-      handleFriendRequestCancelled(data);
-    };
-
-    const onFriendAdded = (data: { userId: string; friendId: string }) => {
-      handleFriendAdded(data);
-    };
-
-    const onFriendRemoved = (data: { userId: string; friendId: string }) => {
-      handleFriendRemoved(data);
-    };
-
-    // Registrar listeners
-    friendshipsSocket.on('friend_request_sent', onFriendRequestSent);
-    friendshipsSocket.on('friend_request_accepted', onFriendRequestAccepted);
-    friendshipsSocket.on('friend_request_rejected', onFriendRequestRejected);
-    friendshipsSocket.on('friend_request_cancelled', onFriendRequestCancelled);
-    friendshipsSocket.on('friend_added', onFriendAdded);
-    friendshipsSocket.on('friend_removed', onFriendRemoved);
-
-    // Cleanup
-    return () => {
-  
-      friendshipsSocket.off('friend_request_sent', onFriendRequestSent);
-      friendshipsSocket.off('friend_request_accepted', onFriendRequestAccepted);
-      friendshipsSocket.off('friend_request_rejected', onFriendRequestRejected);
-      friendshipsSocket.off('friend_request_cancelled', onFriendRequestCancelled);
-      friendshipsSocket.off('friend_added', onFriendAdded);
-      friendshipsSocket.off('friend_removed', onFriendRemoved);
-    };
-  }, [
-    friendshipsSocket,
-    isFriendshipsConnected,
-    handleFriendRequestSent,
-    handleFriendRequestAccepted,
-    handleFriendRequestRejected,
-    handleFriendRequestCancelled,
-    handleFriendAdded,
-    handleFriendRemoved,
-  ]);
-
-  // ============================================================================
-  // Join friendship room (CRITICAL para recibir eventos)
-  // ============================================================================
-
-  useEffect(() => {
-    if (!friendshipsSocket || !isFriendshipsConnected || !user?.id) return;
-
-
-    // Emit join event para unirse a la sala personal
-    friendshipsSocket.emit('join_friendship_room', { userId: user.id }, (response: any) => {
-      
-    });
-
-    return () => {};
-  }, [friendshipsSocket, isFriendshipsConnected, user?.id]);
 
   // ============================================================================
   // Load after auth is ready (avoid empty snapshot when SDK/cookie are not hydrated yet)
@@ -165,15 +79,16 @@ export function useFriendships() {
     fetchSuggestions,
   ]);
 
-  // HTTP polling fallback while realtime WebSocket is dormant
+  // ============================================================================
+  // Realtime refresh — ONE shared subscription no matter how many mounts
+  // (module-level refcount in friendships.realtime.ts). Replaces the old
+  // 15 s polling fallback that ran forever because the socket.io backend is gone.
+  // ============================================================================
+
   useEffect(() => {
-    if (isFriendshipsConnected) return;
-    const interval = setInterval(() => {
-      fetchPendingRequests();
-      fetchFriends();
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [isFriendshipsConnected, fetchPendingRequests, fetchFriends]);
+    if (!authInitialized || !isAuthenticated || !user?.id) return;
+    return acquireFriendshipsRealtime(user.id);
+  }, [authInitialized, isAuthenticated, user?.id]);
 
   // ============================================================================
   // Return API
@@ -187,7 +102,7 @@ export function useFriendships() {
     suggestions,
     isLoading,
     error,
-    
+
     // Stats
     totalFriends,
     closeFriendsCount,
@@ -205,8 +120,5 @@ export function useFriendships() {
     cancelFriendRequest,
     removeFriend,
     updateFriendConfig,
-
-    // WebSocket status
-    isConnected: isFriendshipsConnected,
   };
 }

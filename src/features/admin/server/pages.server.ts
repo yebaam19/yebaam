@@ -1,5 +1,6 @@
 import 'server-only'
 import { getServiceClient } from '@/utils/supabase/server'
+import { sanitizePostgrestFilterTerm } from '@/lib/supabase-filter'
 
 export interface AdminPageRow {
   id: string
@@ -23,10 +24,10 @@ export interface AdminPagesResult {
 
 export async function listAdminPages(search = ''): Promise<AdminPagesResult> {
   const client = getServiceClient()
-  // PostgREST's .or() grammar treats , ( ) as separators — strip them (plus
-  // the ilike wildcard %) so a search like "a,b" or "(x)" can't crash the
-  // page. Mirrors the sanitizing in listAdminBadges / lookupUserForGrant.
-  const term = search.replace(/[%,()]/g, ' ').trim()
+  // PostgREST's .or() grammar treats , ( ) as separators — strip them and
+  // escape the ilike wildcards so a search like "a,b" or "(x)" can't crash
+  // the page or inject conditions.
+  const term = sanitizePostgrestFilterTerm(search)
 
   let query = client
     .from('pages')

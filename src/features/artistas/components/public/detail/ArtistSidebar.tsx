@@ -1,5 +1,6 @@
 import { ExternalLink, Send, Heart, BookmarkPlus, Flag } from 'lucide-react'
 import type { ArtistProfileDetail, ServiceOffer, SocialLink } from '../../../types'
+import { safeExternalHref } from '@/lib/safe-href'
 
 function formatCurrency(value: number | null, currency = 'COP') {
   if (!value) return 'A convenir'
@@ -19,7 +20,10 @@ interface Props {
 
 export function ArtistSidebar({ artist, onContact, onBooking, onCollaboration }: Props) {
   const services = (artist.service_offers ?? []).filter((s) => s.is_active !== false)
-  const socialLinks = (artist.social_links ?? []).filter((l) => l.is_public !== false)
+  const socialLinks = (artist.social_links ?? [])
+    .filter((l) => l.is_public !== false)
+    .map((l) => ({ ...l, href: safeExternalHref(l.url) }))
+    .filter((l): l is SocialLink & { href: string } => l.href !== null)
 
   return (
     <aside className="space-y-5" aria-label="Acciones y datos del artista">
@@ -61,7 +65,7 @@ export function ArtistSidebar({ artist, onContact, onBooking, onCollaboration }:
           <h2 className="mb-4 font-black text-neutral-950">Redes y enlaces</h2>
           <div className="space-y-2">
             {socialLinks.map((link) => (
-              <a key={link.id} href={link.url} target="_blank" rel="noreferrer noopener"
+              <a key={link.id} href={link.href} target="_blank" rel="noreferrer noopener"
                 className="flex items-center justify-between rounded-xl bg-primary-50 px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-primary-100">
                 <span>{link.label ?? link.platform}</span>
                 <ExternalLink size={13} className="text-neutral-500" />

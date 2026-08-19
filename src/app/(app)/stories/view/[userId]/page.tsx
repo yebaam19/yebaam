@@ -12,6 +12,7 @@ export default function ViewStoryPage() {
 
   const {
     videoRef,
+    isLoading,
     isMyStories,
     currentUser,
     currentStory,
@@ -28,7 +29,15 @@ export default function ViewStoryPage() {
   if (!currentStory) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950">
-        <p className="text-white">No hay historias para mostrar</p>
+        {isLoading ? (
+          <div
+            role="status"
+            aria-label="Cargando historias"
+            className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent"
+          />
+        ) : (
+          <p className="text-white">No hay historias para mostrar</p>
+        )}
       </div>
     )
   }

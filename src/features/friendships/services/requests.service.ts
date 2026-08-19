@@ -3,6 +3,7 @@ import { getCurrentUserId } from '@/utils/supabase/current-user';
 import { FriendRequestBlockedError, blockMessageFor } from './friendships.errors';
 import {
   type DbFriendship,
+  FRIENDSHIP_COLUMNS,
   hydrateProfiles,
   profileToShortDto,
   rowToRequest,
@@ -102,7 +103,7 @@ async function acceptFriendRequest(requestId: string): Promise<FriendRequest> {
     .from('friendships')
     .update({ status: 'accepted' })
     .eq('id', requestId)
-    .select('*')
+    .select(FRIENDSHIP_COLUMNS)
     .single();
   if (error || !data) throw new Error(error?.message || 'Error al aceptar solicitud');
   const friendship = data as DbFriendship;
@@ -125,7 +126,7 @@ async function rejectFriendRequest(requestId: string): Promise<FriendRequest> {
     .from('friendships')
     .delete()
     .eq('id', requestId)
-    .select('*')
+    .select(FRIENDSHIP_COLUMNS)
     .single();
   if (error || !data) throw new Error(error?.message || 'Error al rechazar solicitud');
   return rowToRequest(data as DbFriendship);
@@ -146,7 +147,7 @@ async function getRequesterProfile(friendshipId: string) {
 
   const { data, error } = await supabase
     .from('friendships')
-    .select('*')
+    .select(FRIENDSHIP_COLUMNS)
     .eq('id', friendshipId)
     .single();
   if (error || !data) throw new Error(error?.message || 'Friendship not found');
@@ -194,12 +195,12 @@ async function getAllPendingRequests(): Promise<AllPendingRequestsResponse> {
     const [receivedRes, sentRes] = await Promise.all([
       supabase
         .from('friendships')
-        .select('*')
+        .select(FRIENDSHIP_COLUMNS)
         .eq('status', 'pending')
         .eq('recipient_id', userId),
       supabase
         .from('friendships')
-        .select('*')
+        .select(FRIENDSHIP_COLUMNS)
         .eq('status', 'pending')
         .eq('requester_id', userId),
     ]);

@@ -13,18 +13,14 @@ import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { usePresenceStore } from '@/features/presence/store/presence.store'
 import type { FriendSuggestion } from '@/features/friendships/services/friendships.service'
 
+// Only the online state is real (presence store); there is no last_seen
+// field, so offline suggestions get no badge at all.
 function StatusBadge({ online }: { online: boolean }) {
-  if (online) {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-primary-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
-        <span className="size-1.5 rounded-full bg-white" />
-        En línea
-      </span>
-    )
-  }
+  if (!online) return null
   return (
-    <span className="inline-flex items-center rounded-md bg-neutral-900/70 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
-      Hace 2 horas
+    <span className="inline-flex items-center gap-1 rounded-md bg-primary-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
+      <span className="size-1.5 rounded-full bg-white" />
+      En línea
     </span>
   )
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ProfessionalService } from '../../../interfaces/professional-service.interfaces'
+import { safeExternalHref } from '@/lib/safe-href'
 
 interface ContactCardProps {
   service: Pick<ProfessionalService, 'name' | 'email' | 'phone' | 'website' | 'hourlyRate' | 'currency'>
@@ -14,6 +15,7 @@ interface ContactCardProps {
  * fuente.
  */
 export function ContactCard({ service, inline }: ContactCardProps) {
+  const websiteHref = safeExternalHref(service.website)
   return (
     <div
       id="consulta"
@@ -40,9 +42,9 @@ export function ContactCard({ service, inline }: ContactCardProps) {
           </a>
         )}
 
-        {service.website && (
+        {websiteHref && (
           <a
-            href={service.website}
+            href={websiteHref}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full rounded-lg border border-neutral-300 py-3 text-center font-semibold text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"

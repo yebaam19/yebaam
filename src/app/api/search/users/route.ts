@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { checkRateLimit, clientIp } from '@/lib/api/rate-limit';
+import { sanitizePostgrestFilterTerm } from '@/lib/supabase-filter';
 
 type ProfileRow = {
   id: string;
@@ -31,7 +32,12 @@ export async function GET(request: NextRequest) {
   const q = (searchParams.get('q') ?? '').trim();
   const max = Math.min(Math.max(Number(searchParams.get('limit') ?? '8') || 8, 1), 20);
 
-  if (q.length < 2) {
+  // Strip PostgREST `.or()` grammar chars + escape ilike wildcards — `q` is
+  // raw request input interpolated into a filter string, not a bound param.
+  // Length-check the sanitized term so "(," can't degrade into a match-all.
+  const term = sanitizePostgrestFilterTerm(q);
+
+  if (term.length < 2) {
     return NextResponse.json(
       { results: [], query: q },
       {
@@ -44,8 +50,7 @@ export async function GET(request: NextRequest) {
   }
 
   const client = await getServerClient();
-  const escaped = q.replace(/[\\%_]/g, '\\$&');
-  const pattern = `%${escaped}%`;
+  const pattern = `%${term}%`;
 
   const { data, error } = await client
     .from('profiles')

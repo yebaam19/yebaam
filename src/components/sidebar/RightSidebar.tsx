@@ -7,7 +7,6 @@ import { FriendRequestsCard } from '@/features/friendships/components/FriendRequ
 import { SuggestedGroupsCard } from '@/features/communities/components/SuggestedGroupsCard'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import BirthdaysSection from './BirthdaysSection'
 import OnlineContacts from './OnlineContacts'
@@ -28,13 +27,11 @@ interface OnlineContact {
  * `rail-registry.tsx`) appear ABOVE this in `<RightSidebar />`.
  */
 function DefaultRail() {
-  const { friends, fetchSuggestions } = useFriendships()
+  // Suggestions are loaded once by useFriendships() (limit 10); rail widgets
+  // slice the store array instead of issuing their own friend_suggestions RPC.
+  const { friends } = useFriendships()
   const isUserOnline = usePresenceStore((state) => state.isUserOnline)
   const openBubble = useChatStore((s) => s.openBubble)
-
-  useEffect(() => {
-    fetchSuggestions(6)
-  }, [fetchSuggestions])
 
   const handleOpenChat = (contact: OnlineContact) => {
     openBubble({

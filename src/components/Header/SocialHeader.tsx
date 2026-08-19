@@ -135,10 +135,15 @@ export default function SocialHeader({ onMobileMenuClick, isPlatformAdmin }: Soc
           <nav className="hidden min-w-0 max-w-2xl flex-1 items-center justify-center lg:flex">
             {navItems.map((item) => {
               const Icon = item.isActive ? item.iconSolid : item.icon
+              // Only /feed keeps the default prefetch; the other targets are
+              // dynamic (`private, no-store`) routes that would otherwise be
+              // prefetched on every header mount.
+              const prefetch = item.href === '/feed' ? undefined : false
               return (
                 <Link
                   key={item.href}
                   href={item.href as Route}
+                  prefetch={prefetch}
                   className={cn(
                     'relative flex h-14 items-center justify-center px-8 xl:px-10',
                     'transition-all duration-200',

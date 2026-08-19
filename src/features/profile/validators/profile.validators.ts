@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod'
+import { isSafeExternalUrl } from '@/lib/safe-href'
 
 /**
  * Schema para actualizar nombres y apellidos del usuario
@@ -45,15 +46,26 @@ export const updatePersonalInfoSchema = z.object({
 export type UpdatePersonalInfoValues = z.infer<typeof updatePersonalInfoSchema>
 
 /**
+ * URL externa opcional: `z.string().url()` acepta `javascript:` y otros esquemas,
+ * así que se exige http(s) explícitamente (stored-XSS via <a href>).
+ */
+const optionalHttpUrl = z
+  .string()
+  .url('URL inválida')
+  .refine(isSafeExternalUrl, 'URL inválida')
+  .optional()
+  .or(z.literal(''))
+
+/**
  * Schema para actualizar enlaces sociales
  */
 export const updateSocialLinksSchema = z.object({
-  websiteUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-  facebookUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-  instagramUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-  twitterUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-  linkedinUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-  githubUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  websiteUrl: optionalHttpUrl,
+  facebookUrl: optionalHttpUrl,
+  instagramUrl: optionalHttpUrl,
+  twitterUrl: optionalHttpUrl,
+  linkedinUrl: optionalHttpUrl,
+  githubUrl: optionalHttpUrl,
 })
 
 export type UpdateSocialLinksValues = z.infer<typeof updateSocialLinksSchema>

@@ -23,7 +23,8 @@ export function SuggestionsTabView({
 }: SuggestionsTabViewProps) {
   const t = useTranslations('feed');
 
-  if (isLoading) {
+  // Skeleton only while there is nothing to show yet (see FriendsTabView).
+  if (isLoading && suggestions.length === 0) {
     return (
       <div className="grid w-full gap-3 sm:gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,11rem),1fr))]">
         {Array.from({ length: 8 }).map((_, i) => (

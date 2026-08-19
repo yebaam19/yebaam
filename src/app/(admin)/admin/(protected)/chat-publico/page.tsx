@@ -3,6 +3,7 @@ import {
   listAdminTopics,
 } from '@/features/chat-publico/server/admin.server'
 import { getTranslations } from 'next-intl/server'
+import { requirePlatformAdmin } from '@/features/admin/server/auth'
 import ChatPublicoMessagesTable from '@/features/chat-publico/components/admin/ChatPublicoMessagesTable'
 
 export const metadata = { title: 'Admin · Chat Público' }
@@ -17,6 +18,7 @@ interface PageProps {
 }
 
 export default async function AdminChatPublicoPage({ searchParams }: PageProps) {
+  await requirePlatformAdmin()
   const sp = await searchParams
   const page = Math.max(1, Number(sp.page) || 1)
 

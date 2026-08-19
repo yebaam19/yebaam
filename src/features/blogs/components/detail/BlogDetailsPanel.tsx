@@ -9,6 +9,7 @@ import {
 } from '@/components/icons/heroicons-shim'
 import type { Blog } from '../../types/blog.types'
 import { formatFollowersCount, getCategoryLabel } from '../../utils/blogHelpers'
+import { safeExternalHref } from '@/lib/safe-href'
 
 interface BlogDetailsPanelProps {
   blog: Blog
@@ -16,6 +17,7 @@ interface BlogDetailsPanelProps {
 
 export const BlogDetailsPanel = ({ blog }: BlogDetailsPanelProps) => {
   const socialEntries = Object.entries(blog.social ?? {}).filter(([, v]) => !!v)
+  const websiteHref = safeExternalHref(blog.website)
 
   return (
     <aside className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-700 dark:bg-neutral-800">
@@ -32,15 +34,15 @@ export const BlogDetailsPanel = ({ blog }: BlogDetailsPanelProps) => {
         value={formatFollowersCount(blog.stats?.followersCount ?? 0)}
       />
 
-      {blog.website && (
+      {websiteHref && (
         <a
-          href={blog.website}
+          href={websiteHref}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-md bg-neutral-50 px-2 py-1.5 text-primary-600 hover:underline dark:bg-neutral-900 dark:text-primary-400"
         >
           <GlobeAltIcon className="h-4 w-4" />
-          <span className="truncate">{blog.website.replace(/^https?:\/\//, '')}</span>
+          <span className="truncate">{(blog.website ?? websiteHref).replace(/^https?:\/\//, '')}</span>
         </a>
       )}
 

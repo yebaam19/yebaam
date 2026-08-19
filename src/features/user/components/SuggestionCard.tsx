@@ -6,6 +6,7 @@ import {
   UsersIcon,
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
+import { getUserInitials } from '@/lib/user-helpers';
 import { FriendSuggestion } from '@/features/user/services/friend-request.service';
 
 interface SuggestionCardProps {
@@ -28,8 +29,15 @@ export function SuggestionCard({ suggestion, onSendRequest, onDismiss }: Suggest
 
   const handleSendRequest = async () => {
     setIsProcessing(true);
-    await onSendRequest?.(suggestion.id);
-    setIsProcessing(false);
+    try {
+      // The store rethrows on rate-limit / already-pending; the parent surfaces the
+      // toast, so swallow here so the button never sticks on "Enviando...".
+      await onSendRequest?.(suggestion.id);
+    } catch {
+      // handled upstream
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDismiss = () => {
@@ -41,11 +49,11 @@ export function SuggestionCard({ suggestion, onSendRequest, onDismiss }: Suggest
 
   return (
     <div className="@container min-w-0 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 hover:shadow-lg transition-shadow">
-      <div className="flex min-w-0 flex-col items-center text-center">
+      <div className="flex h-full min-w-0 flex-col items-center text-center">
         {/* Avatar */}
         <Avatar
           src={suggestion.avatar}
-          initials={`${suggestion.firstName[0]}${suggestion.lastName[0]}`}
+          initials={getUserInitials(`${suggestion.firstName ?? ''} ${suggestion.lastName ?? ''}`.trim() || suggestion.username)}
           className="w-16 h-16 @[12rem]:w-20 @[12rem]:h-20 mb-4 shrink-0"
         />
 
@@ -77,7 +85,7 @@ export function SuggestionCard({ suggestion, onSendRequest, onDismiss }: Suggest
         )}
 
         {/* Actions */}
-        <div className="w-full min-w-0 flex flex-col gap-2">
+        <div className="mt-auto w-full min-w-0 flex flex-col gap-2">
           <button
             onClick={handleSendRequest}
             disabled={isProcessing}

@@ -1,7 +1,8 @@
 import { supabase } from '@/utils/supabase/client';
 import { getCurrentUserId } from '@/utils/supabase/current-user';
 import { uploadService } from '@/lib/service/upload.service';
-import { imageUrl, withImageVariant } from '@/lib/media/urls';
+import { imageUrl } from '@/lib/media/urls';
+import { friendshipsService } from '@/features/friendships/services/friendships.service';
 
 export interface StoryView {
   userId: string;
@@ -72,13 +73,12 @@ type DbStoryView = {
   viewed_at: string;
 };
 
-type DbProfile = {
-  id: string;
-  username: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  avatar_url: string | null;
-};
+/** Every column `DbStory` / `rowToStory` read — keep in sync with the type. */
+const STORY_COLUMNS =
+  'id, author_id, media_url, media_type, content, background_color, privacy, view_count, expires_at, created_at, cloudflare_image_id, cloudflare_stream_uid';
+const STORY_VIEW_COLUMNS = 'story_id, viewer_id, viewed_at';
+/** Cap on the friends' stories read (24h TTL keeps this small in practice). */
+const FRIENDS_STORIES_LIMIT = 200;
 
 /**
  * id-first: la URL de entrega se reconstruye del id de Cloudflare al leer.
@@ -168,7 +168,7 @@ class StoryService {
           cloudflare_stream_uid: isVideo ? upload.streamUid ?? upload.s3Key : null,
         },
       ])
-      .select('*')
+      .select(STORY_COLUMNS)
       .single();
     if (error || !inserted) throw new Error(error?.message || 'Error al crear story');
 
@@ -197,7 +197,7 @@ class StoryService {
 
     const { data, error } = await supabase
       .from('stories')
-      .select('*')
+      .select(STORY_COLUMNS)
       .eq('author_id', userId)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });
@@ -209,38 +209,31 @@ class StoryService {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const { data: friends } = await supabase
-      .from('friendships')
-      .select('requester_id, recipient_id')
-      .eq('status', 'accepted')
-      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
-
-    const friendIds = ((friends ?? []) as { requester_id: string; recipient_id: string }[])
-      .map((f) => (f.requester_id === userId ? f.recipient_id : f.requester_id))
-      .filter((id) => id !== userId);
+    // Reuse the friendships service's guarded read: on /feed `useFriends()`
+    // already fetches `friendships` + `profiles` for the same user, and the
+    // in-flight guard collapses this call into that round-trip instead of
+    // re-issuing both queries. Its `Friend` rows carry the profile fields
+    // (username, first/last name, avatar already on the `avatar` variant).
+    const { friends } = await friendshipsService.getFriends();
+    const friendsById = new Map(friends.map((f) => [f.friendId, f]));
+    const friendIds = Array.from(friendsById.keys()).filter((id) => id !== userId);
 
     if (friendIds.length === 0) return [];
 
     const { data: storiesData } = await supabase
       .from('stories')
-      .select('*')
+      .select(STORY_COLUMNS)
       .in('author_id', friendIds)
       .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(FRIENDS_STORIES_LIMIT);
 
     const stories = (storiesData ?? []) as DbStory[];
     if (stories.length === 0) return [];
 
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('id, username, first_name, last_name, avatar_url')
-      .in('id', friendIds);
-    const profiles = new Map<string, DbProfile>();
-    for (const p of (profileData ?? []) as DbProfile[]) profiles.set(p.id, p);
-
     const { data: viewData } = await supabase
       .from('story_views')
-      .select('*')
+      .select(STORY_VIEW_COLUMNS)
       .eq('viewer_id', userId)
       .in(
         'story_id',
@@ -259,12 +252,12 @@ class StoryService {
 
     const result: UserStoriesDto[] = [];
     for (const [authorId, authorStories] of grouped.entries()) {
-      const p = profiles.get(authorId);
+      const f = friendsById.get(authorId);
       result.push({
         userId: authorId,
-        username: p?.username ?? '',
-        avatarUrl: p?.avatar_url ? withImageVariant(p.avatar_url, 'avatar') : undefined,
-        fullName: [p?.first_name, p?.last_name].filter(Boolean).join(' '),
+        username: f?.username ?? '',
+        avatarUrl: f?.avatar,
+        fullName: [f?.firstName, f?.lastName].filter(Boolean).join(' '),
         stories: authorStories,
         unviewedCount: authorStories.filter((s) => !viewedIds.has(s.id)).length,
         lastStoryAt: authorStories[0]?.createdAt ?? '',
@@ -283,7 +276,7 @@ class StoryService {
 
     const { data } = await supabase
       .from('stories')
-      .select('*')
+      .select(STORY_COLUMNS)
       .eq('id', storyId)
       .single();
     if (!data) throw new Error('Story not found');

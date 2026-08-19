@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { requirePlatformAdmin } from '@/features/admin/server/auth'
 import { listActiveUsers } from '@/features/admin/server/users.server'
 import UserAvatar from '@/features/foro/components/UserAvatar'
 import { occupationLabel } from '@/features/auth/constants/occupations'
@@ -24,6 +25,9 @@ function formatDate(iso: string) {
 }
 
 export default async function AdminUsuariosPage({ searchParams }: PageProps) {
+  // Renders user PII (names, signup dates); the layout only checks for a
+  // forum_global_roles row, so gate on platform admin explicitly here.
+  await requirePlatformAdmin()
   const sp = await searchParams
   const search = sp.q?.trim() ?? ''
   const page = Math.max(1, Number(sp.page) || 1)

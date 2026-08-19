@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getServerAccessToken } from '@/utils/supabase/server';
+import { getVerifiedUserId } from '@/utils/supabase/server';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 
 /**
  * Mints short-lived ICE servers for WebRTC.
@@ -20,9 +21,23 @@ const STUN_ONLY: RTCIceServer[] = [
   { urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] },
 ];
 
+/** TURN credential lifetime — a call setup needs minutes, not a day. */
+const TURN_TTL_SECONDS = 3600;
+/** ICE mints per user: every call start hits this once, so 60/h is generous. */
+const ICE_LIMIT = { limit: 60, windowMs: 60 * 60 * 1000 };
+
 export async function GET() {
-  const token = await getServerAccessToken();
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Verified identity (signature-checked claims), also the rate-limit key.
+  const userId = await getVerifiedUserId();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const rate = checkRateLimit(`ice:${userId}`, ICE_LIMIT);
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rate.resetAt - Date.now()) / 1000)) } },
+    );
+  }
 
   const keyId = process.env.CLOUDFLARE_REALTIME_TURN_KEY_ID;
   const apiToken = process.env.CLOUDFLARE_REALTIME_TURN_API_TOKEN;
@@ -42,7 +57,7 @@ export async function GET() {
       {
         method: 'POST',
         headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ttl: 86400 }),
+        body: JSON.stringify({ ttl: TURN_TTL_SECONDS }),
       },
     );
 

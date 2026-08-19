@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
 import { GlobeAltIcon, LinkIcon } from '@/components/icons/heroicons-shim';
+import { safeExternalHref } from '@/lib/safe-href';
 
 export default async function CommunityLinksPage({
   params,
@@ -10,15 +11,16 @@ export default async function CommunityLinksPage({
   const { slug } = await params;
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
+  const websiteHref = safeExternalHref(community.website);
 
   return (
     <div className="space-y-4">
       <h2 className="text-base font-semibold text-gray-900 dark:text-white">
         Enlaces a páginas relacionadas
       </h2>
-      {community.website ? (
+      {websiteHref ? (
         <a
-          href={community.website}
+          href={websiteHref}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow"

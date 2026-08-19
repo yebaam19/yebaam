@@ -2,6 +2,7 @@
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { slugifyCommunity } from '@/lib/api/communities';
+import { isValidWebsite } from '@/lib/safe-href';
 import { ensureCommunityForumSpace } from '../server/community-forum.server';
 import type { CreateCommunityDto } from '../types/community.types';
 import {
@@ -45,6 +46,9 @@ export async function createCommunity(
   const name = (dto.name ?? '').trim();
   if (!name) return { ok: false, error: 'El nombre es obligatorio.' };
   if (name.length > 80) return { ok: false, error: 'El nombre es demasiado largo (máx. 80).' };
+  if (!isValidWebsite(dto.website)) {
+    return { ok: false, error: 'El sitio web debe ser una URL http(s) válida.' };
+  }
 
   const client = await getServerClient();
 

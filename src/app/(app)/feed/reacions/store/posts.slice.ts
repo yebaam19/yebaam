@@ -7,6 +7,7 @@ import type {
 } from '../interfaces/reaction.interfaces';
 import { reactionService } from '../services/reaction.service';
 import { decrementCountsMap, incrementCountsMap } from './reaction.counts';
+import { bumpPostReactionsCountInCache } from './reaction.postCache';
 import type { PostsReactionSlice, ReactionState } from './reaction-store.types';
 
 /**
@@ -48,6 +49,7 @@ export const createPostsReactionSlice: StateCreator<
       }));
 
       get().incrementCount(postId, type);
+      bumpPostReactionsCountInCache(postId, type, null);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al reaccionar';
       set({ error: errorMessage });
@@ -67,6 +69,7 @@ export const createPostsReactionSlice: StateCreator<
       await reactionService.unreact(postId);
 
       get().decrementCount(postId, currentReaction.type);
+      bumpPostReactionsCountInCache(postId, null, currentReaction.type);
 
       set(state => ({
         myReactionsByPost: {
@@ -98,6 +101,7 @@ export const createPostsReactionSlice: StateCreator<
       const reaction = await reactionService.updateReaction(postId, { type });
 
       get().incrementCount(postId, type);
+      bumpPostReactionsCountInCache(postId, type, currentReaction.type);
 
       set(state => ({
         myReactionsByPost: {
@@ -184,6 +188,31 @@ export const createPostsReactionSlice: StateCreator<
     } catch {
       // Silent
     }
+  },
+
+  /**
+   * Seed `myReactionsByPost` from the `currentUserReaction` the server already
+   * ships with each post (RSC / GET /api/posts), so the Like buttons paint the
+   * real state without a `reactions` round-trip and `fetchMyReactionsForPosts`
+   * finds nothing missing. Only fills ids not yet known: a value already in the
+   * store (from a click or a fetch) is newer than the payload seeding it.
+   */
+  seedMyReactions: (
+    userId: string,
+    entries: ReadonlyArray<{ postId: string; type: `${ReactionType}` | null | undefined }>,
+  ) => {
+    set(state => {
+      let next: Record<string, Reaction | null> | null = null;
+      for (const { postId, type } of entries) {
+        if (postId in state.myReactionsByPost) continue;
+        next ??= { ...state.myReactionsByPost };
+        // Only `type` travels with the post; nothing reads id/timestamps of my own reaction.
+        next[postId] = type
+          ? { id: '', postId, userId, type: type as ReactionType, createdAt: '', updatedAt: '' }
+          : null;
+      }
+      return next ? { myReactionsByPost: next } : state;
+    });
   },
 
   /**

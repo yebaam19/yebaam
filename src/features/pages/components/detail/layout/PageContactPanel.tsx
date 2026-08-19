@@ -9,6 +9,7 @@ import {
 } from '@/components/icons/heroicons-shim';
 import type { Page } from '../../../types/page.types';
 import { SOCIAL_NETWORKS } from '../../settings/general/social-networks';
+import { safeExternalHref } from '@/lib/safe-href';
 import { PageContactForm } from './PageContactForm';
 
 interface PageContactPanelProps {
@@ -21,6 +22,7 @@ export const PageContactPanel: FC<PageContactPanelProps> = ({ page }) => {
   const address = contact?.address;
   const social = contact?.social;
   const socialLinks = social ? SOCIAL_NETWORKS.filter((n) => social[n.key]) : [];
+  const websiteHref = safeExternalHref(contact?.website);
 
   const hasAddress = Boolean(address?.street || address?.city || address?.country);
   const hasAnything =
@@ -75,16 +77,16 @@ export const PageContactPanel: FC<PageContactPanelProps> = ({ page }) => {
           </div>
         )}
 
-        {contact?.website && (
+        {websiteHref && (
           <div className="flex items-start gap-3">
             <GlobeAltIcon className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
             <a
-              href={contact.website}
+              href={websiteHref}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline break-all"
             >
-              {contact.website}
+              {contact?.website}
             </a>
           </div>
         )}

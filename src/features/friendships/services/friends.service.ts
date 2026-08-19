@@ -5,6 +5,8 @@ import {
   type DbFriendSettings,
   type DbFriendship,
   type DbProfile,
+  FRIEND_SETTINGS_COLUMNS,
+  FRIENDSHIP_COLUMNS,
   PROFILE_COLUMNS,
   hydrateProfiles,
 } from './_shared';
@@ -22,7 +24,7 @@ async function getFriendSettingsMap(
   if (friendIds.length === 0) return new Map();
   const { data } = await supabase
     .from('friend_settings')
-    .select('*')
+    .select(FRIEND_SETTINGS_COLUMNS)
     .eq('owner_id', ownerId)
     .in('friend_id', friendIds);
   const map = new Map<string, DbFriendSettings>();
@@ -63,7 +65,7 @@ async function loadFriendshipsUncached(
 ): Promise<FriendsListResponse> {
   const { data } = await supabase
     .from('friendships')
-    .select('*')
+    .select(FRIENDSHIP_COLUMNS)
     .eq('status', 'accepted')
     .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
 
@@ -136,7 +138,7 @@ async function updateFriendConfig(friendId: string, config: UpdateFriendConfigDt
 
   const { data: existing } = await supabase
     .from('friend_settings')
-    .select('*')
+    .select('owner_id')
     .eq('owner_id', userId)
     .eq('friend_id', friendId)
     .maybeSingle();

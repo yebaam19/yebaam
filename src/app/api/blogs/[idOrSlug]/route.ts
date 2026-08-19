@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient, getServerAccessToken } from '@/utils/supabase/server';
 import { mapBlog, tearDownBlogSideArtifacts, type BlogRow, type OwnerProfile } from '@/lib/api/blogs';
+import { isValidWebsite } from '@/lib/safe-href';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -95,6 +96,9 @@ export async function PUT(
 
   const { idOrSlug } = await context.params;
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  if (body.website !== undefined && !isValidWebsite(body.website)) {
+    return NextResponse.json({ error: 'website must be an http(s) URL' }, { status: 400 });
+  }
 
   const client = await getServerClient();
   const row = await loadBlog(client, idOrSlug);

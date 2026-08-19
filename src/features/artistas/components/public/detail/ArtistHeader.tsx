@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin, Globe, ShieldCheck, Eye, Heart, Briefcase, ArrowLeft } from 'lucide-react'
 import type { ArtistProfileDetail } from '../../../types'
+import { safeExternalHref } from '@/lib/safe-href'
 
 const CF_HASH = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_HASH ?? ''
 export function cfImageUrl(id: string | null): string | null {
@@ -22,6 +23,7 @@ interface Props { artist: ArtistProfileDetail }
 export function ArtistHeader({ artist }: Props) {
   const coverUrl = cfImageUrl(artist.cover_cf_image_id)
   const profileUrl = cfImageUrl(artist.profile_cf_image_id)
+  const websiteHref = safeExternalHref(artist.website)
   const initials = (artist.stage_name ?? '').trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('') || '?'
 
   return (
@@ -69,8 +71,8 @@ export function ArtistHeader({ artist }: Props) {
               <span className="flex items-center gap-1.5">
                 <MapPin size={14} className="text-primary-700" />{artist.city}, {artist.country}
               </span>
-              {artist.website && (
-                <a href={artist.website} target="_blank" rel="noreferrer"
+              {websiteHref && (
+                <a href={websiteHref} target="_blank" rel="noreferrer"
                   className="flex items-center gap-1.5 font-semibold text-primary-700 hover:underline">
                   <Globe size={14} /> Sitio web
                 </a>

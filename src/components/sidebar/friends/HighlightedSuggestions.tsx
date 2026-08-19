@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Avatar from '@/ui/Avatar'
 import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { cn } from '@/lib/utils'
@@ -10,13 +10,10 @@ import { useTranslations } from 'next-intl'
 
 export function HighlightedSuggestions() {
   const t = useTranslations('nav')
-  const { suggestions, fetchSuggestions, sendFriendRequest, isLoading } = useFriendships()
+  // Store suggestions are loaded once by useFriendships() (limit 10); slice here.
+  const { suggestions, sendFriendRequest, isLoading } = useFriendships()
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [followed, setFollowed] = useState<Set<string>>(new Set())
-
-  useEffect(() => {
-    fetchSuggestions(6)
-  }, [fetchSuggestions])
 
   const list = (suggestions || []).filter((s) => !dismissed.has(s.id)).slice(0, 3)
 

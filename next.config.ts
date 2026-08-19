@@ -42,6 +42,33 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // Don't advertise the framework in every response.
+  poweredByHeader: false,
+  async headers() {
+    // Baseline hardening headers for every route. Deliberately NOT a full
+    // script-src CSP: the app embeds Cloudflare Stream, Turnstile, Sentry and
+    // Supabase from many origins and a strict policy needs per-origin testing.
+    // `frame-ancestors 'self'` + X-Frame-Options stop clickjacking; nosniff
+    // stops MIME confusion on user uploads; Permissions-Policy limits the
+    // powerful APIs (camera/mic/geo are used first-party for calls & posts).
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Permissions-Policy',
+            value:
+              'camera=(self), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()',
+          },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+        ],
+      },
+    ]
+  },
   typedRoutes: true,
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   images: {
@@ -50,6 +77,10 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 2678400 * 6,
     dangerouslyAllowSVG: true,
+    // Explicit (these are the Next defaults, pinned so an upgrade can't relax them):
+    // SVGs served by the optimizer are downloaded, not rendered, and sandboxed.
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: 'https', hostname: 'images.pexels.com', pathname: '/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },

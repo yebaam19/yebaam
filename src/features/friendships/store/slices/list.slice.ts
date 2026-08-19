@@ -34,6 +34,11 @@ export function createListActions(
   // Intentionally PER-ACTION, never a shared isLoading flag — these run in
   // parallel (initializeFriendships uses Promise.all) and a shared guard would
   // make them cancel each other and drop pending/sent/suggestions data.
+  //
+  // `isLoading` is an INITIAL-load flag: fetchers only raise it while the store
+  // is not yet initialized. Later refreshes (realtime, remounts, post-mutation)
+  // are silent so consumers that render `if (isLoading) <skeleton/>` don't
+  // flash. Mutations never touch it — they surface progress locally.
   let friendsP: Promise<void> | null = null;
   let pendingP: Promise<void> | null = null;
   let sentP: Promise<void> | null = null;
@@ -83,7 +88,7 @@ export function createListActions(
     fetchFriends: async () => {
       if (friendsP) return friendsP;
       friendsP = (async () => {
-      set({ isLoading: true, error: null });
+      set({ isLoading: !get().isInitialized, error: null });
       try {
         const data = await friendshipsService.getFriends();
         set({
@@ -108,7 +113,7 @@ export function createListActions(
     fetchPendingRequests: async () => {
       if (pendingP) return pendingP;
       pendingP = (async () => {
-      set({ isLoading: true, error: null });
+      set({ isLoading: !get().isInitialized, error: null });
       try {
         const data = await friendshipsService.getPendingRequests();
 
@@ -136,7 +141,7 @@ export function createListActions(
     fetchSentRequests: async () => {
       if (sentP) return sentP;
       sentP = (async () => {
-      set({ isLoading: true, error: null });
+      set({ isLoading: !get().isInitialized, error: null });
       try {
         const data = await friendshipsService.getSentRequests();
         set({
@@ -159,7 +164,7 @@ export function createListActions(
     fetchSuggestions: async (limit: number = 10) => {
       if (suggP) return suggP;
       suggP = (async () => {
-      set({ isLoading: true, error: null });
+      set({ isLoading: !get().isInitialized, error: null });
       try {
         const suggestions = await friendshipsService.getFriendSuggestions(limit);
         set({
@@ -181,20 +186,17 @@ export function createListActions(
      * @param friendshipId - ID de la relación de amistad
      */
     removeFriend: async (friendshipId: string) => {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       try {
         await friendshipsService.removeFriend(friendshipId);
 
         // Remover de lista de amigos usando friendshipId
-        set((state) => ({
-          ...removeFriendFromList(state, (f) => f.friendshipId === friendshipId),
-          isLoading: false,
-        }));
+        set((state) => removeFriendFromList(state, (f) => f.friendshipId === friendshipId));
 
         toast.success('Amigo eliminado');
       } catch (error) {
         const errorMsg = getErrorMessage(error, 'Error al eliminar amigo');
-        set({ error: errorMsg, isLoading: false });
+        set({ error: errorMsg });
         toast.error(errorMsg);
         throw error;
       }
@@ -204,7 +206,7 @@ export function createListActions(
      * Actualizar configuración de un amigo
      */
     updateFriendConfig: async (friendId: string, config: UpdateFriendConfigDto) => {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       try {
         const updatedFriend = await friendshipsService.updateFriendConfig(friendId, config);
 
@@ -219,7 +221,6 @@ export function createListActions(
                 ? state.closeFriendsCount + 1
                 : state.closeFriendsCount - 1
               : state.closeFriendsCount,
-          isLoading: false,
         }));
 
         if (config.closeFriend !== undefined) {
@@ -229,7 +230,7 @@ export function createListActions(
         }
       } catch (error) {
         const errorMsg = getErrorMessage(error, 'Error al actualizar configuración');
-        set({ error: errorMsg, isLoading: false });
+        set({ error: errorMsg });
         toast.error(errorMsg);
         throw error;
       }

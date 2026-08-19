@@ -16,7 +16,7 @@ const STORY_DURATION = 15000 // 15 segundos para imágenes
 export function useStoryViewer(userId: string) {
   const router = useRouter()
 
-  const { friendsStories, myStories, viewStory } = useStoryStore()
+  const { friendsStories, myStories, viewStory, isLoading: isStoreLoading } = useStoryStore()
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const [currentUserIndex, setCurrentUserIndex] = useState(0)
@@ -31,21 +31,47 @@ export function useStoryViewer(userId: string) {
   const isMyStories = userId === 'my-stories'
   const allUsers = isMyStories ? [] : friendsStories
 
+  // On reload / deep-link the store is empty (only the feed rail fetches), so
+  // the viewer would sit on "No hay historias" forever. If the relevant list is
+  // empty at mount, fetch it once and report `isLoading` until it settles.
+  const [isBootstrapping, setIsBootstrapping] = useState(() => {
+    const s = useStoryStore.getState()
+    return (isMyStories ? s.myStories : s.friendsStories).length === 0
+  })
+  useEffect(() => {
+    if (!isBootstrapping) return
+    let cancelled = false
+    const s = useStoryStore.getState()
+    // The store's in-flight guard collapses StrictMode's double invoke.
+    ;(isMyStories ? s.fetchMyStories() : s.fetchFriendsStories()).finally(() => {
+      if (!cancelled) setIsBootstrapping(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [isBootstrapping, isMyStories])
+
   // Historias actuales
   const currentUserStories = isMyStories ? myStories : allUsers[currentUserIndex]?.stories || []
 
   const currentStory = currentUserStories[currentStoryIndex]
   const currentUser = isMyStories ? null : allUsers[currentUserIndex]
 
+  // Key the lookup on the *set* of user ids, not on array identity:
+  // `viewStory → incrementViewCount` rebuilds `friendsStories` on every view,
+  // and re-running this on identity snapped `currentUserIndex` back to the
+  // URL's user each time the viewer advanced to the next friend.
+  const friendUserIdsKey = allUsers.map((u) => u.userId).join(',')
   useEffect(() => {
-    if (!isMyStories) {
-      // Encontrar el índice del usuario cuyas historias queremos ver
-      const userIndex = allUsers.findIndex((u) => u.userId === userId)
-      if (userIndex !== -1) {
-        setCurrentUserIndex(userIndex)
-      }
+    if (isMyStories) return
+    // Encontrar el índice del usuario cuyas historias queremos ver
+    const userIndex = useStoryStore
+      .getState()
+      .friendsStories.findIndex((u) => u.userId === userId)
+    if (userIndex !== -1) {
+      setCurrentUserIndex(userIndex)
     }
-  }, [userId, allUsers, isMyStories])
+  }, [userId, isMyStories, friendUserIdsKey])
 
   // Marcar historia como vista
   useEffect(() => {
@@ -139,6 +165,7 @@ export function useStoryViewer(userId: string) {
 
   return {
     videoRef,
+    isLoading: isBootstrapping || isStoreLoading,
     isMyStories,
     currentUser,
     currentStory,
