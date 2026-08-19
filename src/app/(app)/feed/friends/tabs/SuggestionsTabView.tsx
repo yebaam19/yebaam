@@ -25,7 +25,7 @@ export function SuggestionsTabView({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+      <div className="grid w-full gap-3 sm:gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,11rem),1fr))]">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
@@ -46,7 +46,7 @@ export function SuggestionsTabView({
 
   return (
     <div>
-      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+      <div className="mb-8 grid w-full gap-3 sm:gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,11rem),1fr))]">
         {suggestions.map((suggestion) => (
           <SuggestionCard
             key={suggestion.id}
