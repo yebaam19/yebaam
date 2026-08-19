@@ -198,7 +198,7 @@ export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h3>
         <Link
-          href={'/friends/suggestions' as Route}
+          href={'/feed/friends?tab=suggestions' as Route}
           className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           Ver más

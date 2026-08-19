@@ -67,7 +67,7 @@ export function FriendSuggestions() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h2>
         <Link
-          href={'/friends/suggestions' as Route}
+          href={'/feed/friends?tab=suggestions' as Route}
           className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           Ver todo

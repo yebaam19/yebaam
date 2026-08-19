@@ -64,7 +64,7 @@ export default function ProfileFriendsFull({
 
           {isOwnProfile && (
             <Link
-              href={'/friends/requests' as Route}
+              href={'/feed/friends?tab=requests' as Route}
               className="flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
             >
               <UserPlusIcon className="w-5 h-5" />

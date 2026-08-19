@@ -3,6 +3,7 @@
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import Avatar from '@/ui/Avatar'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -42,7 +43,7 @@ export function FriendRequestsCard() {
           {t('title')}
         </h3>
         <Link
-          href={'/friends/requests' as never}
+          href={'/feed/friends?tab=requests' as Route}
           className="text-xs font-medium text-primary-600 hover:underline"
         >
           {t('viewAll')}
