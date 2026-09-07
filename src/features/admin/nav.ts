@@ -47,6 +47,12 @@ const RAW_ADMIN_NAV_ITEMS: AdminNavItem[] = [
     matchPrefix: '/admin/ciudades',
   },
   {
+    label: 'Noticias',
+    href: '/admin/noticias' as Route,
+    iconName: 'inbox',
+    matchPrefix: '/admin/noticias',
+  },
+  {
     label: 'Verificaciones',
     href: '/admin/verifications' as Route,
     iconName: 'shield-check',

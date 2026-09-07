@@ -104,6 +104,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
     firstSegment === 'feed' ||
     firstSegment === 'cities' ||
     firstSegment === 'insignias' ||
+    firstSegment === 'noticias' ||
     firstSegment === 'professional-services' ||
     firstSegment === 'paginas' ||
     (segments.length === 1 && !!firstSegment && !RESERVED_TOP_LEVEL.has(firstSegment))

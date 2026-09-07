@@ -12,8 +12,8 @@ import { useSidebar } from './hooks/useSidebar'
 import { useSidebarExpanded } from './hooks/useSidebarExpanded'
 import { SidebarContent } from './SidebarContent'
 
-// 11 so the El Umbral entry fits without demoting Artistas below "Ver más".
-const MAX_VISIBLE_ITEMS = 11
+// Keep Noticias in the first visible group alongside Inicio and Ciudades.
+const MAX_VISIBLE_ITEMS = 12
 
 interface SidebarProps {
   className?: string
@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, user, isMobileOpen = false
   // getMenuForUser no puede resolver de forma estática.
   const allItems = useMemo(() => {
     const items = userMenuConfig.flatMap((section) => section.items)
-    return items.map((item: any) => {
+    return items.map((item) => {
       if (item.href !== '/feed/mis-negocios') return item
       if (badges.myBusinessesCount > 0) {
         return { ...item, badge: String(badges.myBusinessesCount) }

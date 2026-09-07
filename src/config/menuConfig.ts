@@ -78,6 +78,12 @@ export const menuConfig: Record<string, MenuSectionConfig[]> = {
           featureFlag: 'CITIES_ENABLED' as FeatureFlag,
         },
         {
+          icon: NewspaperIcon,
+          labelKey: 'items.news',
+          href: '/noticias',
+          featureFlag: 'NOTICIAS_ENABLED' as FeatureFlag,
+        },
+        {
           icon: SparklesIcon,
           labelKey: 'items.clubs',
           href: '{basePath}/clubs',
@@ -180,14 +186,6 @@ export const menuConfig: Record<string, MenuSectionConfig[]> = {
           badgeKey: 'badges.pronto',
           badgeHideOnMobile: true,
           featureFlag: 'PROMOCIONES_ENABLED' as FeatureFlag,
-        },
-        {
-          icon: NewspaperIcon,
-          labelKey: 'items.news',
-          href: '{basePath}/noticias',
-          badgeKey: 'badges.pronto',
-          badgeHideOnMobile: true,
-          featureFlag: 'NOTICIAS_ENABLED' as FeatureFlag,
         },
         {
           icon: RectangleStackIcon,

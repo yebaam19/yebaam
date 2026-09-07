@@ -1,0 +1,92 @@
+--- PAGE 1 ---
+Objetivo: crear un portal de contenidos personalizado o news aggregator 
+donde se puedan publicar noticias locales, regionales, nacionales e 
+internacionales. Es como un portal tipo msn o yahoo. AQUI TENEMOS QUE 
+MONETIZAR. Asi que dejemos abierta este modulo para cobrar por pautas.  
+Características: Esto tendría las siguientes características: 
+1.​ Cada ciudad tendrá sus noticias independientes. El administrador podrá 
+agregar administradores locales. que suplan de noticias. 
+2.​ La plataforma podrá incluir noticias nacionales e internacionales en las 
+noticias locales que pueden ser agregados por el administrador principal  
+3.​ Yebaam tendrá su propio portal de noticias. Se podrá acceder ya sea por el 
+logo de Yebaam o por la casita. El administrador puede compartir noticias 
+locales o regionales en las noticias principales.   
+4.​ Los artículos deben obligatoriamente tener un responsable. Los autores 
+deben estar autenticados con perfil profesional al día. Y la fuente o sea la 
+página autorizada para hacer noticias.    
+5.​ Puede hacerse videos dentro de los módulos y subirlos en los espacios.  
+6.​ Debe haber repositorios de noticias publicadas.  
+7.​ Debemos tener la capacidad de agregar secciones por ejemplo cultura, 
+deportes etc 
+8.​ Las noticias pueden reaccionar, compartirse, guardarse  y comentarse.  
+9.​ Las noticias pueden replicarse solamente para entidades o personas 
+legitimadas por la plataforma. Por ejemplo, personas públicas que han 
+pagado el perfil personalizado. Esta réplica aparece debajo de la publicación.   
+10.​Las organizaciones que participan en las noticias deben tener su página 
+parecidas de noticias.  
+
+
+--- PAGE 2 ---
+ 
+ 
+PORTAL PRINCIPAL │  
+                    PORTAL PRINCIPAL 
+                           │ 
+        ┌──────────────────┼──────────────────┐ 
+        │                  │                  │ 
+    Noticias             Clima             Promociones 
+        │                  │                  │ 
+   ┌────┴────┐          API clima        Proveedores 
+   │         │ 
+ Local, Nacional e Internacional 
+   │ 
+   ├── Política 
+   ├── Deportes 
+   ├── Tecnología 
+
+
+--- PAGE 3 ---
+   ├── Cultura y Entretenimiento 
+   └── Economía 
+ 
+              ↓ 
+      MOTOR DE PERSONALIZACIÓN 
+              ↓ 
+     Contenido recomendado 
+ 
+ 
+ 
+Backend: 
+Usuarios 
+Publicaciones 
+Noticias 
+Comentarios 
+Likes 
+Seguidores 
+Notificaciones 
+Recomendaciones 
+Publicidad 
+Administración 
+ 
+🧩 Sistema de módulos 
+Una ventaja enorme sería que el administrador pueda activar o desactivar 
+bloques. 
+Por ejemplo: 
+ADMINISTRACIÓN 
+ 
+☑ Noticias 
+☑ Videos 
+☑ Música 
+
+
+--- PAGE 4 ---
+☑ Juegos 
+☑ Clima 
+☑ Tendencias 
+☑ Publicidad 
+☐ Bolsa 
+☐ Deportes 
+☑ Emprendedores 
+☑ Comunidades 
+Cultura y entrenimiento 
+ 

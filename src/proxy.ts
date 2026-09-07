@@ -149,7 +149,10 @@ export async function proxy(request: NextRequest) {
     return redirectWithCookies(new URL(hasSession ? '/feed' : '/login', request.url), client);
   }
 
-  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+  // `/cities` is public, while each city's news tab belongs to the private
+  // Noticias module. This exception covers every city slug in one place.
+  const isPrivateCityNewsRoute = /^\/cities\/[^/]+\/news(?:\/|$)/.test(pathname);
+  const isPublicRoute = !isPrivateCityNewsRoute && PUBLIC_ROUTES.some((route) =>
     route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`),
   );
 
@@ -159,7 +162,7 @@ export async function proxy(request: NextRequest) {
     return redirectWithCookies(loginUrl, client);
   }
 
-  const isAuthAllowedPublic = AUTH_ALLOWED_PUBLIC_ROUTES.some((route) =>
+  const isAuthAllowedPublic = !isPrivateCityNewsRoute && AUTH_ALLOWED_PUBLIC_ROUTES.some((route) =>
     pathname === route || pathname.startsWith(`${route}/`),
   );
 

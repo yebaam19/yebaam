@@ -78,7 +78,7 @@ const FEATURE_FLAGS_BASE = {
   // ============================================================================
   
   ARTICLES_ENABLED: false, // Artículos/Blogs - Backend no implementado
-  NOTICIAS_ENABLED: false, // Sección de noticias - No implementado
+  NOTICIAS_ENABLED: true, // Portal de noticias — fuentes y profesionales verificados
   EVENTOS_ENABLED: false, // Eventos y calendario - No implementado
 
   // ============================================================================
