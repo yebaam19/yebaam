@@ -22,6 +22,16 @@ import type { NewsModuleSettings } from '../types'
 const fieldClassName =
   'min-h-11 rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100'
 const labelClassName = 'grid gap-1.5 text-sm font-semibold text-neutral-800 dark:text-neutral-200'
+const sourceStatusLabels: Record<AdminNewsSource['status'], string> = {
+  pending: 'Pendiente',
+  approved: 'Aprobada',
+  suspended: 'Suspendida',
+}
+const sourceStatusClasses: Record<AdminNewsSource['status'], string> = {
+  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+  approved: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+  suspended: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+}
 
 interface AdminNewsSourcesProps {
   sources: AdminNewsSource[]
@@ -86,14 +96,20 @@ export function AdminNewsSources({ sources, articles, replicas, sections, adSlot
               <tr><th className="p-3">Fuente</th><th className="p-3">Responsable</th><th className="p-3">Estado</th><th className="p-3">Acciones</th></tr>
             </thead>
             <tbody>
-              {sources.map((source) => (
-                <tr key={source.id} className="border-t border-neutral-100 dark:border-neutral-800">
-                  <td className="p-3 font-medium">{source.name}{source.websiteUrl && <a className="ml-2 text-xs text-sky-700 underline dark:text-sky-400" href={source.websiteUrl} target="_blank" rel="noreferrer">Sitio</a>}</td>
-                  <td className="p-3">{source.ownerName}</td>
-                  <td className="p-3 capitalize">{source.status}</td>
-                  <td className="p-3"><div className="flex gap-2"><button type="button" onClick={() => run(setNewsSourceStatusAction({ sourceId: source.id, status: 'approved' }), 'Fuente aprobada.')} className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white">Aprobar</button><button type="button" onClick={() => run(setNewsSourceStatusAction({ sourceId: source.id, status: 'suspended' }), 'Fuente suspendida.')} className="rounded bg-neutral-700 px-2 py-1 text-xs font-semibold text-white">Suspender</button></div></td>
-                </tr>
-              ))}
+              {sources.map((source) => {
+                const isApproved = source.status === 'approved'
+                const nextStatus = isApproved ? 'suspended' : 'approved'
+                const actionLabel = isApproved ? 'Suspender' : source.status === 'suspended' ? 'Reactivar' : 'Aprobar'
+                const successMessage = isApproved ? 'Fuente suspendida.' : source.status === 'suspended' ? 'Fuente reactivada.' : 'Fuente aprobada.'
+                return (
+                  <tr key={source.id} className="border-t border-neutral-100 dark:border-neutral-800">
+                    <td className="p-3 font-medium">{source.name}{source.websiteUrl && <a className="ml-2 text-xs text-sky-700 underline dark:text-sky-400" href={source.websiteUrl} target="_blank" rel="noreferrer">Sitio</a>}</td>
+                    <td className="p-3">{source.ownerName}</td>
+                    <td className="p-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${sourceStatusClasses[source.status]}`}>{sourceStatusLabels[source.status]}</span></td>
+                    <td className="p-3"><button type="button" onClick={() => run(setNewsSourceStatusAction({ sourceId: source.id, status: nextStatus }), successMessage)} className={`rounded px-2 py-1 text-xs font-semibold text-white ${isApproved ? 'bg-neutral-700' : 'bg-emerald-600'}`}>{actionLabel}</button></td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
