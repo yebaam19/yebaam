@@ -5,6 +5,7 @@ import { getServerClient, getServiceClient } from '@/utils/supabase/server'
 import { sanitizeRichText } from '@/lib/html/sanitize-rich-text'
 import { isPlatformAdmin } from '@/app/(app)/foro/server/foro.server'
 import type { NewsScope } from '../types'
+import { normalizeNewsWebsiteUrl } from '../lib/website-url'
 
 type Result<T = undefined> = { ok: true; data?: T } | { ok: false; error: string }
 
@@ -47,7 +48,9 @@ export async function createNewsSourceAction(input: { name: string; websiteUrl?:
   if (!current) return { ok: false, error: 'Inicia sesión para registrar una fuente.' }
   const name = input.name.trim()
   if (name.length < 2 || name.length > 160) return { ok: false, error: 'El nombre de la fuente debe tener entre 2 y 160 caracteres.' }
-  const { error } = await current.client.from('news_sources').insert({ name, website_url: input.websiteUrl?.trim() || null, city_id: input.cityId || null, owner_id: current.userId })
+  const website = normalizeNewsWebsiteUrl(input.websiteUrl)
+  if (!website.ok) return website
+  const { error } = await current.client.from('news_sources').insert({ name, website_url: website.value, city_id: input.cityId || null, owner_id: current.userId })
   if (error) return { ok: false, error: error.message }
   revalidatePath('/noticias/crear')
   revalidatePath('/admin/noticias')
