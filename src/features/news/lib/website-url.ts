@@ -1,6 +1,4 @@
-export type NewsWebsiteUrlResult =
-  | { ok: true; value: string | null }
-  | { ok: false; error: string }
+export type NewsWebsiteUrlResult = { ok: true; value: string | null } | { ok: false; error: string }
 
 const URL_SCHEME = /^[a-z][a-z\d+.-]*:/i
 
@@ -12,11 +10,7 @@ export function normalizeNewsWebsiteUrl(input?: string | null): NewsWebsiteUrlRe
     return { ok: false, error: 'La dirección del sitio web es demasiado larga.' }
   }
 
-  const candidate = URL_SCHEME.test(value)
-    ? value
-    : value.startsWith('//')
-      ? `https:${value}`
-      : `https://${value}`
+  const candidate = URL_SCHEME.test(value) ? value : value.startsWith('//') ? `https:${value}` : `https://${value}`
 
   try {
     const url = new URL(candidate)

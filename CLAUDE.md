@@ -65,9 +65,9 @@ Two exceptions where you extract on the **first** repetition:
 
 When you extract, names should carry "what" and "how"; comment only the **Why** if it's non-obvious.
 
-## **!IMPORTANT: split components when they grow long**
+## **!IMPORTANT: keep every code file at 250 lines or fewer**
 
-Component files that drift past **~250 lines** must be broken into smaller, single-purpose files **before declaring the feature done**. This is non-negotiable — a long component is a future bug magnet, hides duplication, makes diffs unreviewable, and makes targeted edits brittle. Apply the same discipline to every new component: write it small, and split it the moment it grows.
+Every code file created or modified must stay at or below **250 lines**. Split it by responsibility instead of compressing code into long lines. This is non-negotiable: oversized files hide duplication, make diffs unreviewable, and make targeted edits brittle.
 
 When splitting:
 - Co-locate the children in a `<feature>/<parent>/` subfolder (e.g. `admin/editor/TrackRow.tsx`, `admin/editor/AddTrackForm.tsx`) so the parent stays as the orchestration shell.

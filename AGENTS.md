@@ -187,7 +187,7 @@ Recurring invariants these enforce: privacy-by-default at the DB/RLS layer; Safe
 
 ## Refactor discipline — DRY at the right moment, not the wrong one
 
-After substantial feature work, do a **refactor pass before declaring done**. It is part of "done", not extra credit. Concretely, look for:
+Every code file you create or modify must stay at or below **250 lines**; split by responsibility instead of compressing lines. After substantial feature work, do a **refactor pass before declaring done**. It is part of "done", not extra credit. Concretely, look for:
 
 - **Repeated logic in 3+ places → extract.** Real examples from the Familias rollout (Sprint 1):
   - 6× `select slug → revalidatePath(\`/feed/familias/${slug}\`)` collapsed into a single `revalidatePath('/feed/familias/[slug]', 'page')`.
