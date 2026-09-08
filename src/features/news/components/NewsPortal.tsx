@@ -4,7 +4,7 @@ import { ArrowRight, ArrowUpRight, CloudSun, Megaphone, Newspaper, PenLine, Sett
 import { NewsCard } from './NewsCard'
 import { WeatherWidget } from './WeatherWidget'
 import { newsCoverUrl } from '../server/news.server'
-import type { NewsAd, NewsArticle, NewsModuleSettings, NewsSection } from '../types'
+import type { NewsAd, NewsArticle, NewsModuleSettings, NewsScope, NewsSection } from '../types'
 
 const scopes = [
   { value: 'local', label: 'Local' },
@@ -31,6 +31,7 @@ export function NewsPortal({
   recommended = [],
   activeSection,
   activeScope,
+  availableScopes = scopes.map((scope) => scope.value),
   basePath = '/noticias',
   title = 'Lo que importa, cerca de ti.',
   description = 'Información local, regional, nacional e internacional de fuentes y profesionales autorizados.',
@@ -43,6 +44,7 @@ export function NewsPortal({
   recommended?: NewsArticle[]
   activeSection?: string
   activeScope?: string
+  availableScopes?: readonly NewsScope[]
   basePath?: string
   title?: string
   description?: string
@@ -100,7 +102,7 @@ export function NewsPortal({
 
       <nav aria-label="Alcance de las noticias" className="hidden-scrollbar -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
         <Link href={filterHref(basePath, activeSection)} aria-current={!activeScope ? 'page' : undefined} className={`min-h-9 rounded-lg px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors ${!activeScope ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'} ${focusRing}`}>Todos los alcances</Link>
-        {scopes.map((scope) => (
+        {scopes.filter((scope) => availableScopes.includes(scope.value)).map((scope) => (
           <Link key={scope.value} href={filterHref(basePath, activeSection, scope.value)} aria-current={activeScope === scope.value ? 'page' : undefined} className={`min-h-9 rounded-lg px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors ${activeScope === scope.value ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'} ${focusRing}`}>
             {scope.label}
           </Link>
