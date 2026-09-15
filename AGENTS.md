@@ -24,7 +24,7 @@ All agent work lands as edits in the existing working tree on `main`. If a task 
 - **Auth**: `@supabase/ssr` for cookie-managed sessions across server + client.
 - **Storage**: `supabase.storage.from(bucket)` is for **non-media files only**. All images and videos live on **Cloudflare** (Cloudflare Images + Cloudflare Stream) — see "Media uploads — Cloudflare only" below. The legacy buckets (`avatars`, `covers`, `posts`, `profile-photos`, `profile-videos`, `stories`) are not the source of truth for media; do not write new media there.
 - **Realtime**: `postgres_changes` on tables (the canonical pattern — write a row, every subscriber gets it for free) plus Broadcast channels for ephemeral signals like typing indicators. Both wrapped by [src/utils/supabase/realtime.ts](src/utils/supabase/realtime.ts).
-- **Edge Functions**: live under `supabase/functions/<name>/index.ts`. Three currently deployed: `feed`, `send-email`, `story-cleanup`.
+- **Edge Functions**: live under `supabase/functions/<name>/index.ts`. The repository currently contains `feed`, `send-email`, `story-cleanup`, `notify-verification-submitted`, `notify-family-invitation`, and `notify-music-track-upload`.
 
 ## Client wrappers — always import from these
 
@@ -128,11 +128,14 @@ For non-media files only — Storage RLS enforces `(storage.foldername(name))[1]
 
 ## Edge functions
 
-Three live in `supabase/functions/`:
+Edge Functions currently in `supabase/functions/`:
 
 - `feed` — paginated post + author feed, JWT-verified, RLS-aware.
 - `send-email` — internal Resend wrapper, secret-gated by `EMAIL_WEBHOOK_SECRET`.
 - `story-cleanup` — calls `cleanup_expired_stories()` SQL function and removes orphaned storage objects, secret-gated by `CRON_SECRET`.
+- `notify-verification-submitted` — notifies admins when a verification request is submitted.
+- `notify-family-invitation` — sends rate-limited family invitation notifications.
+- `notify-music-track-upload` — notifies the relevant audience about music track uploads.
 
 Deploy via the Supabase MCP `deploy_edge_function` tool or `supabase functions deploy <name>` CLI. Secrets are configured in **Project Settings → Edge Functions → Secrets** or via `supabase secrets set <KEY>=<value>`.
 
@@ -185,6 +188,46 @@ Three Claude Code subagents under `.claude/agents/` encode these for **build + r
 
 Recurring invariants these enforce: privacy-by-default at the DB/RLS layer; Safe Harbor (no editorial pre-moderation of UGC); media → Cloudflare or official embed, **never native**; `#Publicidad`/`#Patrocinio` on sponsored content; anti-scraping (lists hidden by default); minors require verifiable parental consent; 24h takedown SLA; progressive sanction ladder; clickwrap consent with a durable evidentiary record. Known code/rule gaps (not yet built) are tracked in [`docs/legal/ENFORCEMENT-GAPS.md`](docs/legal/ENFORCEMENT-GAPS.md).
 
+## Code Review Rules
+
+Review the changed behavior, not only the edited lines. Report a finding only when the change introduces a concrete, reproducible defect or security/compliance regression. Include the affected file and line, explain the user or system impact, and describe the smallest safe correction. Do not report formatting, import ordering, or lint-only issues that CI can enforce. Do not require unrelated cleanup or treat pre-existing problems outside the diff as findings; mention them separately only when they directly block validation of the change.
+
+### Security and authorization
+
+- Flag any authenticated `/api/**` handler that trusts the proxy, cookies, request-supplied user IDs, or `getSession()` without independently verifying the caller. Safe path: use `getServerClient()` plus a verified user lookup and return `401`/`403` explicitly.
+- Flag browser-accessible code that imports or exposes service-role credentials, Cloudflare secrets, Resend keys, presigning credentials, or other server-only values. Safe path: keep secrets in server modules or route handlers and expose only the minimum result.
+- Flag `getServiceClient()` use for caller-scoped reads or writes unless the code performs an explicit authorization check first. Safe path: prefer the session-bound client so RLS applies; use service role only for a documented privileged operation.
+- Flag a new table or privileged operation when RLS, ownership checks, least-privilege grants, or private-by-default policies are missing. Safe path: ship the schema and its policies in the same migration, then verify anonymous, owner, non-owner, and admin behavior.
+- Flag public auth or auth-adjacent flows that can execute without a valid, action-bound Turnstile token. Apply the documented native Supabase CAPTCHA or `verifyTurnstileToken()` path as appropriate.
+
+### Data and Supabase
+
+- Flag `.single()` when zero rows are a valid state. Safe path: use `.maybeSingle()` and handle `null` deliberately.
+- Flag schema changes made only in application code or against the live database without a checked-in migration. Safe path: add an idempotent migration under `supabase/migrations/` and use the Supabase MCP to apply or inspect it.
+- Flag unbounded reads, offset-only pagination on growing feeds, N+1 queries, or filters/orderings on hot paths that lack a supporting index. Safe path: select only needed columns, use bounded/keyset pagination, batch related reads, and add a justified index in a migration.
+- Flag write flows that can duplicate state when retried, especially webhooks, invitations, notifications, purchases, and upload finalization. Safe path: use a stable idempotency/uniqueness key and handle conflicts intentionally.
+- Flag retries around non-idempotent writes when a repeated attempt can create duplicate side effects. Safe path: retry safe reads or make the write idempotent before applying retry logic.
+
+### Media, realtime, and external effects
+
+- Flag any image/video upload outside `uploadService`, any new Supabase media bucket, or any database write that persists a full Cloudflare delivery URL. Safe path: upload through Cloudflare and persist only the image ID, video UID, or R2 key.
+- Flag presigned upload routes that omit authentication, MIME allowlists, size limits bound into the signature, ownership-scoped object keys, or short expirations. Safe path: validate all constraints before signing and derive the object key server-side.
+- Flag row-backed events sent through Broadcast or manual publish calls. Safe path: write the row once and subscribe with `subscribeToTable()`; reserve Broadcast for ephemeral signals such as typing and presence.
+- Flag email, notification, payment, cleanup, or third-party calls that can leave database state ambiguous after partial failure. Safe path: define an idempotent boundary and record enough state to retry or reconcile safely.
+
+### Product, privacy, and legal behavior
+
+- Flag new public list/search endpoints, realtime subscriptions, or UI disclosures that bypass privacy-by-default, block/mute rules, audience visibility, or anti-scraping constraints. Safe path: enforce visibility in SQL/RLS or a server-side authorization boundary, not only in the UI.
+- Flag sponsored content that can render without `#Publicidad`/`#Patrocinio`, minor-facing flows without required consent controls, or moderation/reporting changes that break the documented takedown and sanction process. Safe path: follow the applicable document under `docs/legal/`, using `macro-reglamento.md` when rules conflict.
+- Flag destructive account/content actions that omit confirmation, authorization, auditability, or the applicable ARCO/Derecho al Olvido behavior. Safe path: preserve an auditable record while deleting or anonymizing data according to the governing rule.
+
+### Correctness and user experience
+
+- Flag server/client boundary mistakes such as importing server-only modules into Client Components, trusting client validation on the server, or producing hydration-dependent output. Safe path: keep authority on the server and pass serializable, stable props across the boundary.
+- Flag changes that leave loading, empty, error, unauthorized, or retry states unusable, or expose an incomplete/mock-backed feature without a `Pronto`/`Próximamente` gate.
+- Flag accessibility regressions that block keyboard use, remove an accessible name, break focus management, or make critical status/error feedback unavailable to assistive technology. Safe path: use semantic controls and preserve focus and live feedback.
+- Flag missing tests only when the changed logic is high-risk or already covered by an existing test pattern. For UI changes without automated coverage, require a concrete browser verification note; rely on type-check, tests, lint, and production build for mechanical failures.
+
 ## Refactor discipline — DRY at the right moment, not the wrong one
 
 Every code file you create or modify must stay at or below **250 lines**; split by responsibility instead of compressing lines. After substantial feature work, do a **refactor pass before declaring done**. It is part of "done", not extra credit. Concretely, look for:
@@ -213,9 +256,9 @@ When you extract, names should carry "what" and "how"; comment only the **Why** 
 ## Stack and conventions
 
 - **Package manager**: `pnpm` (use it for every install, never npm/yarn).
-- **Tailwind**: 3.4 (do NOT upgrade to v4). Lock the version in `package.json`.
+- **Tailwind**: 4.x via `@tailwindcss/postcss`. Keep `src/styles/tailwind.css` on Tailwind 4 syntax (`@theme`, `@utility`, and `@custom-variant`); do not introduce a Tailwind 3 config or directives.
 - **State**: Zustand for client stores. TanStack Query is in the codebase but Devtools were removed — don't re-add the floating devtools.
-- **Tests**: there is no test runner configured yet. UI changes must be hand-verified in a browser; type-checking + production build are the gating signals (`npx tsc --noEmit` then `pnpm build`).
+- **Tests**: Vitest + Testing Library. Run the relevant tests for changed behavior. UI changes must also be hand-verified in a browser; the full gating signals are `pnpm test`, `pnpm lint`, `pnpm exec tsc --noEmit`, then `pnpm build`.
 - **Email**: `RESEND_API_KEY` is server-only — never prefix it `NEXT_PUBLIC_*`. Mirror in `.env.example` with a placeholder.
 
 ## Layout
@@ -241,6 +284,6 @@ docs/
 - Use `pnpm` for installs and package changes in this repository.
 - Email: `RESEND_API_KEY` is server-only.
 - TanStack Query Devtools were removed from the app; keep `@tanstack/react-query` for existing data hooks and do not re-add floating devtools unless explicitly requested.
-- Tailwind CSS 3.4 — do not upgrade to v4.
+- Tailwind CSS 4 — preserve the existing v4 PostCSS and CSS-first configuration.
 - For backend infra / schema / debug tasks, use the **Supabase MCP** (available in this workspace). Apply migrations via `apply_migration`, run ad-hoc SQL via `execute_sql`, deploy edge functions via `deploy_edge_function`, and read logs via `get_logs`. Never edit Supabase data through screenshots / guessing — query the live DB through the MCP. The legacy InsForge MCP/CLI is **not** the active backend; ignore older docs that reference it.
 - When feature entry points are incomplete, mock-backed, or not fully wired, mark them as `Pronto`/`Proximamente` instead of exposing unfinished flows in navigation.

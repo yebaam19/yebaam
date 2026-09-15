@@ -1,15 +1,17 @@
 # Yebaam
 
-A social media platform built with Next.js, connecting people through posts, stories, blogs, businesses, live streaming, and more.
+A social platform for connecting people through posts, stories, chat, cities, communities, blogs, businesses, professional services, live streaming, and more.
 
 ## Tech Stack
 
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Backend:** InsForge
-- **Real-time:** Socket.IO
-- **Package Manager:** pnpm
+- **Framework:** Next.js 16 (App Router and Turbopack)
+- **Language:** TypeScript and React 19
+- **Styling:** Tailwind CSS 4
+- **Backend:** Supabase (Postgres, Auth, RLS, Realtime, and Edge Functions)
+- **Media:** Cloudflare Images, Stream, and R2
+- **Monitoring:** Sentry and Vercel Analytics
+- **Tests:** Vitest and Testing Library
+- **Package manager:** pnpm
 
 ## Getting Started
 
@@ -43,6 +45,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### Build
 
 ```bash
+pnpm test
+pnpm lint
+pnpm exec tsc --noEmit
 pnpm build
 pnpm start
 ```
@@ -69,16 +74,19 @@ pnpm start
 
 ```
 src/
-├── app/          # Next.js App Router pages
-├── components/   # Reusable UI components
-├── hooks/        # Custom React hooks
-├── lib/          # Utilities and helpers
-└── images/       # Static image assets
+├── app/                 # App Router pages and API route handlers
+├── features/            # Feature modules
+├── components/          # Shared UI components
+├── lib/                 # Cross-cutting helpers and services
+└── utils/supabase/      # Approved Supabase client wrappers
+supabase/
+├── functions/           # Supabase Edge Functions
+└── migrations/          # Database migrations
 ```
 
-## Backend Migration
+## Project Instructions
 
-See [PDR.md](PDR.md) for the full backend migration plan to InsForge.
+See [AGENTS.md](AGENTS.md) for the authoritative architecture, security, media, governance, and contribution rules.
 
 ## License
 
