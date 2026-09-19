@@ -1,3 +1,4 @@
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 import { getServerClient } from '@/utils/supabase/server'
 import 'server-only'
 
@@ -23,6 +24,15 @@ export async function hasMusicArchiveAdminAccess(
     allowed: Boolean(platformAdmin || musicEditor),
     isPlatformAdmin: Boolean(platformAdmin),
   }
+}
+
+/** UI-only visibility check. Server actions and routes still call requireMusicArchiveAdmin(). */
+export async function canCurrentUserManageMusicArchive(): Promise<boolean> {
+  const user = await getCachedAuthUser()
+  if (!user) return false
+
+  const client = await getServerClient()
+  return (await hasMusicArchiveAdminAccess(client, user.id)).allowed
 }
 
 export async function requireMusicArchiveAdmin(): Promise<MusicArchiveAdminSession | null> {

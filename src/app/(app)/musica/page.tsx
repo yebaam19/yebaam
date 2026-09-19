@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata, Route } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { MusicalNoteIcon, PlusIcon } from '@/components/icons/heroicons-shim';
+import { Cog6ToothIcon, MusicalNoteIcon, PlusIcon } from '@/components/icons/heroicons-shim';
 import {
   getArtistNamesByIds,
   listAlbumsFiltered,
@@ -19,6 +19,7 @@ import { LANDING_DECADES } from '@/features/music-archive/components/landing/mus
 import { MUSIC_ARCHIVE_PUBLIC_COUNTRY_FILTERS } from '@/features/music-archive/components/upload/constants';
 import { ALBUM_CONDITION_LABELS, type AlbumCondition } from '@/features/music-archive/types/music.types';
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
+import { canCurrentUserManageMusicArchive } from '@/features/music-archive/server/music-authorization.server';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('musica');
@@ -54,7 +55,7 @@ export default async function MusicArchiveLandingPage({
   const isFiltered =
     decade !== undefined || country !== undefined || forTrade || !!genreSlug || !!conditionValue;
 
-  const [albums, viewer, clubs, media, genres] = await Promise.all([
+  const [albums, viewer, clubs, media, genres, canManageArchive] = await Promise.all([
     isFiltered
       ? listAlbumsFiltered({
           decade,
@@ -69,6 +70,7 @@ export default async function MusicArchiveLandingPage({
     listMusicClubs(),
     listLatestMusicMedia(12),
     listMusicGenres(),
+    canCurrentUserManageMusicArchive(),
   ]);
   const genreName = genreSlug ? genres.find((g) => g.slug === genreSlug)?.name ?? null : null;
   const conditionLabel = conditionValue ? t(`filteredCondition.${conditionValue}`) : null;
@@ -101,14 +103,23 @@ export default async function MusicArchiveLandingPage({
             <MusicSearchBar size="hero" />
           </div>
           {isAuthed && (
-            <p className="pt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs">
               <Link
                 href={'/musica/subir' as Route}
-                className="font-medium text-zinc-800 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-500 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:decoration-zinc-400"
+                className="font-medium text-zinc-800 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:decoration-zinc-400 dark:focus-visible:outline-zinc-100"
               >
                 {t('landing.uploadCta')}
               </Link>
-            </p>
+              {canManageArchive && (
+                <Link
+                  href={'/admin/music' as Route}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 font-semibold text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:focus-visible:outline-zinc-100"
+                >
+                  <Cog6ToothIcon className="h-4 w-4" />
+                  {t('landing.adminCta')}
+                </Link>
+              )}
+            </div>
           )}
         </div>
       </header>
