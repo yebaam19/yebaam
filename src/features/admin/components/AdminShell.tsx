@@ -1,19 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
+import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
+import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
-import type { Route } from 'next'
-import { Bars3Icon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import AdminSidebar from './AdminSidebar'
-import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
-import { useTranslations } from 'next-intl'
+import { useState } from 'react'
+import AdminSidebar, { type AdminNavScope } from './AdminSidebar'
 
 interface Props {
   children: React.ReactNode
+  navScope?: AdminNavScope
 }
 
-export default function AdminShell({ children }: Props) {
+export default function AdminShell({ children, navScope = 'all' }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const t = useTranslations('admin.shell')
 
@@ -21,25 +22,17 @@ export default function AdminShell({ children }: Props) {
     <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 border-r border-neutral-200 bg-white lg:block dark:border-neutral-800 dark:bg-neutral-900">
-        <AdminSidebar />
+        <AdminSidebar scope={navScope} />
       </aside>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileOpen(false)}
-          />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
           <div className="absolute top-0 bottom-0 left-0 flex w-64 flex-col bg-white shadow-xl dark:bg-neutral-900">
             <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
               <Link href={'/feed' as Route} className="flex h-6 shrink-0 items-center">
-                <Image
-                  src={YebaamLogo}
-                  alt="Yebaam"
-                  className="h-full w-auto"
-                  style={{ width: 'auto' }}
-                />
+                <Image src={YebaamLogo} alt="Yebaam" className="h-full w-auto" style={{ width: 'auto' }} />
               </Link>
               <button
                 type="button"
@@ -51,7 +44,7 @@ export default function AdminShell({ children }: Props) {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <AdminSidebar onNavigate={() => setMobileOpen(false)} />
+              <AdminSidebar scope={navScope} onNavigate={() => setMobileOpen(false)} />
             </div>
           </div>
         </div>
@@ -68,12 +61,7 @@ export default function AdminShell({ children }: Props) {
             <Bars3Icon className="h-5 w-5" />
           </button>
           <Link href={'/feed' as Route} className="flex h-6 shrink-0 items-center">
-            <Image
-              src={YebaamLogo}
-              alt="Yebaam"
-              className="h-full w-auto"
-              style={{ width: 'auto' }}
-            />
+            <Image src={YebaamLogo} alt="Yebaam" className="h-full w-auto" style={{ width: 'auto' }} />
           </Link>
           <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-700 uppercase dark:bg-primary-900/30 dark:text-primary-300">
             {t('adminBadge')}

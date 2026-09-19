@@ -1,14 +1,14 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config'
+import { hasAdminViewParam } from '@/lib/auth/admin-view'
+import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
+import { getAuthClaimsUser, type AuthClaimsUser } from '@/utils/supabase/claims'
 import {
   createClient,
   isAnonymousSessionError,
   isInvalidRefreshTokenError,
   redirectWithCookies,
-} from '@/utils/supabase/middleware';
-import { getAuthClaimsUser, type AuthClaimsUser } from '@/utils/supabase/claims';
-import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config';
-import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
-import { hasAdminViewParam } from '@/lib/auth/admin-view';
+} from '@/utils/supabase/middleware'
+import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_ROUTES = [
   '/',
@@ -55,7 +55,7 @@ const PUBLIC_ROUTES = [
   // El Umbral (clave-1.pdf marketing stunt): the shared link must open for
   // anyone; pronouncing a clave gates at the server-action layer.
   '/umbral',
-];
+]
 
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
 // also be able to use without being bounced to /feed or /admin/foros.
@@ -74,10 +74,10 @@ const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/promociones',
   '/normativa',
   '/umbral',
-];
+]
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl
 
   // Music archive kill switch — when disabled, the whole module is hidden.
   // We rewrite to a synthetic 404 path so Next's not-found UI renders.
@@ -88,11 +88,11 @@ export async function proxy(request: NextRequest) {
       pathname === '/admin/music' ||
       pathname.startsWith('/admin/music/'))
   ) {
-    return NextResponse.rewrite(new URL('/_not-found', request.url));
+    return NextResponse.rewrite(new URL('/_not-found', request.url))
   }
 
-  const client = createClient(request);
-  const { supabase, clearAuthCookies } = client;
+  const client = createClient(request)
+  const { supabase, clearAuthCookies } = client
 
   // Identity comes from `getClaims()`, not `getUser()`: this project signs
   // access tokens with an asymmetric ES256 key, so the token is verified with
@@ -107,12 +107,12 @@ export async function proxy(request: NextRequest) {
   // swapping Supabase projects, or when a user was signed out elsewhere — can
   // still be thrown or returned, and we treat it as "anonymous" plus expire the
   // bad cookies so the browser stops resending them.
-  let user: AuthClaimsUser | null = null;
+  let user: AuthClaimsUser | null = null
   try {
-    const { user: claimsUser, error } = await getAuthClaimsUser(supabase);
+    const { user: claimsUser, error } = await getAuthClaimsUser(supabase)
     if (error) {
       if (isInvalidRefreshTokenError(error)) {
-        clearAuthCookies();
+        clearAuthCookies()
       } else if (isAnonymousSessionError(error)) {
         // Normal case: no cookies → no user. Not an error, do not log.
         // (`getClaims()` usually reports this as `{ user: null, error: null }`
@@ -120,22 +120,22 @@ export async function proxy(request: NextRequest) {
         // without even reaching this branch.)
       } else if (error.status && error.status !== 401) {
         // Genuine unexpected failure — surface it but don't crash the request.
-        console.warn('[proxy] supabase.auth.getClaims error:', error.message);
+        console.warn('[proxy] supabase.auth.getClaims error:', error.message)
       }
     } else {
-      user = claimsUser;
+      user = claimsUser
     }
   } catch (err) {
     if (isInvalidRefreshTokenError(err)) {
-      clearAuthCookies();
+      clearAuthCookies()
     } else if (isAnonymousSessionError(err)) {
       // Normal case: no cookies → no user. Not an error, do not log.
     } else {
-      console.warn('[proxy] supabase.auth.getClaims threw:', err);
+      console.warn('[proxy] supabase.auth.getClaims threw:', err)
     }
   }
 
-  const hasSession = Boolean(user);
+  const hasSession = Boolean(user)
 
   // `/` is a pure redirect target: signed-in users go to their feed, everyone
   // else to login. Handle it here, before any page renders, so we never
@@ -146,60 +146,69 @@ export async function proxy(request: NextRequest) {
   // `/login`, which sits under the much lighter (auth) layout). Doing it here
   // also skips the two admin-role queries below for this path.
   if (pathname === '/') {
-    return redirectWithCookies(new URL(hasSession ? '/feed' : '/login', request.url), client);
+    return redirectWithCookies(new URL(hasSession ? '/feed' : '/login', request.url), client)
   }
 
   // `/cities` is public, while each city's news tab belongs to the private
   // Noticias module. This exception covers every city slug in one place.
-  const isPrivateCityNewsRoute = /^\/cities\/[^/]+\/news(?:\/|$)/.test(pathname);
-  const isPublicRoute = !isPrivateCityNewsRoute && PUBLIC_ROUTES.some((route) =>
-    route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`),
-  );
+  const isPrivateCityNewsRoute = /^\/cities\/[^/]+\/news(?:\/|$)/.test(pathname)
+  const isPublicRoute =
+    !isPrivateCityNewsRoute &&
+    PUBLIC_ROUTES.some((route) =>
+      route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`)
+    )
 
   if (!hasSession && !isPublicRoute) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return redirectWithCookies(loginUrl, client);
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return redirectWithCookies(loginUrl, client)
   }
 
-  const isAuthAllowedPublic = !isPrivateCityNewsRoute && AUTH_ALLOWED_PUBLIC_ROUTES.some((route) =>
-    pathname === route || pathname.startsWith(`${route}/`),
-  );
+  const isAuthAllowedPublic =
+    !isPrivateCityNewsRoute &&
+    AUTH_ALLOWED_PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
   if (hasSession && user) {
-    const [{ data: adminRow }, { data: forumRoleRow }] = await Promise.all([
+    const [{ data: adminRow }, { data: forumRoleRow }, { data: musicEditorRow }] = await Promise.all([
       supabase.from('platform_admins').select('user_id').eq('user_id', user.id).maybeSingle(),
       supabase.from('forum_global_roles').select('role').eq('user_id', user.id).maybeSingle(),
-    ]);
-    const isPlatformAdmin = Boolean(adminRow);
-    const hasForumAccess = isPlatformAdmin || Boolean(forumRoleRow);
+      supabase.from('music_archive_editors').select('user_id').eq('user_id', user.id).maybeSingle(),
+    ])
+    const isPlatformAdmin = Boolean(adminRow)
+    const hasForumAccess = isPlatformAdmin || Boolean(forumRoleRow)
+    const hasMusicAdminAccess = isPlatformAdmin || Boolean(musicEditorRow)
 
-    const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
+    const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/')
+    const isMusicAdminRoute = pathname === '/admin/music' || pathname.startsWith('/admin/music/')
 
     // Explicit "ver como público" link from the admin panel (e.g. the user
     // detail's "Ver perfil público"). Without this the corral below would bounce
     // the admin straight back into /admin, so the profile never rendered.
-    const isAdminView = isPlatformAdmin && hasAdminViewParam(request.nextUrl.searchParams);
+    const isAdminView = isPlatformAdmin && hasAdminViewParam(request.nextUrl.searchParams)
 
     if (isPlatformAdmin && !isAdminView && !isAdminRoute && !isPublicRoute && !isAuthAllowedPublic) {
-      return redirectWithCookies(new URL('/admin/foros', request.url), client);
+      return redirectWithCookies(new URL('/admin/foros', request.url), client)
     }
 
     if (isPlatformAdmin && !isAdminView && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
-      return redirectWithCookies(new URL('/admin/foros', request.url), client);
+      return redirectWithCookies(new URL('/admin/foros', request.url), client)
     }
 
-    if (!hasForumAccess && isAdminRoute) {
-      return redirectWithCookies(new URL('/feed', request.url), client);
+    if (!hasForumAccess && !hasMusicAdminAccess && isAdminRoute) {
+      return redirectWithCookies(new URL('/feed', request.url), client)
+    }
+
+    if (hasMusicAdminAccess && !hasForumAccess && isAdminRoute && !isMusicAdminRoute) {
+      return redirectWithCookies(new URL('/admin/music', request.url), client)
     }
   }
 
   if (hasSession && isPublicRoute && pathname !== '/' && !isAuthAllowedPublic) {
-    const safeRedirect = sanitizeRedirectPath(request.nextUrl.searchParams.get('redirect'));
-    return redirectWithCookies(new URL(safeRedirect, request.url), client);
+    const safeRedirect = sanitizeRedirectPath(request.nextUrl.searchParams.get('redirect'))
+    return redirectWithCookies(new URL(safeRedirect, request.url), client)
   }
 
-  return client.supabaseResponse;
+  return client.supabaseResponse
 }
 
 export const config = {
@@ -220,4 +229,4 @@ export const config = {
     // replaces `_next/static|_next/image` to also cover `_next/data` and HMR.
     '/((?!api|monitoring|_next|favicon\\.ico|icon\\.png|icon\\.ico|opengraph-image|twitter-image|apple-icon|manifest\\.json|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:png|jpe?g|gif|webp|svg|avif|ico|bmp|pdf|txt|xml|json|webmanifest|mp3|mp4|webm|mov|woff|woff2|ttf|otf|eot|map|ai|zip|csv)$).*)',
   ],
-};
+}

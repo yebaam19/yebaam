@@ -1,9 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import type { Route } from 'next'
-import { usePathname, useRouter } from 'next/navigation'
-import { useTransition } from 'react'
 import {
   AcademicCapIcon,
   BuildingOffice2Icon,
@@ -19,26 +15,30 @@ import {
 } from '@/components/icons/heroicons-shim'
 import { ADMIN_NAV_ITEMS, type AdminNavItem } from '@/features/admin/nav'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-import Image from 'next/image'
 import YebaamLogo from '@/images/brand/Yebaam-Logo.png'
+import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { useTransition } from 'react'
 
 // Maps the Spanish nav labels (defined in nav.ts) to translation keys under admin.nav.
 const NAV_LABEL_TO_KEY: Record<string, string> = {
-  'Dashboard': 'dashboard',
-  'Foros': 'foros',
+  Dashboard: 'dashboard',
+  Foros: 'foros',
   'Chat Público': 'chatPublico',
-  'Usuarios': 'usuarios',
-  'Ciudades': 'ciudades',
-  'Verificaciones': 'verifications',
+  Usuarios: 'usuarios',
+  Ciudades: 'ciudades',
+  Verificaciones: 'verifications',
   'Credenciales Profesionales': 'professionalCredentials',
-  'Insignias': 'insignias',
+  Insignias: 'insignias',
   'Solicitudes de insignias': 'badgeRequests',
-  'Páginas': 'paginas',
+  Páginas: 'paginas',
   'Blog del Músico': 'blogs',
   'Servicios Profesionales': 'professionalServices',
   'Club de coleccionistas': 'musicClub',
-  'Ajustes': 'ajustes',
+  Ajustes: 'ajustes',
 }
 
 const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: string }>> = {
@@ -57,9 +57,12 @@ const ICONS: Record<AdminNavItem['iconName'], React.ComponentType<{ className?: 
 
 interface Props {
   onNavigate?: () => void
+  scope?: AdminNavScope
 }
 
-export default function AdminSidebar({ onNavigate }: Props) {
+export type AdminNavScope = 'all' | 'music'
+
+export default function AdminSidebar({ onNavigate, scope = 'all' }: Props) {
   const pathname = usePathname() ?? ''
   const router = useRouter()
   const logout = useAuthStore((s) => s.logout)
@@ -84,33 +87,22 @@ export default function AdminSidebar({ onNavigate }: Props) {
     <nav className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-neutral-200 px-4 pt-5 pb-4 dark:border-neutral-800">
         <Link href={'/feed' as Route} className="flex h-7 shrink-0 items-center">
-          <Image
-            src={YebaamLogo}
-            alt="Yebaam"
-            className="h-full w-auto"
-            style={{ width: 'auto' }}
-            priority
-          />
+          <Image src={YebaamLogo} alt="Yebaam" className="h-full w-auto" style={{ width: 'auto' }} priority />
         </Link>
         <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-700 uppercase dark:bg-primary-900/30 dark:text-primary-300">
           {tShell('adminBadge')}
         </span>
       </div>
       <div className="px-4 pt-5 pb-3">
-        <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
-          {tSidebar('section')}
-        </p>
+        <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">{tSidebar('section')}</p>
       </div>
       <ul className="flex-1 space-y-1 px-2">
-        {ADMIN_NAV_ITEMS.map((item) => {
+        {ADMIN_NAV_ITEMS.filter((item) => scope === 'all' || item.matchPrefix === '/admin/music').map((item) => {
           const Icon = ICONS[item.iconName]
           const isActive =
             item.href != null &&
-            (item.matchPrefix === '/admin'
-              ? pathname === '/admin'
-              : pathname.startsWith(item.matchPrefix ?? item.href))
-          const base =
-            'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors'
+            (item.matchPrefix === '/admin' ? pathname === '/admin' : pathname.startsWith(item.matchPrefix ?? item.href))
+          const base = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors'
           if (item.disabled || !item.href) {
             return (
               <li key={item.label}>
@@ -144,12 +136,7 @@ export default function AdminSidebar({ onNavigate }: Props) {
                   }`}
                 />
                 <span>{navLabel(item.label)}</span>
-                {isActive && (
-                  <span
-                    aria-hidden="true"
-                    className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500"
-                  />
-                )}
+                {isActive && <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500" />}
               </Link>
             </li>
           )

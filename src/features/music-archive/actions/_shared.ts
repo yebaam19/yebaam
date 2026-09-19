@@ -1,74 +1,73 @@
-import 'server-only';
-import { revalidatePath } from 'next/cache';
-import { after } from 'next/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { getServerClient } from '@/utils/supabase/server';
-import { requirePlatformAdmin } from '../server/music.server';
+import { getServerClient, getServiceClient } from '@/utils/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
+import 'server-only'
+import { hasMusicArchiveAdminAccess, requireMusicArchiveAdmin } from '../server/music-authorization.server'
 
-export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
+export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
-export type Session = { userId: string; client: SupabaseClient };
+type ServerClient = Awaited<ReturnType<typeof getServerClient>>
 
-export { MAX_AUDIO_BYTES } from '@/lib/upload-limits';
+export type Session = { userId: string; client: ServerClient }
+
+export { MAX_AUDIO_BYTES } from '@/lib/upload-limits'
 
 /** Revalidate a club's detail + members pages after a membership change.
  *  Shared by the club members + moderation actions. */
 export async function revalidateClubMembers(clubId: string): Promise<void> {
-  const client = await getServerClient();
-  const { data } = await client.from('clubs').select('slug').eq('id', clubId).maybeSingle();
-  const slug = (data as { slug: string } | null)?.slug;
+  const client = await getServerClient()
+  const { data } = await client.from('clubs').select('slug').eq('id', clubId).maybeSingle()
+  const slug = (data as { slug: string } | null)?.slug
   if (slug) {
-    revalidatePath(`/musica/clubes/${slug}`);
-    revalidatePath(`/musica/clubes/${slug}/miembros`);
+    revalidatePath(`/musica/clubes/${slug}`)
+    revalidatePath(`/musica/clubes/${slug}/miembros`)
   }
 }
 
 export async function requireSession(): Promise<Session | null> {
-  const client = await getServerClient();
-  const { data } = await client.auth.getUser();
-  if (!data.user) return null;
-  return { userId: data.user.id, client };
+  const client = await getServerClient()
+  const { data } = await client.auth.getUser()
+  if (!data.user) return null
+  return { userId: data.user.id, client }
 }
 
-export async function adminGate(): Promise<
-  | { ok: true; userId: string }
-  | { ok: false; error: string }
-> {
-  const admin = await requirePlatformAdmin();
-  if (!admin) return { ok: false, error: 'Solo administradores.' };
-  return { ok: true, userId: admin.userId };
+export async function adminGate(): Promise<{ ok: true; userId: string } | { ok: false; error: string }> {
+  const admin = await requireMusicArchiveAdmin()
+  if (!admin) return { ok: false, error: 'Solo administradores del Club de Coleccionistas.' }
+  return { ok: true, userId: admin.userId }
 }
 
-/** Pass if the viewer is a platform admin OR has one of the given roles in the
+/** Pass if the viewer manages the music archive OR has one of the given roles in the
  *  given club. Used by club_links + role + article admin actions. Roles in
  *  `club_members.role` are uppercase ('OWNER','ADMIN','MODERATOR','MEMBER'). */
 export async function clubAdminGate(
   clubId: string,
-  allowedRoles: readonly string[] = ['OWNER', 'ADMIN'],
+  allowedRoles: readonly string[] = ['OWNER', 'ADMIN']
 ): Promise<
-  | { ok: true; userId: string; client: SupabaseClient; isPlatformAdmin: boolean }
-  | { ok: false; error: string }
+  { ok: true; userId: string; client: ServerClient; isPlatformAdmin: boolean } | { ok: false; error: string }
 > {
-  const session = await requireSession();
-  if (!session) return { ok: false, error: 'Inicia sesión para continuar.' };
-  // Platform admin always passes.
-  const { data: pa } = await session.client
-    .from('platform_admins')
-    .select('user_id')
-    .eq('user_id', session.userId)
-    .maybeSingle();
-  if (pa) return { ok: true, userId: session.userId, client: session.client, isPlatformAdmin: true };
+  const session = await requireSession()
+  if (!session) return { ok: false, error: 'Inicia sesión para continuar.' }
+  const adminAccess = await hasMusicArchiveAdminAccess(session.client, session.userId)
+  if (adminAccess.allowed) {
+    return {
+      ok: true,
+      userId: session.userId,
+      client: getServiceClient(),
+      isPlatformAdmin: adminAccess.isPlatformAdmin,
+    }
+  }
   const { data: cm } = await session.client
     .from('club_members')
     .select('role')
     .eq('club_id', clubId)
     .eq('user_id', session.userId)
-    .maybeSingle();
-  const role = (cm as { role: string } | null)?.role;
+    .maybeSingle()
+  const role = (cm as { role: string } | null)?.role
   if (!role || !allowedRoles.includes(role)) {
-    return { ok: false, error: 'No tienes permisos en este club.' };
+    return { ok: false, error: 'No tienes permisos en este club.' }
   }
-  return { ok: true, userId: session.userId, client: session.client, isPlatformAdmin: false };
+  return { ok: true, userId: session.userId, client: session.client, isPlatformAdmin: false }
 }
 
 export function musicSlug(name: string): string {
@@ -80,69 +79,59 @@ export function musicSlug(name: string): string {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .slice(0, 80) || 'item'
-  );
+  )
 }
 
 export async function uniqueSlug(
-  client: SupabaseClient,
+  client: ServerClient,
   table: 'music_artists' | 'music_albums' | 'music_labels',
-  base: string,
+  base: string
 ): Promise<string> {
-  const baseSlug = musicSlug(base);
-  let candidate = baseSlug;
-  let suffix = 1;
+  const baseSlug = musicSlug(base)
+  let candidate = baseSlug
+  let suffix = 1
   // Up to 20 attempts. Race condition ok — UNIQUE constraint will catch collision.
   for (let i = 0; i < 20; i++) {
-    const { data } = await client.from(table).select('id').eq('slug', candidate).maybeSingle();
-    if (!data) return candidate;
-    suffix += 1;
-    candidate = `${baseSlug}-${suffix}`;
+    const { data } = await client.from(table).select('id').eq('slug', candidate).maybeSingle()
+    if (!data) return candidate
+    suffix += 1
+    candidate = `${baseSlug}-${suffix}`
   }
-  return `${baseSlug}-${Date.now()}`;
+  return `${baseSlug}-${Date.now()}`
 }
 
 export function revalidateMusic(slug?: { albumSlug?: string; artistSlug?: string }) {
-  revalidatePath('/musica');
-  if (slug?.albumSlug) revalidatePath(`/musica/albumes/${slug.albumSlug}`);
-  if (slug?.artistSlug) revalidatePath(`/musica/artistas/${slug.artistSlug}`);
+  revalidatePath('/musica')
+  if (slug?.albumSlug) revalidatePath(`/musica/albumes/${slug.albumSlug}`)
+  if (slug?.artistSlug) revalidatePath(`/musica/artistas/${slug.artistSlug}`)
 }
 
 /** Look up an album's slug (and optionally its artist's slug) by album id and
  *  revalidate the affected /musica paths. Used by every track-mutating action. */
 export async function revalidateAlbumById(
-  client: SupabaseClient,
+  client: ServerClient,
   albumId: string,
-  opts: { withArtist?: boolean } = {},
+  opts: { withArtist?: boolean } = {}
 ): Promise<void> {
-  const { data: album } = await client
-    .from('music_albums')
-    .select('slug, artist_id')
-    .eq('id', albumId)
-    .maybeSingle();
-  if (!album) return;
-  const a = album as { slug: string; artist_id: string };
-  let artistSlug: string | undefined;
+  const { data: album } = await client.from('music_albums').select('slug, artist_id').eq('id', albumId).maybeSingle()
+  if (!album) return
+  const a = album as { slug: string; artist_id: string }
+  let artistSlug: string | undefined
   if (opts.withArtist) {
-    const { data: artist } = await client
-      .from('music_artists')
-      .select('slug')
-      .eq('id', a.artist_id)
-      .maybeSingle();
-    artistSlug = (artist as { slug: string } | null)?.slug;
+    const { data: artist } = await client.from('music_artists').select('slug').eq('id', a.artist_id).maybeSingle()
+    artistSlug = (artist as { slug: string } | null)?.slug
   }
-  revalidateMusic({ albumSlug: a.slug, artistSlug });
+  revalidateMusic({ albumSlug: a.slug, artistSlug })
 }
 
 /** Fire the `notify-music-track-upload` Deno edge function for each newly
  *  inserted track. Best-effort — never blocks the response. Call inside a
  *  Server Action; the `after()` runtime keeps Vercel's runtime alive past
  *  the response. Used by createTrack, createTracksBatch, and confirmImport. */
-export function fireTrackAuditAfter(
-  targets: Array<{ trackId: string; r2Key: string; contributorId: string | null }>,
-) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const internalSecret = process.env.EMAIL_WEBHOOK_SECRET;
-  if (!supabaseUrl || !internalSecret || targets.length === 0) return;
+export function fireTrackAuditAfter(targets: Array<{ trackId: string; r2Key: string; contributorId: string | null }>) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const internalSecret = process.env.EMAIL_WEBHOOK_SECRET
+  if (!supabaseUrl || !internalSecret || targets.length === 0) return
   after(async () => {
     for (const t of targets) {
       try {
@@ -153,10 +142,10 @@ export function fireTrackAuditAfter(
             'X-Internal-Secret': internalSecret,
           },
           body: JSON.stringify(t),
-        });
+        })
       } catch (err) {
-        console.error('[track-audit] notify-music-track-upload failed:', err);
+        console.error('[track-audit] notify-music-track-upload failed:', err)
       }
     }
-  });
+  })
 }

@@ -1,81 +1,73 @@
-'use server';
+'use server'
 
-import { getServiceClient } from '@/utils/supabase/server';
-import { uploadAudioFromUrl } from '@/lib/cloudflare/r2';
-import { uploadImageFromUrl } from '@/lib/cloudflare/images';
-import {
-  isAllowedAudioHost,
-  type DetectedAlbum,
-} from '../../server/music.importer';
-import { requirePlatformAdmin } from '../../server/music.server';
-import type { MusicImportSource } from '../../types/music.types';
-import {
-  fireTrackAuditAfter,
-  musicSlug,
-  revalidateMusic,
-  type ActionResult,
-} from '../_shared';
+import { uploadImageFromUrl } from '@/lib/cloudflare/images'
+import { uploadAudioFromUrl } from '@/lib/cloudflare/r2'
+import { getServiceClient } from '@/utils/supabase/server'
+import { requireMusicArchiveAdmin } from '../../server/music-authorization.server'
+import { isAllowedAudioHost, type DetectedAlbum } from '../../server/music.importer'
+import type { MusicImportSource } from '../../types/music.types'
+import { fireTrackAuditAfter, musicSlug, revalidateMusic, type ActionResult } from '../_shared'
 
 export async function confirmImport(
   importId: string,
-  edits: Partial<DetectedAlbum>,
+  edits: Partial<DetectedAlbum>
 ): Promise<ActionResult<{ albumId: string; albumSlug: string; trackIds: string[] }>> {
-  const admin = await requirePlatformAdmin();
-  if (!admin) return { ok: false, error: 'Solo administradores pueden importar.' };
+  const admin = await requireMusicArchiveAdmin()
+  if (!admin) return { ok: false, error: 'Solo administradores pueden importar.' }
 
-  const service = getServiceClient();
+  const service = getServiceClient()
   const { data: importRow, error: importErr } = await service
     .from('music_imports')
     .select('*')
     .eq('id', importId)
-    .maybeSingle();
-  if (importErr || !importRow) return { ok: false, error: 'Import no encontrado.' };
+    .maybeSingle()
+  if (importErr || !importRow) return { ok: false, error: 'Import no encontrado.' }
   const row = importRow as {
-    id: string;
-    source: MusicImportSource;
-    source_url: string;
-    status: string;
-    detected_metadata: DetectedAlbum;
-  };
+    id: string
+    source: MusicImportSource
+    source_url: string
+    status: string
+    detected_metadata: DetectedAlbum
+  }
   if (row.status === 'imported') {
-    return { ok: false, error: 'Este import ya está completado.' };
+    return { ok: false, error: 'Este import ya está completado.' }
   }
 
-  const merged: DetectedAlbum = { ...row.detected_metadata, ...edits };
+  const merged: DetectedAlbum = { ...row.detected_metadata, ...edits }
   if (!merged.artist_name?.trim() || !merged.album_title?.trim() || merged.tracks.length === 0) {
-    return { ok: false, error: 'Datos incompletos: faltan artista, título o tracks.' };
+    return { ok: false, error: 'Datos incompletos: faltan artista, título o tracks.' }
   }
 
   // Mark processing.
-  await service.from('music_imports').update({ status: 'processing' }).eq('id', importId);
+  await service.from('music_imports').update({ status: 'processing' }).eq('id', importId)
 
   try {
     // 1) Cover image → Cloudflare Images (server-to-server fetch).
-    let coverCfImageId: string | null = null;
+    let coverCfImageId: string | null = null
     if (merged.cover_image_url) {
       try {
         const cover = await uploadImageFromUrl(merged.cover_image_url, {
           source: row.source,
           source_url: row.source_url,
-        });
-        coverCfImageId = cover.id;
+        })
+        coverCfImageId = cover.id
       } catch (err) {
-        console.warn('[confirmImport] cover upload failed (continuing):', err);
+        console.warn('[confirmImport] cover upload failed (continuing):', err)
       }
     }
 
     // 2) Artist — find by name, create if missing. Slug is unique so we
     // tolerate the race (next() throws on conflict, we catch and re-fetch).
-    const artistSlugBase = musicSlug(merged.artist_name);
-    let artistId: string;
+    const artistSlugBase = musicSlug(merged.artist_name)
+    let artistId: string
     {
       const { data: existing } = await service
         .from('music_artists')
         .select('id')
         .eq('slug', artistSlugBase)
-        .maybeSingle();
+        .maybeSingle()
       if (existing) {
-        artistId = (existing as { id: string }).id;
+        artistId = (existing as { id: string }).id
       } else {
         const { data: newArtist, error: artErr } = await service
           .from('music_artists')
@@ -86,9 +78,9 @@ export async function confirmImport(
             contributed_by: null, // system import
           })
           .select('id')
-          .single();
-        if (artErr) throw artErr;
-        artistId = (newArtist as { id: string }).id;
+          .single()
+        if (artErr) throw artErr
+        artistId = (newArtist as { id: string }).id
       }
     }
 
@@ -97,15 +89,11 @@ export async function confirmImport(
       musicSlug(`${merged.album_title}-${merged.year ?? ''}`),
       musicSlug(`${merged.album_title}-${merged.year ?? ''}-${merged.catalog_number ?? ''}`),
       musicSlug(`${merged.album_title}-${importId.slice(0, 8)}`),
-    ];
-    let albumId: string | null = null;
-    let albumSlug: string | null = null;
+    ]
+    let albumId: string | null = null
+    let albumSlug: string | null = null
     for (const slug of albumSlugCandidates) {
-      const { data: clash } = await service
-        .from('music_albums')
-        .select('id')
-        .eq('slug', slug)
-        .maybeSingle();
+      const { data: clash } = await service.from('music_albums').select('id').eq('slug', slug).maybeSingle()
       if (!clash) {
         const { data: alb, error: albErr } = await service
           .from('music_albums')
@@ -122,44 +110,38 @@ export async function confirmImport(
             contributed_by: null,
           })
           .select('id, slug')
-          .single();
-        if (albErr) throw albErr;
-        albumId = (alb as { id: string }).id;
-        albumSlug = (alb as { slug: string }).slug;
-        break;
+          .single()
+        if (albErr) throw albErr
+        albumId = (alb as { id: string }).id
+        albumSlug = (alb as { slug: string }).slug
+        break
       }
     }
     if (!albumId || !albumSlug) {
-      throw new Error('No se pudo crear el álbum (slug en conflicto).');
+      throw new Error('No se pudo crear el álbum (slug en conflicto).')
     }
 
     // 4) Tracks — stream each remote MP3 to R2, then create the row.
-    const trackIds: string[] = [];
-    const r2KeysByTrackId: string[] = [];
-    const importedAt = new Date().toISOString().slice(0, 10);
-    const note = `Importado desde ${row.source_url} el ${importedAt}`;
-    const yearForKey = merged.year ?? new Date().getUTCFullYear();
-    let position = 1;
+    const trackIds: string[] = []
+    const r2KeysByTrackId: string[] = []
+    const importedAt = new Date().toISOString().slice(0, 10)
+    const note = `Importado desde ${row.source_url} el ${importedAt}`
+    const yearForKey = merged.year ?? new Date().getUTCFullYear()
+    let position = 1
     for (const t of merged.tracks) {
       if (!isAllowedAudioHost(t.audio_url)) {
-        console.warn('[confirmImport] skipping disallowed audio host:', t.audio_url);
-        continue;
+        console.warn('[confirmImport] skipping disallowed audio host:', t.audio_url)
+        continue
       }
-      const fmt = t.format ?? 'mp3';
-      const r2Key = `tracks/${yearForKey}/${crypto.randomUUID()}.${fmt}`;
+      const fmt = t.format ?? 'mp3'
+      const r2Key = `tracks/${yearForKey}/${crypto.randomUUID()}.${fmt}`
       const contentType =
-        fmt === 'flac'
-          ? 'audio/flac'
-          : fmt === 'wav'
-            ? 'audio/wav'
-            : fmt === 'ogg'
-              ? 'audio/ogg'
-              : 'audio/mpeg';
+        fmt === 'flac' ? 'audio/flac' : fmt === 'wav' ? 'audio/wav' : fmt === 'ogg' ? 'audio/ogg' : 'audio/mpeg'
       try {
-        await uploadAudioFromUrl(t.audio_url, r2Key, contentType);
+        await uploadAudioFromUrl(t.audio_url, r2Key, contentType)
       } catch (err) {
-        console.error('[confirmImport] track upload failed:', t.audio_url, err);
-        continue;
+        console.error('[confirmImport] track upload failed:', t.audio_url, err)
+        continue
       }
       const { data: trackRow, error: trErr } = await service
         .from('music_tracks')
@@ -177,18 +159,18 @@ export async function confirmImport(
           restored_by_note: note,
         })
         .select('id')
-        .single();
+        .single()
       if (trErr) {
-        console.error('[confirmImport] track row insert failed:', trErr);
-        continue;
+        console.error('[confirmImport] track row insert failed:', trErr)
+        continue
       }
-      trackIds.push((trackRow as { id: string }).id);
-      r2KeysByTrackId.push(r2Key);
-      position += 1;
+      trackIds.push((trackRow as { id: string }).id)
+      r2KeysByTrackId.push(r2Key)
+      position += 1
     }
 
     if (trackIds.length === 0) {
-      throw new Error('No se pudo importar ninguna canción. Verifica las URLs de audio.');
+      throw new Error('No se pudo importar ninguna canción. Verifica las URLs de audio.')
     }
 
     await service
@@ -199,25 +181,21 @@ export async function confirmImport(
         created_track_ids: trackIds,
         completed_at: new Date().toISOString(),
       })
-      .eq('id', importId);
+      .eq('id', importId)
 
     fireTrackAuditAfter(
       trackIds.map((id, idx) => ({
         trackId: id,
         r2Key: r2KeysByTrackId[idx]!,
         contributorId: null,
-      })),
-    );
+      }))
+    )
 
-    revalidateMusic({ albumSlug });
-    return { ok: true, data: { albumId, albumSlug, trackIds } };
+    revalidateMusic({ albumSlug })
+    return { ok: true, data: { albumId, albumSlug, trackIds } }
   } catch (e) {
-    const detail = e instanceof Error ? e.message : String(e);
-    await service
-      .from('music_imports')
-      .update({ status: 'failed', error_detail: detail })
-      .eq('id', importId);
-    return { ok: false, error: detail };
+    const detail = e instanceof Error ? e.message : String(e)
+    await service.from('music_imports').update({ status: 'failed', error_detail: detail }).eq('id', importId)
+    return { ok: false, error: detail }
   }
 }
-

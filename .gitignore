@@ -98,8 +98,10 @@ docker-compose.override.yml
 dist/
 .cache/
 
-# SQL files — never commit (migrations, dumps, scratch queries)
+# SQL dumps and scratch queries
 *.sql
+# Reviewed schema changes are committed one migration at a time.
+!supabase/migrations/20260918010000_music_archive_editors.sql
 
 # MCP config (contains API keys)
 .mcp.json

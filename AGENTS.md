@@ -253,6 +253,12 @@ Two exceptions where you extract on the **first** repetition:
 
 When you extract, names should carry "what" and "how"; comment only the **Why** if it's non-obvious. Mirror this rule in [CLAUDE.md](CLAUDE.md) when editing.
 
+## AI features — TypeSafe
+
+- Use the `$typesafe-ai` skill when a feature needs structured semantic judgment from natural language or application state, including routing, ranking, extraction, verification, scoring, or classification.
+- Before implementing a TypeSafe integration, follow the skill and read the relevant live TypeSafe API/SDK, primitive, confidence, and cookbook documentation. Do not invent version-dependent API details.
+- Keep deterministic rules, authorization, calculations, exact lookups, workflow execution, and policy enforcement in application code. Keep TypeSafe credentials server-only and validate model behavior against representative product cases.
+
 ## Stack and conventions
 
 - **Package manager**: `pnpm` (use it for every install, never npm/yarn).
