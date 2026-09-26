@@ -1,22 +1,33 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { memo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'sonner'
 
-import { CommentList } from '@/app/(app)/feed/comments'
-import { ReactionListModal } from '@/app/(app)/feed/reacions'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { getUserDisplayName } from '@/lib/user-helpers'
 import type { Post } from '../interfaces/post.interfaces'
 import { usePostStore } from '../stores/post.store'
-import DeletePostModal from './DeletePostModal'
 import PostMedia from './PostMedia'
 import { PostCardContent } from './post-card/PostCardContent'
 import { PostCardFooter } from './post-card/PostCardFooter'
 import { PostCardHeader } from './post-card/PostCardHeader'
+
+const DeletePostModal = dynamic(() => import('./DeletePostModal'), { ssr: false })
+const CommentList = dynamic(
+  () => import('@/app/(app)/feed/comments/components/CommentList').then((mod) => mod.CommentList),
+  {
+    ssr: false,
+    loading: () => <div role="status" className="p-4 text-sm text-neutral-500">Cargando comentarios…</div>,
+  },
+)
+const ReactionListModal = dynamic(
+  () => import('@/app/(app)/feed/reacions/components/ReactionListModal/ReactionListModal').then((mod) => mod.ReactionListModal),
+  { ssr: false },
+)
 
 interface PostCardProps {
   post: Post
@@ -44,8 +55,10 @@ function PostCard({ post, className, onShowReactions, lcpCandidate = false }: Po
   )
   const [showComments, setShowComments] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [hasOpenedDeleteModal, setHasOpenedDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [reactionsModalOpen, setReactionsModalOpen] = useState(false)
+  const [hasOpenedReactionsModal, setHasOpenedReactionsModal] = useState(false)
 
   if (!post || !post.author || !post.id) return null
 
@@ -104,7 +117,10 @@ function PostCard({ post, className, onShowReactions, lcpCandidate = false }: Po
         isOwner={isOwner}
         isOptimistic={isOptimistic}
         onEdit={() => openEditModal(post)}
-        onDeleteClick={() => setShowDeleteModal(true)}
+        onDeleteClick={() => {
+          setHasOpenedDeleteModal(true)
+          setShowDeleteModal(true)
+        }}
       />
 
       <PostCardContent post={post} />
@@ -119,7 +135,10 @@ function PostCard({ post, className, onShowReactions, lcpCandidate = false }: Po
 
       <PostCardFooter
         post={post}
-        onShowReactions={onShowReactions ?? (() => setReactionsModalOpen(true))}
+        onShowReactions={onShowReactions ?? (() => {
+          setHasOpenedReactionsModal(true)
+          setReactionsModalOpen(true)
+        })}
         onToggleComments={() => setShowComments((v) => !v)}
         onShare={handleShare}
       />
@@ -130,14 +149,16 @@ function PostCard({ post, className, onShowReactions, lcpCandidate = false }: Po
         </div>
       )}
 
-      <DeletePostModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
-        isDeleting={isDeleting}
-      />
+      {hasOpenedDeleteModal && (
+        <DeletePostModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          isDeleting={isDeleting}
+        />
+      )}
 
-      {!onShowReactions && (
+      {!onShowReactions && hasOpenedReactionsModal && (
         <ReactionListModal
           isOpen={reactionsModalOpen}
           onClose={() => setReactionsModalOpen(false)}

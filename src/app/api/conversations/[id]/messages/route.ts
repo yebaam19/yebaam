@@ -6,6 +6,7 @@ import {
   isPrivateConversation,
 } from '@/lib/server/chat-crypto';
 import { MAX_MESSAGE_CHARS } from '@/features/chat/constants';
+import { hasAllowedChatAttachmentKey } from '@/lib/server/chat-attachment-access';
 
 type MessageRow = {
   id: string;
@@ -143,6 +144,12 @@ export async function POST(
   const { data: me } = await client.auth.getUser();
   const senderId = me?.user?.id;
   if (!senderId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // New R2 uploads are owner-scoped. A caller must not attach somebody else's
+  // key to a message they control and then use the conversation download route.
+  if (!hasAllowedChatAttachmentKey(body.media, senderId)) {
+    return NextResponse.json({ error: 'Invalid attachment key' }, { status: 403 });
+  }
 
   // Membership check via the conversation row itself (`conv_select` RLS =
   // is_conversation_participant), which also yields club_id for the

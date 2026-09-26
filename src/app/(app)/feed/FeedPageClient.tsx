@@ -5,10 +5,8 @@ import { CreatePostCard } from '@/components/CreatePostCard'
 import FabComposer from '@/components/FabComposer'
 import { Stories } from '@/components/Stories'
 import { useAuth } from '@/features/auth'
-import FeedTimeline from '@/app/(app)/feed/post/components/FeedTimeline'
 import { usePostStore } from '@/app/(app)/feed/post/stores/post.store'
-import { FriendSuggestionsCompact } from '@/features/user/components/FriendSuggestionCard'
-import type { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces'
+import DeferredFriendSuggestions from './DeferredFriendSuggestions'
 
 // Composer modals are heavy (uploader, media pipeline) — load them lazily and
 // only when open so they stay out of the feed's first-paint JS.
@@ -20,10 +18,10 @@ const EditPostModal = dynamic(() => import('@/app/(app)/feed/post/components/Edi
 })
 
 interface FeedPageClientProps {
-  initialPosts: Post[]
+  timeline: React.ReactNode
 }
 
-export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
+export default function FeedPageClient({ timeline }: FeedPageClientProps) {
   const { user } = useAuth()
   const openCreateModal = usePostStore((s) => s.openCreateModal)
   const isCreateModalOpen = usePostStore((s) => s.isCreateModalOpen)
@@ -66,11 +64,9 @@ export default function FeedPageClient({ initialPosts }: FeedPageClientProps) {
           />
         )}
 
-        <FeedTimeline initialPosts={initialPosts} />
+        {timeline}
 
-        <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <FriendSuggestionsCompact limit={4} />
-        </div>
+        <DeferredFriendSuggestions />
 
         <div className="flex items-center gap-4 py-4">
           <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />

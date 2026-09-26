@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getServerClient } from '@/utils/supabase/server';
 import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
+import { authorizeChatAttachment } from '@/lib/server/chat-attachment-access';
 
 /**
  * Presign a playback URL for a chat voice note, but ONLY for participants of the
@@ -12,15 +12,6 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id: conversationId } = await context.params;
-  if (!conversationId) {
-    return NextResponse.json({ error: 'conversationId is required' }, { status: 400 });
-  }
-
-  const client = await getServerClient();
-  const { data: me } = await client.auth.getUser();
-  const viewerId = me?.user?.id;
-  if (!viewerId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   let r2Key = '';
   try {
     const body = (await request.json()) as { r2_key?: string } | null;
@@ -28,20 +19,8 @@ export async function POST(
   } catch {
     /* validated below */
   }
-  if (!r2Key.startsWith('chat-audio/')) {
-    return NextResponse.json({ error: 'Invalid audio key' }, { status: 400 });
-  }
-
-  const { data: membership, error: memberErr } = await client
-    .from('conversation_participants')
-    .select('conversation_id')
-    .eq('conversation_id', conversationId)
-    .eq('user_id', viewerId)
-    .maybeSingle();
-  if (memberErr) return NextResponse.json({ error: memberErr.message }, { status: 500 });
-  if (!membership) {
-    return NextResponse.json({ error: 'Not a participant in this conversation' }, { status: 403 });
-  }
+  const denial = await authorizeChatAttachment(conversationId, r2Key, 'audio');
+  if (denial) return NextResponse.json({ error: denial.error }, { status: denial.status });
 
   try {
     const url = await getPublicAudioUrl(r2Key, 3600);

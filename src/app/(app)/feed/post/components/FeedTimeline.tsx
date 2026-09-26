@@ -8,6 +8,7 @@ import PostCard from './PostCard';
 import { usePosts, useSuggestedPosts } from '../hooks/usePosts';
 import { setCached } from '@/lib/hooks/cacheStore';
 import type { Post } from '../interfaces/post.interfaces';
+import FeedTimelineSkeleton from './FeedTimelineSkeleton';
 
 interface FeedTimelineProps {
   initialPosts?: Post[];
@@ -104,29 +105,7 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
 
   // Mostrar skeleton mientras carga
   if (isLoading && posts.length === 0) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-white dark:bg-neutral-900 rounded-xl p-6 animate-pulse"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-800 rounded" />
-                <div className="h-3 w-24 bg-neutral-200 dark:bg-neutral-800 rounded" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-800 rounded" />
-              <div className="h-4 w-5/6 bg-neutral-200 dark:bg-neutral-800 rounded" />
-              <div className="h-4 w-4/6 bg-neutral-200 dark:bg-neutral-800 rounded" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <FeedTimelineSkeleton />;
   }
 
   return (

@@ -1,15 +1,18 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import SocialHeader from '@/components/Header/SocialHeader'
 import { useSidebar } from '@/components/sidebar/hooks/useSidebar'
-import RightSidebar from '@/components/sidebar/RightSidebar'
 import Sidebar from '@/components/sidebar/Sidebar'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useOptionalCurrentUser } from '@/features/auth/context/current-user.context'
 import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
 import { cn } from '@/lib/utils'
+import { useIsXl } from '@/lib/hooks/useIsXl'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+
+const RightSidebar = dynamic(() => import('@/components/sidebar/RightSidebar'), { ssr: false })
 
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
@@ -23,6 +26,7 @@ export default function FeedLayout({ children }: { children: React.ReactNode }) 
   const serverUser = useOptionalCurrentUser()
   const hasSession = Boolean(serverUser ?? user)
   const { isCollapsed } = useSidebar()
+  const isXl = useIsXl()
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const pathname = usePathname()
 
@@ -76,7 +80,7 @@ export default function FeedLayout({ children }: { children: React.ReactNode }) 
             )}
           </main>
 
-          {!isChatFullscreen && user && (
+          {!isChatFullscreen && user && isXl && (
             <aside className="hidden bg-white xl:fixed xl:top-[calc(3.5rem+env(safe-area-inset-top,0px))] xl:right-0 xl:z-30 xl:block xl:h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] xl:w-80 xl:overflow-y-auto xl:overflow-x-hidden dark:bg-neutral-900">
               <RightSidebar />
             </aside>

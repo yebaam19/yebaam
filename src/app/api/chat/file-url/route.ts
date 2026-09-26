@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
   }
 
   const year = new Date().getUTCFullYear();
-  const key = `chat-files/${year}/${crypto.randomUUID()}.${EXT[base]}`;
+  const key = `chat-files/${userId}/${year}/${crypto.randomUUID()}.${EXT[base]}`;
   try {
     const { url } = await getPresignedUploadUrl(key, base, 300, size);
     return NextResponse.json({ url, key, mime: base });

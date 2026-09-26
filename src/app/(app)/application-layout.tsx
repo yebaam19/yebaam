@@ -11,7 +11,7 @@ interface Props {
 }
 
 const ApplicationLayout: React.FC<Props> = async ({ children, header }) => {
-  const user = await getAuthUser();
+  const [user, staff] = await Promise.all([getAuthUser(), canAccessForumAdmin()]);
 
   // Si no hay usuario autenticado, envolver en AsideProvider para que Header funcione
   if (!user) {
@@ -24,8 +24,6 @@ const ApplicationLayout: React.FC<Props> = async ({ children, header }) => {
       </Aside.Provider>
     );
   }
-
-  const staff = await canAccessForumAdmin();
 
   return (
     <ApplicationLayoutClient user={user} isPlatformAdmin={staff}>

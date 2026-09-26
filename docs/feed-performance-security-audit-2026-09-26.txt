@@ -1,0 +1,37 @@
+# Feed latency and access-control audit — 2026-09-26
+
+## Scope and evidence
+
+- Inspected the signed-in `http://localhost:3000/feed` page in Chrome and the current Next.js/Supabase code paths. The local server runs in development mode, so its timings are **not** production Core Web Vitals.
+- After the streaming change, a Chrome reload returned the feed header, composer, and `Cargando publicaciones` status while the first post was still absent; the post then appeared and the status disappeared. This verifies progressive rendering, not a quantified LCP improvement.
+- Opening the first post's comments showed `Cargando comentarios…` immediately, followed by the comment input and empty-thread state. The reaction list also opened in the signed-in browser after its earlier code split.
+- `pnpm build`, `pnpm exec tsc --noEmit`, focused ESLint, and focused chat access-control tests passed. The full test suite has three unrelated existing failures: two city tests assume eight seeded cities while the live database has nine, and one login redirect assertion omits `redirect=%2Ffeed`. Full lint has pre-existing errors outside the changed files.
+- The production `/feed` redirects anonymous requests to `/login`, so a public synthetic test cannot measure its authenticated load. The app already includes Vercel Speed Insights in `src/app/layout.tsx`; its field dashboard was not available in this audit.
+- The final production build's feed client-reference manifest lists 25 distinct JavaScript chunks totaling about 1.1 MB raw or 324 KB when individually gzipped. This is a dependency-set estimate, **not** a measured browser transfer size or proof that all 25 load before interaction.
+- A separate `next start` instance on `localhost:3001` rendered the signed-in feed in the same Chrome profile. Its observed page-state inventory contained 37 scripts, 5 fonts, and 9 images; these are discovered assets, not a network waterfall or transfer-size measurement.
+
+## Changes prepared in this working tree
+
+1. `/(app)/feed/page.tsx` streams the timeline under Suspense. The header and composer can render while the Supabase timeline RPC and enrichment calls run. This follows the [Next.js 16 streaming guidance retrieved through Context7](https://github.com/vercel/next.js/blob/v16.2.2/docs/01-app/02-guides/streaming.mdx).
+2. Post cards load comment, reaction-list, and delete-modal code when first opened. Comment loading has an accessible status so a click receives immediate feedback.
+3. The application layout starts independent user and forum-admin reads together. The feed's existing timeline code already batches profile enrichment and the viewer's reaction lookup in parallel after the timeline RPC.
+4. Chat attachment download URLs now require verified user membership and an attachment message in the requested conversation. New R2 keys include the uploader ID and are checked again when signing downloads. Five focused tests cover missing attachments, nonmembers, and copied keys.
+5. The right rail now mounts only at the `xl` breakpoint. Chrome verification at 390 px showed the post list without the hidden contacts rail; at 1440 px the rail returned. This avoids loading the rail's component code and starting its data reads solely for a CSS-hidden mobile surface.
+6. The in-feed friend suggestion carousel now waits until it is within 600 px of the viewport. In Chrome it was absent at the top after reload and appeared with four suggestion actions near the feed end. This delays its component code and request work until the user approaches it.
+
+## Remaining latency work, in priority order
+
+| Priority | Evidence | Next verification/action |
+| --- | --- | --- |
+| P1 | The timeline needs an auth lookup, `get_timeline_posts` RPC, then profile/reaction enrichment. The latter pair is parallel, but the database phases are sequential. | Capture server spans or query timings in production for these phases before changing the RPC or schema. Optimize the slow phase only. |
+| P1 | On desktop, the right rail's `useFriendships()` starts friends, pending, sent, and suggestions reads after auth; the in-feed suggestions hook can also request combined pending/sent state. | Measure the production request waterfall and check consumers; then remove redundant reads while preserving request and suggestion state. The rail is no longer mounted at mobile widths. |
+| P2 | The initial timeline renders up to 20 post cards and currently has no true infinite-pagination continuation in `FeedTimeline`. | Measure hydration cost on a mid-range mobile device; if material, add bounded continuation with a stable cursor and preserve existing feed order and visibility rules. |
+| P2 | Development Chrome showed dozens of scripts and images, but HMR and dev instrumentation inflate those counts. | Use a production build with an authenticated test session to record LCP, INP, CLS, TTFB, transfer size, and the slowest network requests at mobile and desktop widths. Compare before/after releases using Speed Insights. |
+
+## Cloudflare boundary and security
+
+`www.yebaam.com` currently has a CNAME to `cdbafc025d9da349.vercel-dns-017.com`; its `/feed` response reports `server: Vercel` and no Cloudflare proxy headers. The domain's authoritative nameservers are `ns29.domaincontrol.com` and `ns30.domaincontrol.com`. This is evidence that the website's HTTP traffic currently reaches Vercel directly. It does **not** establish that Cloudflare WAF or rate-limiting rules protect the app hostname. Cloudflare Images, Stream, R2, and Turnstile integrations protect their own media or challenge flows but do not automatically put the Next.js app behind the Cloudflare proxy. [Cloudflare's proxy-status documentation](https://developers.cloudflare.com/dns/proxy-status/) explains that WAF and caching apply to proxied HTTP traffic.
+
+Before counting on Cloudflare for app-layer protection, verify the actual zone and DNS setup in the Cloudflare dashboard, then plan a supported proxy path for the Vercel-hosted app or use Vercel's edge protections. Test TLS, OAuth callbacks, Supabase auth cookies, uploads, and realtime behavior before changing DNS. Once traffic is genuinely proxied, scope WAF/rate-limit rules to abuse-prone routes such as auth and upload-signing endpoints, observe false positives, and keep authorization checks in Next.js/Supabase. An edge rule cannot decide whether a user may read a specific conversation attachment.
+
+Legacy chat R2 keys lack uploader IDs. The download route still requires a live message in the conversation, but complete uploader binding for those older objects needs a backfill or migration; do not claim that the legacy case is fully resolved by prefix checks alone.
