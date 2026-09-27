@@ -3,6 +3,8 @@
 import { useFetch } from '@/lib/hooks/useFetch';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { invalidate } from '@/lib/hooks/cacheStore';
+import { coalescePending } from '@/lib/coalesce-pending';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { communitiesService } from '../services/communities.service';
 import {
   Community,
@@ -53,9 +55,13 @@ export function useMyCommunities(initial?: Community[]) {
 }
 
 export function useSuggestedCommunities(limit = 6, initial?: Community[]) {
+  const viewerId = useAuthStore((state) => state.user?.id);
   return useFetch(
-    communitiesKeys.suggested(limit),
-    () => communitiesService.getSuggestedCommunities(limit),
+    [...communitiesKeys.suggested(limit), viewerId],
+    () => coalescePending(
+      `suggested-communities:${viewerId ?? 'guest'}:${limit}`,
+      () => communitiesService.getSuggestedCommunities(limit),
+    ),
     { initialData: listInitial(initial), staleTime: 5 * 60_000 },
   );
 }

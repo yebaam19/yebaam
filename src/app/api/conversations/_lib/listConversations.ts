@@ -1,7 +1,6 @@
 import { getServerClient } from '@/utils/supabase/server';
 import { withRetry } from '@/utils/supabase/with-retry';
 import { decryptChatContent } from '@/lib/server/chat-crypto';
-import { mapWithConcurrency } from '@/lib/map-with-concurrency';
 import { type PeerProfileRow } from '@/features/chat/lib/resolvePeerDisplay';
 import type { ConversationRow, MessageRow, ParticipantRow } from './conversations.types';
 import { serializeConversationRow } from './serializeConversation';
@@ -11,8 +10,7 @@ type Client = Awaited<ReturnType<typeof getServerClient>>;
 /** Newest N conversations answered per request — the inbox is not infinite. */
 const MAX_CONVERSATIONS_PER_REQUEST = 100;
 
-/** Simultaneous last-message lookups. Keeps one caller off the whole pool. */
-const LAST_MESSAGE_CONCURRENCY = 8;
+type ConversationWithMessages = ConversationRow & { messages: MessageRow[] | null };
 
 export type ConversationListItem = ReturnType<typeof serializeConversationRow>;
 
@@ -47,17 +45,21 @@ export async function loadConversationList(
   const { data: convs, error: convErr } = await withRetry(() =>
     client
       .from('conversations')
-      .select('*')
+      .select('*,messages(id,conversation_id,sender_id,content,media,created_at)')
       .in('id', conversationIds)
       .order('updated_at', { ascending: false })
-      .limit(MAX_CONVERSATIONS_PER_REQUEST),
+      .limit(MAX_CONVERSATIONS_PER_REQUEST)
+      .eq('messages.is_deleted', false)
+      .order('created_at', { referencedTable: 'messages', ascending: false })
+      .limit(1, { referencedTable: 'messages' }),
   );
 
   if (convErr) {
     return { ok: false, error: convErr.message };
   }
 
-  const pagedIds = ((convs ?? []) as ConversationRow[]).map((c) => c.id);
+  const conversationRows = (convs ?? []) as ConversationWithMessages[];
+  const pagedIds = conversationRows.map((c) => c.id);
   if (pagedIds.length === 0) {
     return { ok: true, data: [] };
   }
@@ -69,30 +71,10 @@ export async function loadConversationList(
       .in('conversation_id', pagedIds),
   );
 
-  // Fetch only the latest message per conversation. A single unbounded
-  // `in('conversation_id', …)` pulls every message in every conversation,
-  // which OOM-killed Postgres in the small dev container.
-  //
-  // The per-conversation query stays, but the fan-out is now bounded twice: by
-  // the page size above and by the concurrency cap here. `Promise.all` over
-  // every id turned one HTTP request into N concurrent PostgREST requests (each
-  // retried up to 4x), so a handful of parallel callers could saturate the
-  // connection pool for everyone.
-  const lastMsgResults = await mapWithConcurrency(pagedIds, LAST_MESSAGE_CONCURRENCY, (cid) =>
-    withRetry(() =>
-      client
-        .from('messages')
-        .select('id,conversation_id,sender_id,content,media,created_at')
-        .eq('conversation_id', cid)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ),
-  );
-  const recentMsgs = lastMsgResults
-    .map((r) => (r.data as MessageRow | null))
-    .filter((m): m is MessageRow => m !== null)
+  // PostgREST applies the embedded limit to each parent conversation. This
+  // keeps the one-message bound without N separate requests to the database.
+  const recentMsgs = conversationRows
+    .flatMap((c) => c.messages ?? [])
     // Sidebar/inbox previews ship `lastMessage.content` — decrypt here, inside
     // the participant-authenticated request, so ciphertext never reaches the UI.
     .map((m) => ({ ...m, content: decryptChatContent(m.content, m.conversation_id) }));
@@ -119,7 +101,7 @@ export async function loadConversationList(
   const peerIds = new Set<string>();
   // Group conv id -> ordered list of the *other* members' user ids.
   const groupOthersByConv = new Map<string, string[]>();
-  for (const c of (convs ?? []) as ConversationRow[]) {
+  for (const c of conversationRows) {
     if (c.type === 'direct') {
       const peer = (partsByConv.get(c.id) ?? []).find((p) => p.user_id !== userId);
       if (peer) {
@@ -151,7 +133,7 @@ export async function loadConversationList(
     }
   }
 
-  const result = ((convs ?? []) as ConversationRow[]).map((c) =>
+  const result = conversationRows.map((c) =>
     serializeConversationRow({
       c,
       partsByConv,

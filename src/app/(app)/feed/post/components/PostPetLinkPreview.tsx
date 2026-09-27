@@ -6,6 +6,8 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { PawIcon } from '@/components/icons/PawIcon';
 import { imageUrl } from '@/lib/media/urls';
+import { coalescePending } from '@/lib/coalesce-pending';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
   getPetPreviewByUsernameAndSlug,
   type PetLinkPreview,
@@ -43,12 +45,16 @@ interface PostPetLinkPreviewProps {
 
 export function PostPetLinkPreview({ username, slug }: PostPetLinkPreviewProps) {
   const [preview, setPreview] = useState<PetLinkPreview | null | 'loading' | 'error'>('loading');
+  const viewerId = useAuthStore((state) => state.user?.id);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const result = await getPetPreviewByUsernameAndSlug(username, slug);
+        const result = await coalescePending(
+          `pet-preview:${viewerId ?? 'guest'}:${username}:${slug}`,
+          () => getPetPreviewByUsernameAndSlug(username, slug),
+        );
         if (!cancelled) setPreview(result);
       } catch {
         if (!cancelled) setPreview('error');
@@ -57,7 +63,7 @@ export function PostPetLinkPreview({ username, slug }: PostPetLinkPreviewProps) 
     return () => {
       cancelled = true;
     };
-  }, [username, slug]);
+  }, [username, slug, viewerId]);
 
   if (preview === 'loading') {
     return (

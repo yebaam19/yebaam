@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Route } from 'next';
 import { ClockIcon, NewspaperIcon } from '@/components/icons/heroicons-shim';
+import { coalescePending } from '@/lib/coalesce-pending';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
   getCommunityArticlePreview,
   type CommunityArticlePreview,
@@ -47,12 +49,16 @@ export function PostArticleLinkPreview({
   const [preview, setPreview] = useState<CommunityArticlePreview | null | 'loading' | 'error'>(
     'loading',
   );
+  const viewerId = useAuthStore((state) => state.user?.id);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const result = await getCommunityArticlePreview(communitySlug, articleSlug);
+        const result = await coalescePending(
+          `article-preview:${viewerId ?? 'guest'}:${communitySlug}:${articleSlug}`,
+          () => getCommunityArticlePreview(communitySlug, articleSlug),
+        );
         if (!cancelled) setPreview(result);
       } catch {
         if (!cancelled) setPreview('error');
@@ -61,7 +67,7 @@ export function PostArticleLinkPreview({
     return () => {
       cancelled = true;
     };
-  }, [communitySlug, articleSlug]);
+  }, [communitySlug, articleSlug, viewerId]);
 
   if (preview === 'loading') {
     return (
