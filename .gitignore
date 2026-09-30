@@ -102,6 +102,7 @@ dist/
 *.sql
 # Reviewed schema changes are committed one migration at a time.
 !supabase/migrations/20260918010000_music_archive_editors.sql
+!supabase/migrations/20260930041641_harden_timeline_posts_identity_visibility.sql
 
 # MCP config (contains API keys)
 .mcp.json

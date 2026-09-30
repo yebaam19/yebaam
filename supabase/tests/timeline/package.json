@@ -1,0 +1,12 @@
+{
+  "name": "yebaam-timeline-sql-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run-tests.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "pglite-pg17": "npm:@electric-sql/pglite@0.4.6"
+  }
+}

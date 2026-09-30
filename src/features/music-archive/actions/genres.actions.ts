@@ -1,7 +1,8 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { getServiceClient } from '@/utils/supabase/server';
+import { MUSIC_GENRES_CACHE_TAG } from '../server/genres.server';
 import { adminGate, musicSlug, type ActionResult } from './_shared';
 
 export interface MusicGenreRow {
@@ -98,6 +99,7 @@ export async function createGenre(
     .select(SELECT)
     .single();
   if (error || !data) return { ok: false, error: error?.message ?? 'No se pudo crear el género.' };
+  updateTag(MUSIC_GENRES_CACHE_TAG);
   revalidatePath('/admin/music');
   revalidatePath('/musica');
   return { ok: true, data: data as MusicGenreRow };
@@ -126,6 +128,7 @@ export async function updateGenre(
     .select(SELECT)
     .single();
   if (error || !data) return { ok: false, error: error?.message ?? 'No se pudo actualizar.' };
+  updateTag(MUSIC_GENRES_CACHE_TAG);
   revalidatePath('/admin/music');
   revalidatePath('/musica');
   return { ok: true, data: data as MusicGenreRow };
@@ -151,6 +154,7 @@ export async function deleteGenre(
   }
   const { error } = await svc.from('music_genres').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
+  updateTag(MUSIC_GENRES_CACHE_TAG);
   revalidatePath('/admin/music');
   revalidatePath('/musica');
   return { ok: true, data: { deleted: true } };

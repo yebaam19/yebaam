@@ -8,6 +8,7 @@ import {
   type PostRow,
 } from '@/lib/api/posts';
 import { mirrorMediaToProfileGallery } from '@/lib/api/mirror-post-media';
+import { loadTimelinePosts } from '@/lib/api/timeline-posts';
 
 async function getUserId() {
   const client = await getServerClient();
@@ -17,7 +18,7 @@ async function getUserId() {
 
 function parseIntParam(value: string | null, fallback: number, max = 100): number {
   const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return fallback;
+  if (!Number.isSafeInteger(n) || n <= 0) return fallback;
   return Math.min(n, max);
 }
 
@@ -43,41 +44,12 @@ export async function GET(request: NextRequest) {
 
   // ── Timeline: single-source-of-truth RPC (friends + followed businesses) ──
   if (scope === 'timeline' && userId) {
-    const { data: rpcRows, error: rpcError } = await client.rpc('get_timeline_posts', {
-      p_user_id: userId,
-      p_limit: limit,
-      p_offset: offset,
-    });
-    if (rpcError) {
-      return NextResponse.json({ error: rpcError.message }, { status: 500 });
+    const { data: posts, error } = await loadTimelinePosts(client, userId, limit, offset);
+    const headers = { 'Cache-Control': 'private, no-store' };
+    if (error) {
+      return NextResponse.json({ error: 'Unable to load timeline' }, { status: 500, headers });
     }
-    let rows = (rpcRows ?? []) as PostRow[];
-    // Defense-in-depth: page-wall posts must never surface in the personal
-    // timeline (same rule as blog/business walls). get_timeline_posts predates
-    // page_id; drop any tagged rows here. Preferred zero-cost fix once approved:
-    // add `AND p.page_id IS NULL` to the RPC's friend_posts CTE, then delete this.
-    // All three reads are independent, so they run as one round-trip instead of
-    // three. Hydrating a page-wall row that the filter then drops is cheap and
-    // far rarer than paying two extra sequential hops on every feed request.
-    const ids = rows.map((r) => r.id);
-    const [tagged, profiles, myReactions] = await Promise.all([
-      ids.length
-        ? client
-            .from('posts')
-            .select('id')
-            .in('id', ids)
-            .not('page_id', 'is', null)
-            .then(({ data }) => (data ?? []) as Array<{ id: string }>)
-        : Promise.resolve([] as Array<{ id: string }>),
-      loadProfilesForPosts(client, rows),
-      loadMyReactions(client, ids, userId),
-    ]);
-    if (tagged.length) {
-      const drop = new Set(tagged.map((t) => t.id));
-      rows = rows.filter((r) => !drop.has(r.id));
-    }
-    const posts = rows.map((r) => mapPost(r, profiles, myReactions.get(r.id) ?? null));
-    return NextResponse.json({ success: true, data: posts });
+    return NextResponse.json({ success: true, data: posts }, { headers });
   }
 
   let query = client
@@ -114,7 +86,7 @@ export async function GET(request: NextRequest) {
       query = query.eq('author_id', userId);
     } else if (scope === 'user' && userIdFilter) {
       query = query.eq('author_id', userIdFilter);
-    } else if ((scope === 'timeline' || scope === 'suggestions') && userId) {
+    } else if (scope === 'suggestions' && userId) {
       const { data: friendships } = await client
         .from('friendships')
         .select('requester_id, recipient_id')
@@ -126,35 +98,27 @@ export async function GET(request: NextRequest) {
         friendIds.add(f.requester_id === userId ? f.recipient_id : f.requester_id);
       }
 
-      if (scope === 'timeline') {
-        // Friends-only feed: own posts (any privacy) + accepted-friend posts
-        // whose privacy is 'public' or 'friends'. Private friend posts hidden.
-        query = query
-          .in('author_id', Array.from(friendIds))
-          .or(`author_id.eq.${userId},privacy.in.(public,friends)`);
-      } else {
-        // Suggestions: public posts from users outside the user's social graph
-        // (friends + clubmates). Clubmates are excluded so they appear in
-        // "personas que quizás conozcas" only when not already connected.
-        const connectedIds = new Set<string>(friendIds);
-        const { data: myMemberships } = await client
+      // Suggestions: public posts from users outside the user's social graph
+      // (friends + clubmates). Clubmates are excluded so they appear in
+      // "personas que quizás conozcas" only when not already connected.
+      const connectedIds = new Set<string>(friendIds);
+      const { data: myMemberships } = await client
+        .from('club_members')
+        .select('club_id')
+        .eq('user_id', userId);
+      const myClubIds = ((myMemberships ?? []) as Array<{ club_id: string }>).map((m) => m.club_id);
+      if (myClubIds.length > 0) {
+        const { data: clubmates } = await client
           .from('club_members')
-          .select('club_id')
-          .eq('user_id', userId);
-        const myClubIds = ((myMemberships ?? []) as Array<{ club_id: string }>).map((m) => m.club_id);
-        if (myClubIds.length > 0) {
-          const { data: clubmates } = await client
-            .from('club_members')
-            .select('user_id')
-            .in('club_id', myClubIds);
-          for (const row of (clubmates ?? []) as Array<{ user_id: string }>) {
-            connectedIds.add(row.user_id);
-          }
+          .select('user_id')
+          .in('club_id', myClubIds);
+        for (const row of (clubmates ?? []) as Array<{ user_id: string }>) {
+          connectedIds.add(row.user_id);
         }
-        query = query
-          .eq('privacy', 'public')
-          .not('author_id', 'in', `(${Array.from(connectedIds).join(',')})`);
       }
+      query = query
+        .eq('privacy', 'public')
+        .not('author_id', 'in', `(${Array.from(connectedIds).join(',')})`);
     }
   }
 

@@ -1,6 +1,5 @@
 import 'server-only';
 import { cache } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerClient } from '@/utils/supabase/server';
 import type {
   MusicMediaAlbumRef,
@@ -8,6 +7,8 @@ import type {
   MusicMediaClubRef,
   MusicMediaItem,
 } from '../types/music-media.types';
+
+type SessionClient = Awaited<ReturnType<typeof getServerClient>>;
 
 type BaseRow = {
   id: string;
@@ -27,11 +28,10 @@ type BaseRow = {
 const BASE_SELECT =
   'id, kind, source, cf_image_id, cf_stream_uid, embed_url, embed_provider, thumbnail_cf_image_id, caption, duration_seconds, uploaded_by, created_at';
 
-/** Batch-load the three pivots + their parent labels for a set of media ids.
- *  Avoids N+1 — one query per pivot, then a single fetch for each lookup
- *  table. Returns three maps keyed by media id. */
+/** Read each pivot and its visible parent labels together. Inner joins preserve
+ *  the old behavior of omitting associations hidden by parent-table RLS. */
 async function loadAssociations(
-  client: SupabaseClient,
+  client: SessionClient,
   mediaIds: string[],
 ): Promise<{
   artistsByMediaId: Map<string, MusicMediaArtistRef[]>;
@@ -45,65 +45,37 @@ async function loadAssociations(
   };
   if (mediaIds.length === 0) return empty;
 
-  const [artistPivots, albumPivots, clubPivots] = await Promise.all([
-    client.from('music_media_artists').select('media_id, artist_id').in('media_id', mediaIds),
-    client.from('music_media_albums').select('media_id, album_id').in('media_id', mediaIds),
-    client.from('music_media_clubs').select('media_id, club_id').in('media_id', mediaIds),
+  const [artists, albums, clubs] = await Promise.all([
+    client.from('music_media_artists')
+      .select('media_id, ref:music_artists!inner(id, name, slug)')
+      .in('media_id', mediaIds),
+    client.from('music_media_albums')
+      .select('media_id, ref:music_albums!inner(id, title, slug)')
+      .in('media_id', mediaIds),
+    client.from('music_media_clubs')
+      .select('media_id, ref:clubs!inner(id, name, slug)')
+      .in('media_id', mediaIds),
   ]);
 
-  const artistRows = (artistPivots.data ?? []) as Array<{ media_id: string; artist_id: string }>;
-  const albumRows = (albumPivots.data ?? []) as Array<{ media_id: string; album_id: string }>;
-  const clubRows = (clubPivots.data ?? []) as Array<{ media_id: string; club_id: string }>;
+  return {
+    artistsByMediaId: groupAssociations<MusicMediaArtistRef>(artists.data),
+    albumsByMediaId: groupAssociations<MusicMediaAlbumRef>(albums.data),
+    clubsByMediaId: groupAssociations<MusicMediaClubRef>(clubs.data),
+  };
+}
 
-  const artistIds = Array.from(new Set(artistRows.map((r) => r.artist_id)));
-  const albumIds = Array.from(new Set(albumRows.map((r) => r.album_id)));
-  const clubIds = Array.from(new Set(clubRows.map((r) => r.club_id)));
+type AssociationRow<T> = { media_id: string; ref: T | T[] | null };
 
-  const [artistRes, albumRes, clubRes] = await Promise.all([
-    artistIds.length > 0
-      ? client.from('music_artists').select('id, name, slug').in('id', artistIds)
-      : Promise.resolve({ data: [] as Array<MusicMediaArtistRef> }),
-    albumIds.length > 0
-      ? client.from('music_albums').select('id, title, slug').in('id', albumIds)
-      : Promise.resolve({ data: [] as Array<MusicMediaAlbumRef> }),
-    clubIds.length > 0
-      ? client.from('clubs').select('id, name, slug').in('id', clubIds)
-      : Promise.resolve({ data: [] as Array<MusicMediaClubRef> }),
-  ]);
-
-  const artistById = new Map<string, MusicMediaArtistRef>();
-  for (const a of (artistRes.data ?? []) as MusicMediaArtistRef[]) artistById.set(a.id, a);
-  const albumById = new Map<string, MusicMediaAlbumRef>();
-  for (const a of (albumRes.data ?? []) as MusicMediaAlbumRef[]) albumById.set(a.id, a);
-  const clubById = new Map<string, MusicMediaClubRef>();
-  for (const c of (clubRes.data ?? []) as MusicMediaClubRef[]) clubById.set(c.id, c);
-
-  const artistsByMediaId = new Map<string, MusicMediaArtistRef[]>();
-  for (const r of artistRows) {
-    const ref = artistById.get(r.artist_id);
+function groupAssociations<T>(data: unknown): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+  for (const row of (data ?? []) as AssociationRow<T>[]) {
+    const ref = Array.isArray(row.ref) ? row.ref[0] : row.ref;
     if (!ref) continue;
-    const list = artistsByMediaId.get(r.media_id) ?? [];
-    list.push(ref);
-    artistsByMediaId.set(r.media_id, list);
+    const refs = grouped.get(row.media_id) ?? [];
+    refs.push(ref);
+    grouped.set(row.media_id, refs);
   }
-  const albumsByMediaId = new Map<string, MusicMediaAlbumRef[]>();
-  for (const r of albumRows) {
-    const ref = albumById.get(r.album_id);
-    if (!ref) continue;
-    const list = albumsByMediaId.get(r.media_id) ?? [];
-    list.push(ref);
-    albumsByMediaId.set(r.media_id, list);
-  }
-  const clubsByMediaId = new Map<string, MusicMediaClubRef[]>();
-  for (const r of clubRows) {
-    const ref = clubById.get(r.club_id);
-    if (!ref) continue;
-    const list = clubsByMediaId.get(r.media_id) ?? [];
-    list.push(ref);
-    clubsByMediaId.set(r.media_id, list);
-  }
-
-  return { artistsByMediaId, albumsByMediaId, clubsByMediaId };
+  return grouped;
 }
 
 function hydrate(
@@ -121,7 +93,7 @@ function hydrate(
 }
 
 async function hydrateRows(
-  client: SupabaseClient,
+  client: SessionClient,
   rows: BaseRow[],
 ): Promise<MusicMediaItem[]> {
   const ids = rows.map((r) => r.id);

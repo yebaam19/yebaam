@@ -1,0 +1,3 @@
+# Only reviewed timeline artifacts override the repository-wide exclusions.
+!timeline/*.md
+!timeline/*.sql

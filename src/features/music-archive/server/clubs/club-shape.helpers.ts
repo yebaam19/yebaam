@@ -6,7 +6,7 @@ export type ClubGenreJoin =
   | null;
 
 export const CLUB_SELECT =
-  'id, name, slug, description, music_genre_id, cover_image_url, profile_image_url, music_genres!inner(slug, name)';
+  'id, name, slug, description, music_genre_id, cover_image_url, profile_image_url, music_genres!inner(slug, name), music_album_clubs(count), club_members(count)';
 
 export function pickGenre(j: ClubGenreJoin): { slug: string; name: string } {
   if (!j) return { slug: '', name: '' };
@@ -22,6 +22,8 @@ export type ClubRowRaw = {
   cover_image_url: string | null;
   profile_image_url: string | null;
   music_genres: ClubGenreJoin;
+  music_album_clubs: Array<{ count: number }>;
+  club_members: Array<{ count: number }>;
 };
 
 /** Project a raw clubs+genre join row into the public MusicClubRow shape, given

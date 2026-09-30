@@ -1,0 +1,4 @@
+# This isolated test package never contributes application dependencies.
+**/node_modules/
+!timeline/*.sql
+!timeline/*.md

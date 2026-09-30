@@ -38,29 +38,13 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
   if (error || !clubs) return [];
   const rows = clubs as unknown as ClubRowRaw[];
 
-  const clubIds = rows.map((r) => r.id);
-  if (clubIds.length === 0) return [];
-
-  // Album + member counts in two batched queries; saves N+1.
-  const [{ data: albumRows }, { data: memberRows }] = await Promise.all([
-    client.from('music_album_clubs').select('club_id').in('club_id', clubIds),
-    client.from('club_members').select('club_id').in('club_id', clubIds),
-  ]);
-
-  const albumCount = new Map<string, number>();
-  for (const r of (albumRows ?? []) as Array<{ club_id: string }>) {
-    albumCount.set(r.club_id, (albumCount.get(r.club_id) ?? 0) + 1);
-  }
-  const memberCount = new Map<string, number>();
-  for (const r of (memberRows ?? []) as Array<{ club_id: string }>) {
-    memberCount.set(r.club_id, (memberCount.get(r.club_id) ?? 0) + 1);
-  }
-
+  // Embedded counts remain session/RLS-scoped, transfer no member/link rows,
+  // and aren't truncated by PostgREST's row limit on those related tables.
   return rows
     .map((r) =>
       mapClubRow(r, {
-        albumCount: albumCount.get(r.id) ?? 0,
-        memberCount: memberCount.get(r.id) ?? 0,
+        albumCount: r.music_album_clubs?.[0]?.count ?? 0,
+        memberCount: r.club_members?.[0]?.count ?? 0,
       }),
     )
     .sort((a, b) => b.album_count - a.album_count || a.name.localeCompare(b.name));
@@ -77,20 +61,9 @@ export const getMusicClubBySlug = cache(async (slug: string): Promise<MusicClubR
   if (!club) return null;
   const c = club as unknown as ClubRowRaw;
 
-  const [{ count: albumCount }, { count: memberCount }] = await Promise.all([
-    client
-      .from('music_album_clubs')
-      .select('*', { count: 'exact', head: true })
-      .eq('club_id', c.id),
-    client
-      .from('club_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('club_id', c.id),
-  ]);
-
   return mapClubRow(c, {
-    albumCount: albumCount ?? 0,
-    memberCount: memberCount ?? 0,
+    albumCount: c.music_album_clubs?.[0]?.count ?? 0,
+    memberCount: c.club_members?.[0]?.count ?? 0,
   });
 });
 
