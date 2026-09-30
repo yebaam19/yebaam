@@ -1,0 +1,1649 @@
+diff --git a/messages/en/player.json b/messages/en/player.json
+index 4ce627b..14dc2d8 100644
+--- a/messages/en/player.json
++++ b/messages/en/player.json
+@@ -1,5 +1,6 @@
+ {
+   "bar": {
++    "playbackError": "Audio could not be played. Press play to try again.",
+     "playAria": "Play",
+     "pauseAria": "Pause",
+     "previousAria": "Previous track",
+diff --git a/messages/es/player.json b/messages/es/player.json
+index d420bd1..ffac529 100644
+--- a/messages/es/player.json
++++ b/messages/es/player.json
+@@ -1,5 +1,6 @@
+ {
+   "bar": {
++    "playbackError": "No se pudo reproducir el audio. Pulsa reproducir para volver a intentarlo.",
+     "playAria": "Reproducir",
+     "pauseAria": "Pausar",
+     "previousAria": "Pista anterior",
+diff --git a/src/app/(app)/musica/albumes/[slug]/page.tsx b/src/app/(app)/musica/albumes/[slug]/page.tsx
+index 82ddf12..c4abc44 100644
+--- a/src/app/(app)/musica/albumes/[slug]/page.tsx
++++ b/src/app/(app)/musica/albumes/[slug]/page.tsx
+@@ -4,7 +4,6 @@ import type { Metadata, Route } from 'next';
+ import { getTranslations } from 'next-intl/server';
+ import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
+ import { imageUrl } from '@/lib/media/urls';
+-import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
+ import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
+ import { listClubsForAlbum } from '@/features/music-archive/server/clubs.server';
+ import { getAlbumReactionCounts } from '@/features/music-archive/server/music-reactions.server';
+@@ -53,34 +52,14 @@ export default async function AlbumPage({
+   if (!album) notFound();
+   const t = await getTranslations('musica');
+ 
+-  // Pre-sign R2 URLs for every track in parallel. The TTL is 1h which is
+-  // plenty for a single page session. Kicked off before the Promise.all below
+-  // (its only input is album.tracks) so the fan-out overlaps the other reads.
+-  const audioEntriesPromise = Promise.all(
+-    album.tracks.map(async (track) => {
+-      try {
+-        const url = await getPublicAudioUrl(track.r2_key, 3600);
+-        return [track.id, url] as const;
+-      } catch (err) {
+-        console.error('[album page] R2 presign failed', { trackId: track.id, r2Key: track.r2_key, err: err instanceof Error ? err.message : err });
+-        return [track.id, ''] as const;
+-      }
+-    }),
+-  );
+-
+-  const [clubs, reactions, authUser, media, audioEntries] = await Promise.all([
++  const [clubs, reactions, authUser, media] = await Promise.all([
+     listClubsForAlbum(album.id),
+     getAlbumReactionCounts(album.id),
+     getCachedAuthUser(),
+     listMusicMediaForAlbum(album.id),
+-    audioEntriesPromise,
+   ]);
+   const signedIn = Boolean(authUser);
+ 
+-  const audioUrlByTrackId = Object.fromEntries(
+-    audioEntries.filter(([, url]) => url !== ''),
+-  ) as Record<string, string>;
+-
+   const albumJsonLd = {
+     '@context': 'https://schema.org',
+     '@type': 'MusicAlbum',
+@@ -196,7 +175,7 @@ export default async function AlbumPage({
+         <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+           {t('album.tracklistHeading')}
+         </h2>
+-        <AlbumTracklist album={album} audioUrlByTrackId={audioUrlByTrackId} />
++        <AlbumTracklist album={album} />
+       </section>
+ 
+       <AlbumReactionsBar albumId={album.id} initial={reactions} signedIn={signedIn} />
+diff --git a/src/app/api/blogs/[idOrSlug]/music/route.ts b/src/app/api/blogs/[idOrSlug]/music/route.ts
+index 3552cad..611aa49 100644
+--- a/src/app/api/blogs/[idOrSlug]/music/route.ts
++++ b/src/app/api/blogs/[idOrSlug]/music/route.ts
+@@ -1,7 +1,6 @@
+ import { NextResponse, type NextRequest } from 'next/server';
+ import { getServerClient } from '@/utils/supabase/server';
+ import { blogKey } from '@/lib/api/blogs';
+-import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
+ 
+ /** "Mi Música" tab — the catalog artist linked to this blog and their albums/tracks. */
+ export async function GET(
+@@ -66,21 +65,8 @@ export async function GET(
+     tracksByAlbum.set(tr.album_id, list);
+   }
+ 
+-  // Pre-sign each track's R2 audio URL server-side (album-page pattern) so the
+-  // client can play without a round-trip. Tracks without an r2_key get null
+-  // (play button stays disabled). TTL 1h covers a page session.
+-  const signed = await Promise.all(
+-    tracks.map(async (tr) =>
+-      tr.r2_key ? [tr.id, await getPublicAudioUrl(tr.r2_key, 3600).catch(() => null)] as const : ([tr.id, null] as const)
+-    )
+-  );
+-  const audioUrlByTrackId = new Map(signed);
+-
+-  // Cacheable: every table read here (`blogs`, `music_artists`, `music_albums`,
+-  // `music_tracks`) is `select ... using (true)` under RLS, so the payload is the
+-  // same for every caller. Max staleness (60 + 600 s) stays well inside the 1 h
+-  // TTL of the pre-signed audio URLs above, so a cached copy never serves a dead
+-  // signature.
++  // Metadata only: never place private bearer URLs in a shared response.
++  // Playback signs lazily through the existing RLS-bound music action.
+   return NextResponse.json(
+     {
+       artist: { id: artist.id, name: artist.name, slug: artist.slug },
+@@ -96,7 +82,7 @@ export async function GET(
+           position: tr.position,
+           side: tr.side,
+           durationSeconds: tr.duration_seconds,
+-          audioUrl: audioUrlByTrackId.get(tr.id) ?? null,
++          hasAudio: Boolean(tr.r2_key),
+         })),
+       })),
+     },
+diff --git a/src/features/blogs/components/BlogMusicTab.tsx b/src/features/blogs/components/BlogMusicTab.tsx
+index 6fff0c9..7f41cf6 100644
+--- a/src/features/blogs/components/BlogMusicTab.tsx
++++ b/src/features/blogs/components/BlogMusicTab.tsx
+@@ -2,6 +2,8 @@
+ 
+ import { ArrowDownTrayIcon, MusicalNoteIcon, PauseIcon, PlayIcon } from '@/components/icons/heroicons-shim'
+ import { usePlayerStore } from '@/features/music-archive/components/PlayerStore'
++import { musicAudioUrls } from '@/features/music-archive/lib/audio-url-session'
++import { toast } from 'sonner'
+ import type { PlayItem } from '@/features/music-archive/types/music.types'
+ import { imageUrl } from '@/lib/media/urls'
+ import Link from 'next/link'
+@@ -14,8 +16,8 @@ interface Track {
+   position: number | null
+   side: string | null
+   durationSeconds: number | null
+-  /** Pre-signed R2 audio URL, or null when the track has no audio. */
+-  audioUrl: string | null
++  /** Availability only; bearer URLs stay in the session-local music cache. */
++  hasAudio: boolean
+ }
+ interface Album {
+   id: string
+@@ -52,7 +54,7 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
+ 
+   useEffect(() => {
+     let active = true
+-    fetch(`/api/blogs/${blogId}/music`, { credentials: 'same-origin' })
++    fetch(`/api/blogs/${blogId}/music?v=2`, { credentials: 'same-origin' })
+       .then((r) => r.json())
+       .then((j: MusicResponse) => {
+         if (active) {
+@@ -73,7 +75,7 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
+ 
+   const playFromAlbum = (album: Album, trackId: string) => {
+     if (!data?.artist) return
+-    const playable = album.tracks.filter((t) => t.audioUrl)
++    const playable = album.tracks.filter((t) => t.hasAudio)
+     const items: PlayItem[] = playable.map((t) => ({
+       trackId: t.id,
+       title: t.title,
+@@ -81,7 +83,6 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
+       albumSlug: album.slug,
+       artistSlug: data.artist!.slug,
+       coverCfId: album.coverCfImageId,
+-      audioUrl: t.audioUrl as string,
+       durationSeconds: t.durationSeconds ?? 0,
+     }))
+     const startIndex = Math.max(0, items.findIndex((i) => i.trackId === trackId))
+@@ -93,6 +94,17 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
+     setQueue(items, startIndex)
+   }
+ 
++  const downloadTrack = async (trackId: string) => {
++    try {
++      const { url } = await musicAudioUrls.get(trackId)
++      const link = document.createElement('a')
++      link.href = url
++      link.download = ''
++      link.rel = 'noopener'
++      link.click()
++    } catch { toast.error('No se pudo preparar la descarga. Inténtalo de nuevo.') }
++  }
++
+   if (loading) return <p className="text-sm text-neutral-500 dark:text-neutral-400">Cargando música…</p>
+ 
+   if (!data?.artist) {
+@@ -153,8 +165,8 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
+                     <li key={tr.id} className="flex items-center gap-3 px-3 py-2 text-sm">
+                       <button
+                         type="button"
+-                        onClick={() => tr.audioUrl && playFromAlbum(album, tr.id)}
+-                        disabled={!tr.audioUrl}
++                        onClick={() => tr.hasAudio && playFromAlbum(album, tr.id)}
++                        disabled={!tr.hasAudio}
+                         aria-label={isCurrent && isPlaying ? 'Pausar' : `Reproducir ${tr.title}`}
+                         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-30"
+                       >
+@@ -173,15 +185,16 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
+                         {tr.title}
+                       </span>
+                       <span className="shrink-0 text-xs text-neutral-400">{formatDuration(tr.durationSeconds)}</span>
+-                      {tr.audioUrl && (
+-                        <a
+-                          href={tr.audioUrl}
+-                          download
++                      {tr.hasAudio && (
++                        <button
++                          type="button"
++                          onClick={() => { void downloadTrack(tr.id) }}
++                          aria-label={`Descargar ${tr.title}`}
+                           title="Descargar"
+                           className="shrink-0 rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-700"
+                         >
+                           <ArrowDownTrayIcon className="h-4 w-4" />
+-                        </a>
++                        </button>
+                       )}
+                     </li>
+                   )
+diff --git a/src/features/music-archive/actions/playback.actions.ts b/src/features/music-archive/actions/playback.actions.ts
+index 45267b0..289830d 100644
+--- a/src/features/music-archive/actions/playback.actions.ts
++++ b/src/features/music-archive/actions/playback.actions.ts
+@@ -1,26 +1,48 @@
+ 'use server';
+ 
+ import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+-import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
++import { getSignedFileUrl } from '@/lib/cloudflare/r2';
++import { z } from 'zod';
++import { MUSIC_CLUB_ENABLED } from '../config';
++import type { MusicAudioUrl } from '../types/music/audio-url.types';
+ import type { ActionResult } from './_shared';
+ 
++const trackIdSchema = z.uuid();
++const PLAYBACK_ERROR = 'No se pudo cargar el audio.';
++
+ /** Public endpoint for the player. Returns a short-lived presigned R2 GET
+  *  URL. Anyone can call this; the audio itself is meant to be publicly
+- *  playable (público abierto). */
+-export async function getTrackPlayUrl(trackId: string): Promise<ActionResult<{ url: string }>> {
++ *  playable (público abierto). Every signing request still checks caller RLS. */
++export async function getTrackPlayUrl(trackId: string): Promise<ActionResult<MusicAudioUrl>> {
++  if (!MUSIC_CLUB_ENABLED) {
++    return { ok: false, error: 'El Club de Coleccionistas no está disponible.' };
++  }
++  if (!trackIdSchema.safeParse(trackId).success) {
++    return { ok: false, error: 'Pista no válida.' };
++  }
+   try {
+     const client = await getServerClient();
+-    const { data: track } = await client
++    const { data: auth, error: authError } = await client.auth.getUser();
++    // No session is normal for this public action. Never downgrade an auth
++    // outage, invalid token, or other verification failure to anonymous reuse.
++    const missingSession = authError?.name === 'AuthSessionMissingError'
++      && authError.status === 400 && !auth.user;
++    if (authError && !missingSession) return { ok: false, error: PLAYBACK_ERROR };
++
++    const { data: track, error } = await client
+       .from('music_tracks')
+       .select('r2_key')
+       .eq('id', trackId)
+       .maybeSingle();
++    if (error) return { ok: false, error: PLAYBACK_ERROR };
+     const r2Key = (track as { r2_key: string } | null)?.r2_key;
+-    if (!r2Key) return { ok: false, error: 'Pista no encontrada.' };
+-    const url = await getPublicAudioUrl(r2Key, 3600);
+-    return { ok: true, data: { url } };
+-  } catch (e) {
+-    return { ok: false, error: e instanceof Error ? e.message : 'No se pudo firmar la URL.' };
++    if (typeof r2Key !== 'string' || !r2Key.trim()) {
++      return { ok: false, error: 'Pista no encontrada.' };
++    }
++    const signed = await getSignedFileUrl(r2Key, 3600);
++    return { ok: true, data: { ...signed, viewerId: auth.user?.id ?? null } };
++  } catch {
++    return { ok: false, error: PLAYBACK_ERROR };
+   }
+ }
+ 
+diff --git a/src/features/music-archive/components/AlbumTracklist.tsx b/src/features/music-archive/components/AlbumTracklist.tsx
+index c55df1a..a5eb6fa 100644
+--- a/src/features/music-archive/components/AlbumTracklist.tsx
++++ b/src/features/music-archive/components/AlbumTracklist.tsx
+@@ -19,12 +19,9 @@ function formatPosition(side: string | null, position: number): string {
+ 
+ interface Props {
+   album: AlbumWithDetails;
+-  /** Pre-signed audio URLs keyed by trackId. Computed server-side and passed in
+-   *  so the client doesn't have to round-trip per click. */
+-  audioUrlByTrackId: Record<string, string>;
+ }
+ 
+-export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
++export function AlbumTracklist({ album }: Props) {
+   const t = useTranslations('musica');
+   const setQueue = usePlayerStore((s) => s.setQueue);
+   const togglePlay = usePlayerStore((s) => s.togglePlay);
+@@ -32,7 +29,7 @@ export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
+   const currentIndex = usePlayerStore((s) => s.currentIndex);
+   const isPlaying = usePlayerStore((s) => s.isPlaying);
+ 
+-  const playableTracks = album.tracks.filter((t) => audioUrlByTrackId[t.id]);
++  const playableTracks = album.tracks.filter((t) => t.r2_key);
+ 
+   function playTrack(trackIndex: number) {
+     const items: PlayItem[] = playableTracks.map((t) => ({
+@@ -42,7 +39,6 @@ export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
+       albumSlug: album.slug,
+       artistSlug: album.artist.slug,
+       coverCfId: album.cover_cf_image_id,
+-      audioUrl: audioUrlByTrackId[t.id],
+       durationSeconds: t.duration_seconds ?? 0,
+     }));
+     const startIndex = Math.max(0, items.findIndex((i) => i.trackId === playableTracks[trackIndex].id));
+@@ -69,7 +65,7 @@ export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
+         </thead>
+         <tbody>
+           {album.tracks.map((track) => {
+-            const playable = Boolean(audioUrlByTrackId[track.id]);
++            const playable = Boolean(track.r2_key);
+             const playableIdx = playableTracks.findIndex((p) => p.id === track.id);
+             const isCurrent = queue[currentIndex]?.trackId === track.id;
+             return (
+diff --git a/src/features/music-archive/components/PlayerBar.tsx b/src/features/music-archive/components/PlayerBar.tsx
+index e7984af..99da7c7 100644
+--- a/src/features/music-archive/components/PlayerBar.tsx
++++ b/src/features/music-archive/components/PlayerBar.tsx
+@@ -2,7 +2,7 @@
+ 
+ import Link from 'next/link';
+ import type { Route } from 'next';
+-import { useEffect, useRef } from 'react';
++import { useRef } from 'react';
+ import { useTranslations } from 'next-intl';
+ import {
+   PlayIcon,
+@@ -15,6 +15,8 @@ import {
+ import { imageUrl } from '@/lib/media/urls';
+ import { incrementPlayCount } from '../actions/playback.actions';
+ import { usePlayerStore } from './PlayerStore';
++import { useMusicAudioSession } from '../hooks/useMusicAudioSession';
++import { useMusicAudioPlayback } from '../hooks/useMusicAudioPlayback';
+ 
+ function formatTime(seconds: number): string {
+   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+@@ -37,7 +39,6 @@ export function PlayerBar() {
+   const currentTime = usePlayerStore((s) => s.currentTime);
+   const duration = usePlayerStore((s) => s.duration);
+   const volume = usePlayerStore((s) => s.volume);
+-  const playSerial = usePlayerStore((s) => s.playSerial);
+   const togglePlay = usePlayerStore((s) => s.togglePlay);
+   const next = usePlayerStore((s) => s.next);
+   const prev = usePlayerStore((s) => s.prev);
+@@ -45,37 +46,11 @@ export function PlayerBar() {
+   const setVolume = usePlayerStore((s) => s.setVolume);
+   const setCurrentTime = usePlayerStore((s) => s.setCurrentTime);
+   const setDuration = usePlayerStore((s) => s.setDuration);
+-  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
+ 
+   const current = queue[currentIndex];
+ 
+-  // Sync isPlaying ↔ audio element via the playSerial heartbeat.
+-  useEffect(() => {
+-    const audio = audioRef.current;
+-    if (!audio || !current) return;
+-    if (isPlaying) {
+-      audio.play().catch(() => setIsPlaying(false));
+-    } else {
+-      audio.pause();
+-    }
+-    // eslint-disable-next-line react-hooks/exhaustive-deps
+-  }, [playSerial, current?.audioUrl]);
+-
+-  // Sync seek requests.
+-  useEffect(() => {
+-    const audio = audioRef.current;
+-    if (!audio) return;
+-    if (Math.abs(audio.currentTime - currentTime) > 0.5) {
+-      audio.currentTime = currentTime;
+-    }
+-    // eslint-disable-next-line react-hooks/exhaustive-deps
+-  }, [playSerial]);
+-
+-  // Sync volume.
+-  useEffect(() => {
+-    const audio = audioRef.current;
+-    if (audio) audio.volume = volume;
+-  }, [volume]);
++  const sessionReady = useMusicAudioSession();
++  const playbackError = useMusicAudioPlayback(audioRef, sessionReady);
+ 
+   if (!current) return null;
+ 
+@@ -86,10 +61,7 @@ export function PlayerBar() {
+     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+       <audio
+         ref={audioRef}
+-        src={current.audioUrl}
+-        preload="metadata"
+-        onPlay={() => setIsPlaying(true)}
+-        onPause={() => setIsPlaying(false)}
++        preload="none"
+         onLoadedMetadata={(e) => {
+           const d = (e.target as HTMLAudioElement).duration;
+           if (Number.isFinite(d) && d > 0) setDuration(Math.round(d));
+@@ -106,6 +78,8 @@ export function PlayerBar() {
+         onEnded={() => next()}
+       />
+ 
++      {playbackError && <p role="status" className="mx-auto max-w-6xl text-xs text-red-600">{t('playbackError')}</p>}
++
+       <div className="mx-auto flex max-w-6xl items-center gap-3">
+         {/* Cover + meta */}
+         <Link
+@@ -196,7 +170,7 @@ export function PlayerBar() {
+         {/* Close */}
+         <button
+           type="button"
+-          onClick={() => usePlayerStore.setState({ queue: [], isPlaying: false, currentIndex: 0 })}
++          onClick={() => usePlayerStore.getState().reset()}
+           className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800"
+           aria-label={t('closeAria')}
+         >
+diff --git a/src/features/music-archive/components/PlayerStore.ts b/src/features/music-archive/components/PlayerStore.ts
+index 7da538a..5e07259 100644
+--- a/src/features/music-archive/components/PlayerStore.ts
++++ b/src/features/music-archive/components/PlayerStore.ts
+@@ -14,6 +14,7 @@ interface PlayerState {
+   // The PlayerBar listens to this to call `audio.play()` (which requires a
+   // user gesture in browsers).
+   playSerial: number;
++  reset(): void;
+   setQueue(items: PlayItem[], startIndex?: number): void;
+   togglePlay(): void;
+   next(): void;
+@@ -34,6 +35,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
+   volume: 0.9,
+   playSerial: 0,
+ 
++  reset() {
++    set((s) => ({ queue: [], currentIndex: 0, isPlaying: false, currentTime: 0,
++      duration: 0, playSerial: s.playSerial + 1 }));
++  },
++
+   setQueue(items, startIndex = 0) {
+     set((s) => ({
+       queue: items,
+diff --git a/src/features/music-archive/types/music/player.types.ts b/src/features/music-archive/types/music/player.types.ts
+index ecdf0c5..ce51f22 100644
+--- a/src/features/music-archive/types/music/player.types.ts
++++ b/src/features/music-archive/types/music/player.types.ts
+@@ -6,6 +6,5 @@ export interface PlayItem {
+   albumSlug: string;
+   artistSlug: string;
+   coverCfId: string | null;
+-  audioUrl: string;
+   durationSeconds: number;
+ }
+diff --git a/src/lib/cloudflare/r2.ts b/src/lib/cloudflare/r2.ts
+index 30265e7..0332a60 100644
+--- a/src/lib/cloudflare/r2.ts
++++ b/src/lib/cloudflare/r2.ts
+@@ -70,14 +70,28 @@ export async function getPresignedUploadUrl(
+   return { url, key };
+ }
+ 
+-/** Generate a presigned GET URL for any stored object (audio, PDF documents).
+- *  TTL 1h covers a long listening/reading session. When a custom public domain
+- *  is configured later, this function can switch to returning an unsigned URL. */
+-export async function getPublicFileUrl(key: string, ttlSeconds = 3600): Promise<string> {
++/** Sign a direct R2 GET and expose its actual expiry for in-memory client reuse.
++ *  SigV4 timestamps have second precision; use that exact timestamp for expiry.
++ *  Only the S3 client is reused on the server, never signed URLs. */
++export async function getSignedFileUrl(
++  key: string,
++  ttlSeconds = 3600,
++): Promise<{ url: string; expiresAt: number; serverTime: number }> {
+   const client = getR2Client();
+   const bucket = getR2Bucket();
+   const cmd = new GetObjectCommand({ Bucket: bucket, Key: key });
+-  return getSignedUrl(client, cmd, { expiresIn: ttlSeconds });
++  const signingDate = new Date(Math.floor(Date.now() / 1000) * 1000);
++  const url = await getSignedUrl(client, cmd, { expiresIn: ttlSeconds, signingDate });
++  return {
++    url,
++    expiresAt: signingDate.getTime() + ttlSeconds * 1000,
++    serverTime: Date.now(),
++  };
++}
++
++/** Existing file/chat callers keep their string result and original TTLs. */
++export async function getPublicFileUrl(key: string, ttlSeconds = 3600): Promise<string> {
++  return (await getSignedFileUrl(key, ttlSeconds)).url;
+ }
+ 
+ /** Alias histórico: los call sites de audio (música, chat) siguen usando el
+diff --git a/src/app/api/blogs/[idOrSlug]/music/route.test.ts b/src/app/api/blogs/[idOrSlug]/music/route.test.ts
+new file mode 100644
+index 0000000..feab585
+--- /dev/null
++++ b/src/app/api/blogs/[idOrSlug]/music/route.test.ts
+@@ -0,0 +1,28 @@
++import { describe, expect, it, vi } from 'vitest';
++import type { NextRequest } from 'next/server';
++import { GET } from './route';
++import { getServerClient } from '@/utils/supabase/server';
++vi.mock('@/utils/supabase/server', () => ({ getServerClient: vi.fn() }));
++
++describe('blog music metadata', () => {
++  it('contains availability instead of cached bearer URLs or object keys', async () => {
++    const results = [
++      { id: 'blog', music_artist_id: 'artist' },
++      { id: 'artist', name: 'Artist', slug: 'artist' },
++      [{ id: 'album', title: 'Album', slug: 'album', year: 2000, cover_cf_image_id: null }],
++      [{ id: 'track', album_id: 'album', title: 'Song', r2_key: 'private/music.mp3' },
++        { id: 'empty', album_id: 'album', title: 'Empty', r2_key: null }],
++    ];
++    const from = vi.fn(() => {
++      const result = Promise.resolve({ data: results.shift() });
++      const query = { select: () => query, eq: () => query, in: () => query,
++        order: () => result, maybeSingle: () => result };
++      return query;
++    });
++    vi.mocked(getServerClient).mockResolvedValue({ from } as never);
++    const response = await GET({} as NextRequest, { params: Promise.resolve({ idOrSlug: 'blog' }) });
++    const data = await response.json();
++    expect(data.albums[0].tracks.map((track: { hasAudio: boolean }) => track.hasAudio)).toEqual([true, false]);
++    expect(JSON.stringify(data)).not.toMatch(/audioUrl|r2_key|private\/music|X-Amz/);
++  });
++});
+diff --git a/src/features/music-archive/actions/playback.actions.test.ts b/src/features/music-archive/actions/playback.actions.test.ts
+new file mode 100644
+index 0000000..3a1e5b4
+--- /dev/null
++++ b/src/features/music-archive/actions/playback.actions.test.ts
+@@ -0,0 +1,127 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++
++const mocks = vi.hoisted(() => ({
++  getServerClient: vi.fn(), getServiceClient: vi.fn(), getUser: vi.fn(),
++  getSignedFileUrl: vi.fn(), from: vi.fn(), enabled: true,
++  query: { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() },
++}));
++vi.mock('@/utils/supabase/server', () => ({
++  getServerClient: mocks.getServerClient,
++  getServiceClient: mocks.getServiceClient,
++}));
++vi.mock('@/lib/cloudflare/r2', () => ({ getSignedFileUrl: mocks.getSignedFileUrl }));
++vi.mock('../config', () => ({ get MUSIC_CLUB_ENABLED() { return mocks.enabled; } }));
++
++import { getTrackPlayUrl } from './playback.actions';
++
++const trackId = '8b7cead5-609e-4e4e-ae2d-1a2181cb7d25';
++const viewerId = 'ce16b034-94d2-47c8-88d7-5d315e3a9016';
++const signed = {
++  url: 'https://r2.example.test/track.mp3?signature=test',
++  expiresAt: 1_800_003_600_000,
++  serverTime: 1_800_000_000_123,
++};
++const failure = { ok: false, error: 'No se pudo cargar el audio.' };
++const missingSession = { name: 'AuthSessionMissingError', status: 400, message: 'Auth session missing!' };
++
++beforeEach(() => {
++  vi.resetAllMocks();
++  mocks.enabled = true;
++  mocks.getServerClient.mockResolvedValue({ auth: { getUser: mocks.getUser }, from: mocks.from });
++  mocks.getUser.mockResolvedValue({ data: { user: { id: viewerId } }, error: null });
++  mocks.from.mockReturnValue(mocks.query);
++  mocks.query.select.mockReturnValue(mocks.query);
++  mocks.query.eq.mockReturnValue(mocks.query);
++  mocks.query.maybeSingle.mockResolvedValue({ data: { r2_key: 'stored/track.mp3' }, error: null });
++  mocks.getSignedFileUrl.mockResolvedValue(signed);
++});
++
++describe('getTrackPlayUrl', () => {
++  it('returns expiry and verified scope, signing only the caller-visible stored key', async () => {
++    expect(await getTrackPlayUrl(trackId)).toEqual({ ok: true, data: { ...signed, viewerId } });
++    expect(mocks.getUser).toHaveBeenCalledOnce();
++    expect(mocks.from).toHaveBeenCalledExactlyOnceWith('music_tracks');
++    expect(mocks.query.select).toHaveBeenCalledExactlyOnceWith('r2_key');
++    expect(mocks.query.eq).toHaveBeenCalledExactlyOnceWith('id', trackId);
++    expect(mocks.getSignedFileUrl).toHaveBeenCalledExactlyOnceWith('stored/track.mp3', 3600);
++    expect(mocks.getServiceClient).not.toHaveBeenCalled();
++  });
++
++  it.each([null, missingSession])('keeps public playback available without a session (%j)', async (error) => {
++    mocks.getUser.mockResolvedValue({ data: { user: null }, error });
++    expect(await getTrackPlayUrl(trackId)).toEqual({ ok: true, data: { ...signed, viewerId: null } });
++    expect(mocks.getSignedFileUrl).toHaveBeenCalledOnce();
++    expect(mocks.getServiceClient).not.toHaveBeenCalled();
++  });
++
++  it.each(['', 'stored/track.mp3', 'https://r2.example.test/file', 'not-a-uuid', null, 123])(
++    'rejects invalid track IDs before auth, database, or signing (%j)', async (value) => {
++      expect(await getTrackPlayUrl(value as string)).toEqual({ ok: false, error: 'Pista no válida.' });
++      expect(mocks.getServerClient).not.toHaveBeenCalled();
++      expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++    },
++  );
++
++  it('honors the feature kill switch before doing any work', async () => {
++    mocks.enabled = false;
++    expect((await getTrackPlayUrl(trackId)).ok).toBe(false);
++    expect(mocks.getServerClient).not.toHaveBeenCalled();
++    expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++  });
++
++  it.each([
++    { name: 'AuthRetryableFetchError', status: 503, message: 'upstream detail' },
++    { name: 'AuthApiError', status: 401, code: 'bad_jwt', message: 'invalid token' },
++    { name: 'AuthApiError', status: 400, code: 'session_not_found' },
++    { name: 'AuthApiError', status: 400, code: 'refresh_token_not_found' },
++    { name: 'AuthUnknownError', status: 400, message: 'Auth session missing!' },
++    { name: 'AuthSessionMissingError', status: 503, message: 'Auth session missing!' },
++  ])('does not downgrade auth failures to anonymous (%j)', async (error) => {
++    mocks.getUser.mockResolvedValue({ data: { user: null }, error });
++    expect(await getTrackPlayUrl(trackId)).toEqual(failure);
++    expect(mocks.from).not.toHaveBeenCalled();
++    expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++  });
++
++  it('does not trust a user returned together with an auth error', async () => {
++    mocks.getUser.mockResolvedValue({ data: { user: { id: viewerId } }, error: missingSession });
++    expect(await getTrackPlayUrl(trackId)).toEqual(failure);
++    expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++  });
++
++  it.each([null, {}, { r2_key: null }, { r2_key: '' }, { r2_key: ' ' }, { r2_key: 123 }])(
++    'does not sign missing, RLS-hidden, or malformed rows (%j)', async (data) => {
++      mocks.query.maybeSingle.mockResolvedValue({ data, error: null });
++      expect(await getTrackPlayUrl(trackId)).toEqual({ ok: false, error: 'Pista no encontrada.' });
++      expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++    },
++  );
++
++  it.each([null, { r2_key: 'stored/track.mp3' }])('fails closed on DB errors even with data', async (data) => {
++    mocks.query.maybeSingle.mockResolvedValue({ data, error: { message: 'private database details' } });
++    expect(await getTrackPlayUrl(trackId)).toEqual(failure);
++    expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++  });
++
++  it.each(['getServerClient', 'getUser', 'getSignedFileUrl'] as const)(
++    'redacts thrown %s errors', async (source) => {
++      mocks[source].mockRejectedValue(new Error('private configuration or credential detail'));
++      expect(await getTrackPlayUrl(trackId)).toEqual(failure);
++    },
++  );
++
++  it('redacts thrown database errors without signing', async () => {
++    mocks.query.maybeSingle.mockRejectedValue(new Error('private database detail'));
++    expect(await getTrackPlayUrl(trackId)).toEqual(failure);
++    expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
++  });
++
++  it('reauthorizes every request instead of caching URLs on the server', async () => {
++    expect((await getTrackPlayUrl(trackId)).ok).toBe(true);
++    mocks.query.maybeSingle.mockResolvedValue({ data: null, error: null });
++    expect((await getTrackPlayUrl(trackId)).ok).toBe(false);
++    expect(mocks.getUser).toHaveBeenCalledTimes(2);
++    expect(mocks.query.maybeSingle).toHaveBeenCalledTimes(2);
++    expect(mocks.getSignedFileUrl).toHaveBeenCalledOnce();
++  });
++});
+diff --git a/src/features/music-archive/hooks/useMusicAudioPlayback.test.tsx b/src/features/music-archive/hooks/useMusicAudioPlayback.test.tsx
+new file mode 100644
+index 0000000..74af907
+--- /dev/null
++++ b/src/features/music-archive/hooks/useMusicAudioPlayback.test.tsx
+@@ -0,0 +1,167 @@
++import { act, cleanup, fireEvent, render } from '@testing-library/react';
++import { useRef } from 'react';
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++import { usePlayerStore } from '../components/PlayerStore';
++import type { PlayItem } from '../types/music.types';
++import type { MusicAudioUrl } from '../types/music/audio-url.types';
++import { musicAudioUrls } from '../lib/audio-url-session';
++import { AudioSessionChangedError } from '../lib/audio-url-cache';
++import { useMusicAudioPlayback } from './useMusicAudioPlayback';
++
++vi.mock('../lib/audio-url-session', () => ({ musicAudioUrls: {
++  get: vi.fn(), invalidate: vi.fn(), remaining: vi.fn(() => 3_600_000),
++} }));
++const item = (trackId: string): PlayItem => ({ trackId, title: trackId, artistName: 'Artist',
++  albumSlug: 'album', artistSlug: 'artist', coverCfId: null, durationSeconds: 240 });
++const signed = (trackId: string): MusicAudioUrl => ({ url: `https://test.r2.cloudflarestorage.com/${trackId}`,
++  expiresAt: 3_600_000, serverTime: 0, viewerId: null });
++function Player({ ready = true }: { ready?: boolean }) {
++  const ref = useRef<HTMLAudioElement>(null);
++  const current = usePlayerStore((s) => s.queue[s.currentIndex]);
++  const error = useMusicAudioPlayback(ref, ready);
++  return <>{current && <audio ref={ref} data-testid="audio" />}<span>{error ? 'failed' : ''}</span></>;
++}
++async function flush() { await act(async () => { await Promise.resolve(); await Promise.resolve(); }); }
++
++beforeEach(() => {
++  vi.useFakeTimers(); vi.clearAllMocks();
++  vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
++  vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
++  vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
++  vi.mocked(musicAudioUrls.get).mockImplementation(async (id) => signed(id));
++  usePlayerStore.getState().reset();
++});
++afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
++
++describe('direct R2 playback lifecycle', () => {
++  it('does not request a URL without a track/session', async () => {
++    const view = render(<Player ready={false} />);
++    act(() => usePlayerStore.getState().setQueue([item('a')]));
++    await flush();
++    expect(musicAudioUrls.get).not.toHaveBeenCalled();
++    view.rerender(<Player ready />); await flush();
++    expect(view.getByTestId('audio').getAttribute('src')).toBe(signed('a').url);
++  });
++  it('plays, pauses, seeks, and resumes with the same source', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    const audio = view.getByTestId('audio') as HTMLAudioElement;
++    fireEvent.loadedMetadata(audio); await flush();
++    act(() => usePlayerStore.getState().togglePlay()); await flush();
++    expect(usePlayerStore.getState().isPlaying).toBe(false);
++    act(() => usePlayerStore.getState().seek(42)); await flush();
++    expect(audio.currentTime).toBe(42);
++    act(() => usePlayerStore.getState().togglePlay()); await flush();
++    expect(audio.getAttribute('src')).toBe(signed('a').url);
++    expect(audio.play).toHaveBeenCalled();
++  });
++  it('ignores a late signature after a rapid track switch', async () => {
++    let resolve!: (result: MusicAudioUrl) => void;
++    vi.mocked(musicAudioUrls.get).mockImplementationOnce(() => new Promise((r) => { resolve = r; }));
++    usePlayerStore.getState().setQueue([item('a'), item('b')]);
++    const view = render(<Player />); await flush();
++    act(() => usePlayerStore.getState().next()); await flush();
++    resolve(signed('a')); await flush();
++    expect(view.getByTestId('audio').getAttribute('src')).toBe(signed('b').url);
++  });
++  it('does not revive playback after close while signing', async () => {
++    let resolve!: (result: MusicAudioUrl) => void;
++    vi.mocked(musicAudioUrls.get).mockImplementationOnce(() => new Promise((r) => { resolve = r; }));
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    act(() => usePlayerStore.getState().reset());
++    resolve(signed('a')); await flush();
++    expect(view.queryByTestId('audio')).toBeNull();
++    expect(usePlayerStore.getState().isPlaying).toBe(false);
++  });
++  it('refreshes before expiry and restores position after metadata', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    const audio = view.getByTestId('audio') as HTMLAudioElement;
++    fireEvent.loadedMetadata(audio); await flush();
++    usePlayerStore.getState().setCurrentTime(92);
++    vi.mocked(musicAudioUrls.get).mockResolvedValue({ ...signed('a'), url: signed('a').url + '?new=1' });
++    await act(async () => { await vi.advanceTimersByTimeAsync(3_540_000); });
++    fireEvent.loadedMetadata(audio); await flush();
++    expect(audio.currentTime).toBe(92);
++    expect(audio.getAttribute('src')).toContain('?new=1');
++  });
++  it('does not refresh continuously while paused', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    fireEvent.loadedMetadata(view.getByTestId('audio'));
++    act(() => usePlayerStore.getState().togglePlay()); await flush();
++    const calls = vi.mocked(musicAudioUrls.get).mock.calls.length;
++    await act(async () => { await vi.advanceTimersByTimeAsync(7_200_000); });
++    expect(musicAudioUrls.get).toHaveBeenCalledTimes(calls);
++  });
++  it('renews once on media error then stops instead of looping', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    const audio = view.getByTestId('audio');
++    fireEvent.error(audio); await flush();
++    expect(musicAudioUrls.invalidate).toHaveBeenCalledTimes(1);
++    fireEvent.error(audio); await flush();
++    expect(musicAudioUrls.invalidate).toHaveBeenCalledTimes(1);
++    expect(usePlayerStore.getState().isPlaying).toBe(false);
++    expect(view.getByText('failed')).toBeTruthy();
++  });
++  it('reports signing failure and allows explicit retry', async () => {
++    vi.mocked(musicAudioUrls.get).mockRejectedValueOnce(new Error('offline'));
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    expect(view.getByText('failed')).toBeTruthy();
++    act(() => usePlayerStore.getState().togglePlay()); await flush();
++    expect(view.queryByText('failed')).toBeNull();
++    expect(usePlayerStore.getState().isPlaying).toBe(true);
++  });
++  it('requests a fresh source when retrying an element with a persistent media error', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    const audio = view.getByTestId('audio') as HTMLAudioElement;
++    Object.defineProperty(audio, 'error', { configurable: true, value: { code: 4 } });
++    fireEvent.error(audio); await flush();
++    fireEvent.error(audio); await flush();
++    expect(usePlayerStore.getState().isPlaying).toBe(false);
++    vi.mocked(musicAudioUrls.get).mockResolvedValue({ ...signed('a'), url: signed('a').url + '?retry=1' });
++    act(() => usePlayerStore.getState().togglePlay()); await flush();
++    expect(musicAudioUrls.invalidate).toHaveBeenCalledTimes(2);
++    expect(audio.getAttribute('src')).toContain('?retry=1');
++    expect(view.queryByText('failed')).toBeNull();
++  });
++  it('reloads a failed element even when a fresh signature returns the same URL', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    const audio = view.getByTestId('audio') as HTMLAudioElement;
++    fireEvent.error(audio); await flush();
++    fireEvent.error(audio); await flush();
++    const loads = vi.mocked(audio.load).mock.calls.length;
++    act(() => usePlayerStore.getState().togglePlay()); await flush();
++    expect(musicAudioUrls.invalidate).toHaveBeenCalledTimes(2);
++    expect(audio.load).toHaveBeenCalledTimes(loads + 1);
++    expect(audio.getAttribute('src')).toBe(signed('a').url);
++  });
++  it('stops safely if signer detects a different account before auth events arrive', async () => {
++    vi.mocked(musicAudioUrls.get).mockRejectedValueOnce(new AudioSessionChangedError());
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    expect(view.getByText('failed')).toBeTruthy();
++    expect(usePlayerStore.getState().isPlaying).toBe(false);
++  });
++  it('handles browser play rejection without an unhandled promise', async () => {
++    vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValue(new Error('NotAllowedError'));
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    expect(view.getByText('failed')).toBeTruthy();
++    expect(usePlayerStore.getState().isPlaying).toBe(false);
++  });
++  it('rechecks on focus and releases source on unmount', async () => {
++    usePlayerStore.getState().setQueue([item('a')]);
++    const view = render(<Player />); await flush();
++    const audio = view.getByTestId('audio');
++    fireEvent.focus(window); await flush();
++    expect(musicAudioUrls.get).toHaveBeenCalledTimes(2);
++    view.unmount();
++    expect(audio.getAttribute('src')).toBeNull();
++  });
++});
+diff --git a/src/features/music-archive/hooks/useMusicAudioPlayback.ts b/src/features/music-archive/hooks/useMusicAudioPlayback.ts
+new file mode 100644
+index 0000000..f57dcaa
+--- /dev/null
++++ b/src/features/music-archive/hooks/useMusicAudioPlayback.ts
+@@ -0,0 +1,131 @@
++'use client';
++
++import { useEffect, useRef, useState, type RefObject } from 'react';
++import { usePlayerStore } from '../components/PlayerStore';
++import { AUDIO_REFRESH_MARGIN_MS } from '../lib/audio-url-cache';
++import { musicAudioUrls } from '../lib/audio-url-session';
++
++/** Owns the element's source so a late signature never replaces a newer track. */
++export function useMusicAudioPlayback(audioRef: RefObject<HTMLAudioElement | null>, ready: boolean) {
++  const current = usePlayerStore((s) => s.queue[s.currentIndex]);
++  const serial = usePlayerStore((s) => s.playSerial);
++  const volume = usePlayerStore((s) => s.volume);
++  const [error, setError] = useState(false);
++  const run = useRef(0);
++  const failedTrack = useRef<string | null>(null);
++
++  useEffect(() => {
++    const audio = audioRef.current;
++    if (audio) audio.volume = volume;
++  }, [audioRef, volume, current?.trackId]);
++
++  useEffect(() => {
++    const audio = audioRef.current;
++    if (!audio || !current || !ready) return;
++    const generation = ++run.current;
++    let timer: ReturnType<typeof setTimeout> | undefined;
++    let recovering = false;
++    let recoveryUsed = false;
++    let loading = false;
++    let pendingSeek: number | null = null;
++    const active = () => generation === run.current &&
++      usePlayerStore.getState().queue[usePlayerStore.getState().currentIndex]?.trackId === current.trackId;
++    const fail = () => {
++      if (!active()) return;
++      audio.pause();
++      usePlayerStore.getState().setIsPlaying(false);
++      failedTrack.current = current.trackId;
++      setError(true);
++      clearTimeout(timer);
++    };
++    const play = async () => {
++      if (!active()) return;
++      if (usePlayerStore.getState().isPlaying) {
++        const source = audio.src;
++        try { await audio.play(); } catch {
++          if (audio.src === source && usePlayerStore.getState().isPlaying) fail();
++        }
++      } else audio.pause();
++    };
++    const loaded = () => {
++      if (!active()) return;
++      if (pendingSeek !== null) {
++        audio.currentTime = Number.isFinite(audio.duration)
++          ? Math.min(pendingSeek, Math.max(0, audio.duration)) : pendingSeek;
++        pendingSeek = null;
++      }
++      void play();
++    };
++    const load = async (force = false) => {
++      if (loading) return;
++      loading = true;
++      try {
++        if (force) musicAudioUrls.invalidate(current.trackId);
++        const signed = await musicAudioUrls.get(current.trackId);
++        if (!active()) return;
++        failedTrack.current = null;
++        setError(false);
++        const state = usePlayerStore.getState();
++        if (force || audio.getAttribute('src') !== signed.url) {
++          pendingSeek = state.currentTime;
++          audio.pause();
++          audio.src = signed.url; // The browser fetches bytes directly from R2.
++          audio.load();
++        } else if (Math.abs(audio.currentTime - state.currentTime) > 0.5) {
++          audio.currentTime = state.currentTime;
++        }
++        void play();
++        if (active() && usePlayerStore.getState().isPlaying) {
++          clearTimeout(timer);
++          timer = setTimeout(() => { void load(); }, Math.max(1,
++            musicAudioUrls.remaining(current.trackId) - AUDIO_REFRESH_MARGIN_MS));
++        }
++      } catch { fail(); }
++      finally { loading = false; }
++    };
++    const recover = () => {
++      if (!active() || recovering) return;
++      if (recoveryUsed) { fail(); return; }
++      recoveryUsed = true;
++      recovering = true;
++      void load(true).finally(() => { recovering = false; });
++    };
++    // Timers may be throttled in background tabs: recheck before resuming or
++    // issuing another range request after focus/network recovery.
++    const recheck = () => {
++      if (document.visibilityState !== 'hidden' && usePlayerStore.getState().isPlaying) void load();
++    };
++    audio.addEventListener('loadedmetadata', loaded);
++    audio.addEventListener('error', recover);
++    window.addEventListener('focus', recheck);
++    window.addEventListener('online', recheck);
++    document.addEventListener('visibilitychange', recheck);
++    if (!usePlayerStore.getState().isPlaying) audio.pause();
++    // A failed element can reject play() without emitting another error event.
++    // Retry both the signature and the media load, even if the URL is identical.
++    void load(failedTrack.current === current.trackId);
++    return () => {
++      run.current += 1;
++      clearTimeout(timer);
++      audio.removeEventListener('loadedmetadata', loaded);
++      audio.removeEventListener('error', recover);
++      window.removeEventListener('focus', recheck);
++      window.removeEventListener('online', recheck);
++      document.removeEventListener('visibilitychange', recheck);
++      audio.pause();
++    };
++  }, [audioRef, current, serial, ready]);
++
++  // Unmount/logout/close releases the bearer URL and any buffered audio.
++  useEffect(() => {
++    const audio = audioRef.current;
++    return () => {
++      if (audio) {
++        audio.pause();
++        audio.removeAttribute('src');
++        audio.load();
++      }
++    };
++  }, [audioRef, current?.trackId]);
++  return error;
++}
+diff --git a/src/features/music-archive/hooks/useMusicAudioSession.test.tsx b/src/features/music-archive/hooks/useMusicAudioSession.test.tsx
+new file mode 100644
+index 0000000..76c447b
+--- /dev/null
++++ b/src/features/music-archive/hooks/useMusicAudioSession.test.tsx
+@@ -0,0 +1,180 @@
++import { act, cleanup, renderHook } from '@testing-library/react';
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++import type { MusicAudioUrl } from '../types/music/audio-url.types';
++
++type Session = { user: { id: string }; access_token: string } | null;
++type StoreState = { user: { id: string } | null };
++const mocks = vi.hoisted(() => ({
++  authListener: undefined as undefined | ((event: string, session: Session) => void),
++  storeListener: undefined as undefined | ((state: StoreState, previous: StoreState) => void),
++  authUnsubscribe: vi.fn(), storeUnsubscribe: vi.fn(), clearPlayer: vi.fn(), sign: vi.fn(),
++}));
++vi.mock('@/utils/supabase/client', () => ({
++  createClient: () => ({ auth: {
++    onAuthStateChange: (callback: NonNullable<typeof mocks.authListener>) => {
++      mocks.authListener = callback;
++      return { data: { subscription: { unsubscribe: mocks.authUnsubscribe } } };
++    },
++  } }),
++}));
++vi.mock('@/features/auth/store/auth.store', () => ({
++  useAuthStore: { subscribe: (callback: NonNullable<typeof mocks.storeListener>) => {
++    mocks.storeListener = callback;
++    return mocks.storeUnsubscribe;
++  } },
++}));
++vi.mock('../components/PlayerStore', () => ({
++  usePlayerStore: { getState: () => ({ reset: mocks.clearPlayer }) },
++}));
++vi.mock('../lib/audio-url-session', async () => {
++  const { MusicAudioUrlCache } = await import('../lib/audio-url-cache');
++  return { musicAudioUrls: new MusicAudioUrlCache(mocks.sign) };
++});
++
++import { AudioSessionChangedError } from '../lib/audio-url-cache';
++import { musicAudioUrls } from '../lib/audio-url-session';
++import { useMusicAudioSession } from './useMusicAudioSession';
++
++function session(id = 'a', sessionId = 'session-a', refresh = 1): NonNullable<Session> {
++  return { user: { id }, access_token: `test.${btoa(JSON.stringify({ session_id: sessionId, refresh }))}.test` };
++}
++function auth(event: string, value: Session) {
++  act(() => mocks.authListener!(event, value));
++}
++function store(previous: string | null, next: string | null) {
++  act(() => mocks.storeListener!(
++    { user: next ? { id: next } : null }, { user: previous ? { id: previous } : null },
++  ));
++}
++function signed(viewerId: string | null = 'a'): MusicAudioUrl {
++  const now = Date.now();
++  return { url: 'https://r2.example.test/music', serverTime: now, expiresAt: now + 3_600_000, viewerId };
++}
++
++beforeEach(() => {
++  vi.resetAllMocks();
++  musicAudioUrls.reset();
++  vi.spyOn(musicAudioUrls, 'reset');
++  mocks.sign.mockImplementation(async () => signed());
++});
++afterEach(() => {
++  cleanup();
++  vi.restoreAllMocks();
++});
++
++describe('music audio session lifecycle', () => {
++  it('waits for the initial auth result and permits public anonymous playback', async () => {
++    const { result } = renderHook(useMusicAudioSession);
++    expect(result.current).toBe(false);
++    await expect(musicAudioUrls.get('track')).rejects.toBeInstanceOf(AudioSessionChangedError);
++    auth('INITIAL_SESSION', null);
++    expect(result.current).toBe(true);
++    expect(musicAudioUrls.reset).toHaveBeenCalledExactlyOnceWith(null);
++    expect(mocks.clearPlayer).not.toHaveBeenCalled();
++    mocks.sign.mockResolvedValue(signed(null));
++    await expect(musicAudioUrls.get('track')).resolves.toMatchObject({ viewerId: null });
++  });
++
++  it('keeps the known B session ready when the auth event precedes the A -> B store update', async () => {
++    const { result } = renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', session());
++    auth('SIGNED_IN', session('b', 'session-b'));
++    store('a', 'b');
++    expect(result.current).toBe(true);
++    expect(musicAudioUrls.reset).toHaveBeenCalledTimes(2);
++    expect(musicAudioUrls.reset).toHaveBeenLastCalledWith('b');
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++    mocks.sign.mockResolvedValue(signed('b'));
++    await expect(musicAudioUrls.get('track')).resolves.toMatchObject({ viewerId: 'b' });
++  });
++
++  it.each(['a', null])('waits safely when the %s -> B store update precedes auth', async (previous) => {
++    const { result } = renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', previous ? session(previous) : null);
++    store(previous, 'b');
++    expect(result.current).toBe(false);
++    expect(musicAudioUrls.reset).toHaveBeenLastCalledWith(undefined);
++    await expect(musicAudioUrls.get('track')).rejects.toBeInstanceOf(AudioSessionChangedError);
++    auth('SIGNED_IN', session('b', 'session-b'));
++    expect(result.current).toBe(true);
++    expect(musicAudioUrls.reset).toHaveBeenLastCalledWith('b');
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++  });
++
++  it('clears URLs and playback on SIGNED_OUT without duplicating the store cleanup', async () => {
++    const { result } = renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', session());
++    await musicAudioUrls.get('track');
++    auth('SIGNED_OUT', null);
++    store('a', null);
++    expect(result.current).toBe(true);
++    expect(musicAudioUrls.remaining('track')).toBe(0);
++    expect(musicAudioUrls.reset).toHaveBeenCalledTimes(2);
++    expect(musicAudioUrls.reset).toHaveBeenLastCalledWith(null);
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++  });
++
++  it('clears URLs and playback on local logout even when Supabase never emits SIGNED_OUT', async () => {
++    const { result } = renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', session());
++    await musicAudioUrls.get('track');
++    store('a', null);
++    expect(result.current).toBe(true);
++    expect(musicAudioUrls.remaining('track')).toBe(0);
++    expect(musicAudioUrls.reset).toHaveBeenLastCalledWith(null);
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++  });
++
++  it('invalidates cached and pending URLs for a new session_id of the same user', async () => {
++    renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', session());
++    await musicAudioUrls.get('cached');
++    let resolve!: (value: MusicAudioUrl) => void;
++    mocks.sign.mockReturnValueOnce(new Promise<MusicAudioUrl>((done) => { resolve = done; }));
++    const pending = musicAudioUrls.get('pending');
++    const rejected = expect(pending).rejects.toBeInstanceOf(AudioSessionChangedError);
++    auth('SIGNED_IN', session('a', 'new-session'));
++    resolve(signed());
++    await rejected;
++    expect(musicAudioUrls.remaining('cached')).toBe(0);
++    expect(musicAudioUrls.remaining('pending')).toBe(0);
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++  });
++
++  it('preserves URLs across token refreshes, repeated sign-in events, and profile updates for the same session', async () => {
++    const { result } = renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', session());
++    await musicAudioUrls.get('track');
++    auth('TOKEN_REFRESHED', session('a', 'session-a', 2));
++    auth('SIGNED_IN', session('a', 'session-a', 2));
++    store('a', 'a');
++    expect(result.current).toBe(true);
++    await musicAudioUrls.get('track');
++    expect(mocks.sign).toHaveBeenCalledOnce();
++    expect(musicAudioUrls.reset).toHaveBeenCalledOnce();
++    expect(mocks.clearPlayer).not.toHaveBeenCalled();
++  });
++
++  it('unsubscribes, clears URLs/player, and rejects pending results on unmount', async () => {
++    const { unmount } = renderHook(useMusicAudioSession);
++    auth('INITIAL_SESSION', session());
++    await musicAudioUrls.get('cached');
++    let resolve!: (value: MusicAudioUrl) => void;
++    mocks.sign.mockReturnValueOnce(new Promise<MusicAudioUrl>((done) => { resolve = done; }));
++    const pending = musicAudioUrls.get('pending');
++    const rejected = expect(pending).rejects.toBeInstanceOf(AudioSessionChangedError);
++    unmount();
++    expect(mocks.authUnsubscribe).toHaveBeenCalledOnce();
++    expect(mocks.storeUnsubscribe).toHaveBeenCalledOnce();
++    expect(musicAudioUrls.reset).toHaveBeenLastCalledWith();
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++    expect(musicAudioUrls.remaining('cached')).toBe(0);
++    resolve(signed());
++    await rejected;
++    auth('SIGNED_IN', session('b', 'session-b'));
++    store('a', 'b');
++    expect(musicAudioUrls.reset).toHaveBeenCalledTimes(2);
++    expect(mocks.clearPlayer).toHaveBeenCalledOnce();
++    await expect(musicAudioUrls.get('track')).rejects.toBeInstanceOf(AudioSessionChangedError);
++  });
++});
+diff --git a/src/features/music-archive/hooks/useMusicAudioSession.ts b/src/features/music-archive/hooks/useMusicAudioSession.ts
+new file mode 100644
+index 0000000..413e048
+--- /dev/null
++++ b/src/features/music-archive/hooks/useMusicAudioSession.ts
+@@ -0,0 +1,61 @@
++'use client';
++
++import { useEffect, useState } from 'react';
++import { createClient } from '@/utils/supabase/client';
++import { useAuthStore } from '@/features/auth/store/auth.store';
++import { usePlayerStore } from '../components/PlayerStore';
++import { musicAudioUrls } from '../lib/audio-url-session';
++
++type AudioSession = { user: { id: string }; access_token: string } | null;
++
++/** Cache partition only. This does not authorize playback; RLS does that. */
++function sessionKey(token: string): string {
++  try {
++    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
++    const claims = JSON.parse(atob(payload));
++    return typeof claims.session_id === 'string' ? claims.session_id : token;
++  } catch { return token; }
++}
++
++export function useMusicAudioSession() {
++  const [ready, setReady] = useState(false);
++  useEffect(() => {
++    let context: string | undefined;
++    let viewerId: string | null | undefined;
++    let active = true;
++    const clearPlayer = () => usePlayerStore.getState().reset();
++    const { data: { subscription } } = createClient().auth.onAuthStateChange((event: string, session: AudioSession) => {
++      if (!active) return;
++      const nextContext = session ? `${session.user.id}:${sessionKey(session.access_token)}` : 'guest';
++      if (context !== nextContext || event === 'SIGNED_OUT') {
++        viewerId = session?.user.id ?? null;
++        musicAudioUrls.reset(viewerId);
++        if (context !== undefined) clearPlayer();
++        context = nextContext;
++      }
++      setReady(true);
++    });
++    // Local logout cleanup still runs if a failed remote sign-out never emits
++    // SIGNED_OUT. It also protects user switches handled by the app's store.
++    const unsubscribe = useAuthStore.subscribe((state, previous) => {
++      const nextViewerId = state.user?.id ?? null;
++      // Supabase can announce B before the app finishes loading B's profile.
++      // That later A -> B store update must not erase the known B session.
++      if (active && previous.user?.id !== state.user?.id && viewerId !== nextViewerId) {
++        viewerId = state.user ? undefined : null;
++        musicAudioUrls.reset(viewerId);
++        clearPlayer();
++        context = state.user ? undefined : 'guest';
++        setReady(!state.user);
++      }
++    });
++    return () => {
++      active = false;
++      subscription.unsubscribe();
++      unsubscribe();
++      musicAudioUrls.reset();
++      clearPlayer();
++    };
++  }, []);
++  return ready;
++}
+diff --git a/src/features/music-archive/lib/audio-url-cache.test.ts b/src/features/music-archive/lib/audio-url-cache.test.ts
+new file mode 100644
+index 0000000..53f59f4
+--- /dev/null
++++ b/src/features/music-archive/lib/audio-url-cache.test.ts
+@@ -0,0 +1,140 @@
++import { describe, expect, it, vi } from 'vitest';
++import { AudioSessionChangedError, MusicAudioUrlCache } from './audio-url-cache';
++import type { MusicAudioUrl } from '../types/music/audio-url.types';
++
++const entry = (viewerId: string | null = 'alice', url = 'https://test.r2.cloudflarestorage.com/song') => ({
++  url, viewerId, serverTime: 1_000_000, expiresAt: 4_600_000,
++});
++function setup() {
++  let wall = 0;
++  let monotonic = 0;
++  const sign = vi.fn<() => Promise<MusicAudioUrl>>().mockResolvedValue(entry());
++  const cache = new MusicAudioUrlCache(sign, () => wall, () => monotonic);
++  cache.reset('alice');
++  return { cache, sign, advance(ms: number) { wall += ms; monotonic += ms; },
++    setWall(ms: number) { wall = ms; } };
++}
++
++describe('music-only session URL reuse', () => {
++  it('does not sign until first get and reuses the exact valid URL', async () => {
++    const { cache, sign, advance } = setup();
++    expect(sign).not.toHaveBeenCalled();
++    const first = await cache.get('track-a');
++    advance(60_000);
++    expect(await cache.get('track-a')).toMatchObject(first);
++    expect(sign).toHaveBeenCalledTimes(1);
++  });
++  it('coalesces concurrent callers for the same track', async () => {
++    const { cache, sign } = setup();
++    await Promise.all([cache.get('a'), cache.get('a'), cache.get('a')]);
++    expect(sign).toHaveBeenCalledTimes(1);
++  });
++  it('isolates track IDs', async () => {
++    const { cache, sign } = setup();
++    await Promise.all([cache.get('a'), cache.get('b')]);
++    expect(sign).toHaveBeenCalledTimes(2);
++  });
++  it('renews at the 60 second boundary, including after long idle', async () => {
++    const { cache, sign, advance } = setup();
++    await cache.get('a');
++    advance(3_540_000);
++    await cache.get('a');
++    expect(sign).toHaveBeenCalledTimes(2);
++    advance(4_000_000);
++    await cache.get('a');
++    expect(sign).toHaveBeenCalledTimes(3);
++  });
++  it('uses relative server lifetime, not the client clock', async () => {
++    const { cache, setWall } = setup();
++    setWall(99_000_000_000);
++    await cache.get('a');
++    expect(cache.remaining('a')).toBe(3_600_000);
++  });
++  it('does not extend expiry after clock rollback', async () => {
++    const { cache, advance, setWall, sign } = setup();
++    await cache.get('a');
++    advance(3_550_000);
++    setWall(-500_000);
++    await cache.get('a');
++    expect(sign).toHaveBeenCalledTimes(2);
++  });
++  it('counts request latency against the usable TTL', async () => {
++    const { cache, sign, advance } = setup();
++    sign.mockImplementation(async () => { advance(5_000); return entry(); });
++    await cache.get('a');
++    expect(cache.remaining('a')).toBe(3_595_000);
++  });
++  it('does not cache failures and allows a fresh user retry', async () => {
++    const { cache, sign } = setup();
++    sign.mockRejectedValueOnce(new Error('denied'));
++    await expect(cache.get('a')).rejects.toThrow('denied');
++    await cache.get('a');
++    expect(sign).toHaveBeenCalledTimes(2);
++  });
++  it('rejects a response from a different authenticated viewer', async () => {
++    const { cache, sign } = setup();
++    sign.mockResolvedValue(entry('bob'));
++    await expect(cache.get('a')).rejects.toBeInstanceOf(AudioSessionChangedError);
++    expect(cache.remaining('a')).toBe(0);
++  });
++  it('supports a separate anonymous session', async () => {
++    const { cache, sign } = setup();
++    cache.reset(null);
++    sign.mockResolvedValue(entry(null));
++    await cache.get('a');
++    cache.reset('alice');
++    sign.mockResolvedValue(entry());
++    await cache.get('a');
++    expect(sign).toHaveBeenCalledTimes(2);
++  });
++  it('drops an in-flight response after logout or same-user re-login', async () => {
++    const { cache, sign } = setup();
++    let resolve!: (entry: MusicAudioUrl) => void;
++    sign.mockImplementationOnce(() => new Promise((r) => { resolve = r; }));
++    const old = cache.get('a');
++    cache.reset('alice');
++    await cache.get('a');
++    resolve(entry());
++    await expect(old).rejects.toBeInstanceOf(AudioSessionChangedError);
++    expect(await cache.get('a')).toMatchObject(entry());
++    expect(sign).toHaveBeenCalledTimes(2);
++  });
++  it('does not let an old finally remove a new session pending request', async () => {
++    const { cache, sign } = setup();
++    const resolvers: Array<(entry: MusicAudioUrl) => void> = [];
++    sign.mockImplementation(() => new Promise((resolve) => resolvers.push(resolve)));
++    const old = cache.get('a');
++    cache.reset('alice');
++    const fresh = cache.get('a');
++    resolvers[0](entry());
++    await expect(old).rejects.toBeInstanceOf(AudioSessionChangedError);
++    const duplicate = cache.get('a');
++    resolvers[1](entry());
++    await Promise.all([fresh, duplicate]);
++    expect(sign).toHaveBeenCalledTimes(2);
++  });
++  it('blocks use before a session is established', async () => {
++    const { cache, sign } = setup();
++    cache.reset();
++    await expect(cache.get('a')).rejects.toBeInstanceOf(AudioSessionChangedError);
++    expect(sign).not.toHaveBeenCalled();
++  });
++  it.each([NaN, 0, 60_000, 3_600_001])('rejects unsafe TTL %s', async (ttl) => {
++    const { cache, sign } = setup();
++    sign.mockResolvedValue({ ...entry(), expiresAt: 1_000_000 + ttl });
++    await expect(cache.get('a')).rejects.toThrow('Invalid audio URL');
++  });
++  it('invalidates one failed URL without dropping unrelated tracks', async () => {
++    const { cache, sign } = setup();
++    await cache.get('a'); await cache.get('b');
++    cache.invalidate('a');
++    await cache.get('a'); await cache.get('b');
++    expect(sign).toHaveBeenCalledTimes(3);
++  });
++  it('caps retained entries', async () => {
++    const { cache, sign } = setup();
++    for (let i = 0; i < 129; i++) await cache.get(String(i));
++    await cache.get('0');
++    expect(sign).toHaveBeenCalledTimes(130);
++  });
++});
+diff --git a/src/features/music-archive/lib/audio-url-cache.ts b/src/features/music-archive/lib/audio-url-cache.ts
+new file mode 100644
+index 0000000..22f9d34
+--- /dev/null
++++ b/src/features/music-archive/lib/audio-url-cache.ts
+@@ -0,0 +1,86 @@
++import type { MusicAudioUrl } from '../types/music/audio-url.types';
++
++export const AUDIO_REFRESH_MARGIN_MS = 60_000;
++const MAX_TTL_MS = 3_600_000;
++const MAX_ENTRIES = 128;
++
++export class AudioSessionChangedError extends Error {
++  constructor() { super('Audio session changed'); }
++}
++
++type Entry = MusicAudioUrl & { wallDeadline: number; monotonicDeadline: number };
++
++/** Memory only: never persisted, never shared with chat/admin or another tab. */
++export class MusicAudioUrlCache {
++  private viewerId: string | null | undefined;
++  private generation = 0;
++  private entries = new Map<string, Entry>();
++  private pending = new Map<string, Promise<MusicAudioUrl>>();
++
++  constructor(
++    private readonly sign: (trackId: string) => Promise<MusicAudioUrl>,
++    private readonly wallNow = () => Date.now(),
++    private readonly monotonicNow = () => performance.now(),
++  ) {}
++
++  reset(viewerId?: string | null) {
++    this.generation += 1;
++    this.viewerId = viewerId;
++    this.entries.clear();
++    this.pending.clear();
++  }
++
++  invalidate(trackId: string) { this.entries.delete(trackId); }
++
++  remaining(trackId: string): number {
++    const entry = this.entries.get(trackId);
++    return entry ? Math.min(
++      entry.wallDeadline - this.wallNow(),
++      entry.monotonicDeadline - this.monotonicNow(),
++    ) : 0;
++  }
++
++  async get(trackId: string): Promise<MusicAudioUrl> {
++    if (this.viewerId === undefined) throw new AudioSessionChangedError();
++    const cached = this.entries.get(trackId);
++    if (cached && this.remaining(trackId) > AUDIO_REFRESH_MARGIN_MS) return cached;
++    this.entries.delete(trackId);
++    const inflight = this.pending.get(trackId);
++    if (inflight) return inflight;
++    const generation = this.generation;
++    const wallStart = this.wallNow();
++    const monotonicStart = this.monotonicNow();
++    const request = this.sign(trackId).then((result) => {
++      if (generation !== this.generation || result.viewerId !== this.viewerId) {
++        throw new AudioSessionChangedError();
++      }
++      const ttl = result.expiresAt - result.serverTime;
++      // The server is authoritative; translate lifetime to local clocks to avoid
++      // assuming a user's wall clock agrees with the signing server.
++      if (!Number.isFinite(ttl) || ttl <= AUDIO_REFRESH_MARGIN_MS || ttl > MAX_TTL_MS ||
++          !Number.isFinite(result.serverTime) || !result.url.startsWith('https://')) {
++        throw new Error('Invalid audio URL response');
++      }
++      const entry: Entry = {
++        ...result,
++        wallDeadline: wallStart + ttl,
++        monotonicDeadline: monotonicStart + ttl,
++      };
++      if (Math.min(entry.wallDeadline - this.wallNow(),
++        entry.monotonicDeadline - this.monotonicNow()) <= AUDIO_REFRESH_MARGIN_MS) {
++        throw new Error('Audio URL expired while loading');
++      }
++      for (const key of this.entries.keys()) {
++        if (this.remaining(key) <= AUDIO_REFRESH_MARGIN_MS) this.entries.delete(key);
++      }
++      if (this.entries.size >= MAX_ENTRIES) this.entries.delete(this.entries.keys().next().value!);
++      this.entries.set(trackId, entry);
++      return result;
++    }).finally(() => {
++      // A previous session's late request must not remove this session's flight.
++      if (this.pending.get(trackId) === request) this.pending.delete(trackId);
++    });
++    this.pending.set(trackId, request);
++    return request;
++  }
++}
+diff --git a/src/features/music-archive/lib/audio-url-session.test.ts b/src/features/music-archive/lib/audio-url-session.test.ts
+new file mode 100644
+index 0000000..0fd7997
+--- /dev/null
++++ b/src/features/music-archive/lib/audio-url-session.test.ts
+@@ -0,0 +1,24 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++import { getTrackPlayUrl } from '../actions/playback.actions';
++import { musicAudioUrls } from './audio-url-session';
++vi.mock('../actions/playback.actions', () => ({ getTrackPlayUrl: vi.fn() }));
++beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); musicAudioUrls.reset(null); });
++afterEach(() => { musicAudioUrls.reset(); vi.useRealTimers(); });
++describe('signing request timeout', () => {
++  it('releases a hung request and permits a retry without late cache insertion', async () => {
++    let resolve!: (data: Awaited<ReturnType<typeof getTrackPlayUrl>>) => void;
++    vi.mocked(getTrackPlayUrl).mockImplementationOnce(() => new Promise((r) => { resolve = r; }));
++    const old = musicAudioUrls.get('a');
++    const rejected = expect(old).rejects.toThrow('timed out');
++    await vi.advanceTimersByTimeAsync(15_000);
++    await rejected;
++    const data = { url: 'https://test.r2.cloudflarestorage.com/fresh', expiresAt: 3_600_000,
++      serverTime: 0, viewerId: null };
++    vi.mocked(getTrackPlayUrl).mockResolvedValue({ ok: true, data });
++    expect(await musicAudioUrls.get('a')).toMatchObject(data);
++    resolve({ ok: true, data: { ...data, url: 'https://test.r2.cloudflarestorage.com/late' } });
++    await Promise.resolve();
++    expect(await musicAudioUrls.get('a')).toMatchObject(data);
++    expect(getTrackPlayUrl).toHaveBeenCalledTimes(2);
++  });
++});
+diff --git a/src/features/music-archive/lib/audio-url-session.ts b/src/features/music-archive/lib/audio-url-session.ts
+new file mode 100644
+index 0000000..e503b14
+--- /dev/null
++++ b/src/features/music-archive/lib/audio-url-session.ts
+@@ -0,0 +1,20 @@
++'use client';
++
++import { getTrackPlayUrl } from '../actions/playback.actions';
++import { MusicAudioUrlCache } from './audio-url-cache';
++
++export const musicAudioUrls = new MusicAudioUrlCache(async (trackId) => {
++  let timer: ReturnType<typeof setTimeout> | undefined;
++  try {
++    const result = await Promise.race([
++      getTrackPlayUrl(trackId),
++      new Promise<never>((_, reject) => {
++        timer = setTimeout(() => reject(new Error('Audio signing timed out')), 15_000);
++      }),
++    ]);
++    if (!result.ok) throw new Error(result.error);
++    return result.data;
++  } finally {
++    clearTimeout(timer);
++  }
++});
+diff --git a/src/features/music-archive/types/music/audio-url.types.ts b/src/features/music-archive/types/music/audio-url.types.ts
+new file mode 100644
+index 0000000..66756e3
+--- /dev/null
++++ b/src/features/music-archive/types/music/audio-url.types.ts
+@@ -0,0 +1,10 @@
++/** Music playback capability. Keep only in memory; never persist the signed URL. */
++export type MusicAudioUrl = {
++  url: string;
++  /** Epoch milliseconds derived from the exact R2 signing timestamp and TTL. */
++  expiresAt: number;
++  /** Server epoch milliseconds sampled after signing, for client clock skew. */
++  serverTime: number;
++  /** Verified caller scope; null represents the public, unauthenticated viewer. */
++  viewerId: string | null;
++};
+diff --git a/src/lib/cloudflare/r2.test.ts b/src/lib/cloudflare/r2.test.ts
+new file mode 100644
+index 0000000..c67770b
+--- /dev/null
++++ b/src/lib/cloudflare/r2.test.ts
+@@ -0,0 +1,99 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++
++const { getSignedUrl, send } = vi.hoisted(() => ({ getSignedUrl: vi.fn(), send: vi.fn() }));
++vi.mock('@aws-sdk/client-s3', () => {
++  class Command { constructor(public input: Record<string, unknown>) {} }
++  return {
++    S3Client: class { send = send; },
++    GetObjectCommand: Command, PutObjectCommand: Command,
++    DeleteObjectCommand: Command, HeadObjectCommand: Command,
++  };
++});
++vi.mock('@aws-sdk/s3-request-presigner', () => ({ getSignedUrl }));
++
++import {
++  getDownloadUrl, getPresignedUploadUrl, getPublicAudioUrl,
++  getPublicFileUrl, getSignedFileUrl,
++} from './r2';
++
++const now = Date.parse('2026-09-30T06:00:00.987Z');
++const signingTime = Date.parse('2026-09-30T06:00:00.000Z');
++const url = 'https://r2.example.test/track.mp3?signature=test';
++
++beforeEach(() => {
++  vi.resetAllMocks();
++  vi.useFakeTimers({ toFake: ['Date'] });
++  vi.setSystemTime(now);
++  for (const name of ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET']) {
++    vi.stubEnv(name, `test-${name.toLowerCase()}`);
++  }
++  vi.stubEnv('R2_ENDPOINT', 'https://r2.example.test');
++  getSignedUrl.mockResolvedValue(url);
++});
++
++afterEach(() => {
++  vi.useRealTimers();
++  vi.unstubAllEnvs();
++});
++
++describe('R2 signing metadata', () => {
++  it('derives expiry from the exact second-aligned signing timestamp', async () => {
++    expect(await getSignedFileUrl('stored/track.mp3')).toEqual({
++      url, expiresAt: signingTime + 3_600_000, serverTime: now,
++    });
++    expect(getSignedUrl).toHaveBeenCalledExactlyOnceWith(
++      expect.anything(),
++      expect.objectContaining({ input: { Bucket: 'test-r2_bucket', Key: 'stored/track.mp3' } }),
++      { expiresIn: 3600, signingDate: new Date(signingTime) },
++    );
++    expect(send).not.toHaveBeenCalled();
++  });
++
++  it('does not extend expiry by time spent signing', async () => {
++    getSignedUrl.mockImplementation(async () => {
++      vi.setSystemTime(now + 1750);
++      return url;
++    });
++    expect(await getSignedFileUrl('stored/track.mp3', 60)).toEqual({
++      url, expiresAt: signingTime + 60_000, serverTime: now + 1750,
++    });
++  });
++
++  it('signs afresh on every server request', async () => {
++    await getSignedFileUrl('stored/track.mp3');
++    vi.setSystemTime(now + 10_000);
++    const result = await getSignedFileUrl('stored/track.mp3');
++    expect(getSignedUrl).toHaveBeenCalledTimes(2);
++    expect(result.expiresAt).toBe(signingTime + 3_610_000);
++    expect(send).not.toHaveBeenCalled();
++  });
++});
++
++describe('existing R2 helper compatibility', () => {
++  it('keeps the public audio alias and string-returning default file URL', async () => {
++    expect(getPublicAudioUrl).toBe(getPublicFileUrl);
++    expect(await getPublicFileUrl('file.pdf')).toBe(url);
++    expect(getSignedUrl.mock.calls[0][2]).toMatchObject({ expiresIn: 3600 });
++  });
++
++  it.each([900, 7200])('retains custom file/audio TTL %i', async (ttl) => {
++    expect(await getPublicAudioUrl('chat/audio.mp3', ttl)).toBe(url);
++    expect(getSignedUrl.mock.calls[0][2]).toMatchObject({ expiresIn: ttl });
++  });
++
++  it('does not change the admin download TTL or disposition', async () => {
++    expect(await getDownloadUrl('file.pdf', 'report.pdf')).toBe(url);
++    expect(getSignedUrl.mock.calls[0][2]).toEqual({ expiresIn: 900 });
++    expect(getSignedUrl.mock.calls[0][1].input).toMatchObject({
++      Key: 'file.pdf', ResponseContentDisposition: expect.stringContaining('attachment;'),
++    });
++  });
++
++  it('does not change PUT signing or its bound upload length', async () => {
++    expect(await getPresignedUploadUrl('new.mp3', 'audio/mpeg', 300, 100)).toEqual({ url, key: 'new.mp3' });
++    expect(getSignedUrl.mock.calls[0][2]).toEqual({ expiresIn: 300 });
++    expect(getSignedUrl.mock.calls[0][1].input).toMatchObject({
++      Key: 'new.mp3', ContentType: 'audio/mpeg', ContentLength: 100,
++    });
++  });
++});

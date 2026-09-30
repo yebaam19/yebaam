@@ -1,0 +1,71 @@
+{
+  "recorded_at_utc": "2026-09-30T07:28:47Z",
+  "source": "Observaciones de las herramientas del navegador durante esta conversación; registro resumido, no HAR.",
+  "base_commit": "eed588bb424df549c4c1e27b8dd4f6e9a186f4c1",
+  "environment": {
+    "browser": "Chrome",
+    "app_url": "http://localhost:3000/musica",
+    "authentication": "Sesión autenticada existente; sin identificar al usuario."
+  },
+  "album": {
+    "title": "A La Luz Luna",
+    "artist": "Tito Schipa",
+    "url": "http://localhost:3000/musica/albumes/a-la-luz-luna-1960"
+  },
+  "tracks": [
+    {
+      "title": "Vida Mia",
+      "duration_seconds": 180.383563,
+      "paused_while_playing": false,
+      "ready_state": 4,
+      "playback_time_observed_seconds": 28.242895,
+      "media_error": null,
+      "source_https": true,
+      "source_host_suffix": ".r2.cloudflarestorage.com",
+      "has_sigv4_signature": true,
+      "paused_after_click": true,
+      "paused_time_seconds": 28.281634,
+      "seek_while_paused_seconds": 1,
+      "resumed_paused": false,
+      "resumed_time_seconds": 1.227538,
+      "same_complete_url_after_pause_and_resume": true,
+      "same_complete_url_after_switching_to_second_track_and_back": true
+    },
+    {
+      "title": "Dimelo Al Oido",
+      "duration_seconds": 132.527188,
+      "paused_while_playing": false,
+      "playback_time_observed_seconds": 15.873916,
+      "media_error": null
+    }
+  ],
+  "final_state": {
+    "url": "http://localhost:3000/musica",
+    "audio_element_count": 0,
+    "playback_error_message_present": false,
+    "captured_console_error_count": 0
+  },
+  "limitations": [
+    "Dos pistas de un álbum; no se probaron todos los álbumes.",
+    "La prueba real se hizo autenticado; el acceso anónimo no se probó en esa sesión.",
+    "Caducidad, logout, cambio de cuenta y fallos provocados se probaron con mocks o audio sintético, no contra R2 real.",
+    "No se midieron bytes, coste, encabezados HTTP ni caché compartida CDN.",
+    "No se conservaron cookies, tokens, URLs firmadas completas, identificadores de usuario ni claves R2."
+  ],
+  "verification_complete": false,
+  "full_build": {
+    "passed": false,
+    "last_exit_code": 1,
+    "last_command": "pnpm build",
+    "isolation": "Copia temporal sin .env; conexiones externas denegadas; solo conexiones locales permitidas.",
+    "last_failure": "next/font no pudo descargar fuentes de fonts.googleapis.com por el bloqueo de red externa.",
+    "fonts": [
+      "Cormorant Garamond",
+      "Great Vibes",
+      "Playfair Display",
+      "Poppins"
+    ],
+    "sentry_uploads_authorized": false,
+    "sentry_artifacts_uploaded": false
+  }
+}

@@ -1,5 +1,6 @@
 {
   "bar": {
+    "playbackError": "No se pudo reproducir el audio. Pulsa reproducir para volver a intentarlo.",
     "playAria": "Reproducir",
     "pauseAria": "Pausar",
     "previousAria": "Pista anterior",

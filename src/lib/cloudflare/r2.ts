@@ -70,14 +70,28 @@ export async function getPresignedUploadUrl(
   return { url, key };
 }
 
-/** Generate a presigned GET URL for any stored object (audio, PDF documents).
- *  TTL 1h covers a long listening/reading session. When a custom public domain
- *  is configured later, this function can switch to returning an unsigned URL. */
-export async function getPublicFileUrl(key: string, ttlSeconds = 3600): Promise<string> {
+/** Sign a direct R2 GET and expose its actual expiry for in-memory client reuse.
+ *  SigV4 timestamps have second precision; use that exact timestamp for expiry.
+ *  Only the S3 client is reused on the server, never signed URLs. */
+export async function getSignedFileUrl(
+  key: string,
+  ttlSeconds = 3600,
+): Promise<{ url: string; expiresAt: number; serverTime: number }> {
   const client = getR2Client();
   const bucket = getR2Bucket();
   const cmd = new GetObjectCommand({ Bucket: bucket, Key: key });
-  return getSignedUrl(client, cmd, { expiresIn: ttlSeconds });
+  const signingDate = new Date(Math.floor(Date.now() / 1000) * 1000);
+  const url = await getSignedUrl(client, cmd, { expiresIn: ttlSeconds, signingDate });
+  return {
+    url,
+    expiresAt: signingDate.getTime() + ttlSeconds * 1000,
+    serverTime: Date.now(),
+  };
+}
+
+/** Existing file/chat callers keep their string result and original TTLs. */
+export async function getPublicFileUrl(key: string, ttlSeconds = 3600): Promise<string> {
+  return (await getSignedFileUrl(key, ttlSeconds)).url;
 }
 
 /** Alias histórico: los call sites de audio (música, chat) siguen usando el

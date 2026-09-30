@@ -1,5 +1,6 @@
 {
   "bar": {
+    "playbackError": "Audio could not be played. Press play to try again.",
     "playAria": "Play",
     "pauseAria": "Pause",
     "previousAria": "Previous track",

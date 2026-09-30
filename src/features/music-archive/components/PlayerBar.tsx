@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   PlayIcon,
@@ -15,6 +15,8 @@ import {
 import { imageUrl } from '@/lib/media/urls';
 import { incrementPlayCount } from '../actions/playback.actions';
 import { usePlayerStore } from './PlayerStore';
+import { useMusicAudioSession } from '../hooks/useMusicAudioSession';
+import { useMusicAudioPlayback } from '../hooks/useMusicAudioPlayback';
 
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -37,7 +39,6 @@ export function PlayerBar() {
   const currentTime = usePlayerStore((s) => s.currentTime);
   const duration = usePlayerStore((s) => s.duration);
   const volume = usePlayerStore((s) => s.volume);
-  const playSerial = usePlayerStore((s) => s.playSerial);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const next = usePlayerStore((s) => s.next);
   const prev = usePlayerStore((s) => s.prev);
@@ -45,37 +46,11 @@ export function PlayerBar() {
   const setVolume = usePlayerStore((s) => s.setVolume);
   const setCurrentTime = usePlayerStore((s) => s.setCurrentTime);
   const setDuration = usePlayerStore((s) => s.setDuration);
-  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
 
   const current = queue[currentIndex];
 
-  // Sync isPlaying ↔ audio element via the playSerial heartbeat.
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !current) return;
-    if (isPlaying) {
-      audio.play().catch(() => setIsPlaying(false));
-    } else {
-      audio.pause();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playSerial, current?.audioUrl]);
-
-  // Sync seek requests.
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (Math.abs(audio.currentTime - currentTime) > 0.5) {
-      audio.currentTime = currentTime;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playSerial]);
-
-  // Sync volume.
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) audio.volume = volume;
-  }, [volume]);
+  const sessionReady = useMusicAudioSession();
+  const playbackError = useMusicAudioPlayback(audioRef, sessionReady);
 
   if (!current) return null;
 
@@ -86,10 +61,7 @@ export function PlayerBar() {
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
       <audio
         ref={audioRef}
-        src={current.audioUrl}
-        preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        preload="none"
         onLoadedMetadata={(e) => {
           const d = (e.target as HTMLAudioElement).duration;
           if (Number.isFinite(d) && d > 0) setDuration(Math.round(d));
@@ -105,6 +77,8 @@ export function PlayerBar() {
         }}
         onEnded={() => next()}
       />
+
+      {playbackError && <p role="status" className="mx-auto max-w-6xl text-xs text-red-600">{t('playbackError')}</p>}
 
       <div className="mx-auto flex max-w-6xl items-center gap-3">
         {/* Cover + meta */}
@@ -196,7 +170,7 @@ export function PlayerBar() {
         {/* Close */}
         <button
           type="button"
-          onClick={() => usePlayerStore.setState({ queue: [], isPlaying: false, currentIndex: 0 })}
+          onClick={() => usePlayerStore.getState().reset()}
           className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800"
           aria-label={t('closeAria')}
         >

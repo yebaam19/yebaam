@@ -1,26 +1,48 @@
 'use server';
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
-import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
+import { getSignedFileUrl } from '@/lib/cloudflare/r2';
+import { z } from 'zod';
+import { MUSIC_CLUB_ENABLED } from '../config';
+import type { MusicAudioUrl } from '../types/music/audio-url.types';
 import type { ActionResult } from './_shared';
+
+const trackIdSchema = z.uuid();
+const PLAYBACK_ERROR = 'No se pudo cargar el audio.';
 
 /** Public endpoint for the player. Returns a short-lived presigned R2 GET
  *  URL. Anyone can call this; the audio itself is meant to be publicly
- *  playable (público abierto). */
-export async function getTrackPlayUrl(trackId: string): Promise<ActionResult<{ url: string }>> {
+ *  playable (público abierto). Every signing request still checks caller RLS. */
+export async function getTrackPlayUrl(trackId: string): Promise<ActionResult<MusicAudioUrl>> {
+  if (!MUSIC_CLUB_ENABLED) {
+    return { ok: false, error: 'El Club de Coleccionistas no está disponible.' };
+  }
+  if (!trackIdSchema.safeParse(trackId).success) {
+    return { ok: false, error: 'Pista no válida.' };
+  }
   try {
     const client = await getServerClient();
-    const { data: track } = await client
+    const { data: auth, error: authError } = await client.auth.getUser();
+    // No session is normal for this public action. Never downgrade an auth
+    // outage, invalid token, or other verification failure to anonymous reuse.
+    const missingSession = authError?.name === 'AuthSessionMissingError'
+      && authError.status === 400 && !auth.user;
+    if (authError && !missingSession) return { ok: false, error: PLAYBACK_ERROR };
+
+    const { data: track, error } = await client
       .from('music_tracks')
       .select('r2_key')
       .eq('id', trackId)
       .maybeSingle();
+    if (error) return { ok: false, error: PLAYBACK_ERROR };
     const r2Key = (track as { r2_key: string } | null)?.r2_key;
-    if (!r2Key) return { ok: false, error: 'Pista no encontrada.' };
-    const url = await getPublicAudioUrl(r2Key, 3600);
-    return { ok: true, data: { url } };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'No se pudo firmar la URL.' };
+    if (typeof r2Key !== 'string' || !r2Key.trim()) {
+      return { ok: false, error: 'Pista no encontrada.' };
+    }
+    const signed = await getSignedFileUrl(r2Key, 3600);
+    return { ok: true, data: { ...signed, viewerId: auth.user?.id ?? null } };
+  } catch {
+    return { ok: false, error: PLAYBACK_ERROR };
   }
 }
 

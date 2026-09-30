@@ -4,7 +4,6 @@ import type { Metadata, Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { MusicalNoteIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
-import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
 import { getAlbumBySlug } from '@/features/music-archive/server/music.server';
 import { listClubsForAlbum } from '@/features/music-archive/server/clubs.server';
 import { getAlbumReactionCounts } from '@/features/music-archive/server/music-reactions.server';
@@ -53,33 +52,13 @@ export default async function AlbumPage({
   if (!album) notFound();
   const t = await getTranslations('musica');
 
-  // Pre-sign R2 URLs for every track in parallel. The TTL is 1h which is
-  // plenty for a single page session. Kicked off before the Promise.all below
-  // (its only input is album.tracks) so the fan-out overlaps the other reads.
-  const audioEntriesPromise = Promise.all(
-    album.tracks.map(async (track) => {
-      try {
-        const url = await getPublicAudioUrl(track.r2_key, 3600);
-        return [track.id, url] as const;
-      } catch (err) {
-        console.error('[album page] R2 presign failed', { trackId: track.id, r2Key: track.r2_key, err: err instanceof Error ? err.message : err });
-        return [track.id, ''] as const;
-      }
-    }),
-  );
-
-  const [clubs, reactions, authUser, media, audioEntries] = await Promise.all([
+  const [clubs, reactions, authUser, media] = await Promise.all([
     listClubsForAlbum(album.id),
     getAlbumReactionCounts(album.id),
     getCachedAuthUser(),
     listMusicMediaForAlbum(album.id),
-    audioEntriesPromise,
   ]);
   const signedIn = Boolean(authUser);
-
-  const audioUrlByTrackId = Object.fromEntries(
-    audioEntries.filter(([, url]) => url !== ''),
-  ) as Record<string, string>;
 
   const albumJsonLd = {
     '@context': 'https://schema.org',
@@ -196,7 +175,7 @@ export default async function AlbumPage({
         <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           {t('album.tracklistHeading')}
         </h2>
-        <AlbumTracklist album={album} audioUrlByTrackId={audioUrlByTrackId} />
+        <AlbumTracklist album={album} />
       </section>
 
       <AlbumReactionsBar albumId={album.id} initial={reactions} signedIn={signedIn} />

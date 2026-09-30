@@ -2,6 +2,8 @@
 
 import { ArrowDownTrayIcon, MusicalNoteIcon, PauseIcon, PlayIcon } from '@/components/icons/heroicons-shim'
 import { usePlayerStore } from '@/features/music-archive/components/PlayerStore'
+import { musicAudioUrls } from '@/features/music-archive/lib/audio-url-session'
+import { toast } from 'sonner'
 import type { PlayItem } from '@/features/music-archive/types/music.types'
 import { imageUrl } from '@/lib/media/urls'
 import Link from 'next/link'
@@ -14,8 +16,8 @@ interface Track {
   position: number | null
   side: string | null
   durationSeconds: number | null
-  /** Pre-signed R2 audio URL, or null when the track has no audio. */
-  audioUrl: string | null
+  /** Availability only; bearer URLs stay in the session-local music cache. */
+  hasAudio: boolean
 }
 interface Album {
   id: string
@@ -52,7 +54,7 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
 
   useEffect(() => {
     let active = true
-    fetch(`/api/blogs/${blogId}/music`, { credentials: 'same-origin' })
+    fetch(`/api/blogs/${blogId}/music?v=2`, { credentials: 'same-origin' })
       .then((r) => r.json())
       .then((j: MusicResponse) => {
         if (active) {
@@ -73,7 +75,7 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
 
   const playFromAlbum = (album: Album, trackId: string) => {
     if (!data?.artist) return
-    const playable = album.tracks.filter((t) => t.audioUrl)
+    const playable = album.tracks.filter((t) => t.hasAudio)
     const items: PlayItem[] = playable.map((t) => ({
       trackId: t.id,
       title: t.title,
@@ -81,7 +83,6 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
       albumSlug: album.slug,
       artistSlug: data.artist!.slug,
       coverCfId: album.coverCfImageId,
-      audioUrl: t.audioUrl as string,
       durationSeconds: t.durationSeconds ?? 0,
     }))
     const startIndex = Math.max(0, items.findIndex((i) => i.trackId === trackId))
@@ -91,6 +92,17 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
       return
     }
     setQueue(items, startIndex)
+  }
+
+  const downloadTrack = async (trackId: string) => {
+    try {
+      const { url } = await musicAudioUrls.get(trackId)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = ''
+      link.rel = 'noopener'
+      link.click()
+    } catch { toast.error('No se pudo preparar la descarga. Inténtalo de nuevo.') }
   }
 
   if (loading) return <p className="text-sm text-neutral-500 dark:text-neutral-400">Cargando música…</p>
@@ -153,8 +165,8 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
                     <li key={tr.id} className="flex items-center gap-3 px-3 py-2 text-sm">
                       <button
                         type="button"
-                        onClick={() => tr.audioUrl && playFromAlbum(album, tr.id)}
-                        disabled={!tr.audioUrl}
+                        onClick={() => tr.hasAudio && playFromAlbum(album, tr.id)}
+                        disabled={!tr.hasAudio}
                         aria-label={isCurrent && isPlaying ? 'Pausar' : `Reproducir ${tr.title}`}
                         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-30"
                       >
@@ -173,15 +185,16 @@ export function BlogMusicTab({ blogId, isOwner }: { blogId: string; isOwner: boo
                         {tr.title}
                       </span>
                       <span className="shrink-0 text-xs text-neutral-400">{formatDuration(tr.durationSeconds)}</span>
-                      {tr.audioUrl && (
-                        <a
-                          href={tr.audioUrl}
-                          download
+                      {tr.hasAudio && (
+                        <button
+                          type="button"
+                          onClick={() => { void downloadTrack(tr.id) }}
+                          aria-label={`Descargar ${tr.title}`}
                           title="Descargar"
                           className="shrink-0 rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-primary-600 dark:hover:bg-neutral-700"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4" />
-                        </a>
+                        </button>
                       )}
                     </li>
                   )

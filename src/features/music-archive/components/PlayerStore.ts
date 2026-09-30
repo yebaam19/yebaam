@@ -14,6 +14,7 @@ interface PlayerState {
   // The PlayerBar listens to this to call `audio.play()` (which requires a
   // user gesture in browsers).
   playSerial: number;
+  reset(): void;
   setQueue(items: PlayItem[], startIndex?: number): void;
   togglePlay(): void;
   next(): void;
@@ -33,6 +34,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   duration: 0,
   volume: 0.9,
   playSerial: 0,
+
+  reset() {
+    set((s) => ({ queue: [], currentIndex: 0, isPlaying: false, currentTime: 0,
+      duration: 0, playSerial: s.playSerial + 1 }));
+  },
 
   setQueue(items, startIndex = 0) {
     set((s) => ({

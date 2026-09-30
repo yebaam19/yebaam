@@ -1,0 +1,145 @@
+{
+  "base": "eed588bb424df549c4c1e27b8dd4f6e9a186f4c1",
+  "package_sha256": "322137e17e94ff2cdf11225058ba213644cf6049822cf66e55c03f52236514e8",
+  "code_patch_sha256": "04aa3f9691d44c81e8beaa8cc9f3bd9732ca08c079473174ac3f778c7dcfd419",
+  "files": [
+    {
+      "path": "messages/en/player.json",
+      "status": "modified",
+      "sha256": "9b1e7a0e1bf217c0ec27b4b4ea5ff3b5fd43cad8b9898584e0fb48a0e96524ee",
+      "lines": 28
+    },
+    {
+      "path": "messages/es/player.json",
+      "status": "modified",
+      "sha256": "1094468a0816d1437080d4816d80f2b87a9fc8e024eee62a39408d17c4b4e4be",
+      "lines": 28
+    },
+    {
+      "path": "src/app/(app)/musica/albumes/[slug]/page.tsx",
+      "status": "modified",
+      "sha256": "52f8073b7b96967f9b4524ea6b81a165f275398ea0eaaaab711dc403c77e699f",
+      "lines": 198
+    },
+    {
+      "path": "src/app/api/blogs/[idOrSlug]/music/route.test.ts",
+      "status": "added",
+      "sha256": "c6db8faaa24de399ead7ff664658f8fd063eb8610a558b01309b3aee6efa5569",
+      "lines": 28
+    },
+    {
+      "path": "src/app/api/blogs/[idOrSlug]/music/route.ts",
+      "status": "modified",
+      "sha256": "5f0cb3e5da7b6be3475bcc8e5b4b313e4d5f98159b563baece51aa57fac2b057",
+      "lines": 91
+    },
+    {
+      "path": "src/features/blogs/components/BlogMusicTab.tsx",
+      "status": "modified",
+      "sha256": "970bfaa379a33241f9e3e33d8c05e95f7f2727c5fcf403d66a71e06ade29624c",
+      "lines": 209
+    },
+    {
+      "path": "src/features/music-archive/actions/playback.actions.test.ts",
+      "status": "added",
+      "sha256": "f4b04bc5a2c60c57c1d40ff8739512f416f62e620e866c0e2027fd7cb04fa6eb",
+      "lines": 127
+    },
+    {
+      "path": "src/features/music-archive/actions/playback.actions.ts",
+      "status": "modified",
+      "sha256": "814fb682311de3531387c74caa7978cc09f4be94992c34819a28f73253130a51",
+      "lines": 66
+    },
+    {
+      "path": "src/features/music-archive/components/AlbumTracklist.tsx",
+      "status": "modified",
+      "sha256": "3eb9aeb2d0dc1a46e62db1a14518c71e28c6b3c74cd28918b5b58d005b807856",
+      "lines": 129
+    },
+    {
+      "path": "src/features/music-archive/components/PlayerBar.tsx",
+      "status": "modified",
+      "sha256": "3a7c7a41607e8c4801640bc3f7cfe9f86c3b39878f922f67a7ff08a4cd66a69c",
+      "lines": 182
+    },
+    {
+      "path": "src/features/music-archive/components/PlayerStore.ts",
+      "status": "modified",
+      "sha256": "3d0c94b555c699c53a0dd2f7962329d9ae96a6ca80e867f4a1dade8e2b3103c1",
+      "lines": 108
+    },
+    {
+      "path": "src/features/music-archive/hooks/useMusicAudioPlayback.test.tsx",
+      "status": "added",
+      "sha256": "9381e5e4cb46622beb3604f7c892327edab5ca1c815d43d1a1f7552d29fd48a3",
+      "lines": 167
+    },
+    {
+      "path": "src/features/music-archive/hooks/useMusicAudioPlayback.ts",
+      "status": "added",
+      "sha256": "ab8a27032f41fcacadd8b08ab631f8cb33c2cb4f8f353b8bb65338725faf53a3",
+      "lines": 131
+    },
+    {
+      "path": "src/features/music-archive/hooks/useMusicAudioSession.test.tsx",
+      "status": "added",
+      "sha256": "dc9f497fc75c9ddf1d40088c7260d8331b665688da4ea5e91708854ac39bff16",
+      "lines": 180
+    },
+    {
+      "path": "src/features/music-archive/hooks/useMusicAudioSession.ts",
+      "status": "added",
+      "sha256": "3bd7389a7592299f921f3c9e08270e1e83dd848ae171efd58954c29a6a26cd86",
+      "lines": 61
+    },
+    {
+      "path": "src/features/music-archive/lib/audio-url-cache.test.ts",
+      "status": "added",
+      "sha256": "b12764a332516d6857e087d6d06fa5d369f9e2c446c224362e04f6e69a14bfb3",
+      "lines": 140
+    },
+    {
+      "path": "src/features/music-archive/lib/audio-url-cache.ts",
+      "status": "added",
+      "sha256": "ab0c95b29eed03ba8044d2487c56aeba3d71924cb04efd9ebb0a2a38b15100d1",
+      "lines": 86
+    },
+    {
+      "path": "src/features/music-archive/lib/audio-url-session.test.ts",
+      "status": "added",
+      "sha256": "088467ed2a31d2b5913c97e8e90acf712a05f9fc4c7041d6f0146241f135fb88",
+      "lines": 24
+    },
+    {
+      "path": "src/features/music-archive/lib/audio-url-session.ts",
+      "status": "added",
+      "sha256": "859f34ae05f9dcec69f8cf05ff60b779cbc32b216f8bbcb2328aa78549e75877",
+      "lines": 20
+    },
+    {
+      "path": "src/features/music-archive/types/music/audio-url.types.ts",
+      "status": "added",
+      "sha256": "c17bccdd347079371fa96c1554979bd1a59084da8c0e2070d6c929adf24d5545",
+      "lines": 10
+    },
+    {
+      "path": "src/features/music-archive/types/music/player.types.ts",
+      "status": "modified",
+      "sha256": "5acf5fe21615ab096ec34289ab85b38441a3c84fab6468429333a1d3ec207b48",
+      "lines": 10
+    },
+    {
+      "path": "src/lib/cloudflare/r2.test.ts",
+      "status": "added",
+      "sha256": "1d28b63c2d52ffefc028c0ad6e62b983f80666e2ac72b4f794e62ed4022dc052",
+      "lines": 99
+    },
+    {
+      "path": "src/lib/cloudflare/r2.ts",
+      "status": "modified",
+      "sha256": "d56f36244fbb5d5256f6120a3c10ef0250bd140640402eff4757edda4d0c6d73",
+      "lines": 212
+    }
+  ]
+}

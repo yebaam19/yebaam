@@ -19,12 +19,9 @@ function formatPosition(side: string | null, position: number): string {
 
 interface Props {
   album: AlbumWithDetails;
-  /** Pre-signed audio URLs keyed by trackId. Computed server-side and passed in
-   *  so the client doesn't have to round-trip per click. */
-  audioUrlByTrackId: Record<string, string>;
 }
 
-export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
+export function AlbumTracklist({ album }: Props) {
   const t = useTranslations('musica');
   const setQueue = usePlayerStore((s) => s.setQueue);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
@@ -32,7 +29,7 @@ export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
 
-  const playableTracks = album.tracks.filter((t) => audioUrlByTrackId[t.id]);
+  const playableTracks = album.tracks.filter((t) => t.r2_key);
 
   function playTrack(trackIndex: number) {
     const items: PlayItem[] = playableTracks.map((t) => ({
@@ -42,7 +39,6 @@ export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
       albumSlug: album.slug,
       artistSlug: album.artist.slug,
       coverCfId: album.cover_cf_image_id,
-      audioUrl: audioUrlByTrackId[t.id],
       durationSeconds: t.duration_seconds ?? 0,
     }));
     const startIndex = Math.max(0, items.findIndex((i) => i.trackId === playableTracks[trackIndex].id));
@@ -69,7 +65,7 @@ export function AlbumTracklist({ album, audioUrlByTrackId }: Props) {
         </thead>
         <tbody>
           {album.tracks.map((track) => {
-            const playable = Boolean(audioUrlByTrackId[track.id]);
+            const playable = Boolean(track.r2_key);
             const playableIdx = playableTracks.findIndex((p) => p.id === track.id);
             const isCurrent = queue[currentIndex]?.trackId === track.id;
             return (

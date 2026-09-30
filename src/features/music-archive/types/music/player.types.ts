@@ -6,6 +6,5 @@ export interface PlayItem {
   albumSlug: string;
   artistSlug: string;
   coverCfId: string | null;
-  audioUrl: string;
   durationSeconds: number;
 }

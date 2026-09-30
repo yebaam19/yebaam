@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getServerClient } from '@/utils/supabase/server';
 import { blogKey } from '@/lib/api/blogs';
-import { getPublicAudioUrl } from '@/lib/cloudflare/r2';
 
 /** "Mi Música" tab — the catalog artist linked to this blog and their albums/tracks. */
 export async function GET(
@@ -66,21 +65,8 @@ export async function GET(
     tracksByAlbum.set(tr.album_id, list);
   }
 
-  // Pre-sign each track's R2 audio URL server-side (album-page pattern) so the
-  // client can play without a round-trip. Tracks without an r2_key get null
-  // (play button stays disabled). TTL 1h covers a page session.
-  const signed = await Promise.all(
-    tracks.map(async (tr) =>
-      tr.r2_key ? [tr.id, await getPublicAudioUrl(tr.r2_key, 3600).catch(() => null)] as const : ([tr.id, null] as const)
-    )
-  );
-  const audioUrlByTrackId = new Map(signed);
-
-  // Cacheable: every table read here (`blogs`, `music_artists`, `music_albums`,
-  // `music_tracks`) is `select ... using (true)` under RLS, so the payload is the
-  // same for every caller. Max staleness (60 + 600 s) stays well inside the 1 h
-  // TTL of the pre-signed audio URLs above, so a cached copy never serves a dead
-  // signature.
+  // Metadata only: never place private bearer URLs in a shared response.
+  // Playback signs lazily through the existing RLS-bound music action.
   return NextResponse.json(
     {
       artist: { id: artist.id, name: artist.name, slug: artist.slug },
@@ -96,7 +82,7 @@ export async function GET(
           position: tr.position,
           side: tr.side,
           durationSeconds: tr.duration_seconds,
-          audioUrl: audioUrlByTrackId.get(tr.id) ?? null,
+          hasAudio: Boolean(tr.r2_key),
         })),
       })),
     },
