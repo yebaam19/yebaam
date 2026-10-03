@@ -2,6 +2,7 @@
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { getSignedFileUrl } from '@/lib/cloudflare/r2';
+import { musicCacheUrl } from '@/lib/cloudflare/music-cache';
 import { z } from 'zod';
 import { MUSIC_CLUB_ENABLED } from '../config';
 import type { MusicAudioUrl } from '../types/music/audio-url.types';
@@ -10,8 +11,8 @@ import type { ActionResult } from './_shared';
 const trackIdSchema = z.uuid();
 const PLAYBACK_ERROR = 'No se pudo cargar el audio.';
 
-/** Public endpoint for the player. Returns a short-lived presigned R2 GET
- *  URL. Anyone can call this; the audio itself is meant to be publicly
+/** Public endpoint for the player. Returns a short-lived signed edge URL
+ *  (direct R2 when the cache is disabled). The audio is meant to be publicly
  *  playable (público abierto). Every signing request still checks caller RLS. */
 export async function getTrackPlayUrl(trackId: string): Promise<ActionResult<MusicAudioUrl>> {
   if (!MUSIC_CLUB_ENABLED) {
@@ -39,7 +40,8 @@ export async function getTrackPlayUrl(trackId: string): Promise<ActionResult<Mus
     if (typeof r2Key !== 'string' || !r2Key.trim()) {
       return { ok: false, error: 'Pista no encontrada.' };
     }
-    const signed = await getSignedFileUrl(r2Key, 3600);
+    const signed = await musicCacheUrl(`/audio/v1/${encodeURIComponent(r2Key)}`)
+      ?? await getSignedFileUrl(r2Key, 3600);
     return { ok: true, data: { ...signed, viewerId: auth.user?.id ?? null } };
   } catch {
     return { ok: false, error: PLAYBACK_ERROR };

@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "legal:build": "node scripts/build-legal.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "music-cache:check": "wrangler types workers/music-cache/env.d.ts -c workers/music-cache/wrangler.jsonc --env-interface MusicCacheEnv --include-runtime=false --check && tsc -p workers/music-cache/tsconfig.json && wrangler deploy -c workers/music-cache/wrangler.jsonc --dry-run --outdir .wrangler/music-cache-build && node --test workers/music-cache/runtime.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1045.0",
@@ -70,6 +71,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "5.20261003.1",
     "@eslint/eslintrc": "^3.3.5",
     "@tailwindcss/postcss": "^4.1.5",
     "@testing-library/jest-dom": "^6.9.1",
@@ -82,12 +84,14 @@
     "cross-env": "^10.1.0",
     "jsdom": "^29.1.1",
     "markdown-it": "^14.2.0",
+    "miniflare": "5.20261001.0-alpha",
     "postcss": "^8.4.31",
     "prettier": "^3.3.2",
     "prettier-plugin-organize-imports": "^4.0.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.5",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.6",
+    "wrangler": "4.147.0"
   },
   "overrides": {
     "@types/react": "19.2.14",

@@ -1,0 +1,86 @@
+{
+  "recorded_at_utc": "2026-09-30T08:13:45Z",
+  "entry_url": "https://www.yebaam.com/musica",
+  "browser": "Chrome",
+  "context": "Existing authenticated session; no logout or account switch performed",
+  "album_url": "https://www.yebaam.com/musica/albumes/a-la-luz-luna-1960",
+  "observations": {
+    "catalog_loaded": true,
+    "recent_album_count_displayed": 24,
+    "first_track": {
+      "title": "Vida Mia",
+      "duration_seconds": 180.383563,
+      "playing_time_seconds_observed": 21.00703,
+      "paused_while_playing": false,
+      "ready_state": 4,
+      "media_error_code": null,
+      "direct_signed_r2_source": true
+    },
+    "pause": {
+      "paused": true,
+      "current_time_seconds": 41.609117
+    },
+    "seek_while_paused": {
+      "interaction": "Position slider: Home, ArrowRight, ArrowRight",
+      "current_time_seconds": 2,
+      "paused": true,
+      "media_error_code": null
+    },
+    "resume": {
+      "paused": false,
+      "current_time_seconds": 2.349447,
+      "ready_state": 4,
+      "media_error_code": null,
+      "same_first_signed_url": true
+    },
+    "next_track": {
+      "title": "Dimelo Al Oido",
+      "duration_seconds": 132.527188,
+      "current_time_seconds": 21.020125,
+      "paused": false,
+      "ready_state": 4,
+      "media_error_code": null,
+      "direct_r2_source": true
+    },
+    "previous_button": {
+      "observed_behavior": "After more than three seconds, restarts the current track",
+      "current_time_seconds_after_click": 0.32039
+    },
+    "reselect_first_track_from_list": {
+      "title": "Vida Mia",
+      "duration_seconds": 180.383563,
+      "current_time_seconds": 0.340485,
+      "paused": false,
+      "ready_state": 4,
+      "media_error_code": null,
+      "same_first_signed_url": true
+    },
+    "close_player": {
+      "remaining_audio_elements": 0,
+      "visible_audio_failure": false
+    },
+    "catalog_search": {
+      "query": "Tito Schipa",
+      "result_url": "https://www.yebaam.com/musica/buscar?q=Tito%20Schipa",
+      "album_count_displayed": 1,
+      "album_title": "Tito Schipa en Español",
+      "artist_count_displayed": 1,
+      "artist_name": "Tito Schipa"
+    },
+    "captured_console_errors": 0,
+    "captured_console_warnings": 0,
+    "final_audio_elements": 0
+  },
+  "limits": [
+    "Only two real tracks from one album were exercised",
+    "Anonymous access, logout, account switching and permissions were not tested in production",
+    "Expiration, renewal at expiry and induced failures were not tested in production",
+    "Mobile browsers, uploads, downloads, all filters and the full catalog were not tested",
+    "Production deployment commit and CI build results were not inspected",
+    "This browser check does not resolve the previously unverified full production build",
+    "HTTP cache headers, transferred bytes and shared CDN caching were not measured"
+  ],
+  "privacy": "No cookies, credentials, signed URLs, R2 object keys or account identifiers retained",
+  "changes": "Local evidence file only; no configuration changes, artifact uploads, commit, push or deploy performed during this check",
+  "side_effects": "Normal playback may update application play counters through its existing behavior"
+}

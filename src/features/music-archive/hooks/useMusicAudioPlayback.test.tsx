@@ -164,4 +164,23 @@ describe('direct R2 playback lifecycle', () => {
     view.unmount();
     expect(audio.getAttribute('src')).toBeNull();
   });
+  it('keeps playback active when the tab is hidden and returns without reloading a valid source', async () => {
+    usePlayerStore.getState().setQueue([item('a')]);
+    const view = render(<Player />); await flush();
+    const audio = view.getByTestId('audio') as HTMLAudioElement;
+    fireEvent.loadedMetadata(audio); await flush();
+    audio.currentTime = 20;
+    usePlayerStore.getState().setCurrentTime(20);
+    const pauses = vi.mocked(audio.pause).mock.calls.length;
+    const loads = vi.mocked(audio.load).mock.calls.length;
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    fireEvent(document, new Event('visibilitychange')); await flush();
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+    expect(audio.pause).toHaveBeenCalledTimes(pauses);
+    visibility.mockReturnValue('visible');
+    fireEvent(document, new Event('visibilitychange')); await flush();
+    expect(audio.pause).toHaveBeenCalledTimes(pauses);
+    expect(audio.load).toHaveBeenCalledTimes(loads);
+    expect(audio.currentTime).toBe(20);
+  });
 });

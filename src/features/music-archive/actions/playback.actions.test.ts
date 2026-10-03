@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getServerClient: vi.fn(), getServiceClient: vi.fn(), getUser: vi.fn(),
   getSignedFileUrl: vi.fn(), from: vi.fn(), enabled: true,
+  musicCacheUrl: vi.fn(),
   query: { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() },
 }));
 vi.mock('@/utils/supabase/server', () => ({
@@ -10,6 +11,7 @@ vi.mock('@/utils/supabase/server', () => ({
   getServiceClient: mocks.getServiceClient,
 }));
 vi.mock('@/lib/cloudflare/r2', () => ({ getSignedFileUrl: mocks.getSignedFileUrl }));
+vi.mock('@/lib/cloudflare/music-cache', () => ({ musicCacheUrl: mocks.musicCacheUrl }));
 vi.mock('../config', () => ({ get MUSIC_CLUB_ENABLED() { return mocks.enabled; } }));
 
 import { getTrackPlayUrl } from './playback.actions';
@@ -34,9 +36,19 @@ beforeEach(() => {
   mocks.query.eq.mockReturnValue(mocks.query);
   mocks.query.maybeSingle.mockResolvedValue({ data: { r2_key: 'stored/track.mp3' }, error: null });
   mocks.getSignedFileUrl.mockResolvedValue(signed);
+  mocks.musicCacheUrl.mockResolvedValue(null);
 });
 
 describe('getTrackPlayUrl', () => {
+  it('uses the edge URL only after verifying the caller and reading through RLS', async () => {
+    const edge = { ...signed, url: 'https://music-cache.example.test/audio/v1/stored%2Ftrack.mp3' };
+    mocks.musicCacheUrl.mockResolvedValue(edge);
+    expect(await getTrackPlayUrl(trackId)).toEqual({ ok: true, data: { ...edge, viewerId } });
+    expect(mocks.getUser).toHaveBeenCalledOnce();
+    expect(mocks.query.maybeSingle).toHaveBeenCalledOnce();
+    expect(mocks.musicCacheUrl).toHaveBeenCalledExactlyOnceWith('/audio/v1/stored%2Ftrack.mp3');
+    expect(mocks.getSignedFileUrl).not.toHaveBeenCalled();
+  });
   it('returns expiry and verified scope, signing only the caller-visible stored key', async () => {
     expect(await getTrackPlayUrl(trackId)).toEqual({ ok: true, data: { ...signed, viewerId } });
     expect(mocks.getUser).toHaveBeenCalledOnce();

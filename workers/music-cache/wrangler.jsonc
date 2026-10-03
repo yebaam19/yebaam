@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "yebaam-music-cache",
+  "main": "index.ts",
+  "account_id": "97e7fd9a393f52945ed697222f9ec3e2",
+  "compatibility_date": "2026-10-03",
+  "workers_dev": true,
+  "r2_buckets": [{ "binding": "MUSIC", "bucket_name": "yebaam-music-archive" }],
+  "secrets": { "required": ["MUSIC_CACHE_SECRET"] },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": false },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 },
+    "redact_query_string": true
+  }
+}

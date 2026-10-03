@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { getServerClient } from '@/utils/supabase/server';
+import { musicSearchCacheKey, readMusicSearchCache, writeMusicSearchCache } from '@/lib/cloudflare/music-cache';
 import type {
   MusicAlbumRow,
   MusicArtistRow,
@@ -74,9 +75,20 @@ export const searchMusic = cache(
     const trimmed = q.trim();
     if (trimmed.length < 2) return { artists: [], albums: [], tracks: [] };
     const client = await getServerClient();
+    // Verify identity before reading a cache entry; never share caller-scoped RLS results.
+    let cacheKey: string | null = null;
+    if (process.env.MUSIC_CACHE_ORIGIN && process.env.MUSIC_CACHE_SECRET) {
+      const { data, error } = await client.auth.getUser();
+      const guest = error?.name === 'AuthSessionMissingError' && error.status === 400 && !data.user;
+      if (!error || guest) {
+        cacheKey = musicSearchCacheKey(data.user?.id ?? null, trimmed.toLowerCase(), limit);
+        const cached = await readMusicSearchCache<MusicSearchResult>(cacheKey);
+        if (cached) return cached;
+      }
+    }
     const pattern = `%${trimmed}%`;
 
-    const [{ data: artists }, { data: albums }, { data: tracks }] = await Promise.all([
+    const [artistsResult, albumsResult, tracksResult] = await Promise.all([
       client
         .from('music_artists')
         .select('*')
@@ -95,16 +107,23 @@ export const searchMusic = cache(
         .ilike('title', pattern)
         .limit(limit),
     ]);
+    const { data: artists } = artistsResult;
+    const { data: albums } = albumsResult;
+    const { data: tracks } = tracksResult;
 
     const trackRows = ((tracks ?? []) as unknown as RawTrackJoin[])
       .map<SearchTrackResult | null>((t) => normalizeSearchTrack(t))
       .filter((t): t is SearchTrackResult => t !== null);
 
-    return {
+    const result = {
       artists: (artists as MusicArtistRow[] | null) ?? [],
       albums: (albums as MusicAlbumRow[] | null) ?? [],
       tracks: trackRows,
     };
+    if (cacheKey && !artistsResult.error && !albumsResult.error && !tracksResult.error) {
+      await writeMusicSearchCache(cacheKey, result);
+    }
+    return result;
   },
 );
 

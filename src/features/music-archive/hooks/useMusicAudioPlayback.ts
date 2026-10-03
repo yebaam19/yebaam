@@ -69,7 +69,7 @@ export function useMusicAudioPlayback(audioRef: RefObject<HTMLAudioElement | nul
         if (force || audio.getAttribute('src') !== signed.url) {
           pendingSeek = state.currentTime;
           audio.pause();
-          audio.src = signed.url; // The browser fetches bytes directly from R2.
+          audio.src = signed.url; // R2 or its edge cache serves bytes outside Next.js.
           audio.load();
         } else if (Math.abs(audio.currentTime - state.currentTime) > 0.5) {
           audio.currentTime = state.currentTime;
