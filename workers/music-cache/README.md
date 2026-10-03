@@ -33,10 +33,14 @@ La caché es local al centro de datos, no promete persistencia ni tiered caching
 
 ## Configuración y activación
 
-Cuenta prevista: `97e7fd9a393f52945ed697222f9ec3e2`; bucket existente: `yebaam-music-archive`; Worker nuevo: `yebaam-music-cache`. No requiere migración de DB, cambios DNS ni un bucket público.
+Cuenta: `97e7fd9a393f52945ed697222f9ec3e2`; bucket existente: `yebaam-music-archive`; Worker publicado: `yebaam-music-cache`. Origen: `https://yebaam-music-cache.yebaam19.workers.dev`. No requiere migración de DB, cambios DNS ni un bucket público.
+
+El Worker ya tiene el binding `MUSIC` y `MUSIC_CACHE_SECRET` cifrado. La app local está conectada mediante `.env.local`. Para producción, copiar ambas variables server-only al hosting de Next.js y desplegar la app por el flujo habitual. El secreto local está en el archivo ignorado `workers/music-cache/.dev.vars`; no sustituirlo sin actualizar ambos destinos.
+
+Se conservan los logs de errores del código, que no incluyen URLs. Los logs automáticos de invocaciones y las trazas están desactivados para no registrar firmas. `redact_query_string` está preparado en Wrangler para futuros despliegues; el panel no ofrecía este control.
 
 1. Dar al mecanismo de despliegue acceso de edición de Workers Scripts para esta cuenta y acceso a su subdominio `workers.dev`. No cambiar permisos de lectura pública del bucket.
-2. Generar un secreto aleatorio de al menos 32 bytes. Guardarlo como `MUSIC_CACHE_SECRET` en un archivo local ignorado `.dev.vars` con permisos 600 y en el gestor de secretos del hosting de Next.js. No pegarlo en terminales compartidas, historial ni documentación.
+2. Reutilizar el secreto configurado. Solo en una instalación nueva, generar al menos 32 bytes aleatorios y guardarlos como `MUSIC_CACHE_SECRET` en un archivo local ignorado `.dev.vars` con permisos 600 y en el gestor de secretos del hosting de Next.js. No pegarlo en terminales compartidas, historial ni documentación.
 3. Validar desde la raíz: `pnpm music-cache:check`.
 4. Publicar con `pnpm exec wrangler deploy -c workers/music-cache/wrangler.jsonc --secrets-file workers/music-cache/.dev.vars`.
 5. Configurar `MUSIC_CACHE_ORIGIN` en Next.js con el origen HTTPS devuelto por el despliegue, sin rutas, y el mismo `MUSIC_CACHE_SECRET`. Ambas variables son **server-only**.
@@ -51,6 +55,8 @@ Sin ambas variables, Next.js continúa firmando URLs R2 y consultando Supabase. 
 - Chrome con sesión abierta y audio real de R2: salida del disco al archivo conservó reproducción (141.14→142.31 s); búsqueda de Tito Schipa conservó la canción Cuesta Abajo (156.76 s); se abrió otro álbum con la barra todavía activa. Chrome también mostró la pestaña musical no seleccionada con el indicador «Audio playing». La prueba automática adicional cubre `visibilitychange` a hidden/visible sin pausa ni recarga.
 - TypeScript, lint de archivos modificados y build de producción aprobaron. Build ejecutado con `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` y `SENTRY_PROJECT` vacíos para no subir artefactos.
 - La suite global reportó 3 fallos previos: dos pruebas de ciudades esperan 8 registros pero la DB tiene 9; una prueba de login omite el parámetro `redirect` que ya devuelve el formulario. El lint global reportó 264 errores y 342 avisos ajenos a los archivos modificados.
-- **La caché remota no está activada.** Se verificaron cuenta, bucket y políticas actuales de lectura mediante los MCP. La publicación fue rechazada por Cloudflare con HTTP 403, «No access to the specified resource». No se añadieron variables de caché a `.env.local` ni se publicó la app. El rendimiento y los HIT del CDN remoto quedan pendientes de acceso para desplegar.
+- **Worker remoto publicado y probado.** El token de terminal y el MCP rechazaron escrituras con HTTP 403; se publicó mediante la sesión autorizada del panel. Audio real: primer rango de 1024 bytes `206/MISS`, segundo rango `206/HIT`, HEAD `200/HIT`, acceso sin firma o vencido `403`. Búsqueda de prueba: `404` inicial, escritura `204`, lectura `200`, acceso sin firma `403`. Las respuestas externas mantuvieron `private, no-store`.
+- Chrome, con caché activada en la app local: «Un Viejo Amor» usó `yebaam-music-cache.yebaam19.workers.dev`, avanzó de 5.15 a 17.91 s al salir del álbum y buscar «Carlos Gardel», con `paused=false`, `readyState=4` y sin error de audio. Cerrar el reproductor retiró sus controles correctamente.
+- Las 69 pruebas enfocadas de la app y las 3 pruebas del Worker pasaron. No se modificaron objetos R2 ni datos de Supabase durante las pruebas de caché. `.env.local` tiene el origen y secreto; la configuración del hosting y el despliegue de la app de producción siguen pendientes.
 
 Referencias: [Cache API y rangos](https://developers.cloudflare.com/workers/runtime-apis/cache/), [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/), [Workers Cache y diferencias con Cache API](https://developers.cloudflare.com/workers/cache/limitations/).
