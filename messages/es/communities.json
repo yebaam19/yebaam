@@ -626,7 +626,7 @@
     "show": "Ver mes",
     "list": "Lista",
     "calendar": "Calendario",
-    "dayLabel": "{day}: {count} eventos",
+    "dayLabel": "{day}: {count, plural, one {# evento} other {# eventos}}",
     "wholeMonth": "Ver todo el mes",
     "partial": "Se muestran los eventos cargados. Carga más para completar este mes.",
     "empty": "No hay eventos visibles en este mes.",

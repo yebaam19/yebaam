@@ -318,7 +318,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | CRUD con borrador/publicación, imagen de biblioteca Cloudflare, orden, paginación, enlace seguro, RLS y auditoría implementados. SQL rollback y guardado/recarga de borrador en localhost verificados. Pendiente publicación con imagen real y lectura multirol. |
 | 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs, rutas y UI de preguntas, categorías, respuestas oficiales, FAQ y moderación conectados. Búsqueda, pregunta privada guardada/recargada, borrador de respuesta y cierre/reapertura verificados en localhost. Pendiente E2E multirol de publicación, FAQ y moderación. |
-| 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. SQL con rollback y UI vacía/formulario en localhost verificados; pendiente guardar/recargar un evento real y detalle poblado. |
+| 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. Borrador privado guardado y recargado en localhost; detalle, lista y calendario poblados verificados. Pendiente QA de portada real, publicación/lectura multirol, RSVP y compartir. |
 | 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada; pendiente QA visual de galería y carga real autenticada. |
 | 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; pendiente QA visual/reproducción real y enlace a cabecera. |
 | 5.3; aceptación 9 | Artículos: enriquecido, portada/resumen, autor/fecha, categorías/tags, adjuntos, borradores y publicación | Migraciones aplicadas: borradores privados, RPC versionado y moderación auditada; lectura RLS, paginación/búsqueda, editor, selectores de biblioteca y lector conectados. Dos artículos previos conservados; borrador guardado/recargado en localhost y archivado. Prueba SQL con rollback pasa. Pendiente QA con medios/adjuntos reales, publicación desde UI y validación multirol. |
@@ -575,12 +575,19 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   Ciudades/login permanecen. Lint global: 262 errores y 338 avisos preexistentes.
 - Browser autenticado real en `localhost:3000`: lista vacía, calendario y formulario
   a 1440/390 px CSS. Móvil sin overflow horizontal (390/390); sidebar llega a la
-  última opción con scroll independiente (215 de 216 px en móvil). No se guardaron
-  datos de prueba. Capturas `community-events-{desktop,create-desktop,mobile,
+  última opción con scroll independiente (215 de 216 px en móvil). En esa primera
+  revisión no se guardaron datos de prueba. Capturas `community-events-{desktop,create-desktop,mobile,
   calendar-mobile,sidebar-mobile}.png` en `.impeccable/review/`.
+- QA posterior: `comunidad-mvp-test` conserva el borrador privado «Evento de prueba
+  QA» (16 oct 2026, 18:00–19:00 Bogotá). Se guardó desde la UI, sobrevivió a
+  recarga, aparece en la lista mensual y en el día 16 del calendario; Supabase
+  confirma `is_published=false`, los timestamps UTC equivalentes y cero filas
+  visibles para `anon`. El nombre accesible del día usa singular/plural correcto
+  en español e inglés.
 - Detector sin hallazgos. Revisor fresco **ship** para las cinco capturas y código
-  revisado; no acredita detalle poblado, guardado/recarga autenticados ni tema
-  oscuro. Esas pruebas siguen pendientes; el PDF completo continúa abierto.
+  revisado; esa revisión inicial no acreditaba detalle poblado, guardado/recarga
+  autenticados ni tema oscuro. Detalle y persistencia ya se comprobaron después;
+  tema oscuro, medios reales, publicación multirol y RSVP siguen pendientes.
 - Build de producción pasa (Next.js 16.2.3). Contrato visual local en
   `components/events/DESIGN.md`; todos los archivos de código cambiados ≤250 líneas.
 

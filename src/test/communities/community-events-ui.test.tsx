@@ -69,6 +69,7 @@ describe('Events interaction', () => {
     mocks.load.mockRejectedValue(new Error('network'));
     show(<EventsIndex communityId={id} slug="test" month="2026-10" initialView="calendar" canManage={false} initialNow="2026-10-01T11:00:00Z" initial={{ items: [event], nextCursor: { id, startsAt: event.starts_at } }} />);
     expect(screen.queryByRole('link', { name: 'Crear evento' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2026-10-01: 1 evento' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '2026-10-02: 0 eventos' }));
     expect(screen.queryByRole('link', { name: 'Encuentro' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Ver todo el mes' }));
