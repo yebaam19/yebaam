@@ -25,7 +25,7 @@ function Workspace({ communityId, name, section, about, media, capabilities }: P
   const opener = useEditorReturnFocus(editorId);
   return <section className="min-w-0 rounded-xl bg-white p-4 text-neutral-900 sm:p-6 dark:bg-neutral-800 dark:text-white">
     <div className="flex flex-wrap items-start justify-between gap-3">
-      <h2 className="min-w-0 flex-1 text-xl font-semibold wrap-anywhere">{section?.title ?? t('title')}</h2>
+      <h2 className="min-w-0 flex-1 basis-full text-xl font-semibold wrap-anywhere sm:basis-auto">{section?.title ?? t('title')}</h2>
       {section && capabilities.content && <Button ref={opener} color="brand" disabled={interaction.busy || !!interaction.editor}
         onClick={() => interaction.beginEdit(editorId)}>{t(about ? 'edit' : 'create')}</Button>}
     </div>

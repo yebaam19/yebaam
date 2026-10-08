@@ -311,7 +311,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
 | 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Editor de portada/logo con previsualización, posición, zoom y eliminación confirmada implementado; encuadre/versionado/auditoría probados con RLS. Administrador delegado activo ya puede editar ambas imágenes mediante RPC acotada, probado con rollback. Pendiente carga y guardado real autenticado, limpieza de originales huérfanos y QA con sesión de administrador. |
 | 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Modelo transaccional, selector/orden, cabecera y reproductor optativo implementados; pendiente QA visual con cuatro medios reales y persistencia autenticada del conjunto. |
-| 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados; pendiente persistencia autenticada y reproducción real. |
+| 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados. Sección oculta y borrador con descripción, historia y ubicación guardados/recargados en localhost; RLS anónimo verificado. Pendiente publicación/lectura multirol y medios reales. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. Pendiente QA autenticado y reproducción/portada real. |
 | 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
@@ -395,8 +395,15 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   Escritorio 1440, móvil 390 y tablet 768; lector oscuro, vacío, error de guardado
   con campos preservados y selector limitado a fotos/videos con reintento.
   Reviewer fresco: **ship** para estos estados. Contrato local en
-  `components/about/DESIGN.md`. No acredita persistencia autenticada ni Stream real.
+  `components/about/DESIGN.md`. Esa revisión aislada no acreditaba persistencia autenticada ni Stream real.
   La prueba de foco espera el efecto posterior a habilitar de nuevo el botón.
+- QA real posterior en `comunidad-mvp-test`: se creó la sección oculta y se guardó
+  como borrador la descripción, historia y ubicación desde el editor enriquecido.
+  Los campos sobrevivieron al cambio de sección y a la recarga; Supabase confirmó
+  `is_visible=false`, `is_published=false` y cero filas para `anon`. En móvil,
+  el título de Acerca de ocupa su propia fila para no quedar partido junto al
+  botón de edición; se verificó visualmente sin desbordamiento horizontal.
+  Siguen pendientes medios reales y publicación/lectura con otros roles.
 - Dirigentes: `supabase/tests/communities/leaders.sql` pasó con rollback y sin
   fixtures persistentes. Cubre borradores, ocultación de categoría/sección,
   comunidad privada, miembros activos/expulsados, editor sin permiso de planes,
