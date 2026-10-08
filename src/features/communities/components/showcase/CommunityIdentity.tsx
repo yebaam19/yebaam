@@ -7,7 +7,7 @@ import type { Community } from '../../types/community.types';
 import { formatMembersCount, getCategoryLabel, getCategoryColor, getPrivacyLabel } from '../../utils/communityHelpers';
 import { CommunityHeaderImageButton } from '../CommunityHeaderImageButton';
 
-export function CommunityIdentity({ community: c, isOwner, stacked, headerImages }: { community: Community; isOwner: boolean; stacked?: boolean; headerImages?: HeaderImages | null }) {
+export function CommunityIdentity({ community: c, canManageHeader, stacked, headerImages }: { community: Community; canManageHeader: boolean; stacked?: boolean; headerImages?: HeaderImages | null }) {
   const t = useTranslations('communities');
   return (
             <div className={stacked ? "flex flex-col gap-4" : "flex flex-col md:flex-row gap-5"}>
@@ -24,7 +24,7 @@ export function CommunityIdentity({ community: c, isOwner, stacked, headerImages
                       </div>
                     )}
                   </div>
-                  {isOwner && headerImages && (
+                  {canManageHeader && headerImages && (
                     <div className="absolute bottom-0 right-0">
                       <CommunityHeaderImageButton
                         communityId={c.id}

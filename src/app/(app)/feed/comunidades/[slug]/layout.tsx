@@ -27,8 +27,8 @@ export default async function CommunityLayout({ params, children }: CommunityLay
   ]);
 
   return (
-    <CommunityLayoutShell headerImages={headerImages} community={community} viewerState={viewerState} profileHeader={
-      <CommunityProfileHeader headerImages={headerImages} community={community} isOwner={viewerState.kind === 'owner'} canEdit={capabilities.content} showcase={showcase} />
+    <CommunityLayoutShell headerImages={headerImages} canManageHeader={capabilities.settings} community={community} viewerState={viewerState} profileHeader={
+      <CommunityProfileHeader headerImages={headerImages} community={community} canManageHeader={capabilities.settings} canEdit={capabilities.content} showcase={showcase} />
     } institutionalNavigation={
       <CommunityInstitutionalNav slug={slug} sections={sections} canManage={capabilities.settings}
         legacyRules={!migratedRules && Boolean(community.rules?.length)} />

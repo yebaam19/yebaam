@@ -309,7 +309,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | PDF | Requisito completo | Evidencia actual / trabajo pendiente |
 | --- | --- | --- |
 | 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
-| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Editor de portada/logo con previsualización, posición, zoom y eliminación confirmada implementado; encuadre/versionado/auditoría probados con RLS. Pendiente carga y guardado real autenticado, limpieza de originales huérfanos y adopción de administradores delegados. |
+| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Editor de portada/logo con previsualización, posición, zoom y eliminación confirmada implementado; encuadre/versionado/auditoría probados con RLS. Administrador delegado activo ya puede editar ambas imágenes mediante RPC acotada, probado con rollback. Pendiente carga y guardado real autenticado, limpieza de originales huérfanos y QA con sesión de administrador. |
 | 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Modelo transaccional, selector/orden, cabecera y reproductor optativo implementados; pendiente QA visual con cuatro medios reales y persistencia autenticada del conjunto. |
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados; pendiente persistencia autenticada y reproducción real. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
@@ -494,11 +494,13 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - El original permanece en Cloudflare Images. `FramedImage` comparte el mismo
   modelo de posición/escala entre preview y cabecera; la portada usa 3:1 en ancho
   y 16:9 bajo `sm`. El logo usa marco circular. No hay copias raster recortadas.
-- Acción con sesión verificada, filtro explícito de propietario y RLS existente;
-  una imagen nueva requiere procedencia `uploadedBy` del usuario, estado listo y
-  ausencia de firma privada. No usa service role. La autorización todavía conserva
-  el propietario del flujo anterior; delegar imágenes a administradores permanece
-  dentro de la adopción transversal de roles (§6).
+- Acción con sesión verificada y capacidad `settings`; una imagen nueva requiere
+  procedencia `uploadedBy` del usuario, estado listo y ausencia de firma privada.
+  La escritura usa una RPC exclusiva de `service_role` que vuelve a comprobar
+  propietario o administrador delegado con membresía activa bajo bloqueo, y solo
+  modifica la imagen solicitada. No amplía la política UPDATE de `communities`.
+  El actor verificado queda en la auditoría; conflicto de versión y reintento
+  idéntico se resuelven dentro de la transacción.
 - `uploadService.uploadImage` se llama al guardar. Su ID se retiene ante error de
   persistencia para evitar repetir la subida. Los blobs locales se liberan al
   reemplazar/cerrar. Una subida abandonada después de fallar el guardado todavía
@@ -519,6 +521,11 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   rangos con teclado, vista móvil/escritorio, cancelación, foco de confirmación y
   ausencia de overflow horizontal. No se guardaron cambios de prueba. La prueba
   auténtica de upload/persistencia/recarga sigue pendiente.
+- Migración `community_header_images_admin` aplicada en Supabase. Prueba en la
+  base real con rollback: `anon` y `authenticated` no pueden ejecutar la RPC,
+  un miembro sin rol no puede escribir, el administrador activo sí puede,
+  la versión/auditoría avanzan una vez y el reintento no duplica revisiones.
+  La UI del propietario conserva los botones y el foco tras cancelar en localhost.
 - Detector sin hallazgos; advisor de seguridad sin avisos de las nuevas funciones.
   El aviso de hidratación observado contiene atributos `bis_skin_checked` y
   `bis_register` inyectados por una extensión del navegador, no por estos componentes.

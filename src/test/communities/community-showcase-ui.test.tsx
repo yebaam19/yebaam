@@ -91,10 +91,10 @@ describe('Showcase editing', () => {
   });
   it('hides controls from readers and restores editor focus after cancellation', async () => {
     const community = { id: communityId, slug: 'test', description: 'Description' } as Community;
-    const page = view(<CommunityProfileHeader community={community} isOwner={false} canEdit={false} showcase={null} />);
+    const page = view(<CommunityProfileHeader community={community} canManageHeader={false} canEdit={false} showcase={null} />);
     expect(screen.queryByRole('button', { name: 'Editar presentación' })).toBeNull();
     page.unmount();
-    view(<CommunityProfileHeader community={community} isOwner canEdit showcase={null} />);
+    view(<CommunityProfileHeader community={community} canManageHeader canEdit showcase={null} />);
     fireEvent.click(screen.getByRole('button', { name: 'Editar presentación' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Editar presentación' })).toHaveFocus());

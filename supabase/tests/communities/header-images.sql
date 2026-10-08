@@ -55,6 +55,34 @@ begin
   reset role;
   if (select count(*) from public.community_profile_revisions where community_id=org and entity_table='community_header_images')<>3 then raise exception 'Audit count mismatch'; end if;
   if exists(select 1 from public.community_profile_revisions where community_id=org and actor_id is distinct from owner_id) then raise exception 'Wrong audit actor'; end if;
+  if has_function_privilege('anon','public.save_community_header_image(uuid,uuid,text,text,jsonb,integer)','EXECUTE')
+    or has_function_privilege('authenticated','public.save_community_header_image(uuid,uuid,text,text,jsonb,integer)','EXECUTE')
+  then raise exception 'Client can call privileged header RPC'; end if;
+  rev:=(select header_image_version from public.communities where id=org);
+  set local role service_role;
+  begin
+    perform public.save_community_header_image(org,stranger_id,'cover','header-test-aaaaaaaaaaaaaaaa',
+      '{"x":50,"y":50,"zoom":1}',rev);
+    raise exception 'Ungranted member changed identity image';
+  exception when insufficient_privilege then null; end;
+  reset role;
+  insert into public.community_profile_roles(community_id,user_id,role)
+    values(org,stranger_id,'admin');
+  set local role service_role;
+  if public.save_community_header_image(org,stranger_id,'cover','header-test-aaaaaaaaaaaaaaaa',
+      '{"x":50,"y":50,"zoom":1}',rev)<>rev+1 then raise exception 'Admin save failed'; end if;
+  if public.save_community_header_image(org,stranger_id,'cover','header-test-aaaaaaaaaaaaaaaa',
+      '{"x":50,"y":50,"zoom":1}',rev)<>rev+1 then raise exception 'Admin retry failed'; end if;
+  begin
+    perform public.save_community_header_image(org,stranger_id,'cover','header-test-aaaaaaaaaaaaaaaa',
+      '{"x":60,"y":50,"zoom":1}',rev);
+    raise exception 'Stale admin edit succeeded';
+  exception when sqlstate '40001' then null; end;
+  reset role;
+  if (select count(*) from public.community_profile_revisions where community_id=org and entity_table='community_header_images')<>4
+    or not exists(select 1 from public.community_profile_revisions where community_id=org
+      and entity_table='community_header_images' and actor_id=stranger_id)
+  then raise exception 'Admin audit/retry mismatch'; end if;
   perform set_config('request.jwt.claim.sub','',true);
   set local role anon;
   if exists(select 1 from public.communities where id=org) then raise exception 'Anonymous private read'; end if;

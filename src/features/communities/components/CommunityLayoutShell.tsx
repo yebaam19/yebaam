@@ -24,6 +24,7 @@ interface CommunityLayoutShellProps {
   institutionalNavigation?: ReactNode;
   profileHeader: ReactNode;
   headerImages: HeaderImages | null;
+  canManageHeader: boolean;
 }
 
 export function CommunityLayoutShell({
@@ -33,6 +34,7 @@ export function CommunityLayoutShell({
   institutionalNavigation,
   profileHeader,
   headerImages,
+  canManageHeader,
 }: CommunityLayoutShellProps) {
   const t = useTranslations('communities');
   const router = useRouter();
@@ -97,7 +99,7 @@ export function CommunityLayoutShell({
         {c.coverImageUrl && (
           <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}
-        {viewerState.kind === 'owner' && headerImages && (
+        {canManageHeader && headerImages && (
           <div className="absolute right-4 top-4 z-10">
             <CommunityHeaderImageButton communityId={c.id} target="cover" images={headerImages} currentUrl={c.coverImageUrl} />
           </div>
