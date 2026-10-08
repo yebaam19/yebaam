@@ -1,6 +1,7 @@
 'use server';
 
 import { getServerClient } from '@/utils/supabase/server';
+import { DEFAULT_IMAGE_FRAMING } from '../schemas/communityHeaderImage.schema';
 import { isValidWebsite } from '@/lib/safe-href';
 import type { UpdateCommunityDto } from '../types/community.types';
 import {
@@ -31,8 +32,8 @@ export async function updateCommunity(
   if (dto.tags !== undefined) patch.tags = dto.tags;
   if (dto.allowMemberPosts !== undefined) patch.allow_member_posts = dto.allowMemberPosts;
   if (dto.requireApproval !== undefined) patch.require_approval = dto.requireApproval;
-  if (dto.coverImageId !== undefined) patch.cover_image = dto.coverImageId;
-  if (dto.profileImageId !== undefined) patch.profile_image = dto.profileImageId;
+  if (dto.coverImageId !== undefined) { patch.cover_image = dto.coverImageId; patch.cover_framing = DEFAULT_IMAGE_FRAMING; }
+  if (dto.profileImageId !== undefined) { patch.profile_image = dto.profileImageId; patch.profile_framing = DEFAULT_IMAGE_FRAMING; }
   if (dto.rules !== undefined) {
     patch.rules = dto.rules.map((r, idx) => ({
       id: `rule-${idx}`,

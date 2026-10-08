@@ -2,7 +2,8 @@
 
 import { useState, useTransition, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { FramedImage } from './header-images/FramedImage';
+import type { HeaderImages } from '../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
 import {
   cancelJoinRequest,
@@ -20,6 +21,7 @@ interface CommunityLayoutShellProps {
   children: ReactNode;
   institutionalNavigation?: ReactNode;
   profileHeader: ReactNode;
+  headerImages: HeaderImages | null;
 }
 
 export function CommunityLayoutShell({
@@ -28,6 +30,7 @@ export function CommunityLayoutShell({
   children,
   institutionalNavigation,
   profileHeader,
+  headerImages,
 }: CommunityLayoutShellProps) {
   const t = useTranslations('communities');
   const router = useRouter();
@@ -86,21 +89,13 @@ export function CommunityLayoutShell({
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="relative h-56 md:h-72 bg-primary-900">
+      <div className="relative aspect-video overflow-hidden sm:aspect-[3/1] bg-primary-900">
         {c.coverImageUrl && (
-          <Image
-            src={c.coverImageUrl}
-            alt={c.name}
-            fill
-            sizes="100vw"
-            className="object-cover"
-            unoptimized
-            priority
-          />
+          <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}
-        {viewerState.kind === 'owner' && (
+        {viewerState.kind === 'owner' && headerImages && (
           <div className="absolute right-4 top-4 z-10">
-            <CommunityHeaderImageButton communityId={c.id} target="cover" />
+            <CommunityHeaderImageButton communityId={c.id} target="cover" images={headerImages} currentUrl={c.coverImageUrl} />
           </div>
         )}
         {viewerState.kind !== 'owner' && (

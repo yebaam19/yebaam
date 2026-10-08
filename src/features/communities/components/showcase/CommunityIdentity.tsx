@@ -1,12 +1,13 @@
 'use client';
-import Image from 'next/image';
+import { FramedImage } from '../header-images/FramedImage';
+import type { HeaderImages } from '../../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
 import { UserGroupIcon, CheckBadgeIcon, DocumentTextIcon, LockClosedIcon, ArrowTrendingUpIcon } from '@/components/icons/heroicons-shim';
 import type { Community } from '../../types/community.types';
 import { formatMembersCount, getCategoryLabel, getCategoryColor, getPrivacyLabel } from '../../utils/communityHelpers';
 import { CommunityHeaderImageButton } from '../CommunityHeaderImageButton';
 
-export function CommunityIdentity({ community: c, isOwner, stacked }: { community: Community; isOwner: boolean; stacked?: boolean }) {
+export function CommunityIdentity({ community: c, isOwner, stacked, headerImages }: { community: Community; isOwner: boolean; stacked?: boolean; headerImages?: HeaderImages | null }) {
   const t = useTranslations('communities');
   return (
             <div className={stacked ? "flex flex-col gap-4" : "flex flex-col md:flex-row gap-5"}>
@@ -14,14 +15,7 @@ export function CommunityIdentity({ community: c, isOwner, stacked }: { communit
                 <div className="relative w-20 h-20">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-neutral-800">
                     {c.profileImageUrl ? (
-                      <Image
-                        src={c.profileImageUrl}
-                        alt={c.name}
-                        width={80}
-                        height={80}
-                        className="h-full w-full object-cover"
-                        unoptimized
-                      />
+                      <FramedImage src={c.profileImageUrl} alt={c.name} framing={headerImages?.profile.framing} />
                     ) : (
                       <div className="w-full h-full bg-secondary-500 text-primary-900 flex items-center justify-center">
                         <span className="text-primary-900 font-bold text-2xl">
@@ -30,12 +24,13 @@ export function CommunityIdentity({ community: c, isOwner, stacked }: { communit
                       </div>
                     )}
                   </div>
-                  {isOwner && (
+                  {isOwner && headerImages && (
                     <div className="absolute bottom-0 right-0">
                       <CommunityHeaderImageButton
                         communityId={c.id}
                         target="profile"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-800 text-white shadow-md ring-2 ring-white transition-colors hover:bg-primary-900 disabled:opacity-60 dark:ring-neutral-800"
+                        images={headerImages} currentUrl={c.profileImageUrl}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-800 text-white shadow-md ring-2 ring-white transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:opacity-60 dark:ring-neutral-800"
                       />
                     </div>
                   )}

@@ -284,7 +284,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | PDF | Requisito completo | Evidencia actual / trabajo pendiente |
 | --- | --- | --- |
 | 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
-| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Uploads Cloudflare existentes; faltan verificar y completar eliminación/encuadre/preview. |
+| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Editor de portada/logo con previsualización, posición, zoom y eliminación confirmada implementado; encuadre/versionado/auditoría probados con RLS. Pendiente carga y guardado real autenticado, limpieza de originales huérfanos y adopción de administradores delegados. |
 | 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Modelo transaccional, selector/orden, cabecera y reproductor optativo implementados; pendiente QA visual con cuatro medios reales y persistencia autenticada del conjunto. |
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados; pendiente persistencia autenticada y reproducción real. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
@@ -305,14 +305,14 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
 
 Orden de continuación: QA de galerías y adjuntos con medios reales →
-QA de cabecera con cuatro videos reales → portada/logo con encuadre y eliminación → eventos,
+QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
 No habilitar entradas incompletas sin la indicación Próximamente.
 
 ## Verificación de esta fase
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
-- Veinte migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- Veintiuna migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
@@ -325,7 +325,7 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   rol, defaults privados, carpetas ocultas, aislamiento, autor de finalización,
   idempotencia, recibos de carga, reemplazos/versiones, adjuntos y retiro de objetos.
   Sin fixtures persistentes ni escrituras de prueba a Cloudflare.
-- 130 pruebas de acciones, lecturas, permisos de página, navegación, orden y
+- 141 pruebas de acciones, lecturas, permisos de página, navegación, orden y
   formularios pasan; typecheck pasa. Los dos casos de formulario verifican
   conservación de campos tras error y estabilidad del ID al reintentar. Otros dos
   casos cubren borradores abiertos frente a mutaciones/navegación ajenas.
@@ -454,3 +454,52 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - Sidebar móvil: navegación de 952 px dentro de 736 px; scroll de 0 a 215,625 px,
   con acceso a la última opción. Sidebar de escritorio con scroll independiente
   (952 px de contenido en 445 px disponibles).
+
+
+### Portada y logo: encuadre reversible
+
+- PDF §2.1–2.2: el botón de cámara abre un editor con imagen existente o archivo
+  local, posición horizontal/vertical, zoom, restablecer, vista previa y eliminación
+  confirmada. Seleccionar no sube ni guarda; cancelar devuelve el foco al botón.
+  Eliminar retira la referencia del perfil, no destruye el objeto original.
+- `cover_framing` y `profile_framing` guardan `{x,y,zoom}` validados en Postgres.
+  `header_image_version` lo genera un trigger, incluso para cambios desde el flujo
+  anterior. El guardado compara versión; un reintento idéntico no crea otra revisión.
+  Otro trigger registra actor y antes/después exclusivamente de campos de imagen.
+- El original permanece en Cloudflare Images. `FramedImage` comparte el mismo
+  modelo de posición/escala entre preview y cabecera; la portada usa 3:1 en ancho
+  y 16:9 bajo `sm`. El logo usa marco circular. No hay copias raster recortadas.
+- Acción con sesión verificada, filtro explícito de propietario y RLS existente;
+  una imagen nueva requiere procedencia `uploadedBy` del usuario, estado listo y
+  ausencia de firma privada. No usa service role. La autorización todavía conserva
+  el propietario del flujo anterior; delegar imágenes a administradores permanece
+  dentro de la adopción transversal de roles (§6).
+- `uploadService.uploadImage` se llama al guardar. Su ID se retiene ante error de
+  persistencia para evitar repetir la subida. Los blobs locales se liberan al
+  reemplazar/cerrar. Una subida abandonada después de fallar el guardado todavía
+  necesita el barrido de huérfanos previsto para el módulo; no se elimina a ciegas
+  un objeto que podría estar compartido.
+- Lectura acotada a una comunidad, columnas explícitas y `react.cache` por petición.
+  Revalidación del layout y listado después de guardar; no caché compartida de IDs
+  privados. Adaptador separado para no ampliar el mapper legado de comunidades.
+- `supabase/tests/communities/header-images.sql` pasó con rollback: restricciones,
+  actualización atómica, versión antigua, no-op, versión no falsificable,
+  aislamiento privado, propietario/no propietario/anónimo, eliminación independiente
+  del otro slot y actor de auditoría. No quedaron datos de prueba ni objetos nuevos.
+- 141 pruebas de comunidades pasan, incluyendo errores, ownership de subida,
+  estado privado/listo, preview local, cancelación/foco, confirmación, reintento
+  sin repetir upload y recuperación de errores. Se corrigió una espera de prueba
+  de paginación de adjuntos: el error puede aparecer antes de que acabe la transición.
+- Browser real `localhost:3000` a 1440×1000 y 390×800 CSS: portada existente, logo,
+  rangos con teclado, vista móvil/escritorio, cancelación, foco de confirmación y
+  ausencia de overflow horizontal. No se guardaron cambios de prueba. La prueba
+  auténtica de upload/persistencia/recarga sigue pendiente.
+- Detector sin hallazgos; advisor de seguridad sin avisos de las nuevas funciones.
+  El aviso de hidratación observado contiene atributos `bis_skin_checked` y
+  `bis_register` inyectados por una extensión del navegador, no por estos componentes.
+- Revisor independiente: **ship** para las capturas y controles comprobados, sin
+  hallazgos materiales; no certifica upload/persistencia remotos ni el PDF completo.
+  Contrato local en `components/header-images/DESIGN.md`.
+- TypeScript, lint de archivos modificados y build de producción pasan tras la
+  corrección del foco. Suite global: 426 pasan, 3 fallos previos (dos de Ciudades,
+  uno de login). Lint global conserva 262 errores y 338 avisos preexistentes.

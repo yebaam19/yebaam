@@ -1,4 +1,5 @@
 'use client';
+import type { HeaderImages } from '../../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/ui/Button';
 import type { Community } from '../../types/community.types';
@@ -10,11 +11,11 @@ import { CommunityIdentity } from './CommunityIdentity';
 import { ShowcasePlayer } from './ShowcasePlayer';
 import { ShowcaseEditor } from './ShowcaseEditor';
 
-type Props = { community: Community; isOwner: boolean; canEdit: boolean; showcase: CommunityShowcase | null };
+type Props = { community: Community; isOwner: boolean; canEdit: boolean; showcase: CommunityShowcase | null; headerImages?: HeaderImages | null };
 export function CommunityProfileHeader(props: Props) {
   return <PlanInteractionProvider><Header {...props} /></PlanInteractionProvider>;
 }
-function Header({ community, isOwner, canEdit, showcase }: Props) {
+function Header({ community, isOwner, canEdit, showcase, headerImages }: Props) {
   const t = useTranslations('communities.showcase');
   const interaction = usePlanInteraction();
   const opener = useEditorReturnFocus('showcase');
@@ -23,7 +24,7 @@ function Header({ community, isOwner, canEdit, showcase }: Props) {
   return <div className="rounded-xl bg-white p-5 text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-white">
     <div className={videos.length ? 'grid items-start gap-6 xl:grid-cols-[0.85fr_1.15fr]' : ''}>
       <div className="min-w-0 space-y-4">
-        <CommunityIdentity community={community} isOwner={isOwner} stacked={videos.length > 0} />
+        <CommunityIdentity community={community} headerImages={headerImages} isOwner={isOwner} stacked={videos.length > 0} />
         {(showcase?.introduction || (videos.length > 0 && community.description)) && <p className="max-w-prose whitespace-pre-line wrap-anywhere text-sm leading-relaxed text-neutral-700 dark:text-neutral-200">
           {showcase?.introduction || community.description}
         </p>}

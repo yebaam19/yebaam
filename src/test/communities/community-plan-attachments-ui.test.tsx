@@ -92,7 +92,7 @@ describe('plan attachments', () => {
     await screen.findByText('Reintenta la carga.');
     expect(screen.getByText('Acta de trabajo')).toBeVisible();
     mocks.more.mockResolvedValue({ ok: true, data: { items: [{ ...attachment, id: 'link-2', asset: { ...asset, title: 'Segundo archivo' } }], nextCursor: null } });
-    fireEvent.click(screen.getByRole('button', { name: 'Ver más adjuntos' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver más adjuntos' }));
     await screen.findByText('Segundo archivo');
     expect(mocks.more).toHaveBeenLastCalledWith({ communityId: 'community', pointId: 'point', cursor: { id: 'link', position: 0 } });
     expect(screen.queryByRole('button', { name: 'Ver más adjuntos' })).not.toBeInTheDocument();

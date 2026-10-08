@@ -159,12 +159,14 @@ tokens.json
 # Reviewed schema and authorization contracts belong with application changes.
 !supabase/migrations/*_community_profile_*.sql
 !supabase/migrations/*_community_plan_*.sql
+!supabase/migrations/*_community_header_*.sql
 !supabase/tests/communities/*.sql
 !src/features/communities/components/plans/DESIGN.md
 !src/features/communities/components/library/DESIGN.md
 !src/features/communities/components/about/DESIGN.md
 !src/features/communities/components/leaders/DESIGN.md
 !src/features/communities/components/showcase/DESIGN.md
+!src/features/communities/components/header-images/DESIGN.md
 # Local visual QA evidence, retained on disk for review.
 .impeccable/review/
 # YEBAAM governance source-of-truth — keep tracked despite the *.md ignore above
