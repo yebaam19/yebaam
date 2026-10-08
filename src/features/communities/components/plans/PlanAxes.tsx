@@ -32,7 +32,7 @@ export function PlanAxes({ section, initial, selectedId, basePath, canEdit, onCr
   }
   return <div className="min-w-0">
     <button type="button" aria-expanded={expanded} aria-controls={navigationId} onClick={() => setExpanded(!expanded)}
-      className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-left text-sm font-medium text-gray-800 focus-visible:outline-2 focus-visible:outline-blue-600 xl:hidden dark:bg-gray-900 dark:text-gray-100">
+      className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg bg-neutral-50 px-3 py-2 text-left text-sm font-medium text-neutral-800 focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 xl:hidden dark:bg-neutral-900 dark:text-neutral-100">
       <span>{t('axes')}</span><ChevronDown size={18} aria-hidden="true" className={expanded ? 'rotate-180' : ''} />
     </button>
     <div id={navigationId} className={expanded ? 'block' : 'hidden xl:block'}>
@@ -43,9 +43,9 @@ export function PlanAxes({ section, initial, selectedId, basePath, canEdit, onCr
         <Button plain aria-pressed={ordering} onClick={() => setOrdering(!ordering)}>{t('reorder')}</Button>
       </div>}
     </div>
-    {!page.items.length && <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">{t('noAxes')}</p>}
+    {!page.items.length && <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">{t('noAxes')}</p>}
     <nav aria-label={t('axes')} className="mt-3">
-      <ol className="divide-y divide-gray-200 dark:divide-gray-700">
+      <ol className="divide-y divide-neutral-200 dark:divide-neutral-700">
         {page.items.map((axis, index) => <li key={axis.id} className="py-2"
           onDragOver={(event) => {
             if (canEdit && (event.dataTransfer.types.includes(planDragType('axis')) || event.dataTransfer.types.includes(planDragType('point')))) event.preventDefault();
@@ -63,9 +63,9 @@ export function PlanAxes({ section, initial, selectedId, basePath, canEdit, onCr
           <Link href={axisPath(basePath, axis.id) as Route} aria-current={selectedId === axis.id ? 'page' : undefined}
             aria-disabled={mutation.blocked || undefined} tabIndex={mutation.blocked ? -1 : undefined}
             onClick={(event) => { if (mutation.blocked) event.preventDefault(); else setExpanded(false); }}
-            className={`block rounded-lg px-3 py-2.5 text-sm wrap-anywhere focus-visible:outline-2 focus-visible:outline-blue-600 ${selectedId === axis.id
-              ? 'bg-blue-50 font-semibold text-blue-800 dark:bg-blue-950 dark:text-blue-200'
-              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'}`}>
+            className={`block rounded-lg px-3 py-2.5 text-sm wrap-anywhere focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 ${selectedId === axis.id
+              ? 'bg-secondary-100 font-semibold text-primary-900 dark:bg-primary-900 dark:text-secondary-200'
+              : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-700'}`}>
             {axis.title}
             {!axis.is_published && <span className="ml-2 text-xs">({t('draft')})</span>}
           </Link>

@@ -78,9 +78,9 @@ export function CommunityAdminPanel({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-        <CheckBadgeIcon className="h-5 w-5 text-blue-500" />
+    <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm p-6 mb-6">
+      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+        <CheckBadgeIcon className="h-5 w-5 text-primary-800 dark:text-primary-300" />
         {t('admin.panel.title')}
       </h2>
 
@@ -88,7 +88,7 @@ export function CommunityAdminPanel({
 
       {privacy === 'SECRET' && (
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             {t('admin.panel.inviteSectionTitle')}
           </h3>
           <form onSubmit={handleInvite} className="flex gap-2">
@@ -97,12 +97,12 @@ export function CommunityAdminPanel({
               value={inviteUsername}
               onChange={(e) => setInviteUsername(e.target.value)}
               placeholder={t('admin.panel.invitePlaceholder')}
-              className="flex-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+              className="flex-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:border-primary-800 dark:focus:border-primary-300 focus:outline-none"
             />
             <button
               type="submit"
               disabled={isPending || !inviteUsername.trim()}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-md bg-primary-800 px-4 py-2 text-sm font-medium text-white hover:bg-primary-900 disabled:opacity-50"
             >
               {t('admin.panel.inviteSubmit')}
             </button>
@@ -115,11 +115,11 @@ export function CommunityAdminPanel({
 
       {privacy === 'PRIVATE' && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
             {t('admin.panel.pendingTitle', { count: pendingRequests.length })}
           </h3>
           {pendingRequests.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
               {t('admin.panel.pendingEmpty')}
             </p>
           ) : (
@@ -127,7 +127,7 @@ export function CommunityAdminPanel({
               {pendingRequests.map((req) => (
                 <li
                   key={req.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-gray-200 dark:border-gray-700 p-3"
+                  className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 dark:border-neutral-700 p-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {req.avatar ? (
@@ -140,19 +140,19 @@ export function CommunityAdminPanel({
                         unoptimized
                       />
                     ) : (
-                      <div className="h-9 w-9 rounded-full bg-gray-200 dark:bg-gray-700" />
+                      <div className="h-9 w-9 rounded-full bg-neutral-200 dark:bg-neutral-700" />
                     )}
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                      <p className="font-medium text-neutral-900 dark:text-white truncate">
                         {req.name}
                       </p>
                       {req.username && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                           @{req.username}
                         </p>
                       )}
                       {req.message && (
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                        <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1">
                           {req.message}
                         </p>
                       )}
@@ -171,7 +171,7 @@ export function CommunityAdminPanel({
                       type="button"
                       onClick={() => handleDecline(req.id)}
                       disabled={isPending}
-                      className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50"
+                      className="rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 disabled:opacity-50"
                       aria-label={t('admin.panel.declineAria')}
                     >
                       <XMarkIcon className="h-3.5 w-3.5" />
@@ -185,7 +185,7 @@ export function CommunityAdminPanel({
       )}
 
       {privacy === 'PUBLIC' && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           {t('admin.panel.publicNotice')}
         </p>
       )}

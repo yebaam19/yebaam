@@ -43,9 +43,11 @@ The finish reviewer returned **ship** for five isolated real-component captures:
 
 ## Colors
 
-The workspace uses white with gray-900 text in light mode and gray-800 with white text in dark mode. Gray separators and secondary text keep institutional prose primary. Existing community blue identifies edit/save actions, external links, and selected formatting controls. Shared fields retain their existing green primary focus treatment.
+The user explicitly corrected the palette to YEBAAM green and gold. Primary actions use the shared `brand` button (`primary-800`, white labels); selected institutional tabs, plan axes, and formatting controls use pale gold (`secondary-100`) with dark green text, changing to a dark green surface with light gold text in dark mode. Earlier fixture screenshots predate this correction and are historical layout evidence only.
 
-Amber accompanies the textual unpublished-content marker. Red accompanies inline errors. Dark variants soften separators and use lighter links and feedback. The reviewed dark state is the tablet reader; it does not certify every editor or media state.
+The workspace uses white with neutral-900 text in light mode and neutral-800 with white text in dark mode. Gray separators and secondary text keep institutional prose primary. Existing YEBAAM brand green identifies edit/save actions, and external links; selected formatting controls pair gold and green. Shared fields retain their existing green primary focus treatment.
+
+Brand gold accompanies the textual unpublished-content marker. Red accompanies inline errors. Dark variants soften separators and use lighter links and feedback. The reviewed dark state is the tablet reader; it does not certify every editor or media state.
 
 ## Typography
 
@@ -73,7 +75,7 @@ The workspace and rich-text editor use the workspace radius. Library image frame
 
 - **Workspace:** the title and capability-dependent create/edit action share a wrapping header. Section settings reuse `PlanSectionSettings`. Missing setup, empty reader, and empty editor states have distinct guidance. An unpublished About record carries a textual draft notice.
 - **Reader:** use semantic headings, a definition list for facts, and labeled navigation for external links. External links have 44px minimum heights, visible focus, and accessible labels indicating the new tab. Optional content disappears without leaving decorative empty containers.
-- **Editor:** reuse shared labeled `Input` and `Select` controls and the existing dynamically loaded `PlanTextEditor`. The selector receives initial focus; its rich-text control exposes an accessible multiline textbox and 44px formatting buttons. Save is blue; cancel is outline. Social links have individual labels, explicit remove actions, and a maximum of ten entries.
+- **Editor:** reuse shared labeled `Input` and `Select` controls and the existing dynamically loaded `PlanTextEditor`. The selector receives initial focus; its rich-text control exposes an accessible multiline textbox and 44px formatting buttons. Save uses brand green; cancel is outline. Social links have individual labels, explicit remove actions, and a maximum of ten entries.
 - **Publication and feedback:** a separate publication checkbox and explanatory copy accompany the form. Failed validation or mutation leaves entered values available for retry. Errors use `role="alert"`; mutation feedback uses `role="status"`. The captured failures are fixture behavior, not evidence of a real backend outage or successful save.
 - **Editing guard:** reuse the plan interaction provider to prevent competing workspace mutations while an editor is open. Closing returns focus to the initiating control when it remains mounted. This is a local interaction guard, not a general protection against navigating away with unsaved content.
 - **Media:** reuse `LibraryAssetView`, the image/video-only library picker, and named inline unlink confirmation. Media metadata includes editor-only audience and draft information. Pagination uses an explicit load-more control with inline error feedback. Readers with no media see no empty gallery; editors retain the add action and empty guidance. Selection links an existing library asset and does not create a separate upload flow.
@@ -81,7 +83,7 @@ The workspace and rich-text editor use the workspace radius. Library image frame
 
 ## Do's and Don'ts
 
-- **Do** reuse the established typography, community blue, shared controls, and library media renderer.
+- **Do** reuse the established typography, YEBAAM brand green, shared controls, and library media renderer.
 - **Do** keep prose bounded, facts compact, labels visible, and actions wrapping on narrow screens.
 - **Do** preserve entered content on failure and keep draft, publication, and error states explicit.
 - **Do** verify authenticated persistence, visibility, and remote media separately from the visual fixtures.

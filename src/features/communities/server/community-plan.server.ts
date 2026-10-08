@@ -3,10 +3,11 @@ import { cache } from 'react';
 import { z } from 'zod';
 import { getServerClient } from '@/utils/supabase/server';
 import { sanitizePlanContent } from './plan-content';
+import { orderedPage } from '../lib/ordered-page';
 import { getAttachmentPreviews } from './community-attachments.server';
 import { planCursorSchema, planScopeSchema } from '../schemas/communityPlan.schema';
 import type {
-  CommunitySection, PlanAxis, PlanCursor, PlanPage, PlanPoint, ProfileCapabilities,
+  CommunitySection, PlanAxis, PlanPage, PlanPoint, ProfileCapabilities,
 } from '../types/communityPlan.types';
 
 const SECTION_COLUMNS = 'id,community_id,kind,title,position,is_visible,version';
@@ -39,15 +40,6 @@ export const getCommunityProfileCapabilities = cache(async (communityId: string)
   return data as ProfileCapabilities;
 });
 
-function pageOf<T extends PlanCursor>(rows: T[]): PlanPage<T> {
-  const items = rows.slice(0, PAGE_SIZE);
-  const last = items.at(-1);
-  return {
-    items,
-    nextCursor: rows.length > PAGE_SIZE && last ? { position: last.position, id: last.id } : null,
-  };
-}
-
 // Primitive arguments preserve React.cache deduplication across layout/page reads.
 export const getPlanAxes = cache(async (
   communityId: string, sectionId: string, cursorJson: string | null = null,
@@ -61,7 +53,7 @@ export const getPlanAxes = cache(async (
   if (cursor) query = query.or(`position.gt.${cursor.position},and(position.eq.${cursor.position},id.gt.${cursor.id})`);
   const { data, error } = await query;
   if (error) throw new Error('No se pudieron cargar los ejes.');
-  return pageOf((data ?? []) as PlanAxis[]);
+  return orderedPage((data ?? []) as PlanAxis[]);
 });
 
 export const getPlanAxis = cache(async (
@@ -89,7 +81,7 @@ export const getPlanPoints = cache(async (
   if (cursor) query = query.or(`position.gt.${cursor.position},and(position.eq.${cursor.position},id.gt.${cursor.id})`);
   const { data, error } = await query;
   if (error) throw new Error('No se pudieron cargar los puntos.');
-  const page = pageOf((data ?? []) as PlanPoint[]);
+  const page = orderedPage((data ?? []) as PlanPoint[]);
   const previews = await getAttachmentPreviews(communityId, JSON.stringify(page.items.map((point) => point.id)));
   return { ...page, items: page.items.map((point) => ({
     ...point, content: sanitizePlanContent(point.content),

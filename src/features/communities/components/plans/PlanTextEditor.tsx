@@ -16,7 +16,7 @@ export function PlanTextEditor({ content, onChange, disabled, label }: {
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: { attributes: {
       role: 'textbox', 'aria-multiline': 'true', 'aria-label': label ?? t('content'),
-      class: 'prose prose-sm min-h-40 max-w-none p-4 focus:outline-2 focus:outline-blue-500 dark:prose-invert',
+      class: 'prose prose-sm min-h-40 max-w-none p-4 focus:outline-2 focus:outline-primary-800 dark:focus:outline-primary-300 dark:prose-invert',
     } },
   });
   useEffect(() => { editor?.setEditable(!disabled); }, [editor, disabled]);
@@ -31,14 +31,14 @@ export function PlanTextEditor({ content, onChange, disabled, label }: {
     { label: 'redo', Icon: Redo2, run: () => editor?.chain().focus().redo().run() },
   ];
   return (
-    <div className="mt-2 overflow-hidden rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900">
-      <div role="group" aria-label={t('formatting')} className="flex flex-wrap border-b border-gray-200 p-1 dark:border-gray-700">
+    <div className="mt-2 overflow-hidden rounded-xl border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900">
+      <div role="group" aria-label={t('formatting')} className="flex flex-wrap border-b border-neutral-200 p-1 dark:border-neutral-700">
         {controls.map(({ label, Icon, active, run }) => (
           <button key={label} type="button" title={t(`format.${label}`)} aria-label={t(`format.${label}`)}
             aria-pressed={active} disabled={!editor || disabled} onClick={run}
             className={`flex h-11 w-11 items-center justify-center rounded-lg disabled:opacity-40 ${active
-              ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200'
-              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'}`}>
+              ? 'bg-secondary-100 text-primary-900 dark:bg-primary-900 dark:text-secondary-200'
+              : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800'}`}>
             <Icon size={18} aria-hidden="true" />
           </button>
         ))}

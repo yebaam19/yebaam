@@ -30,15 +30,15 @@ export function PlanPoints({ axis, initial, axes, canEdit, basePath }: {
   return <div className="min-w-0">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <h2 className="min-w-0 flex-1 text-xl font-semibold wrap-anywhere">{axis.title}</h2>
-      {!axis.is_published && <span className="text-sm text-amber-800 dark:text-amber-300">{t('draft')}</span>}
-      {canEdit && <Button color="blue" disabled={mutation.blocked} onClick={() => interaction.beginEdit(createId)}>{t('new.point')}</Button>}
+      {!axis.is_published && <span className="text-sm text-secondary-900 dark:text-secondary-300">{t('draft')}</span>}
+      {canEdit && <Button color="brand" disabled={mutation.blocked} onClick={() => interaction.beginEdit(createId)}>{t('new.point')}</Button>}
     </div>
-    {axis.description && <p className="mt-3 max-w-prose whitespace-pre-wrap text-gray-600 dark:text-gray-300">{axis.description}</p>}
+    {axis.description && <p className="mt-3 max-w-prose whitespace-pre-wrap text-neutral-600 dark:text-neutral-300">{axis.description}</p>}
     {canEdit && <PlanItemActions item={axis} kind="axis" onEdit={() => interaction.beginEdit(editId)} />}
     {interaction.editor === editId && <PlanItemForm {...scope} kind="axis" item={axis} editorId={editId} basePath={basePath} onClose={interaction.endEdit} />}
     {interaction.editor === createId && <PlanItemForm {...scope} kind="point" axisId={axis.id} editorId={createId} basePath={basePath} onClose={interaction.endEdit} />}
-    {!page.items.length && <p className="my-8 text-gray-600 dark:text-gray-300">{t('noPoints')}</p>}
-    <ol className="divide-y divide-gray-200 dark:divide-gray-700">
+    {!page.items.length && <p className="my-8 text-neutral-600 dark:text-neutral-300">{t('noPoints')}</p>}
+    <ol className="divide-y divide-neutral-200 dark:divide-neutral-700">
       {page.items.map((point, index) => <li key={`${point.id}:${point.version}`}
         onDragOver={(event) => { if (canEdit && event.dataTransfer.types.includes(planDragType('point'))) event.preventDefault(); }}
         onDrop={(event) => {

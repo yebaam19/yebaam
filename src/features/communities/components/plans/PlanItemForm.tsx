@@ -43,7 +43,7 @@ export function PlanItemForm({ communityId, sectionId, kind, axisId, item, baseP
 
   return (
     <form onSubmit={(event) => { event.preventDefault(); save(new FormData(event.currentTarget)); }}
-      className="my-4 space-y-4 rounded-xl border border-gray-300 p-4 dark:border-gray-600">
+      className="my-4 space-y-4 rounded-xl border border-neutral-300 p-4 dark:border-neutral-600">
       <h3 className="text-lg font-semibold">{t(item ? `edit.${kind}` : `new.${kind}`)}</h3>
       <fieldset disabled={mutation.blocked} className="space-y-4">
         <label className="block text-sm font-medium">{t('title')}
@@ -56,12 +56,12 @@ export function PlanItemForm({ communityId, sectionId, kind, axisId, item, baseP
           <PlanTextEditor content={content} onChange={setContent} disabled={mutation.pending} />
         </div>}
         <label className="flex items-center gap-3 text-sm">
-          <input name="published" type="checkbox" defaultChecked={item?.is_published ?? false} className="rounded" />
+          <input name="published" type="checkbox" defaultChecked={item?.is_published ?? false} className="rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />
           {t('publish')}
         </label>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{t('publishHint')}</p>
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('publishHint')}</p>
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" color="blue">{mutation.pending ? t('saving') : t('save')}</Button>
+          <Button type="submit" color="brand">{mutation.pending ? t('saving') : t('save')}</Button>
           <Button type="button" outline onClick={onClose}>{t('cancel')}</Button>
         </div>
       </fieldset>

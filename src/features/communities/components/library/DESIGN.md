@@ -42,9 +42,11 @@ The finish review returned **ship** for six document states in the isolated actu
 
 ## Colors
 
-Use existing community blue for the active tab, primary upload/save actions, links, and progress. White surfaces, gray text and separators, and restrained gray icons carry the document hierarchy. Shared fields retain the application's green primary focus treatment; tabs and action controls retain their existing blue focus outlines.
+The user explicitly corrected the palette to YEBAAM green and gold. Primary actions use the shared `brand` button (`primary-800`, white labels); selected institutional tabs, plan axes, and formatting controls use pale gold (`secondary-100`) with dark green text, changing to a dark green surface with light gold text in dark mode. Earlier fixture screenshots predate this correction and are historical layout evidence only.
 
-Amber accompanies textual draft/hidden markers; red accompanies errors and confirmed destructive actions. Dark variants use dark gray surfaces, light text, subdued separators, and lighter links and feedback. The dark reader capture covers the document reading state only.
+Use existing YEBAAM brand green for primary upload/save actions, links, and progress; the active institutional tab pairs pale gold with dark green text. White surfaces, gray text and separators, and restrained gray icons carry the document hierarchy. Shared fields retain the application's green primary focus treatment; tabs and action controls retain their existing green focus outlines.
+
+Brand gold accompanies textual draft/hidden markers; red accompanies errors and confirmed destructive actions. Dark variants use dark gray surfaces, light text, subdued separators, and lighter links and feedback. The dark reader capture covers the document reading state only.
 
 ## Typography
 

@@ -27,7 +27,7 @@ export function PlanAttachments({ point, canEdit }: { point: PlanPoint; canEdit:
   }
   return <section aria-label={t('title')} className="mt-4 min-w-0">
     <div className="flex flex-wrap items-center justify-between gap-2">
-      {!!page.items.length && <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('title')}</h4>}
+      {!!page.items.length && <h4 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">{t('title')}</h4>}
       {canEdit && <Button ref={opener} plain disabled={interaction.busy || !!interaction.editor}
         onClick={() => interaction.beginEdit(editorId)} aria-label={t('addTo', { title: point.title })}>
         <Paperclip size={16} aria-hidden="true" />{t('add')}

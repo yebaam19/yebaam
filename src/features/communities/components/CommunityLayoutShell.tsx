@@ -96,8 +96,8 @@ export function CommunityLayoutShell({
     (viewerState.kind === 'none' && c.privacy === 'SECRET');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="relative h-56 md:h-72 bg-linear-to-r from-blue-500 to-purple-500">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+      <div className="relative h-56 md:h-72 bg-primary-900">
         {c.coverImageUrl && (
           <Image
             src={c.coverImageUrl}
@@ -121,12 +121,10 @@ export function CommunityLayoutShell({
               disabled={joinButtonDisabled}
               className={`px-5 py-2 rounded-lg font-medium text-sm shadow-md transition-colors ${
                 viewerState.kind === 'member' || c.isMember
-                  ? 'bg-white text-gray-700 hover:bg-gray-100'
+                  ? 'bg-white text-neutral-700 hover:bg-neutral-100'
                   : viewerState.kind === 'request_pending'
-                    ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                    : viewerState.kind === 'invited'
-                      ? 'bg-green-600 text-white hover:bg-green-700'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-secondary-500 text-neutral-900 hover:bg-secondary-400'
+                    : 'bg-primary-800 text-white hover:bg-primary-900'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {joinButtonLabel}
@@ -142,11 +140,11 @@ export function CommunityLayoutShell({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative -mt-16 pb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-5 shadow-sm">
             <div className="flex flex-col md:flex-row gap-5">
               <div className="shrink-0">
                 <div className="relative w-20 h-20">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-gray-800">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-neutral-800">
                     {c.profileImageUrl ? (
                       <Image
                         src={c.profileImageUrl}
@@ -157,8 +155,8 @@ export function CommunityLayoutShell({
                         unoptimized
                       />
                     ) : (
-                      <div className="w-full h-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                        <span className="text-white font-bold text-2xl">
+                      <div className="w-full h-full bg-secondary-500 text-primary-900 flex items-center justify-center">
+                        <span className="text-primary-900 font-bold text-2xl">
                           {c.name.charAt(0)}
                         </span>
                       </div>
@@ -169,7 +167,7 @@ export function CommunityLayoutShell({
                       <CommunityHeaderImageButton
                         communityId={c.id}
                         target="profile"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md ring-2 ring-white transition-colors hover:bg-blue-700 disabled:opacity-60 dark:ring-gray-800"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-800 text-white shadow-md ring-2 ring-white transition-colors hover:bg-primary-900 disabled:opacity-60 dark:ring-neutral-800"
                       />
                     </div>
                   )}
@@ -178,11 +176,11 @@ export function CommunityLayoutShell({
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                  <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-white truncate">
                     {c.name}
                   </h1>
                   {c.isVerified && (
-                    <CheckBadgeIcon className="w-6 h-6 text-blue-500 shrink-0" />
+                    <CheckBadgeIcon className="w-6 h-6 text-primary-800 shrink-0" />
                   )}
                 </div>
 
@@ -193,7 +191,7 @@ export function CommunityLayoutShell({
                     {getCategoryLabel(c.category)}
                   </span>
                   {c.privacy !== 'PUBLIC' && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-secondary-100 dark:bg-primary-900/30 text-secondary-900 dark:text-secondary-300">
                       <LockClosedIcon className="w-3 h-3" />
                       {getPrivacyLabel(c.privacy)}
                     </span>
@@ -202,21 +200,21 @@ export function CommunityLayoutShell({
 
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
                   <div className="flex items-center gap-1.5">
-                    <UserGroupIcon className="w-4 h-4 text-gray-400" />
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <UserGroupIcon className="w-4 h-4 text-neutral-400" />
+                    <span className="font-semibold text-neutral-900 dark:text-white">
                       {formatMembersCount(c.stats.membersCount)}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">{t('detail.members')}</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">{t('detail.members')}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <DocumentTextIcon className="w-4 h-4 text-gray-400" />
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <DocumentTextIcon className="w-4 h-4 text-neutral-400" />
+                    <span className="font-semibold text-neutral-900 dark:text-white">
                       {c.stats.postsCount}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">{t('detail.posts')}</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">{t('detail.posts')}</span>
                   </div>
                   {c.stats.growthRate > 0 && (
-                    <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                    <div className="flex items-center gap-1.5 text-primary-800 dark:text-primary-300">
                       <ArrowTrendingUpIcon className="w-4 h-4" />
                       <span className="font-semibold">+{c.stats.growthRate.toFixed(1)}%</span>
                     </div>
@@ -229,7 +227,7 @@ export function CommunityLayoutShell({
 
         {institutionalNavigation}
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 pb-12">
-          <aside className="lg:sticky lg:top-20 lg:self-start">
+          <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem-env(safe-area-inset-bottom,0px))] lg:self-start lg:overflow-y-auto lg:overscroll-y-contain">
             <CommunitySidebar
               slug={c.slug}
               isOwner={viewerState.kind === 'owner'}

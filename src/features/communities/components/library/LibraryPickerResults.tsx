@@ -43,14 +43,14 @@ function ResultsPage({ communityId, attach, kind, search, editorId, attachedIds,
   const ids = useRef(new Map<string, string>());
   const page = useLibraryPage(initial, (cursor) => loadLibraryAssets({ communityId, kind, search, cursor }));
   return <div>
-    {!page.items.length && <p className="py-3 text-sm text-gray-600 dark:text-gray-300">{t('empty')}</p>}
-    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+    {!page.items.length && <p className="py-3 text-sm text-neutral-600 dark:text-neutral-300">{t('empty')}</p>}
+    <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
       {page.items.map((asset) => <li key={asset.id} className="flex min-w-0 flex-wrap items-center gap-2 py-2">
         <div className="min-w-0 flex-1 basis-40">
           <p className="wrap-anywhere text-sm font-medium">{asset.title}</p>
-          <p className="wrap-anywhere text-xs text-gray-600 dark:text-gray-400">{asset.original_name}</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            {!asset.is_published && <span className="text-amber-800 dark:text-amber-300">{library('draft')} · </span>}{library(`audience.${asset.visibility}`)}
+          <p className="wrap-anywhere text-xs text-neutral-600 dark:text-neutral-400">{asset.original_name}</p>
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
+            {!asset.is_published && <span className="text-secondary-900 dark:text-secondary-300">{library('draft')} · </span>}{library(`audience.${asset.visibility}`)}
           </p>
         </div>
         <Button outline disabled={mutation.blocked || attachedIds.includes(asset.id)}

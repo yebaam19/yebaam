@@ -22,11 +22,11 @@ export function LibraryUnlinkControl({ id, title, confirm, remove }: {
     <Button ref={opener} plain disabled={mutation.blocked || confirming}
       aria-label={t('removeNamed', { title: title })}
       onClick={() => interaction.beginEdit(editorId)}>{t('remove')}</Button>
-    {confirming && <div className="my-2 space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+    {confirming && <div className="my-2 space-y-2 rounded-lg bg-neutral-50 p-3 dark:bg-neutral-900">
       <p className="text-sm">{confirm}</p>
-      <p className="text-sm text-gray-600 dark:text-gray-300">{t('keepFile')}</p>
+      <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('keepFile')}</p>
       <div className="flex flex-wrap gap-2">
-        <Button autoFocus color="blue" disabled={mutation.blocked} onClick={() => mutation.run(remove, close)}>{t(mutation.pending ? 'saving' : 'confirmRemove')}</Button>
+        <Button autoFocus color="brand" disabled={mutation.blocked} onClick={() => mutation.run(remove, close)}>{t(mutation.pending ? 'saving' : 'confirmRemove')}</Button>
         <Button outline disabled={mutation.blocked} onClick={close}>{t('cancel')}</Button>
       </div>
       <PlanFeedback {...mutation} />

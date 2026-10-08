@@ -31,9 +31,9 @@ export function LibraryAssetForm({ asset, folders, onClose }: { asset: LibraryAs
           {(['editors', 'members', 'public'] as const).map((audience) => <option key={audience} value={audience}>{t(`audience.${audience}`)}</option>)}
         </Select></label>
       </div>
-      <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" name="published" defaultChecked={asset.is_published} className="rounded" />{t('publish')}</label>
-      <p className="text-sm text-gray-600 dark:text-gray-300">{t('publishHint')}</p>
-      <div className="flex flex-wrap gap-2"><Button type="submit" color="blue">{t(mutation.pending ? 'saving' : 'save')}</Button><Button type="button" outline onClick={onClose}>{t('cancel')}</Button></div>
+      <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" name="published" defaultChecked={asset.is_published} className="rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />{t('publish')}</label>
+      <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('publishHint')}</p>
+      <div className="flex flex-wrap gap-2"><Button type="submit" color="brand">{t(mutation.pending ? 'saving' : 'save')}</Button><Button type="button" outline onClick={onClose}>{t('cancel')}</Button></div>
     </fieldset>
     <PlanFeedback error={mutation.error} status={mutation.status} />
   </form>;

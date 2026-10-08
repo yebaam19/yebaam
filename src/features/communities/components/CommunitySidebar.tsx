@@ -82,14 +82,14 @@ export function CommunitySidebar({
               className={cn(
                 'group flex items-center gap-2.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700/60',
+                  ? 'border-primary-800 bg-secondary-100 text-primary-800 dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+                  : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700/60',
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
               <span className="flex-1 truncate">{t(`sidebar.items.${item.labelKey}`)}</span>
               {item.comingSoon && (
-                <span className="shrink-0 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-[10px] font-medium px-2 py-0.5">
+                <span className="shrink-0 rounded-full bg-secondary-100 dark:bg-primary-900/30 text-secondary-900 dark:text-secondary-300 text-[10px] font-medium px-2 py-0.5">
                   {t('sidebar.comingSoon')}
                 </span>
               )}
@@ -101,7 +101,7 @@ export function CommunitySidebar({
     <div className="flex flex-col gap-3">
       <div className="hidden lg:block">{navigation}</div>
       <details className="lg:hidden">
-        <summary className="mb-3 cursor-pointer rounded-lg bg-white px-4 py-3 text-sm font-medium dark:bg-gray-800">{t('sidebar.ariaLabel')}</summary>
+        <summary className="mb-3 cursor-pointer rounded-lg bg-white px-4 py-3 text-sm font-medium dark:bg-neutral-800">{t('sidebar.ariaLabel')}</summary>
         {navigation}
       </details>
       {isOwner && communityId && communityName && (

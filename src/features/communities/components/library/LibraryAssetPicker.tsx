@@ -19,12 +19,12 @@ export function LibraryAssetPicker({ communityId, editorId, attachedIds, onClose
   const interaction = usePlanInteraction();
   const [kind, setKind] = useState<AssetKind>(kinds[0]);
   const [search, setSearch] = useState('');
-  return <div className="my-3 space-y-3 rounded-lg bg-gray-50 p-3 sm:p-4 dark:bg-gray-900">
+  return <div className="my-3 space-y-3 rounded-lg bg-neutral-50 p-3 sm:p-4 dark:bg-neutral-900">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h4 className="text-sm font-semibold">{t('choose')}</h4>
       <Button outline disabled={interaction.busy} onClick={onClose}>{t('cancel')}</Button>
     </div>
-    <p className="max-w-prose text-sm text-gray-600 dark:text-gray-300">{t('privacyHint')}</p>
+    <p className="max-w-prose text-sm text-neutral-600 dark:text-neutral-300">{t('privacyHint')}</p>
     <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => {
       event.preventDefault(); setSearch(String(new FormData(event.currentTarget).get('search') ?? '').trim());
     }}>

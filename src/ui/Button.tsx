@@ -2,6 +2,7 @@ import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import React, { forwardRef } from 'react'
 import { Link } from './link'
+import { brandButtonColors } from './button-brand-colors'
 
 const styles = {
   base: [
@@ -10,7 +11,7 @@ const styles = {
     // Sizing
     'px-[calc(--spacing(4)-1px)] py-[calc(--spacing(2.5)-1px)] sm:px-[calc(--spacing(5)-1px)] sm:text-sm/6',
     // Focus
-    'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500',
+    'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-primary-800 dark:data-focus:outline-primary-300',
     // Disabled
     'data-disabled:opacity-50',
     // Icon
@@ -53,6 +54,7 @@ const styles = {
     '[--btn-icon:var(--color-neutral-500)] data-active:[--btn-icon:var(--color-neutral-700)] data-hover:[--btn-icon:var(--color-neutral-700)] dark:[--btn-icon:var(--color-neutral-500)] dark:data-active:[--btn-icon:var(--color-neutral-400)] dark:data-hover:[--btn-icon:var(--color-neutral-400)]',
   ],
   colors: {
+    ...brandButtonColors,
     'dark/neutral': [
       'text-white [--btn-bg:var(--color-neutral-900)] [--btn-border:var(--color-neutral-950)]/90 [--btn-hover-overlay:var(--color-white)]/10',
       'dark:text-white dark:[--btn-bg:var(--color-neutral-600)] dark:[--btn-hover-overlay:var(--color-white)]/5',
@@ -164,7 +166,7 @@ const styles = {
     // Sizing
     'size-10 text-sm/none',
     // Focus
-    'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500',
+    'focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-primary-800 dark:data-focus:outline-primary-300',
     // Disabled
     'data-disabled:opacity-50',
     // Icon
@@ -185,7 +187,7 @@ export const Button = forwardRef(function Button(
   { color, outline, plain, className, children, ...props }: ButtonProps,
   ref: React.ForwardedRef<HTMLElement>
 ) {
-  let classes = clsx(
+  const classes = clsx(
     className,
     styles.base,
     outline ? styles.outline : plain ? styles.plain : clsx(styles.solid, styles.colors[color ?? 'primary'])
@@ -214,7 +216,7 @@ export const ButtonCircle = forwardRef(function Button(
   { color, outline, plain, className, children = 'x', ...props }: ButtonCircleProps,
   ref: React.ForwardedRef<HTMLElement>
 ) {
-  let classes = clsx(
+  const classes = clsx(
     className,
     styles.baseForCircle,
     outline ? styles.outline : plain ? styles.plain : clsx(styles.solid, styles.colors[color ?? 'dark/neutral'])

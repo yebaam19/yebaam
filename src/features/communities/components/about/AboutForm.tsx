@@ -43,18 +43,18 @@ export function AboutForm({ communityId, sectionId, about, name, editorId, onClo
             {ABOUT_TEXT_FIELDS.map((key) => <option key={key} value={key}>{t(`fields.${key}`)}</option>)}
           </Select>
         </label>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{t('editorHint')}</p>
+        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{t('editorHint')}</p>
         <TextEditor key={field} content={content[field]} label={t(`fields.${field}`)} disabled={mutation.blocked}
           onChange={(html) => setContent((previous) => ({ ...previous, [field]: html }))} />
       </div>
       <AboutContactFields about={about} name={name} />
       <AboutSocialFields links={links} onChange={setLinks} />
       <label className="flex items-start gap-3 text-sm">
-        <input name="published" type="checkbox" defaultChecked={about?.is_published ?? false} className="mt-0.5 rounded" />
-        <span>{t('publish')}<span className="mt-1 block text-gray-600 dark:text-gray-300">{t('publishHint')}</span></span>
+        <input name="published" type="checkbox" defaultChecked={about?.is_published ?? false} className="mt-0.5 rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />
+        <span>{t('publish')}<span className="mt-1 block text-neutral-600 dark:text-neutral-300">{t('publishHint')}</span></span>
       </label>
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" color="blue">{t(mutation.pending ? 'saving' : 'save')}</Button>
+        <Button type="submit" color="brand">{t(mutation.pending ? 'saving' : 'save')}</Button>
         <Button type="button" outline onClick={onClose}>{t('cancel')}</Button>
       </div>
     </fieldset>

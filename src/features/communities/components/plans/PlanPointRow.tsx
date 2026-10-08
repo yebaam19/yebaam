@@ -21,16 +21,16 @@ export function PlanPointRow({ point, number, canEdit, axes, basePath, pending, 
   return <article className="min-w-0 py-4">
     <div className="flex flex-wrap items-start justify-between gap-2">
       <h3 className="min-w-0 flex-1 text-lg font-semibold wrap-anywhere">{number}. {point.title}</h3>
-      {!point.is_published && <span className="text-sm text-amber-800 dark:text-amber-300">{t('draft')}</span>}
+      {!point.is_published && <span className="text-sm text-secondary-900 dark:text-secondary-300">{t('draft')}</span>}
     </div>
-    {point.description && <p className="mt-2 max-w-prose whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{point.description}</p>}
+    {point.description && <p className="mt-2 max-w-prose whitespace-pre-wrap text-sm text-neutral-600 dark:text-neutral-300">{point.description}</p>}
     {interaction.editor === editId ? <PlanItemForm communityId={point.community_id} sectionId={point.section_id} kind="point"
       axisId={point.axis_id} item={point} editorId={editId} basePath={basePath} onClose={interaction.endEdit} />
       : point.content && <div className="prose prose-sm mt-3 max-w-prose wrap-anywhere dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: point.content }} />}
     <PlanAttachments point={point} canEdit={canEdit} />
     {canEdit && <details className="mt-2">
-      <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">{t('pointActions')}</summary>
+      <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">{t('pointActions')}</summary>
       <div className="flex flex-wrap items-center gap-x-3">
         <PlanOrderControls item={point} kind="point" disabled={pending} onUp={onUp} onDown={onDown} />
         <Button plain disabled={pending} onClick={() => interaction.beginEdit(moveId)}>{t('moveToAxis')}</Button>

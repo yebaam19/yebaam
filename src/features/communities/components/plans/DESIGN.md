@@ -40,11 +40,13 @@ The attachment extension adds a separate, bounded review: `.impeccable/review/co
 
 ## Colors
 
-White surfaces, dark text, muted gray descriptions, and thin gray separators carry the workspace. Existing Tailwind blue shades identify the selected institutional tab, selected axis, active formatting controls, and primary save/create actions. These do not replace the global primary palette.
+The user explicitly corrected the palette to YEBAAM green and gold. Primary actions use the shared `brand` button (`primary-800`, white labels); selected institutional tabs, plan axes, and formatting controls use pale gold (`secondary-100`) with dark green text, changing to a dark green surface with light gold text in dark mode. Earlier fixture screenshots predate this correction and are historical layout evidence only.
 
-Amber text marks unpublished content and hidden sections. Red marks error feedback and destructive confirmation. Draft and hidden states always include words. Shared fields retain their existing green primary focus treatment; navigation retains its blue focus outline.
+White surfaces, dark text, muted gray descriptions, and thin gray separators carry the workspace. YEBAAM primary green identifies actions, links and formatting controls; secondary gold highlights selected tabs and axes. All colors come from the existing global primary, secondary and neutral tokens.
 
-Dark variants use dark gray workspace surfaces, darker editor surfaces, light text, and softened blue/amber/red states as defined in the components. The original plan review did not capture these variants; the attachment review adds only the dark document-reader state described above.
+Brand gold text marks unpublished content and hidden sections. Red marks error feedback and destructive confirmation. Draft and hidden states always include words. Shared fields retain their existing green primary focus treatment; navigation retains its green focus outline.
+
+Dark variants use dark gray workspace surfaces, darker editor surfaces, light text, and softened green/gold/red states as defined in the components. The original plan review did not capture these variants; the attachment review adds only the dark document-reader state described above.
 
 ## Typography
 
@@ -68,8 +70,8 @@ Workspace and editor containers use the workspace radius; axis links use the nav
 
 ## Components
 
-- **Navigation:** selected tabs and axes have blue tonal backgrounds and `aria-current`. Axes expose an expanded state and a controlled navigation region on narrower screens.
-- **Actions:** reuse shared `Button` variants: blue for save/create, plain for inline management, outline for cancellation and pagination, red for confirmed deletion. The point action list uses native `details`/`summary`; reorder controls include explicit movement buttons as well as drag affordances.
+- **Navigation:** selected tabs and axes have gold tonal backgrounds and `aria-current`. Axes expose an expanded state and a controlled navigation region on narrower screens.
+- **Actions:** reuse shared `Button` variants: brand green for save/create, plain for inline management, outline for cancellation and pagination, red for confirmed deletion. The point action list uses native `details`/`summary`; reorder controls include explicit movement buttons as well as drag affordances.
 - **Drafts:** unpublished titles carry a textual draft marker. Readers receive the same reading hierarchy without editing controls; visibility and authorization remain backend responsibilities.
 - **Forms:** reuse shared `Input` and `Textarea`, visible labels, required titles, length limits, and an explicit publish checkbox. Submit is handled without resetting uncontrolled fields after a failed action. Errors remain next to the form with `role="alert"`; progress/status feedback uses `role="status"`.
 - **Rich editor:** the existing Tiptap editor provides bold, italic, heading, list, quote, undo, and redo controls. Toolbar buttons have accessible names, pressed states where applicable, and 44px square targets. Content has an accessible multiline textbox role and a minimum height of 10rem.
@@ -77,7 +79,7 @@ Workspace and editor containers use the workspace radius; axis links use the nav
 - **Deletion:** show the item's named confirmation inline, with destructive and cancel actions. Preserve pending/disabled feedback and the same error reporting path.
 - **Attachments:** reuse `LibraryAssetView` for document rows and media rendering. Document metadata stays secondary to the file title, with download and supported preview links below. Editors see file audience and draft status; readers have no attach/unlink controls and no empty attachment section. Attaching preserves the library file's audience, folder, and publication state; the picker states this explicitly.
 - **Attachment picker:** reuse shared `Select`, `Input`, and outline buttons in a neutral rounded inset. Default to documents; offer image and video types and an explicitly submitted title/description search. Results show title, original filename, audience, and a textual draft marker where applicable. Already attached results have a disabled named state. Loading uses status feedback; failed initial reads offer retry; empty results have explanatory copy. Cursor pagination uses load-more controls for both results and attached files. Mutation errors remain beside the open picker.
-- **Unlinking:** a named inline confirmation explains that the file remains in the library and in other plan points. Its confirm action uses the incumbent blue button, because it removes this relationship rather than deleting the file. Cancellation and mutation feedback remain local to the row.
+- **Unlinking:** a named inline confirmation explains that the file remains in the library and in other plan points. Its confirm action uses the incumbent brand green button, because it removes this relationship rather than deleting the file. Cancellation and mutation feedback remain local to the row.
 - **Attachment focus and editing:** opening the picker focuses its search field; opening unlink confirmation focuses its confirm action. Closing returns focus to the initiating control when it remains mounted. Both flows share the existing single-workspace-editor guard, disabling unrelated mutations while preserving failed work for retry.
 
 ## Do's and Don'ts

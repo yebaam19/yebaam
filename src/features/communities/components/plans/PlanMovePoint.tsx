@@ -28,7 +28,7 @@ export function PlanMovePoint({ point, axes, onClose, editorId }: {
     </label>
     {page.nextCursor && <Button plain disabled={page.pending} onClick={page.loadMore}>{t('loadAxes')}</Button>}
     <div className="flex flex-wrap gap-2">
-      <Button color="blue" disabled={!destination || mutation.blocked} onClick={() => mutation.run(() => movePlanItem({
+      <Button color="brand" disabled={!destination || mutation.blocked} onClick={() => mutation.run(() => movePlanItem({
         ...scope, kind: 'point', id: point.id, expectedVersion: point.version, destinationAxis: destination,
       }), onClose)}>{t('move')}</Button>
       <Button outline disabled={mutation.blocked} onClick={onClose}>{t('cancel')}</Button>

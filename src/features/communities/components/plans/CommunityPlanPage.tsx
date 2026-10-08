@@ -21,7 +21,7 @@ export async function CommunityPlanPage({ slug, kind, axisId }: { slug: string; 
     const migrated = kind === 'rules' && await usesStructuredRules(community.id);
     const legacyRules = kind === 'rules' && !migrated ? [...(community.rules ?? [])].sort((a, b) => a.order - b.order) : [];
     if (!capabilities.settings && !legacyRules.length) notFound();
-    return <section className="rounded-xl bg-white p-6 text-gray-900 dark:bg-gray-800 dark:text-white">
+    return <section className="rounded-xl bg-white p-6 text-neutral-900 dark:bg-neutral-800 dark:text-white">
       <h2 className="mb-4 text-2xl font-semibold">{t(`titles.${kind}`)}</h2>
       {legacyRules.length ? <RulesList rules={legacyRules} isOwner={capabilities.settings} /> : <p>{t('setupHint')}</p>}
       {capabilities.settings && <PlanSectionSettings communityId={community.id} kind={kind} hasLegacyRules={legacyRules.length > 0} />}

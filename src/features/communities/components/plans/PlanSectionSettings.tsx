@@ -30,9 +30,9 @@ export function PlanSectionSettings({ communityId, kind, section, hasLegacyRules
   }
 
   if (!section && hasLegacyRules) return (
-    <div className="mt-6 border-t border-gray-200 pt-5 dark:border-gray-700">
-      <p className="mb-3 max-w-prose text-sm text-gray-600 dark:text-gray-300">{t('importHint')}</p>
-      <Button color="blue" disabled={mutation.pending}
+    <div className="mt-6 border-t border-neutral-200 pt-5 dark:border-neutral-700">
+      <p className="mb-3 max-w-prose text-sm text-neutral-600 dark:text-neutral-300">{t('importHint')}</p>
+      <Button color="brand" disabled={mutation.pending}
         onClick={() => mutation.run(() => importCommunityRules({ communityId }))}>
         {mutation.pending ? t('saving') : t('importRules')}
       </Button>
@@ -50,25 +50,25 @@ export function PlanSectionSettings({ communityId, kind, section, hasLegacyRules
         <label className="block max-w-48 text-sm font-medium">
           {t('tabPosition')}
           <Input name="position" type="number" min={0} max={2147483647} required
-            defaultValue={section?.position ?? (kind === 'about' ? 0 : kind === 'government' ? 2 : kind === 'economy' ? 3 : 1)} className="mt-2" />
+            defaultValue={section?.position ?? (kind === 'about' ? 0 : kind === 'government' ? 2 : kind === 'economy' ? 3 : kind === 'leaders' ? 4 : 1)} className="mt-2" />
         </label>
         <label className="flex items-start gap-3 text-sm">
-          <input type="checkbox" name="visible" defaultChecked={section?.is_visible ?? false} className="mt-0.5 rounded" />
-          <span>{t('visible')}<span className="mt-1 block text-gray-600 dark:text-gray-300">{t('visibleHint')}</span></span>
+          <input type="checkbox" name="visible" defaultChecked={section?.is_visible ?? false} className="mt-0.5 rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />
+          <span>{t('visible')}<span className="mt-1 block text-neutral-600 dark:text-neutral-300">{t('visibleHint')}</span></span>
         </label>
-        <Button type="submit" color="blue">{mutation.pending ? t('saving') : section ? t('saveSettings') : t('createSection')}</Button>
+        <Button type="submit" color="brand">{mutation.pending ? t('saving') : section ? t('saveSettings') : t('createSection')}</Button>
       </fieldset>
       <PlanFeedback {...mutation} />
     </form>
   );
 
   return section ? (
-    <details open={interaction.editor === editorId} className="mt-5 border-t border-gray-200 pt-4 dark:border-gray-700">
+    <details open={interaction.editor === editorId} className="mt-5 border-t border-neutral-200 pt-4 dark:border-neutral-700">
       <summary aria-disabled={mutation.blocked || undefined} onClick={(event) => {
         event.preventDefault();
         if (mutation.blocked) return;
         if (interaction.editor === editorId) interaction.endEdit(); else interaction.beginEdit(editorId);
-      }} className="cursor-pointer text-sm font-medium text-blue-700 dark:text-blue-300">{t('settings')}</summary>
+      }} className="cursor-pointer text-sm font-medium text-primary-800 dark:text-primary-300">{t('settings')}</summary>
       {form}
     </details>
   ) : form;

@@ -46,7 +46,7 @@ export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
     <nav
       ref={navigation}
       aria-label={t('topTabs.ariaLabel')}
-      className="flex items-center gap-1 overflow-x-auto rounded-lg border border-gray-200 bg-white p-1.5 dark:border-gray-700 dark:bg-gray-800"
+      className="flex items-center gap-1 overflow-x-auto rounded-lg border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-800"
     >
       {tabs.map((tab) => {
         const isActive =
@@ -57,10 +57,10 @@ export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
             href={tab.href as Route}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
+              'inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300',
               isActive
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60',
+                ? 'bg-primary-800 text-white shadow-sm'
+                : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-700/60',
             )}
           >
             {t(`topTabs.${tab.labelKey}`)}

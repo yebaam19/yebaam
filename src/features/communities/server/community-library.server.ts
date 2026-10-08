@@ -1,5 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
+import { orderedPage } from '../lib/ordered-page';
 import { z } from 'zod';
 import { getServerClient } from '@/utils/supabase/server';
 import { libraryQuerySchema, libraryCursorSchema, assetKindSchema } from '../schemas/communityLibrary.schema';
@@ -88,8 +89,5 @@ export const getPlanAttachments = cache(async (communityId: string, pointId: str
   if (cursor) query = query.or(`position.gt.${cursor.position},and(position.eq.${cursor.position},id.gt.${cursor.id})`);
   const { data, error } = await query;
   if (error) throw new Error('No se pudieron cargar los adjuntos.');
-  const rows = (data ?? []) as unknown as PlanAttachment[];
-  const items = rows.slice(0, PAGE_SIZE);
-  const last = items.at(-1);
-  return { items, nextCursor: rows.length > PAGE_SIZE && last ? { id: last.id, position: last.position } : null };
+  return orderedPage((data ?? []) as unknown as PlanAttachment[]);
 });

@@ -23,7 +23,7 @@ export function AboutMediaGallery({ communityId, aboutId, initial, canEdit }: {
   const opener = useEditorReturnFocus(editorId);
   const page = usePlanPage(initial, (cursor) => loadAboutMedia({ communityId, aboutId, cursor }));
   if (!page.items.length && !canEdit) return null;
-  return <section className="mt-7 min-w-0 border-t border-gray-200 pt-5 dark:border-gray-700" aria-label={t('media')}>
+  return <section className="mt-7 min-w-0 border-t border-neutral-200 pt-5 dark:border-neutral-700" aria-label={t('media')}>
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
       <h3 className="text-lg font-semibold">{t('media')}</h3>
       {canEdit && <Button ref={opener} outline disabled={interaction.busy || !!interaction.editor}
@@ -38,7 +38,7 @@ export function AboutMediaGallery({ communityId, aboutId, initial, canEdit }: {
           remove={() => detachAboutMedia({ communityId, aboutId, assetId: item.asset_id, id: item.id, confirmed: true })} />}
       </LibraryAssetView>)}
     </div>
-    {!page.items.length && <p className="text-sm text-gray-600 dark:text-gray-300">{t('emptyMedia')}</p>}
+    {!page.items.length && <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('emptyMedia')}</p>}
     {page.nextCursor && <Button outline disabled={page.pending} onClick={page.loadMore}>{t(page.pending ? 'loading' : 'moreMedia')}</Button>}
     {page.error && <PlanFeedback error={page.error} />}
   </section>;

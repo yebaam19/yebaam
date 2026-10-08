@@ -146,6 +146,39 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
   Selector, confirmación de desvinculación y devolución de foco se comparten con
   planes. El nombre se administra mediante el flujo existente de comunidad.
 
+### Dirigentes
+
+- `community_leader_categories` y `community_leaders`: sección y comunidad
+  inmutables, claves compuestas, nombre/cargo, biografía/trayectoria saneadas,
+  posición numérica y publicación privada por defecto. Categoría oculta oculta
+  sus fichas; se puede mover una ficha a otra categoría o dejarla sin categoría.
+  Las categorías con integrantes rechazan borrado hasta moverlos.
+- `community_leader_contacts` separa correo/teléfono, redes y enlace a perfil de
+  la ficha pública. `is_public=false` impide leer la fila por API aunque la ficha
+  sea pública. El enlace de perfil se resuelve por nombre de usuario exacto con
+  el cliente de sesión y vuelve a comprobarse con RLS en lectura; un error de
+  consulta impide guardar o mostrar un estado ambiguo.
+- `community_leader_media` tiene tres espacios tipados: retrato, portada y video.
+  Referencia activos existentes de biblioteca por comunidad; la DB rechaza
+  documento como foto, foto como video y cambios de identidad del espacio.
+  Las audiencias/borradores/archivos retirados conservan su protección. El editor
+  puede quitar una referencia cuyo archivo ya no está disponible. Eliminar una
+  ficha borra sus contactos/vínculos, conserva los medios y registra el actor.
+- CRUD usa capacidad `content`, confirmaciones y versiones optimistas. Cada
+  registro nuevo conserva el UUID local en reintentos; un conflicto devuelve un
+  error para recargar, sin sobrescribir cambios ni producir duplicados.
+- Lista de 30 tarjetas por cursor `(position,id)` con retratos en una consulta
+  por lote, sin biografías en las tarjetas. Categorías paginadas; la categoría
+  actual se resuelve aparte cuando no está en la primera página. Contacto y
+  textos extensos solo se leen en la ficha. `react.cache` deduplica por petición.
+  `lib/ordered-page.ts` centraliza el cursor y el recorte de páginas ordenadas
+  para planes, adjuntos, medios institucionales y dirigentes.
+- `/lideres` y `/lideres/[leaderId]` conectan lista y ficha. Formularios inline,
+  selector enriquecido de biografía/trayectoria, publicación de contacto
+  independiente y biblioteca tipada para medios. El orden es numérico, con
+  desempate estable por ID; no hay arrastre en el directorio. Un editor activo
+  bloquea filtros y otras mutaciones locales, no la navegación global del shell.
+
 ### Retiro de medios y programación
 
 - Las mutaciones verificadas de eliminar/reemplazar programan limpieza mediante
@@ -225,7 +258,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Biblioteca disponible; pendiente selección de cuatro, orden, reproductor y administración; sin autoplay sonoro. |
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados; pendiente persistencia autenticada y reproducción real. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
-| 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Pendiente modelo y UI. Contacto oculto por defecto. |
+| 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. Pendiente QA autenticado y reproducción/portada real. |
 | 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | Ruta `enlaces` existente; verificar persistencia/administración y destinos. |
@@ -242,14 +275,14 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
 
 Orden de continuación: QA de galerías y adjuntos con medios reales →
-dirigentes y cabecera de cuatro videos → eventos,
+cabecera de cuatro videos → eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
 No habilitar entradas incompletas sin la indicación Próximamente.
 
 ## Verificación de esta fase
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
-- Dieciocho migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- Diecinueve migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
@@ -262,7 +295,7 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   rol, defaults privados, carpetas ocultas, aislamiento, autor de finalización,
   idempotencia, recibos de carga, reemplazos/versiones, adjuntos y retiro de objetos.
   Sin fixtures persistentes ni escrituras de prueba a Cloudflare.
-- 95 pruebas de acciones, lecturas, permisos de página, navegación, orden y
+- 117 pruebas de acciones, lecturas, permisos de página, navegación, orden y
   formularios pasan; typecheck pasa. Los dos casos de formulario verifican
   conservación de campos tras error y estabilidad del ID al reintentar. Otros dos
   casos cubren borradores abiertos frente a mutaciones/navegación ajenas.
@@ -309,19 +342,33 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   Reviewer fresco: **ship** para estos estados. Contrato local en
   `components/about/DESIGN.md`. No acredita persistencia autenticada ni Stream real.
   La prueba de foco espera el efecto posterior a habilitar de nuevo el botón.
+- Dirigentes: `supabase/tests/communities/leaders.sql` pasó con rollback y sin
+  fixtures persistentes. Cubre borradores, ocultación de categoría/sección,
+  comunidad privada, miembros activos/expulsados, editor sin permiso de planes,
+  contacto independiente, activos privados, tipos de medios, identidad,
+  aislamiento, versiones, límites, eliminación con historial y archivos intactos.
+  Advisor de seguridad sin avisos de las tablas del directorio.
+- Dirigentes UI: siete capturas de componentes reales con fixtures explícitos,
+  `community-leaders-{desktop,mobile-editor-error,tablet-dark-reader,mobile-contact-error,mobile-empty,desktop-category-error,desktop-media-error}.png`.
+  Verificados 1440/390/768 px, TipTap real, cambio de texto sin perder campos,
+  fallo de contacto/categoría/medios con reintento, foco de retorno y lector sin
+  controles administrativos. Reviewer fresco: **ship**, sin cambios materiales.
+  Contrato local en `components/leaders/DESIGN.md`; no acredita autenticación,
+  escritura remota, carga real, imagen de portada ni reproducción de Stream.
 - ESLint de archivos nuevos pasa. Supabase marca solo dos avisos informativos
   [RLS sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
   en los nuevos ledger/outbox: es intencional, son server-only, con RLS y sin grants
   a `anon`/`authenticated`; se verificaron los privilegios en la base real.
-- Suite global: 380 pasan y 3 fallan en tests existentes no modificados (Ciudades
+- Suite global: 402 pasan y 3 fallan en tests existentes no modificados (Ciudades
   espera 8 registros y hay 9; login espera redirect sin el parámetro `redirect`).
 - Lint global: 264 errores y 338 avisos en código existente/skills. No se alteran
   archivos ajenos para hacer pasar el gate. `pnpm build`: pasa (Next.js 16.2.3).
 - Browser QA de los componentes reales en preview local con fixtures etiquetados,
   sin escrituras remotas: escritorio, tablet y móvil; desplegables, controles de
   orden, lector sin edición y guardado fallido con todos los campos conservados.
-  La aplicación real redirige a login y falta `NEXT_PUBLIC_TURNSTILE_SITE_KEY`;
-  esta prueba visual no acredita persistencia autenticada de extremo a extremo.
+  En aquella revisión la aplicación redirigía a login y faltaba
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. La sesión posterior en localhost:3000 sí está
+  autenticada; ninguna de estas revisiones acredita persistencia de extremo a extremo.
 - Revisión Impeccable: composición acorde al sistema existente; el único hallazgo
   material (borrador perdido al mutar otro punto) fue corregido y puntuado como
   resuelto (`ship` para esa corrección). Capturas en `.impeccable/review/` locales.
@@ -342,3 +389,12 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 [Postgres SKIP LOCKED](https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE),
 [Supabase Cron](https://supabase.com/docs/guides/cron/quickstart) y
 [pg_net](https://supabase.com/docs/guides/database/extensions/pg_net).
+
+### Revisión de marca y navegación en localhost:3000
+
+- Acciones institucionales en verde `primary-800`, selección dorada `secondary-100`, superficies `neutral`; variante compartida `Button color="brand"`.
+- Revisión autenticada real en Comunidad MVP test: sección Líderes sin configurar, sin publicar ni modificar contenido.
+- Sidebar global comprobado hasta Perfil profesional en escritorio y móvil (390px CSS); en móvil scrollTop 265 y último enlace dentro del viewport (734.7 / 750px).
+- Sidebar local limitado a la altura disponible en escritorio con scroll independiente: a 1440×450px, 411px de contenido en 354px de área; Gestionar comunidad accesible tras desplazar 56px. En móvil conserva su disclosure.
+- Las capturas históricas con fixtures no prueban persistencia autenticada; esta revisión real tampoco ejecutó uploads ni publicó líderes.
+- Validación tras la corrección de paleta: 117 tests de comunidades pasan; TypeScript y lint de archivos cambiados pasan; build de producción pasa.

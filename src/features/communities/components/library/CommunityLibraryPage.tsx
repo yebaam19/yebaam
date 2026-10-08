@@ -32,9 +32,9 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
     <CommunityTopTabs slug={slug} />
     <LibraryWorkspace key={crypto.randomUUID()} communityId={community.id} kind={kind} initial={initial} folders={initialFolders}
       canEdit={capabilities.content} basePath={`/feed/comunidades/${slug}/${path}`} search={search} folderId={folderId} pdfOnly={pdfOnly} />
-    {legacy && <details className="rounded-xl bg-white p-4 dark:bg-gray-800">
-      <summary className="min-h-11 cursor-pointer text-sm font-medium text-gray-700 focus-visible:outline-2 focus-visible:outline-blue-600 dark:text-gray-200">{t('fromPosts')}</summary>
-      <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">{t('fromPostsHint')}</p>
+    {legacy && <details className="rounded-xl bg-white p-4 dark:bg-neutral-800">
+      <summary className="min-h-11 cursor-pointer text-sm font-medium text-neutral-700 focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 dark:text-neutral-200">{t('fromPosts')}</summary>
+      <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-300">{t('fromPostsHint')}</p>
       {kind === 'image' ? <CommunityPhotosPanel posts={legacy.posts} /> : <CommunityVideosPanel posts={legacy.posts} />}
     </details>}
   </div>;

@@ -47,15 +47,15 @@ export function LibraryWorkspace({ communityId, kind, initial, folders, canEdit,
     if (folder !== 'all') query.set('carpeta', folder);
     startNavigation(() => router.push(`${basePath}${query.size ? `?${query}` : ''}` as Route));
   }
-  return <section aria-label={t(pdfOnly ? 'titles.pdf' : `titles.${kind}`)} className="rounded-xl bg-white p-4 text-gray-900 sm:p-5 dark:bg-gray-800 dark:text-white">
+  return <section aria-label={t(pdfOnly ? 'titles.pdf' : `titles.${kind}`)} className="rounded-xl bg-white p-4 text-neutral-900 sm:p-5 dark:bg-neutral-800 dark:text-white">
     <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
       <h2 className="text-xl font-semibold">{t(pdfOnly ? 'titles.pdf' : `titles.${kind}`)}</h2>
       {canEdit && <div className="flex flex-wrap gap-2">
         <Button outline disabled={blocked} onClick={() => edit({ type: 'folders' })}>{t('manageFolders')}</Button>
-        <Button color="blue" disabled={blocked} onClick={() => edit({ type: 'upload' })}>{t('upload')}</Button>
+        <Button color="brand" disabled={blocked} onClick={() => edit({ type: 'upload' })}>{t('upload')}</Button>
       </div>}
     </header>
-    {editor && <div ref={panel} tabIndex={-1} className="mb-5 rounded-xl border border-gray-300 p-4 focus:outline-none dark:border-gray-600">
+    {editor && <div ref={panel} tabIndex={-1} className="mb-5 rounded-xl border border-neutral-300 p-4 focus:outline-none dark:border-neutral-600">
       {editor.type === 'edit' && <LibraryAssetForm asset={editor.asset} folders={folders} onClose={close} />}
       {editor.type === 'delete' && <LibraryDeleteAsset asset={editor.asset} onClose={close} />}
       {editor.type === 'folders' && <LibraryFolderManager communityId={communityId} kind={kind} initial={folders} onClose={close} />}
@@ -72,7 +72,7 @@ export function LibraryWorkspace({ communityId, kind, initial, folders, canEdit,
     <div aria-busy={navigating || page.pending} className={kind === 'document' ? '' : 'grid gap-x-5 gap-y-6 sm:grid-cols-2 2xl:grid-cols-3'}>
       {page.items.map((asset) => <LibraryAssetView key={asset.id} asset={asset} canEdit={canEdit}>
         {canEdit && <details className="group">
-          <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm text-gray-600 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-blue-600 dark:text-gray-300" aria-label={t('manageNamed', { title: asset.title })}>{t('manage')}</summary>
+          <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm text-neutral-600 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 dark:text-neutral-300" aria-label={t('manageNamed', { title: asset.title })}>{t('manage')}</summary>
           <div className="flex flex-wrap gap-1">
             <Button plain disabled={blocked} onClick={() => edit({ type: 'edit', asset })}>{t('edit')}</Button>
             <Button plain disabled={blocked} onClick={() => edit({ type: 'replace', asset })}>{t('replace')}</Button>
@@ -83,7 +83,7 @@ export function LibraryWorkspace({ communityId, kind, initial, folders, canEdit,
     </div>
     {!page.items.length && <div className="py-8 text-center">
       <p className="text-sm font-medium">{t(search || folderId !== undefined ? 'noResults' : 'empty')}</p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-gray-600 dark:text-gray-300">{t(search || folderId !== undefined ? 'noResultsHint' : canEdit ? 'emptyEditorHint' : 'emptyReaderHint')}</p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-neutral-600 dark:text-neutral-300">{t(search || folderId !== undefined ? 'noResultsHint' : canEdit ? 'emptyEditorHint' : 'emptyReaderHint')}</p>
     </div>}
     {page.error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{page.error}</p>}
     {page.nextCursor && <div className="mt-5"><Button outline disabled={blocked || page.pending} onClick={page.loadMore}>{t(page.pending ? 'loading' : 'loadMore')}</Button></div>}

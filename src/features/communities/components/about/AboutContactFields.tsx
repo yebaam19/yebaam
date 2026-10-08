@@ -7,7 +7,7 @@ import type { CommunityAbout } from '../../types/communityAbout.types';
 export function AboutContactFields({ about, name }: { about: CommunityAbout | null; name: string }) {
   const t = useTranslations('communities.about');
   return <div className="space-y-4">
-    <p className="text-sm"><span className="text-gray-600 dark:text-gray-300">{t('officialName')}: </span>{name}</p>
+    <p className="text-sm"><span className="text-neutral-600 dark:text-neutral-300">{t('officialName')}: </span>{name}</p>
     <div className="grid gap-4 sm:grid-cols-2">
       <label className="block text-sm font-medium">{t('foundedOn')}
         <Input name="foundedOn" type="date" defaultValue={about?.founded_on ?? ''} className="mt-2" />

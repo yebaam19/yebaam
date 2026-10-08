@@ -19,9 +19,9 @@ export function AboutReadView({ about, name }: { about: CommunityAbout; name: st
       {about.description && <div className="prose prose-sm mt-3 wrap-anywhere dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: about.description }} />}
     </div>
-    {!!details.length && <dl className="grid min-w-0 gap-x-6 gap-y-4 border-y border-gray-200 py-4 sm:grid-cols-2 dark:border-gray-700">
+    {!!details.length && <dl className="grid min-w-0 gap-x-6 gap-y-4 border-y border-neutral-200 py-4 sm:grid-cols-2 dark:border-neutral-700">
       {details.map((item) => <div key={item.key} className="min-w-0">
-        <dt className="text-xs text-gray-600 dark:text-gray-400">{t(item.key)}</dt>
+        <dt className="text-xs text-neutral-600 dark:text-neutral-400">{t(item.key)}</dt>
         <dd className="mt-1 text-sm wrap-anywhere">{item.value}</dd>
       </div>)}
     </dl>}
@@ -29,7 +29,7 @@ export function AboutReadView({ about, name }: { about: CommunityAbout; name: st
       {[...(about.website ? [{ label: t('website'), url: about.website }] : []), ...about.social_links].map((link, index) =>
         <a key={`${index}:${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer nofollow"
           aria-label={t('externalLink', { label: link.label })}
-          className="inline-flex min-h-11 max-w-full items-center text-sm text-blue-700 underline-offset-4 wrap-anywhere hover:underline focus-visible:outline-2 dark:text-blue-300">
+          className="inline-flex min-h-11 max-w-full items-center text-sm text-primary-800 underline-offset-4 wrap-anywhere hover:underline focus-visible:outline-2 dark:text-primary-300">
           {link.label}
         </a>)}
     </nav>}

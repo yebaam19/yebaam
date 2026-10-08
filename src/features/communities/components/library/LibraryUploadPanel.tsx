@@ -59,24 +59,24 @@ export function LibraryUploadPanel({ communityId, kind, replacement, pdfOnly, on
     ? 'video/mp4,video/quicktime,video/webm,video/x-msvideo,video/x-matroska' : pdfOnly ? '.pdf,application/pdf' : DOCUMENT_ACCEPT;
   return <div className="space-y-4">
     <h3 className="break-words text-lg font-semibold">{replacement ? t('replaceTitle', { title: replacement.title }) : t('upload')}</h3>
-    <p className="text-sm text-gray-600 dark:text-gray-300">{t(replacement ? 'replaceHint' : 'uploadHint', { size: formatBytes(limit) })}</p>
+    <p className="text-sm text-neutral-600 dark:text-neutral-300">{t(replacement ? 'replaceHint' : 'uploadHint', { size: formatBytes(limit) })}</p>
     {!items.length && <label className="block text-sm font-medium">{t('chooseFiles')}
       <input autoFocus type="file" accept={accept} multiple={!replacement} disabled={busy} onChange={(event) => choose(event.currentTarget.files)}
-        className="mt-2 block w-full min-w-0 rounded-lg border border-gray-300 p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-gray-800 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-gray-600 dark:file:bg-gray-700 dark:file:text-white" />
+        className="mt-2 block w-full min-w-0 rounded-lg border border-neutral-300 p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-neutral-100 file:px-3 file:py-2 file:text-neutral-800 focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 dark:border-neutral-600 dark:file:bg-neutral-700 dark:file:text-white" />
     </label>}
     {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</p>}
-    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+    <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
       {items.map((item) => <li key={item.id} className="space-y-2 py-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm"><span className="min-w-0 break-all font-medium">{item.file.name}</span>
-          <span role="status" className="text-gray-600 dark:text-gray-300">{t(`uploadStates.${item.state}`)}</span></div>
-        {item.state === 'uploading' && <progress aria-label={t('progress', { title: item.file.name })} max={100} value={item.progress} className="h-1.5 w-full accent-blue-600" />}
+          <span role="status" className="text-neutral-600 dark:text-neutral-300">{t(`uploadStates.${item.state}`)}</span></div>
+        {item.state === 'uploading' && <progress aria-label={t('progress', { title: item.file.name })} max={100} value={item.progress} className="h-1.5 w-full accent-primary-800" />}
         {item.error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{item.error}</p>}
       </li>)}
     </ul>
     {confirmClose ? <div className="space-y-3"><p className="text-sm">{t('discardQueue')}</p><div className="flex flex-wrap gap-2">
       <Button color="red" onClick={close}>{t('discard')}</Button><Button outline onClick={() => setConfirmClose(false)}>{t('keepUploading')}</Button>
     </div></div> : <div className="flex flex-wrap gap-2">
-      {unfinished && <Button color="blue" disabled={busy} onClick={upload}>{t(busy ? 'uploading' : items.some((item) => item.state === 'error') ? 'retry' : 'upload')}</Button>}
+      {unfinished && <Button color="brand" disabled={busy} onClick={upload}>{t(busy ? 'uploading' : items.some((item) => item.state === 'error') ? 'retry' : 'upload')}</Button>}
       <Button outline disabled={busy} onClick={() => unfinished ? setConfirmClose(true) : close()}>{t(items.length && !unfinished ? 'done' : 'cancel')}</Button>
     </div>}
   </div>;

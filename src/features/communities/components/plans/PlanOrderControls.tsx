@@ -9,8 +9,8 @@ export function PlanOrderControls({ item, kind, disabled, onUp, onDown }: {
   onUp?: () => void; onDown?: () => void;
 }) {
   const t = useTranslations('communities.plans');
-  const button = 'flex h-11 w-11 items-center justify-center rounded-lg hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-blue-600 disabled:opacity-30 dark:hover:bg-gray-700';
-  return <div className="flex shrink-0 items-center text-gray-600 dark:text-gray-300">
+  const button = 'flex h-11 w-11 items-center justify-center rounded-lg hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 disabled:opacity-30 dark:hover:bg-neutral-700';
+  return <div className="flex shrink-0 items-center text-neutral-600 dark:text-neutral-300">
     <button type="button" className={`${button} cursor-grab`} draggable={!disabled} disabled={disabled}
       aria-label={t('dragNamed', { title: item.title })} title={t('dragHint')}
       onDragStart={(event) => {

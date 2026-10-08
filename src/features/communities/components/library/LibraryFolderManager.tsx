@@ -33,23 +33,23 @@ export function LibraryFolderManager({ communityId, kind, initial, onClose }: {
     {editing ? <form key={folder?.id ?? 'new'} onSubmit={(event) => { event.preventDefault(); save(new FormData(event.currentTarget)); }}>
       <fieldset disabled={mutation.blocked} className="space-y-4">
         <label className="block text-sm font-medium">{t('folderName')}<Input autoFocus name="title" required maxLength={120} defaultValue={folder?.title ?? ''} className="mt-1.5" /></label>
-        <label className="flex min-h-11 items-center gap-3 text-sm"><input name="visible" type="checkbox" defaultChecked={folder?.is_visible ?? false} className="rounded" />{t('showFolder')}</label>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{t('folderHint')}</p>
-        <div className="flex flex-wrap gap-2"><Button type="submit" color="blue">{t(mutation.pending ? 'saving' : 'save')}</Button><Button type="button" outline onClick={() => setEditing(null)}>{t('cancel')}</Button></div>
+        <label className="flex min-h-11 items-center gap-3 text-sm"><input name="visible" type="checkbox" defaultChecked={folder?.is_visible ?? false} className="rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />{t('showFolder')}</label>
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('folderHint')}</p>
+        <div className="flex flex-wrap gap-2"><Button type="submit" color="brand">{t(mutation.pending ? 'saving' : 'save')}</Button><Button type="button" outline onClick={() => setEditing(null)}>{t('cancel')}</Button></div>
       </fieldset>
     </form> : deleting ? <div className="space-y-3">
       <p className="break-words text-sm">{t('deleteFolderConfirm', { title: deleting.title })}</p>
       <div className="flex flex-wrap gap-2"><Button color="red" disabled={mutation.blocked} onClick={() => mutation.run(() => deleteAssetFolder({ communityId, id: deleting.id, expectedVersion: deleting.version, confirmed: true }), onClose)}>{t('delete')}</Button>
         <Button outline disabled={mutation.pending} onClick={() => setDeleting(null)}>{t('cancel')}</Button></div>
     </div> : <>
-      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
         {folders.items.map((item) => <li key={item.id} className="flex flex-wrap items-center gap-2 py-2">
-          <span className="min-w-0 flex-1 break-words text-sm">{item.title}{!item.is_visible && <span className="text-amber-800 dark:text-amber-300"> · {t('hidden')}</span>}</span>
+          <span className="min-w-0 flex-1 break-words text-sm">{item.title}{!item.is_visible && <span className="text-secondary-900 dark:text-secondary-300"> · {t('hidden')}</span>}</span>
           <Button plain onClick={() => setEditing(item)} aria-label={t('editNamed', { title: item.title })}>{t('edit')}</Button>
           <Button plain onClick={() => setDeleting(item)} aria-label={t('deleteNamed', { title: item.title })}>{t('delete')}</Button>
         </li>)}
       </ul>
-      {!folders.items.length && <p className="text-sm text-gray-600 dark:text-gray-300">{t('emptyFolders')}</p>}
+      {!folders.items.length && <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('emptyFolders')}</p>}
       {folders.nextCursor && <Button outline disabled={folders.pending} onClick={folders.loadMore}>{t(folders.pending ? 'loading' : 'moreFolders')}</Button>}
       <Button type="button" outline onClick={onClose}>{t('done')}</Button>
     </>}
