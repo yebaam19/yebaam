@@ -15,6 +15,10 @@ export function usePlanMutation(editorId?: string) {
   const interaction = usePlanInteraction();
   const ownsMutation = useRef(false);
   const { endMutation } = interaction;
+  useEffect(() => () => {
+    // A successful inline action may close its editor before the transition ends.
+    if (ownsMutation.current) { ownsMutation.current = false; endMutation(); }
+  }, [endMutation]);
   useEffect(() => {
     if (!pending && ownsMutation.current) { ownsMutation.current = false; endMutation(); }
   }, [pending, endMutation]);

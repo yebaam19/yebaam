@@ -162,6 +162,7 @@ tokens.json
 !supabase/tests/communities/*.sql
 !src/features/communities/components/plans/DESIGN.md
 !src/features/communities/components/library/DESIGN.md
+!src/features/communities/components/about/DESIGN.md
 # Local visual QA evidence, retained on disk for review.
 .impeccable/review/
 # YEBAAM governance source-of-truth — keep tracked despite the *.md ignore above

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getPlanAxes, getPlanPoints } from '@/features/communities/server/community-plan.server';
 
-const mocks = vi.hoisted(() => ({ client: vi.fn(), from: vi.fn() }));
+const mocks = vi.hoisted(() => ({ client: vi.fn(), from: vi.fn(), rpc: vi.fn() }));
 vi.mock('@/utils/supabase/server', () => ({ getServerClient: mocks.client }));
 const community = '11111111-1111-4111-8111-111111111111';
 const section = '22222222-2222-4222-8222-222222222222';
@@ -19,7 +19,8 @@ function rowsResult(data: unknown[], error: unknown = null) {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.client.mockResolvedValue({ from: mocks.from });
+  mocks.client.mockResolvedValue({ from: mocks.from, rpc: mocks.rpc });
+  mocks.rpc.mockResolvedValue({ data: [], error: null });
 });
 
 describe('bounded RLS-bound plan reads', () => {
@@ -50,6 +51,23 @@ describe('bounded RLS-bound plan reads', () => {
     rowsResult([{ id: axis, position: 0, content: '<p>Hello</p><img src="https://test/x" onerror="x()"><script>x()</script>' }]);
     const result = await getPlanPoints(community, section, axis);
     expect(result.items[0].content).toBe('<p>Hello</p>');
+  });
+
+  it('batches previews for only the visible page and preserves the extra-row cursor', async () => {
+    rowsResult(Array.from({ length: 31 }, (_, position) => ({ id: axis, position, content: '' })));
+    mocks.rpc.mockResolvedValue({ data: [{ point_id: axis, items: [0, 1, 2, 3].map((position) => ({ id: axis, position })) }], error: null });
+    const result = await getPlanPoints(community, section, axis);
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    expect(mocks.rpc).toHaveBeenCalledWith('community_plan_attachment_previews', { target_community: community, point_ids: Array(30).fill(axis) });
+    expect(result.items[0].attachments?.items).toHaveLength(3);
+    expect(result.items[0].attachments?.nextCursor).toEqual({ id: axis, position: 2 });
+    expect(result.nextCursor).toEqual({ id: axis, position: 29 });
+  });
+
+  it('surfaces failed previews instead of silently omitting files', async () => {
+    rowsResult([{ id: axis, position: 0, content: '' }]);
+    mocks.rpc.mockResolvedValue({ data: null, error: { code: '503' } });
+    await expect(getPlanPoints(community, section, axis)).rejects.toThrow('No se pudieron cargar los adjuntos.');
   });
 
   it('preserves backend failures as errors instead of showing an empty plan', async () => {

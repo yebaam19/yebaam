@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { z } from 'zod';
 import { getServerClient } from '@/utils/supabase/server';
 import { sanitizePlanContent } from './plan-content';
+import { getAttachmentPreviews } from './community-attachments.server';
 import { planCursorSchema, planScopeSchema } from '../schemas/communityPlan.schema';
 import type {
   CommunitySection, PlanAxis, PlanCursor, PlanPage, PlanPoint, ProfileCapabilities,
@@ -88,7 +89,10 @@ export const getPlanPoints = cache(async (
   if (cursor) query = query.or(`position.gt.${cursor.position},and(position.eq.${cursor.position},id.gt.${cursor.id})`);
   const { data, error } = await query;
   if (error) throw new Error('No se pudieron cargar los puntos.');
-  return pageOf(((data ?? []) as PlanPoint[]).map((point) => ({
+  const page = pageOf((data ?? []) as PlanPoint[]);
+  const previews = await getAttachmentPreviews(communityId, JSON.stringify(page.items.map((point) => point.id)));
+  return { ...page, items: page.items.map((point) => ({
     ...point, content: sanitizePlanContent(point.content),
-  })));
+    attachments: previews.get(point.id) ?? { items: [], nextCursor: null },
+  })) };
 });

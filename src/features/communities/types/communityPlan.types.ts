@@ -1,3 +1,5 @@
+import type { PlanAttachment } from './communityLibrary.types';
+
 export type PlanKind = 'rules' | 'government' | 'economy';
 export type SectionKind = PlanKind | 'about' | 'leaders';
 export type ProfileCapability = 'settings' | 'content' | 'plans' | 'moderation';
@@ -27,6 +29,7 @@ export interface PlanAxis {
 export interface PlanPoint extends PlanAxis {
   axis_id: string;
   content: string;
+  attachments?: PlanPage<PlanAttachment>;
 }
 
 export interface PlanCursor {

@@ -8,6 +8,7 @@ import { PlanItemActions } from './PlanItemActions';
 import { PlanMovePoint } from './PlanMovePoint';
 import { PlanOrderControls } from './PlanOrderControls';
 import { usePlanInteraction } from './PlanInteractionProvider';
+import { PlanAttachments } from './PlanAttachments';
 
 export function PlanPointRow({ point, number, canEdit, axes, basePath, pending, onUp, onDown }: {
   point: PlanPoint; number: number; canEdit: boolean; axes: PlanPage<PlanAxis>;
@@ -27,6 +28,7 @@ export function PlanPointRow({ point, number, canEdit, axes, basePath, pending, 
       axisId={point.axis_id} item={point} editorId={editId} basePath={basePath} onClose={interaction.endEdit} />
       : point.content && <div className="prose prose-sm mt-3 max-w-prose wrap-anywhere dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: point.content }} />}
+    <PlanAttachments point={point} canEdit={canEdit} />
     {canEdit && <details className="mt-2">
       <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">{t('pointActions')}</summary>
       <div className="flex flex-wrap items-center gap-x-3">

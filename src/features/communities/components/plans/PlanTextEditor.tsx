@@ -6,8 +6,8 @@ import StarterKit from '@tiptap/starter-kit';
 import { useTranslations } from 'next-intl';
 import { Bold, Italic, Heading2, List, ListOrdered, Quote, Undo2, Redo2 } from 'lucide-react';
 
-export function PlanTextEditor({ content, onChange, disabled }: {
-  content: string; onChange: (html: string) => void; disabled: boolean;
+export function PlanTextEditor({ content, onChange, disabled, label }: {
+  content: string; onChange: (html: string) => void; disabled: boolean; label?: string;
 }) {
   const t = useTranslations('communities.plans');
   const editor = useEditor({
@@ -15,7 +15,7 @@ export function PlanTextEditor({ content, onChange, disabled }: {
     content, immediatelyRender: false, shouldRerenderOnTransaction: true,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: { attributes: {
-      role: 'textbox', 'aria-multiline': 'true', 'aria-label': t('content'),
+      role: 'textbox', 'aria-multiline': 'true', 'aria-label': label ?? t('content'),
       class: 'prose prose-sm min-h-40 max-w-none p-4 focus:outline-2 focus:outline-blue-500 dark:prose-invert',
     } },
   });

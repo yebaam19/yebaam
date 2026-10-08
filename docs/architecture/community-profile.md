@@ -47,7 +47,7 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
 - La actualización/eliminación exige la versión leída; un formulario obsoleto no
   sobrescribe cambios. Las eliminaciones exigen confirmación explícita.
 - HTML de planes saneado al guardar y al leer; medios embebidos arbitrarios se
-  descartan. Los adjuntos tipados Cloudflare tienen base SQL/acciones; falta UI.
+  descartan. Los adjuntos tipados Cloudflare incluyen selector de biblioteca y lectura paginada.
 - Editor reutilizable para reglas, gobierno y economía: ejes/puntos, texto
   enriquecido, borradores, publicación, eliminación confirmada, orden mediante
   arrastre o flechas y traslado entre ejes. Formularios conservan los campos al
@@ -127,7 +127,24 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
 - Pestañas semánticas de navegación con aria-current, desplazables en móvil;
   formularios y filtros se adaptan al ancho. Paleta, Poppins y controles compartidos
   conservados; modos claro/oscuro, feedback accesible y acciones táctiles de 44px.
-  El selector visual de adjuntos de planes continúa pendiente.
+  El selector de biblioteca se comparte entre adjuntos de planes y medios institucionales.
+
+### Acerca de nosotros
+
+- `community_about` contiene seis campos enriquecidos, fundación, ubicación,
+  contacto y redes. El nombre oficial procede de `communities`, sin duplicación.
+  Nace sin publicar; la capacidad `content` permite editar sin conceder permisos
+  de planes. RLS comprueba sección visible, audiencia, membresía activa y bloqueos.
+- HTML saneado en lectura y escritura, límite de 50 KB por campo, enlaces HTTP(S),
+  diez redes y 24 KB de JSON como máximo. La fecha excluye infinitos y años fuera
+  de 0001–9999. Escrituras con versión optimista y registro de actor en historial.
+- Lecturas deduplicadas por petición. Fotos/videos referencian la biblioteca con
+  claves compuestas por comunidad, respetan sus permisos y se paginan por cursor.
+  Desvincular exige confirmación y conserva el archivo. No hay otro flujo de carga.
+- `/acerca` reutiliza navegación, controles y editor del sistema. El formulario
+  conserva cada texto al cambiar de sección y tras errores; publicación explícita.
+  Selector, confirmación de desvinculación y devolución de foco se comparten con
+  planes. El nombre se administra mediante el flujo existente de comunidad.
 
 ### Retiro de medios y programación
 
@@ -205,9 +222,9 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | --- | --- | --- |
 | 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
 | 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Uploads Cloudflare existentes; faltan verificar y completar eliminación/encuadre/preview. |
-| 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Pendiente biblioteca, selección de cuatro, reproductor y administración; sin autoplay sonoro. |
-| 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Tipo de sección preparado; faltan datos institucionales, editor enriquecido y medios. |
-| 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos con backend preparado; falta UI y verificación autenticada integral. |
+| 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Biblioteca disponible; pendiente selección de cuatro, orden, reproductor y administración; sin autoplay sonoro. |
+| 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados; pendiente persistencia autenticada y reproducción real. |
+| 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Pendiente modelo y UI. Contacto oculto por defecto. |
 | 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
@@ -224,15 +241,15 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. Componentes probados en vista aislada a 390/768/1440; falta flujo autenticado. |
 | aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
 
-Orden de continuación: QA de galerías y UI de adjuntos →
-datos institucionales, dirigentes y cabecera de cuatro videos → eventos,
+Orden de continuación: QA de galerías y adjuntos con medios reales →
+dirigentes y cabecera de cuatro videos → eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
 No habilitar entradas incompletas sin la indicación Próximamente.
 
 ## Verificación de esta fase
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
-- Catorce migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- Dieciocho migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
@@ -245,7 +262,7 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   rol, defaults privados, carpetas ocultas, aislamiento, autor de finalización,
   idempotencia, recibos de carga, reemplazos/versiones, adjuntos y retiro de objetos.
   Sin fixtures persistentes ni escrituras de prueba a Cloudflare.
-- 75 pruebas de acciones, lecturas, permisos de página, navegación, orden y
+- 95 pruebas de acciones, lecturas, permisos de página, navegación, orden y
   formularios pasan; typecheck pasa. Los dos casos de formulario verifican
   conservación de campos tras error y estabilidad del ID al reintentar. Otros dos
   casos cubren borradores abiertos frente a mutaciones/navegación ajenas.
@@ -263,11 +280,40 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   confirmado inactivo. Sin pruebas de concurrencia entre dos conexiones reales.
   Pruebas Vitest cubren destino/proveedor, referencias activas, fallos, ack perdido,
   namespace R2, autenticación, scheduling posrespuesta y 404 idempotente.
+- Adjuntos: RPC invoker limitada a 30 puntos, cuatro filas por punto para mostrar
+  tres y un cursor; una lectura por lote después de recortar la página. Caché de
+  solicitud, sin caché compartida de borradores. La UI reutiliza el renderizador
+  de biblioteca y conserva audiencia/publicación/carpeta; quitar el vínculo no
+  elimina el archivo. Selector por tipo/búsqueda, reintento con ID estable,
+  confirmación y devolución del foco. El bloqueo de edición se libera también
+  cuando una acción desmonta su editor antes de terminar la transición.
+- `supabase/tests/communities/attachments.sql`: ejecutado con rollback. Verifica
+  anónimo/miembro/propietario, límites, borradores, carpetas ocultas, archivados,
+  aislamiento, ocultación de sección y proyección explícita de columnas.
+  Advisor de seguridad sin avisos para la nueva RPC de vistas previas.
+- QA visual de adjuntos documentales con componentes reales y fixtures: escritorio
+  1440, móvil 390 (selector/error, ancho sin overflow), tablet 768 (confirmación)
+  y lector oscuro 768; cancelar devuelve el foco al control de origen.
+  Capturas `community-attachments-{desktop,picker-desktop,mobile-error,tablet-confirm,reader-dark}.png`.
+  No acredita autenticación, descargas remotas ni variantes de fotos/videos.
+  Reviewer fresco: **ship** para estos estados documentales; contrato local
+  actualizado en `components/plans/DESIGN.md`.
+- `supabase/tests/communities/about.sql`: ejecutado con rollback; borradores,
+  permisos de contenido independientes, versiones, sección oculta, comunidad
+  privada, miembros activos/expulsados, aislamiento, límites, historial y medios.
+  El advisor de seguridad no reportó hallazgos para las nuevas tablas About.
+- Acerca de: cinco capturas de componentes reales con fixtures explícitos,
+  `community-about-{desktop,mobile-editor-error,tablet-reader-dark,mobile-empty,desktop-media-error}.png`.
+  Escritorio 1440, móvil 390 y tablet 768; lector oscuro, vacío, error de guardado
+  con campos preservados y selector limitado a fotos/videos con reintento.
+  Reviewer fresco: **ship** para estos estados. Contrato local en
+  `components/about/DESIGN.md`. No acredita persistencia autenticada ni Stream real.
+  La prueba de foco espera el efecto posterior a habilitar de nuevo el botón.
 - ESLint de archivos nuevos pasa. Supabase marca solo dos avisos informativos
   [RLS sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
   en los nuevos ledger/outbox: es intencional, son server-only, con RLS y sin grants
   a `anon`/`authenticated`; se verificaron los privilegios en la base real.
-- Suite global: 360 pasan y 3 fallan en tests existentes no modificados (Ciudades
+- Suite global: 380 pasan y 3 fallan en tests existentes no modificados (Ciudades
   espera 8 registros y hay 9; login espera redirect sin el parámetro `redirect`).
 - Lint global: 264 errores y 338 avisos en código existente/skills. No se alteran
   archivos ajenos para hacer pasar el gate. `pnpm build`: pasa (Next.js 16.2.3).

@@ -6,12 +6,12 @@ import { Button } from '@/ui/Button';
 import Input from '@/ui/Input';
 import { importCommunityRules, saveCommunitySection } from '../../actions/plans/sections.actions';
 import { usePlanMutation } from '../../hooks/usePlanMutation';
-import type { CommunitySection, PlanKind } from '../../types/communityPlan.types';
+import type { CommunitySection, SectionKind } from '../../types/communityPlan.types';
 import { PlanFeedback } from './PlanFeedback';
 import { usePlanInteraction } from './PlanInteractionProvider';
 
 export function PlanSectionSettings({ communityId, kind, section, hasLegacyRules = false }: {
-  communityId: string; kind: PlanKind; section?: CommunitySection; hasLegacyRules?: boolean;
+  communityId: string; kind: SectionKind; section?: CommunitySection; hasLegacyRules?: boolean;
 }) {
   const t = useTranslations('communities.plans');
   const editorId = `section:${section?.id ?? 'new'}`;
@@ -50,7 +50,7 @@ export function PlanSectionSettings({ communityId, kind, section, hasLegacyRules
         <label className="block max-w-48 text-sm font-medium">
           {t('tabPosition')}
           <Input name="position" type="number" min={0} max={2147483647} required
-            defaultValue={section?.position ?? (kind === 'government' ? 2 : kind === 'economy' ? 3 : 1)} className="mt-2" />
+            defaultValue={section?.position ?? (kind === 'about' ? 0 : kind === 'government' ? 2 : kind === 'economy' ? 3 : 1)} className="mt-2" />
         </label>
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="visible" defaultChecked={section?.is_visible ?? false} className="mt-0.5 rounded" />
