@@ -1,21 +1,9 @@
-import { ComingSoonPanel } from '@/features/communities/components/ComingSoonPanel';
-import { CommunityTopTabs } from '@/features/communities/components/CommunityTopTabs';
-import { DocumentIcon } from '@/components/icons/heroicons-shim';
+import { CommunityLibraryPage } from '@/features/communities/components/library/CommunityLibraryPage';
 
-export default async function CommunityPdfPage({
-  params,
-}: {
+export default async function Page({ params, searchParams }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ q?: string; carpeta?: string }>;
 }) {
   const { slug } = await params;
-  return (
-    <div className="space-y-5">
-      <CommunityTopTabs slug={slug} />
-      <ComingSoonPanel
-        title="Documentos PDF"
-        description="Sube y comparte PDFs con los miembros. Disponible próximamente."
-        icon={DocumentIcon}
-      />
-    </div>
-  );
+  return <CommunityLibraryPage slug={slug} kind="document" pdfOnly searchParams={await searchParams} />;
 }

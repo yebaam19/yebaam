@@ -112,9 +112,10 @@ export async function deleteStreamVideo(uid: string): Promise<void> {
   const { accountId, apiToken } = creds();
   const res = await fetch(`${API_BASE}/accounts/${accountId}/stream/${assertStreamUid(uid)}`, {
     method: 'DELETE',
+    signal: AbortSignal.timeout(15000),
     headers: { Authorization: `Bearer ${apiToken}` },
   });
-  await unwrap<unknown>(res);
+  if (res.status !== 404) await unwrap<unknown>(res);
 }
 
 /**

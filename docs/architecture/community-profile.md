@@ -1,0 +1,298 @@
+# Perfil institucional de Comunidades
+
+Fuente funcional: `perfil-de-comunidades.pdf`, versión 1.0, 15 páginas.
+Estado a 2026-10-08: implementación en curso; no se considera terminado el PDF.
+
+## Arquitectura
+
+El perfil amplía `communities`; no introduce otra entidad de organización ni duplica
+autenticación, chat, foro o artículos. Next.js conserva App Router y los wrappers de
+Supabase. Las consultas viven en `features/communities/server`, las mutaciones en
+`actions`, la validación en `schemas` y la interfaz en `components`.
+
+Supabase Postgres es la autoridad para contenido y permisos. RLS se aplica también
+a llamadas directas a PostgREST. Los medios se almacenan en Cloudflare Images y
+Stream; los documentos, en R2. Todo nuevo upload debe pasar por `uploadService`.
+La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
+
+### Implementado en esta fase
+
+- `community_profile_roles`: concesiones explícitas del propietario para el perfil
+  institucional: administrador, editor o moderador; edición de planes optativa.
+  Requiere membresía activa para ejercer una concesión. El propietario conserva
+  autoridad. No se confía en el rol legado de `community_members` para conceder
+  estos nuevos permisos: su política actual permite inserciones propias y no
+  demuestra que un rol elevado haya sido concedido por el propietario.
+- `community_sections`: identidad funcional estable, título, orden y visibilidad
+  por organización. Tipos: acerca de, reglas, gobierno, economía y dirigentes.
+  Las secciones nacen ocultas. Solo propietario/administrador cambia configuración.
+- `community_plan_axes` y `community_plan_points`: registros independientes para
+  reglas y ambos planes, con borradores, orden y control de versión. No hay límite
+  funcional al número de ejes o puntos. Cada lectura devuelve hasta 30 registros,
+  con cursor compuesto `(position, id)` e índices por organización y padre.
+- Claves foráneas compuestas impiden enlazar padres de otra organización/sección.
+  Identidad y sección son inmutables. Los puntos pueden moverse entre ejes de su
+  misma sección mediante una RPC transaccional con bloqueo por sección.
+- Los nuevos puntos/ejes se agregan al final. Reordenar modifica exclusivamente
+  posiciones afectadas del destino. El coste es O(n) en hermanos para esta
+  operación editorial infrecuente; no se carga ni reescribe el plan completo desde
+  el navegador. La numeración visible debe derivarse del orden, no del ID.
+- `community_profile_revisions`: historial de creación, modificación y eliminación,
+  con actor, timestamp y antes/después. Ningún cliente puede escribirlo o editarlo.
+  Se elimina junto con la organización y el actor se anonimiza al borrar su cuenta.
+- Acciones de guardar sección, guardar/eliminar/mover eje o punto. Validan datos,
+  verifican usuario, comprueban capacidad, ejecutan con RLS y devuelven errores
+  tipados. IDs estables impiden duplicados en reintentos; el conflicto de creación
+  se informa para recargar. No se reintentan escrituras no idempotentes.
+- La actualización/eliminación exige la versión leída; un formulario obsoleto no
+  sobrescribe cambios. Las eliminaciones exigen confirmación explícita.
+- HTML de planes saneado al guardar y al leer; medios embebidos arbitrarios se
+  descartan. Los adjuntos tipados Cloudflare tienen base SQL/acciones; falta UI.
+- Editor reutilizable para reglas, gobierno y economía: ejes/puntos, texto
+  enriquecido, borradores, publicación, eliminación confirmada, orden mediante
+  arrastre o flechas y traslado entre ejes. Formularios conservan los campos al
+  fallar y reutilizan el ID de creación durante un reintento.
+- Un único editor activo bloquea mutaciones ajenas y navegación entre ejes hasta
+  guardar/cancelar; evita que el refresco de otro punto descarte un borrador.
+  El bloqueo se mantiene durante la transición de actualización del servidor.
+- Navegación institucional con títulos/orden/visibilidad por organización. Lectura
+  sin controles administrativos; configuración visible solo según capacidades.
+  Ejes plegables en móvil/tablet y acciones por punto desplegables. Se conservan
+  tipografía, paleta del módulo y componentes del sistema existente.
+- Importación explícita e idempotente de reglas JSON: RPC comprueba permisos,
+  bloquea la comunidad, importa capítulos/puntos y archiva el original en el
+  historial privado antes de vaciar `communities.rules`. Una sección oculta nunca
+  recupera las reglas antiguas como fallback público. Sin importar, se conserva
+  la lectura antigua; no hay migración silenciosa de contenido de usuarios.
+
+### Biblioteca y adjuntos
+
+- `community_library_assets` reúne imágenes, videos y documentos; las carpetas
+  están separadas por comunidad y tipo. Todas las entradas nacen como borrador
+  con audiencia `editors`. RLS distingue público, miembro activo y editor, aplica
+  privacidad de la comunidad, rechaza miembros expulsados y oculta carpetas privadas.
+- `community_plan_attachments` referencia archivos existentes, con claves foráneas
+  compuestas para impedir cruces entre comunidades. La lectura exige acceso al
+  punto y al archivo. Adjuntar es idempotente y devuelve la identidad persistida;
+  quitar el vínculo exige confirmación y no elimina el archivo de la biblioteca.
+- La finalización es una RPC accesible solo a `service_role`, tras comprobar la
+  sesión y capacidad en servidor y verificar el objeto remoto. Revalida el permiso
+  en la transacción, conserva actor en el historial, serializa reintentos y exige
+  versión al reemplazar. Reemplazar conserva título, carpeta, audiencia y publicación.
+- Imágenes: se comprueban propietario, origen de biblioteca, estado de carga y
+  ausencia de firma obligatoria. Videos: propietario, origen de la biblioteca y
+  `readyToStream` en Stream.
+  Ninguna URL de entrega se persiste. Los IDs remotos no son editables por navegador.
+- Documentos: `uploadService.uploadDocument(file, progress, { communityId, uploadId })`
+  admite PDF, Word, Excel, PowerPoint, TXT y ZIP (máximo 10 MB). La ruta de firma
+  verifica usuario/capacidad; el ledger privado fija clave, MIME, tamaño y autor.
+  Clave: `<userId>/communities/<communityId>/<uploadId>.<ext>`. Firma PUT de 5 minutos,
+  tamaño incluido en la firma y HEAD antes de finalizar. Reintentar conserva ID/clave.
+  La finalización y el recibo se actualizan en una sola transacción.
+- La descarga/preview pasa por una lectura con RLS y firma GET de 60 segundos.
+  Respuesta y objeto llevan `private, no-store`; solo PDF/TXT se abren inline.
+  Los demás formatos se descargan. Nunca se acepta una clave R2 enviada por el lector.
+- Búsqueda textual con índice GIN; páginas de 30 por cursor `(created_at,id)`.
+  Carpetas y adjuntos también están paginados. Caché únicamente por petición.
+- Archivar o reemplazar registra en `community_asset_deletions` el objeto remoto
+  por retirar, dentro de la misma transacción. El archivo archivado desaparece de
+  lecturas normales y ya no se adjunta; el historial permanece privado. El consumidor
+  ahora procesa lotes de cinco objetos y acepta 404 como éxito en Images/Stream;
+  R2 utiliza DELETE idempotente. Los llamados remotos tienen timeout de 15 segundos.
+  La eliminación física no se declara completada antes de confirmar al proveedor.
+- Se dividió `upload.service.ts` por transporte, tipos, medios y R2; el XHR permanece
+  exclusivamente en el archivo permitido por ESLint. Se conserva el flujo PDF de CV
+  y los contratos de audio/imágenes/video. Todos los archivos de código quedan ≤250 líneas.
+- Biblioteca reutilizable en `/fotos`, `/videos`, `/archivos` y `/pdf`: búsqueda,
+  paginación, filtro de carpeta, títulos/descripciones, audiencia, publicación,
+  reemplazo y eliminación confirmada. Carpetas privadas/visibles con creación,
+  edición y eliminación confirmada; una carpeta con archivos no se puede eliminar.
+  `/pdf` filtra por MIME en servidor, antes de paginar. Los nombres de autores se
+  consultan en un lote por página, con RLS de perfiles; no se revelan perfiles ocultos.
+- Carga múltiple secuencial de hasta 20 archivos por lote. La cola conserva ID de
+  creación y objeto remoto para reintentar finalización sin volver a subirlo. Stream
+  comunica su UID tras el upload, antes de procesar, para recuperarse de un timeout.
+  Archivos nuevos siguen siendo borradores privados. Reemplazar conserva metadata.
+  La cola tiene progreso, estado de procesamiento, errores por archivo y reintento;
+  salir con archivos pendientes requiere confirmación local.
+- La finalización no invalida RSC en mitad del lote: cerrar la cola refresca la
+  página, cuyo nuevo snapshot reemplaza las páginas locales. Las demás mutaciones
+  mantienen revalidatePath. Un único editor local bloquea filtros y otras escrituras;
+  los campos sobreviven a fallos. No es un guard global contra navegación SPA.
+- Documentos en filas compactas; imágenes/videos en galería, con URLs derivadas y
+  el reproductor Stream existente. Preview PDF/TXT y descarga pasan por la ruta RLS.
+  Las fotos/videos de publicaciones se conservan en un desplegable separado que
+  identifica su límite de las 50 publicaciones recientes. Los tabs de Archivos/PDF
+  ya abren una biblioteca conectada; no contienen mocks ni el panel Próximamente.
+- Pestañas semánticas de navegación con aria-current, desplazables en móvil;
+  formularios y filtros se adaptan al ancho. Paleta, Poppins y controles compartidos
+  conservados; modos claro/oscuro, feedback accesible y acciones táctiles de 44px.
+  El selector visual de adjuntos de planes continúa pendiente.
+
+### Retiro de medios y programación
+
+- Las mutaciones verificadas de eliminar/reemplazar programan limpieza mediante
+  `after()` una vez confirmado el cambio en DB. Un error al programar o limpiar
+  no cambia la respuesta de la escritura ya confirmada; el outbox permanece.
+- `claim_community_asset_deletions` reclama con `FOR UPDATE SKIP LOCKED`, una
+  concesión UUID y vencimiento de cinco minutos. Una confirmación solo modifica
+  la concesión vigente. Fallos se reintentan con backoff de 60 segundos a 24 horas;
+  las interrupciones se recuperan al vencer la concesión. No se descartan fallos.
+- Los registros completados se conservan como tombstones mínimos. Un trigger con
+  bloqueo por identificador remoto impide reinsertar un objeto retirado, incluso
+  si una validación remota anterior llega tarde. El worker comprueba además que
+  no exista referencia activa; si esa consulta falla, no elimina. Las claves R2
+  se restringen al namespace de documentos de Comunidades. Los errores guardados
+  son códigos estables, sin respuestas del proveedor, credenciales ni contenido.
+- RPCs de reclamar/confirmar exclusivas de `service_role`; el cliente no elige
+  destinos de borrado. `POST /api/internal/community-asset-cleanup` exige Bearer
+  `COMMUNITY_CLEANUP_SECRET` (servidor, mínimo 32 caracteres), compara en tiempo
+  constante y devuelve solo contadores con `private, no-store`.
+- Supabase Cron: `community-asset-cleanup`, cada cinco minutos, llama al dispatcher
+  privado con credenciales en Vault, no en `cron.job.command`. **Creado inactivo**:
+  la ruta nueva aún no está desplegada y no se configuraron esos secretos. El
+  despliegue/activación está pendiente, sin solicitudes ni borrados remotos de prueba.
+
+Activación tras desplegar esta versión:
+
+1. Configurar en el servidor `COMMUNITY_CLEANUP_SECRET` con un secreto aleatorio
+   de al menos 32 caracteres. En Supabase Vault, guardar el mismo valor como
+   `community_cleanup_secret` y la URL HTTPS completa de la ruta como
+   `community_cleanup_url` (sin query/hash). No pegar secretos en logs ni commits.
+2. Verificar POST sin secreto → 401 y con el secreto → contadores/200; con la cola
+   vacía no realiza llamadas de borrado. Revisar la ruta desplegada, no un preview
+   protegido por autenticación adicional que impida acceder al scheduler.
+3. Activar el job desde Supabase Cron o, como operador de base de datos:
+   `select cron.alter_job(jobid, active := true) from cron.job where jobname = 'community-asset-cleanup';`
+4. Monitorizar `community_asset_deletions` pendientes, `attempts`, `last_error` y
+   edad del más antiguo; también respuestas HTTP de `pg_net`, porque un despacho
+   SQL correcto no demuestra éxito HTTP. El job puede desactivarse sin perder cola.
+
+No se limpiaron cargas abandonadas que nunca llegaron a finalizar. Ese ciclo
+requiere registrar expiración/reintentos de firma antes de borrar temporales, para
+no competir con un PUT aún autorizado. No reutilizar ni purgar tombstones al azar.
+
+### Caché y consistencia
+
+1. Servidor: `react.cache()` deduplica consultas dentro de la petición, con
+   argumentos primitivos. El cliente es siempre el de sesión. No hay caché global
+   de resultados con RLS, permisos, borradores o historial.
+2. Escrituras: `revalidatePath('/feed/comunidades/[slug]', 'layout')` invalida el
+   árbol del perfil; la interfaz refresca tras un resultado exitoso. Finalizar
+   uploads usa la excepción de lote documentada arriba para preservar la cola.
+3. Cliente: las páginas adicionales se acumulan solo en estado local del editor,
+   deduplicadas por ID. Cada respuesta RSC lleva una clave de snapshot serializada
+   que remonta el editor y descarta páginas antiguas al refrescar, incluso cambios
+   fuera de los primeros 30 registros. La selección vive en `?eje=`, validada por
+   RLS. No se persisten permisos ni resultados privados en caché compartida.
+4. Cloudflare: mantener CDN para medios inmutables. Las respuestas de sesión y
+   URLs firmadas R2 deberán llevar `private, no-store`. No activar Cache Everything
+   para perfiles autenticados ni consultas que mezclen contenido público/privado.
+5. Caché compartida de contenido público (futura, si las métricas la justifican):
+   DTO exclusivamente público, autorización comprobada antes de cada entrega,
+   claves versionadas e invalidación al ocultar/publicar. No exponer borradores
+   durante una ventana de TTL ni caché negativa de permisos.
+
+No se añade Workers KV/D1/Hyperdrive: ya existe Postgres vía PostgREST y no se ha
+demostrado una carga que requiera duplicar datos o coordinar otro sistema de caché.
+
+## Matriz del PDF y siguiente trabajo
+
+Todos los puntos siguen abiertos hasta tener una prueba funcional de extremo a
+extremo; existencia de un componente anterior no equivale a verificación.
+
+| PDF | Requisito completo | Evidencia actual / trabajo pendiente |
+| --- | --- | --- |
+| 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
+| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Uploads Cloudflare existentes; faltan verificar y completar eliminación/encuadre/preview. |
+| 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Pendiente biblioteca, selección de cuatro, reproductor y administración; sin autoplay sonoro. |
+| 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Tipo de sección preparado; faltan datos institucionales, editor enriquecido y medios. |
+| 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos con backend preparado; falta UI y verificación autenticada integral. |
+| 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Pendiente modelo y UI. Contacto oculto por defecto. |
+| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
+| 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
+| 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | Ruta `enlaces` existente; verificar persistencia/administración y destinos. |
+| 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Pendiente modelo y UI. |
+| 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Actualmente Próximamente; pendiente módulo real. |
+| 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada; pendiente QA visual de galería y carga real autenticada. |
+| 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; pendiente QA visual/reproducción real y enlace a cabecera. |
+| 5.3; aceptación 9 | Artículos: enriquecido, portada/resumen, autor/fecha, categorías/tags, adjuntos, borradores y publicación | CRUD existente; esquema actual no tiene estado de borrador. Completar sin exponer borradores. |
+| 5.4; aceptación 9 | Documentos PDF/Office/TXT/ZIP: upload, reemplazo, carpetas, metadata, preview/descarga y visibilidad | Backend R2, UI y consumidor de retiro implementados; cron creado inactivo. Pendiente despliegue/activación, cargas abandonadas y prueba autenticada con archivo real. |
+| 6; aceptación 15 y 17 | Roles y permisos verificados en servidor; visitantes y miembros | Nuevos permisos institucionales probados en SQL; falta panel, delegación y adopción en todos los módulos existentes. |
+| 7; aceptación 5 | Colores, pestañas ordenables/ocultables, títulos por organización y secciones destacadas | Configuración de título, posición y visibilidad de planes conectada; colores por organización e inicio pendientes. |
+| 8 | CRUD, separación, validación/optimización/procesamiento, paginación/búsqueda, historial, confirmaciones y borradores | Planes parcialmente implementados; completar medios, documentos, búsquedas y adopción transversal. |
+| 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. Componentes probados en vista aislada a 390/768/1440; falta flujo autenticado. |
+| aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
+
+Orden de continuación: QA de galerías y UI de adjuntos →
+datos institucionales, dirigentes y cabecera de cuatro videos → eventos,
+Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
+No habilitar entradas incompletas sin la indicación Próximamente.
+
+## Verificación de esta fase
+
+- Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
+- Catorce migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
+  real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
+  Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
+  bloqueo, borradores, publicación, ocultación del padre, aislamiento, conflictos,
+  historial y reordenamiento/traslado.
+- `supabase/tests/communities/rules-import.sql`: importación ordenada/idempotente,
+  rechazo del no autorizado, archivo original privado y ausencia de filtración
+  del JSON legado tras ocultar la sección; ejecutado con éxito y `ROLLBACK`.
+- `supabase/tests/communities/library.sql`: probado con `ROLLBACK`: permisos por
+  rol, defaults privados, carpetas ocultas, aislamiento, autor de finalización,
+  idempotencia, recibos de carga, reemplazos/versiones, adjuntos y retiro de objetos.
+  Sin fixtures persistentes ni escrituras de prueba a Cloudflare.
+- 75 pruebas de acciones, lecturas, permisos de página, navegación, orden y
+  formularios pasan; typecheck pasa. Los dos casos de formulario verifican
+  conservación de campos tras error y estabilidad del ID al reintentar. Otros dos
+  casos cubren borradores abiertos frente a mutaciones/navegación ajenas.
+- Uploads: pruebas de MIME/tamaño, reintento con ID estable, compatibilidad de CV,
+  metadatos Images, propietario/estado remoto, recibo y HEAD, rutas 401/403/404,
+  TTL de firmas, no-store e identidad idempotente de adjuntos.
+- Biblioteca UI: reintento sin re-upload, UID de Stream retenido tras timeout,
+  finalización documental con ID de ledger, validación de archivo, conservación
+  de metadata/formulario/carpeta no cargada en primera página, borrado confirmado
+  y ausencia de controles administrativos para lectores.
+- Limpieza: `supabase/tests/communities/cleanup.sql` pasó en DB real con rollback:
+  RPCs privadas, concesión exclusiva, reclaim tras vencimiento, rechazo de ack
+  obsoleto, backoff, tombstone persistente y rechazo de reinserción/finalización
+  tardía. También se volvió a ejecutar `library.sql`; cola final vacía y job
+  confirmado inactivo. Sin pruebas de concurrencia entre dos conexiones reales.
+  Pruebas Vitest cubren destino/proveedor, referencias activas, fallos, ack perdido,
+  namespace R2, autenticación, scheduling posrespuesta y 404 idempotente.
+- ESLint de archivos nuevos pasa. Supabase marca solo dos avisos informativos
+  [RLS sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
+  en los nuevos ledger/outbox: es intencional, son server-only, con RLS y sin grants
+  a `anon`/`authenticated`; se verificaron los privilegios en la base real.
+- Suite global: 360 pasan y 3 fallan en tests existentes no modificados (Ciudades
+  espera 8 registros y hay 9; login espera redirect sin el parámetro `redirect`).
+- Lint global: 264 errores y 338 avisos en código existente/skills. No se alteran
+  archivos ajenos para hacer pasar el gate. `pnpm build`: pasa (Next.js 16.2.3).
+- Browser QA de los componentes reales en preview local con fixtures etiquetados,
+  sin escrituras remotas: escritorio, tablet y móvil; desplegables, controles de
+  orden, lector sin edición y guardado fallido con todos los campos conservados.
+  La aplicación real redirige a login y falta `NEXT_PUBLIC_TURNSTILE_SITE_KEY`;
+  esta prueba visual no acredita persistencia autenticada de extremo a extremo.
+- Revisión Impeccable: composición acorde al sistema existente; el único hallazgo
+  material (borrador perdido al mutar otro punto) fue corregido y puntuado como
+  resuelto (`ship` para esa corrección). Capturas en `.impeccable/review/` locales.
+  El modo oscuro conserva variantes del sistema, pero no se verificó visualmente.
+- Biblioteca documental: seis capturas válidas de componentes reales con fixtures
+  explícitos (`community-library-{desktop,mobile,tablet,mobile-error,dark-reader,empty}.png`),
+  a 1440/390/768 px. Sin overflow horizontal en móvil; edición y carpetas conservan
+  datos tras error. Estado lector sin edición, tema oscuro y vacío revisados.
+  Reviewer fresco: **ship**, exclusivamente para estos estados de documentos.
+  No acredita las variantes de fotos/videos, cargas/descargas remotas ni flujo
+  autenticado. Contrato local en `components/library/DESIGN.md`.
+
+Referencias técnicas consultadas: [RLS de Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security),
+[changelog de Supabase](https://supabase.com/changelog),
+[caché de Cloudflare](https://developers.cloudflare.com/cache/concepts/default-cache-behavior/).
+Normativa del repositorio: Macro Reglamento arts. 2 y 30; Manual de Convivencia art. 14.
+Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/after),
+[Postgres SKIP LOCKED](https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE),
+[Supabase Cron](https://supabase.com/docs/guides/cron/quickstart) y
+[pg_net](https://supabase.com/docs/guides/database/extensions/pg_net).

@@ -31,12 +31,14 @@ interface CommunityLayoutShellProps {
   community: Community;
   viewerState: ViewerJoinState;
   children: ReactNode;
+  institutionalNavigation?: ReactNode;
 }
 
 export function CommunityLayoutShell({
   community: c,
   viewerState,
   children,
+  institutionalNavigation,
 }: CommunityLayoutShellProps) {
   const t = useTranslations('communities');
   const router = useRouter();
@@ -225,6 +227,7 @@ export function CommunityLayoutShell({
           </div>
         </div>
 
+        {institutionalNavigation}
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 pb-12">
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <CommunitySidebar

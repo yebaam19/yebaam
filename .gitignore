@@ -155,6 +155,15 @@ tokens.json
 # markdown docs — don't push to repo
 *.md
 !README.md
+!docs/architecture/community-profile.md
+# Reviewed schema and authorization contracts belong with application changes.
+!supabase/migrations/*_community_profile_*.sql
+!supabase/migrations/*_community_plan_*.sql
+!supabase/tests/communities/*.sql
+!src/features/communities/components/plans/DESIGN.md
+!src/features/communities/components/library/DESIGN.md
+# Local visual QA evidence, retained on disk for review.
+.impeccable/review/
 # YEBAAM governance source-of-truth — keep tracked despite the *.md ignore above
 !docs/legal/
 !docs/legal/**

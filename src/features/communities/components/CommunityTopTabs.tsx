@@ -5,6 +5,7 @@ import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { useEffect, useRef } from 'react';
 
 type TabKey = 'posts' | 'photos' | 'videos' | 'articles' | 'files' | 'pdf';
 
@@ -12,7 +13,6 @@ interface TabItem {
   id: string;
   labelKey: TabKey;
   href: string;
-  comingSoon?: boolean;
 }
 
 function buildTabs(slug: string): TabItem[] {
@@ -22,8 +22,8 @@ function buildTabs(slug: string): TabItem[] {
     { id: 'fotos', labelKey: 'photos', href: `${base}/fotos` },
     { id: 'videos', labelKey: 'videos', href: `${base}/videos` },
     { id: 'articulos', labelKey: 'articles', href: `${base}/articulos` },
-    { id: 'archivos', labelKey: 'files', href: `${base}/archivos`, comingSoon: true },
-    { id: 'pdf', labelKey: 'pdf', href: `${base}/pdf`, comingSoon: true },
+    { id: 'archivos', labelKey: 'files', href: `${base}/archivos` },
+    { id: 'pdf', labelKey: 'pdf', href: `${base}/pdf` },
   ];
 }
 
@@ -35,12 +35,18 @@ export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
   const pathname = usePathname();
   const t = useTranslations('communities');
   const tabs = buildTabs(slug);
+  const navigation = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = navigation.current;
+    const selected = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (nav && selected) nav.scrollLeft = Math.max(0, selected.offsetLeft - nav.offsetLeft - 12);
+  }, [pathname]);
 
   return (
-    <div
-      role="tablist"
+    <nav
+      ref={navigation}
       aria-label={t('topTabs.ariaLabel')}
-      className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5"
+      className="flex items-center gap-1 overflow-x-auto rounded-lg border border-gray-200 bg-white p-1.5 dark:border-gray-700 dark:bg-gray-800"
     >
       {tabs.map((tab) => {
         const isActive =
@@ -49,31 +55,18 @@ export function CommunityTopTabs({ slug }: CommunityTopTabsProps) {
           <Link
             key={tab.id}
             href={tab.href as Route}
-            role="tab"
-            aria-selected={isActive}
+            aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              'inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
               isActive
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60',
             )}
           >
             {t(`topTabs.${tab.labelKey}`)}
-            {tab.comingSoon && (
-              <span
-                className={cn(
-                  'rounded-full text-[9px] font-medium px-1.5 py-0.5',
-                  isActive
-                    ? 'bg-white/20 text-white'
-                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
-                )}
-              >
-                {t('topTabs.comingSoon')}
-              </span>
-            )}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

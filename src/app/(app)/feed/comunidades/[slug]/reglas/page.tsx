@@ -1,21 +1,9 @@
-import { notFound } from 'next/navigation';
-import {
-  getCommunityBySlug,
-  getViewerJoinState,
-} from '@/features/communities/server/communities.server';
-import { CommunityRulesPanel } from '@/features/communities/components/CommunityRulesPanel';
+import { CommunityPlanPage } from '@/features/communities/components/plans/CommunityPlanPage';
 
-export default async function CommunityRulesPage({
-  params,
-}: {
+export default async function CommunityRulesPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ eje?: string }>;
 }) {
-  const { slug } = await params;
-  const community = await getCommunityBySlug(slug);
-  if (!community) notFound();
-
-  const viewerState = await getViewerJoinState(community.id);
-  const isOwner = viewerState.kind === 'owner';
-
-  return <CommunityRulesPanel community={community} isOwner={isOwner} />;
+  const [{ slug }, { eje }] = await Promise.all([params, searchParams]);
+  return <CommunityPlanPage slug={slug} kind="rules" axisId={eje} />;
 }

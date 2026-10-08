@@ -1,26 +1,9 @@
-import { notFound } from 'next/navigation';
-import {
-  getCommunityBySlug,
-  getCommunityPosts,
-} from '@/features/communities/server/communities.server';
-import { CommunityTopTabs } from '@/features/communities/components/CommunityTopTabs';
-import { CommunityVideosPanel } from '@/features/communities/components/CommunityVideosPanel';
+import { CommunityLibraryPage } from '@/features/communities/components/library/CommunityLibraryPage';
 
-export default async function CommunityVideosPage({
-  params,
-}: {
+export default async function Page({ params, searchParams }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ q?: string; carpeta?: string }>;
 }) {
   const { slug } = await params;
-  const community = await getCommunityBySlug(slug);
-  if (!community) notFound();
-
-  const { posts } = await getCommunityPosts(community.id, { page: 1, limit: 50 });
-
-  return (
-    <div className="space-y-5">
-      <CommunityTopTabs slug={slug} />
-      <CommunityVideosPanel posts={posts} />
-    </div>
-  );
+  return <CommunityLibraryPage slug={slug} kind="video" searchParams={await searchParams} />;
 }

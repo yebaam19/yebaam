@@ -18,9 +18,11 @@ type ImageResult = {
   id: string;
   filename: string;
   meta: Record<string, string>;
+  metadata?: Record<string, string>;
   requireSignedURLs: boolean;
   variants: string[];
   uploaded: string;
+  draft?: boolean;
 };
 
 function creds() {
@@ -68,6 +70,8 @@ export const CF_SOURCE_ANON_CHAT = 'anon-chat';
 export type CloudflareImageProvenance = {
   uploadedBy: string | null;
   source: string | null;
+  ready: boolean;
+  requiresSignature: boolean;
 };
 
 /**
@@ -84,9 +88,12 @@ export async function getImageProvenance(id: string): Promise<CloudflareImagePro
   if (!res.ok) return null;
   const image = await unwrap<ImageResult>(res).catch(() => null);
   if (!image) return null;
+  const metadata = image.meta ?? image.metadata;
   return {
-    uploadedBy: image.meta?.[CF_META_UPLOADED_BY] ?? null,
-    source: image.meta?.[CF_META_SOURCE] ?? null,
+    uploadedBy: metadata?.[CF_META_UPLOADED_BY] ?? null,
+    source: metadata?.[CF_META_SOURCE] ?? null,
+    ready: image.draft !== true,
+    requiresSignature: image.requireSignedURLs === true,
   };
 }
 
@@ -233,7 +240,8 @@ export async function deleteImage(id: string): Promise<void> {
   const safeId = assertImageId(id);
   const res = await fetch(`${API_BASE}/accounts/${accountId}/images/v1/${safeId}`, {
     method: 'DELETE',
+    signal: AbortSignal.timeout(15000),
     headers: { Authorization: `Bearer ${apiToken}` },
   });
-  await unwrap<unknown>(res);
+  if (res.status !== 404) await unwrap<unknown>(res);
 }

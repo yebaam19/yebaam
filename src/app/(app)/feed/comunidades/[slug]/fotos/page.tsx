@@ -1,26 +1,9 @@
-import { notFound } from 'next/navigation';
-import {
-  getCommunityBySlug,
-  getCommunityPosts,
-} from '@/features/communities/server/communities.server';
-import { CommunityTopTabs } from '@/features/communities/components/CommunityTopTabs';
-import { CommunityPhotosPanel } from '@/features/communities/components/CommunityPhotosPanel';
+import { CommunityLibraryPage } from '@/features/communities/components/library/CommunityLibraryPage';
 
-export default async function CommunityPhotosPage({
-  params,
-}: {
+export default async function Page({ params, searchParams }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ q?: string; carpeta?: string }>;
 }) {
   const { slug } = await params;
-  const community = await getCommunityBySlug(slug);
-  if (!community) notFound();
-
-  const { posts } = await getCommunityPosts(community.id, { page: 1, limit: 50 });
-
-  return (
-    <div className="space-y-5">
-      <CommunityTopTabs slug={slug} />
-      <CommunityPhotosPanel posts={posts} />
-    </div>
-  );
+  return <CommunityLibraryPage slug={slug} kind="image" searchParams={await searchParams} />;
 }

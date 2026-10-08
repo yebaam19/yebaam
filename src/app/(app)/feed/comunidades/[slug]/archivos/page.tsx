@@ -1,21 +1,9 @@
-import { ComingSoonPanel } from '@/features/communities/components/ComingSoonPanel';
-import { CommunityTopTabs } from '@/features/communities/components/CommunityTopTabs';
-import { FolderIcon } from '@/components/icons/heroicons-shim';
+import { CommunityLibraryPage } from '@/features/communities/components/library/CommunityLibraryPage';
 
-export default async function CommunityFilesPage({
-  params,
-}: {
+export default async function Page({ params, searchParams }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ q?: string; carpeta?: string }>;
 }) {
   const { slug } = await params;
-  return (
-    <div className="space-y-5">
-      <CommunityTopTabs slug={slug} />
-      <ComingSoonPanel
-        title="Archivos"
-        description="Pronto los miembros podrán compartir archivos relevantes para la comunidad."
-        icon={FolderIcon}
-      />
-    </div>
-  );
+  return <CommunityLibraryPage slug={slug} kind="document" searchParams={await searchParams} />;
 }

@@ -6,7 +6,6 @@ import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
 import {
   UserGroupIcon,
-  ShieldCheckIcon,
   ChatBubbleLeftRightIcon,
   ChatBubbleBottomCenterTextIcon,
   TagIcon,
@@ -40,7 +39,6 @@ function buildItems(slug: string): SidebarItem[] {
   const base = `/feed/comunidades/${slug}`;
   return [
     { href: `${base}/miembros`, labelKey: 'members', icon: UserGroupIcon },
-    { href: `${base}/reglas`, labelKey: 'rules', icon: ShieldCheckIcon },
     { href: `${base}/chat`, labelKey: 'chat', icon: ChatBubbleLeftRightIcon },
     { href: `${base}/foros`, labelKey: 'forums', icon: ChatBubbleBottomCenterTextIcon },
     { href: `${base}/clasificados`, labelKey: 'classifieds', icon: TagIcon, comingSoon: true },
@@ -73,9 +71,7 @@ export function CommunitySidebar({
   const t = useTranslations('communities');
   const items = buildItems(slug);
 
-  return (
-    <div className="flex flex-col gap-3">
-      <nav aria-label={t('sidebar.ariaLabel')} className="flex flex-col gap-1.5">
+  const navigation = <nav aria-label={t('sidebar.ariaLabel')} className="flex flex-col gap-1.5">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -100,8 +96,14 @@ export function CommunitySidebar({
             </Link>
           );
         })}
-      </nav>
-
+      </nav>;
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="hidden lg:block">{navigation}</div>
+      <details className="lg:hidden">
+        <summary className="mb-3 cursor-pointer rounded-lg bg-white px-4 py-3 text-sm font-medium dark:bg-gray-800">{t('sidebar.ariaLabel')}</summary>
+        {navigation}
+      </details>
       {isOwner && communityId && communityName && (
         <div className="mt-1 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
