@@ -164,6 +164,7 @@ tokens.json
 !src/features/communities/components/library/DESIGN.md
 !src/features/communities/components/about/DESIGN.md
 !src/features/communities/components/leaders/DESIGN.md
+!src/features/communities/components/showcase/DESIGN.md
 # Local visual QA evidence, retained on disk for review.
 .impeccable/review/
 # YEBAAM governance source-of-truth — keep tracked despite the *.md ignore above

@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import { StreamVideo } from '@/components/media/StreamVideo';
 import { CommunityPostComposer } from './CommunityPostComposer';
 import { CommunityPostCard } from './CommunityPostCard';
 import { CommunityFeaturedPhotos } from './CommunityFeaturedPhotos';
@@ -31,11 +30,6 @@ export async function CommunityHomeMain({
   const isMember = viewerState.kind === 'member' || viewerState.kind === 'owner' || c.isMember;
   const showComposer = isMember && (c.allowMemberPosts || isOwner);
   const websiteHref = safeExternalHref(c.website);
-
-  const videos = posts
-    .flatMap((p) => p.media ?? [])
-    .filter((m) => m.kind === 'video' && m.cfVideoUid)
-    .slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -127,24 +121,6 @@ export async function CommunityHomeMain({
         </div>
       </section>
 
-      {videos.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-            {t('detail.featuredVideosHeading')}
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {videos.map((m) => (
-              <StreamVideo
-                key={m.cfVideoUid}
-                uid={m.cfVideoUid as string}
-                aspectRatio="16 / 9"
-                controls
-                className="overflow-hidden rounded-lg shadow-sm"
-              />
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">

@@ -179,6 +179,36 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
   desempate estable por ID; no hay arrastre en el directorio. Un editor activo
   bloquea filtros y otras mutaciones locales, no la navegación global del shell.
 
+### Presentación y cuatro videos destacados
+
+- `community_showcases` conserva introducción breve, publicación explícita y versión;
+  `community_showcase_videos` referencia hasta cuatro videos existentes de la biblioteca,
+  con posición 0–3 y claves compuestas que impiden cruces entre comunidades.
+- Una RPC guarda texto, publicación y selección/orden como una sola transacción.
+  Bloquea el padre, detecta versiones obsoletas y reconoce reintentos idénticos sin
+  duplicar revisiones. Las escrituras directas a ambas tablas están revocadas.
+- La función pública es invoker; el escritor privado es definer con search_path vacío,
+  usuario verificado y capacidad `content` obligatoria. Este privilegio acotado permite
+  impedir escrituras parciales por PostgREST. No acepta medios ajenos, archivados o de otro tipo.
+- RLS requiere publicación y audiencia de la comunidad, y vuelve a aplicar la audiencia,
+  carpeta y publicación de cada archivo. Destacar nunca vuelve público un archivo privado.
+  Retirar de la selección conserva el video y su historial en la biblioteca.
+- Lectura en una consulta con joins RLS y caché limitada a la solicitud del usuario.
+  La restricción de posiciones únicas limita el resultado a cuatro registros en la base.
+  Los editores pueden quitar referencias archivadas sin recibir su UID remoto.
+- Cabecera con identidad e introducción a la izquierda y reproductor principal a la derecha
+  cuando existen videos; se apila en pantallas estrechas. Tres miniaturas permiten elegir
+  otro video. El SDK oficial de Cloudflare (`@cloudflare/stream-react` 1.9.3) se carga
+  dinámicamente tras una acción de reproducción; la secuencia es optativa y termina en
+  el último video. Se conserva volumen/silencio al pasar al siguiente.
+- Editor inline con selección local, sustitución, orden, desvinculación confirmada y
+  publicación. Guardado fallido conserva los campos; cancelar devuelve el foco. La
+  biblioteca se abre en otra pestaña para subir/reemplazar/editar archivos sin perder el
+  borrador de selección. El muestreo anterior de videos de publicaciones se retiró de Inicio.
+- QA real en localhost:3000: escritorio y móvil, biblioteca vacía, borrador sin guardar,
+  cancelación y foco. La biblioteca observada no tiene videos; la reproducción real,
+  el diseño con cuatro medios y el guardado autenticado del conjunto siguen pendientes.
+
 ### Retiro de medios y programación
 
 - Las mutaciones verificadas de eliminar/reemplazar programan limpieza mediante
@@ -255,7 +285,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | --- | --- | --- |
 | 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
 | 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Uploads Cloudflare existentes; faltan verificar y completar eliminación/encuadre/preview. |
-| 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Biblioteca disponible; pendiente selección de cuatro, orden, reproductor y administración; sin autoplay sonoro. |
+| 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Modelo transaccional, selector/orden, cabecera y reproductor optativo implementados; pendiente QA visual con cuatro medios reales y persistencia autenticada del conjunto. |
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados; pendiente persistencia autenticada y reproducción real. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. Pendiente QA autenticado y reproducción/portada real. |
@@ -275,14 +305,14 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
 
 Orden de continuación: QA de galerías y adjuntos con medios reales →
-cabecera de cuatro videos → eventos,
+QA de cabecera con cuatro videos reales → portada/logo con encuadre y eliminación → eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
 No habilitar entradas incompletas sin la indicación Próximamente.
 
 ## Verificación de esta fase
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
-- Diecinueve migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- Veinte migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
@@ -295,7 +325,7 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   rol, defaults privados, carpetas ocultas, aislamiento, autor de finalización,
   idempotencia, recibos de carga, reemplazos/versiones, adjuntos y retiro de objetos.
   Sin fixtures persistentes ni escrituras de prueba a Cloudflare.
-- 117 pruebas de acciones, lecturas, permisos de página, navegación, orden y
+- 130 pruebas de acciones, lecturas, permisos de página, navegación, orden y
   formularios pasan; typecheck pasa. Los dos casos de formulario verifican
   conservación de campos tras error y estabilidad del ID al reintentar. Otros dos
   casos cubren borradores abiertos frente a mutaciones/navegación ajenas.
@@ -359,9 +389,9 @@ No habilitar entradas incompletas sin la indicación Próximamente.
   [RLS sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
   en los nuevos ledger/outbox: es intencional, son server-only, con RLS y sin grants
   a `anon`/`authenticated`; se verificaron los privilegios en la base real.
-- Suite global: 402 pasan y 3 fallan en tests existentes no modificados (Ciudades
+- Suite global: 414 pasan y 3 fallan en tests existentes no modificados (Ciudades
   espera 8 registros y hay 9; login espera redirect sin el parámetro `redirect`).
-- Lint global: 264 errores y 338 avisos en código existente/skills. No se alteran
+- Lint global: 262 errores y 338 avisos en código existente/skills. No se alteran
   archivos ajenos para hacer pasar el gate. `pnpm build`: pasa (Next.js 16.2.3).
 - Browser QA de los componentes reales en preview local con fixtures etiquetados,
   sin escrituras remotas: escritorio, tablet y móvil; desplegables, controles de
@@ -398,3 +428,29 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - Sidebar local limitado a la altura disponible en escritorio con scroll independiente: a 1440×450px, 411px de contenido en 354px de área; Gestionar comunidad accesible tras desplazar 56px. En móvil conserva su disclosure.
 - Las capturas históricas con fixtures no prueban persistencia autenticada; esta revisión real tampoco ejecutó uploads ni publicó líderes.
 - Validación tras la corrección de paleta: 117 tests de comunidades pasan; TypeScript y lint de archivos cambiados pasan; build de producción pasa.
+
+### Verificación de presentación audiovisual
+
+- `supabase/tests/communities/showcase.sql` pasa en la base real con rollback: máximo cuatro,
+  duplicados, aislamiento, tipos, auditoría, reordenamiento atómico, reintento, conflictos,
+  anónimo/miembro/editor/expulsado/revocado, comunidad privada y conservación de archivos.
+  No quedaron fixtures. No se probó concurrencia entre dos conexiones independientes.
+- Ambas tablas tienen RLS y solo SELECT para clientes; únicamente usuarios autenticados
+  pueden ejecutar la RPC, que verifica el permiso de contenido.
+- 130 tests de comunidades pasan. Tests de UI cubren selección local con el selector real,
+  error con borrador conservado, reordenar/quitar, foco, carga diferida del player, opt-in
+  y fin de secuencia usando un doble del SDK. No equivalen a reproducción en Cloudflare.
+- TypeScript, lint de archivos cambiados y build de producción pasan tras la
+  corrección del foco. Detector de UI sin hallazgos.
+- API consultada: [Cloudflare Stream React](https://github.com/cloudflare/stream-react),
+  [Player API](https://developers.cloudflare.com/stream/viewing-videos/using-the-stream-player/using-the-player-api/)
+  y [funciones de Supabase](https://supabase.com/docs/guides/database/functions).
+
+- Revisión real en `localhost:3000`, a 1440 y 390 px CSS: editor compacto,
+  borrador local cancelado sin guardar y ausencia de desbordamiento horizontal.
+  Cancelar el selector con teclado devuelve el foco visible a «Elegir video».
+  El revisor calificó esa corrección como resuelta (`ship`), con alcance limitado
+  al foco; apariencia del reproductor con contenido real y reproducción pendientes.
+- Sidebar móvil: navegación de 952 px dentro de 736 px; scroll de 0 a 215,625 px,
+  con acceso a la última opción. Sidebar de escritorio con scroll independiente
+  (952 px de contenido en 445 px disponibles).

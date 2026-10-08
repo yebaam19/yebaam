@@ -5,15 +5,16 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/ui/Button';
 import Input from '@/ui/Input';
 import Select from '@/ui/Select';
-import type { AssetKind } from '../../types/communityLibrary.types';
+import type { AssetKind, LibraryAsset } from '../../types/communityLibrary.types';
 import { usePlanInteraction } from '../plans/PlanInteractionProvider';
 import type { ActionResult } from '../../actions/_shared';
 import { LibraryPickerResults } from './LibraryPickerResults';
 const DEFAULT_KINDS: AssetKind[] = ['document', 'image', 'video'];
 
-export function LibraryAssetPicker({ communityId, editorId, attachedIds, onClose, attach, kinds = DEFAULT_KINDS }: {
+export function LibraryAssetPicker({ communityId, editorId, attachedIds, onClose, attach, onSelect, kinds = DEFAULT_KINDS }: {
   communityId: string; kinds?: AssetKind[];
-  attach: (id: string, assetId: string) => Promise<ActionResult<{ id: string }>>; editorId: string; attachedIds: string[]; onClose: () => void;
+  onSelect?: (asset: LibraryAsset) => void;
+  attach?: (id: string, assetId: string) => Promise<ActionResult<{ id: string }>>; editorId: string; attachedIds: string[]; onClose: () => void;
 }) {
   const t = useTranslations('communities.attachments');
   const interaction = usePlanInteraction();
@@ -38,7 +39,7 @@ export function LibraryAssetPicker({ communityId, editorId, attachedIds, onClose
       </label>
       <Button type="submit" outline disabled={interaction.busy}>{t('search')}</Button>
     </form>
-    <LibraryPickerResults key={`${kind}:${search}`} communityId={communityId} attach={attach}
+    <LibraryPickerResults key={`${kind}:${search}`} communityId={communityId} attach={attach} onSelect={onSelect}
       editorId={editorId} kind={kind} search={search} attachedIds={attachedIds} onAttached={onClose} />
   </div>;
 }

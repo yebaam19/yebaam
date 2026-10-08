@@ -7,12 +7,13 @@ import { loadLibraryAssets } from '../../actions/library/queries.actions';
 import type { ActionResult } from '../../actions/_shared';
 import { useLibraryPage } from '../../hooks/useLibraryPage';
 import { usePlanMutation } from '../../hooks/usePlanMutation';
-import type { AssetKind, LibraryPage } from '../../types/communityLibrary.types';
+import type { AssetKind, LibraryPage, LibraryAsset } from '../../types/communityLibrary.types';
 import { PlanFeedback } from '../plans/PlanFeedback';
 
 type Props = {
   communityId: string; kind: AssetKind; search: string;
-  attach: (id: string, assetId: string) => Promise<ActionResult<{ id: string }>>;
+  onSelect?: (asset: LibraryAsset) => void;
+  attach?: (id: string, assetId: string) => Promise<ActionResult<{ id: string }>>;
   editorId: string; attachedIds: string[]; onAttached: () => void;
 };
 
@@ -36,7 +37,7 @@ export function LibraryPickerResults(props: Props) {
   }}>{t('retry')}</Button></div> : <p role="status" className="py-3 text-sm">{t('loading')}</p>;
 }
 
-function ResultsPage({ communityId, attach, kind, search, editorId, attachedIds, onAttached, initial }: Props & { initial: LibraryPage }) {
+function ResultsPage({ communityId, attach, kind, search, editorId, attachedIds, onAttached, onSelect, initial }: Props & { initial: LibraryPage }) {
   const t = useTranslations('communities.attachments');
   const library = useTranslations('communities.library');
   const mutation = usePlanMutation(editorId);
@@ -53,9 +54,11 @@ function ResultsPage({ communityId, attach, kind, search, editorId, attachedIds,
             {!asset.is_published && <span className="text-secondary-900 dark:text-secondary-300">{library('draft')} · </span>}{library(`audience.${asset.visibility}`)}
           </p>
         </div>
-        <Button outline disabled={mutation.blocked || attachedIds.includes(asset.id)}
+        <Button outline disabled={mutation.blocked || attachedIds.includes(asset.id) || (!attach && !onSelect)}
           aria-label={t(attachedIds.includes(asset.id) ? 'attachedNamed' : 'attachNamed', { title: asset.title })}
           onClick={() => {
+            if (onSelect) { onSelect(asset); onAttached(); return; }
+            if (!attach) return;
             const id = ids.current.get(asset.id) ?? crypto.randomUUID();
             ids.current.set(asset.id, id);
             mutation.run(() => attach(id, asset.id), onAttached);
