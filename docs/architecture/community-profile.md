@@ -292,7 +292,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | Ruta `enlaces` existente; verificar persistencia/administración y destinos. |
-| 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Pendiente modelo y UI. |
+| 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs de escritura/moderación, búsqueda y lecturas paginadas implementados y probados. Pendiente interfaz y verificación en navegador. |
 | 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. SQL con rollback y UI vacía/formulario en localhost verificados; pendiente guardar/recargar un evento real y detalle poblado. |
 | 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada; pendiente QA visual de galería y carga real autenticada. |
 | 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; pendiente QA visual/reproducción real y enlace a cabecera. |
@@ -312,7 +312,7 @@ No habilitar entradas incompletas sin la indicación Próximamente.
 ## Verificación de esta fase
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
-- Veintitrés migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- Veintiséis migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
@@ -551,3 +551,62 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   oscuro. Esas pruebas siguen pendientes; el PDF completo continúa abierto.
 - Build de producción pasa (Next.js 16.2.3). Contrato visual local en
   `components/events/DESIGN.md`; todos los archivos de código cambiados ≤250 líneas.
+
+
+### Preguntas y respuestas: backend conectado
+
+- PDF §4.4: `community_question_categories`, `community_questions` y
+  `community_question_answers` aplicadas en Supabase con RLS. Las tres migraciones
+  locales conservan las versiones devueltas por el historial remoto:
+  `20261008220448`, `20261008220450` y `20261008220452`.
+- Pregunta privada por defecto, visible al autor y a representantes/moderadores
+  institucionales; el autor publica explícitamente, sin aprobación editorial previa.
+  Usuarios registrados pueden preguntar en comunidades a las que tienen acceso;
+  expulsados y visitantes sin sesión no escriben. Límite de 30 preguntas/hora por
+  autor, serializado con bloqueo transaccional e índice por autor.
+- Propietario, administrador o editor delegado activo (`content`) puede responder
+  oficialmente y administrar categorías. No se confía en roles legados de membresía.
+  Solo el autor edita el texto de su pregunta; solo el representante autor, con
+  permiso vigente, edita su respuesta. Nadie puede falsificar autor o insignia
+  oficial mediante escrituras directas: clientes tienen SELECT, sin INSERT/UPDATE/DELETE.
+- Respuestas y categorías nacen sin publicar. Ocultar una categoría oculta sus
+  preguntas a lectores públicos; no elimina contenido. Para archivarla deben
+  trasladarse o archivarse las preguntas que contiene. La clasificación es una
+  operación independiente del texto para no atribuir cambios de terceros al autor.
+- Moderadores activos pueden cerrar/reabrir, ocultar con motivo, restaurar y archivar.
+  Ocultar/archivar requieren confirmación; restaurar elimina el motivo visible pero
+  conserva el registro previo en auditoría. El autor puede retirar su pregunta,
+  pero no deshacer una decisión de moderación. FAQ exige pregunta publicada y una
+  respuesta oficial visible; retirar la última respuesta visible elimina la marca.
+- Bloqueos bidireccionales de `friendships` se aplican en SQL a preguntas y respuestas.
+  El contenido bloqueado no reaparece mediante su hilo padre. Las capacidades de
+  gestión conservan acceso para moderación; no se expone el grafo de relaciones.
+- Las RPCs privadas SECURITY DEFINER comprueban identidad, comunidad, permiso y
+  versión bajo bloqueo. Wrappers públicos SECURITY INVOKER solo para authenticated;
+  anónimo no puede ejecutarlos. Orden de bloqueo pregunta→respuesta para serializar
+  guardados y cierres; IDs estables y reintento idéntico sin nueva escritura/auditoría.
+- Acciones en `actions/questions`, validación Zod, errores tipados y revalidación
+  del layout institucional. Los resultados RPC también se validan. Sin service role
+  en rutas de usuario, consultas inline en páginas, notificaciones ni nuevos medios.
+- Lecturas request-cache de 30 registros con cursor compuesto; preguntas más
+  recientes primero, respuestas cronológicas y categorías por posición/ID. Búsqueda
+  con vector GIN español y websearch. Nombres consultados por lote con RLS de perfiles;
+  nombre privado/no disponible se representa como null, sin fallback privilegiado.
+  «Mis preguntas» deriva autor de getUser; la cola de moderación exige capacidad.
+- `supabase/tests/communities/questions.sql` pasó en la base real con rollback,
+  antes y después de aplicar las migraciones: privacidad, búsqueda, roles, bloqueo,
+  publicación, FAQ, cierre, moderación, aislamiento, autoría, revocación, categorías,
+  conflictos, idempotencia, límite por hora y auditoría. Sin fixtures persistidos.
+  No se probó concurrencia entre dos conexiones independientes.
+- 173 tests de Comunidades pasan (14 nuevos de acciones/lecturas), TypeScript y
+  lint del código cambiado pasan. Advisor de seguridad sin hallazgos de estas tablas
+  o funciones. Interfaz, navegación y prueba de persistencia desde navegador
+  pendientes: este backend no equivale a completar la sección del PDF.
+- Referencias consultadas: [búsqueda textual](https://supabase.com/docs/guides/database/full-text-search)
+  y [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
+  Manual de Convivencia art. 14: moderación comunitaria; privacidad y Safe Harbor
+  se conservan mediante opt-in de publicación y retirada posterior, sin premoderación.
+- Build de producción pasa. Suite global: 458 pruebas pasan y permanecen los
+  3 fallos previos de Ciudades/login. Lint global conserva 262 errores y 338 avisos
+  anteriores. Privilegios comprobados en vivo: anon/authenticated sin escritura
+  directa sobre las tres tablas; SQL nuevo sin credenciales en la revisión realizada.
