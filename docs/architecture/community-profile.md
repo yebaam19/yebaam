@@ -293,7 +293,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | Ruta `enlaces` existente; verificar persistencia/administración y destinos. |
 | 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Pendiente modelo y UI. |
-| 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Actualmente Próximamente; pendiente módulo real. |
+| 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. SQL con rollback y UI vacía/formulario en localhost verificados; pendiente guardar/recargar un evento real y detalle poblado. |
 | 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada; pendiente QA visual de galería y carga real autenticada. |
 | 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; pendiente QA visual/reproducción real y enlace a cabecera. |
 | 5.3; aceptación 9 | Artículos: enriquecido, portada/resumen, autor/fecha, categorías/tags, adjuntos, borradores y publicación | CRUD existente; esquema actual no tiene estado de borrador. Completar sin exponer borradores. |
@@ -305,14 +305,14 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
 
 Orden de continuación: QA de galerías y adjuntos con medios reales →
-QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → eventos,
+QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → QA de eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
 No habilitar entradas incompletas sin la indicación Próximamente.
 
 ## Verificación de esta fase
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
-- Veintiuna migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
+- Veintitrés migraciones aplicadas mediante `apply_migration`, conservadas en el repo.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por
@@ -503,3 +503,51 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - TypeScript, lint de archivos modificados y build de producción pasan tras la
   corrección del foco. Suite global: 426 pasan, 3 fallos previos (dos de Ciudades,
   uno de login). Lint global conserva 262 errores y 338 avisos preexistentes.
+
+
+### Eventos
+
+- PDF §4.5: lista y calendario mensual, detalle, creación/edición, cancelación y
+  archivo confirmado. Título, descripción, inicio/finalización, lugar físico o
+  enlace virtual, organizador, inscripción y portada de biblioteca. Texto plano
+  con saltos de línea y enlaces HTTP(S) filtrados al renderizar.
+- `community_events` nace como borrador y con RSVP desactivado. RLS permite
+  administrar al propietario o administrador delegado activo (`settings`);
+  lectores necesitan publicación y acceso a la comunidad. Portadas exigen imagen
+  de la misma comunidad; el join conserva RLS y omite archivos archivados.
+  Archivar una portada no bloquea cancelar o archivar su evento.
+- Trigger conserva identidad/comunidad, genera versión/fechas y registra actor
+  y antes/después. Acciones verifican sesión/capacidad y comparan versión; un
+  reintento idéntico devuelve éxito sin repetir escritura. No hay borrado físico
+  desde clientes ni notificaciones externas introducidas por este módulo.
+- `community_event_attendance` solo expone la confirmación propia. La RPC deriva
+  usuario de `auth.uid()`, bloquea el evento y serializa con cancelar/deshabilitar/
+  archivar. Repetir confirmación no duplica filas; retirar se permite en eventos
+  cancelados/finalizados todavía accesibles. No hay listas públicas de asistentes.
+- Lecturas con columnas explícitas, caché solo por petición, 30 registros por
+  cursor `(starts_at,id)` y solapamiento mensual. Calendario muestra un aviso
+  mientras faltan páginas; filtrar por día considera eventos de varios días y
+  final exclusivo. Estados se actualizan cada minuto desde el snapshot servidor.
+  Editor y calendario declaran Bogotá (UTC−5); selector mensual 2000–2099.
+- Formulario conserva campos/ID tras error; portada se selecciona sin publicar
+  archivos y su selector no anida formularios. Cancelar/eliminar exige confirmación;
+  foco de regreso espera a que termine la transición y se habilite el control.
+  «Cargar más» conserva resultados ante fallo de transporte y permite reintentar.
+- `supabase/tests/communities/events.sql` ejecutado en la base real con rollback:
+  publicación, roles, aislamiento, rango temporal, portada, asistencia idempotente,
+  usuario no falsificable, cancelación/cierre, expulsión, revocación y auditoría.
+  Sin fixtures persistidos. No se probó concurrencia con dos conexiones independientes.
+  Advisor de seguridad sin avisos de las tablas de Eventos.
+- 159 tests de comunidades pasan (18 nuevos de Eventos); TypeScript y lint del
+  código cambiado pasan. Suite global: 444 pasan y los 3 fallos previos de
+  Ciudades/login permanecen. Lint global: 262 errores y 338 avisos preexistentes.
+- Browser autenticado real en `localhost:3000`: lista vacía, calendario y formulario
+  a 1440/390 px CSS. Móvil sin overflow horizontal (390/390); sidebar llega a la
+  última opción con scroll independiente (215 de 216 px en móvil). No se guardaron
+  datos de prueba. Capturas `community-events-{desktop,create-desktop,mobile,
+  calendar-mobile,sidebar-mobile}.png` en `.impeccable/review/`.
+- Detector sin hallazgos. Revisor fresco **ship** para las cinco capturas y código
+  revisado; no acredita detalle poblado, guardado/recarga autenticados ni tema
+  oscuro. Esas pruebas siguen pendientes; el PDF completo continúa abierto.
+- Build de producción pasa (Next.js 16.2.3). Contrato visual local en
+  `components/events/DESIGN.md`; todos los archivos de código cambiados ≤250 líneas.

@@ -44,7 +44,7 @@ function buildItems(slug: string): SidebarItem[] {
     { href: `${base}/clasificados`, labelKey: 'classifieds', icon: TagIcon, comingSoon: true },
     { href: `${base}/promociones`, labelKey: 'promotions', icon: MegaphoneIcon, comingSoon: true },
     { href: `${base}/enlaces`, labelKey: 'links', icon: LinkIcon },
-    { href: `${base}/eventos`, labelKey: 'events', icon: CalendarDaysIcon, comingSoon: true },
+    { href: `${base}/eventos`, labelKey: 'events', icon: CalendarDaysIcon },
   ];
 }
 
