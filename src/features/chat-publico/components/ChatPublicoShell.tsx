@@ -36,7 +36,7 @@ export default function ChatPublicoShell({
   identity,
 }: Props) {
   const [roomsOpen, setRoomsOpen] = useState(true)
-  const [usersOpen, setUsersOpen] = useState(true)
+  const [mobileUsersOpen, setMobileUsersOpen] = useState(false)
   const [view, setView] = useState<ViewMode>('chat')
   const t = useTranslations('chat.public.shell')
 
@@ -48,7 +48,7 @@ export default function ChatPublicoShell({
           onClick={() => setRoomsOpen((v) => !v)}
           aria-label={roomsOpen ? 'Ocultar salas' : 'Mostrar salas'}
           aria-expanded={roomsOpen}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+          className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 md:inline-flex"
         >
           <ChevronIcon open={roomsOpen} />
         </button>
@@ -82,9 +82,9 @@ export default function ChatPublicoShell({
 
         <button
           type="button"
-          onClick={() => setUsersOpen((v) => !v)}
-          aria-label={usersOpen ? 'Ocultar usuarios' : 'Mostrar usuarios'}
-          aria-expanded={usersOpen}
+          onClick={() => setMobileUsersOpen((v) => !v)}
+          aria-label={mobileUsersOpen ? 'Ocultar usuarios' : 'Mostrar usuarios'}
+          aria-expanded={mobileUsersOpen}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 lg:hidden"
         >
           <UsersIcon />
@@ -95,7 +95,7 @@ export default function ChatPublicoShell({
         {/* Left rooms pane — animated collapse */}
         <div
           className={cn(
-            'transition-[width,opacity,transform] duration-300 ease-in-out',
+            'shrink-0 overflow-hidden transition-[width,opacity,transform] duration-300 ease-in-out',
             roomsOpen
               ? 'w-0 md:w-56 lg:w-60 opacity-100'
               : 'w-0 opacity-0 -translate-x-2 pointer-events-none',
@@ -138,18 +138,13 @@ export default function ChatPublicoShell({
         {/* Right users pane — animated collapse */}
         <div
           className={cn(
-            'transition-[width,opacity,transform] duration-300 ease-in-out',
-            usersOpen
-              ? 'w-0 lg:w-56 xl:w-64 opacity-100'
-              : 'w-0 opacity-0 translate-x-2 pointer-events-none',
+            'shrink-0 overflow-hidden transition-[width,opacity,transform] duration-300 ease-in-out lg:w-56 xl:w-64',
+            mobileUsersOpen
+              ? 'absolute inset-y-0 right-0 z-20 w-56 bg-white shadow-lg opacity-100 lg:static lg:shadow-none'
+              : 'w-0 opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto',
           )}
         >
-          <div
-            className={cn(
-              'h-full transition-opacity duration-200',
-              usersOpen ? 'opacity-100 delay-100' : 'opacity-0',
-            )}
-          >
+          <div className="h-full">
             <RoomUserList
               roomId={topic.id}
               initialUsers={initialPresence}

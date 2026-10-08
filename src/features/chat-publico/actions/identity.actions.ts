@@ -23,12 +23,13 @@ function sanitizeNickname(raw: unknown): string | null {
 }
 
 async function roomIsOpen(roomId: string): Promise<
-  { open: true; capacity: number } | { open: false; reason: 'not_found' | 'closed' | 'archived' | 'expired' }
+  { open: true; capacity: number; ownerType: string | null }
+  | { open: false; reason: 'not_found' | 'closed' | 'archived' | 'expired' }
 > {
   const client = await getServerClient()
   const { data } = await client
     .from('public_chat_topics')
-    .select('id, is_archived, closed_at, expires_at, max_capacity')
+    .select('id, is_archived, closed_at, expires_at, max_capacity, owner_type')
     .eq('id', roomId)
     .maybeSingle()
   if (!data) return { open: false, reason: 'not_found' }
@@ -37,11 +38,12 @@ async function roomIsOpen(roomId: string): Promise<
     closed_at: string | null
     expires_at: string | null
     max_capacity: number | null
+    owner_type: string | null
   }
   if (row.is_archived) return { open: false, reason: 'archived' }
   if (row.closed_at) return { open: false, reason: 'closed' }
   if (row.expires_at && new Date(row.expires_at) < new Date()) return { open: false, reason: 'expired' }
-  return { open: true, capacity: row.max_capacity ?? 200 }
+  return { open: true, capacity: row.max_capacity ?? 200, ownerType: row.owner_type }
 }
 
 async function roomHasSpace(roomId: string, capacity: number): Promise<boolean> {
@@ -120,10 +122,11 @@ export async function joinRoomAsNickname(
 
   const status = await roomIsOpen(roomId)
   if (!status.open) return { ok: false, error: 'room_closed' }
+  const user = await getAuthUser()
+  if (status.ownerType === 'community' && !user) return { ok: false, error: 'unauthorized' }
 
   const sessionToken = await getOrCreateSessionToken()
   const sessionHash = hashSessionToken(sessionToken)
-  const user = await getAuthUser()
   const identityKind: 'nick' | 'guest' = user ? 'nick' : 'guest'
 
   if (!(await roomHasSpace(roomId, status.capacity))) {

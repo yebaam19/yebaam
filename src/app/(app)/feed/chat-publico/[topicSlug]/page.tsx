@@ -6,6 +6,7 @@ import { ArrowLeftIcon } from '@/components/icons/heroicons-shim'
 import { getAuthUser } from '@/features/auth/actions/auth.actions'
 import ChatEntryGate from '@/features/chat-publico/components/ChatEntryGate'
 import ChatPublicoShell from '@/features/chat-publico/components/ChatPublicoShell'
+import ChatPublicoView from '@/features/chat-publico/components/ChatPublicoView'
 import { getRoomIdentity } from '@/features/chat-publico/lib/identity'
 import { readPreferredNickname } from '@/features/chat-publico/lib/session'
 import {
@@ -51,7 +52,33 @@ export default async function ChatPublicoTopicPage({
       readPreferredNickname(),
     ])
 
-  if (!identity) {
+  const communityIdentity = topic.owner_type === 'community' && identity?.kind === 'guest'
+    ? null
+    : identity
+
+  if (!communityIdentity && topic.owner_type === 'community' && !authedUser) {
+    return (
+      <div className="mx-auto flex h-[min(75dvh,760px)] min-h-[420px] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-primary-100 bg-white dark:border-primary-900/50 dark:bg-neutral-900">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-primary-100 px-4 py-3 dark:border-primary-900/50">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-semibold text-primary-900 dark:text-primary-100">{topic.name}</h1>
+            <p className="text-xs text-neutral-600 dark:text-neutral-400">Lectura pública en tiempo real</p>
+          </div>
+          <Link
+            href={`/login?redirect=/feed/chat-publico/${topic.slug}` as Route}
+            className="inline-flex rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-900"
+          >
+            Inicia sesión para participar
+          </Link>
+        </div>
+        <div className="min-h-0 flex-1">
+          <ChatPublicoView topic={topic} initialMessages={initialMessages} identity={null} />
+        </div>
+      </div>
+    )
+  }
+
+  if (!communityIdentity) {
     return (
       <div className="mx-auto w-full max-w-5xl">
         {ownerBlog && (
@@ -81,7 +108,7 @@ export default async function ChatPublicoTopicPage({
   }
 
   const initialPresence = await listRoomPresence(topic.id)
-  const clientIdentity = toClientIdentity(identity)
+  const clientIdentity = toClientIdentity(communityIdentity)
 
   return (
     <div className="flex h-full w-full flex-col">

@@ -1,0 +1,65 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { sendChatMessage } from '@/features/chat-publico/actions/chat-publico.actions'
+
+const mocks = vi.hoisted(() => ({
+  identity: vi.fn(),
+  getUser: vi.fn(),
+  topic: vi.fn(),
+  visibleTopic: vi.fn(),
+  serviceInsert: vi.fn(),
+  sessionInsert: vi.fn(),
+}))
+
+vi.mock('@/features/chat-publico/lib/identity', () => ({ getRoomIdentity: mocks.identity }))
+vi.mock('@/features/chat-publico/lib/session', () => ({ hashSessionToken: () => 'session-hash' }))
+vi.mock('@/features/chat-publico/lib/permissions', () => ({ capabilitiesFor: () => ({ canChat: true }) }))
+vi.mock('@/utils/supabase/server', () => ({
+  getServiceClient: async () => ({
+    from: (table: string) => table === 'public_chat_topics'
+      ? { select: () => ({ eq: () => ({ maybeSingle: mocks.topic }) }) }
+      : {
+          select: () => ({ eq: () => ({ gte: () => ({ order: () => ({ limit: async () => ({ data: [] }) }) }) }) }),
+          insert: mocks.serviceInsert,
+        },
+  }),
+  getServerClient: async () => ({
+    auth: { getUser: mocks.getUser },
+    from: (table: string) => table === 'public_chat_topics'
+      ? { select: () => ({ eq: () => ({ maybeSingle: mocks.visibleTopic }) }) }
+      : { insert: mocks.sessionInsert },
+  }),
+}))
+
+const userId = '11111111-1111-4111-8111-111111111111'
+const roomId = '22222222-2222-4222-8222-222222222222'
+
+beforeEach(() => {
+  vi.resetAllMocks()
+  mocks.topic.mockResolvedValue({ data: { owner_type: 'community' }, error: null })
+  mocks.visibleTopic.mockResolvedValue({ data: { id: roomId }, error: null })
+  mocks.getUser.mockResolvedValue({ data: { user: { id: userId } } })
+  mocks.sessionInsert.mockReturnValue({ select: () => ({ maybeSingle: async () => ({ data: { id: 'message-id' }, error: null }) }) })
+})
+
+describe('community chat writes', () => {
+  it('rejects a guest identity even when an old guest session exists', async () => {
+    mocks.identity.mockResolvedValue({ kind: 'guest', nickname: 'visitor', sessionToken: 'token' })
+    expect(await sendChatMessage(roomId, 'Hola')).toMatchObject({ ok: false, error: 'unauthorized' })
+    expect(mocks.serviceInsert).not.toHaveBeenCalled()
+    expect(mocks.sessionInsert).not.toHaveBeenCalled()
+  })
+
+  it('writes through the verified user session so RLS checks the community audience', async () => {
+    mocks.identity.mockResolvedValue({ kind: 'profile', userId, displayName: 'Miembro', avatarUrl: null, sessionToken: 'token' })
+    expect(await sendChatMessage(roomId, 'Hola')).toMatchObject({ ok: true, messageId: 'message-id' })
+    expect(mocks.sessionInsert).toHaveBeenCalledWith(expect.objectContaining({ topic_id: roomId, sender_id: userId }))
+    expect(mocks.serviceInsert).not.toHaveBeenCalled()
+  })
+
+  it('rejects a revoked community audience before inserting', async () => {
+    mocks.identity.mockResolvedValue({ kind: 'profile', userId, displayName: 'Miembro', avatarUrl: null, sessionToken: 'token' })
+    mocks.visibleTopic.mockResolvedValue({ data: null, error: null })
+    expect(await sendChatMessage(roomId, 'Hola')).toMatchObject({ ok: false, error: 'unauthorized' })
+    expect(mocks.sessionInsert).not.toHaveBeenCalled()
+  })
+})

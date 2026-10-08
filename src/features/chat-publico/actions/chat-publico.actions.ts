@@ -110,8 +110,25 @@ export async function sendChatMessage(
   const caps = capabilitiesFor(identity)
   if (!caps.canChat) return { ok: false, error: 'unauthorized' }
 
-  // Rate limit: 5 messages / 10s per session (covers all identity kinds).
   const service = await getServiceClient()
+  const { data: topic, error: topicError } = await service.from('public_chat_topics')
+    .select('owner_type').eq('id', roomId).maybeSingle()
+  if (topicError || !topic) return { ok: false, error: 'unauthorized' }
+  let writer = service
+  if (topic.owner_type === 'community') {
+    const client = await getServerClient()
+    const { data: auth } = await client.auth.getUser()
+    if (!auth.user || identity.kind === 'guest' || identity.userId !== auth.user.id) {
+      return { ok: false, error: 'unauthorized' }
+    }
+    const { data: visible } = await client.from('public_chat_topics')
+      .select('id').eq('id', roomId).maybeSingle()
+    if (!visible) return { ok: false, error: 'unauthorized' }
+    // A community message must pass RLS at INSERT time, after any role change.
+    writer = client
+  }
+
+  // Rate limit: 5 messages / 10s per session (covers all identity kinds).
   const sessionHash = hashSessionToken(identity.sessionToken)
   const since = new Date(Date.now() - WINDOW_MS).toISOString()
   const { data: recent } = await service
@@ -141,7 +158,7 @@ export async function sendChatMessage(
   const senderAvatar =
     identity.kind === 'guest' ? null : identity.avatarUrl ?? null
 
-  const { data, error } = await service
+  const { data, error } = await writer
     .from('public_chat_messages')
     .insert({
       topic_id: roomId,
