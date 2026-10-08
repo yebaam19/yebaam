@@ -13,17 +13,21 @@ import type { PendingJoinRequest } from '@/features/communities/server/communiti
 import { invalidate } from '@/lib/hooks/cacheStore';
 import { CheckBadgeIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { AddCommunityMemberForm } from './community-admin/AddCommunityMemberForm';
+import { CommunityRoleManager } from './community-admin/CommunityRoleManager';
+import type { CommunityRolePage } from '../types/communityRole.types';
 
 interface CommunityAdminPanelProps {
   communityId: string;
   privacy: 'PUBLIC' | 'PRIVATE' | 'SECRET';
   pendingRequests: PendingJoinRequest[];
+  rolePage: CommunityRolePage;
 }
 
 export function CommunityAdminPanel({
   communityId,
   privacy,
   pendingRequests,
+  rolePage,
 }: CommunityAdminPanelProps) {
   const router = useRouter();
   const t = useTranslations('communities');
@@ -85,6 +89,7 @@ export function CommunityAdminPanel({
       </h2>
 
       <AddCommunityMemberForm communityId={communityId} />
+      <CommunityRoleManager communityId={communityId} initial={rolePage} />
 
       {privacy === 'SECRET' && (
         <div className="mb-6">

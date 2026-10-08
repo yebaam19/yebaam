@@ -109,6 +109,7 @@ dist/
 !supabase/migrations/20261008224800_community_article_writes.sql
 !supabase/migrations/20261008224802_community_article_moderation.sql
 !supabase/migrations/20261008225236_community_article_remove_legacy_touch.sql
+!supabase/migrations/20261008231144_community_profile_role_lifecycle.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

@@ -11,6 +11,7 @@ import type {
 import type { Community, CommunityPost } from '@/features/communities/types/community.types';
 import { GlobeAltIcon } from '@/components/icons/heroicons-shim';
 import { safeExternalHref } from '@/lib/safe-href';
+import { getCommunityRoleGrants } from '@/features/communities/server/community-roles.server';
 
 interface CommunityHomeMainProps {
   community: Community;
@@ -27,6 +28,7 @@ export async function CommunityHomeMain({
 }: CommunityHomeMainProps) {
   const t = await getTranslations('communities');
   const isOwner = viewerState.kind === 'owner';
+  const rolePage = isOwner ? await getCommunityRoleGrants(c.id) : null;
   const isMember = viewerState.kind === 'member' || viewerState.kind === 'owner' || c.isMember;
   const showComposer = isMember && (c.allowMemberPosts || isOwner);
   const websiteHref = safeExternalHref(c.website);
@@ -35,11 +37,12 @@ export async function CommunityHomeMain({
     <div className="space-y-6">
       <CommunityTopTabs slug={c.slug} />
 
-      {isOwner && (
+      {isOwner && rolePage && (
         <CommunityAdminPanel
           communityId={c.id}
           privacy={c.privacy}
           pendingRequests={pendingRequests}
+          rolePage={rolePage}
         />
       )}
 
