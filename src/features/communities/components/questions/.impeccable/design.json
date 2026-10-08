@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T22:32:54.219661+00:00",
+  "title": "Design System: Community questions",
+  "extensions": {
+    "colorMeta": {
+      "primary-800": {
+        "role": "primary",
+        "displayName": "Primary 800",
+        "tonalRamp": ["rgb(5, 80, 35)", "rgb(8, 118, 50)", "rgb(22, 164, 76)", "rgb(67, 175, 100)", "rgb(152, 208, 169)", "rgb(190, 228, 205)", "rgb(228, 247, 235)", "rgb(240, 252, 245)"]
+      },
+      "primary-900": {
+        "role": "primary",
+        "displayName": "Primary 900",
+        "tonalRamp": ["rgb(5, 80, 35)", "rgb(8, 118, 50)", "rgb(22, 164, 76)", "rgb(67, 175, 100)", "rgb(152, 208, 169)", "rgb(190, 228, 205)", "rgb(228, 247, 235)", "rgb(240, 252, 245)"]
+      },
+      "primary-300": {
+        "role": "primary",
+        "displayName": "Primary 300",
+        "tonalRamp": ["rgb(5, 80, 35)", "rgb(8, 118, 50)", "rgb(22, 164, 76)", "rgb(67, 175, 100)", "rgb(152, 208, 169)", "rgb(190, 228, 205)", "rgb(228, 247, 235)", "rgb(240, 252, 245)"]
+      },
+      "secondary-900": {
+        "role": "secondary",
+        "displayName": "Secondary 900",
+        "tonalRamp": ["rgb(180, 75, 3)", "rgb(225, 98, 5)", "rgb(236, 132, 55)", "rgb(255, 156, 49)", "rgb(255, 208, 77)", "rgb(255, 225, 140)", "rgb(255, 237, 197)", "rgb(255, 250, 235)"]
+      },
+      "secondary-300": {
+        "role": "secondary",
+        "displayName": "Secondary 300",
+        "tonalRamp": ["rgb(180, 75, 3)", "rgb(225, 98, 5)", "rgb(236, 132, 55)", "rgb(255, 156, 49)", "rgb(255, 208, 77)", "rgb(255, 225, 140)", "rgb(255, 237, 197)", "rgb(255, 250, 235)"]
+      },
+      "neutral-200": {
+        "role": "neutral",
+        "displayName": "Neutral 200",
+        "tonalRamp": ["rgb(17, 24, 39)", "rgb(31, 41, 55)", "rgb(55, 65, 81)", "rgb(75, 85, 99)", "rgb(156, 163, 175)", "rgb(209, 213, 219)", "rgb(243, 244, 246)", "rgb(249, 250, 251)"]
+      },
+      "neutral-300": {
+        "role": "neutral",
+        "displayName": "Neutral 300",
+        "tonalRamp": ["rgb(17, 24, 39)", "rgb(31, 41, 55)", "rgb(55, 65, 81)", "rgb(75, 85, 99)", "rgb(156, 163, 175)", "rgb(209, 213, 219)", "rgb(243, 244, 246)", "rgb(249, 250, 251)"]
+      },
+      "neutral-600": {
+        "role": "neutral",
+        "displayName": "Neutral 600",
+        "tonalRamp": ["rgb(17, 24, 39)", "rgb(31, 41, 55)", "rgb(55, 65, 81)", "rgb(75, 85, 99)", "rgb(156, 163, 175)", "rgb(209, 213, 219)", "rgb(243, 244, 246)", "rgb(249, 250, 251)"]
+      },
+      "neutral-800": {
+        "role": "neutral",
+        "displayName": "Neutral 800",
+        "tonalRamp": ["rgb(17, 24, 39)", "rgb(31, 41, 55)", "rgb(55, 65, 81)", "rgb(75, 85, 99)", "rgb(156, 163, 175)", "rgb(209, 213, 219)", "rgb(243, 244, 246)", "rgb(249, 250, 251)"]
+      },
+      "neutral-900": {
+        "role": "neutral",
+        "displayName": "Neutral 900",
+        "tonalRamp": ["rgb(17, 24, 39)", "rgb(31, 41, 55)", "rgb(55, 65, 81)", "rgb(75, 85, 99)", "rgb(156, 163, 175)", "rgb(209, 213, 219)", "rgb(243, 244, 246)", "rgb(249, 250, 251)"]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": ["rgb(17, 24, 39)", "rgb(31, 41, 55)", "rgb(55, 65, 81)", "rgb(75, 85, 99)", "rgb(156, 163, 175)", "rgb(209, 213, 219)", "rgb(243, 244, 246)", "rgb(249, 250, 251)"]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Workspace title",
+        "purpose": "List, editor, category, and detail headings share one scale."
+      },
+      "metadata": {
+        "displayName": "Byline and status",
+        "purpose": "Compact author, date, and lifecycle context."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "route-loading-pulse",
+        "value": "2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "purpose": "Inherited loading placeholder; disabled with prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "40rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Brand button",
+      "kind": "button",
+      "description": "Ask, save, and official-answer actions.",
+      "html": "<button class=\"ds-button ds-brand\">Guardar pregunta</button>",
+      "css": ".ds-button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.625rem;border-radius:9999px;border:1px solid;padding:9px 15px;font-family:Poppins,sans-serif;font-size:1rem;line-height:1.5rem}.ds-button:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50));outline-offset:2px}.ds-button:disabled{opacity:.5}@media(min-width:40rem){.ds-button{padding-inline:19px;font-size:.875rem}}.ds-brand{background:var(--color-primary-800,rgb(8,118,50));color:white;border-color:var(--color-primary-900,rgb(5,80,35))}.ds-brand:hover,.ds-brand:active{background:linear-gradient(rgb(255 255 255 / .1),rgb(255 255 255 / .1)),var(--color-primary-800,rgb(8,118,50))}",
+      "refersTo": "button-brand"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "description": "Secondary and cancel actions.",
+      "html": "<button class=\"ds-button ds-outline\">Cancelar</button>",
+      "css": ".ds-button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.625rem;border-radius:9999px;border:1px solid;padding:9px 15px;font-family:Poppins,sans-serif;font-size:1rem;line-height:1.5rem}.ds-button:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50));outline-offset:2px}.ds-button:disabled{opacity:.5}@media(min-width:40rem){.ds-button{padding-inline:19px;font-size:.875rem}}.ds-outline{background:transparent;border-color:color-mix(in oklab,var(--color-neutral-950,oklch(14.5% 0 0)) 10%,transparent);color:var(--color-neutral-950,oklch(14.5% 0 0))}.ds-outline:hover,.ds-outline:active{background:color-mix(in oklab,var(--color-neutral-950,oklch(14.5% 0 0)) 2.5%,transparent)}",
+      "refersTo": "button-outline"
+    },
+    {
+      "name": "Plain back control",
+      "kind": "button",
+      "description": "Tertiary navigation and management actions.",
+      "html": "<button class=\"ds-button ds-plain\">Volver a preguntas</button>",
+      "css": ".ds-button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.625rem;border-radius:9999px;border:1px solid;padding:9px 15px;font-family:Poppins,sans-serif;font-size:1rem;line-height:1.5rem}.ds-button:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50));outline-offset:2px}.ds-button:disabled{opacity:.5}@media(min-width:40rem){.ds-button{padding-inline:19px;font-size:.875rem}}.ds-plain{background:transparent;border-color:transparent;color:var(--color-neutral-950,oklch(14.5% 0 0))}.ds-plain:hover,.ds-plain:active{background:color-mix(in oklab,var(--color-neutral-950,oklch(14.5% 0 0)) 5%,transparent)}",
+      "refersTo": "button-plain"
+    },
+    {
+      "name": "Question title field",
+      "kind": "input",
+      "description": "Shared single-line field with green focus treatment.",
+      "html": "<label class=\"ds-label\">Título de la pregunta<input class=\"ds-input\" type=\"text\"></label>",
+      "css": ".ds-label{display:block;font:500 .875rem/1.25rem Poppins,sans-serif;color:var(--color-neutral-900,rgb(17,24,39))}.ds-input{display:block;box-sizing:border-box;width:100%;height:2.75rem;margin-top:.25rem;padding:.75rem 1rem;border:1px solid var(--color-neutral-200,rgb(229,231,235));border-radius:1rem;background:white;font:400 1rem/1.5rem Poppins,sans-serif}.ds-input:focus{outline:none;border-color:var(--color-primary-300,rgb(190,228,205));box-shadow:0 0 0 3px color-mix(in oklab,var(--color-primary-200,rgb(213,239,222)) 50%,transparent)}@media(min-width:40rem){.ds-input{font-size:.875rem}}",
+      "refersTo": "field"
+    },
+    {
+      "name": "Multiline question field",
+      "kind": "input",
+      "description": "Body, official answer, and moderation reason.",
+      "html": "<label class=\"ds-label\">Tu pregunta<textarea class=\"ds-textarea\" rows=\"6\"></textarea></label>",
+      "css": ".ds-label{display:block;font:500 .875rem/1.25rem Poppins,sans-serif;color:var(--color-neutral-900,rgb(17,24,39))}.ds-textarea{box-sizing:border-box;width:100%;margin-top:.25rem;padding:.75rem;border:1px solid var(--color-neutral-300,rgb(209,213,219));border-radius:.5rem;background:white;font:400 .875rem/1.25rem Poppins,sans-serif}.ds-textarea:focus{outline-color:var(--color-primary-800,rgb(8,118,50))}"
+    },
+    {
+      "name": "Category selector",
+      "kind": "input",
+      "description": "Shared select; options and pagination come from authorized data.",
+      "html": "<label class=\"ds-label\">Categoría<select class=\"ds-select\"><option>Sin categoría</option></select></label>",
+      "css": ".ds-label{display:block;font:500 .875rem/1.25rem Poppins,sans-serif;color:var(--color-neutral-900,rgb(17,24,39))}.ds-select{box-sizing:border-box;width:100%;margin-top:.25rem;border:1px solid var(--color-neutral-300,rgb(209,213,219));border-radius:9999px;padding:.5rem 2.4375rem .5rem .8125rem;background:transparent;font:400 1rem/1.5rem Poppins,sans-serif}.ds-select:hover{border-color:var(--color-neutral-400,rgb(156,163,175))}.ds-select:focus-visible{outline:2px solid var(--color-primary-500,rgb(93,184,123));outline-offset:-2px}.ds-select:disabled{opacity:.5}@media(min-width:40rem){.ds-select{font-size:.875rem;padding-right:2.1875rem;padding-left:.6875rem}}"
+    },
+    {
+      "name": "Textual status",
+      "kind": "custom",
+      "description": "Plain privacy and lifecycle labels rather than pills.",
+      "html": "<div class=\"ds-status\"><span class=\"ds-private\">Privada</span><span>Abierta</span></div>",
+      "css": ".ds-status{display:flex;flex-wrap:wrap;gap:.25rem .75rem;font:500 .75rem/1rem Poppins,sans-serif;color:var(--color-neutral-600,rgb(75,85,99))}.ds-private{color:var(--color-secondary-900,rgb(180,75,3))}",
+      "refersTo": "private-status"
+    },
+    {
+      "name": "Workspace",
+      "kind": "card",
+      "description": "Flat reading and operation panel.",
+      "html": "<section class=\"ds-workspace\"><h2 class=\"ds-title\">Preguntas y respuestas</h2><p class=\"ds-copy\">No hay preguntas que coincidan con estos filtros.</p></section>",
+      "css": ".ds-workspace{padding:1rem;border-radius:.75rem;background:white;color:var(--color-neutral-900,rgb(17,24,39));font-family:Poppins,sans-serif}.ds-title{margin:0;font-size:1.25rem;line-height:1.75rem;font-weight:600}.ds-copy{margin:1.25rem 0 0;font-size:.875rem;line-height:1.25rem;color:var(--color-neutral-600,rgb(75,85,99))}@media(min-width:40rem){.ds-workspace{padding:1.25rem}}",
+      "refersTo": "workspace"
+    }
+  ],
+  "narrative": {
+    "overview": "This compact Operate/Read surface extends the incumbent YEBAAM community shell: green actions, restrained gold privacy markers, Poppins, flat white workspaces, and shared responsive controls. It establishes no new identity or metaphor. Root `PRODUCT.md` was absent; this record derives from implemented source and the established [surface direction](../../../../../.impeccable/surfaces/community-questions.md).",
+    "keyCharacteristics": [
+      "Compact, wrapping controls and divided reading rows.",
+      "Explicit private publication and textual status.",
+      "Guarded inline editors with local feedback and focus restoration."
+    ],
+    "rules": [
+      {
+        "name": "The Textual Status Rule",
+        "body": "Privacy, open/closed state, FAQ, and moderation state remain readable words; color does not carry their meaning alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Inline Workspace Rule",
+        "body": "Reading, editing, confirmation, and feedback occupy the same local workspace; competing controls become unavailable while an editor or mutation owns it.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** reuse the incumbent Poppins, green/gold palette, shared controls, and compact wrapping layout.",
+      "**Do** keep publication explicit, status textual, errors local, and keyboard focus recoverable.",
+      "**Do** preserve stable mutation IDs and unsent editor fields after failed requests.",
+      "**Do** retain server authorization and privacy checks independently of visible controls."
+    ],
+    "donts": [
+      "**Don't** turn the official-answer label into permission for ordinary readers to answer.",
+      "**Don't** reset answer rows by remounting the whole answers section after refreshed server data.",
+      "**Don't** infer dark-mode, English, complete permission, or full institutional-specification coverage from the light Spanish screenshots."
+    ]
+  }
+}

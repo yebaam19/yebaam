@@ -25,7 +25,8 @@ type SidebarItemKey =
   | 'classifieds'
   | 'promotions'
   | 'links'
-  | 'events';
+  | 'events'
+  | 'questions';
 
 interface SidebarItem {
   href: string;
@@ -45,6 +46,7 @@ function buildItems(slug: string): SidebarItem[] {
     { href: `${base}/promociones`, labelKey: 'promotions', icon: MegaphoneIcon, comingSoon: true },
     { href: `${base}/enlaces`, labelKey: 'links', icon: LinkIcon },
     { href: `${base}/eventos`, labelKey: 'events', icon: CalendarDaysIcon },
+    { href: `${base}/preguntas`, labelKey: 'questions', icon: ChatBubbleBottomCenterTextIcon },
   ];
 }
 

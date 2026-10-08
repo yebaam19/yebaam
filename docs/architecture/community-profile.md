@@ -292,7 +292,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | Ruta `enlaces` existente; verificar persistencia/administración y destinos. |
-| 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs de escritura/moderación, búsqueda y lecturas paginadas implementados y probados. Pendiente interfaz y verificación en navegador. |
+| 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs, rutas y UI de preguntas, categorías, respuestas oficiales, FAQ y moderación conectados. Búsqueda, pregunta privada guardada/recargada, borrador de respuesta y cierre/reapertura verificados en localhost. Pendiente E2E multirol de publicación, FAQ y moderación. |
 | 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. SQL con rollback y UI vacía/formulario en localhost verificados; pendiente guardar/recargar un evento real y detalle poblado. |
 | 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada; pendiente QA visual de galería y carga real autenticada. |
 | 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; pendiente QA visual/reproducción real y enlace a cabecera. |
@@ -302,7 +302,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 7; aceptación 5 | Colores, pestañas ordenables/ocultables, títulos por organización y secciones destacadas | Configuración de título, posición y visibilidad de planes conectada; colores por organización e inicio pendientes. |
 | 8 | CRUD, separación, validación/optimización/procesamiento, paginación/búsqueda, historial, confirmaciones y borradores | Planes parcialmente implementados; completar medios, documentos, búsquedas y adopción transversal. |
 | 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. Componentes probados en vista aislada a 390/768/1440; falta flujo autenticado. |
-| aceptación 18 | Persistencia tras recarga | Probado en SQL; pendiente UI real. |
+| aceptación 18 | Persistencia tras recarga | SQL y pregunta privada Q&A verificados; pendiente cobertura UI de los demás módulos. |
 
 Orden de continuación: QA de galerías y adjuntos con medios reales →
 QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → QA de eventos,
@@ -553,7 +553,7 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   `components/events/DESIGN.md`; todos los archivos de código cambiados ≤250 líneas.
 
 
-### Preguntas y respuestas: backend conectado
+### Preguntas y respuestas: backend e interfaz conectados
 
 - PDF §4.4: `community_question_categories`, `community_questions` y
   `community_question_answers` aplicadas en Supabase con RLS. Las tres migraciones
@@ -600,8 +600,7 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   No se probó concurrencia entre dos conexiones independientes.
 - 173 tests de Comunidades pasan (14 nuevos de acciones/lecturas), TypeScript y
   lint del código cambiado pasan. Advisor de seguridad sin hallazgos de estas tablas
-  o funciones. Interfaz, navegación y prueba de persistencia desde navegador
-  pendientes: este backend no equivale a completar la sección del PDF.
+  o funciones. Esta verificación inicial del backend se amplía con la prueba UI siguiente.
 - Referencias consultadas: [búsqueda textual](https://supabase.com/docs/guides/database/full-text-search)
   y [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
   Manual de Convivencia art. 14: moderación comunitaria; privacidad y Safe Harbor
@@ -610,3 +609,45 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   3 fallos previos de Ciudades/login. Lint global conserva 262 errores y 338 avisos
   anteriores. Privilegios comprobados en vivo: anon/authenticated sin escritura
   directa sobre las tres tablas; SQL nuevo sin credenciales en la revisión realizada.
+
+#### Interfaz Q&A y verificación en localhost
+
+- Rutas de lista, pregunta nueva/detalle/edición y categorías bajo `/preguntas`;
+  entrada activa en el sidebar. Contexto servidor compartido con identidad verificada,
+  validación de UUID y permisos antes de exponer editores. Consultas fuera de páginas.
+- Búsqueda y filtros por categoría, estado, frecuentes, propias y contenido oculto;
+  paginación con cursor. El selector carga más categorías y conserva una selección
+  que no figure en la primera página. Limpiar restablece también filtros no enviados.
+- Publicación optativa, respuestas oficiales, FAQ, cierre/reapertura y moderación
+  mediante RPCs existentes. Motivo y confirmación para ocultar; confirmación para
+  retirar. Los formularios conservan contenido e ID después de errores. Un editor
+  activo bloquea acciones competidoras; las respuestas se actualizan sin desmontar
+  sus filas para conservar el foco tras guardar.
+- Prueba real en `localhost:3000`, comunidad MVP test, propietario autenticado:
+  guardar pregunta privada, recargar, guardar borrador oficial, cerrar/reabrir,
+  búsqueda española y filtro de preguntas propias. Supabase confirmó pregunta
+  versión 3, sin publicar, abierta y con una respuesta privada. Sin notificaciones
+  ni publicación de contenido de prueba.
+- Capturas de lista, formulario, detalle y categorías a CSS 1440×1000 y 390×800
+  bajo `.impeccable/review/questions/`. Tres capturas iniciales tuvieron artefactos
+  de redimensionado y se reemplazaron tras estabilizar la vista. Ancho de documento
+  igual al viewport en lista de escritorio/móvil. Se conservan colores verde/dorado,
+  Poppins, controles compartidos y menú móvil plegable del sistema existente.
+- 180 pruebas de Comunidades pasan, incluidas siete nuevas de interfaz: privacidad,
+  reintento estable, razón/confirmación, exclusión de editores, foco, permisos visibles,
+  paginación fallida y categorías. Suite global: 465 pasan y tres fallos previos
+  de Ciudades/login. Lint cambiado, TypeScript y build pasan; lint global mantiene
+  262 errores/338 avisos anteriores.
+- Consola del navegador conserva el aviso de hidratación por atributos
+  `bis_skin_checked`/`bis_register` inyectados por una extensión. No se alteró la
+  extensión ni la protección de hidratación para ocultarlo.
+- Límites: no se verificaron en navegador sesiones de visitante/miembro/moderador,
+  publicación pública, FAQ, moderación completa, múltiples páginas reales ni modo
+  oscuro. Las pruebas SQL cubren esas reglas de acceso; no sustituyen ese E2E.
+
+- Categoría privada creada desde móvil y foco devuelto a «Crear categoría» tras
+  guardar. Registro de pregunta, respuesta y categoría de prueba retirados mediante
+  las RPCs de archivo bajo la identidad del autor; comprobados `deleted_at` y
+  `is_published=false` en Supabase. Se conserva auditoría; no se borró historial.
+- Revisor independiente: **ship** para las ocho capturas y el código de la interfaz
+  Q&A. No certifica el PDF completo ni sustituye la auditoría de autorización SQL.

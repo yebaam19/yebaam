@@ -194,3 +194,5 @@ tokens.json
 .windsurf
 
 !src/features/communities/components/events/DESIGN.md
+
+!src/features/communities/components/questions/DESIGN.md
