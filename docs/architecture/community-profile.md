@@ -276,6 +276,25 @@ no competir con un PUT aún autorizado. No reutilizar ni purgar tombstones al az
 No se añade Workers KV/D1/Hyperdrive: ya existe Postgres vía PostgREST y no se ha
 demostrado una carga que requiera duplicar datos o coordinar otro sistema de caché.
 
+### Páginas relacionadas
+
+- `community_related_links` reemplaza la única URL del perfil por una lista
+  paginada de vínculos con nombre, descripción, imagen de biblioteca y orden.
+  El sitio oficial existente conserva su enlace separado.
+- RLS muestra borradores solo a propietario y administrador activo; miembros y
+  visitantes ven únicamente registros publicados de acuerdo con la audiencia
+  de la comunidad. Las escrituras requieren capacidad `settings` también en
+  servidor, con versión optimista, retiro lógico e historial.
+- Para publicar se exige una imagen Cloudflare registrada en la biblioteca de
+  la misma comunidad, publicada para todos y en una carpeta visible. La URL
+  externa se valida al guardar y se sanitiza al renderizar. No se guarda una URL
+  de entrega Cloudflare en Postgres.
+- Prueba SQL transaccional en Supabase con rollback: lectura pública y borradores,
+  denegación de escritura al miembro, edición por administrador, rechazo de
+  publicación sin imagen, versión e historial; no quedaron fixtures. En
+  `localhost:3000` se guardó un borrador en Comunidad MVP test y sobrevivió a
+  recarga. Falta publicar con una imagen real y verificar un lector distinto.
+
 ## Matriz del PDF y siguiente trabajo
 
 Todos los puntos siguen abiertos hasta tener una prueba funcional de extremo a
@@ -291,7 +310,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. Pendiente QA autenticado y reproducción/portada real. |
 | 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Chat existente; auditar cobertura y cerrar faltantes. Realtime por filas. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Foro existente; auditar autorización, paginación y acciones faltantes. |
-| 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | Ruta `enlaces` existente; verificar persistencia/administración y destinos. |
+| 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | CRUD con borrador/publicación, imagen de biblioteca Cloudflare, orden, paginación, enlace seguro, RLS y auditoría implementados. SQL rollback y guardado/recarga de borrador en localhost verificados. Pendiente publicación con imagen real y lectura multirol. |
 | 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs, rutas y UI de preguntas, categorías, respuestas oficiales, FAQ y moderación conectados. Búsqueda, pregunta privada guardada/recargada, borrador de respuesta y cierre/reapertura verificados en localhost. Pendiente E2E multirol de publicación, FAQ y moderación. |
 | 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. SQL con rollback y UI vacía/formulario en localhost verificados; pendiente guardar/recargar un evento real y detalle poblado. |
 | 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada; pendiente QA visual de galería y carga real autenticada. |
