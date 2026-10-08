@@ -294,6 +294,12 @@ demostrado una carga que requiera duplicar datos o coordinar otro sistema de cac
   publicación sin imagen, versión e historial; no quedaron fixtures. En
   `localhost:3000` se guardó un borrador en Comunidad MVP test y sobrevivió a
   recarga. Falta publicar con una imagen real y verificar un lector distinto.
+- Revisión adicional del despliegue: la migración `community_related_links` figura
+  aplicada en Supabase; el SQL de Comunidades no contiene credenciales detectables.
+  En la base real, `anon` y un usuario autenticado ajeno no ven el borrador; la
+  inserción del usuario ajeno fue rechazada por RLS dentro de una transacción con
+  rollback. El advisor no señala hallazgos de esta tabla; mantiene advertencias
+  generales del proyecto sobre funciones `SECURITY DEFINER` y contraseñas filtradas.
 
 ## Matriz del PDF y siguiente trabajo
 
