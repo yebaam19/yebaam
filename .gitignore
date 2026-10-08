@@ -105,6 +105,11 @@ dist/
 # Reviewed schema changes are committed one migration at a time.
 !supabase/migrations/20260918010000_music_archive_editors.sql
 !supabase/migrations/20260930041641_harden_timeline_posts_identity_visibility.sql
+!supabase/migrations/20261008224758_community_article_drafts.sql
+!supabase/migrations/20261008224800_community_article_writes.sql
+!supabase/migrations/20261008224802_community_article_moderation.sql
+!supabase/migrations/20261008225236_community_article_remove_legacy_touch.sql
+!supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)
 .mcp.json
@@ -155,6 +160,8 @@ tokens.json
 # markdown docs — don't push to repo
 *.md
 !README.md
+!PRODUCT.md
+!.impeccable/surfaces/community-articles.md
 !docs/architecture/community-profile.md
 # Reviewed schema and authorization contracts belong with application changes.
 !supabase/migrations/*_community_profile_*.sql
@@ -196,3 +203,4 @@ tokens.json
 !src/features/communities/components/events/DESIGN.md
 
 !src/features/communities/components/questions/DESIGN.md
+!src/features/communities/components/CommunityArticleComposer/DESIGN.md

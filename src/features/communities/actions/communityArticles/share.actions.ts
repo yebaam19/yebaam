@@ -1,54 +1,36 @@
 'use server';
 
-import { getServiceClient } from '@/utils/supabase/server';
+import { z } from 'zod';
 import { requireSession } from '../_shared';
 import type { DeleteResult } from './types';
 import { revalidateCommunityArticlePaths } from './_helpers';
 
-/**
- * Share an article into the community feed by creating a `community_posts`
- * row that links back to the article. Members of the community will see the
- * post in their feed. Only the article's author may share it.
- */
-export async function shareCommunityArticleToFeed(
-  articleId: string,
-  message?: string,
-): Promise<DeleteResult> {
-  const svc = getServiceClient();
-  const { data: article } = await svc
-    .from('community_articles')
-    .select('id, community_id, author_id, slug, title')
-    .eq('id', articleId)
-    .maybeSingle();
-  const row = article as
-    | { id: string; community_id: string; author_id: string; slug: string; title: string }
-    | null;
-  if (!row) return { ok: false, error: 'Artículo no encontrado.' };
-
+export async function shareCommunityArticleToFeed(articleId: string, message: string, requestId: string): Promise<DeleteResult> {
+  if (!z.uuid().safeParse(articleId).success || !z.uuid().safeParse(requestId).success) {
+    return { ok: false, error: 'Solicitud inválida.' };
+  }
   const session = await requireSession();
   if (!session) return { ok: false, error: 'Debes iniciar sesión.' };
-  if (session.userId !== row.author_id) {
-    return { ok: false, error: 'Solo el autor del artículo puede compartirlo.' };
-  }
-
-  // Body format: optional author message, then a single marker line at the end
-  // that `mapPost` parses to render a rich article preview card. The marker
-  // line is intentionally machine-friendly and is stripped from the visible
-  // text by the renderer, so users only see their own message.
-  //   [[community-article: <slug>|<title>]]
-  const trimmedMessage = (message ?? '').trim().slice(0, 1000);
-  const safeTitle = row.title.replace(/[\r\n|\]]/g, ' ').slice(0, 200);
-  const marker = `[[community-article: ${row.slug}|${safeTitle}]]`;
-  const body = trimmedMessage ? `${trimmedMessage}\n${marker}` : marker;
-
+  const { data: row, error: loadError } = await session.client.from('community_articles')
+    .select('community_id,author_id,slug,title').eq('id', articleId).eq('is_published', true)
+    .is('hidden_at', null).is('deleted_at', null).maybeSingle();
+  if (loadError || !row) return { ok: false, error: 'El artículo no está publicado o ya no está disponible.' };
+  if (row.author_id !== session.userId) return { ok: false, error: 'Solo el autor puede compartir este artículo.' };
+  const trimmed = message.trim().slice(0, 1000);
+  const title = row.title.replace(/[\r\n|\]]/g, ' ').slice(0, 200);
+  const marker = `[[community-article: ${row.slug}|${title}]]`;
+  const body = trimmed ? `${trimmed}\n${marker}` : marker;
   const { error } = await session.client.from('community_posts').insert({
-    community_id: row.community_id,
-    author_id: session.userId,
-    body,
-    media: [],
+    id: requestId, community_id: row.community_id, author_id: session.userId, body, media: [],
   });
-  if (error) return { ok: false, error: error.message };
-
+  if (error?.code === '23505') {
+    const { data: existing } = await session.client.from('community_posts')
+      .select('community_id,author_id,body').eq('id', requestId).maybeSingle();
+    if (existing?.community_id === row.community_id && existing?.author_id === session.userId && existing?.body === body) {
+      return { ok: true };
+    }
+  }
+  if (error) return { ok: false, error: 'No se pudo compartir el artículo. Inténtalo de nuevo.' };
   revalidateCommunityArticlePaths();
   return { ok: true };
 }

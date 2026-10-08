@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
 import {
   canManageCommunityArticle,
+  getCommunityArticleAssets,
   getCommunityArticleForEdit,
 } from '@/features/communities/server/community-articles.server';
 import { CommunityArticleComposer } from '@/features/communities/components/CommunityArticleComposer';
@@ -20,15 +21,16 @@ export default async function EditCommunityArticlePage({ params }: PageProps) {
     redirect(`/feed/comunidades/${slug}/articulos/${articleSlug}`);
   }
 
-  const data = await getCommunityArticleForEdit(community.id, articleSlug);
-  if (!data) notFound();
+  const article = await getCommunityArticleForEdit(community.id, articleSlug);
+  if (!article) notFound();
+  const attachments = await getCommunityArticleAssets(community.id, article.attachmentIds);
 
   return (
     <CommunityArticleComposer
       communityId={community.id}
       communitySlug={slug}
-      initialArticle={data.article}
-      initialCoverImageId={data.cfImageId}
+      initialArticle={article}
+      initialAttachments={attachments}
     />
   );
 }

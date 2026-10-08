@@ -5,7 +5,7 @@
  * and the shared types in the pure `./communityArticles/types` module.
  *
  * NOTE: this barrel intentionally does NOT re-export `_helpers` — those are
- * `'server-only'` helpers (slug resolution, owner gating, image cleanup), and
+ * `'server-only'` validation and cache-revalidation helpers, and
  * re-exporting them here would pull the `server-only` chain into the client
  * bundles of the `'use client'` composer / actions-menu / share-button that
  * import these actions. Server callers import them directly from `./communityArticles/_helpers`.

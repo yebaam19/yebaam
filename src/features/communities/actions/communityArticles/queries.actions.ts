@@ -27,9 +27,12 @@ export async function getCommunityArticlePreview(
 
   const { data: article } = await client
     .from('community_articles')
-    .select('slug, title, subtitle, summary, cf_image_id, read_time')
+    .select('slug, title, subtitle, summary, cf_image_id, cover_asset_id, read_time')
     .eq('community_id', communityRow.id)
     .eq('slug', articleSlug)
+    .eq('is_published', true)
+    .is('hidden_at', null)
+    .is('deleted_at', null)
     .maybeSingle();
   const articleRow = article as
     | {
@@ -38,6 +41,7 @@ export async function getCommunityArticlePreview(
         subtitle: string | null;
         summary: string | null;
         cf_image_id: string | null;
+        cover_asset_id: string | null;
         read_time: number | null;
       }
     | null;
@@ -49,6 +53,14 @@ export async function getCommunityArticlePreview(
       coverImageUrl = imageUrl(articleRow.cf_image_id, 'public');
     } catch {
       coverImageUrl = null;
+    }
+  }
+  if (articleRow.cover_asset_id) {
+    const { data: cover } = await client.from('community_library_assets').select('media_id')
+      .eq('community_id', communityRow.id).eq('id', articleRow.cover_asset_id)
+      .eq('kind', 'image').is('deleted_at', null).maybeSingle();
+    if (cover) {
+      try { coverImageUrl = imageUrl(cover.media_id, 'public'); } catch { coverImageUrl = null; }
     }
   }
 

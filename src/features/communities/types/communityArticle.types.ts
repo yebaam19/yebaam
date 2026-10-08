@@ -15,34 +15,48 @@ export interface CommunityArticleSummary {
   coverImageUrl: string | null;
   readTime: number | null;
   tags: string[];
-  publishedAt: string;
+  publishedAt: string | null;
+  isPublished: boolean;
+  category: string;
+  version: number;
   author: CommunityArticleAuthor;
 }
 
 export interface CommunityArticle extends CommunityArticleSummary {
   content: string;
+  coverAssetId: string | null;
+  attachmentIds: string[];
+  embeddedAssetIds: string[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCommunityArticleInput {
+  id: string;
   communityId: string;
   title: string;
   subtitle?: string;
   content: string;
-  cfImageId?: string;
+  summary?: string;
+  category?: string;
+  coverAssetId?: string | null;
+  attachmentIds?: string[];
+  isPublished: boolean;
   tags?: string[];
 }
 
 export interface UpdateCommunityArticleInput {
   articleId: string;
+  communityId: string;
+  expectedVersion: number;
   title: string;
   subtitle?: string;
   content: string;
-  /**
-   * Cloudflare image id for the cover. `null` removes the existing cover;
-   * `undefined` leaves it untouched.
-   */
-  cfImageId?: string | null;
+  summary?: string;
+  category?: string;
+  coverAssetId?: string | null;
+  attachmentIds?: string[];
+  keepLegacyCover?: boolean;
+  isPublished: boolean;
   tags?: string[];
 }

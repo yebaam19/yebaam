@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
 import {
   canManageCommunityArticle,
+  getCommunityArticleAssets,
   getCommunityArticleBySlug,
 } from '@/features/communities/server/community-articles.server';
 import { CommunityArticleView } from '@/features/communities/components/CommunityArticleView';
@@ -22,6 +23,7 @@ export default async function CommunityArticleDetailPage({ params }: PageProps) 
     getCachedAuthUser(),
   ]);
   if (!article) notFound();
+  const assets = await getCommunityArticleAssets(community.id, [...article.embeddedAssetIds, ...article.attachmentIds]);
 
   const isAuthor = Boolean(viewer && viewer.id === article.author.id);
 
@@ -29,6 +31,7 @@ export default async function CommunityArticleDetailPage({ params }: PageProps) 
     <CommunityArticleView
       communitySlug={slug}
       article={article}
+      assets={assets}
       canManage={canManage}
       isAuthor={isAuthor}
     />

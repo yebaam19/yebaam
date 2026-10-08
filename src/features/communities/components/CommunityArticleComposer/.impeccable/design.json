@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T23:07:34Z",
+  "title": "Design System: Community article list, editor, and reader",
+  "extensions": {
+    "colorMeta": {
+      "primary-50": {
+        "role": "primary",
+        "displayName": "primary 50",
+        "tonalRamp": [
+          "rgb(5, 80, 35)",
+          "rgb(8, 118, 50)",
+          "rgb(22, 164, 76)",
+          "rgb(67, 175, 100)",
+          "rgb(152, 208, 169)",
+          "rgb(190, 228, 205)",
+          "rgb(228, 247, 235)",
+          "rgb(240, 252, 245)"
+        ]
+      },
+      "primary-800": {
+        "role": "primary",
+        "displayName": "primary 800",
+        "tonalRamp": [
+          "rgb(5, 80, 35)",
+          "rgb(8, 118, 50)",
+          "rgb(22, 164, 76)",
+          "rgb(67, 175, 100)",
+          "rgb(152, 208, 169)",
+          "rgb(190, 228, 205)",
+          "rgb(228, 247, 235)",
+          "rgb(240, 252, 245)"
+        ]
+      },
+      "primary-900": {
+        "role": "primary",
+        "displayName": "primary 900",
+        "tonalRamp": [
+          "rgb(5, 80, 35)",
+          "rgb(8, 118, 50)",
+          "rgb(22, 164, 76)",
+          "rgb(67, 175, 100)",
+          "rgb(152, 208, 169)",
+          "rgb(190, 228, 205)",
+          "rgb(228, 247, 235)",
+          "rgb(240, 252, 245)"
+        ]
+      },
+      "secondary-100": {
+        "role": "secondary",
+        "displayName": "secondary 100",
+        "tonalRamp": [
+          "rgb(180, 75, 3)",
+          "rgb(225, 98, 5)",
+          "rgb(236, 132, 55)",
+          "rgb(255, 156, 49)",
+          "rgb(255, 208, 77)",
+          "rgb(255, 225, 140)",
+          "rgb(255, 237, 197)",
+          "rgb(255, 250, 235)"
+        ]
+      },
+      "secondary-900": {
+        "role": "secondary",
+        "displayName": "secondary 900",
+        "tonalRamp": [
+          "rgb(180, 75, 3)",
+          "rgb(225, 98, 5)",
+          "rgb(236, 132, 55)",
+          "rgb(255, 156, 49)",
+          "rgb(255, 208, 77)",
+          "rgb(255, 225, 140)",
+          "rgb(255, 237, 197)",
+          "rgb(255, 250, 235)"
+        ]
+      },
+      "neutral-50": {
+        "role": "neutral",
+        "displayName": "neutral 50",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      },
+      "neutral-100": {
+        "role": "neutral",
+        "displayName": "neutral 100",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      },
+      "neutral-200": {
+        "role": "neutral",
+        "displayName": "neutral 200",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      },
+      "neutral-300": {
+        "role": "neutral",
+        "displayName": "neutral 300",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      },
+      "neutral-600": {
+        "role": "neutral",
+        "displayName": "neutral 600",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      },
+      "neutral-900": {
+        "role": "neutral",
+        "displayName": "neutral 900",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "white",
+        "tonalRamp": [
+          "rgb(17, 24, 39)",
+          "rgb(31, 41, 55)",
+          "rgb(55, 65, 81)",
+          "rgb(75, 85, 99)",
+          "rgb(156, 163, 175)",
+          "rgb(209, 213, 219)",
+          "rgb(243, 244, 246)",
+          "rgb(249, 250, 251)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "workspace-title": {
+        "displayName": "Workspace title",
+        "purpose": "List and editor heading."
+      },
+      "reader-title": {
+        "displayName": "Reader title",
+        "purpose": "Article detail heading; grows at 640px."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Two-line article preview heading."
+      },
+      "body": {
+        "displayName": "Compact body",
+        "purpose": "Descriptions, form controls, and secondary actions."
+      },
+      "metadata": {
+        "displayName": "Metadata",
+        "purpose": "Status, author, date, read time, category, and tags."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "card-cover-hover",
+        "value": "transform 500ms",
+        "purpose": "A linked card's cover scales subtly on hover."
+      },
+      {
+        "name": "card-border-hover",
+        "value": "color transition",
+        "purpose": "Linked card border changes from neutral to green on hover."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "card-two-columns",
+        "value": "520px container width"
+      },
+      {
+        "name": "card-three-columns",
+        "value": "860px container width"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Create article action",
+      "kind": "button",
+      "refersTo": "create-action",
+      "description": "Manager-only entry from the article list.",
+      "html": "<a class=\"ds-create\" href=\"#\">Nuevo artículo</a>",
+      "css": ".ds-create{display:inline-flex;min-height:44px;align-items:center;gap:8px;padding:0 16px;border-radius:8px;background:var(--color-primary-800,rgb(8,118,50));color:white;font:500 14px/20px Poppins,sans-serif;text-decoration:none}.ds-create:hover{background:var(--color-primary-900,rgb(5,80,35))}.ds-create:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50));outline-offset:2px}.ds-create:active{filter:brightness(.95)}"
+    },
+    {
+      "name": "Publish action",
+      "kind": "button",
+      "refersTo": "publish-action",
+      "description": "Explicit editor publication action.",
+      "html": "<button class=\"ds-publish\">Publicar</button>",
+      "css": ".ds-publish{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--color-primary-900,rgb(5,80,35));border-radius:9999px;padding:9px 15px;background:var(--color-primary-800,rgb(8,118,50));color:white;font:500 16px/24px Poppins,sans-serif;cursor:pointer}.ds-publish:hover,.ds-publish:active{background:linear-gradient(rgb(255 255 255 / .1),rgb(255 255 255 / .1)),var(--color-primary-800,rgb(8,118,50))}.ds-publish:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50));outline-offset:2px}.ds-publish:disabled{opacity:.5}@media(min-width:640px){.ds-publish{padding-inline:19px;font-size:14px}}"
+    },
+    {
+      "name": "Article filter",
+      "kind": "input",
+      "description": "Labeled search field in the wrapping list filters.",
+      "html": "<label class=\"ds-label\">Buscar<input class=\"ds-filter\" type=\"search\" placeholder=\"Título, resumen o contenido\"></label>",
+      "css": ".ds-label{display:block;color:var(--color-neutral-900,rgb(17,24,39));font:500 14px/20px Poppins,sans-serif}.ds-filter{display:block;box-sizing:border-box;width:100%;min-height:44px;margin-top:4px;padding:0 12px;border:1px solid var(--color-neutral-300,rgb(209,213,219));border-radius:8px;background:white;color:var(--color-neutral-900,rgb(17,24,39));font:400 14px/20px Poppins,sans-serif}.ds-filter:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50))}"
+    },
+    {
+      "name": "Editor title field",
+      "kind": "input",
+      "description": "Shared rounded single-line editor input.",
+      "html": "<label class=\"ds-label\">Título<input class=\"ds-editor-input\" type=\"text\" placeholder=\"Título del artículo\"></label>",
+      "css": ".ds-label{display:block;color:var(--color-neutral-900,rgb(17,24,39));font:500 14px/20px Poppins,sans-serif}.ds-editor-input{display:block;box-sizing:border-box;width:100%;height:44px;margin-top:4px;padding:12px 16px;border:1px solid var(--color-neutral-200,rgb(229,231,235));border-radius:16px;background:white;color:var(--color-neutral-900,rgb(17,24,39));font:400 14px/20px Poppins,sans-serif}.ds-editor-input:focus{outline:none;border-color:rgb(190,228,205);box-shadow:0 0 0 3px rgb(213 239 222 / .5)}"
+    },
+    {
+      "name": "Article card",
+      "kind": "card",
+      "refersTo": "article-card",
+      "description": "Cover-led linked preview with a compact metadata footer.",
+      "html": "<a class=\"ds-card\" href=\"#\"><div class=\"ds-cover\">Imagen principal</div><div class=\"ds-card-body\"><h3>Artículo de la comunidad</h3><p>Una línea que da contexto</p><footer>Autor · 1 may 2026 · 1 min</footer></div></a>",
+      "css": ".ds-card{display:block;overflow:hidden;border:1px solid var(--color-neutral-200,rgb(229,231,235));border-radius:12px;background:white;color:var(--color-neutral-900,rgb(17,24,39));font-family:Poppins,sans-serif;text-decoration:none;transition:border-color .2s}.ds-card:hover{border-color:rgb(22,164,76)}.ds-card:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50));outline-offset:2px}.ds-cover{display:flex;aspect-ratio:16/10;align-items:center;justify-content:center;background:var(--color-secondary-100,rgb(255,237,197));color:var(--color-primary-800,rgb(8,118,50));font-size:12px}.ds-card-body{padding:16px}.ds-card h3{margin:0;font-size:18px;font-weight:600;line-height:1.375}.ds-card p{margin:8px 0;color:var(--color-neutral-600,rgb(75,85,99));font-size:14px}.ds-card footer{border-top:1px solid var(--color-neutral-200,rgb(229,231,235));padding-top:12px;color:var(--color-neutral-600,rgb(75,85,99));font-size:12px}"
+    },
+    {
+      "name": "Private draft status",
+      "kind": "chip",
+      "refersTo": "draft-status",
+      "description": "Gold textual state visible to authorized editors.",
+      "html": "<span class=\"ds-draft\">Borrador privado</span>",
+      "css": ".ds-draft{display:inline-flex;align-items:center;border-radius:9999px;padding:4px 10px;background:var(--color-secondary-100,rgb(255,237,197));color:var(--color-secondary-900,rgb(180,75,3));font:600 12px/16px Poppins,sans-serif}"
+    },
+    {
+      "name": "Community breadcrumb",
+      "kind": "nav",
+      "description": "Compact context replaces the large profile cover on article routes.",
+      "html": "<nav class=\"ds-breadcrumb\" aria-label=\"Contexto de la comunidad\"><a href=\"#\">Comunidad</a><span aria-hidden=\"true\">/</span><span>Artículos</span></nav>",
+      "css": ".ds-breadcrumb{display:flex;min-width:0;align-items:center;gap:8px;padding:16px 0;color:var(--color-neutral-600,rgb(75,85,99));font:400 14px/20px Poppins,sans-serif}.ds-breadcrumb a{overflow:hidden;color:var(--color-primary-800,rgb(8,118,50));font-weight:600;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}.ds-breadcrumb a:hover{text-decoration:underline}.ds-breadcrumb a:focus-visible{outline:2px solid var(--color-primary-800,rgb(8,118,50))}"
+    }
+  ],
+  "narrative": {
+    "overview": "This scoped record covers the article list, editor, and reader even though it lives beside the composer implementation. The shipped surface uses YEBAAM's Poppins, green actions, restrained gold private state, white content surfaces, and compact responsive spacing. It inherits the community shell; it introduces no separate visual identity.",
+    "keyCharacteristics": [
+      "Compact article work within the existing community shell.",
+      "Explicit draft and publication actions.",
+      "A cover-led list and readable article detail."
+    ],
+    "rules": [
+      {
+        "name": "The Textual State Rule",
+        "body": "Published and private draft states keep explicit words; color only reinforces them.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** keep the article list, editor, and reader in the compact YEBAAM community shell.",
+      "**Do** keep private draft and published state explicit, with green actions and restrained gold private markers.",
+      "**Do** let actions, filters, metadata, and fields wrap naturally at narrow widths."
+    ],
+    "donts": [
+      "**Don't** let a profile hero displace the article task on article routes.",
+      "**Don't** claim selected media or playback was visually verified by the six first-view captures."
+    ]
+  }
+}

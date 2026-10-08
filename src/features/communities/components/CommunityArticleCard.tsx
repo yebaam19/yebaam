@@ -11,18 +11,18 @@ interface CommunityArticleCardProps {
 
 export function CommunityArticleCard({ communitySlug, article }: CommunityArticleCardProps) {
   const href = `/feed/comunidades/${communitySlug}/articulos/${article.slug}` as Route;
-  const date = new Date(article.publishedAt).toLocaleDateString('es-MX', {
+  const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('es-MX', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  });
+  }) : 'Borrador';
 
   return (
     <Link
       href={href}
-      className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:focus-visible:ring-offset-gray-900"
+      className="group flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-colors hover:border-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-primary-300"
     >
-      <div className="relative aspect-16/10 overflow-hidden bg-linear-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40">
+      <div className="relative aspect-16/10 overflow-hidden bg-secondary-100 dark:bg-primary-950">
         {article.coverImageUrl ? (
           <Image
             src={article.coverImageUrl}
@@ -34,7 +34,7 @@ export function CommunityArticleCard({ communitySlug, article }: CommunityArticl
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <NewspaperIcon className="h-14 w-14 text-blue-500/40 dark:text-blue-400/30" />
+            <NewspaperIcon className="h-12 w-12 text-primary-800/60 dark:text-primary-300/70" />
           </div>
         )}
         {article.tags.length > 0 && (
@@ -42,7 +42,7 @@ export function CommunityArticleCard({ communitySlug, article }: CommunityArticl
             {article.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-gray-800 shadow-sm backdrop-blur-sm dark:bg-gray-900/80 dark:text-gray-100"
+                className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-primary-900 dark:bg-primary-900 dark:text-white"
               >
                 #{tag}
               </span>
@@ -51,17 +51,19 @@ export function CommunityArticleCard({ communitySlug, article }: CommunityArticl
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2.5 p-5">
-        <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-gray-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        {!article.isPublished && <span className="text-xs font-semibold text-secondary-900 dark:text-secondary-200">Borrador privado</span>}
+        {article.category && <span className="text-xs font-medium text-primary-800 dark:text-primary-300">{article.category}</span>}
+        <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-primary-800 dark:text-white dark:group-hover:text-primary-300">
           {article.title}
         </h3>
         {article.subtitle && (
-          <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+            <p className="line-clamp-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
             {article.subtitle}
           </p>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-xs text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
           <div className="flex min-w-0 items-center gap-2">
             {article.author.avatar ? (
               <Image
@@ -69,16 +71,16 @@ export function CommunityArticleCard({ communitySlug, article }: CommunityArticl
                 alt={article.author.name}
                 width={24}
                 height={24}
-                className="rounded-full ring-2 ring-white dark:ring-gray-800"
+                className="rounded-full"
                 style={{ width: 24, height: 24 }}
                 unoptimized
               />
             ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-500 text-[10px] font-semibold text-white ring-2 ring-white dark:ring-gray-800">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-800 text-[10px] font-semibold text-white">
                 {article.author.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="truncate font-medium text-gray-700 dark:text-gray-300">
+            <span className="truncate font-medium text-neutral-700 dark:text-neutral-200">
               {article.author.name}
             </span>
           </div>

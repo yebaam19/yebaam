@@ -40,6 +40,7 @@ export function CommunityArticleShareButton({
   const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const shareRequestId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -88,8 +89,9 @@ export function CommunityArticleShareButton({
 
   const handleShareToCommunity = () => {
     setError(null);
+    shareRequestId.current ??= crypto.randomUUID();
     startTransition(async () => {
-      const result = await shareCommunityArticleToFeed(articleId, message);
+      const result = await shareCommunityArticleToFeed(articleId, message, shareRequestId.current!);
       if (!result.ok) {
         setError(result.error);
         return;
@@ -113,7 +115,7 @@ export function CommunityArticleShareButton({
           onClick={() => setMenuOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-primary-800 hover:bg-secondary-100 focus-visible:outline-2 dark:text-primary-300 dark:hover:bg-primary-900"
         >
           {copied ? (
             <>
@@ -131,7 +133,7 @@ export function CommunityArticleShareButton({
         {menuOpen && (
           <div
             role="menu"
-            className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-lg bg-white shadow-lg dark:bg-neutral-800"
           >
             {isAuthor && (
               <button
@@ -143,7 +145,7 @@ export function CommunityArticleShareButton({
                   setShared(false);
                   setDialogOpen(true);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60"
+                className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-neutral-900 hover:bg-secondary-100 focus-visible:outline-2 dark:text-white dark:hover:bg-primary-900"
               >
                 <UserGroupIcon className="h-4 w-4" />
                 {t('admin.article.share.shareToCommunity')}
@@ -156,7 +158,7 @@ export function CommunityArticleShareButton({
                 setMenuOpen(false);
                 void handleCopyLink();
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60"
+              className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-neutral-900 hover:bg-secondary-100 focus-visible:outline-2 dark:text-white dark:hover:bg-primary-900"
             >
               <LinkIcon className="h-4 w-4" />
               {t('admin.article.share.copyLink')}
@@ -167,11 +169,11 @@ export function CommunityArticleShareButton({
 
       {dialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl dark:bg-neutral-900">
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-white">
               {t('admin.article.share.dialogTitle')}
             </h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
               {t('admin.article.share.dialogDescription', { title: articleTitle })}
             </p>
 
@@ -181,7 +183,7 @@ export function CommunityArticleShareButton({
               placeholder={t('admin.article.share.messagePlaceholder')}
               rows={3}
               disabled={isPending || shared}
-              className="mt-3 w-full resize-none rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className="mt-3 w-full resize-none rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-primary-800 dark:border-neutral-600 dark:bg-neutral-900 dark:text-white"
             />
 
             {error && (
@@ -205,7 +207,7 @@ export function CommunityArticleShareButton({
                   setMessage('');
                 }}
                 disabled={isPending}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/60 disabled:opacity-50"
+                className="min-h-11 rounded-lg px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 dark:text-neutral-200 dark:hover:bg-neutral-800 disabled:opacity-50"
               >
                 {t('admin.article.share.cancel')}
               </button>
@@ -213,7 +215,7 @@ export function CommunityArticleShareButton({
                 type="button"
                 onClick={handleShareToCommunity}
                 disabled={isPending || shared}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="min-h-11 rounded-lg bg-primary-800 px-4 text-sm font-medium text-white hover:bg-primary-900 focus-visible:outline-2 disabled:opacity-50"
               >
                 {isPending
                   ? t('admin.article.share.submitting')

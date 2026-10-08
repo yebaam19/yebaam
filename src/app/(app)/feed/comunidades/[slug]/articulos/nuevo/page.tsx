@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
-import { canPublishCommunityArticle } from '@/features/communities/server/community-articles.server';
+import { canManageCommunityArticle } from '@/features/communities/server/community-articles.server';
 import { CommunityArticleComposer } from '@/features/communities/components/CommunityArticleComposer';
 
 interface PageProps {
@@ -12,7 +12,7 @@ export default async function NewCommunityArticlePage({ params }: PageProps) {
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
-  const canPublish = await canPublishCommunityArticle(community.id);
+  const canPublish = await canManageCommunityArticle(community.id);
   if (!canPublish) {
     redirect(`/feed/comunidades/${slug}/articulos`);
   }

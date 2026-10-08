@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useTransition, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import type { Route } from 'next';
 import { FramedImage } from './header-images/FramedImage';
 import type { HeaderImages } from '../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
@@ -34,6 +36,8 @@ export function CommunityLayoutShell({
 }: CommunityLayoutShellProps) {
   const t = useTranslations('communities');
   const router = useRouter();
+  const pathname = usePathname();
+  const isArticleRoute = pathname?.startsWith(`/feed/comunidades/${c.slug}/articulos`) ?? false;
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joinTransition, startJoinTransition] = useTransition();
   const leaveMutation = useLeaveCommunity();
@@ -89,7 +93,7 @@ export function CommunityLayoutShell({
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="relative aspect-video overflow-hidden sm:aspect-[3/1] bg-primary-900">
+      {!isArticleRoute && <div className="relative aspect-video overflow-hidden sm:aspect-[3/1] bg-primary-900">
         {c.coverImageUrl && (
           <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}
@@ -120,14 +124,19 @@ export function CommunityLayoutShell({
             )}
           </div>
         )}
-      </div>
+      </div>}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative -mt-16 pb-6">{profileHeader}</div>
-
-        {institutionalNavigation}
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 pb-12">
-          <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem-env(safe-area-inset-bottom,0px))] lg:self-start lg:overflow-y-auto lg:overscroll-y-contain">
+        {isArticleRoute ? <nav aria-label="Contexto de la comunidad" className="flex min-w-0 items-center gap-2 py-4 text-sm">
+          <Link href={`/feed/comunidades/${c.slug}` as Route} className="truncate font-semibold text-primary-800 hover:underline focus-visible:outline-2 dark:text-primary-300">{c.name}</Link>
+          <span aria-hidden="true" className="text-neutral-400">/</span>
+          <span className="shrink-0 text-neutral-600 dark:text-neutral-300">Artículos</span>
+        </nav> : <>
+          <div className="relative -mt-16 pb-6">{profileHeader}</div>
+          {institutionalNavigation}
+        </>}
+        <div className={`grid grid-cols-1 gap-6 pb-12 lg:grid-cols-[240px_1fr] ${isArticleRoute ? 'lg:pt-2' : ''}`}>
+          <aside className={`${isArticleRoute ? 'hidden lg:block ' : ''}lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem-env(safe-area-inset-bottom,0px))] lg:self-start lg:overflow-y-auto lg:overscroll-y-contain`}>
             <CommunitySidebar
               slug={c.slug}
               isOwner={viewerState.kind === 'owner'}

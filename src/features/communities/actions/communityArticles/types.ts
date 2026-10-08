@@ -5,23 +5,8 @@
  * without pulling any runtime/server code into client bundles.
  */
 
-export type Result = { ok: true; slug: string } | { ok: false; error: string };
+export type Result = { ok: true; id: string; slug: string; version: number } | { ok: false; error: string };
 export type DeleteResult = { ok: true } | { ok: false; error: string };
-
-export type ArticleFields = {
-  title: string;
-  subtitle: string | null;
-  content: string;
-  tags: string[];
-};
-
-export type ManageableArticle = {
-  id: string;
-  community_id: string;
-  slug: string;
-  title: string;
-  cf_image_id: string | null;
-};
 
 export interface CommunityArticlePreview {
   communitySlug: string;
