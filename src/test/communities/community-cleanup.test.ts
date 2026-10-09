@@ -20,8 +20,14 @@ beforeEach(() => {
 });
 
 describe('retired community media worker', () => {
+  it('does not claim deletions when the abandoned-upload sweep fails', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: 'database unavailable' } });
+    await expect(processAssetCleanup()).rejects.toThrow('cleanup_abandoned_uploads_failed');
+    expect(mocks.rpc).not.toHaveBeenCalledWith('claim_community_asset_deletions', expect.anything());
+  });
   it('deletes only outbox targets and acknowledges the claimed lease', async () => {
     expect(await processAssetCleanup()).toEqual({ claimed: 1, completed: 1, retrying: 0 });
+    expect(mocks.rpc).toHaveBeenCalledWith('queue_abandoned_community_documents', { batch_size: 20 });
     expect(mocks.image).toHaveBeenCalledWith(uuid);
     expect(mocks.rpc).toHaveBeenCalledWith('finish_community_asset_deletion', {
       job_id: '1', claimed_lease: uuid, succeeded: true, failure_code: null,
@@ -39,18 +45,23 @@ describe('retired community media worker', () => {
     expect(mocks.rpc).toHaveBeenLastCalledWith('finish_community_asset_deletion', expect.objectContaining({ failure_code: 'remote_delete_failed', succeeded: false }));
   });
   it('treats an unacknowledged deletion as retryable', async () => {
-    mocks.rpc.mockResolvedValueOnce({ data: [job], error: null }).mockResolvedValueOnce({ data: false, error: null });
+    mocks.rpc.mockImplementation(async (name) => name === 'claim_community_asset_deletions'
+      ? { data: [job], error: null } : { data: name === 'finish_community_asset_deletion' ? false : 0, error: null });
     expect(await processAssetCleanup()).toMatchObject({ retrying: 1, completed: 0 });
   });
   it('routes videos and scoped R2 documents to their providers', async () => {
     const key = `${uuid}/communities/${uuid}/${uuid}.pdf`;
-    mocks.rpc.mockResolvedValueOnce({ data: [{ ...job, kind: 'video', media_id: 'a'.repeat(32) }, { ...job, id: '2', kind: 'document', media_id: key }], error: null });
+    mocks.rpc.mockImplementation(async (name) => name === 'claim_community_asset_deletions'
+      ? { data: [{ ...job, kind: 'video', media_id: 'a'.repeat(32) }, { ...job, id: '2', kind: 'document', media_id: key }], error: null }
+      : { data: true, error: null });
     expect(await processAssetCleanup()).toMatchObject({ completed: 2 });
     expect(mocks.video).toHaveBeenCalledWith('a'.repeat(32));
     expect(mocks.document).toHaveBeenCalledWith(key);
   });
   it('rejects document keys outside the community namespace', async () => {
-    mocks.rpc.mockResolvedValueOnce({ data: [{ ...job, kind: 'document', media_id: `${uuid}/cv.pdf` }], error: null });
+    mocks.rpc.mockImplementation(async (name) => name === 'claim_community_asset_deletions'
+      ? { data: [{ ...job, kind: 'document', media_id: `${uuid}/cv.pdf` }], error: null }
+      : { data: true, error: null });
     expect(await processAssetCleanup()).toMatchObject({ retrying: 1 });
     expect(mocks.document).not.toHaveBeenCalled();
   });

@@ -4,9 +4,9 @@ import { POST } from '@/app/api/communities/[communityId]/documents/upload-url/r
 import { GET } from '@/app/api/communities/[communityId]/assets/[assetId]/file/route';
 import { signCommunityDocument } from '@/features/communities/server/document-upload.server';
 
-const mocks = vi.hoisted(() => ({ session: vi.fn(), rpc: vi.fn(), getUser: vi.fn(), from: vi.fn(), presign: vi.fn(), fileUrl: vi.fn(), asset: vi.fn(), rate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ session: vi.fn(), rpc: vi.fn(), prepare: vi.fn(), getUser: vi.fn(), presign: vi.fn(), fileUrl: vi.fn(), asset: vi.fn(), rate: vi.fn() }));
 vi.mock('@/features/communities/actions/_shared', () => ({ requireSession: mocks.session }));
-vi.mock('@/utils/supabase/server', () => ({ getServiceClient: () => ({ from: mocks.from }), getServerClient: async () => ({ auth: { getUser: mocks.getUser } }) }));
+vi.mock('@/utils/supabase/server', () => ({ getServiceClient: () => ({ rpc: mocks.prepare }), getServerClient: async () => ({ auth: { getUser: mocks.getUser } }) }));
 vi.mock('@/lib/cloudflare/r2', () => ({ getPresignedUploadUrl: mocks.presign }));
 vi.mock('@/lib/cloudflare/community-documents', () => ({ signLibraryDocument: mocks.fileUrl }));
 vi.mock('@/features/communities/server/community-library.server', () => ({ getLibraryAsset: mocks.asset }));
@@ -25,15 +25,10 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.session.mockResolvedValue({ userId, client: { rpc: mocks.rpc } });
   mocks.rpc.mockResolvedValue({ data: { content: true }, error: null });
+  mocks.prepare.mockResolvedValue({ data: true, error: null });
   mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
   mocks.rate.mockReturnValue({ ok: true });
 });
-function ledger(row: unknown) {
-  const query = { insert: vi.fn().mockResolvedValue({ error: { code: '23505' } }), select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: row, error: null }) };
-  mocks.from.mockReturnValue(query);
-  return query;
-}
-
 describe('library route authorization and presigning', () => {
   it('requires a verified session and content capability before spending signing credentials', async () => {
     mocks.session.mockResolvedValueOnce(null);
@@ -41,22 +36,23 @@ describe('library route authorization and presigning', () => {
     mocks.rpc.mockResolvedValueOnce({ data: { content: false }, error: null });
     expect((await POST(request(), { params })).status).toBe(403);
     expect(mocks.presign).not.toHaveBeenCalled();
-    expect(mocks.from).not.toHaveBeenCalled();
+    expect(mocks.prepare).not.toHaveBeenCalled();
   });
   it('reuses the owned ledger identity and signs exact MIME, size and short TTL', async () => {
-    const query = ledger({ object_key: key, content_type: body.contentType, size_bytes: 1024, original_name: body.fileName, finalized_asset_id: null });
     mocks.presign.mockResolvedValue({ url: 'https://r2.test/signed', key });
     const response = await POST(request(), { params });
     expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     expect(mocks.presign).toHaveBeenCalledWith(key, 'application/pdf', 300, 1024);
-    expect(query.eq).toHaveBeenCalledWith('uploaded_by', userId);
-    expect(query.eq).toHaveBeenCalledWith('community_id', communityId);
+    expect(mocks.prepare).toHaveBeenCalledWith('prepare_community_document_upload', {
+      target_community: communityId, actor: userId, upload_id: uploadId, object_key: key,
+      mime_type: 'application/pdf', byte_size: 1024, original_name: 'report.pdf',
+    });
   });
   it('does not sign a conflicting or already-finalized upload ID', async () => {
-    ledger({ object_key: key, content_type: body.contentType, size_bytes: 999, original_name: body.fileName });
+    mocks.prepare.mockResolvedValue({ data: false, error: null });
     await expect(signCommunityDocument({ userId, client: {} } as never, { ...body, communityId })).rejects.toThrow();
-    ledger({ object_key: key, content_type: body.contentType, size_bytes: 1024, original_name: body.fileName, finalized_asset_id: uploadId });
+    mocks.prepare.mockResolvedValue({ data: null, error: { code: '23505' } });
     await expect(signCommunityDocument({ userId, client: {} } as never, { ...body, communityId })).rejects.toThrow();
     expect(mocks.presign).not.toHaveBeenCalled();
   });

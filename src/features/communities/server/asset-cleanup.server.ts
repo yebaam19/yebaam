@@ -29,6 +29,8 @@ async function removeRemote(job: Job) {
  * No request-supplied identifiers are accepted; only the DB outbox owns targets. */
 export async function processAssetCleanup() {
   const client = getServiceClient();
+  const retired = await client.rpc('queue_abandoned_community_documents', { batch_size: 20 });
+  if (retired.error) throw new Error('cleanup_abandoned_uploads_failed');
   const { data, error } = await client.rpc('claim_community_asset_deletions', { batch_size: 5 });
   if (error) throw new Error('cleanup_claim_failed');
   const jobs = z.array(jobSchema).max(5).parse(data);
