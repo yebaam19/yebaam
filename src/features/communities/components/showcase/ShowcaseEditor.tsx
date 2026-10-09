@@ -52,6 +52,8 @@ export function ShowcaseEditor({ communityId, slug, initial, onClose }: {
           <div className="min-w-0 flex-1 basis-48">
             <p className="text-xs text-neutral-600 dark:text-neutral-300">{index === 0 ? t('trailer') : t('position', { n: index + 1 })}</p>
             <p className="wrap-anywhere text-sm font-medium">{video.asset?.title ?? t('unavailable')}</p>
+            {video.asset && (!video.asset.is_published || video.asset.visibility !== 'public') &&
+              <p className="text-xs font-medium text-secondary-900 dark:text-secondary-300">{t('assetNotPublic')}</p>}
           </div>
           <Button outline disabled={pending || picker !== null || remove !== null || index === 0} onClick={() => move(index, -1)} aria-label={t('moveUp', { title: video.asset?.title ?? t('unavailable') })}>{t('up')}</Button>
           <Button outline disabled={pending || picker !== null || remove !== null || index === videos.length - 1} onClick={() => move(index, 1)} aria-label={t('moveDown', { title: video.asset?.title ?? t('unavailable') })}>{t('down')}</Button>

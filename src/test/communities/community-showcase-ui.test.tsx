@@ -54,6 +54,14 @@ describe('Showcase playback', () => {
   });
 });
 describe('Showcase editing', () => {
+  it('labels selected draft videos as invisible to visitors', () => {
+    const draft = { ...videos[0], is_published: false };
+    const initial = { id: communityId, community_id: communityId, version: 1, introduction: '', is_published: false,
+      videos: [{ id: draft.id, asset_id: draft.id, community_id: communityId, position: 0, asset: draft }] };
+    view(<ShowcaseEditor communityId={communityId} slug="test" initial={initial} onClose={vi.fn()} />);
+    expect(screen.getByText('No visible para visitantes')).toBeTruthy();
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+  });
   it('stages selected videos locally and preserves text, order and publication after failed save', async () => {
     view(<ShowcaseEditor communityId={communityId} slug="test" initial={null} onClose={vi.fn()} />);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Draft introduction' } });

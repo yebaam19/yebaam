@@ -6,6 +6,7 @@ vi.mock('@/features/communities/actions/_shared', () => ({ requireSession: mocks
 vi.mock('@/utils/supabase/server', () => ({ getServerClient: async () => ({ from: mocks.from }) }));
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidate }));
 vi.mock('react', () => ({ cache: (fn: unknown) => fn }));
+vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
 const communityId = '11111111-1111-4111-8111-111111111111';
 const video1 = '22222222-2222-4222-8222-222222222222';
 const video2 = '33333333-3333-4333-8333-333333333333';
@@ -51,7 +52,10 @@ describe('Community showcase', () => {
     expect(await saveCommunityShowcase(payload)).toEqual({ ok: false, error: expect.stringContaining('cambió') });
     mocks.rpc.mockImplementation(async (name: string) => name === 'community_profile_capabilities'
       ? { data: { content: true }, error: null } : { data: null, error: { code: '23514' } });
-    expect(await saveCommunityShowcase(payload)).toEqual({ ok: false, error: expect.stringContaining('video') });
+    expect(await saveCommunityShowcase(payload)).toEqual({ ok: false, error: 'saveUnavailable' });
+    mocks.rpc.mockImplementation(async (name: string) => name === 'community_profile_capabilities'
+      ? { data: { content: true }, error: null } : { data: null, error: { code: 'YB001' } });
+    expect(await saveCommunityShowcase({ ...payload, isPublished: true })).toEqual({ ok: false, error: 'videosNotPublic' });
     expect(mocks.revalidate).not.toHaveBeenCalled();
   });
   it('treats a missing or RLS-hidden showcase as absent, and errors as failures', async () => {

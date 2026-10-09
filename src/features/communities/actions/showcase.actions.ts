@@ -1,6 +1,7 @@
 'use server';
 
 import { showcaseSchema } from '../schemas/communityShowcase.schema';
+import { getTranslations } from 'next-intl/server';
 import { runPlanAction, planWriteError } from './plans/_shared';
 
 /** The RPC keeps publication, introduction and all four positions in one transaction. */
@@ -13,9 +14,11 @@ export async function saveCommunityShowcase(input: unknown) {
       publish_showcase: value.isPublished,
       video_assets: value.videoAssetIds,
     });
-    if (error) return { ok: false, error: error.code === '23514'
-      ? 'Uno de los videos ya no está disponible. Revisa la selección e inténtalo de nuevo.'
-      : planWriteError(error.code) };
+    if (error?.code === 'YB001' || error?.code === '23514') {
+      const t = await getTranslations('communities.showcase');
+      return { ok: false, error: t(error.code === 'YB001' ? 'videosNotPublic' : 'saveUnavailable') };
+    }
+    if (error) return { ok: false, error: planWriteError(error.code) };
     return { ok: true, data: { version: data as number } };
   });
 }
