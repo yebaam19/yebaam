@@ -13,10 +13,12 @@ import {
   getTopicBySlug,
   getTopicOwnerBlog,
   listMessagesForTopic,
+  listPinnedMessagesForTopic,
   listTopics,
 } from '@/features/chat-publico/server/chat-publico.server'
 import { listRoomPresence } from '@/features/chat-publico/server/presence.server'
 import { toClientIdentity } from '@/features/chat-publico/types'
+import { getServerClient } from '@/utils/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,15 +44,23 @@ export default async function ChatPublicoTopicPage({
   const topic = await getTopicBySlug(topicSlug)
   if (!topic || topic.is_archived) notFound()
 
-  const [identity, topics, initialMessages, ownerBlog, authedUser, preferredNickname] =
+  const [identity, topics, initialMessages, initialPinnedMessages, ownerBlog, authedUser, preferredNickname] =
     await Promise.all([
       getRoomIdentity(topic.id),
       listTopics(),
       listMessagesForTopic(topic.id),
+      listPinnedMessagesForTopic(topic.id),
       getTopicOwnerBlog(topic),
       getAuthUser(),
       readPreferredNickname(),
     ])
+
+  let canModerate = false
+  if (topic.owner_type === 'community' && topic.owner_id && authedUser) {
+    const client = await getServerClient()
+    const { data } = await client.rpc('community_profile_capabilities', { target_community: topic.owner_id })
+    canModerate = !!(data as { moderation?: boolean } | null)?.moderation
+  }
 
   const communityIdentity = topic.owner_type === 'community' && identity?.kind === 'guest'
     ? null
@@ -72,7 +82,8 @@ export default async function ChatPublicoTopicPage({
           </Link>
         </div>
         <div className="min-h-0 flex-1">
-          <ChatPublicoView topic={topic} initialMessages={initialMessages} identity={null} />
+          <ChatPublicoView topic={topic} initialMessages={initialMessages}
+            initialPinnedMessages={initialPinnedMessages} identity={null} canModerate={false} />
         </div>
       </div>
     )
@@ -128,8 +139,10 @@ export default async function ChatPublicoTopicPage({
           topic={topic}
           topics={topics}
           initialMessages={initialMessages}
+          initialPinnedMessages={initialPinnedMessages}
           initialPresence={initialPresence}
           identity={clientIdentity}
+          canModerate={canModerate}
         />
       </div>
     </div>

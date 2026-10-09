@@ -9,6 +9,7 @@ import RoomUserList from './RoomUserList'
 import RoomsSidebar from './RoomsSidebar'
 import type {
   ClientChatIdentity,
+  PinnedChatMessage,
   PublicChatTopic,
   PublicMessageWithSender,
   RoomPresenceRow,
@@ -20,8 +21,10 @@ interface Props {
   topic: PublicChatTopic
   topics: PublicChatTopic[]
   initialMessages: PublicMessageWithSender[]
+  initialPinnedMessages?: PinnedChatMessage[]
   initialPresence: RoomPresenceRow[]
   identity: ClientChatIdentity
+  canModerate?: boolean
 }
 
 /**
@@ -32,8 +35,10 @@ export default function ChatPublicoShell({
   topic,
   topics,
   initialMessages,
+  initialPinnedMessages = [],
   initialPresence,
   identity,
+  canModerate = false,
 }: Props) {
   const [roomsOpen, setRoomsOpen] = useState(true)
   const [mobileUsersOpen, setMobileUsersOpen] = useState(false)
@@ -121,7 +126,9 @@ export default function ChatPublicoShell({
             <ChatPublicoView
               topic={topic}
               initialMessages={initialMessages}
+              initialPinnedMessages={initialPinnedMessages}
               identity={identity}
+              canModerate={canModerate}
             />
           </div>
           {view !== 'chat' && (

@@ -119,6 +119,10 @@ dist/
 !supabase/migrations/20261009002000_chat_reply_boundary.sql
 !supabase/migrations/20261009002010_chat_reply_counter_privilege.sql
 !supabase/migrations/20261009002020_chat_reply_counter_soft_delete.sql
+!supabase/migrations/20261009002500_community_chat_pin.sql
+!supabase/migrations/20261009002510_community_chat_reports.sql
+!supabase/migrations/20261009002520_community_chat_review.sql
+!supabase/migrations/20261009003100_community_chat_audit_account_erasure.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

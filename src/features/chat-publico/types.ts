@@ -26,6 +26,7 @@ export interface PublicMessageRow {
   content: string | null
   created_at: string
   is_deleted: boolean
+  is_pinned?: boolean
   topic_id: string
   // v2 fields (nullable)
   sender_kind?: 'profile' | 'nick' | 'guest' | 'system' | null
@@ -133,6 +134,18 @@ export interface PublicMessageSender {
 
 export interface PublicMessageWithSender extends PublicMessageRow {
   sender: PublicMessageSender | null
+}
+
+export type PinnedChatMessage = Pick<PublicMessageRow, 'id' | 'content' | 'created_at' | 'is_pinned'>
+
+export interface CommunityChatReport {
+  id: string
+  message_id: string
+  reason: string
+  status: 'open' | 'resolved' | 'dismissed'
+  created_at: string
+  reviewer_note: string
+  message: { content: string | null; is_deleted: boolean; moderation_hidden_at: string | null } | null
 }
 
 /** Derived display info so the view doesn't branch on sender_kind everywhere. */

@@ -4,6 +4,7 @@ import { getServerClient } from '@/utils/supabase/server'
 import { resolveMessageSenderAvatars } from '../lib/avatar'
 import type {
   PublicChatTopic,
+  PinnedChatMessage,
   PublicMessageWithSender,
 } from '../types'
 
@@ -13,7 +14,7 @@ import type {
 // Sender avatar is id-first: avatar_cloudflare_id resolves to the delivery URL
 // via resolveMessageSenderAvatars; avatar_url is the legacy-row fallback.
 const MESSAGE_SELECT =
-  'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)'
+  'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, is_pinned, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)'
 
 const TOPIC_COLUMNS =
   'id, slug, name, description, position, is_archived, owner_type, owner_id, city_id, parent_topic_id, creator_id, visibility, max_capacity, duration_hours, expires_at, last_activity_at, closed_at, is_permanent'
@@ -72,4 +73,13 @@ export async function listMessagesForTopic(
     .order('created_at', { ascending: false })
     .limit(limit)
   return resolveMessageSenderAvatars((data as unknown as PublicMessageWithSender[] | null) ?? [])
+}
+
+export async function listPinnedMessagesForTopic(topicId: string): Promise<PinnedChatMessage[]> {
+  const client = await getServerClient()
+  const { data } = await client.from('public_chat_messages')
+    .select('id, content, created_at, is_pinned')
+    .eq('topic_id', topicId).eq('is_pinned', true).eq('is_deleted', false)
+    .order('created_at', { ascending: false }).limit(5)
+  return (data as PinnedChatMessage[] | null) ?? []
 }

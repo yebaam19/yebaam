@@ -4,26 +4,36 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime'
-import type { ClientChatIdentity, PublicChatTopic, PublicMessageRow, PublicMessageSender, PublicMessageWithSender } from '../types'
+import type { ClientChatIdentity, PinnedChatMessage, PublicChatTopic, PublicMessageRow, PublicMessageSender, PublicMessageWithSender } from '../types'
 import { sendChatMessage, softDeletePublicMessage } from '../actions/chat-publico.actions'
+import { setCommunityChatPin } from '../actions/community-chat.actions'
 import { capabilitiesFor } from '../lib/permissions'
 import { profileAvatarUrl, resolveMessageSenderAvatars } from '../lib/avatar'
 import ChatMessageList from './ChatMessageList'
 import ChatMessageComposer from './ChatMessageComposer'
+import ChatPinnedBar from './ChatPinnedBar'
+import ChatReportDialog from './ChatReportDialog'
+import ChatReportsPanel from './ChatReportsPanel'
 
 interface Props {
   topic: PublicChatTopic
   initialMessages: PublicMessageWithSender[]
+  initialPinnedMessages?: PinnedChatMessage[]
   identity: ClientChatIdentity | null
+  canModerate?: boolean
 }
 
 const PAGE_SIZE = 30
 
-export default function ChatPublicoView({ topic, initialMessages, identity }: Props) {
+export default function ChatPublicoView({ topic, initialMessages, initialPinnedMessages = [], identity, canModerate = false }: Props) {
   const t = useTranslations('chat.public.view')
   const [messages, setMessages] = useState<PublicMessageWithSender[]>(() => [...initialMessages].reverse())
   const [draft, setDraft] = useState('')
   const [replyTo, setReplyTo] = useState<PublicMessageWithSender | null>(null)
+  const [pinned, setPinned] = useState<PinnedChatMessage[]>(initialPinnedMessages)
+  const [reportTarget, setReportTarget] = useState<string | null>(null)
+  const [reportsOpen, setReportsOpen] = useState(false)
+  const [pinBusyId, setPinBusyId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [cooldownNow, setCooldownNow] = useState(Date.now())
@@ -91,6 +101,10 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
           if (row.sender_id && !profileCacheRef.current.has(row.sender_id)) void fetchSenders([row.sender_id])
         } else if (payload.eventType === 'UPDATE') {
           setMessages((previous) => previous.map((message) => message.id === row.id ? { ...message, ...row } : message))
+          setPinned((previous) => row.is_pinned && !row.is_deleted
+            ? [...previous.filter((message) => message.id !== row.id), row]
+              .sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5)
+            : previous.filter((message) => message.id !== row.id))
         }
       },
     })
@@ -102,7 +116,7 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
     setIsLoadingOlder(true)
     try {
       const { data } = await createClient().from('public_chat_messages')
-        .select('id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)')
+        .select('id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, is_pinned, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)')
         .eq('topic_id', topic.id).eq('is_deleted', false).lt('created_at', messages[0].created_at)
         .order('created_at', { ascending: false }).limit(PAGE_SIZE)
       const rows = resolveMessageSenderAvatars((data as unknown as PublicMessageWithSender[] | null) ?? [])
@@ -145,14 +159,37 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
     if (!result.ok) setError(t('errors.deleteFailed'))
   }, [t])
 
+  const handlePin = useCallback(async (message: PublicMessageWithSender) => {
+    if (pinBusyId) return
+    setPinBusyId(message.id)
+    const next = !message.is_pinned
+    const result = await setCommunityChatPin(message.id, next)
+    if (result.ok) {
+      setMessages((previous) => previous.map((row) => row.id === message.id ? { ...row, is_pinned: next } : row))
+      setPinned((previous) => next
+        ? [...previous.filter((row) => row.id !== message.id), { id: message.id, content: message.content, created_at: message.created_at, is_pinned: true }]
+          .sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5)
+        : previous.filter((row) => row.id !== message.id))
+    } else setError(result.error)
+    setPinBusyId(null)
+  }, [pinBusyId])
+
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-neutral-900">
+      {canModerate && topic.owner_id && <div className="flex shrink-0 justify-end border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:px-6">
+        <button type="button" onClick={() => setReportsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Revisar reportes</button>
+      </div>}
+      <ChatPinnedBar messages={pinned} />
       <ChatMessageList messages={messages} identity={identity} locallySent={locallySentRef.current}
         listRef={listRef} hasMore={hasMore} isLoadingOlder={isLoadingOlder} onScroll={handleScroll}
-        onLoadOlder={loadOlder} onDelete={handleDelete} onReply={setReplyTo} />
+        onLoadOlder={loadOlder} onDelete={handleDelete} onReply={setReplyTo}
+        canModerate={canModerate} canReport={topic.owner_type === 'community' && !!identity && identity.kind !== 'guest'}
+        pinBusyId={pinBusyId} onPin={handlePin} onReport={setReportTarget} />
       <ChatMessageComposer topic={topic} identity={identity} draft={draft} setDraft={setDraft}
         replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onSend={send}
         isPending={isPending} cooling={cooling} remainingMs={remainingMs} error={error} canChat={canChat} />
+      {reportTarget && <ChatReportDialog messageId={reportTarget} onClose={() => setReportTarget(null)} />}
+      {reportsOpen && topic.owner_id && <ChatReportsPanel communityId={topic.owner_id} onClose={() => setReportsOpen(false)} />}
     </div>
   )
 }

@@ -18,6 +18,11 @@ interface Props {
   onLoadOlder: () => void
   onDelete: (id: string) => void
   onReply: (message: PublicMessageWithSender) => void
+  canModerate: boolean
+  canReport: boolean
+  pinBusyId: string | null
+  onPin: (message: PublicMessageWithSender) => void
+  onReport: (id: string) => void
 }
 
 function resolveAuthor(message: PublicMessageWithSender, fallbackUser: string, fallbackGuest: string): ResolvedMessageAuthor {
@@ -42,7 +47,7 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function ChatMessageList({ messages, identity, locallySent, listRef, hasMore, isLoadingOlder, onScroll, onLoadOlder, onDelete, onReply }: Props) {
+export default function ChatMessageList({ messages, identity, locallySent, listRef, hasMore, isLoadingOlder, onScroll, onLoadOlder, onDelete, onReply, canModerate, canReport, pinBusyId, onPin, onReport }: Props) {
   const t = useTranslations('chat.public.view')
   const parentById = useMemo(() => new Map(messages.map((message) => [message.id, message])), [messages])
 
@@ -81,6 +86,7 @@ export default function ChatMessageList({ messages, identity, locallySent, listR
                     )}
                   </span>
                 )}
+                {message.is_pinned && !message.is_deleted && <span className={cn('rounded-full bg-secondary-100 px-2 py-0.5 text-[10px] font-semibold text-primary-900 dark:bg-primary-900 dark:text-secondary-100', isOwn ? 'self-end' : 'self-start')}>Fijado</span>}
                 <div className={cn('rounded-2xl px-3 py-2 text-sm break-words', message.is_deleted ? 'bg-neutral-100 text-neutral-400' : isOwn ? 'bg-primary-700 text-white' : 'bg-primary-50 text-primary-950 dark:bg-primary-950/40 dark:text-primary-100')}>
                   {message.parent_message_id && (
                     <div className={cn('mb-1.5 border-l-2 py-0.5 pl-2 text-xs', isOwn ? 'border-white/50 text-white/80' : 'border-primary-400 text-primary-700 dark:text-primary-300')}>
@@ -90,10 +96,12 @@ export default function ChatMessageList({ messages, identity, locallySent, listR
                   )}
                   <span className="whitespace-pre-wrap">{message.is_deleted ? t('deletedMessage') : message.content ?? ''}</span>
                 </div>
-                <div className="flex items-center gap-2 px-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 px-1 text-xs text-neutral-500 dark:text-neutral-400">
                   <time dateTime={message.created_at}>{formatTime(message.created_at)}</time>
-                  {!message.is_deleted && identity && <button type="button" onClick={() => onReply(message)} className="font-medium text-primary-700 hover:underline dark:text-primary-300">Responder</button>}
-                  {isOwn && !message.is_deleted && identity?.kind !== 'guest' && <button type="button" onClick={() => onDelete(message.id)} className="font-medium text-red-700 hover:underline dark:text-red-400">Eliminar</button>}
+                  {!message.is_deleted && identity && <button type="button" onClick={() => onReply(message)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline dark:text-primary-300">Responder</button>}
+                  {!message.is_deleted && canReport && <button type="button" onClick={() => onReport(message.id)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline dark:text-primary-300">Reportar</button>}
+                  {!message.is_deleted && canModerate && <button type="button" disabled={pinBusyId === message.id} onClick={() => onPin(message)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline disabled:opacity-50 dark:text-primary-300">{message.is_pinned ? 'Desfijar' : 'Fijar'}</button>}
+                  {isOwn && !message.is_deleted && identity?.kind !== 'guest' && <button type="button" onClick={() => onDelete(message.id)} className="inline-flex min-h-7 items-center font-medium text-red-700 hover:underline dark:text-red-400">Eliminar</button>}
                 </div>
               </div>
             </li>
