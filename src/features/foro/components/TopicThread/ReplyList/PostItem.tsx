@@ -1,12 +1,13 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { ForoPost } from '@/features/foro/types'
 import { formatRelativeDate } from '@/features/foro/utils/format'
 import PostContent from '../../PostContent'
 import PostEditForm from './PostEditForm'
 import UserCard, { type UserCardStrings } from './UserCard'
+import { ForumReportDialog } from '../ForumReportDialog'
 
 export interface PostItemProps {
   post: ForoPost
@@ -14,6 +15,7 @@ export interface PostItemProps {
   isLocked: boolean
   /** Whether the current viewer is signed in (gates the quote action). */
   hasUser: boolean
+  canReport: boolean
   canEdit: boolean
   canDelete: boolean
   /** True when this row is the active edit target (state owned by the parent). */
@@ -40,6 +42,7 @@ function PostItem({
   topicHref,
   isLocked,
   hasUser,
+  canReport,
   canEdit,
   canDelete,
   isEditing,
@@ -52,6 +55,12 @@ function PostItem({
 }: PostItemProps) {
   const t = useTranslations('foro')
   const isOp = post.postNumber === 1
+  const [reportOpen, setReportOpen] = useState(false)
+  const reportTrigger = useRef<HTMLButtonElement>(null)
+  const closeReport = () => {
+    setReportOpen(false)
+    requestAnimationFrame(() => reportTrigger.current?.focus())
+  }
 
   return (
     <li
@@ -99,6 +108,12 @@ function PostItem({
                   {t('thread.actions.edit')}
                 </button>
               )}
+              {canReport && (
+                <button ref={reportTrigger} type="button" onClick={() => setReportOpen(true)}
+                  className="text-primary-700 hover:underline dark:text-primary-400">
+                  {t('reports.report')}
+                </button>
+              )}
               {canDelete && (
                 <button
                   type="button"
@@ -128,6 +143,7 @@ function PostItem({
             {post.authorMeta.signature}
           </div>
         )}
+        {reportOpen && <ForumReportDialog postId={post.id} onClose={closeReport} />}
       </div>
     </li>
   )

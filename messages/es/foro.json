@@ -74,6 +74,31 @@
       "createFailed": "No se pudo crear el tema."
     }
   },
+  "reports": {
+    "report": "Reportar",
+    "title": "Reportar mensaje",
+    "description": "El equipo de la comunidad revisará tu reporte.",
+    "received": "Reporte recibido. Gracias por avisarnos.",
+    "close": "Cerrar",
+    "reason": "¿Qué ocurrió?",
+    "reasonPlaceholder": "Describe el motivo del reporte",
+    "length": "{count}/500 caracteres · mínimo 10",
+    "cancel": "Cancelar",
+    "sending": "Enviando…",
+    "submit": "Enviar reporte",
+    "reviewReports": "Revisar reportes",
+    "queueTitle": "Reportes del foro",
+    "queueDescription": "Revisa el contenido y el motivo antes de decidir.",
+    "status": { "open": "Pendientes", "resolved": "Resueltos", "dismissed": "Descartados" },
+    "loading": "Cargando…",
+    "empty": "No hay reportes en esta sección.",
+    "decisionNote": "Decisión",
+    "remove": "Retirar mensaje",
+    "dismiss": "Descartar reporte",
+    "more": "Cargar más reportes",
+    "reviewReason": "Motivo para {action}",
+    "confirm": "Confirmar"
+  },
   "thread": {
     "subtitle": "Iniciado por {author} · {date} · {views} {viewsLabel}",
     "viewOne": "vista",

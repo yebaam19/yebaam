@@ -127,6 +127,9 @@ dist/
 !supabase/migrations/20261009003510_chat_delete_restore_snapshot.sql
 !supabase/migrations/20261009003520_chat_community_restore_cleanup.sql
 !supabase/migrations/20261009004500_forum_post_column_privileges.sql
+!supabase/migrations/20261009010000_community_forum_reports.sql
+!supabase/migrations/20261009010500_community_forum_report_actor_indexes.sql
+!supabase/migrations/20261009011000_community_forum_report_erasure.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

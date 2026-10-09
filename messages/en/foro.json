@@ -74,6 +74,31 @@
       "createFailed": "The topic could not be created."
     }
   },
+  "reports": {
+    "report": "Report",
+    "title": "Report message",
+    "description": "The community team will review your report.",
+    "received": "Report received. Thanks for letting us know.",
+    "close": "Close",
+    "reason": "What happened?",
+    "reasonPlaceholder": "Describe the reason for your report",
+    "length": "{count}/500 characters · minimum 10",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "submit": "Send report",
+    "reviewReports": "Review reports",
+    "queueTitle": "Forum reports",
+    "queueDescription": "Review the content and reason before deciding.",
+    "status": { "open": "Pending", "resolved": "Resolved", "dismissed": "Dismissed" },
+    "loading": "Loading…",
+    "empty": "No reports in this section.",
+    "decisionNote": "Decision",
+    "remove": "Remove message",
+    "dismiss": "Dismiss report",
+    "more": "Load more reports",
+    "reviewReason": "Reason to {action}",
+    "confirm": "Confirm"
+  },
   "thread": {
     "subtitle": "Started by {author} · {date} · {views} {viewsLabel}",
     "viewOne": "view",

@@ -2,6 +2,8 @@ import type { Route } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { getSpaceBoard, getSpaceOwnerBackLink, isSpaceAdmin } from '../server/foro.server'
+import { getCommunityProfileCapabilities } from '@/features/communities/server/community-plan.server'
+import { ForumReportsEntry } from '@/features/foro/components/ForumReportsEntry'
 import SpaceBoard from '@/features/foro/components/SpaceBoard'
 import ForoHeader from '@/features/foro/components/ForoHeader'
 import { getOwnerMeta } from '@/features/foro/utils/owner'
@@ -19,6 +21,8 @@ export default async function SpacePage({ params }: PageProps) {
   if (!result) notFound()
   const { space, categories } = result
   const userIsAdmin = await isSpaceAdmin(space.id)
+  const canReviewReports = space.ownerType === 'community'
+    && (await getCommunityProfileCapabilities(space.ownerId)).moderation
   const owner = getOwnerMeta(space.ownerType)
   const ownerBack = await getSpaceOwnerBackLink(space)
   const crumbs = [
@@ -49,11 +53,12 @@ export default async function SpacePage({ params }: PageProps) {
         crumbs={crumbs}
         subtitle={undefined}
         action={
-          userIsAdmin ? (
-            <Button href={`/foro/${space.slug}/admin` as Route} outline className="w-full sm:w-auto">
+          userIsAdmin || canReviewReports ? <div className="flex flex-wrap gap-2">
+            {canReviewReports && <ForumReportsEntry communityId={space.ownerId} />}
+            {userIsAdmin && <Button href={`/foro/${space.slug}/admin` as Route} outline className="w-full sm:w-auto">
               {t('space.manage')}
-            </Button>
-          ) : null
+            </Button>}
+          </div> : null
         }
       />
       <div className="flex flex-wrap items-center gap-2 px-1 text-sm">

@@ -123,6 +123,7 @@ export default function TopicThread(props: TopicThreadProps) {
         isLocked={isLocked}
         isModerator={isModerator}
         currentUserId={user?.id}
+        canReport={space.ownerType === 'community'}
         editingPostId={editingPostId}
         userCardStrings={userCardStrings}
         onStartEdit={startEditing}

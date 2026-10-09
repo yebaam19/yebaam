@@ -11,6 +11,7 @@ interface Props {
   isModerator: boolean
   /** Current viewer id (null when signed out), used to compute owner rights. */
   currentUserId: string | null | undefined
+  canReport: boolean
   editingPostId: string | null
   userCardStrings: UserCardStrings
   onStartEdit: (post: ForoPost) => void
@@ -28,6 +29,7 @@ export default function ReplyList({
   isLocked,
   isModerator,
   currentUserId,
+  canReport,
   editingPostId,
   userCardStrings,
   onStartEdit,
@@ -50,6 +52,7 @@ export default function ReplyList({
             topicHref={topicHref}
             isLocked={isLocked}
             hasUser={hasUser}
+            canReport={canReport && hasUser}
             canEdit={canEdit}
             canDelete={canDelete}
             isEditing={editingPostId === post.id}
