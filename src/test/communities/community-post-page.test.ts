@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getCommunityHomePosts } from '@/features/communities/server/communities/communities-posts.server';
+import { getCommunityHomePosts, getCommunityLegacyPosts } from '@/features/communities/server/communities/communities-posts.server';
 
 const mocks = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock('react', () => ({ cache: (fn: unknown) => fn }));
@@ -14,12 +14,12 @@ const rows = Array.from({ length: 11 }, (_, index) => ({
   created_at: createdAt,
 }));
 
-function database() {
+function database(data = rows) {
   const postQuery = {
     select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(),
     or: vi.fn().mockReturnThis(),
-    then: (resolve: (value: { data: typeof rows; error: null }) => void) => resolve({ data: rows, error: null }),
+    then: (resolve: (value: { data: typeof rows; error: null }) => void) => resolve({ data, error: null }),
   };
   mocks.from.mockImplementation((table: string) => {
     if (table === 'community_posts') return postQuery;
@@ -47,6 +47,22 @@ describe('community home post pagination', () => {
     await getCommunityHomePosts(communityId, cursor);
     expect(query.or).toHaveBeenCalledWith(
       `created_at.lt.${createdAt},and(created_at.eq.${createdAt},id.lt.${cursor.id})`,
+    );
+  });
+
+  it('pages legacy galleries without a fixed fifty-post cutoff', async () => {
+    const history = Array.from({ length: 51 }, (_, index) => ({
+      id: `00000000-0000-4000-8000-${String(51 - index).padStart(12, '0')}`,
+      author_id: communityId, created_at: createdAt,
+    }));
+    const query = database(history);
+    const first = await getCommunityLegacyPosts(communityId, null);
+    expect(first.posts).toHaveLength(50);
+    expect(first.nextCursor).toEqual({ createdAt, id: history[49].id });
+    expect(query.limit).toHaveBeenCalledWith(51);
+    await getCommunityLegacyPosts(communityId, first.nextCursor);
+    expect(query.or).toHaveBeenCalledWith(
+      `created_at.lt.${createdAt},and(created_at.eq.${createdAt},id.lt.${history[49].id})`,
     );
   });
 });

@@ -20,7 +20,7 @@ export async function CommunityPhotosPanel({ posts }: CommunityPhotosPanelProps)
   if (photos.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center text-sm text-gray-600 dark:text-gray-400">
-        Aún no se han compartido fotos en esta comunidad.
+        {t('noPostPhotos')}
       </div>
     );
   }

@@ -11,6 +11,7 @@ import type { CommunityPostCursor } from '../../schemas/communityPostCursor.sche
 
 const POST_COLUMNS = 'id,community_id,author_id,body,media,created_at,updated_at';
 const HOME_PAGE_SIZE = 10;
+const LEGACY_PAGE_SIZE = 50;
 
 async function mapCommunityPostRows(
   communityId: string,
@@ -29,28 +30,35 @@ async function mapCommunityPostRows(
   return rows.map((row) => mapPost(row, profileMap.get(row.author_id), communitySlug));
 }
 
-export const getCommunityHomePosts = cache(async (
+async function getCursorPostPage(
   communityId: string,
   cursor: CommunityPostCursor | null,
-): Promise<{ posts: CommunityPost[]; nextCursor: CommunityPostCursor | null }> => {
+  pageSize: number,
+): Promise<{ posts: CommunityPost[]; nextCursor: CommunityPostCursor | null }> {
   const client = await getServerClient();
   let query = client.from('community_posts').select(POST_COLUMNS)
     .eq('community_id', communityId)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
-    .limit(HOME_PAGE_SIZE + 1);
+    .limit(pageSize + 1);
   if (cursor) query = query.or(`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`);
   const { data, error } = await query;
   if (error) throw new Error('No se pudieron cargar las publicaciones.');
   const rows = (data ?? []) as CommunityPostRow[];
-  const visibleRows = rows.slice(0, HOME_PAGE_SIZE);
+  const visibleRows = rows.slice(0, pageSize);
   const last = visibleRows.at(-1);
   return {
     posts: await mapCommunityPostRows(communityId, visibleRows, client),
-    nextCursor: rows.length > HOME_PAGE_SIZE && last
+    nextCursor: rows.length > pageSize && last
       ? { createdAt: last.created_at, id: last.id } : null,
   };
-});
+}
+
+export const getCommunityHomePosts = cache((communityId: string, cursor: CommunityPostCursor | null) =>
+  getCursorPostPage(communityId, cursor, HOME_PAGE_SIZE));
+
+export const getCommunityLegacyPosts = cache((communityId: string, cursor: CommunityPostCursor | null) =>
+  getCursorPostPage(communityId, cursor, LEGACY_PAGE_SIZE));
 
 export async function getCommunityPosts(
   communityId: string,

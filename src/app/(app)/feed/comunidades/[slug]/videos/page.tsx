@@ -2,7 +2,7 @@ import { CommunityLibraryPage } from '@/features/communities/components/library/
 
 export default async function Page({ params, searchParams }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ q?: string; carpeta?: string }>;
+  searchParams: Promise<{ q?: string; carpeta?: string; legacyCursor?: string; legacyPage?: string }>;
 }) {
   const { slug } = await params;
   return <CommunityLibraryPage slug={slug} kind="video" searchParams={await searchParams} />;
