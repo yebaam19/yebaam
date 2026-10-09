@@ -3,6 +3,7 @@ import { CommunityPostComposer } from './CommunityPostComposer';
 import { CommunityPostCard } from './CommunityPostCard';
 import { CommunityFeaturedPhotos } from './CommunityFeaturedPhotos';
 import { CommunityTopTabs } from './CommunityTopTabs';
+import { CommunityTopTabSettings } from './CommunityTopTabSettings';
 import { CommunityFeaturedSections } from './CommunityFeaturedSections';
 import { CommunityThemeSettings } from './CommunityThemeSettings';
 import { CommunityAdminPanel } from './CommunityAdminPanel';
@@ -16,6 +17,7 @@ import { safeExternalHref } from '@/lib/safe-href';
 import { getCommunityRoleGrants } from '@/features/communities/server/community-roles.server';
 import type { CommunitySection } from '../types/communityPlan.types';
 import type { CommunityTheme } from '../types/communityTheme.types';
+import type { CommunityTopTab } from '../types/communityTopTab.types';
 
 interface CommunityHomeMainProps {
   community: Community;
@@ -23,6 +25,7 @@ interface CommunityHomeMainProps {
   viewerState: ViewerJoinState;
   pendingRequests: PendingJoinRequest[];
   sections: CommunitySection[];
+  topTabs: CommunityTopTab[];
   theme: CommunityTheme;
   canManageTheme: boolean;
 }
@@ -33,6 +36,7 @@ export async function CommunityHomeMain({
   viewerState,
   pendingRequests,
   sections,
+  topTabs,
   theme,
   canManageTheme,
 }: CommunityHomeMainProps) {
@@ -45,7 +49,7 @@ export async function CommunityHomeMain({
 
   return (
     <div className="space-y-6">
-      <CommunityTopTabs slug={c.slug} />
+      <CommunityTopTabs slug={c.slug} saved={topTabs} canManage={canManageTheme} />
 
       {isOwner && rolePage && (
         <CommunityAdminPanel
@@ -57,6 +61,7 @@ export async function CommunityHomeMain({
       )}
 
       {canManageTheme && <CommunityThemeSettings initial={theme} />}
+      {canManageTheme && <CommunityTopTabSettings communityId={c.id} slug={c.slug} saved={topTabs} />}
 
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
         <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">

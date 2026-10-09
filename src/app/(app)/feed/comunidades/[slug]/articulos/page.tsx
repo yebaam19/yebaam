@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
 import { canManageCommunityArticle, getCommunityArticlePage } from '@/features/communities/server/community-articles.server';
 import { CommunityTopTabs } from '@/features/communities/components/CommunityTopTabs';
+import { getCommunityProfileCapabilities } from '@/features/communities/server/community-plan.server';
+import { getCommunityTopTabs } from '@/features/communities/server/community-top-tabs.server';
 import { CommunityArticleCard } from '@/features/communities/components/CommunityArticleCard';
 import { NewspaperIcon, PencilSquareIcon } from '@/components/icons/heroicons-shim';
 
@@ -14,7 +16,10 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
   const [{ slug }, filters] = await Promise.all([params, searchParams]);
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
-  const canManage = await canManageCommunityArticle(community.id);
+  const [canManage, capabilities, topTabs] = await Promise.all([
+    canManageCommunityArticle(community.id), getCommunityProfileCapabilities(community.id),
+    getCommunityTopTabs(community.id),
+  ]);
   const q = (filters.q ?? '').trim().slice(0, 100);
   const category = (filters.category ?? '').trim().slice(0, 120);
   let page;
@@ -30,7 +35,7 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
   if (page.nextCursor) query.set('cursor', page.nextCursor);
   const nextHref = `/feed/comunidades/${slug}/articulos?${query.toString()}`;
   return <div className="space-y-6">
-    <CommunityTopTabs slug={slug} />
+    <CommunityTopTabs slug={slug} saved={topTabs} canManage={capabilities.settings} />
     <header className="flex flex-wrap items-end justify-between gap-3">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">Artículos</h1>

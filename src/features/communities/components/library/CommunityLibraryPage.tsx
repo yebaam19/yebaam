@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 import { getCommunityBySlug, getCommunityPosts } from '../../server/communities.server';
 import { getCommunityProfileCapabilities } from '../../server/community-plan.server';
+import { getCommunityTopTabs } from '../../server/community-top-tabs.server';
 import { getAssetFolder, getAssetFolders, getLibraryAssets } from '../../server/community-library.server';
 import type { AssetKind } from '../../types/communityLibrary.types';
 import { CommunityTopTabs } from '../CommunityTopTabs';
@@ -18,10 +19,11 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
   if (!community) notFound();
   const search = typeof searchParams.q === 'string' ? searchParams.q.trim().slice(0, 100) : '';
   const folderId = searchParams.carpeta === 'none' ? null : z.uuid().safeParse(searchParams.carpeta).success ? searchParams.carpeta : undefined;
-  const [initial, folders, capabilities, t, selectedFolder] = await Promise.all([
+  const [initial, folders, capabilities, t, selectedFolder, topTabs] = await Promise.all([
     getLibraryAssets(community.id, kind, folderId, search, null, pdfOnly), getAssetFolders(community.id, kind),
     getCommunityProfileCapabilities(community.id), getTranslations('communities.library'),
     folderId ? getAssetFolder(community.id, folderId, kind) : null,
+    getCommunityTopTabs(community.id),
   ]);
   if (folderId && !selectedFolder) notFound();
   const initialFolders = selectedFolder && !folders.items.some((folder) => folder.id === selectedFolder.id)
@@ -29,7 +31,7 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
   const path = pdfOnly ? 'pdf' : kind === 'image' ? 'fotos' : kind === 'video' ? 'videos' : 'archivos';
   const legacy = kind !== 'document' ? await getCommunityPosts(community.id, { page: 1, limit: 50 }) : null;
   return <div className="space-y-5">
-    <CommunityTopTabs slug={slug} />
+    <CommunityTopTabs slug={slug} saved={topTabs} canManage={capabilities.settings} />
     <LibraryWorkspace key={crypto.randomUUID()} communityId={community.id} kind={kind} initial={initial} folders={initialFolders}
       canEdit={capabilities.content} basePath={`/feed/comunidades/${slug}/${path}`} search={search} folderId={folderId} pdfOnly={pdfOnly} />
     {legacy && <details className="rounded-xl bg-white p-4 dark:bg-neutral-800">
