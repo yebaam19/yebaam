@@ -4,6 +4,7 @@ import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { slugifyCommunity } from '@/lib/api/communities';
 import { isValidWebsite } from '@/lib/safe-href';
 import { ensureCommunityForumSpace } from '../server/community-forum.server';
+import { registerCommunityHeaderImage } from '../server/community-header-image-receipt.server';
 import type { CreateCommunityDto } from '../types/community.types';
 import {
   type ActionResult,
@@ -62,6 +63,13 @@ export async function createCommunity(
       ok: false,
       error: `Solo puedes crear hasta ${MAX_COMMUNITIES_PER_OWNER} comunidades.`,
     };
+  }
+
+  for (const imageId of [dto.coverImageId, dto.profileImageId]) {
+    if (imageId == null) continue;
+    if (typeof imageId !== 'string' || !await registerCommunityHeaderImage(imageId, userId)) {
+      return { ok: false, error: 'No se pudo verificar la portada o el logo. Selecciónalo de nuevo.' };
+    }
   }
 
   // Slug collision retry — service-role for the existence check so we don't

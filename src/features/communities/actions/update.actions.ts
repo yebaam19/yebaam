@@ -1,7 +1,6 @@
 'use server';
 
 import { getServerClient } from '@/utils/supabase/server';
-import { DEFAULT_IMAGE_FRAMING } from '../schemas/communityHeaderImage.schema';
 import { isValidWebsite } from '@/lib/safe-href';
 import type { UpdateCommunityDto } from '../types/community.types';
 import {
@@ -11,13 +10,16 @@ import {
 } from './_shared';
 
 export async function updateCommunity(
-  dto: UpdateCommunityDto & { coverImageId?: string | null; profileImageId?: string | null },
+  dto: UpdateCommunityDto,
 ): Promise<ActionResult<{ slug: string }>> {
   const userId = await requireUserId();
   if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
 
   if (!isValidWebsite(dto.website)) {
     return { ok: false, error: 'El sitio web debe ser una URL http(s) válida.' };
+  }
+  if (Object.hasOwn(dto, 'coverImageId') || Object.hasOwn(dto, 'profileImageId')) {
+    return { ok: false, error: 'Edita la portada y el logo desde sus controles de imagen.' };
   }
 
   const client = await getServerClient();
@@ -32,8 +34,6 @@ export async function updateCommunity(
   if (dto.tags !== undefined) patch.tags = dto.tags;
   if (dto.allowMemberPosts !== undefined) patch.allow_member_posts = dto.allowMemberPosts;
   if (dto.requireApproval !== undefined) patch.require_approval = dto.requireApproval;
-  if (dto.coverImageId !== undefined) { patch.cover_image = dto.coverImageId; patch.cover_framing = DEFAULT_IMAGE_FRAMING; }
-  if (dto.profileImageId !== undefined) { patch.profile_image = dto.profileImageId; patch.profile_framing = DEFAULT_IMAGE_FRAMING; }
   if (dto.rules !== undefined) {
     patch.rules = dto.rules.map((r, idx) => ({
       id: `rule-${idx}`,

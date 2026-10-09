@@ -325,8 +325,8 @@ extremo; existencia de un componente anterior no equivale a verificación.
 
 | PDF | Requisito completo | Evidencia actual / trabajo pendiente |
 | --- | --- | --- |
-| 1; aceptación 1 | Perfiles independientes | `communities` existente; validar creación y persistencia desde UI. |
-| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Editor de portada/logo con previsualización, posición, zoom y eliminación confirmada implementado; encuadre/versionado/auditoría probados con RLS. Administrador delegado activo ya puede editar ambas imágenes mediante RPC acotada, probado con rollback. En la comunidad de prueba, los IDs de portada/avatar guardados en Supabase se cargan correctamente desde Cloudflare Images en localhost. La cabecera ahora presenta descripción breve y ubicación junto al logo, muestra sitio web solo con enlace HTTP seguro y reduce el lienzo verde cuando no hay portada; escritorio y móvil revisados en localhost. Pendiente carga y guardado nuevos autenticados, limpieza de originales huérfanos y QA con sesión de administrador. |
+| 1; aceptación 1 | Perfiles independientes | La comunidad MVP persiste en Supabase y se abre desde la UI. La cuenta QA actual tiene 3/3 comunidades permitidas; falta verificar una creación nueva y su recarga con otra cuenta o tras liberar un cupo de forma autorizada. |
+| 2.1–2.2; aceptación 2 | Portada/logo: subir, reemplazar, borrar, recortar, encuadrar y previsualizar | Editor de portada/logo con previsualización, posición, zoom y eliminación confirmada implementado; encuadre/versionado/auditoría probados con RLS. Administrador delegado activo ya puede editar ambas imágenes mediante RPC acotada, probado con rollback. Una constancia privada, creada solo tras verificar Cloudflare, impide adjuntar IDs de imágenes ajenas mediante PostgREST en la creación o edición; prueba SQL con rollback y pruebas de acciones pasan. En la comunidad de prueba, los IDs de portada/avatar guardados en Supabase se cargan correctamente desde Cloudflare Images en localhost. La cabecera ahora presenta descripción breve y ubicación junto al logo, muestra sitio web solo con enlace HTTP seguro y reduce el lienzo verde cuando no hay portada; escritorio y móvil revisados en localhost. Pendiente carga y guardado nuevos autenticados, limpieza de originales huérfanos y QA con sesión de administrador. |
 | 2.3; aceptación 3–4 | Cabecera institucional con cuatro videos, metadatos, orden y reproducción consecutiva optativa | Modelo transaccional, selector/orden, cabecera y reproductor optativo implementados; pendiente QA visual con cuatro medios reales y persistencia autenticada del conjunto. |
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados. Sección oculta y borrador con descripción, historia y ubicación guardados/recargados en localhost; RLS anónimo verificado. Pendiente publicación/lectura multirol y medios reales. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
@@ -580,6 +580,10 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   y 16:9 bajo `sm`. El logo usa marco circular. No hay copias raster recortadas.
 - Acción con sesión verificada y capacidad `settings`; una imagen nueva requiere
   procedencia `uploadedBy` del usuario, estado listo y ausencia de firma privada.
+  La verificación crea una constancia privada en Supabase; un trigger exige
+  esa constancia para todo ID nuevo en portada/logo, incluso si la escritura
+  llega directamente a PostgREST. El mismo control cubre imágenes elegidas
+  durante la creación de una comunidad. El usuario no puede crear constancias.
   La escritura usa una RPC exclusiva de `service_role` que vuelve a comprobar
   propietario o administrador delegado con membresía activa bajo bloqueo, y solo
   modifica la imagen solicitada. No amplía la política UPDATE de `communities`.

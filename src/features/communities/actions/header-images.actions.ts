@@ -1,8 +1,8 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { getImageProvenance } from '@/lib/cloudflare/images';
 import { getServiceClient } from '@/utils/supabase/server';
 import { requireProfileSession } from '../server/profile-session.server';
+import { registerCommunityHeaderImage } from '../server/community-header-image-receipt.server';
 import type { ActionResult } from './_shared';
 import { headerImageSchema, DEFAULT_IMAGE_FRAMING } from '../schemas/communityHeaderImage.schema';
 
@@ -28,8 +28,7 @@ export async function saveCommunityHeaderImage(input: unknown): Promise<ActionRe
     }
     if (row.header_image_version !== value.expectedVersion) return { ok: false, error: 'Las imágenes cambiaron. Recarga antes de guardar; conserva tu archivo para volver a seleccionarlo.' };
     if (value.imageId && value.imageId !== row[imageKey]) {
-      const provenance = await getImageProvenance(value.imageId);
-      if (!provenance?.ready || provenance.requiresSignature || provenance.uploadedBy !== userId) {
+      if (!await registerCommunityHeaderImage(value.imageId, userId)) {
         return { ok: false, error: 'La imagen no está disponible o no pertenece a tu cuenta.' };
       }
     }

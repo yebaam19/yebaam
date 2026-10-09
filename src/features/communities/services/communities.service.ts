@@ -115,11 +115,7 @@ class CommunitiesService {
   }
 
   async updateCommunity(data: UpdateCommunityDto): Promise<CommunityResponse> {
-    const dto = data as UpdateCommunityDto & {
-      coverImageId?: string | null;
-      profileImageId?: string | null;
-    };
-    const result = await updateCommunityAction(dto);
+    const result = await updateCommunityAction(data);
     if (!result.ok) return { success: false, data: {} as Community, message: result.error };
     const updated = await getCommunityBySlugAction(result.data.slug);
     return {

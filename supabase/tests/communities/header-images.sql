@@ -6,14 +6,33 @@ begin
   select array_agg(id) into users from (select p.id from public.profiles p join auth.users u on u.id=p.id order by p.id limit 2) x;
   if cardinality(users)<2 then raise exception 'Two profiles required'; end if;
   owner_id:=users[1]; stranger_id:=users[2];
+  insert into public.community_header_image_receipts(image_id,uploaded_by) values
+    ('11111111-1111-4111-8111-111111111111',owner_id),
+    ('22222222-2222-4222-8222-222222222222',owner_id),
+    ('header-test-aaaaaaaaaaaaaaaa',stranger_id),
+    ('header-test-bbbbbbbbbbbbbbbb',stranger_id);
+  perform set_config('request.jwt.claim.sub',owner_id::text,true);
   insert into public.communities(id,owner_id,name,slug,privacy,cover_image)
     values(org,owner_id,'Framing rollback','framing-rollback-'||org,'PRIVATE','11111111-1111-4111-8111-111111111111');
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
   set local role authenticated;
   if (select header_image_version from public.communities where id=org)<>1 then raise exception 'Bad default version'; end if;
+  begin
+    insert into public.communities(id,owner_id,name,slug,privacy,cover_image)
+      values(gen_random_uuid(),owner_id,'Unverified cover','unverified-cover-'||org,
+        'PUBLIC','header-test-unverifiedimage');
+    raise exception 'Direct creation accepted an unverified cover';
+  exception when insufficient_privilege then null; end;
   update public.communities set cover_framing='{"x":20,"y":80,"zoom":2}' where id=org and header_image_version=1;
   if (select header_image_version from public.communities where id=org)<>2 then raise exception 'Missing version increment'; end if;
   if (select cover_framing from public.communities where id=org)<>'{"x":20,"y":80,"zoom":2}'::jsonb then raise exception 'Framing not stored'; end if;
+  begin
+    update public.communities set cover_image='header-test-unverifiedimage' where id=org;
+    raise exception 'Unverified direct cover assignment succeeded';
+  exception when insufficient_privilege then null; end;
+  if (select cover_image from public.communities where id=org)<>'11111111-1111-4111-8111-111111111111' then
+    raise exception 'Rejected cover assignment changed the image';
+  end if;
   update public.communities set cover_framing='{"x":0,"y":0,"zoom":1}' where id=org and header_image_version=1;
   get diagnostics affected=row_count;
   if affected<>0 then raise exception 'Stale version overwrote framing'; end if;
@@ -58,6 +77,10 @@ begin
   if has_function_privilege('anon','public.save_community_header_image(uuid,uuid,text,text,jsonb,integer)','EXECUTE')
     or has_function_privilege('authenticated','public.save_community_header_image(uuid,uuid,text,text,jsonb,integer)','EXECUTE')
   then raise exception 'Client can call privileged header RPC'; end if;
+  if has_table_privilege('authenticated','public.community_header_image_receipts','INSERT')
+    or has_table_privilege('authenticated','public.community_header_image_receipts','SELECT') then
+    raise exception 'Clients can forge image receipts';
+  end if;
   rev:=(select header_image_version from public.communities where id=org);
   set local role service_role;
   begin

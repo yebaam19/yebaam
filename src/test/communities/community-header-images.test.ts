@@ -5,12 +5,14 @@ import { DEFAULT_IMAGE_FRAMING as framing } from '@/features/communities/schemas
 
 const mocks = vi.hoisted(() => ({
   profileSession: vi.fn(), from: vi.fn(), rpc: vi.fn(),
-  provenance: vi.fn(), revalidate: vi.fn(),
+  register: vi.fn(), revalidate: vi.fn(),
 }));
 vi.mock('@/features/communities/server/profile-session.server', () => ({
   requireProfileSession: mocks.profileSession,
 }));
-vi.mock('@/lib/cloudflare/images', () => ({ getImageProvenance: mocks.provenance }));
+vi.mock('@/features/communities/server/community-header-image-receipt.server', () => ({
+  registerCommunityHeaderImage: mocks.register,
+}));
 vi.mock('@/utils/supabase/server', () => ({
   getServerClient: async () => ({ from: mocks.from }),
   getServiceClient: () => ({ rpc: mocks.rpc }),
@@ -28,7 +30,7 @@ function query(data: unknown, error: unknown = null) {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.profileSession.mockResolvedValue({ ok: true, session: { userId: 'admin', client: { from: mocks.from } } });
-  mocks.provenance.mockResolvedValue({ uploadedBy: 'admin', ready: true, requiresSignature: false });
+  mocks.register.mockResolvedValue(true);
   mocks.rpc.mockResolvedValue({ data: 2, error: null });
 });
 
@@ -62,15 +64,13 @@ describe('Community identity images', () => {
       p_community_id: communityId, p_actor_id: 'admin', p_target: 'cover',
       p_image_id: imageId, p_framing: { ...framing, zoom: 2 }, p_expected_version: 1,
     });
-    expect(mocks.provenance).not.toHaveBeenCalled();
+    expect(mocks.register).not.toHaveBeenCalled();
   });
-  it('checks Cloudflare ownership, readiness and private-image status before a new attachment', async () => {
+  it('requires a verified upload receipt before a new attachment', async () => {
     mocks.from.mockReturnValue(query({ ...row, cover_image: null }));
-    for (const provenance of [null, { uploadedBy: 'other', ready: true },
-      { uploadedBy: 'admin', ready: false }, { uploadedBy: 'admin', ready: true, requiresSignature: true }]) {
-      mocks.provenance.mockResolvedValueOnce(provenance);
-      expect((await saveCommunityHeaderImage(payload)).ok).toBe(false);
-    }
+    mocks.register.mockResolvedValueOnce(false);
+    expect((await saveCommunityHeaderImage(payload)).ok).toBe(false);
+    expect(mocks.register).toHaveBeenCalledWith(imageId, 'admin');
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it('surfaces role revocation and a version race from the locked database write', async () => {
