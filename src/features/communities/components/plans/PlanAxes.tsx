@@ -21,6 +21,7 @@ export function PlanAxes({ section, initial, selectedId, basePath, canEdit, onCr
   basePath: string; canEdit: boolean; onCreate: () => void;
 }) {
   const t = useTranslations('communities.plans');
+  const isRules = section.kind === 'rules';
   const [expanded, setExpanded] = useState(false);
   const [ordering, setOrdering] = useState(false);
   const navigationId = useId();
@@ -33,18 +34,18 @@ export function PlanAxes({ section, initial, selectedId, basePath, canEdit, onCr
   return <div className="min-w-0">
     <button type="button" aria-expanded={expanded} aria-controls={navigationId} onClick={() => setExpanded(!expanded)}
       className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg bg-neutral-50 px-3 py-2 text-left text-sm font-medium text-neutral-800 focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 xl:hidden dark:bg-neutral-900 dark:text-neutral-100">
-      <span>{t('axes')}</span><ChevronDown size={18} aria-hidden="true" className={expanded ? 'rotate-180' : ''} />
+      <span>{t(isRules ? 'rules.axes' : 'axes')}</span><ChevronDown size={18} aria-hidden="true" className={expanded ? 'rotate-180' : ''} />
     </button>
     <div id={navigationId} className={expanded ? 'block' : 'hidden xl:block'}>
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <h3 className="hidden text-sm font-semibold xl:block">{t('axes')}</h3>
+      <h3 className="hidden text-sm font-semibold xl:block">{t(isRules ? 'rules.axes' : 'axes')}</h3>
       {canEdit && <div className="flex flex-wrap gap-1">
-        <Button plain disabled={mutation.blocked} onClick={onCreate}>{t('new.axis')}</Button>
+        <Button plain disabled={mutation.blocked} onClick={onCreate}>{t(isRules ? 'rules.new.axis' : 'new.axis')}</Button>
         <Button plain aria-pressed={ordering} onClick={() => setOrdering(!ordering)}>{t('reorder')}</Button>
       </div>}
     </div>
-    {!page.items.length && <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">{t('noAxes')}</p>}
-    <nav aria-label={t('axes')} className="mt-3">
+    {!page.items.length && <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">{t(isRules ? 'rules.noAxes' : 'noAxes')}</p>}
+    <nav aria-label={t(isRules ? 'rules.axes' : 'axes')} className="mt-3">
       <ol className="divide-y divide-neutral-200 dark:divide-neutral-700">
         {page.items.map((axis, index) => <li key={axis.id} className="py-2"
           onDragOver={(event) => {
@@ -77,7 +78,7 @@ export function PlanAxes({ section, initial, selectedId, basePath, canEdit, onCr
       </ol>
     </nav>
     {page.nextCursor && <Button outline disabled={page.pending} onClick={page.loadMore} className="mt-3">
-      {page.pending ? t('loading') : t('loadAxes')}
+      {page.pending ? t('loading') : t(isRules ? 'rules.loadAxes' : 'loadAxes')}
     </Button>}
     <PlanFeedback error={page.error ?? mutation.error} status={mutation.status} />
     </div>

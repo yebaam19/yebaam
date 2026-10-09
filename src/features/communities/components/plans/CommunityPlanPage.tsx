@@ -23,7 +23,7 @@ export async function CommunityPlanPage({ slug, kind, axisId }: { slug: string; 
     if (!capabilities.settings && !legacyRules.length) notFound();
     return <section className="rounded-xl bg-white p-6 text-neutral-900 dark:bg-neutral-800 dark:text-white">
       <h2 className="mb-4 text-2xl font-semibold">{t(`titles.${kind}`)}</h2>
-      {legacyRules.length ? <RulesList rules={legacyRules} isOwner={capabilities.settings} /> : <p>{t('setupHint')}</p>}
+      {legacyRules.length ? <RulesList rules={legacyRules} isOwner={capabilities.settings} /> : <p>{t(kind === 'rules' ? 'rules.setupHint' : 'setupHint')}</p>}
       {capabilities.settings && <PlanSectionSettings communityId={community.id} kind={kind} hasLegacyRules={legacyRules.length > 0} />}
     </section>;
   }

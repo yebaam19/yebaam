@@ -16,9 +16,9 @@ import { PlanFeedback } from './PlanFeedback';
 
 const PlanTextEditor = dynamic(() => import('./PlanTextEditor').then((module) => module.PlanTextEditor), { ssr: false });
 
-export function PlanItemForm({ communityId, sectionId, kind, axisId, item, basePath, onClose, editorId }: {
+export function PlanItemForm({ communityId, sectionId, kind, axisId, item, basePath, onClose, editorId, isRules = false }: {
   communityId: string; sectionId: string; kind: 'axis' | 'point'; axisId?: string;
-  item?: PlanAxis | PlanPoint; basePath: string; onClose: () => void; editorId?: string;
+  item?: PlanAxis | PlanPoint; basePath: string; onClose: () => void; editorId?: string; isRules?: boolean;
 }) {
   const t = useTranslations('communities.plans');
   const router = useRouter();
@@ -44,7 +44,7 @@ export function PlanItemForm({ communityId, sectionId, kind, axisId, item, baseP
   return (
     <form onSubmit={(event) => { event.preventDefault(); save(new FormData(event.currentTarget)); }}
       className="my-4 space-y-4 rounded-xl border border-neutral-300 p-4 dark:border-neutral-600">
-      <h3 className="text-lg font-semibold">{t(item ? `edit.${kind}` : `new.${kind}`)}</h3>
+      <h3 className="text-lg font-semibold">{t(`${isRules ? 'rules.' : ''}${item ? 'edit' : 'new'}.${kind}`)}</h3>
       <fieldset disabled={mutation.blocked} className="space-y-4">
         <label className="block text-sm font-medium">{t('title')}
           <Input autoFocus name="title" required maxLength={200} defaultValue={item?.title ?? ''} className="mt-2" />
@@ -59,7 +59,7 @@ export function PlanItemForm({ communityId, sectionId, kind, axisId, item, baseP
           <input name="published" type="checkbox" defaultChecked={item?.is_published ?? false} className="rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />
           {t('publish')}
         </label>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('publishHint')}</p>
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">{t(isRules ? 'rules.publishHint' : 'publishHint')}</p>
         <div className="flex flex-wrap gap-2">
           <Button type="submit" color="brand">{mutation.pending ? t('saving') : t('save')}</Button>
           <Button type="button" outline onClick={onClose}>{t('cancel')}</Button>
