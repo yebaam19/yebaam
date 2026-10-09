@@ -351,6 +351,9 @@ revelar títulos ni otros campos. Se verificaron rutas inexistentes en localhost
 incluida la vista móvil de artículos a 390 px. Estas respuestas llevan `noindex`;
 siguen devolviendo HTTP 200, porque `notFound()` bajo el layout actual deja el
 contenido vacío. Queda pendiente resolver ese comportamiento para recuperar 404.
+Las rutas de comunidad inexistente también conservan la vista de recuperación
+del layout, y ahora llevan `noindex`; la vista mínima de acceso a una comunidad
+privada o secreta invitada lleva la misma directiva.
 El fallo se reprodujo también en `next start` (404 con cuerpo visual vacío);
 convertir la página global 404 a Server Component y retirar temporalmente el
 ErrorBoundary no lo corrigieron, por lo que ambos intentos se revirtieron.

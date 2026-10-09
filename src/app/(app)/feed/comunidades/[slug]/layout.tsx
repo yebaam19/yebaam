@@ -26,7 +26,7 @@ export default async function CommunityLayout({ params, children }: CommunityLay
     const preview = await getCommunityAccessPreview(slug);
     if (!preview) return <CommunityUnavailable />;
     const viewerState = await getViewerJoinState(preview.id);
-    return <CommunityAccessPreview community={preview} viewerState={viewerState} />;
+    return <><meta name="robots" content="noindex" /><CommunityAccessPreview community={preview} viewerState={viewerState} /></>;
   }
 
   const [viewerState, sections, capabilities, migratedRules, showcase, headerImages, theme] = await Promise.all([
