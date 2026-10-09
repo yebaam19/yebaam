@@ -26,7 +26,7 @@ export function CommunityInstitutionalNav({ slug, sections, canManage, legacyRul
       const active = pathname === href || (tab.kind === 'leaders' && pathname.startsWith(`${href}/`));
       return <Link key={tab.kind} href={href as Route} aria-current={active ? 'page' : undefined}
         className={`shrink-0 rounded-t-lg px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 ${active
-          ? 'bg-secondary-100 text-primary-900 dark:bg-primary-900 dark:text-secondary-200'
+          ? 'bg-[var(--community-secondary)] text-[var(--community-primary)]'
           : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800'}`}>
         {tab.title}{tab.hidden && <span className="ml-2 text-xs">({t('hidden')})</span>}
       </Link>;

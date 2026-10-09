@@ -22,7 +22,7 @@ function detail(canEdit = true) {
   return render(<NextIntlClientProvider locale="es" messages={{ communities: messages }}><LeaderDetailWorkspace slug="test" leader={leader} categories={empty} category={null} contacts={null} media={[]} canEdit={canEdit} /></NextIntlClientProvider>);
 }
 function directory() {
-  return render(<NextIntlClientProvider locale="es" messages={{ communities: messages }}><LeadersWorkspace communityId={communityId} slug="test" section={{ id, community_id: communityId, kind: 'leaders', title: 'Equipo', position: 4, is_visible: true, version: 1 }} categories={empty} leaders={empty} capabilities={{ content: true, settings: false, plans: false, moderation: false }} /></NextIntlClientProvider>);
+  return render(<NextIntlClientProvider locale="es" messages={{ communities: messages }}><LeadersWorkspace communityId={communityId} slug="test" section={{ id, community_id: communityId, kind: 'leaders', title: 'Equipo', position: 4, is_visible: true, is_featured: false, version: 1 }} categories={empty} leaders={empty} capabilities={{ content: true, settings: false, plans: false, moderation: false }} /></NextIntlClientProvider>);
 }
 beforeEach(() => {
   vi.resetAllMocks(); mocks.save.mockResolvedValue({ ok: false, error: 'Error de prueba al guardar.' });

@@ -16,6 +16,8 @@ import type { ViewerJoinState } from '@/features/communities/server/communities.
 import type { Community } from '@/features/communities/types/community.types';
 import { CommunitySidebar } from './CommunitySidebar';
 import { CommunityHeaderImageButton } from './CommunityHeaderImageButton';
+import type { CommunityTheme } from '../types/communityTheme.types';
+import { communityThemeStyle } from '../lib/community-theme';
 
 interface CommunityLayoutShellProps {
   community: Community;
@@ -25,6 +27,7 @@ interface CommunityLayoutShellProps {
   profileHeader: ReactNode;
   headerImages: HeaderImages | null;
   canManageHeader: boolean;
+  theme: CommunityTheme;
 }
 
 export function CommunityLayoutShell({
@@ -35,6 +38,7 @@ export function CommunityLayoutShell({
   profileHeader,
   headerImages,
   canManageHeader,
+  theme,
 }: CommunityLayoutShellProps) {
   const t = useTranslations('communities');
   const router = useRouter();
@@ -94,8 +98,8 @@ export function CommunityLayoutShell({
     (viewerState.kind === 'none' && c.privacy === 'SECRET');
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      {!isArticleRoute && <div className="relative aspect-video overflow-hidden sm:aspect-[3/1] bg-primary-900">
+    <div style={communityThemeStyle(theme)} className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+      {!isArticleRoute && <div className="relative aspect-video overflow-hidden bg-[var(--community-primary)] sm:aspect-[3/1]">
         {c.coverImageUrl && (
           <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}

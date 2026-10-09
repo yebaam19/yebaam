@@ -130,6 +130,9 @@ dist/
 !supabase/migrations/20261009010000_community_forum_reports.sql
 !supabase/migrations/20261009010500_community_forum_report_actor_indexes.sql
 !supabase/migrations/20261009011000_community_forum_report_erasure.sql
+!supabase/migrations/20261009012000_community_sections_featured.sql
+!supabase/migrations/20261009012500_community_profile_brand_theme.sql
+!supabase/migrations/20261009013000_community_sections_private_read.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

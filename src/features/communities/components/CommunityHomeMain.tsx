@@ -3,6 +3,8 @@ import { CommunityPostComposer } from './CommunityPostComposer';
 import { CommunityPostCard } from './CommunityPostCard';
 import { CommunityFeaturedPhotos } from './CommunityFeaturedPhotos';
 import { CommunityTopTabs } from './CommunityTopTabs';
+import { CommunityFeaturedSections } from './CommunityFeaturedSections';
+import { CommunityThemeSettings } from './CommunityThemeSettings';
 import { CommunityAdminPanel } from './CommunityAdminPanel';
 import type {
   PendingJoinRequest,
@@ -12,12 +14,17 @@ import type { Community, CommunityPost } from '@/features/communities/types/comm
 import { GlobeAltIcon } from '@/components/icons/heroicons-shim';
 import { safeExternalHref } from '@/lib/safe-href';
 import { getCommunityRoleGrants } from '@/features/communities/server/community-roles.server';
+import type { CommunitySection } from '../types/communityPlan.types';
+import type { CommunityTheme } from '../types/communityTheme.types';
 
 interface CommunityHomeMainProps {
   community: Community;
   posts: CommunityPost[];
   viewerState: ViewerJoinState;
   pendingRequests: PendingJoinRequest[];
+  sections: CommunitySection[];
+  theme: CommunityTheme;
+  canManageTheme: boolean;
 }
 
 export async function CommunityHomeMain({
@@ -25,6 +32,9 @@ export async function CommunityHomeMain({
   posts,
   viewerState,
   pendingRequests,
+  sections,
+  theme,
+  canManageTheme,
 }: CommunityHomeMainProps) {
   const t = await getTranslations('communities');
   const isOwner = viewerState.kind === 'owner';
@@ -45,6 +55,8 @@ export async function CommunityHomeMain({
           rolePage={rolePage}
         />
       )}
+
+      {canManageTheme && <CommunityThemeSettings initial={theme} />}
 
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
         <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
@@ -88,6 +100,8 @@ export async function CommunityHomeMain({
           </div>
         )}
       </section>
+
+      <CommunityFeaturedSections slug={c.slug} sections={sections} />
 
       <section className="@container">
         <div className="mb-4 flex items-baseline justify-between gap-3">

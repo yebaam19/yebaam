@@ -24,7 +24,7 @@ beforeEach(() => {
   mocks.section.mockResolvedValue({ ok: false, error: 'No se pudo guardar. Inténtalo de nuevo.' });
 });
 
-const section: CommunitySection = { id: 'section', community_id: 'community', kind: 'government', title: 'Programa', position: 0, is_visible: true, version: 1 };
+const section: CommunitySection = { id: 'section', community_id: 'community', kind: 'government', title: 'Programa', position: 0, is_visible: true, is_featured: false, version: 1 };
 const axis: PlanAxis = { id: 'axis', community_id: 'community', section_id: 'section', title: 'Trabajo', description: '', position: 0, is_published: true, version: 1 };
 const points: PlanPoint[] = ['Primero', 'Segundo'].map((title, position) => ({ ...axis, id: title, axis_id: axis.id, title, position, content: '<p>Propuesta.</p>' }));
 function workspace() {
@@ -51,16 +51,19 @@ describe('failed plan writes preserve user input', () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(mocks.refresh).not.toHaveBeenCalled();
   });
-  it('retains custom section title, position, and visibility on failure', async () => {
+  it('retains custom section title, position, visibility, and Home placement on failure', async () => {
     mount(<PlanSectionSettings communityId="community" kind="government" />);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Nuestro programa' } });
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '7' } });
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Mostrar esta sección/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Destacar en Inicio/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Crear sección' }));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo guardar'));
     expect(screen.getByRole('textbox')).toHaveValue('Nuestro programa');
     expect(screen.getByRole('spinbutton')).toHaveValue(7);
-    expect(screen.getByRole('checkbox')).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Mostrar esta sección/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Destacar en Inicio/ })).toBeChecked();
+    expect(mocks.section).toHaveBeenCalledWith(expect.objectContaining({ isVisible: true, isFeatured: true }));
     expect(mocks.refresh).not.toHaveBeenCalled();
   });
   it('blocks unrelated writes and axis navigation until the editor is saved or cancelled', async () => {

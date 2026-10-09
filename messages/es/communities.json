@@ -98,6 +98,15 @@
     "composerPlaceholder": "¿Qué quieres compartir con la comunidad?",
     "composerSubmit": "Publicar",
     "featuredPhotosHeading": "Fotos destacadas",
+    "featuredSectionsHeading": "Explora la comunidad",
+    "exploreSection": "Ver sección",
+    "featuredSectionDescriptions": {
+      "about": "Historia, propósito e identidad de la organización.",
+      "rules": "Principios y normas para participar.",
+      "government": "Ejes y propuestas del plan de gobierno.",
+      "economy": "Propuestas y prioridades económicas.",
+      "leaders": "Conoce a quienes representan a la organización."
+    },
     "featuredPhotosEmpty": "Aún no hay fotos destacadas.",
     "articleEyebrow": "ARTÍCULO DE LA COMUNIDAD",
     "reactions": {
@@ -111,6 +120,20 @@
     "onlyOwnerPosts": "Solo el propietario puede publicar en esta comunidad.",
     "noPosts": "No hay publicaciones aún. ¡Sé el primero en publicar!",
     "featuredVideosHeading": "Videos destacados"
+  },
+  "theme": {
+    "title": "Colores de la comunidad",
+    "hint": "Personaliza el perfil con variantes de verde y dorado de YEBAAM. Los controles mantienen el contraste y la identidad de la plataforma.",
+    "primary": "Color principal",
+    "secondary": "Color secundario",
+    "green": "Verde YEBAAM",
+    "forest": "Verde profundo",
+    "gold": "Dorado claro",
+    "amber": "Dorado cálido",
+    "preview": "Vista previa de la combinación",
+    "save": "Guardar colores",
+    "saving": "Guardando…",
+    "saved": "Colores guardados."
   },
   "sidebar": {
     "ariaLabel": "Secciones de la comunidad",
@@ -304,6 +327,8 @@
     "tabPosition": "Orden de la pestaña",
     "visible": "Mostrar esta sección",
     "visibleHint": "El contenido publicado será visible para quienes pueden acceder a la comunidad.",
+    "featured": "Destacar en Inicio",
+    "featuredHint": "Aparecerá como acceso directo cuando esta sección sea visible.",
     "saveSettings": "Guardar configuración",
     "createSection": "Crear sección",
     "settings": "Configurar título y visibilidad",

@@ -21,7 +21,7 @@ function Header({ community, canManageHeader, canEdit, showcase, headerImages }:
   const opener = useEditorReturnFocus('showcase');
   const editing = interaction.editor === 'showcase';
   const videos = showcase?.videos.flatMap((video) => video.asset?.kind === 'video' ? [video.asset as LibraryAsset] : []) ?? [];
-  return <div className="rounded-xl bg-white p-5 text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-white">
+  return <div className="rounded-xl border-t-4 border-[var(--community-primary)] bg-white p-5 text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-white">
     <div className={videos.length ? 'grid items-start gap-6 xl:grid-cols-[0.85fr_1.15fr]' : ''}>
       <div className="min-w-0 space-y-4">
         <CommunityIdentity community={community} headerImages={headerImages} canManageHeader={canManageHeader} stacked={videos.length > 0} />

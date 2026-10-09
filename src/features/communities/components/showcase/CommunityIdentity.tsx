@@ -17,8 +17,8 @@ export function CommunityIdentity({ community: c, canManageHeader, stacked, head
                     {c.profileImageUrl ? (
                       <FramedImage src={c.profileImageUrl} alt={c.name} framing={headerImages?.profile.framing} />
                     ) : (
-                      <div className="w-full h-full bg-secondary-500 text-primary-900 flex items-center justify-center">
-                        <span className="text-primary-900 font-bold text-2xl">
+                      <div className="w-full h-full bg-[var(--community-secondary)] text-[var(--community-primary)] flex items-center justify-center">
+                        <span className="font-bold text-2xl">
                           {c.name.charAt(0)}
                         </span>
                       </div>

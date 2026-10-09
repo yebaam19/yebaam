@@ -12,6 +12,7 @@ export interface CommunitySection {
   title: string;
   position: number;
   is_visible: boolean;
+  is_featured: boolean;
   version: number;
 }
 

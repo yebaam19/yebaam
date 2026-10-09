@@ -15,7 +15,7 @@ vi.mock('@/features/communities/actions/plans/queries.actions', () => ({ loadPla
 
 const section: CommunitySection = {
   id: 'section', community_id: 'community', kind: 'government', title: 'Nuestro programa',
-  position: 2, is_visible: true, version: 1,
+  position: 2, is_visible: true, is_featured: false, version: 1,
 };
 const axis: PlanAxis = {
   id: 'axis', community_id: 'community', section_id: 'section', title: 'Trabajo',

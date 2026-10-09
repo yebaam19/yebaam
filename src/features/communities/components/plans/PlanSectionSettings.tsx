@@ -25,6 +25,7 @@ export function PlanSectionSettings({ communityId, kind, section, hasLegacyRules
     mutation.run(() => saveCommunitySection({
       communityId, id, kind, title: form.get('title'),
       position: Number(form.get('position')), isVisible: form.get('visible') === 'on',
+      isFeatured: form.get('featured') === 'on',
       expectedVersion: section?.version,
     }));
   }
@@ -55,6 +56,10 @@ export function PlanSectionSettings({ communityId, kind, section, hasLegacyRules
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="visible" defaultChecked={section?.is_visible ?? false} className="mt-0.5 rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />
           <span>{t('visible')}<span className="mt-1 block text-neutral-600 dark:text-neutral-300">{t('visibleHint')}</span></span>
+        </label>
+        <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" name="featured" defaultChecked={section?.is_featured ?? false} className="mt-0.5 rounded text-primary-800 focus:ring-primary-800 dark:text-primary-400" />
+          <span>{t('featured')}<span className="mt-1 block text-neutral-600 dark:text-neutral-300">{t('featuredHint')}</span></span>
         </label>
         <Button type="submit" color="brand">{mutation.pending ? t('saving') : section ? t('saveSettings') : t('createSection')}</Button>
       </fieldset>

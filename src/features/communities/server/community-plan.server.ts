@@ -10,7 +10,7 @@ import type {
   CommunitySection, PlanAxis, PlanPage, PlanPoint, ProfileCapabilities,
 } from '../types/communityPlan.types';
 
-const SECTION_COLUMNS = 'id,community_id,kind,title,position,is_visible,version';
+const SECTION_COLUMNS = 'id,community_id,kind,title,position,is_visible,is_featured,version';
 const AXIS_COLUMNS = 'id,community_id,section_id,title,description,position,is_published,version';
 const PAGE_SIZE = 30;
 

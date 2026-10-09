@@ -5,6 +5,7 @@ import {
   getViewerJoinState,
 } from '@/features/communities/server/communities.server';
 import { getCommunityHeaderImages } from '@/features/communities/server/community-header-images.server';
+import { getCommunityTheme } from '@/features/communities/server/community-theme.server';
 import { getCommunityShowcase } from '@/features/communities/server/community-showcase.server';
 import { CommunityProfileHeader } from '@/features/communities/components/showcase/CommunityProfileHeader';
 import { CommunityLayoutShell } from '@/features/communities/components/CommunityLayoutShell';
@@ -21,13 +22,13 @@ export default async function CommunityLayout({ params, children }: CommunityLay
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
-  const [viewerState, sections, capabilities, migratedRules, showcase, headerImages] = await Promise.all([
+  const [viewerState, sections, capabilities, migratedRules, showcase, headerImages, theme] = await Promise.all([
     getViewerJoinState(community.id), getCommunitySections(community.id),
-    getCommunityProfileCapabilities(community.id), usesStructuredRules(community.id), getCommunityShowcase(community.id), getCommunityHeaderImages(community.id),
+    getCommunityProfileCapabilities(community.id), usesStructuredRules(community.id), getCommunityShowcase(community.id), getCommunityHeaderImages(community.id), getCommunityTheme(community.id),
   ]);
 
   return (
-    <CommunityLayoutShell headerImages={headerImages} canManageHeader={capabilities.settings} community={community} viewerState={viewerState} profileHeader={
+    <CommunityLayoutShell theme={theme} headerImages={headerImages} canManageHeader={capabilities.settings} community={community} viewerState={viewerState} profileHeader={
       <CommunityProfileHeader headerImages={headerImages} community={community} canManageHeader={capabilities.settings} canEdit={capabilities.content} showcase={showcase} />
     } institutionalNavigation={
       <CommunityInstitutionalNav slug={slug} sections={sections} canManage={capabilities.settings}

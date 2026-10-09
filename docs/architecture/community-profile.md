@@ -324,9 +324,9 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 5.3; aceptación 9 | Artículos: enriquecido, portada/resumen, autor/fecha, categorías/tags, adjuntos, borradores y publicación | Migraciones aplicadas: borradores privados, RPC versionado y moderación auditada; lectura RLS, paginación/búsqueda, editor, selectores de biblioteca y lector conectados. Dos artículos previos conservados; borrador guardado/recargado en localhost y archivado. Prueba SQL con rollback pasa. Pendiente QA con medios/adjuntos reales, publicación desde UI y validación multirol. |
 | 5.4; aceptación 9 | Documentos PDF/Office/TXT/ZIP: upload, reemplazo, carpetas, metadata, preview/descarga y visibilidad | Backend R2, UI y consumidor de retiro implementados; cron creado inactivo. Pendiente despliegue/activación, cargas abandonadas y prueba autenticada con archivo real. |
 | 6; aceptación 15 y 17 | Roles y permisos verificados en servidor; visitantes y miembros | Panel del propietario para asignar, editar y revocar administradores, editores y moderadores. RLS y acciones verifican propietario y membresía activa; salida revoca el permiso y queda en auditoría. Prueba SQL con rollback, acciones y vista responsive verificadas. Pendiente adopción de estos permisos en todos los módulos existentes y QA multirol real. |
-| 7; aceptación 5 | Colores, pestañas ordenables/ocultables, títulos por organización y secciones destacadas | Configuración de título, posición y visibilidad de planes conectada; colores por organización e inicio pendientes. |
+| 7; aceptación 5 | Colores, pestañas ordenables/ocultables, títulos por organización y secciones destacadas | Colores por comunidad restringidos a verde/dorado YEBAAM; cabecera, pestañas y navegación heredan la selección. Título, posición, visibilidad y destaque de cada sección se guardan con versión y auditoría; Inicio enlaza solo secciones visibles y destacadas. Guardado y restauración de colores verificados en localhost, y políticas de lectura/escritura probadas con rollback. Pendiente QA visual de tarjetas destacadas pobladas y ordenamiento con drag-and-drop. |
 | 8 | CRUD, separación, validación/optimización/procesamiento, paginación/búsqueda, historial, confirmaciones y borradores | Planes parcialmente implementados; completar medios, documentos, búsquedas y adopción transversal. |
-| 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. Componentes probados en vista aislada a 390/768/1440; falta flujo autenticado. |
+| 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. En localhost autenticado se verificó el desplazamiento real del sidebar en escritorio y en móvil con viewport bajo; el panel de colores se adapta a una columna. Pendiente flujo multirol. |
 | aceptación 18 | Persistencia tras recarga | SQL y pregunta privada Q&A verificados; pendiente cobertura UI de los demás módulos. |
 
 Orden de continuación: QA de galerías y adjuntos con medios reales →
@@ -338,6 +338,11 @@ No habilitar entradas incompletas sin la indicación Próximamente.
 
 - Proyecto Supabase verificado por MCP: `hwppwxavvamnljfcanje` (`yebaam`).
 - Migraciones del perfil aplicadas mediante `apply_migration` y conservadas en el repo.
+- `community_sections_featured`, `community_profile_brand_theme` y
+  `community_sections_private_read` aplicadas en Supabase. La última corrige la
+  lectura directa de títulos visibles de planes en comunidades privadas.
+  `supabase/tests/communities/theme-featured.sql` pasó con `ROLLBACK`: visitante,
+  miembro, expulsado y propietario; edición denegada, versión, auditoría y paleta.
 - `supabase/tests/communities/authorization.sql`: ejecutado con éxito en la base
   real; fixtures transaccionales y `ROLLBACK`, sin comunidades de prueba persistidas.
   Cubre anónimo/propietario/editor/moderador/admin/no propietario, revocación por

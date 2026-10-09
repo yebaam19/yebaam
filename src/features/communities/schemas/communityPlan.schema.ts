@@ -17,6 +17,7 @@ export const sectionInputSchema = z.object({
   title: title.max(120),
   position: z.number().int().min(0).max(2147483647).default(0),
   isVisible: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
   expectedVersion: version.optional(),
 });
 export const planItemInputSchema = planScopeSchema.extend({

@@ -81,10 +81,11 @@ export function CommunitySidebar({
             <Link
               key={item.href}
               href={item.href as Route}
+              style={isActive ? { backgroundColor: 'var(--community-secondary)', color: 'var(--community-primary)', borderColor: 'var(--community-primary)' } : undefined}
               className={cn(
                 'group flex items-center gap-2.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'border-primary-800 bg-secondary-100 text-primary-800 dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+                  ? 'font-semibold'
                   : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700/60',
               )}
             >

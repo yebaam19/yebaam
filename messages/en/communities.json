@@ -98,6 +98,15 @@
     "composerPlaceholder": "What do you want to share with the community?",
     "composerSubmit": "Post",
     "featuredPhotosHeading": "Featured photos",
+    "featuredSectionsHeading": "Explore the community",
+    "exploreSection": "View section",
+    "featuredSectionDescriptions": {
+      "about": "The organization’s history, purpose, and identity.",
+      "rules": "Principles and participation rules.",
+      "government": "Themes and government proposals.",
+      "economy": "Economic proposals and priorities.",
+      "leaders": "Meet the people representing the organization."
+    },
     "featuredPhotosEmpty": "No featured photos yet.",
     "articleEyebrow": "COMMUNITY ARTICLE",
     "reactions": {
@@ -111,6 +120,20 @@
     "onlyOwnerPosts": "Only the owner can post in this community.",
     "noPosts": "No posts yet. Be the first to post!",
     "featuredVideosHeading": "Featured videos"
+  },
+  "theme": {
+    "title": "Community colors",
+    "hint": "Customize this profile with YEBAAM green and gold variants. Controls keep the platform’s contrast and identity.",
+    "primary": "Primary color",
+    "secondary": "Secondary color",
+    "green": "YEBAAM green",
+    "forest": "Deep green",
+    "gold": "Light gold",
+    "amber": "Warm gold",
+    "preview": "Color combination preview",
+    "save": "Save colors",
+    "saving": "Saving…",
+    "saved": "Colors saved."
   },
   "sidebar": {
     "ariaLabel": "Community sections",
@@ -304,6 +327,8 @@
     "tabPosition": "Tab order",
     "visible": "Show this section",
     "visibleHint": "Published content will be visible to anyone who can access the community.",
+    "featured": "Feature on Home",
+    "featuredHint": "Appears as a shortcut when this section is visible.",
     "saveSettings": "Save settings",
     "createSection": "Create section",
     "settings": "Configure title and visibility",

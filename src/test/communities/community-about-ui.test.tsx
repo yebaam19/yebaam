@@ -24,7 +24,7 @@ const about: CommunityAbout = {
 function mount(canEdit = true) {
   return render(<NextIntlClientProvider locale="es" timeZone="America/Bogota" messages={{ communities: messages }}>
     <AboutWorkspace communityId={communityId} name="Comunidad de prueba" about={{ ...about, is_published: !canEdit }}
-      section={{ id, community_id: communityId, kind: 'about', title: 'Acerca de nosotros', position: 0, is_visible: true, version: 1 }}
+      section={{ id, community_id: communityId, kind: 'about', title: 'Acerca de nosotros', position: 0, is_visible: true, is_featured: false, version: 1 }}
       media={{ items: [], nextCursor: null }} capabilities={{ content: canEdit, settings: false, plans: false, moderation: false }} />
   </NextIntlClientProvider>);
 }

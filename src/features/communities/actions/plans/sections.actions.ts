@@ -16,6 +16,7 @@ export async function saveCommunitySection(input: unknown) {
   return runPlanAction(sectionInputSchema, input, 'settings', async ({ client }, value) => {
     const patch = {
       title: value.title, position: value.position, is_visible: value.isVisible,
+      is_featured: value.isFeatured,
     };
     const query = value.expectedVersion === undefined
       ? client.from('community_sections').insert({
