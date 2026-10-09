@@ -25,10 +25,10 @@ export function CommunityImagesStep({
     <>
       {/* Cover */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="comm-cover" className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {t('create.fields.coverImage')}
         </label>
-        <div className="relative h-32 w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-800">
+        <div className="relative h-28 w-full overflow-hidden rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 focus-within:border-primary-700 focus-within:ring-2 focus-within:ring-primary-200 dark:border-neutral-700 dark:bg-neutral-800">
           {coverPreview ? (
             <Image
               src={coverPreview}
@@ -47,6 +47,7 @@ export function CommunityImagesStep({
             </div>
           )}
           <input
+            id="comm-cover"
             type="file"
             accept="image/*"
             disabled={isUploadingCover}
@@ -61,10 +62,10 @@ export function CommunityImagesStep({
 
       {/* Profile */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="comm-profile" className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {t('create.fields.profileImage')}
         </label>
-        <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-800">
+        <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-dashed border-neutral-300 bg-neutral-50 focus-within:border-primary-700 focus-within:ring-2 focus-within:ring-primary-200 dark:border-neutral-700 dark:bg-neutral-800">
           {profilePreview ? (
             <Image
               src={profilePreview}
@@ -80,6 +81,7 @@ export function CommunityImagesStep({
             </div>
           )}
           <input
+            id="comm-profile"
             type="file"
             accept="image/*"
             disabled={isUploadingProfile}

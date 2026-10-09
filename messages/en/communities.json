@@ -2,6 +2,7 @@
   "list": {
     "title": "Communities",
     "subtitle": "Join communities of people with similar interests",
+    "joinError": "Could not join the community. Please try again.",
     "tabs": {
       "discover": "Discover",
       "myCommunities": "My Communities",
@@ -24,6 +25,7 @@
     "member": "Member",
     "requestAccess": "Request Access",
     "join": "Join",
+    "verified": "Verified community",
     "privacyPrivate": "Private",
     "privacyPublic": "Public",
     "privacySecret": "Secret"
@@ -54,7 +56,8 @@
     "closeAria": "Close",
     "errors": {
       "nameRequired": "Name is required.",
-      "imageUpload": "Error uploading the image"
+      "imageUpload": "Error uploading the image",
+      "createFailed": "Could not create the community. Please try again."
     },
     "privacyOptions": {
       "public": {
@@ -84,6 +87,8 @@
       "processing": "Processing...",
       "guest": "Sign in to join",
       "member": "Member",
+      "leave": "Leave community",
+      "leaveConfirm": "Leave this community? If it is private, you may need approval to rejoin.",
       "requestPending": "Request sent",
       "requestDeclined": "Request declined",
       "invited": "Accept invitation",

@@ -52,6 +52,7 @@ export function CommunityLayoutShell({
     setJoinError(null);
     startJoinTransition(async () => {
       if (viewerState.kind === 'member' || (c.isMember && viewerState.kind !== 'owner')) {
+        if (!window.confirm(t('detail.joinButton.leaveConfirm'))) return;
         try {
           await leaveMutation.mutateAsync(c.id);
         } catch (err) {
@@ -81,7 +82,7 @@ export function CommunityLayoutShell({
   const joinButtonLabel = (() => {
     if (joinTransition || leaveMutation.isPending) return t('detail.joinButton.processing');
     if (viewerState.kind === 'guest') return t('detail.joinButton.guest');
-    if (viewerState.kind === 'member' || c.isMember) return t('detail.joinButton.member');
+    if (viewerState.kind === 'member' || c.isMember) return t('detail.joinButton.leave');
     if (viewerState.kind === 'request_pending') return t('detail.joinButton.requestPending');
     if (viewerState.kind === 'request_declined') return t('detail.joinButton.requestDeclined');
     if (viewerState.kind === 'invited') return t('detail.joinButton.invited');

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { uploadService } from '@/lib/service/upload.service';
 import { createCommunity } from '@/features/communities/actions/create.actions';
 import {
@@ -39,6 +40,10 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const closeIfIdle = () => {
+    if (!submitting && !isUploadingCover && !isUploadingProfile) onClose();
+  };
 
   if (!open) return null;
 
@@ -93,46 +98,54 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
-    const result = await createCommunity({
-      name: name.trim(),
-      description: description.trim(),
-      category,
-      privacy,
-      tags,
-      location: location.trim() || undefined,
-      website: website.trim() || undefined,
-      coverImageId: coverImageId ?? undefined,
-      profileImageId: profileImageId ?? undefined,
-    });
-    setSubmitting(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
+    try {
+      const result = await createCommunity({
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        privacy,
+        tags,
+        location: location.trim() || undefined,
+        website: website.trim() || undefined,
+        coverImageId: coverImageId ?? undefined,
+        profileImageId: profileImageId ?? undefined,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      reset();
+      onClose();
+      router.push(`/feed/comunidades/${result.data.slug}`);
+      router.refresh();
+    } catch {
+      setError(t('create.errors.createFailed'));
+    } finally {
+      setSubmitting(false);
     }
-    reset();
-    onClose();
-    router.push(`/feed/comunidades/${result.data.slug}`);
-    router.refresh();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-white dark:bg-gray-900 shadow-xl">
+    <Dialog open={open} onClose={closeIfIdle} className="relative z-50">
+      <DialogBackdrop className="fixed inset-0 bg-black/50" />
+      <div className="fixed inset-0 flex items-center justify-center overflow-y-auto p-3 sm:p-6">
+        <DialogPanel className="relative max-h-[90dvh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl dark:bg-neutral-900">
         <button
           type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+          onClick={closeIfIdle}
+          disabled={submitting || isUploadingCover || isUploadingProfile}
+          className="absolute right-4 top-4 rounded-full p-2 text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-primary-800 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
           aria-label={t('create.closeAria')}
         >
           <XMarkIcon className="h-5 w-5" />
         </button>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4 p-5 sm:p-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <DialogTitle className="pr-10 text-xl font-semibold text-neutral-900 dark:text-white">
               {t('create.title')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            </DialogTitle>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
               {t('create.subtitle')}
             </p>
           </div>
@@ -166,7 +179,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           />
 
           {error && (
-            <p className="rounded-md bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
               {error}
             </p>
           )}
@@ -174,22 +187,23 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              onClick={closeIfIdle}
+              disabled={submitting || isUploadingCover || isUploadingProfile}
+              className="min-h-10 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
             >
               {t('create.actions.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || isUploadingCover || isUploadingProfile}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="min-h-10 rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? t('create.actions.submitting') : t('create.actions.submit')}
             </button>
           </div>
         </form>
+        </DialogPanel>
       </div>
-    </div>
+    </Dialog>
   );
 }

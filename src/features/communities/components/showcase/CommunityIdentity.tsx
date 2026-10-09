@@ -4,7 +4,7 @@ import type { HeaderImages } from '../../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
 import { UserGroupIcon, CheckBadgeIcon, DocumentTextIcon, LockClosedIcon, ArrowTrendingUpIcon } from '@/components/icons/heroicons-shim';
 import type { Community } from '../../types/community.types';
-import { formatMembersCount, getCategoryLabel, getCategoryColor, getPrivacyLabel } from '../../utils/communityHelpers';
+import { formatMembersCount, getCategoryLabel, COMMUNITY_CATEGORY_BADGE_CLASS, getPrivacyLabel } from '../../utils/communityHelpers';
 import { CommunityHeaderImageButton } from '../CommunityHeaderImageButton';
 
 export function CommunityIdentity({ community: c, canManageHeader, stacked, headerImages }: { community: Community; canManageHeader: boolean; stacked?: boolean; headerImages?: HeaderImages | null }) {
@@ -49,7 +49,7 @@ export function CommunityIdentity({ community: c, canManageHeader, stacked, head
 
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span
-                    className={`inline-block text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(c.category)}`}
+                    className={`inline-block text-xs font-medium px-2 py-1 rounded-full ${COMMUNITY_CATEGORY_BADGE_CLASS}`}
                   >
                     {getCategoryLabel(c.category)}
                   </span>

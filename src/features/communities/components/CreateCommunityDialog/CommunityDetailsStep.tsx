@@ -56,7 +56,7 @@ export function CommunityDetailsStep({
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
           required
-          className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-800 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
         />
       </div>
 
@@ -70,7 +70,7 @@ export function CommunityDetailsStep({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-800 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
         />
       </div>
 
@@ -83,7 +83,7 @@ export function CommunityDetailsStep({
           id="comm-cat"
           value={category}
           onChange={(e) => setCategory(e.target.value as CommunityCategory)}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-800 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
         >
           {CATEGORY_OPTIONS.map((cat) => (
             <option key={cat} value={cat}>
@@ -106,7 +106,7 @@ export function CommunityDetailsStep({
                 key={value}
                 className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 ${
                   privacy === value
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    ? 'border-primary-700 bg-primary-50 dark:border-primary-500 dark:bg-primary-900/20'
                     : 'border-gray-200 dark:border-gray-700'
                 }`}
               >
@@ -116,7 +116,7 @@ export function CommunityDetailsStep({
                   value={value}
                   checked={privacy === value}
                   onChange={() => setPrivacy(value)}
-                  className="mt-1"
+                  className="mt-1 accent-primary-800"
                 />
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">

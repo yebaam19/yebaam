@@ -2,6 +2,7 @@
   "list": {
     "title": "Comunidades",
     "subtitle": "Únete a comunidades de personas con intereses similares",
+    "joinError": "No se pudo unir a la comunidad. Inténtalo de nuevo.",
     "tabs": {
       "discover": "Descubrir",
       "myCommunities": "Mis Comunidades",
@@ -24,6 +25,7 @@
     "member": "Miembro",
     "requestAccess": "Solicitar Acceso",
     "join": "Unirse",
+    "verified": "Comunidad verificada",
     "privacyPrivate": "Privada",
     "privacyPublic": "Pública",
     "privacySecret": "Secreta"
@@ -54,7 +56,8 @@
     "closeAria": "Cerrar",
     "errors": {
       "nameRequired": "El nombre es obligatorio.",
-      "imageUpload": "Error subiendo la imagen"
+      "imageUpload": "Error subiendo la imagen",
+      "createFailed": "No se pudo crear la comunidad. Inténtalo de nuevo."
     },
     "privacyOptions": {
       "public": {
@@ -84,6 +87,8 @@
       "processing": "Procesando...",
       "guest": "Inicia sesión para unirte",
       "member": "Miembro",
+      "leave": "Salir de la comunidad",
+      "leaveConfirm": "¿Quieres salir de esta comunidad? Si es privada, podrías necesitar aprobación para volver.",
       "requestPending": "Solicitud enviada",
       "requestDeclined": "Solicitud rechazada",
       "invited": "Aceptar invitación",

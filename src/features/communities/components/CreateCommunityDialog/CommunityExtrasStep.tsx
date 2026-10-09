@@ -34,7 +34,7 @@ export function CommunityExtrasStep({
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-800 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
           />
         </div>
         <div>
@@ -47,7 +47,7 @@ export function CommunityExtrasStep({
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
             placeholder={t('create.placeholders.website')}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-800 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
           />
         </div>
       </div>
@@ -62,7 +62,7 @@ export function CommunityExtrasStep({
           value={tagsRaw}
           onChange={(e) => setTagsRaw(e.target.value)}
           placeholder={t('create.placeholders.tags')}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-800 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
         />
       </div>
     </>
