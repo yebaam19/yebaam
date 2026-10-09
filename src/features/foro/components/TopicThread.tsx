@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
 import { formatRelativeDate } from '@/features/foro/utils/format'
 import { Button } from '@/ui/Button'
@@ -53,14 +54,21 @@ export default function TopicThread(props: TopicThreadProps) {
 
   const toolbar = (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <Button
-        type="button"
-        onClick={() => replyRef.current?.focus()}
-        disabled={isLocked}
-        color="primary"
-      >
-        {isLocked ? t('thread.actions.topicLocked') : t('thread.actions.reply')}
-      </Button>
+      {isLocked ? (
+        <Button type="button" disabled color="primary">{t('thread.actions.topicLocked')}</Button>
+      ) : user ? (
+        <Button
+          type="button"
+          onClick={() => replyRef.current?.focus()}
+          color="primary"
+        >
+          {t('thread.actions.reply')}
+        </Button>
+      ) : (
+        <Button href={`/login?redirect=${encodeURIComponent(String(topicHref))}` as Route} color="primary">
+          Inicia sesión para responder
+        </Button>
+      )}
       <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
         <span>
           <strong className="text-neutral-900 dark:text-neutral-100">{totalPosts}</strong>{' '}
@@ -126,7 +134,7 @@ export default function TopicThread(props: TopicThreadProps) {
 
       {toolbar}
 
-      <ReplyForm ref={replyRef} topicId={topic.id} isLocked={isLocked} />
+      {user && <ReplyForm ref={replyRef} topicId={topic.id} isLocked={isLocked} />}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-xs dark:border-neutral-800">
         <Link

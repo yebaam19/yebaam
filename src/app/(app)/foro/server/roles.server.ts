@@ -18,14 +18,11 @@ async function hasSpaceRole(spaceId: string, adminOnly: boolean): Promise<boolea
   const user = await getCachedAuthUser()
   if (!user) return false
   const client = await getServerClient()
-  let query = client
-    .from('forum_roles')
-    .select('role')
-    .eq('space_id', spaceId)
-    .eq('user_id', user.id)
-  if (adminOnly) query = query.eq('role', 'admin')
-  const { data } = await query.limit(1)
-  if ((data?.length ?? 0) > 0) return true
+  const { data: hasRole } = await client.rpc('has_forum_role', {
+    p_space: spaceId,
+    p_roles: adminOnly ? ['admin'] : ['admin', 'moderator'],
+  })
+  if (hasRole === true) return true
   const global = await getForumGlobalRole()
   if (adminOnly ? global === 'admin' : Boolean(global)) return true
   return isPlatformAdmin()

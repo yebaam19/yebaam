@@ -112,6 +112,9 @@ dist/
 !supabase/migrations/20261008231144_community_profile_role_lifecycle.sql
 !supabase/migrations/20261008232232_community_related_links.sql
 !supabase/migrations/20261008234820_community_chat_privacy.sql
+!supabase/migrations/20261008235830_community_forum_public_read_roles.sql
+!supabase/migrations/20261009000010_community_forum_privacy_alignment.sql
+!supabase/migrations/20261009000500_community_forum_role_grant_hardening.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

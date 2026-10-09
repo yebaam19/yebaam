@@ -21,6 +21,9 @@ const PUBLIC_ROUTES = [
   // Public chat: guests and authenticated users can enter. Identity (profile /
   // nickname / guest) is resolved inside the page via ChatEntryGate.
   '/feed/chat-publico',
+  // Public forum spaces can be read by visitors; RLS hides private spaces and
+  // every write still requires a verified account in the server action.
+  '/foro',
   // Verification certificate: the artifact a QR code points to. Has to be
   // viewable by anyone (potential employer, friend) without an account.
   '/verification/certificate',
@@ -61,6 +64,7 @@ const PUBLIC_ROUTES = [
 // also be able to use without being bounced to /feed or /admin/foros.
 const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/feed/chat-publico',
+  '/foro',
   '/verification/certificate',
   '/musica',
   '/cities',

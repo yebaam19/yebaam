@@ -7,7 +7,6 @@ import {
 } from '@/features/communities/server/communities.server';
 import {
   getSpaceBoardByOwner,
-  getSpaceByOwner,
   isSpaceAdmin,
 } from '@/app/(app)/foro/server/foro.server';
 import { enableForumForOwner } from '@/features/foro/actions/admin.actions';
@@ -47,8 +46,8 @@ export default async function CommunityForumsPage({ params }: PageProps) {
   if (!board) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-10 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
-          <ChatBubbleBottomCenterTextIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30">
+          <ChatBubbleBottomCenterTextIcon className="h-6 w-6 text-primary-800 dark:text-primary-300" />
         </div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Foros de la comunidad
@@ -68,7 +67,7 @@ export default async function CommunityForumsPage({ params }: PageProps) {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
-            <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary-800 dark:text-primary-300" />
             Foros · {space.name}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
@@ -107,7 +106,7 @@ export default async function CommunityForumsPage({ params }: PageProps) {
               </p>
               <Link
                 href={`/foro/${space.slug}/admin` as Route}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-900"
               >
                 Ir al panel
               </Link>

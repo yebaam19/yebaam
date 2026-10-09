@@ -12,6 +12,7 @@ import ForoPagination from '@/features/foro/components/Pagination'
 import ForoHeader from '@/features/foro/components/ForoHeader'
 import { Button } from '@/ui/Button'
 import { PlusIcon } from '@/components/icons/heroicons-shim'
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 
 interface PageProps {
   params: Promise<{ spaceSlug: string; forumSlug: string }>
@@ -30,7 +31,9 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
   if (!space) notFound()
   const forum = await getForumByslugInSpace(space.id, forumSlug)
   if (!forum) notFound()
-  const ownerBack = await getSpaceOwnerBackLink(space)
+  const [ownerBack, viewer] = await Promise.all([
+    getSpaceOwnerBackLink(space), getCachedAuthUser(),
+  ])
 
   const { stickies, regular, total } = await listTopicsPage(forum.id, {
     page,
@@ -44,12 +47,14 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
 
   const newTopicButton = (
     <Button
-      href={`${basePath}/nuevo-tema` as Route}
+      href={(viewer
+        ? `${basePath}/nuevo-tema`
+        : `/login?redirect=${encodeURIComponent(`${basePath}/nuevo-tema`)}`) as Route}
       color="primary"
       className="w-full sm:w-auto"
     >
       <PlusIcon data-slot="icon" />
-      {t('forum.newTopic')}
+      {viewer ? t('forum.newTopic') : 'Inicia sesión para crear tema'}
     </Button>
   )
 
@@ -85,17 +90,19 @@ export default async function ForumPage({ params, searchParams }: PageProps) {
         <ForoPagination page={page} pageSize={PAGE_SIZE} total={total} buildHref={buildHref} />
       </div>
 
-      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-[11px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400">
-        <p className="font-semibold text-neutral-600 dark:text-neutral-300">
-          {t('forum.permissionsTitle')}
-        </p>
-        <ul className="mt-1 grid grid-cols-1 gap-y-0.5 sm:grid-cols-2">
-          <li>✓ {t('forum.permissions.post')}</li>
-          <li>✓ {t('forum.permissions.reply')}</li>
-          <li>✓ {t('forum.permissions.editOwn')}</li>
-          <li>✓ {t('forum.permissions.deleteOwn')}</li>
-        </ul>
-      </section>
+      {viewer && (
+        <section className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-[11px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400">
+          <p className="font-semibold text-neutral-600 dark:text-neutral-300">
+            {t('forum.permissionsTitle')}
+          </p>
+          <ul className="mt-1 grid grid-cols-1 gap-y-0.5 sm:grid-cols-2">
+            <li>✓ {t('forum.permissions.post')}</li>
+            <li>✓ {t('forum.permissions.reply')}</li>
+            <li>✓ {t('forum.permissions.editOwn')}</li>
+            <li>✓ {t('forum.permissions.deleteOwn')}</li>
+          </ul>
+        </section>
+      )}
     </div>
   )
 }

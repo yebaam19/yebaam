@@ -1,5 +1,7 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import type { Route } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
 import {
   getForumByslugInSpace,
   getSpaceBySlug,
@@ -19,6 +21,9 @@ export default async function NewTopicPage({ params }: PageProps) {
   if (!space) notFound()
   const forum = await getForumByslugInSpace(space.id, forumSlug)
   if (!forum) notFound()
+  if (!(await getCachedAuthUser())) {
+    redirect(`/login?redirect=${encodeURIComponent(`/foro/${space.slug}/${forum.slug}/nuevo-tema`)}` as Route)
+  }
   const ownerBack = await getSpaceOwnerBackLink(space)
 
   return (
