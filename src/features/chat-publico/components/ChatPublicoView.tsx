@@ -1,22 +1,15 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import Avatar from '@/ui/Avatar'
-import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime'
-import type {
-  ClientChatIdentity,
-  PublicChatTopic,
-  PublicMessageRow,
-  PublicMessageSender,
-  PublicMessageWithSender,
-  ResolvedMessageAuthor,
-} from '../types'
+import type { ClientChatIdentity, PublicChatTopic, PublicMessageRow, PublicMessageSender, PublicMessageWithSender } from '../types'
 import { sendChatMessage, softDeletePublicMessage } from '../actions/chat-publico.actions'
 import { capabilitiesFor } from '../lib/permissions'
 import { profileAvatarUrl, resolveMessageSenderAvatars } from '../lib/avatar'
+import ChatMessageList from './ChatMessageList'
+import ChatMessageComposer from './ChatMessageComposer'
 
 interface Props {
   topic: PublicChatTopic
@@ -24,164 +17,80 @@ interface Props {
   identity: ClientChatIdentity | null
 }
 
-const MAX_LENGTH = 2000
 const PAGE_SIZE = 30
-
-function formatTime(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-function resolveAuthor(
-  message: PublicMessageWithSender,
-  fallbackUser: string,
-  fallbackGuest: string,
-): ResolvedMessageAuthor {
-  const kind = (message.sender_kind as ResolvedMessageAuthor['kind']) || 'profile'
-  if (kind === 'profile' || kind === 'nick') {
-    if (message.sender) {
-      const label =
-        message.sender.display_name ||
-        message.sender.username ||
-        message.sender_nickname ||
-        fallbackUser
-      return {
-        label,
-        avatarUrl: message.sender.avatar_url ?? message.sender_avatar_url ?? null,
-        kind,
-        userId: message.sender_id ?? null,
-      }
-    }
-    return {
-      label: message.sender_nickname || fallbackUser,
-      avatarUrl: message.sender_avatar_url ?? null,
-      kind,
-      userId: message.sender_id ?? null,
-    }
-  }
-  return {
-    label: message.sender_nickname || fallbackGuest,
-    avatarUrl: null,
-    kind: 'guest',
-    userId: null,
-  }
-}
-
-function authorInitials(label: string) {
-  const parts = label.split(/\s+/).filter(Boolean)
-  return (parts[0]?.[0] ?? 'U').concat(parts[1]?.[0] ?? '').toUpperCase().slice(0, 2)
-}
 
 export default function ChatPublicoView({ topic, initialMessages, identity }: Props) {
   const t = useTranslations('chat.public.view')
-  const [messages, setMessages] = useState<PublicMessageWithSender[]>(() =>
-    [...initialMessages].reverse(),
-  )
+  const [messages, setMessages] = useState<PublicMessageWithSender[]>(() => [...initialMessages].reverse())
   const [draft, setDraft] = useState('')
+  const [replyTo, setReplyTo] = useState<PublicMessageWithSender | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [cooldownUntil, setCooldownUntil] = useState<number>(0)
-  const [cooldownNow, setCooldownNow] = useState<number>(Date.now())
+  const [cooldownUntil, setCooldownUntil] = useState(0)
+  const [cooldownNow, setCooldownNow] = useState(Date.now())
   const [error, setError] = useState<string | null>(null)
   const [isLoadingOlder, setIsLoadingOlder] = useState(false)
   const [hasMore, setHasMore] = useState(initialMessages.length >= 50)
-
   const listRef = useRef<HTMLDivElement | null>(null)
   const atBottomRef = useRef(true)
-  const locallySentRef = useRef<Set<string>>(new Set())
-  const profileCacheRef = useRef<Map<string, PublicMessageSender>>(
-    new Map(
-      initialMessages
-        .filter((m) => m.sender && m.sender_id)
-        .map((m) => [m.sender_id as string, m.sender as PublicMessageSender]),
-    ),
-  )
+  const locallySentRef = useRef(new Set<string>())
+  const profileCacheRef = useRef(new Map<string, PublicMessageSender>(
+    initialMessages.filter((message) => message.sender && message.sender_id)
+      .map((message) => [message.sender_id as string, message.sender as PublicMessageSender]),
+  ))
 
-  const caps = capabilitiesFor(identity)
+  const canChat = capabilitiesFor(identity).canChat
   const remainingMs = Math.max(0, cooldownUntil - cooldownNow)
   const cooling = remainingMs > 0
 
   useEffect(() => {
     if (!cooling) return
-    const t = setInterval(() => setCooldownNow(Date.now()), 250)
-    return () => clearInterval(t)
+    const timer = setInterval(() => setCooldownNow(Date.now()), 250)
+    return () => clearInterval(timer)
   }, [cooling])
 
   const scrollToBottom = useCallback((smooth: boolean) => {
     const el = listRef.current
-    if (!el) return
-    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' })
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' })
   }, [])
 
-  useEffect(() => {
-    scrollToBottom(false)
-  }, [scrollToBottom])
-
-  useEffect(() => {
-    if (atBottomRef.current) scrollToBottom(true)
-  }, [messages.length, scrollToBottom])
+  useEffect(() => { scrollToBottom(false) }, [scrollToBottom])
+  useEffect(() => { if (atBottomRef.current) scrollToBottom(true) }, [messages.length, scrollToBottom])
 
   const handleScroll = useCallback(() => {
     const el = listRef.current
-    if (!el) return
-    const threshold = 80
-    atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < threshold
+    if (el) atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
   }, [])
 
   const fetchSenders = useCallback(async (ids: string[]) => {
     const missing = ids.filter((id) => id && !profileCacheRef.current.has(id))
     if (missing.length === 0) return
-    const client = createClient()
-    // id-first: prefer avatar_cloudflare_id, fall back to legacy avatar_url.
-    const { data } = await client
-      .from('profiles')
-      .select('id, username, display_name, avatar_url, avatar_cloudflare_id')
-      .in('id', missing)
+    const { data } = await createClient().from('profiles')
+      .select('id, username, display_name, avatar_url, avatar_cloudflare_id').in('id', missing)
     if (!data) return
-    for (const row of data as Array<
-      PublicMessageSender & { id: string; avatar_cloudflare_id: string | null }
-    >) {
+    for (const row of data as Array<PublicMessageSender & { id: string; avatar_cloudflare_id: string | null }>) {
       profileCacheRef.current.set(row.id, {
-        username: row.username,
-        display_name: row.display_name,
-        avatar_url: profileAvatarUrl(row),
+        username: row.username, display_name: row.display_name, avatar_url: profileAvatarUrl(row),
       })
     }
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.sender || !m.sender_id
-          ? m
-          : { ...m, sender: profileCacheRef.current.get(m.sender_id) ?? null },
-      ),
-    )
+    setMessages((previous) => previous.map((message) => message.sender || !message.sender_id
+      ? message : { ...message, sender: profileCacheRef.current.get(message.sender_id) ?? null }))
   }, [])
 
   useEffect(() => {
     const channel = subscribeToTable<PublicMessageRow>({
       channel: `chat-publico:topic:${topic.id}`,
-      table: 'public_chat_messages',
-      filter: `topic_id=eq.${topic.id}`,
-      events: ['INSERT', 'UPDATE'],
+      table: 'public_chat_messages', filter: `topic_id=eq.${topic.id}`, events: ['INSERT', 'UPDATE'],
       onChange: (payload) => {
+        const row = payload.new as PublicMessageRow
+        if (!row?.id) return
         if (payload.eventType === 'INSERT') {
-          const row = payload.new as PublicMessageRow
-          if (!row?.id || row.is_deleted) return
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === row.id)) return prev
-            const sender = row.sender_id
-              ? profileCacheRef.current.get(row.sender_id) ?? null
-              : null
-            const enriched: PublicMessageWithSender = { ...row, sender }
-            return [...prev, enriched]
-          })
-          if (row.sender_id && !profileCacheRef.current.has(row.sender_id)) {
-            void fetchSenders([row.sender_id])
-          }
-          return
-        }
-        if (payload.eventType === 'UPDATE') {
-          const row = payload.new as PublicMessageRow
-          if (!row?.id) return
-          setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, ...row } : m)))
+          if (row.is_deleted) return
+          setMessages((previous) => previous.some((message) => message.id === row.id) ? previous : [
+            ...previous, { ...row, sender: row.sender_id ? profileCacheRef.current.get(row.sender_id) ?? null : null },
+          ])
+          if (row.sender_id && !profileCacheRef.current.has(row.sender_id)) void fetchSenders([row.sender_id])
+        } else if (payload.eventType === 'UPDATE') {
+          setMessages((previous) => previous.map((message) => message.id === row.id ? { ...message, ...row } : message))
         }
       },
     })
@@ -189,245 +98,61 @@ export default function ChatPublicoView({ topic, initialMessages, identity }: Pr
   }, [fetchSenders, topic.id])
 
   const loadOlder = useCallback(async () => {
-    if (isLoadingOlder || !hasMore) return
-    const first = messages[0]
-    if (!first) return
+    if (isLoadingOlder || !hasMore || !messages[0]) return
     setIsLoadingOlder(true)
     try {
-      const client = createClient()
-      const { data } = await client
-        .from('public_chat_messages')
-        .select(
-          'id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)',
-        )
-        .eq('topic_id', topic.id)
-        .eq('is_deleted', false)
-        .lt('created_at', first.created_at)
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE)
-      const rows = resolveMessageSenderAvatars(
-        (data as unknown as PublicMessageWithSender[] | null) ?? [],
-      )
+      const { data } = await createClient().from('public_chat_messages')
+        .select('id, content, sender_id, sender_kind, sender_nickname, sender_avatar_url, created_at, is_deleted, topic_id, media_url, media_type, parent_message_id, reply_count, reaction_count, is_trending, sender:sender_id(username, display_name, avatar_url, avatar_cloudflare_id)')
+        .eq('topic_id', topic.id).eq('is_deleted', false).lt('created_at', messages[0].created_at)
+        .order('created_at', { ascending: false }).limit(PAGE_SIZE)
+      const rows = resolveMessageSenderAvatars((data as unknown as PublicMessageWithSender[] | null) ?? [])
       if (rows.length > 0) {
         const el = listRef.current
-        const prevHeight = el?.scrollHeight ?? 0
-        for (const r of rows) {
-          if (r.sender && r.sender_id)
-            profileCacheRef.current.set(r.sender_id, r.sender)
-        }
-        setMessages((prev) => [...rows.slice().reverse(), ...prev])
-        requestAnimationFrame(() => {
-          if (el) el.scrollTop = el.scrollHeight - prevHeight
-        })
+        const previousHeight = el?.scrollHeight ?? 0
+        for (const row of rows) if (row.sender && row.sender_id) profileCacheRef.current.set(row.sender_id, row.sender)
+        setMessages((previous) => [...rows.slice().reverse(), ...previous])
+        requestAnimationFrame(() => { if (el) el.scrollTop = el.scrollHeight - previousHeight })
       }
       setHasMore(rows.length === PAGE_SIZE)
-    } finally {
-      setIsLoadingOlder(false)
-    }
-  }, [isLoadingOlder, hasMore, messages, topic.id])
+    } finally { setIsLoadingOlder(false) }
+  }, [hasMore, isLoadingOlder, messages, topic.id])
 
-  const submit = useCallback(
-    (content: string) => {
-      setError(null)
-      startTransition(async () => {
-        const res = await sendChatMessage(topic.id, content)
-        if (res.ok) {
-          if (res.messageId) locallySentRef.current.add(res.messageId)
-          setDraft('')
-          return
-        }
-        if (res.error === 'rate_limited') {
-          const ms = res.retryAfterMs ?? 2000
-          setCooldownUntil(Date.now() + ms)
-          setCooldownNow(Date.now())
-          setError(t('errors.rateLimited', { seconds: Math.ceil(ms / 1000) }))
-        } else if (res.error === 'invalid') {
-          setError(t('errors.invalid'))
-        } else if (res.error === 'unauthorized') {
-          setError(t('errors.unauthorized'))
-        } else {
-          setError(t('errors.sendFailed'))
-        }
-      })
-    },
-    [t, topic.id],
-  )
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const trimmed = draft.trim()
-    if (!trimmed || isPending || cooling || !caps.canChat) return
-    submit(trimmed)
-  }
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      const trimmed = draft.trim()
-      if (!trimmed || isPending || cooling || !caps.canChat) return
-      submit(trimmed)
-    }
-  }
+  const send = useCallback(() => {
+    const content = draft.trim()
+    if (!content || isPending || cooling || !canChat) return
+    setError(null)
+    startTransition(async () => {
+      const result = await sendChatMessage(topic.id, content, replyTo?.id)
+      if (result.ok) {
+        if (result.messageId) locallySentRef.current.add(result.messageId)
+        setDraft('')
+        setReplyTo(null)
+        return
+      }
+      if (result.error === 'rate_limited') {
+        const ms = result.retryAfterMs ?? 2000
+        setCooldownUntil(Date.now() + ms)
+        setCooldownNow(Date.now())
+        setError(t('errors.rateLimited', { seconds: Math.ceil(ms / 1000) }))
+      } else if (result.error === 'invalid') setError(t('errors.invalid'))
+      else if (result.error === 'unauthorized') setError(t('errors.unauthorized'))
+      else setError(t('errors.sendFailed'))
+    })
+  }, [canChat, cooling, draft, isPending, replyTo, t, topic.id])
 
   const handleDelete = useCallback(async (id: string) => {
-    const res = await softDeletePublicMessage(id)
-    if (!res.ok) {
-      setError(t('errors.deleteFailed'))
-    }
+    const result = await softDeletePublicMessage(id)
+    if (!result.ok) setError(t('errors.deleteFailed'))
   }, [t])
 
-  const grouped = useMemo(() => {
-    return messages.map((m, i) => {
-      const prev = messages[i - 1]
-      const sameSenderAsPrev =
-        !!prev &&
-        prev.sender_id === m.sender_id &&
-        prev.sender_nickname === m.sender_nickname &&
-        prev.sender_kind === m.sender_kind &&
-        new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() < 60_000
-      return { message: m, showHeader: !sameSenderAsPrev }
-    })
-  }, [messages])
-
   return (
-    <div className="flex min-h-0 h-full flex-col bg-white dark:bg-neutral-900">
-      <div
-        ref={listRef}
-        onScroll={handleScroll}
-        className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-6"
-      >
-        {hasMore && (
-          <div className="mb-4 flex justify-center">
-            <button
-              type="button"
-              onClick={loadOlder}
-              disabled={isLoadingOlder}
-              className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-            >
-              {isLoadingOlder ? t('loading') : t('loadOlder')}
-            </button>
-          </div>
-        )}
-
-        {messages.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center text-center text-neutral-500 dark:text-neutral-400">
-            <p className="text-sm">{t('emptyState')}</p>
-          </div>
-        )}
-
-        <ul className="flex flex-col gap-1">
-          {grouped.map(({ message, showHeader }) => {
-            const author = resolveAuthor(message, t('fallbackUser'), t('fallbackGuest'))
-            const isOwn =
-              !!identity &&
-              ((identity.kind !== 'guest' &&
-                !!message.sender_id &&
-                message.sender_id === identity.userId) ||
-                locallySentRef.current.has(message.id))
-            return (
-              <li
-                key={message.id}
-                className={cn('flex items-end gap-2', isOwn && 'flex-row-reverse')}
-              >
-                <div className="w-8 shrink-0">
-                  {showHeader && !isOwn && (
-                    <Avatar
-                      src={author.avatarUrl ?? undefined}
-                      alt={author.label}
-                      initials={authorInitials(author.label)}
-                      className="h-8 w-8"
-                    />
-                  )}
-                </div>
-                <div className={cn('flex max-w-[75%] flex-col gap-0.5', isOwn && 'items-end')}>
-                  {showHeader && !isOwn && (
-                    <span className="flex items-center gap-1.5 px-1 text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                      {author.label}
-                      {author.kind === 'guest' && (
-                        <span className="rounded-full bg-neutral-100 px-1.5 py-[1px] text-[9px] font-medium uppercase text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                          {t('badgeGuest')}
-                        </span>
-                      )}
-                      {author.kind === 'nick' && (
-                        <span className="rounded-full bg-neutral-100 px-1.5 py-[1px] text-[9px] font-medium uppercase text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                          {t('badgeNick')}
-                        </span>
-                      )}
-                    </span>
-                  )}
-                  <div
-                    className={cn(
-                      'group relative rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words',
-                      message.is_deleted
-                        ? 'bg-neutral-100 italic text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
-                        : isOwn
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100',
-                    )}
-                  >
-                    {message.is_deleted ? t('deletedMessage') : message.content ?? ''}
-                    {isOwn && !message.is_deleted && identity?.kind !== 'guest' && (
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(message.id)}
-                        className="absolute -top-2 -left-2 hidden rounded-full bg-white p-1 text-neutral-500 shadow ring-1 ring-black/5 hover:text-red-600 group-hover:inline-flex dark:bg-neutral-700 dark:text-neutral-300"
-                        aria-label={t('deleteAria')}
-                        title={t('deleteTitle')}
-                      >
-                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                  <span className="px-1 text-[10px] text-neutral-400 dark:text-neutral-500">
-                    {formatTime(message.created_at)}
-                  </span>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-
-      <form
-        onSubmit={onSubmit}
-        className="shrink-0 border-t border-neutral-200 bg-white px-3 py-3 sm:px-6 dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        {error && <p className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
-        <div className="flex items-end gap-2">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.slice(0, MAX_LENGTH))}
-            onKeyDown={onKeyDown}
-            rows={1}
-            maxLength={MAX_LENGTH}
-            disabled={!caps.canChat}
-            placeholder={
-              caps.canChat
-                ? t('placeholderActive', { channel: topic.name })
-                : t('placeholderInactive')
-            }
-            className="min-h-[40px] flex-1 resize-none rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm text-neutral-900 outline-hidden focus:border-primary-500 focus:bg-white disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
-          />
-          <button
-            type="submit"
-            disabled={isPending || cooling || !draft.trim() || !caps.canChat}
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {cooling
-              ? t('submitCooldown', { seconds: Math.ceil(remainingMs / 1000) })
-              : isPending
-                ? t('submitSending')
-                : t('submit')}
-          </button>
-        </div>
-        <p className="mt-1 px-1 text-[10px] text-neutral-400 dark:text-neutral-500">
-          {draft.length}/{MAX_LENGTH} {t('hintEnter')}
-          {identity?.kind === 'guest' && t('hintGuest')}
-          {identity?.kind === 'nick' && t('hintNick')}
-        </p>
-      </form>
+    <div className="flex h-full min-h-0 flex-col bg-white dark:bg-neutral-900">
+      <ChatMessageList messages={messages} identity={identity} locallySent={locallySentRef.current}
+        listRef={listRef} hasMore={hasMore} isLoadingOlder={isLoadingOlder} onScroll={handleScroll}
+        onLoadOlder={loadOlder} onDelete={handleDelete} onReply={setReplyTo} />
+      <ChatMessageComposer topic={topic} identity={identity} draft={draft} setDraft={setDraft}
+        replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onSend={send}
+        isPending={isPending} cooling={cooling} remainingMs={remainingMs} error={error} canChat={canChat} />
     </div>
   )
 }

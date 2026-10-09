@@ -116,6 +116,9 @@ dist/
 !supabase/migrations/20261009000010_community_forum_privacy_alignment.sql
 !supabase/migrations/20261009000500_community_forum_role_grant_hardening.sql
 !supabase/migrations/20261009001500_revoke_client_table_ddl_privileges.sql
+!supabase/migrations/20261009002000_chat_reply_boundary.sql
+!supabase/migrations/20261009002010_chat_reply_counter_privilege.sql
+!supabase/migrations/20261009002020_chat_reply_counter_soft_delete.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

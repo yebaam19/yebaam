@@ -99,10 +99,14 @@ export async function sendPublicMessage(
 export async function sendChatMessage(
   roomId: string,
   rawContent: string,
+  parentMessageId?: string | null,
 ): Promise<SendPublicMessageResult> {
   const content = typeof rawContent === 'string' ? rawContent.trim() : ''
   if (!roomId || typeof roomId !== 'string') return { ok: false, error: 'invalid' }
   if (!content || content.length > MAX_CONTENT_LENGTH) return { ok: false, error: 'invalid' }
+  if (parentMessageId && !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(parentMessageId)) {
+    return { ok: false, error: 'invalid' }
+  }
 
   const identity = await getRoomIdentity(roomId)
   if (!identity) return { ok: false, error: 'unauthorized' }
@@ -168,6 +172,7 @@ export async function sendChatMessage(
       sender_avatar_url: senderAvatar,
       session_hash: sessionHash,
       content,
+      parent_message_id: parentMessageId ?? null,
     })
     .select('id')
     .maybeSingle()

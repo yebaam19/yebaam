@@ -32,6 +32,7 @@ vi.mock('@/utils/supabase/server', () => ({
 
 const userId = '11111111-1111-4111-8111-111111111111'
 const roomId = '22222222-2222-4222-8222-222222222222'
+const parentId = '33333333-3333-4333-8333-333333333333'
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -60,6 +61,17 @@ describe('community chat writes', () => {
     mocks.identity.mockResolvedValue({ kind: 'profile', userId, displayName: 'Miembro', avatarUrl: null, sessionToken: 'token' })
     mocks.visibleTopic.mockResolvedValue({ data: null, error: null })
     expect(await sendChatMessage(roomId, 'Hola')).toMatchObject({ ok: false, error: 'unauthorized' })
+    expect(mocks.sessionInsert).not.toHaveBeenCalled()
+  })
+
+  it('passes a reply parent through the session-bound write', async () => {
+    mocks.identity.mockResolvedValue({ kind: 'profile', userId, displayName: 'Miembro', avatarUrl: null, sessionToken: 'token' })
+    expect(await sendChatMessage(roomId, 'Respuesta', parentId)).toMatchObject({ ok: true })
+    expect(mocks.sessionInsert).toHaveBeenCalledWith(expect.objectContaining({ parent_message_id: parentId }))
+  })
+
+  it('rejects a malformed parent before writing', async () => {
+    expect(await sendChatMessage(roomId, 'Respuesta', 'not-a-uuid')).toMatchObject({ ok: false, error: 'invalid' })
     expect(mocks.sessionInsert).not.toHaveBeenCalled()
   })
 })
