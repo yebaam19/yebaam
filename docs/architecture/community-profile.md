@@ -357,6 +357,16 @@ está aplicado en Supabase; la acción de paginación vuelve a verificar la sesi
 y el permiso `settings` antes de leer. La prueba del panel cubre la carga de la
 siguiente página; el flujo de aprobación multiusuario desde navegador sigue pendiente.
 
+Una auditoría adicional confirmó dos vías de ingreso indebido: una solicitud
+aprobada permitía insertar membresía en otra comunidad secreta y el invitado
+podía cambiar el `community_id` de su invitación. La migración de admisión
+elimina ambas rutas directas; aceptar una invitación secreta ahora inserta la
+membresía y marca la invitación aceptada en la misma RPC. La prueba SQL con
+`ROLLBACK` verifica aislamiento, roles, bloqueo de expulsados, consumo único y acceso a la comunidad
+solo después de aceptar. Los enlaces directos muestran una vista mínima al
+invitado, sin revelar contenido a otras personas. Pendiente: bandeja o aviso
+para que el invitado descubra el enlace, y QA autenticado con su cuenta real.
+
 Orden de continuación: QA multirol de solicitudes privadas →
 QA de galerías y adjuntos con medios reales →
 QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → QA de eventos,

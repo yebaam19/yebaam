@@ -5,15 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { LockClosedIcon } from '@/components/icons/heroicons-shim';
-import { cancelJoinRequest, requestPrivateCommunityAccess } from '../actions/members.actions';
+import { cancelJoinRequest, joinCommunity, requestPrivateCommunityAccess } from '../actions/members.actions';
 import type { ViewerJoinState } from '../server/communities/communities-members.server';
-import type { PrivateCommunityPreview } from '../server/communities/communities-private-preview.server';
+import type { CommunityAccessPreview as AccessPreview } from '../server/communities/communities-access-preview.server';
 
-export function CommunityPrivatePreview({
+export function CommunityAccessPreview({
   community,
   viewerState,
 }: {
-  community: PrivateCommunityPreview;
+  community: AccessPreview;
   viewerState: ViewerJoinState;
 }) {
   const t = useTranslations('communities');
@@ -22,13 +22,15 @@ export function CommunityPrivatePreview({
   const [error, setError] = useState<string | null>(null);
   const pending = viewerState.kind === 'request_pending';
   const declined = viewerState.kind === 'request_declined';
+  const invited = community.privacy === 'SECRET' && viewerState.kind === 'invited';
+  const isSecret = community.privacy === 'SECRET';
 
   const submit = () => {
     setError(null);
     startTransition(async () => {
-      const result = pending
-        ? await cancelJoinRequest(community.id)
-        : await requestPrivateCommunityAccess(community.id);
+      const result = invited ? await joinCommunity(community.id)
+        : pending ? await cancelJoinRequest(community.id)
+          : await requestPrivateCommunityAccess(community.id);
       if (!result.ok) setError(result.error);
       else router.refresh();
     });
@@ -43,26 +45,32 @@ export function CommunityPrivatePreview({
             <LockClosedIcon aria-hidden="true" className="size-6" />
           </div>
           <p className="text-xs font-semibold uppercase tracking-wider text-primary-800 dark:text-primary-300">
-            {t('privatePreview.label')}
+              {t(isSecret ? 'privatePreview.invitedLabel' : 'privatePreview.label')}
           </p>
           <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl dark:text-white">
             {community.name}
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-neutral-600 dark:text-neutral-300">
-            {t('privatePreview.description')}
+              {t(isSecret ? 'privatePreview.invitedDescription' : 'privatePreview.description')}
           </p>
           {(pending || declined) && (
             <p className="mt-4 rounded-lg bg-secondary-50 px-3 py-2 text-sm text-secondary-900 dark:bg-secondary-900/20 dark:text-secondary-200">
               {t(pending ? 'privatePreview.pending' : 'privatePreview.declined')}
             </p>
           )}
+          {isSecret && !invited && (
+            <p role="status" className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
+              {t('privatePreview.inviteUnavailable')}
+            </p>
+          )}
           {error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            {!declined && (
+            {(isSecret ? invited : !declined) && (
               <button type="button" onClick={submit} disabled={isPending}
                 className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:opacity-60">
-                {isPending ? t('detail.joinButton.processing') : pending
-                  ? t('privatePreview.cancel') : t('detail.joinButton.requestAccess')}
+                {isPending ? t('detail.joinButton.processing') : invited
+                  ? t('privatePreview.acceptInvite') : pending
+                    ? t('privatePreview.cancel') : t('detail.joinButton.requestAccess')}
               </button>
             )}
             <Link href="/feed/comunidades" className="inline-flex min-h-10 items-center text-sm font-medium text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-primary-300">

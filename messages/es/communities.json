@@ -82,6 +82,10 @@
   "privatePreview": {
     "label": "Comunidad privada",
     "description": "El contenido de esta comunidad es visible solo para sus miembros. Puedes solicitar acceso al equipo administrador.",
+    "invitedLabel": "Invitación privada",
+    "invitedDescription": "Tienes una invitación para unirte. El contenido de esta comunidad será visible después de aceptarla.",
+    "acceptInvite": "Aceptar invitación",
+    "inviteUnavailable": "La invitación ya no está disponible.",
     "pending": "Tu solicitud está pendiente de revisión.",
     "declined": "Tu solicitud fue rechazada.",
     "back": "Volver a comunidades",

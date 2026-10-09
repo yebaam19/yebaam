@@ -82,6 +82,10 @@
   "privatePreview": {
     "label": "Private community",
     "description": "Only members can see this community's content. You can request access from its administrators.",
+    "invitedLabel": "Private invitation",
+    "invitedDescription": "You have an invitation to join. This community's content will be visible after you accept it.",
+    "acceptInvite": "Accept invitation",
+    "inviteUnavailable": "This invitation is no longer available.",
     "pending": "Your request is waiting for review.",
     "declined": "Your request was declined.",
     "back": "Back to communities",

@@ -8,6 +8,18 @@ import {
 } from './_shared';
 
 type JoinOutcome = 'joined' | 'requested' | 'invited_join' | 'already_member';
+type Client = Awaited<ReturnType<typeof getServerClient>>;
+
+async function acceptSecretInvite(
+  client: Client, id: string, knownSlug?: string,
+): Promise<ActionResult<{ id: string; outcome: JoinOutcome }>> {
+  const { error } = await client.rpc('accept_community_invitation', { target_community: id });
+  if (error) return { ok: false, error: 'Comunidad no encontrada o invitación inválida.' };
+  const slug = knownSlug ?? (await client.from('communities').select('slug')
+    .eq('id', id).maybeSingle()).data?.slug;
+  revalidateCommunityPaths(slug);
+  return { ok: true, data: { id, outcome: 'invited_join' } };
+}
 
 export async function joinCommunity(
   id: string,
@@ -26,16 +38,22 @@ export async function joinCommunity(
   const c = community as
     | { id: string; slug: string; privacy: 'PUBLIC' | 'PRIVATE' | 'SECRET'; owner_id: string }
     | null;
-  if (!c) return { ok: false, error: 'Comunidad no encontrada.' };
+  if (!c) {
+    // Invited users cannot SELECT a secret community until admission succeeds.
+    return acceptSecretInvite(client, id);
+  }
 
   // Already a member? No-op.
   const { data: existing } = await client
     .from('community_members')
-    .select('user_id')
+    .select('status')
     .eq('community_id', id)
     .eq('user_id', userId)
     .maybeSingle();
   if (existing) {
+    if (existing.status !== 'active') {
+      return { ok: false, error: 'Tu acceso a esta comunidad está restringido.' };
+    }
     revalidateCommunityPaths(c.slug);
     return { ok: true, data: { id, outcome: 'already_member' } };
   }
@@ -50,32 +68,7 @@ export async function joinCommunity(
   }
 
   if (c.privacy === 'SECRET') {
-    // Must hold a pending invitation. Consume it inside a transactional pair:
-    // mark invitation accepted, then insert membership. RLS on community_members
-    // INSERT also re-checks the invitation, so this is defense-in-depth.
-    const { data: invite } = await client
-      .from('community_invitations')
-      .select('id')
-      .eq('community_id', id)
-      .eq('invitee_id', userId)
-      .eq('status', 'pending')
-      .maybeSingle();
-    if (!invite) {
-      return { ok: false, error: 'Esta comunidad es secreta. Necesitas una invitación.' };
-    }
-
-    const { error: insErr } = await client
-      .from('community_members')
-      .insert({ community_id: id, user_id: userId, role: 'MEMBER', status: 'active' });
-    if (insErr) return { ok: false, error: insErr.message };
-
-    await client
-      .from('community_invitations')
-      .update({ status: 'accepted', responded_at: new Date().toISOString() })
-      .eq('id', (invite as { id: string }).id);
-
-    revalidateCommunityPaths(c.slug);
-    return { ok: true, data: { id, outcome: 'invited_join' } };
+    return acceptSecretInvite(client, id, c.slug);
   }
 
   // PRIVATE — submit a join request (idempotent against an existing pending row).
