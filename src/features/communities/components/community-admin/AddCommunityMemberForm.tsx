@@ -46,7 +46,7 @@ export function AddCommunityMemberForm({ communityId }: { communityId: string })
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
-        <UserPlusIcon className="h-4 w-4 text-blue-500" />
+        <UserPlusIcon className="h-4 w-4 text-primary-800 dark:text-primary-300" />
         {t('admin.panel.addSectionTitle')}
       </h3>
       <form onSubmit={handleSubmit} className="flex gap-2">
@@ -55,12 +55,12 @@ export function AddCommunityMemberForm({ communityId }: { communityId: string })
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder={t('admin.panel.addPlaceholder')}
-          className="flex-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
+          className="min-w-0 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus-visible:outline-2 focus-visible:outline-primary-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
         />
         <button
           type="submit"
           disabled={isPending || !username.trim()}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="min-h-11 rounded-lg bg-[var(--community-primary)] px-4 py-2 text-sm font-medium text-white hover:brightness-90 focus-visible:outline-2 focus-visible:outline-primary-800 disabled:opacity-50"
         >
           {isPending ? t('admin.panel.addSubmitting') : t('admin.panel.addSubmit')}
         </button>

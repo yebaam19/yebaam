@@ -41,13 +41,13 @@ export async function CommunityPostCard({ post }: CommunityPostCardProps) {
       {post.articleRef && (
         <Link
           href={post.articleRef.href as Route}
-          className="mb-3 flex items-center gap-3 rounded-lg border border-gray-200 bg-linear-to-br from-blue-50 to-indigo-50 p-3 transition-colors hover:border-blue-300 hover:from-blue-100 hover:to-indigo-100 dark:border-gray-700 dark:from-blue-950/30 dark:to-indigo-950/30 dark:hover:border-blue-700"
+          className="mb-3 flex items-center gap-3 rounded-lg border border-primary-100 bg-primary-50 p-3 transition-colors hover:border-primary-300 hover:bg-secondary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:border-primary-900/50 dark:bg-primary-950/20 dark:hover:border-primary-700"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[var(--community-primary)] text-white shadow-sm">
             <NewspaperIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-300">
               {t('detail.articleEyebrow')}
             </p>
             <p className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-white">

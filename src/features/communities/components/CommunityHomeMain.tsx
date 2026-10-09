@@ -12,8 +12,6 @@ import type {
   ViewerJoinState,
 } from '@/features/communities/server/communities.server';
 import type { Community, CommunityPost } from '@/features/communities/types/community.types';
-import { GlobeAltIcon } from '@/components/icons/heroicons-shim';
-import { safeExternalHref } from '@/lib/safe-href';
 import { getCommunityRoleGrants } from '@/features/communities/server/community-roles.server';
 import type { CommunitySection } from '../types/communityPlan.types';
 import type { CommunityTheme } from '../types/communityTheme.types';
@@ -45,7 +43,6 @@ export async function CommunityHomeMain({
   const rolePage = isOwner ? await getCommunityRoleGrants(c.id) : null;
   const isMember = viewerState.kind === 'member' || viewerState.kind === 'owner' || c.isMember;
   const showComposer = isMember && (c.allowMemberPosts || isOwner);
-  const websiteHref = safeExternalHref(c.website);
 
   return (
     <div className="space-y-6">
@@ -74,24 +71,6 @@ export async function CommunityHomeMain({
         ) : (
           <p className="text-sm text-gray-400 italic">{t('detail.noDescription')}</p>
         )}
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs">
-          {c.location && (
-            <span className="text-gray-700 dark:text-gray-300">
-              <strong className="font-medium">{t('detail.locationLabel')}</strong> {c.location}
-            </span>
-          )}
-          {websiteHref && (
-            <a
-              href={websiteHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              <GlobeAltIcon className="w-3.5 h-3.5" />
-              {c.website}
-            </a>
-          )}
-        </div>
         {c.tags && c.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {c.tags.map((tag) => (

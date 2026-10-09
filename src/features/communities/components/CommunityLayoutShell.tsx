@@ -100,7 +100,7 @@ export function CommunityLayoutShell({
 
   return (
     <div style={communityThemeStyle(theme)} className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      {!isArticleRoute && <div className="relative aspect-video overflow-hidden bg-[var(--community-primary)] sm:aspect-[3/1]">
+      {!isArticleRoute && <div className={`relative overflow-hidden bg-[var(--community-primary)] ${c.coverImageUrl ? 'aspect-video sm:aspect-[3/1]' : 'h-40 sm:h-52'}`}>
         {c.coverImageUrl && (
           <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}

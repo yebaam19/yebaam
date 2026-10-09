@@ -62,7 +62,7 @@ export function RulesEditor({
         type="button"
         onClick={onAdd}
         disabled={isPending || drafts.length >= maxRules}
-        className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:text-blue-400"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-dashed border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 hover:border-primary-500 hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-primary-800 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-primary-400 dark:hover:text-primary-300"
       >
         <PlusIcon className="h-4 w-4" />
         {t('admin.rules.addRule')}
@@ -82,7 +82,7 @@ export function RulesEditor({
           type="button"
           onClick={onSave}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-[var(--community-primary)] px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:brightness-90 focus-visible:outline-2 focus-visible:outline-primary-800 disabled:opacity-50"
         >
           {isPending ? t('admin.rules.saving') : t('admin.rules.save')}
         </button>

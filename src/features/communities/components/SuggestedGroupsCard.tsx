@@ -81,7 +81,7 @@ export function SuggestedGroupsCard() {
                 <button
                   onClick={() => handleJoin(c.id)}
                   disabled={join.isPending}
-                  className="mt-2 inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:opacity-60 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                  className="mt-2 inline-flex min-h-10 items-center gap-1 rounded-md bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-800 transition-colors hover:bg-primary-100 focus-visible:outline-2 focus-visible:outline-primary-800 disabled:opacity-60 dark:bg-primary-950 dark:text-primary-300 dark:hover:bg-primary-900"
                 >
                   <PlusIcon className="size-3.5" />
                   Unirse

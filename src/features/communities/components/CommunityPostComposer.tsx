@@ -94,11 +94,12 @@ export function CommunityPostComposer({ communityId }: CommunityPostComposerProp
       className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3"
     >
       <textarea
+        aria-label={t('detail.composerPlaceholder')}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={3}
         placeholder={t('detail.composerPlaceholder')}
-        className="w-full resize-none border-0 bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-0"
+        className="w-full resize-none border-0 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-white dark:focus-visible:outline-primary-300"
       />
 
       {media.length > 0 && (
@@ -142,19 +143,20 @@ export function CommunityPostComposer({ communityId }: CommunityPostComposerProp
       )}
 
       {error && (
-        <p className="rounded-md bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+        <p role="alert" className="rounded-md bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
           {error}
         </p>
       )}
 
       <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3">
         <div className="flex items-center gap-2">
-          <label className="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <label className="cursor-pointer rounded-md p-2 text-neutral-600 hover:bg-primary-50 focus-within:outline-2 focus-within:outline-primary-800 dark:text-neutral-300 dark:hover:bg-primary-950/40">
             <PhotoIcon className="h-5 w-5" />
+            <span className="sr-only">{t('detail.addImage')}</span>
             <input
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
               disabled={uploading !== null}
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -163,12 +165,13 @@ export function CommunityPostComposer({ communityId }: CommunityPostComposerProp
               }}
             />
           </label>
-          <label className="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <label className="cursor-pointer rounded-md p-2 text-neutral-600 hover:bg-primary-50 focus-within:outline-2 focus-within:outline-primary-800 dark:text-neutral-300 dark:hover:bg-primary-950/40">
             <VideoCameraIcon className="h-5 w-5" />
+            <span className="sr-only">{t('detail.addVideo')}</span>
             <input
               type="file"
               accept="video/*"
-              className="hidden"
+              className="sr-only"
               disabled={uploading !== null}
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -179,16 +182,16 @@ export function CommunityPostComposer({ communityId }: CommunityPostComposerProp
           </label>
           {uploading && (
             <span className="text-xs text-gray-500">
-              {uploading === 'image' ? 'Subiendo imagen...' : 'Subiendo video...'}
+              {uploading === 'image' ? t('detail.uploadingImage') : t('detail.uploadingVideo')}
             </span>
           )}
         </div>
         <button
           type="submit"
           disabled={submitting || uploading !== null}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-h-11 rounded-lg bg-[var(--community-primary)] px-4 py-2 text-sm font-medium text-white hover:brightness-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? 'Publicando...' : t('detail.composerSubmit')}
+          {submitting ? t('detail.composerSubmitting') : t('detail.composerSubmit')}
         </button>
       </div>
     </form>

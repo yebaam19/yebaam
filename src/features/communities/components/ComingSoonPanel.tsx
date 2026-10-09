@@ -12,8 +12,8 @@ export async function ComingSoonPanel({ title, description, icon: Icon }: Coming
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
       {Icon && (
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
-          <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary-100 dark:bg-primary-900/30">
+          <Icon className="h-6 w-6 text-primary-800 dark:text-primary-300" />
         </div>
       )}
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{title}</h2>

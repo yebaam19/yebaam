@@ -82,7 +82,7 @@ function RuleDraftRowImpl({
         placeholder={t('admin.rules.titlePlaceholder')}
         disabled={disabled}
         maxLength={maxTitle}
-        className="mb-2 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+        className="mb-2 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus-visible:outline-2 focus-visible:outline-primary-800 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
       />
       <textarea
         value={description}
@@ -91,7 +91,7 @@ function RuleDraftRowImpl({
         rows={2}
         disabled={disabled}
         maxLength={maxDescription}
-        className="w-full resize-none rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+        className="w-full resize-none rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 placeholder:text-neutral-400 focus-visible:outline-2 focus-visible:outline-primary-800 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
       />
     </div>
   );

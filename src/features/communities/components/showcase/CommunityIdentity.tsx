@@ -2,13 +2,15 @@
 import { FramedImage } from '../header-images/FramedImage';
 import type { HeaderImages } from '../../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
-import { UserGroupIcon, CheckBadgeIcon, DocumentTextIcon, LockClosedIcon, ArrowTrendingUpIcon } from '@/components/icons/heroicons-shim';
+import { UserGroupIcon, CheckBadgeIcon, DocumentTextIcon, LockClosedIcon, ArrowTrendingUpIcon, MapPinIcon, GlobeAltIcon } from '@/components/icons/heroicons-shim';
 import type { Community } from '../../types/community.types';
 import { formatMembersCount, getCategoryLabel, COMMUNITY_CATEGORY_BADGE_CLASS, getPrivacyLabel } from '../../utils/communityHelpers';
 import { CommunityHeaderImageButton } from '../CommunityHeaderImageButton';
+import { safeExternalHref } from '@/lib/safe-href';
 
 export function CommunityIdentity({ community: c, canManageHeader, stacked, headerImages }: { community: Community; canManageHeader: boolean; stacked?: boolean; headerImages?: HeaderImages | null }) {
   const t = useTranslations('communities');
+  const websiteHref = safeExternalHref(c.website);
   return (
             <div className={stacked ? "flex flex-col gap-4" : "flex flex-col md:flex-row gap-5"}>
               <div className="shrink-0">
@@ -47,6 +49,8 @@ export function CommunityIdentity({ community: c, canManageHeader, stacked, head
                   )}
                 </div>
 
+                {c.description && <p className="mb-2 line-clamp-2 max-w-prose text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{c.description}</p>}
+
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span
                     className={`inline-block text-xs font-medium px-2 py-1 rounded-full ${COMMUNITY_CATEGORY_BADGE_CLASS}`}
@@ -83,6 +87,15 @@ export function CommunityIdentity({ community: c, canManageHeader, stacked, head
                     </div>
                   )}
                 </div>
+                {(c.location || websiteHref) && <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-600 dark:text-neutral-300">
+                  {c.location && <span className="inline-flex min-w-0 items-center gap-1.5 wrap-anywhere">
+                    <MapPinIcon className="size-3.5 shrink-0 text-primary-800 dark:text-primary-300" aria-hidden="true" />{c.location}
+                  </span>}
+                  {websiteHref && <a href={websiteHref} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex min-h-8 items-center gap-1.5 font-medium text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-300">
+                    <GlobeAltIcon className="size-3.5 shrink-0" aria-hidden="true" />{t('detail.websiteLabel')}
+                  </a>}
+                </div>}
               </div>
             </div>
   );

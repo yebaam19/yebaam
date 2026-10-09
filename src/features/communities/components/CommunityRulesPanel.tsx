@@ -135,7 +135,7 @@ export function CommunityRulesPanel({
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <ShieldCheckIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <ShieldCheckIcon className="h-5 w-5 text-primary-800 dark:text-primary-300" />
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
               {t('admin.rules.title')}
             </h2>
@@ -144,7 +144,7 @@ export function CommunityRulesPanel({
             <button
               type="button"
               onClick={handleStartEditing}
-              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-[var(--community-primary)] px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:brightness-90 focus-visible:outline-2 focus-visible:outline-primary-800"
             >
               <PencilSquareIcon className="h-4 w-4" />
               {sortedRules.length > 0 ? t('admin.rules.editRules') : t('admin.rules.addRules')}

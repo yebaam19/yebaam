@@ -46,7 +46,7 @@ export async function CommunityMembersPanel({ members, total }: CommunityMembers
                   <p className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-1 truncate">
                     {member.name}
                     {member.isVerified && (
-                      <CheckBadgeIcon className="w-4 h-4 text-blue-500 shrink-0" />
+                      <CheckBadgeIcon className="w-4 h-4 shrink-0 text-primary-800 dark:text-primary-300" />
                     )}
                   </p>
                   {member.username && (
