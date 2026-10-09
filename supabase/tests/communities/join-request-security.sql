@@ -6,6 +6,7 @@ declare
   owner_id uuid;
   requester_id uuid;
   outsider_id uuid;
+  reviewer_id uuid;
   private_id uuid := gen_random_uuid();
   public_id uuid := gen_random_uuid();
   request_id uuid;
@@ -13,10 +14,10 @@ declare
 begin
   select array_agg(id) into users from (
     select p.id from public.profiles p join auth.users u on u.id = p.id
-    order by p.id limit 3
+    order by p.id limit 4
   ) candidates;
-  if cardinality(users) < 3 then raise exception 'Test needs three profiles'; end if;
-  owner_id := users[1]; requester_id := users[2]; outsider_id := users[3];
+  if cardinality(users) < 4 then raise exception 'Test needs four profiles'; end if;
+  owner_id := users[1]; requester_id := users[2]; outsider_id := users[3]; reviewer_id := users[4];
   insert into public.communities(id, owner_id, name, slug, privacy) values
     (private_id, owner_id, 'Request security private', 'request-private-' || private_id, 'PRIVATE'),
     (public_id, owner_id, 'Request security public', 'request-public-' || public_id, 'PUBLIC');
@@ -66,12 +67,22 @@ begin
   exception when insufficient_privilege then null;
   end;
 
+  reset role;
+  insert into public.community_members(community_id, user_id, role, status)
+    values (private_id, reviewer_id, 'MEMBER', 'active');
   perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  set local role authenticated;
+  insert into public.community_profile_roles(community_id, user_id, role)
+    values (private_id, reviewer_id, 'admin');
+  perform set_config('request.jwt.claim.sub', reviewer_id::text, true);
+  if not community_private.can_manage_profile(private_id, 'settings') then
+    raise exception 'Delegated admin lacks settings access';
+  end if;
   if public.change_community_join_request(request_id, 'approved') <> private_id then
-    raise exception 'Owner approval returned wrong community';
+    raise exception 'Delegated approval returned wrong community';
   end if;
   if not exists (select 1 from public.community_join_requests
-      where id = request_id and status = 'approved' and responded_by = owner_id)
+      where id = request_id and status = 'approved' and responded_by = reviewer_id)
     or not exists (select 1 from public.community_members
       where community_id = private_id and user_id = requester_id
         and role = 'MEMBER' and status = 'active') then
@@ -81,6 +92,20 @@ begin
   perform set_config('request.jwt.claim.sub', outsider_id::text, true);
   insert into public.community_join_requests(community_id, user_id)
     values (private_id, outsider_id) returning id into another_request;
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  update public.community_profile_roles set role = 'moderator'
+    where community_id = private_id and user_id = reviewer_id;
+  perform set_config('request.jwt.claim.sub', reviewer_id::text, true);
+  if community_private.can_manage_profile(private_id, 'settings')
+    or exists (select 1 from public.community_join_requests where id = another_request) then
+    raise exception 'Moderator can inspect join requests';
+  end if;
+  begin
+    perform public.change_community_join_request(another_request, 'approved');
+    raise exception 'Moderator approved a join request';
+  exception when insufficient_privilege then null;
+  end;
+  perform set_config('request.jwt.claim.sub', outsider_id::text, true);
   perform public.change_community_join_request(another_request, 'cancelled');
   if not exists (select 1 from public.community_join_requests
       where id = another_request and status = 'cancelled') then
@@ -119,4 +144,4 @@ begin
 end;
 $$;
 rollback;
-select 'PASS: private requests, roles, atomic review, repeat requests and banned members' as result;
+select 'PASS: delegated review, moderator denial, repeat requests and banned members' as result;

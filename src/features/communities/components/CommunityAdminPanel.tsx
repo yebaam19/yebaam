@@ -17,7 +17,7 @@ interface CommunityAdminPanelProps {
   communityId: string;
   privacy: 'PUBLIC' | 'PRIVATE' | 'SECRET';
   pendingRequests: PendingJoinRequest[];
-  rolePage: CommunityRolePage;
+  rolePage: CommunityRolePage | null;
 }
 
 export function CommunityAdminPanel({
@@ -88,10 +88,14 @@ export function CommunityAdminPanel({
       </summary>
       <div className="border-t border-neutral-200 px-5 py-5 dark:border-neutral-700 sm:px-6">
 
-      <AddCommunityMemberForm communityId={communityId} />
-      <CommunityRoleManager communityId={communityId} initial={rolePage} />
+      {rolePage && (
+        <>
+          <AddCommunityMemberForm communityId={communityId} />
+          <CommunityRoleManager communityId={communityId} initial={rolePage} />
+        </>
+      )}
 
-      {privacy === 'SECRET' && (
+      {privacy === 'SECRET' && rolePage && (
         <div className="mb-6">
           <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             {t('admin.panel.inviteSectionTitle')}
@@ -113,7 +117,7 @@ export function CommunityAdminPanel({
             </button>
           </form>
           {inviteResult && (
-            <p className="mt-2 text-sm text-green-700 dark:text-green-400">{inviteResult}</p>
+            <p role="status" className="mt-2 text-sm text-primary-800 dark:text-primary-300">{inviteResult}</p>
           )}
         </div>
       )}
@@ -168,7 +172,7 @@ export function CommunityAdminPanel({
                       type="button"
                       onClick={() => handleApprove(req.id)}
                       disabled={isPending}
-                      className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                      className="rounded-md bg-primary-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-900 disabled:opacity-50"
                     >
                       {t('admin.panel.approve')}
                     </button>
@@ -196,7 +200,7 @@ export function CommunityAdminPanel({
       )}
 
       {error && (
-        <p className="mt-3 rounded-md bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+        <p role="alert" className="mt-3 rounded-md bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
           {error}
         </p>
       )}

@@ -54,7 +54,7 @@ export async function CommunityHomeMain({
     <div className="space-y-6">
       <CommunityTopTabs slug={c.slug} config={topTabs} canManage={canManageTheme} />
 
-      {isOwner && rolePage && (
+      {(isOwner || (canManageTheme && c.privacy === 'PRIVATE')) && (
         <CommunityAdminPanel
           communityId={c.id}
           privacy={c.privacy}
