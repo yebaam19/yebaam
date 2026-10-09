@@ -101,6 +101,9 @@
     "websiteLabel": "Sitio web",
     "postsHeading": "Publicaciones",
     "postsCount": "{count, plural, one {# publicación} other {# publicaciones}}",
+    "postsPagination": "Páginas de publicaciones",
+    "latestPosts": "Volver a las recientes",
+    "olderPosts": "Ver publicaciones anteriores",
     "composerPlaceholder": "¿Qué quieres compartir con la comunidad?",
     "composerSubmit": "Publicar",
     "composerSubmitting": "Publicando…",
@@ -130,6 +133,7 @@
     "joinToPost": "Únete a la comunidad para publicar.",
     "onlyOwnerPosts": "Solo el propietario puede publicar en esta comunidad.",
     "noPosts": "No hay publicaciones aún. ¡Sé el primero en publicar!",
+    "noOlderPosts": "No hay más publicaciones anteriores.",
     "featuredVideosHeading": "Videos destacados"
   },
   "theme": {

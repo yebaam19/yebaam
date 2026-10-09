@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 import { CommunityPostComposer } from './CommunityPostComposer';
 import { CommunityPostCard } from './CommunityPostCard';
 import { CommunityFeaturedPhotos } from './CommunityFeaturedPhotos';
@@ -16,10 +17,13 @@ import { getCommunityRoleGrants } from '@/features/communities/server/community-
 import type { CommunitySection } from '../types/communityPlan.types';
 import type { CommunityTheme } from '../types/communityTheme.types';
 import type { CommunityTopTabConfig } from '../types/communityTopTab.types';
+import type { CommunityPostCursor } from '../schemas/communityPostCursor.schema';
 
 interface CommunityHomeMainProps {
   community: Community;
   posts: CommunityPost[];
+  nextPostsCursor: CommunityPostCursor | null;
+  isFirstPostsPage: boolean;
   viewerState: ViewerJoinState;
   pendingRequests: PendingJoinRequest[];
   sections: CommunitySection[];
@@ -31,6 +35,8 @@ interface CommunityHomeMainProps {
 export async function CommunityHomeMain({
   community: c,
   posts,
+  nextPostsCursor,
+  isFirstPostsPage,
   viewerState,
   pendingRequests,
   sections,
@@ -87,14 +93,14 @@ export async function CommunityHomeMain({
 
       <CommunityFeaturedSections slug={c.slug} sections={sections} />
 
-      <section className="@container">
+      <section id="publicaciones" className="@container scroll-mt-6">
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
             {t('detail.postsHeading')}
           </h2>
-          {posts.length > 0 && (
+          {c.stats.postsCount > 0 && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {t('detail.postsCount', { count: posts.length })}
+              {t('detail.postsCount', { count: c.stats.postsCount })}
             </span>
           )}
         </div>
@@ -116,19 +122,35 @@ export async function CommunityHomeMain({
             posts.map((post) => <CommunityPostCard key={post.id} post={post} />)
           ) : (
             <div className="rounded-xl border border-dashed border-gray-200 bg-white p-10 text-center text-sm text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-              {t('detail.noPosts')}
+              {t(isFirstPostsPage ? 'detail.noPosts' : 'detail.noOlderPosts')}
             </div>
+          )}
+          {(nextPostsCursor || !isFirstPostsPage) && (
+            <nav aria-label={t('detail.postsPagination')} className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              {!isFirstPostsPage ? (
+                <Link href={`/feed/comunidades/${c.slug}#publicaciones`}
+                  className="text-sm font-medium text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-primary-300">
+                  {t('detail.latestPosts')}
+                </Link>
+              ) : <span />}
+              {nextPostsCursor && (
+                <Link href={`/feed/comunidades/${c.slug}?postsCursor=${encodeURIComponent(JSON.stringify(nextPostsCursor))}#publicaciones`}
+                  className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary-800 px-4 py-2 text-sm font-semibold text-primary-800 transition-colors hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:border-primary-300 dark:text-primary-300 dark:hover:bg-primary-900/30">
+                  {t('detail.olderPosts')}
+                </Link>
+              )}
+            </nav>
           )}
         </div>
       </section>
 
 
-      <section className="space-y-3">
+      {isFirstPostsPage && <section className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
           {t('detail.featuredPhotosHeading')}
         </h2>
         <CommunityFeaturedPhotos posts={posts} />
-      </section>
+      </section>}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import {
   getCommunityBySlug,
-  getCommunityPosts,
+  getCommunityHomePosts,
   getPendingJoinRequests,
   getViewerJoinState,
 } from '@/features/communities/server/communities.server';
@@ -9,18 +9,22 @@ import { CommunityHomeMain } from '@/features/communities/components/CommunityHo
 import { getCommunitySections, getCommunityProfileCapabilities } from '@/features/communities/server/community-plan.server';
 import { getCommunityTheme } from '@/features/communities/server/community-theme.server';
 import { getCommunityTopTabs } from '@/features/communities/server/community-top-tabs.server';
+import { parseCommunityPostCursor } from '@/features/communities/schemas/communityPostCursor.schema';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ postsCursor?: string }>;
 }
 
-export default async function CommunityHomePage({ params }: PageProps) {
+export default async function CommunityHomePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const { postsCursor } = await searchParams;
+  const cursor = parseCommunityPostCursor(postsCursor);
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
   const [posts, viewerState, pendingRequests, sections, capabilities, theme, topTabs] = await Promise.all([
-    getCommunityPosts(community.id, { page: 1, limit: 10 }),
+    getCommunityHomePosts(community.id, cursor),
     getViewerJoinState(community.id),
     getPendingJoinRequests(community.id),
     getCommunitySections(community.id),
@@ -33,6 +37,8 @@ export default async function CommunityHomePage({ params }: PageProps) {
     <CommunityHomeMain
       community={community}
       posts={posts.posts}
+      nextPostsCursor={posts.nextCursor}
+      isFirstPostsPage={!cursor}
       viewerState={viewerState}
       pendingRequests={pendingRequests}
       sections={sections}

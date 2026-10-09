@@ -101,6 +101,9 @@
     "websiteLabel": "Website",
     "postsHeading": "Posts",
     "postsCount": "{count, plural, one {# post} other {# posts}}",
+    "postsPagination": "Post pages",
+    "latestPosts": "Back to recent posts",
+    "olderPosts": "See older posts",
     "composerPlaceholder": "What do you want to share with the community?",
     "composerSubmit": "Post",
     "composerSubmitting": "Posting…",
@@ -130,6 +133,7 @@
     "joinToPost": "Join the community to post.",
     "onlyOwnerPosts": "Only the owner can post in this community.",
     "noPosts": "No posts yet. Be the first to post!",
+    "noOlderPosts": "There are no older posts.",
     "featuredVideosHeading": "Featured videos"
   },
   "theme": {
