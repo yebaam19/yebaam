@@ -3,14 +3,6 @@
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
 import { canPublishCommunityArticle } from '../server/community-articles.server';
 
-/**
- * Owner/OWNER-ADMIN gate shared by the join-request review actions. Reuses
- * {@link canPublishCommunityArticle} (true for the community owner or an
- * OWNER/ADMIN community_members row) — the same predicate the RLS policies
- * encode, checked here so a 0-row RLS-filtered update can never be mistaken
- * for success (see approveJoinRequest).
- */
-const canModerateCommunity = canPublishCommunityArticle;
 import {
   type ActionResult,
   requireUserId,
@@ -18,9 +10,7 @@ import {
 } from './_shared';
 
 /**
- * Owner / admin moderation: invitations (by username or id) and join-request
- * review (approve / decline). RLS gates these to owners/admins; the pre-checks
- * here just produce friendlier errors than a raw permission failure.
+ * Owner / admin moderation: invitations (by username or id) and direct adds.
  */
 
 export async function inviteByUsername(input: {
@@ -93,104 +83,6 @@ export async function inviteToCommunity(input: {
 
   revalidateCommunityPaths((c as { slug: string }).slug);
   return { ok: true, data: { inviteId: (invite as { id: string }).id } };
-}
-
-export async function approveJoinRequest(requestId: string): Promise<ActionResult<{ id: string }>> {
-  const userId = await requireUserId();
-  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
-
-  const client = await getServerClient();
-  const { data: req } = await client
-    .from('community_join_requests')
-    .select('id, community_id, user_id, status')
-    .eq('id', requestId)
-    .maybeSingle();
-  const r = req as
-    | { id: string; community_id: string; user_id: string; status: string }
-    | null;
-  if (!r) return { ok: false, error: 'Solicitud no encontrada.' };
-  if (r.status !== 'pending') return { ok: false, error: 'La solicitud ya fue procesada.' };
-
-  // Explicit authz BEFORE any write: the membership insert below runs with the
-  // service client, so it must never be reachable by the requester themselves.
-  const allowed = await canModerateCommunity(r.community_id);
-  if (!allowed) return { ok: false, error: 'No tienes permiso para revisar solicitudes.' };
-
-  // Mark approved (RLS: owner/admin only). `.select().maybeSingle()` makes an
-  // RLS-filtered 0-row update visible — without it a silent no-op would fall
-  // through to the service-client insert.
-  const { data: updated, error: updErr } = await client
-    .from('community_join_requests')
-    .update({
-      status: 'approved',
-      responded_at: new Date().toISOString(),
-      responded_by: userId,
-    })
-    .eq('id', r.id)
-    .eq('status', 'pending')
-    .select('id')
-    .maybeSingle();
-  if (updErr) return { ok: false, error: updErr.message };
-  if (!updated) return { ok: false, error: 'No autorizado.' };
-
-  const svc = getServiceClient();
-  const { error: memErr } = await svc
-    .from('community_members')
-    .insert({
-      community_id: r.community_id,
-      user_id: r.user_id,
-      role: 'MEMBER',
-      status: 'active',
-    });
-  if (memErr && !memErr.message.includes('duplicate')) {
-    return { ok: false, error: memErr.message };
-  }
-
-  const { data: c } = await client
-    .from('communities')
-    .select('slug')
-    .eq('id', r.community_id)
-    .maybeSingle();
-  revalidateCommunityPaths((c as { slug?: string } | null)?.slug);
-  return { ok: true, data: { id: requestId } };
-}
-
-export async function declineJoinRequest(requestId: string): Promise<ActionResult<{ id: string }>> {
-  const userId = await requireUserId();
-  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
-
-  const client = await getServerClient();
-  const { data: req } = await client
-    .from('community_join_requests')
-    .select('id, community_id')
-    .eq('id', requestId)
-    .maybeSingle();
-  const r = req as { id: string; community_id: string } | null;
-  if (!r) return { ok: false, error: 'Solicitud no encontrada.' };
-
-  const allowed = await canModerateCommunity(r.community_id);
-  if (!allowed) return { ok: false, error: 'No tienes permiso para revisar solicitudes.' };
-
-  const { data: updated, error } = await client
-    .from('community_join_requests')
-    .update({
-      status: 'declined',
-      responded_at: new Date().toISOString(),
-      responded_by: userId,
-    })
-    .eq('id', r.id)
-    .select('id')
-    .maybeSingle();
-  if (error) return { ok: false, error: error.message };
-  if (!updated) return { ok: false, error: 'No autorizado.' };
-
-  const { data: c } = await client
-    .from('communities')
-    .select('slug')
-    .eq('id', r.community_id)
-    .maybeSingle();
-  revalidateCommunityPaths((c as { slug?: string } | null)?.slug);
-  return { ok: true, data: { id: requestId } };
 }
 
 /**

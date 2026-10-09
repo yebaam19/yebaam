@@ -329,7 +329,19 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. El panel de administración se pliega por defecto para dejar visibles antes las publicaciones; apertura/foco revisados en localhost. Se verificó el desplazamiento real del sidebar en escritorio y en móvil con viewport bajo; el panel de colores se adapta a una columna. Pendiente flujo multirol. |
 | aceptación 18 | Persistencia tras recarga | SQL y pregunta privada Q&A verificados; pendiente cobertura UI de los demás módulos. |
 
-Orden de continuación: QA de galerías y adjuntos con medios reales →
+Seguridad de ingreso privado: `community_join_requests` ya no admite estados
+aprobados desde el cliente ni actualizaciones directas. La RPC transaccional
+aprueba, rechaza o cancela con autorización según el rol institucional; la
+aprobación crea la membresía en la misma transacción. La inserción directa de
+`community_members` ahora exige rol `MEMBER` y estado activo. Dos migraciones
+aplicadas en Supabase; `supabase/tests/communities/join-request-security.sql`
+pasó con `ROLLBACK` (autoaprobación, rol elegido, solicitud privada, autorización,
+alta atómica y cancelación). Pendiente hacer descubrible la entrada a comunidades
+privadas sin exponer su contenido: la lectura general actual oculta esas filas a
+quienes aún no son miembros, así que la acción de ingreso no las encuentra.
+
+Orden de continuación: entrada segura a comunidades privadas →
+QA de galerías y adjuntos con medios reales →
 QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → QA de eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.
 No habilitar entradas incompletas sin la indicación Próximamente.

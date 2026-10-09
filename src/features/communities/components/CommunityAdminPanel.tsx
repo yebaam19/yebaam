@@ -4,11 +4,8 @@ import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import {
-  approveJoinRequest,
-  declineJoinRequest,
-  inviteByUsername,
-} from '@/features/communities/actions/moderation.actions';
+import { approveJoinRequest, declineJoinRequest } from '@/features/communities/actions/join-requests.actions';
+import { inviteByUsername } from '@/features/communities/actions/moderation.actions';
 import type { PendingJoinRequest } from '@/features/communities/server/communities.server';
 import { invalidate } from '@/lib/hooks/cacheStore';
 import { CheckBadgeIcon, ChevronDownIcon, XMarkIcon } from '@/components/icons/heroicons-shim';

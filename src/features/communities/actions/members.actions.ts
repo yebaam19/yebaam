@@ -108,12 +108,20 @@ export async function cancelJoinRequest(communityId: string): Promise<ActionResu
   if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
 
   const client = await getServerClient();
-  const { error } = await client
+  const { data: request, error: lookupError } = await client
     .from('community_join_requests')
-    .update({ status: 'cancelled', responded_at: new Date().toISOString() })
+    .select('id')
     .eq('community_id', communityId)
     .eq('user_id', userId)
-    .eq('status', 'pending');
+    .eq('status', 'pending')
+    .maybeSingle();
+  if (lookupError) return { ok: false, error: lookupError.message };
+  if (!request) return { ok: false, error: 'No hay solicitud pendiente.' };
+
+  const { error } = await client.rpc('change_community_join_request', {
+    target_request: request.id,
+    decision: 'cancelled',
+  });
   if (error) return { ok: false, error: error.message };
 
   const { data: c } = await client
