@@ -30,7 +30,11 @@
   "unavailable": {
     "title": "Comunidad no disponible",
     "description": "No encontramos una comunidad que puedas consultar en este enlace.",
-    "back": "Explorar comunidades"
+    "back": "Explorar comunidades",
+    "articleTitle": "Artículo no disponible",
+    "articleDescription": "Este artículo no existe o no tienes acceso para verlo.",
+    "planTitle": "Plan no disponible",
+    "planDescription": "Este plan no existe o no tienes acceso para verlo."
   },
   "card": {
     "members": "miembros",
@@ -761,7 +765,6 @@
     "allEvents": "Todos los eventos",
     "unavailableTitle": "Evento no disponible",
     "unavailableDescription": "Este evento no existe o no tienes acceso para verlo.",
-    "browseCommunities": "Explorar comunidades",
     "openVirtual": "Abrir enlace del evento ↗",
     "registration": "Inscripción",
     "openRegistration": "Ir a la inscripción ↗",
@@ -779,6 +782,8 @@
     }
   },
   "questions": {
+    "unavailableTitle": "Pregunta no disponible",
+    "unavailableDescription": "Esta pregunta no existe o no tienes acceso para verla.",
     "title": "Preguntas y respuestas",
     "ask": "Hacer una pregunta",
     "signIn": "Inicia sesión para hacer una pregunta.",

@@ -30,7 +30,11 @@
   "unavailable": {
     "title": "Community unavailable",
     "description": "We couldn't find a community you can view at this link.",
-    "back": "Explore communities"
+    "back": "Explore communities",
+    "articleTitle": "Article unavailable",
+    "articleDescription": "This article does not exist or you do not have access to it.",
+    "planTitle": "Plan unavailable",
+    "planDescription": "This plan does not exist or you do not have access to it."
   },
   "card": {
     "members": "members",
@@ -761,7 +765,6 @@
     "allEvents": "All events",
     "unavailableTitle": "Event unavailable",
     "unavailableDescription": "This event does not exist or you do not have access to it.",
-    "browseCommunities": "Explore communities",
     "openVirtual": "Open event link ↗",
     "registration": "Registration",
     "openRegistration": "Go to registration ↗",
@@ -779,6 +782,8 @@
     }
   },
   "questions": {
+    "unavailableTitle": "Question unavailable",
+    "unavailableDescription": "This question does not exist or you do not have access to it.",
     "title": "Questions and answers",
     "ask": "Ask a question",
     "signIn": "Sign in to ask a question.",

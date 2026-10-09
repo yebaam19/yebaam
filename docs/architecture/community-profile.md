@@ -331,6 +331,14 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. El panel de administración se pliega por defecto para dejar visibles antes las publicaciones; apertura/foco revisados en localhost. Se verificó el desplazamiento real del sidebar en escritorio y en móvil con viewport bajo; el panel de colores se adapta a una columna. Pendiente flujo multirol. |
 | aceptación 18 | Persistencia tras recarga | SQL y pregunta privada Q&A verificados; pendiente cobertura UI de los demás módulos. |
 
+Los enlaces directos a preguntas, artículos y planes inexistentes ahora muestran
+un estado de YEBAAM compartido, traducido y accesible, en lugar de dejar vacío
+el contenido del perfil. La misma vista cubre registros ocultos por RLS sin
+revelar títulos ni otros campos. Se verificaron rutas inexistentes en localhost,
+incluida la vista móvil de artículos a 390 px. Estas respuestas llevan `noindex`;
+siguen devolviendo HTTP 200, porque `notFound()` bajo el layout actual deja el
+contenido vacío. Queda pendiente resolver ese comportamiento para recuperar 404.
+
 Seguridad de ingreso privado: `community_join_requests` ya no admite estados
 aprobados desde el cliente ni actualizaciones directas. La RPC transaccional
 aprueba, rechaza o cancela con autorización según el rol institucional; la
