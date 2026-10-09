@@ -79,6 +79,14 @@
       "submitting": "Creando..."
     }
   },
+  "privatePreview": {
+    "label": "Comunidad privada",
+    "description": "El contenido de esta comunidad es visible solo para sus miembros. Puedes solicitar acceso al equipo administrador.",
+    "pending": "Tu solicitud está pendiente de revisión.",
+    "declined": "Tu solicitud fue rechazada.",
+    "back": "Volver a comunidades",
+    "cancel": "Cancelar solicitud"
+  },
   "detail": {
     "members": "miembros",
     "posts": "publicaciones",

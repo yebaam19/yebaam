@@ -79,6 +79,14 @@
       "submitting": "Creating..."
     }
   },
+  "privatePreview": {
+    "label": "Private community",
+    "description": "Only members can see this community's content. You can request access from its administrators.",
+    "pending": "Your request is waiting for review.",
+    "declined": "Your request was declined.",
+    "back": "Back to communities",
+    "cancel": "Cancel request"
+  },
   "detail": {
     "members": "members",
     "posts": "posts",

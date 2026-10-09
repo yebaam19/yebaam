@@ -336,11 +336,22 @@ aprobación crea la membresía en la misma transacción. La inserción directa d
 `community_members` ahora exige rol `MEMBER` y estado activo. Dos migraciones
 aplicadas en Supabase; `supabase/tests/communities/join-request-security.sql`
 pasó con `ROLLBACK` (autoaprobación, rol elegido, solicitud privada, autorización,
-alta atómica y cancelación). Pendiente hacer descubrible la entrada a comunidades
-privadas sin exponer su contenido: la lectura general actual oculta esas filas a
-quienes aún no son miembros, así que la acción de ingreso no las encuentra.
+alta atómica y cancelación). La URL directa de una comunidad privada ahora
+muestra al usuario autenticado una vista mínima con nombre y solicitud de acceso;
+el servidor verifica la sesión, consulta exactamente ese slug y devuelve solo `id`, `name` y `slug`,
+sin abrir la lectura RLS de contenido institucional. La vista se verificó con
+una cuenta no miembro en localhost, en escritorio y móvil; un perfil público
+sigue cargando normalmente. Pendiente verificar desde navegador el envío,
+cancelación y aprobación con cuentas de prueba, y definir si habrá búsqueda
+controlada de comunidades privadas en descubrimiento.
 
-Orden de continuación: entrada segura a comunidades privadas →
+La restricción de unicidad ahora afecta solo solicitudes pendientes, de modo que
+pueden conservarse múltiples cancelaciones/revisiones históricas y repetirse
+el ciclo de solicitud; migración aplicada y prueba SQL con `ROLLBACK` superada.
+La vista de estado toma la solicitud más reciente para evitar que un rechazo
+antiguo bloquee una nueva solicitud después de una aprobación o cancelación.
+
+Orden de continuación: QA multirol de solicitudes privadas →
 QA de galerías y adjuntos con medios reales →
 QA de cabecera con cuatro videos reales → QA de guardado real de portada/logo → QA de eventos,
 Q&A y páginas relacionadas → completar chat/foro/artículos → pruebas integrales.

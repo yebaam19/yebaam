@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import {
   getCommunityBySlug,
+  getPrivateCommunityPreview,
   getViewerJoinState,
 } from '@/features/communities/server/communities.server';
 import { getCommunityHeaderImages } from '@/features/communities/server/community-header-images.server';
@@ -9,6 +10,7 @@ import { getCommunityTheme } from '@/features/communities/server/community-theme
 import { getCommunityShowcase } from '@/features/communities/server/community-showcase.server';
 import { CommunityProfileHeader } from '@/features/communities/components/showcase/CommunityProfileHeader';
 import { CommunityLayoutShell } from '@/features/communities/components/CommunityLayoutShell';
+import { CommunityPrivatePreview } from '@/features/communities/components/CommunityPrivatePreview';
 import { CommunityInstitutionalNav } from '@/features/communities/components/CommunityInstitutionalNav';
 import { getCommunitySections, getCommunityProfileCapabilities, usesStructuredRules } from '@/features/communities/server/community-plan.server';
 
@@ -20,7 +22,12 @@ interface CommunityLayoutProps {
 export default async function CommunityLayout({ params, children }: CommunityLayoutProps) {
   const { slug } = await params;
   const community = await getCommunityBySlug(slug);
-  if (!community) notFound();
+  if (!community) {
+    const preview = await getPrivateCommunityPreview(slug);
+    if (!preview) notFound();
+    const viewerState = await getViewerJoinState(preview.id);
+    return <CommunityPrivatePreview community={preview} viewerState={viewerState} />;
+  }
 
   const [viewerState, sections, capabilities, migratedRules, showcase, headerImages, theme] = await Promise.all([
     getViewerJoinState(community.id), getCommunitySections(community.id),

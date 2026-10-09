@@ -32,6 +32,12 @@ begin
   insert into public.community_join_requests(community_id, user_id)
     values (private_id, requester_id) returning id into request_id;
   begin
+    insert into public.community_join_requests(community_id, user_id)
+      values (private_id, requester_id);
+    raise exception 'Duplicate pending request allowed';
+  exception when unique_violation then null;
+  end;
+  begin
     update public.community_join_requests set status = 'approved' where id = request_id;
     raise exception 'Requester directly approved request';
   exception when insufficient_privilege then null;
@@ -80,6 +86,13 @@ begin
       where id = another_request and status = 'cancelled') then
     raise exception 'Own cancellation failed';
   end if;
+  insert into public.community_join_requests(community_id, user_id)
+    values (private_id, outsider_id) returning id into another_request;
+  perform public.change_community_join_request(another_request, 'cancelled');
+  if (select count(*) from public.community_join_requests
+      where community_id = private_id and user_id = outsider_id and status = 'cancelled') <> 2 then
+    raise exception 'Repeated cancellation lost request history';
+  end if;
 
   reset role;
   insert into public.community_members(community_id, user_id, role, status)
@@ -106,4 +119,4 @@ begin
 end;
 $$;
 rollback;
-select 'PASS: private requests, roles, atomic review, cancellation and banned members' as result;
+select 'PASS: private requests, roles, atomic review, repeat requests and banned members' as result;

@@ -51,8 +51,8 @@ export const getViewerJoinState = cache(async (communityId: string): Promise<Vie
       .select('status')
       .eq('community_id', communityId)
       .eq('user_id', userId)
-      .in('status', ['pending', 'declined'])
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .limit(1)
       .maybeSingle(),
   ]);
@@ -61,8 +61,9 @@ export const getViewerJoinState = cache(async (communityId: string): Promise<Vie
   if (member) return { kind: 'member' };
   if (invite) return { kind: 'invited', invitationId: (invite as { id: string }).id };
   if (req) {
-    const status = (req as { status: 'pending' | 'declined' }).status;
-    return status === 'pending' ? { kind: 'request_pending' } : { kind: 'request_declined' };
+    const status = (req as { status: string }).status;
+    if (status === 'pending') return { kind: 'request_pending' };
+    if (status === 'declined') return { kind: 'request_declined' };
   }
 
   return { kind: 'none' };

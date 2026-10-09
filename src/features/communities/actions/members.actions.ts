@@ -81,10 +81,10 @@ export async function joinCommunity(
   // PRIVATE — submit a join request (idempotent against an existing pending row).
   const { data: existingReq } = await client
     .from('community_join_requests')
-    .select('id, status')
+    .select('id')
     .eq('community_id', id)
     .eq('user_id', userId)
-    .in('status', ['pending', 'approved'])
+    .eq('status', 'pending')
     .maybeSingle();
 
   if (!existingReq) {
@@ -130,6 +130,41 @@ export async function cancelJoinRequest(communityId: string): Promise<ActionResu
     .eq('id', communityId)
     .maybeSingle();
   revalidateCommunityPaths((c as { slug?: string } | null)?.slug);
+  return { ok: true, data: { id: communityId } };
+}
+
+/** Submit by ID from the minimal preview; RLS verifies identity and privacy. */
+export async function requestPrivateCommunityAccess(
+  communityId: string,
+): Promise<ActionResult<{ id: string }>> {
+  const userId = await requireUserId();
+  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
+
+  const client = await getServerClient();
+  const { data: prior, error: lookupError } = await client.from('community_join_requests')
+    .select('status').eq('community_id', communityId).eq('user_id', userId)
+    .order('created_at', { ascending: false }).order('id', { ascending: false })
+    .limit(1).maybeSingle();
+  if (lookupError) return { ok: false, error: lookupError.message };
+  if (prior?.status === 'declined') {
+    return { ok: false, error: 'Esta solicitud ya fue rechazada.' };
+  }
+  if (prior?.status !== 'pending') {
+    const { error } = await client.from('community_join_requests').insert({
+      community_id: communityId,
+      user_id: userId,
+      status: 'pending',
+    });
+    if (error) {
+      // A concurrent click may have inserted the same pending row.
+      const { data: pending } = await client.from('community_join_requests')
+        .select('id').eq('community_id', communityId).eq('user_id', userId)
+        .eq('status', 'pending').maybeSingle();
+      if (!pending) return { ok: false, error: error.message };
+    }
+  }
+
+  revalidateCommunityPaths();
   return { ok: true, data: { id: communityId } };
 }
 
