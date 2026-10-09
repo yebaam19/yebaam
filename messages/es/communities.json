@@ -391,7 +391,9 @@
     "loading": "Cargando…",
     "moreFolders": "Cargar más carpetas",
     "loadError": "No se pudo cargar. Inténtalo de nuevo.",
-    "openImage": "Ver imagen: {title} (nueva pestaña)",
+    "openImage": "Ampliar imagen: {title}",
+    "closeImage": "Cerrar imagen ampliada",
+    "postPhoto": "Foto de la comunidad",
     "draft": "Borrador",
     "audience": {
       "editors": "Solo editores",

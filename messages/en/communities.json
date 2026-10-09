@@ -391,7 +391,9 @@
     "loading": "Loading…",
     "moreFolders": "Load more folders",
     "loadError": "Could not load. Please try again.",
-    "openImage": "View image: {title} (new tab)",
+    "openImage": "Enlarge image: {title}",
+    "closeImage": "Close enlarged image",
+    "postPhoto": "Community photo",
     "draft": "Draft",
     "audience": {
       "editors": "Editors only",

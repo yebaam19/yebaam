@@ -1,16 +1,19 @@
-import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import type { CommunityPost } from '@/features/communities/types/community.types';
+import { CommunityImageLightbox } from './library/CommunityImageLightbox';
 
 interface CommunityPhotosPanelProps {
   posts: CommunityPost[];
 }
 
-export function CommunityPhotosPanel({ posts }: CommunityPhotosPanelProps) {
-  const photos: string[] = [];
+export async function CommunityPhotosPanel({ posts }: CommunityPhotosPanelProps) {
+  const t = await getTranslations('communities.library');
+  const photos: { url: string; title: string; key: string }[] = [];
   for (const post of posts) {
     if (!post.media) continue;
-    for (const m of post.media) {
-      if (m.kind === 'image' && m.url) photos.push(m.url);
+    for (const [index, m] of post.media.entries()) {
+      if (m.kind === 'image' && m.url) photos.push({ url: m.url,
+        title: post.content.trim().slice(0, 80) || t('postPhoto'), key: `${post.id}:${index}` });
     }
   }
 
@@ -24,17 +27,8 @@ export function CommunityPhotosPanel({ posts }: CommunityPhotosPanelProps) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-      {photos.map((url) => (
-        <div key={url} className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-900">
-          <Image
-            src={url}
-            alt=""
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
-            className="object-cover"
-            unoptimized
-          />
-        </div>
+      {photos.map((photo) => (
+        <CommunityImageLightbox key={photo.key} src={photo.url} title={photo.title} square />
       ))}
     </div>
   );

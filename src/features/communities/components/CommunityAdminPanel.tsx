@@ -11,7 +11,7 @@ import {
 } from '@/features/communities/actions/moderation.actions';
 import type { PendingJoinRequest } from '@/features/communities/server/communities.server';
 import { invalidate } from '@/lib/hooks/cacheStore';
-import { CheckBadgeIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
+import { CheckBadgeIcon, ChevronDownIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { AddCommunityMemberForm } from './community-admin/AddCommunityMemberForm';
 import { CommunityRoleManager } from './community-admin/CommunityRoleManager';
 import type { CommunityRolePage } from '../types/communityRole.types';
@@ -82,11 +82,14 @@ export function CommunityAdminPanel({
   };
 
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm p-6 mb-6">
-      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-        <CheckBadgeIcon className="h-5 w-5 text-primary-800 dark:text-primary-300" />
-        {t('admin.panel.title')}
-      </h2>
+    <details className="group mb-6 overflow-hidden rounded-xl border border-primary-100 bg-white shadow-sm dark:border-primary-900/50 dark:bg-neutral-800">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-2 px-5 py-3 text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary-800 dark:text-primary-100 [&::-webkit-details-marker]:hidden">
+        <CheckBadgeIcon aria-hidden="true" className="size-5 shrink-0 text-primary-800 dark:text-primary-300" />
+        <span className="min-w-0 flex-1">{t('admin.panel.title')}</span>
+        {pendingRequests.length > 0 && <span className="rounded-full bg-secondary-100 px-2 py-0.5 text-xs text-secondary-900 dark:bg-secondary-900/30 dark:text-secondary-200">{pendingRequests.length}</span>}
+        <ChevronDownIcon aria-hidden="true" className="size-4 shrink-0 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="border-t border-neutral-200 px-5 py-5 dark:border-neutral-700 sm:px-6">
 
       <AddCommunityMemberForm communityId={communityId} />
       <CommunityRoleManager communityId={communityId} initial={rolePage} />
@@ -200,6 +203,7 @@ export function CommunityAdminPanel({
           {error}
         </p>
       )}
-    </div>
+      </div>
+    </details>
   );
 }
