@@ -5,6 +5,7 @@ import { getServerClient } from '@/utils/supabase/server';
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { imageUrl, withImageVariant } from '@/lib/media/urls';
 import { sanitizeCommunityArticleContent, splitCommunityArticleContent } from '../lib/article-content';
+import { parseArticleCursor } from '../lib/article-cursor';
 import { getCommunityProfileCapabilities } from './community-plan.server';
 import { ASSET_COLUMNS } from './community-library.server';
 import type { LibraryAsset } from '../types/communityLibrary.types';
@@ -87,13 +88,11 @@ export const getCommunityArticleAssets = cache(async (communityId: string, ids: 
   return (data ?? []) as LibraryAsset[];
 });
 
-const cursorSchema = z.object({ createdAt: z.iso.datetime({ offset: true }), id: z.uuid() });
-
 export const getCommunityArticlePage = cache(async (
   communityId: string, search = '', category = '', cursorJson: string | null = null, includeDrafts = false,
 ): Promise<{ items: CommunityArticleSummary[]; nextCursor: string | null }> => {
   z.uuid().parse(communityId);
-  const cursor = cursorJson ? cursorSchema.parse(JSON.parse(cursorJson)) : null;
+  const cursor = parseArticleCursor(cursorJson);
   const client = await getServerClient();
   let query = client.from('community_articles').select(SUMMARY_COLUMNS)
     .eq('community_id', communityId).is('deleted_at', null).is('hidden_at', null)

@@ -231,9 +231,16 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
   `COMMUNITY_CLEANUP_SECRET` (servidor, mínimo 32 caracteres), compara en tiempo
   constante y devuelve solo contadores con `private, no-store`.
 - Supabase Cron: `community-asset-cleanup`, cada cinco minutos, llama al dispatcher
-  privado con credenciales en Vault, no en `cron.job.command`. **Creado inactivo**:
-  la ruta nueva aún no está desplegada y no se configuraron esos secretos. El
-  despliegue/activación está pendiente, sin solicitudes ni borrados remotos de prueba.
+  privado con credenciales en Vault, no en `cron.job.command`. **Creado inactivo**.
+  El 9 de octubre se confirmó que la ruta está desplegada en
+  `www.yebaam.com`: GET devuelve 405 y POST sin autorización devuelve 503
+  `Cleanup is not configured.` con `private, no-store`. La URL desplegada ya
+  está guardada como `community_cleanup_url` en Supabase Vault y se comprobó
+  que coincide. Falta configurar `COMMUNITY_CLEANUP_SECRET` en el proyecto
+  Vercel que aloja YEBAAM y el mismo valor como `community_cleanup_secret` en
+  Vault; aún no se probaron solicitudes autorizadas ni borrados remotos. La
+  sesión actual de Vercel CLI (`ellisvelandia`) no lista el proyecto YEBAAM en
+  ninguno de sus dos equipos, por lo que no puede configurar esa variable.
 - Las firmas PUT de documentos duran cinco minutos. La última firma se registra
   en la base con bloqueo por recibo; una carga sin finalizar se retira después
   de 24 horas y su clave entra en el mismo outbox idempotente. Eliminar usuario
@@ -246,8 +253,8 @@ Activación tras desplegar esta versión:
 
 1. Configurar en el servidor `COMMUNITY_CLEANUP_SECRET` con un secreto aleatorio
    de al menos 32 caracteres. En Supabase Vault, guardar el mismo valor como
-   `community_cleanup_secret` y la URL HTTPS completa de la ruta como
-   `community_cleanup_url` (sin query/hash). No pegar secretos en logs ni commits.
+   `community_cleanup_secret`. `community_cleanup_url` ya apunta a la ruta
+   HTTPS desplegada (sin query/hash). No pegar secretos en logs ni commits.
 2. Verificar POST sin secreto → 401 y con el secreto → contadores/200; con la cola
    vacía no realiza llamadas de borrado. Revisar la ruta desplegada, no un preview
    protegido por autenticación adicional que impida acceder al scheduler.
@@ -257,8 +264,8 @@ Activación tras desplegar esta versión:
    edad del más antiguo; también respuestas HTTP de `pg_net`, porque un despacho
    SQL correcto no demuestra éxito HTTP. El job puede desactivarse sin perder cola.
 
-No reutilizar ni purgar tombstones al azar. La cola y Vault siguen sin secretos
-configurados: una prueba SQL no demuestra que el borrado remoto esté operativo.
+No reutilizar ni purgar tombstones al azar. Vault aún no tiene el secreto de
+autenticación: una prueba SQL no demuestra que el borrado remoto esté operativo.
 
 ### Caché y consistencia
 
@@ -330,7 +337,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada. Las fotos de biblioteca y las heredadas de publicaciones abren un visor ampliado con cierre por botón/Escape y retorno del foco; foto heredada probada en escritorio y móvil. El historial heredado pagina con cursor, 50 publicaciones por página, sin corte fijo; navegación y regreso probados en localhost. La biblioteca de prueba sigue vacía; pendiente carga real autenticada y QA de una galería de biblioteca poblada. |
 | 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; videos heredados comparten paginación por cursor sin corte fijo. Pendiente QA visual/reproducción real y enlace a cabecera. |
 | 5.3; aceptación 9 | Artículos: enriquecido, portada/resumen, autor/fecha, categorías/tags, adjuntos, borradores y publicación | Migraciones aplicadas: borradores privados, RPC versionado y moderación auditada; lectura RLS, paginación/búsqueda, editor, selectores de biblioteca y lector conectados. Dos artículos previos conservados; borrador guardado/recargado en localhost y archivado. Prueba SQL con rollback pasa. Pendiente QA con medios/adjuntos reales, publicación desde UI y validación multirol. |
-| 5.4; aceptación 9 | Documentos PDF/Office/TXT/ZIP: upload, reemplazo, carpetas, metadata, preview/descarga y visibilidad | Backend R2, UI y consumidor de retiro implementados; cron creado inactivo. La carga abandonada ahora se registra y pasa al outbox tras 24 horas; borrado por cascada espera el vencimiento de la firma. Migración aplicada y prueba SQL con rollback. Pendiente despliegue/activación del cron y prueba autenticada con archivo real. |
+| 5.4; aceptación 9 | Documentos PDF/Office/TXT/ZIP: upload, reemplazo, carpetas, metadata, preview/descarga y visibilidad | Backend R2, UI y consumidor de retiro implementados; la ruta ya está desplegada, pero devuelve 503 por falta de secreto y el cron sigue inactivo. La carga abandonada ahora se registra y pasa al outbox tras 24 horas; borrado por cascada espera el vencimiento de la firma. Migración aplicada y prueba SQL con rollback. Pendiente configurar secretos/activar cron y probar una carga autenticada con archivo real. |
 | 6; aceptación 15 y 17 | Roles y permisos verificados en servidor; visitantes y miembros | Panel del propietario para asignar, editar y revocar administradores, editores y moderadores. El administrador delegado activo ve solicitudes privadas y puede aprobar/rechazar; las herramientas de alta directa y de roles siguen visibles solo al propietario. RLS/RPC y una prueba del componente comprueban esta separación; la prueba SQL con rollback confirmó aprobación delegada y rechazo al moderador. Pendiente adopción de estos permisos en todos los módulos existentes y QA multirol real. |
 | 7; aceptación 5 | Colores, pestañas ordenables/ocultables, títulos por organización y secciones destacadas | Colores por comunidad restringidos a verde/dorado YEBAAM; cabecera, pestañas, navegación, compositor, tarjetas de artículo y controles administrativos usan la paleta. Descubrimiento, tarjetas y formulario de creación también usan verde/dorado; la vista se revisó en escritorio y móvil. Las seis pestañas superiores admiten título, orden con controles de teclado y visibilidad por comunidad; se guardan juntas con versión y RLS. Una RPC devuelve solo el dato de si la configuración existe, para que una fila oculta por RLS no reaparezca como pestaña predeterminada. Guardado/restauración verificados en localhost, incluso en móvil; prueba SQL con rollback y prueba del render cubren lectura anónima y visibilidad. Las secciones institucionales conservan título, posición, visibilidad, destaque y auditoría independientes; Inicio enlaza solo las visibles y destacadas. Pendiente QA visual de tarjetas destacadas pobladas. |
 | 8 | CRUD, separación, validación/optimización/procesamiento, paginación/búsqueda, historial, confirmaciones y borradores | Inicio pagina publicaciones de 10 en 10 y el historial multimedia heredado de 50 en 50 con cursor estable `(created_at, id)` e índice aplicado; ambos permiten volver a recientes sin conteo exacto por página. Browser QA con cursor real de la comunidad MVP confirmó navegación y regreso en inicio/fotos. Faltan cargas multimedia y documentales reales, búsquedas y adopción transversal. |
@@ -344,6 +351,11 @@ revelar títulos ni otros campos. Se verificaron rutas inexistentes en localhost
 incluida la vista móvil de artículos a 390 px. Estas respuestas llevan `noindex`;
 siguen devolviendo HTTP 200, porque `notFound()` bajo el layout actual deja el
 contenido vacío. Queda pendiente resolver ese comportamiento para recuperar 404.
+El fallo se reprodujo también en `next start` (404 con cuerpo visual vacío);
+convertir la página global 404 a Server Component y retirar temporalmente el
+ErrorBoundary no lo corrigieron, por lo que ambos intentos se revirtieron.
+Un cursor de artículos mal formado ahora redirige a la primera página,
+conservando búsqueda y categoría, en vez de abrir ese 404 vacío.
 
 Seguridad de ingreso privado: `community_join_requests` ya no admite estados
 aprobados desde el cliente ni actualizaciones directas. La RPC transaccional

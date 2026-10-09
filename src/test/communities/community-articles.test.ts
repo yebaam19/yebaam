@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { plainArticleText, sanitizeCommunityArticleContent, splitCommunityArticleContent } from '@/features/communities/lib/article-content';
+import { parseArticleCursor } from '@/features/communities/lib/article-cursor';
 
 const assetId = 'e90b4974-7c60-47f0-8f5a-cb8a1d858acf';
 
@@ -25,5 +26,19 @@ describe('community article content boundary', () => {
     expect(content).not.toMatch(/onclick|<script|<img|imagedelivery\.net|javascript:|data-community-asset-id=/);
     expect(content).toContain('Texto');
     expect(splitCommunityArticleContent(content).every((part) => part.assetId === undefined)).toBe(true);
+  });
+});
+
+describe('community article pagination cursor', () => {
+  it('accepts the bounded cursor produced by the listing', () => {
+    const cursor = { createdAt: '2026-10-09T00:00:00+00:00', id: assetId };
+    expect(parseArticleCursor(JSON.stringify(cursor))).toEqual(cursor);
+    expect(parseArticleCursor(null)).toBeNull();
+  });
+
+  it.each(['not-json', JSON.stringify({ createdAt: 'invalid', id: assetId }),
+    JSON.stringify({ createdAt: '2026-10-09T00:00:00+00:00', id: 'not-uuid' }), 'x'.repeat(513), ['duplicate']])
+  ('rejects a malformed or repeated query cursor', (cursor) => {
+    expect(() => parseArticleCursor(cursor)).toThrow();
   });
 });

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Route } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getCommunityBySlug } from '@/features/communities/server/communities.server';
 import { canManageCommunityArticle, getCommunityArticlePage } from '@/features/communities/server/community-articles.server';
 import { CommunityTopTabs } from '@/features/communities/components/CommunityTopTabs';
@@ -8,10 +8,11 @@ import { getCommunityProfileCapabilities } from '@/features/communities/server/c
 import { getCommunityTopTabs } from '@/features/communities/server/community-top-tabs.server';
 import { CommunityArticleCard } from '@/features/communities/components/CommunityArticleCard';
 import { NewspaperIcon, PencilSquareIcon } from '@/components/icons/heroicons-shim';
+import { parseArticleCursor } from '@/features/communities/lib/article-cursor';
 
 export default async function CommunityArticlesPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ q?: string; category?: string; cursor?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; cursor?: string | string[] }>;
 }) {
   const [{ slug }, filters] = await Promise.all([params, searchParams]);
   const community = await getCommunityBySlug(slug);
@@ -22,16 +23,18 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
   ]);
   const q = (filters.q ?? '').trim().slice(0, 100);
   const category = (filters.category ?? '').trim().slice(0, 120);
-  let page;
-  try {
-    page = await getCommunityArticlePage(community.id, q, category, filters.cursor ?? null, canManage);
-  } catch {
-    if (filters.cursor) notFound();
-    throw new Error('No se pudieron cargar los artículos.');
-  }
   const query = new URLSearchParams();
   if (q) query.set('q', q);
   if (category) query.set('category', category);
+  let invalidCursor = false;
+  try {
+    parseArticleCursor(filters.cursor ?? null);
+  } catch {
+    invalidCursor = true;
+  }
+  if (invalidCursor) redirect(`/feed/comunidades/${slug}/articulos${query.size ? `?${query}` : ''}` as Route);
+  const page = await getCommunityArticlePage(community.id, q, category,
+    typeof filters.cursor === 'string' ? filters.cursor : null, canManage);
   if (page.nextCursor) query.set('cursor', page.nextCursor);
   const nextHref = `/feed/comunidades/${slug}/articulos?${query.toString()}`;
   return <div className="space-y-6">
