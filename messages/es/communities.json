@@ -27,6 +27,11 @@
   "grid": {
     "emptyDefault": "No se encontraron comunidades"
   },
+  "unavailable": {
+    "title": "Comunidad no disponible",
+    "description": "No encontramos una comunidad que puedas consultar en este enlace.",
+    "back": "Explorar comunidades"
+  },
   "card": {
     "members": "miembros",
     "posts": "posts",

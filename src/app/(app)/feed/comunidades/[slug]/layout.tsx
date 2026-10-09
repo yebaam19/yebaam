@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { notFound } from 'next/navigation';
 import {
   getCommunityBySlug,
   getCommunityAccessPreview,
@@ -11,6 +10,7 @@ import { getCommunityShowcase } from '@/features/communities/server/community-sh
 import { CommunityProfileHeader } from '@/features/communities/components/showcase/CommunityProfileHeader';
 import { CommunityLayoutShell } from '@/features/communities/components/CommunityLayoutShell';
 import { CommunityAccessPreview } from '@/features/communities/components/CommunityAccessPreview';
+import { CommunityUnavailable } from '@/features/communities/components/CommunityUnavailable';
 import { CommunityInstitutionalNav } from '@/features/communities/components/CommunityInstitutionalNav';
 import { getCommunitySections, getCommunityProfileCapabilities, usesStructuredRules } from '@/features/communities/server/community-plan.server';
 
@@ -24,7 +24,7 @@ export default async function CommunityLayout({ params, children }: CommunityLay
   const community = await getCommunityBySlug(slug);
   if (!community) {
     const preview = await getCommunityAccessPreview(slug);
-    if (!preview) notFound();
+    if (!preview) return <CommunityUnavailable />;
     const viewerState = await getViewerJoinState(preview.id);
     return <CommunityAccessPreview community={preview} viewerState={viewerState} />;
   }

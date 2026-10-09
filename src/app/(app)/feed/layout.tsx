@@ -30,11 +30,12 @@ export default function FeedLayout({ children }: { children: React.ReactNode }) 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const pathname = usePathname()
 
-  // Public chat needs full viewport width + height (no right rail, no scroll
-  // container). It's also reachable to guests, so don't gate it on the session.
+  // Public chat needs full viewport width + height. Community profiles also
+  // admit visitors; private routes still require the server session.
   const isChatFullscreen = pathname?.startsWith('/feed/chat-publico') ?? false
+  const isPublicCommunity = pathname === '/feed/comunidades' || pathname?.startsWith('/feed/comunidades/')
 
-  if (!hasSession && !isChatFullscreen) {
+  if (!hasSession && !isChatFullscreen && !isPublicCommunity) {
     return null
   }
 

@@ -75,7 +75,7 @@ export function CommunitiesTabsClient({
     { id: 'descubrir' as TabType, label: t('list.tabs.discover'), icon: FireIcon, count: popularCommunities.length },
     { id: 'mis-comunidades' as TabType, label: t('list.tabs.myCommunities'), icon: UserGroupIcon, count: myCommunities.length },
     { id: 'sugeridas' as TabType, label: t('list.tabs.suggested'), icon: SparklesIcon, count: suggestedCommunities.length },
-  ];
+  ].filter((tab) => canCreate || tab.id !== 'mis-comunidades');
 
   const getActiveData = (): Community[] => {
     switch (activeTab) {
@@ -163,7 +163,7 @@ export function CommunitiesTabsClient({
       {joinError && <p role="alert" className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">{joinError}</p>}
       <CommunitiesGrid
         communities={getActiveData()}
-        onJoinClick={handleJoin}
+        onJoinClick={canCreate ? handleJoin : undefined}
         loadingCommunityId={loadingCommunityId}
         emptyMessage={getEmptyMessage()}
       />

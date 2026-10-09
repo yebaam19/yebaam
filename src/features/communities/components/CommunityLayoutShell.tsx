@@ -109,7 +109,16 @@ export function CommunityLayoutShell({
             <CommunityHeaderImageButton communityId={c.id} target="cover" images={headerImages} currentUrl={c.coverImageUrl} />
           </div>
         )}
-        {viewerState.kind !== 'owner' && (
+        {viewerState.kind === 'guest' ? (
+          <div className="absolute right-4 bottom-4 z-10">
+            <Link
+              href={`/login?redirect=${encodeURIComponent(`/feed/comunidades/${c.slug}`)}`}
+              className="inline-flex min-h-10 items-center rounded-lg bg-primary-800 px-5 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
+            >
+              {joinButtonLabel}
+            </Link>
+          </div>
+        ) : viewerState.kind !== 'owner' && (
           <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-1">
             <button
               onClick={handleJoinClick}

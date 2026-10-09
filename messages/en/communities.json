@@ -27,6 +27,11 @@
   "grid": {
     "emptyDefault": "No communities found"
   },
+  "unavailable": {
+    "title": "Community unavailable",
+    "description": "We couldn't find a community you can view at this link.",
+    "back": "Explore communities"
+  },
   "card": {
     "members": "members",
     "posts": "posts",
