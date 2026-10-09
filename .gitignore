@@ -202,7 +202,7 @@ tokens.json
 !supabase/migrations/*_community_profile_*.sql
 !supabase/migrations/*_community_plan_*.sql
 !supabase/migrations/*_community_header_*.sql
-!supabase/migrations/*_community_top_tabs.sql
+!supabase/migrations/*_community_top_tabs*.sql
 !supabase/tests/communities/*.sql
 !src/features/communities/components/plans/DESIGN.md
 !src/features/communities/components/library/DESIGN.md

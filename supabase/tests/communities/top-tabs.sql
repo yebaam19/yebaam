@@ -33,6 +33,9 @@ begin
 
   perform set_config('role', 'anon', true);
   perform set_config('request.jwt.claim.sub', '', true);
+  if not public.community_top_tabs_configured(test_community) then
+    raise exception 'configured state unavailable to an allowed visitor';
+  end if;
   if exists (select 1 from public.community_top_tabs
     where community_id = test_community and tab_key = 'videos') then
     raise exception 'hidden tab leaked to anonymous viewer';

@@ -17,7 +17,7 @@ import { safeExternalHref } from '@/lib/safe-href';
 import { getCommunityRoleGrants } from '@/features/communities/server/community-roles.server';
 import type { CommunitySection } from '../types/communityPlan.types';
 import type { CommunityTheme } from '../types/communityTheme.types';
-import type { CommunityTopTab } from '../types/communityTopTab.types';
+import type { CommunityTopTabConfig } from '../types/communityTopTab.types';
 
 interface CommunityHomeMainProps {
   community: Community;
@@ -25,7 +25,7 @@ interface CommunityHomeMainProps {
   viewerState: ViewerJoinState;
   pendingRequests: PendingJoinRequest[];
   sections: CommunitySection[];
-  topTabs: CommunityTopTab[];
+  topTabs: CommunityTopTabConfig;
   theme: CommunityTheme;
   canManageTheme: boolean;
 }
@@ -49,7 +49,7 @@ export async function CommunityHomeMain({
 
   return (
     <div className="space-y-6">
-      <CommunityTopTabs slug={c.slug} saved={topTabs} canManage={canManageTheme} />
+      <CommunityTopTabs slug={c.slug} config={topTabs} canManage={canManageTheme} />
 
       {isOwner && rolePage && (
         <CommunityAdminPanel
@@ -61,7 +61,7 @@ export async function CommunityHomeMain({
       )}
 
       {canManageTheme && <CommunityThemeSettings initial={theme} />}
-      {canManageTheme && <CommunityTopTabSettings communityId={c.id} slug={c.slug} saved={topTabs} />}
+      {canManageTheme && <CommunityTopTabSettings communityId={c.id} slug={c.slug} config={topTabs} />}
 
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
         <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">

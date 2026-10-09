@@ -7,15 +7,15 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { buildCommunityTopTabs } from '../lib/community-top-tabs';
-import { COMMUNITY_TAB_KEYS, type CommunityTopTab } from '../types/communityTopTab.types';
+import { COMMUNITY_TAB_KEYS, type CommunityTopTabConfig } from '../types/communityTopTab.types';
 
-export function CommunityTopTabs({ slug, saved, canManage }: {
-  slug: string; saved: CommunityTopTab[]; canManage: boolean;
+export function CommunityTopTabs({ slug, config, canManage }: {
+  slug: string; config: CommunityTopTabConfig; canManage: boolean;
 }) {
   const pathname = usePathname();
   const t = useTranslations('communities');
   const labels = Object.fromEntries(COMMUNITY_TAB_KEYS.map((key) => [key, t(`topTabs.${key}`)])) as Record<(typeof COMMUNITY_TAB_KEYS)[number], string>;
-  const tabs = buildCommunityTopTabs(slug, saved, labels, canManage);
+  const tabs = buildCommunityTopTabs(slug, config, labels, canManage);
   const navigation = useRef<HTMLElement>(null);
   useEffect(() => {
     const nav = navigation.current;
@@ -23,6 +23,7 @@ export function CommunityTopTabs({ slug, saved, canManage }: {
     if (nav && selected) nav.scrollLeft = Math.max(0, selected.offsetLeft - nav.offsetLeft - 12);
   }, [pathname]);
 
+  if (!tabs.length) return null;
   return <nav ref={navigation} aria-label={t('topTabs.ariaLabel')}
     className="flex items-center gap-1 overflow-x-auto rounded-lg border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-800">
     {tabs.map((tab) => {

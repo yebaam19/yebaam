@@ -31,7 +31,7 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
   const path = pdfOnly ? 'pdf' : kind === 'image' ? 'fotos' : kind === 'video' ? 'videos' : 'archivos';
   const legacy = kind !== 'document' ? await getCommunityPosts(community.id, { page: 1, limit: 50 }) : null;
   return <div className="space-y-5">
-    <CommunityTopTabs slug={slug} saved={topTabs} canManage={capabilities.settings} />
+    <CommunityTopTabs slug={slug} config={topTabs} canManage={capabilities.settings} />
     <LibraryWorkspace key={crypto.randomUUID()} communityId={community.id} kind={kind} initial={initial} folders={initialFolders}
       canEdit={capabilities.content} basePath={`/feed/comunidades/${slug}/${path}`} search={search} folderId={folderId} pdfOnly={pdfOnly} />
     {legacy && <details className="rounded-xl bg-white p-4 dark:bg-neutral-800">

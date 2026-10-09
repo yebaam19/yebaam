@@ -1,4 +1,4 @@
-import { COMMUNITY_TAB_KEYS, type CommunityTabKey, type CommunityTopTab } from '../types/communityTopTab.types';
+import { COMMUNITY_TAB_KEYS, type CommunityTabKey, type CommunityTopTabConfig, type CommunityTopTab } from '../types/communityTopTab.types';
 
 export interface DisplayTab extends CommunityTopTab {
   href: string;
@@ -9,11 +9,12 @@ const TAB_PATHS: Record<CommunityTabKey, string> = {
 };
 
 export function buildCommunityTopTabs(
-  slug: string, saved: CommunityTopTab[], labels: Record<CommunityTabKey, string>, canManage: boolean,
+  slug: string, config: CommunityTopTabConfig, labels: Record<CommunityTabKey, string>, canManage: boolean,
 ): DisplayTab[] {
   const base = `/feed/comunidades/${encodeURIComponent(slug)}`;
-  const byKey = new Map(saved.map((tab) => [tab.tab_key, tab]));
-  return COMMUNITY_TAB_KEYS.map((key, index) => ({
+  const byKey = new Map(config.items.map((tab) => [tab.tab_key, tab]));
+  const keys = config.configured ? config.items.map((tab) => tab.tab_key) : [...COMMUNITY_TAB_KEYS];
+  return keys.map((key, index) => ({
     tab_key: key, title: byKey.get(key)?.title ?? labels[key],
     position: byKey.get(key)?.position ?? index,
     is_visible: byKey.get(key)?.is_visible ?? true,

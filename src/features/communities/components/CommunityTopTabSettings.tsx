@@ -6,16 +6,16 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/ui/Button';
 import { saveCommunityTopTabs } from '../actions/top-tabs.actions';
 import { buildCommunityTopTabs } from '../lib/community-top-tabs';
-import { COMMUNITY_TAB_KEYS, type CommunityTopTab } from '../types/communityTopTab.types';
+import { COMMUNITY_TAB_KEYS, type CommunityTopTab, type CommunityTopTabConfig } from '../types/communityTopTab.types';
 
-export function CommunityTopTabSettings({ communityId, slug, saved }: {
-  communityId: string; slug: string; saved: CommunityTopTab[];
+export function CommunityTopTabSettings({ communityId, slug, config }: {
+  communityId: string; slug: string; config: CommunityTopTabConfig;
 }) {
   const t = useTranslations('communities');
   const router = useRouter();
   const labels = Object.fromEntries(COMMUNITY_TAB_KEYS.map((key) => [key, t(`topTabs.${key}`)])) as Record<(typeof COMMUNITY_TAB_KEYS)[number], string>;
   const [tabs, setTabs] = useState<CommunityTopTab[]>(() =>
-    buildCommunityTopTabs(slug, saved, labels, true).map((tab) => ({
+    buildCommunityTopTabs(slug, config, labels, true).map((tab) => ({
       tab_key: tab.tab_key, title: tab.title, position: tab.position,
       is_visible: tab.is_visible, version: tab.version,
     })),

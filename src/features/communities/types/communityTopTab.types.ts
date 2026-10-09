@@ -8,3 +8,8 @@ export interface CommunityTopTab {
   is_visible: boolean;
   version: number;
 }
+
+export interface CommunityTopTabConfig {
+  items: CommunityTopTab[];
+  configured: boolean;
+}

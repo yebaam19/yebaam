@@ -35,7 +35,7 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
   if (page.nextCursor) query.set('cursor', page.nextCursor);
   const nextHref = `/feed/comunidades/${slug}/articulos?${query.toString()}`;
   return <div className="space-y-6">
-    <CommunityTopTabs slug={slug} saved={topTabs} canManage={capabilities.settings} />
+    <CommunityTopTabs slug={slug} config={topTabs} canManage={capabilities.settings} />
     <header className="flex flex-wrap items-end justify-between gap-3">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">Artículos</h1>
