@@ -39,12 +39,9 @@ export async function adminRestoreMessage(id: string): Promise<AdminMessageResul
   if (denial) return denial
 
   const client = await getServerClient()
-  const { data, error } = await client
-    .from('public_chat_messages')
-    .update({ is_deleted: false })
-    .eq('id', id)
-    .select('id')
-    .maybeSingle()
+  const { data, error } = await client.rpc('restore_public_chat_admin_message', {
+    target_message: id,
+  })
 
   if (error) return { ok: false, error: 'db_error', message: error.message }
   if (!data) return { ok: false, error: 'forbidden' }

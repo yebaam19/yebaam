@@ -123,6 +123,9 @@ dist/
 !supabase/migrations/20261009002510_community_chat_reports.sql
 !supabase/migrations/20261009002520_community_chat_review.sql
 !supabase/migrations/20261009003100_community_chat_audit_account_erasure.sql
+!supabase/migrations/20261009003500_chat_soft_delete_redaction.sql
+!supabase/migrations/20261009003510_chat_delete_restore_snapshot.sql
+!supabase/migrations/20261009003520_chat_community_restore_cleanup.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)
