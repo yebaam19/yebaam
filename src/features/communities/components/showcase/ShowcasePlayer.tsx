@@ -24,21 +24,43 @@ export function ShowcasePlayer({ videos }: { videos: LibraryAsset[] }) {
   const [activated, setActivated] = useState(false);
   const [consecutive, setConsecutive] = useState(false);
   const [error, setError] = useState(false);
+  const [autoMuted, setAutoMuted] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [sound, setSound] = useState({ muted: false, volume: 1 });
   const player = useRef<StreamPlayerApi | undefined>(undefined);
   const current = videos.find((video) => video.id === selected) ?? videos[0];
   if (!current) return null;
-  const choose = (id: string) => { setSelected(id); setActivated(true); setError(false); };
+  const choose = (id: string) => { setSelected(id); setActivated(true); setError(false); setAutoMuted(false); };
+  async function startPlayback() {
+    const activePlayer = player.current;
+    if (!activePlayer) return;
+    try {
+      await activePlayer.play();
+    } catch {
+      if (player.current !== activePlayer) return;
+      try {
+        // Some browsers reject autoplay with sound after the next iframe loads.
+        activePlayer.muted = true;
+        await activePlayer.play();
+        if (player.current !== activePlayer) return;
+        setSound((previous) => ({ ...previous, muted: true }));
+        setAutoMuted(true);
+      } catch {
+        if (player.current === activePlayer) setError(true);
+      }
+    }
+  }
   return <div className="min-w-0 space-y-3">
     <div className="relative aspect-video overflow-hidden rounded-xl bg-neutral-950">
       {activated ? <Stream key={`${current.media_id}:${attempt}`} src={current.media_id} title={current.title}
         streamRef={player} controls autoplay muted={sound.muted} volume={sound.volume}
         responsive={false} width="100%" height="100%" className="h-full w-full" primaryColor="#087632"
+        onLoadedMetaData={() => { void startPlayback(); }}
         onError={() => setError(true)} onVolumeChange={() => {
           if (!player.current) return;
           const next = { muted: player.current.muted, volume: player.current.volume };
           setSound((previous) => previous.muted === next.muted && previous.volume === next.volume ? previous : next);
+          if (!next.muted) setAutoMuted(false);
         }} onEnded={() => {
           const next = videos[videos.findIndex((video) => video.id === current.id) + 1];
           if (consecutive && next) choose(next.id);
@@ -51,6 +73,7 @@ export function ShowcasePlayer({ videos }: { videos: LibraryAsset[] }) {
     {error && <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-red-700 dark:text-red-300">
       <span>{t('playError')}</span><Button outline onClick={() => { setError(false); setAttempt((value) => value + 1); }}>{t('retry')}</Button>
     </div>}
+    {autoMuted && <p role="status" className="text-xs text-neutral-600 dark:text-neutral-300">{t('autoMuted')}</p>}
     <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm" aria-live="polite">
       <p className="min-w-0 wrap-anywhere font-semibold">{current.title}</p>
       {duration(current.duration_seconds) && <span className="text-neutral-600 tabular-nums dark:text-neutral-300">{duration(current.duration_seconds)}</span>}

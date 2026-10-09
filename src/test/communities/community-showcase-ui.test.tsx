@@ -8,11 +8,15 @@ import { CommunityProfileHeader } from '@/features/communities/components/showca
 import type { LibraryAsset } from '@/features/communities/types/communityLibrary.types';
 import type { Community } from '@/features/communities/types/community.types';
 import type { ReactNode } from 'react';
-const mocks = vi.hoisted(() => ({ save: vi.fn(), refresh: vi.fn(), assets: vi.fn() }));
+const mocks = vi.hoisted(() => ({ save: vi.fn(), refresh: vi.fn(), assets: vi.fn(),
+  player: { play: vi.fn(), muted: false, volume: 1 } }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
 vi.mock('@/features/communities/actions/showcase.actions', () => ({ saveCommunityShowcase: mocks.save }));
-vi.mock('next/dynamic', () => ({ default: () => function Player(props: { src: string; onEnded: () => void; onError: () => void }) {
-  return <div data-testid="stream" data-uid={props.src}><button onClick={props.onEnded}>End video</button><button onClick={props.onError}>Video error</button></div>;
+vi.mock('next/dynamic', () => ({ default: () => function Player(props: { src: string; onEnded: () => void; onError: () => void;
+  onLoadedMetaData: () => void; streamRef: { current: typeof mocks.player | undefined } }) {
+  props.streamRef.current = mocks.player;
+  return <div data-testid="stream" data-uid={props.src}><button onClick={props.onEnded}>End video</button>
+    <button onClick={props.onError}>Video error</button><button onClick={props.onLoadedMetaData}>Video ready</button></div>;
 } }));
 vi.mock('@/features/communities/components/showcase/CommunityIdentity', () => ({ CommunityIdentity: () => <h1>Community</h1> }));
 vi.mock('@/features/communities/actions/library/queries.actions', () => ({ loadLibraryAssets: mocks.assets }));
@@ -23,7 +27,9 @@ const videos = Array.from({ length: 4 }, (_, index) => ({ id: `22222222-2222-422
 function view(node: ReactNode) {
   return render(<NextIntlClientProvider locale="es" messages={{ communities: translations }}>{node}</NextIntlClientProvider>);
 }
-beforeEach(() => { vi.clearAllMocks(); mocks.assets.mockResolvedValue({ ok: true, data: { items: videos, nextCursor: null } }); mocks.save.mockResolvedValue({ ok: false, error: 'Conflicto: vuelve a intentarlo' }); });
+beforeEach(() => { vi.clearAllMocks(); mocks.player.muted = false; mocks.player.play.mockReset().mockResolvedValue(undefined);
+  mocks.assets.mockResolvedValue({ ok: true, data: { items: videos, nextCursor: null } });
+  mocks.save.mockResolvedValue({ ok: false, error: 'Conflicto: vuelve a intentarlo' }); });
 describe('Showcase playback', () => {
   it('loads no player until a viewer clicks and does not advance without opt-in', () => {
     view(<ShowcasePlayer videos={videos} />);
@@ -51,6 +57,18 @@ describe('Showcase playback', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('No se pudo reproducir');
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+  it('retries muted when the browser blocks autoplay with sound', async () => {
+    view(<ShowcasePlayer videos={videos} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Reproducir Video 1' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'End video' }));
+    expect(screen.getByTestId('stream')).toHaveAttribute('data-uid', 'stream-1');
+    mocks.player.play.mockRejectedValueOnce(new DOMException('Blocked', 'NotAllowedError'));
+    fireEvent.click(screen.getByRole('button', { name: 'Video ready' }));
+    await waitFor(() => expect(mocks.player.play).toHaveBeenCalledTimes(2));
+    expect(mocks.player.muted).toBe(true);
+    expect(screen.getByRole('status')).toHaveTextContent('silenció este video');
   });
 });
 describe('Showcase editing', () => {

@@ -666,6 +666,7 @@
     "privacyHint": "To show the presentation, publish each video for everyone and make sure its folder is visible. Featuring a video does not change its privacy.",
     "assetNotPublic": "Not visible to visitors",
     "videosNotPublic": "Before publishing, make the videos visible to everyone and check their folders.",
+    "autoMuted": "Your browser muted this video to continue playback. You can turn sound on in the player.",
     "saveUnavailable": "A video is no longer available. Review the selection and try again.",
     "validationError": "Check the introduction and choose up to four different videos.",
     "saveError": "Could not save. Your changes are still here; try again.",

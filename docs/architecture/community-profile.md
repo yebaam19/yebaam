@@ -200,7 +200,9 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
   cuando existen videos; se apila en pantallas estrechas. Tres miniaturas permiten elegir
   otro video. El SDK oficial de Cloudflare (`@cloudflare/stream-react` 1.9.3) se carga
   dinámicamente tras una acción de reproducción; la secuencia es optativa y termina en
-  el último video. Se conserva volumen/silencio al pasar al siguiente.
+  el último video. Se conserva volumen/silencio al pasar al siguiente, salvo cuando
+  el navegador rechaza la reproducción automática con sonido: se reintenta silenciado
+  y se informa al lector para que pueda activar el audio desde el reproductor.
 - Editor inline con selección local, sustitución, orden, desvinculación confirmada y
   publicación. Guardado fallido conserva los campos; cancelar devuelve el foco. La
   biblioteca se abre en otra pestaña para subir/reemplazar/editar archivos sin perder el
