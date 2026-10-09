@@ -215,8 +215,10 @@
       "invitePlaceholder": "@usuario",
       "inviteSubmit": "Invitar",
       "inviteSuccess": "Invitación enviada a @{username}",
-      "pendingTitle": "Solicitudes pendientes ({count})",
+      "pendingTitle": "Solicitudes pendientes",
       "pendingEmpty": "No hay solicitudes pendientes.",
+      "loadMore": "Ver más solicitudes",
+      "loadingMore": "Cargando…",
       "approve": "Aprobar",
       "declineAria": "Rechazar",
       "publicNotice": "Esta comunidad es pública — cualquier usuario puede unirse libremente."

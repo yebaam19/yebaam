@@ -350,6 +350,12 @@ pueden conservarse múltiples cancelaciones/revisiones históricas y repetirse
 el ciclo de solicitud; migración aplicada y prueba SQL con `ROLLBACK` superada.
 La vista de estado toma la solicitud más reciente para evitar que un rechazo
 antiguo bloquee una nueva solicitud después de una aprobación o cancelación.
+La bandeja administrativa ahora lee 25 solicitudes por página con cursor estable
+`(created_at, id)`, consulta perfiles solo para esa página y permite cargar más
+sin perder las filas ya visibles. El índice parcial de pendientes para ese orden
+está aplicado en Supabase; la acción de paginación vuelve a verificar la sesión
+y el permiso `settings` antes de leer. La prueba del panel cubre la carga de la
+siguiente página; el flujo de aprobación multiusuario desde navegador sigue pendiente.
 
 Orden de continuación: QA multirol de solicitudes privadas →
 QA de galerías y adjuntos con medios reales →

@@ -9,7 +9,7 @@ import { CommunityFeaturedSections } from './CommunityFeaturedSections';
 import { CommunityThemeSettings } from './CommunityThemeSettings';
 import { CommunityAdminPanel } from './CommunityAdminPanel';
 import type {
-  PendingJoinRequest,
+  PendingJoinRequestPage,
   ViewerJoinState,
 } from '@/features/communities/server/communities.server';
 import type { Community, CommunityPost } from '@/features/communities/types/community.types';
@@ -25,7 +25,7 @@ interface CommunityHomeMainProps {
   nextPostsCursor: CommunityPostCursor | null;
   isFirstPostsPage: boolean;
   viewerState: ViewerJoinState;
-  pendingRequests: PendingJoinRequest[];
+  pendingRequests: PendingJoinRequestPage;
   sections: CommunitySection[];
   topTabs: CommunityTopTabConfig;
   theme: CommunityTheme;
@@ -56,6 +56,7 @@ export async function CommunityHomeMain({
 
       {(isOwner || (canManageTheme && c.privacy === 'PRIVATE')) && (
         <CommunityAdminPanel
+          key={`${c.id}:${pendingRequests.items.map((request) => request.id).join(',')}`}
           communityId={c.id}
           privacy={c.privacy}
           pendingRequests={pendingRequests}

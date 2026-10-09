@@ -215,8 +215,10 @@
       "invitePlaceholder": "@username",
       "inviteSubmit": "Invite",
       "inviteSuccess": "Invitation sent to @{username}",
-      "pendingTitle": "Pending requests ({count})",
+      "pendingTitle": "Pending requests",
       "pendingEmpty": "No pending requests.",
+      "loadMore": "Load more requests",
+      "loadingMore": "Loading…",
       "approve": "Approve",
       "declineAria": "Decline",
       "publicNotice": "This community is public — anyone can join freely."
