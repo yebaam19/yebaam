@@ -38,9 +38,14 @@ describe('community chat restriction panel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar decisión' }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo aplicar'))
     expect(screen.getByRole('textbox', { name: 'Motivo' })).toHaveValue('Conducta repetida en el chat')
-    expect(mocks.set).toHaveBeenCalledWith({
+    expect(mocks.set).toHaveBeenCalledWith(expect.objectContaining({
       communityId, userId, kind: 'suspend', hours: 24, reason: 'Conducta repetida en el chat',
-    })
+      requestId: expect.any(String),
+    }))
+    const firstRequestId = mocks.set.mock.calls[0][0].requestId
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar decisión' }))
+    await waitFor(() => expect(mocks.set).toHaveBeenCalledTimes(2))
+    expect(mocks.set.mock.calls[1][0].requestId).toBe(firstRequestId)
   })
 
   it('lets an administrator review and lift an active block with a reason', async () => {

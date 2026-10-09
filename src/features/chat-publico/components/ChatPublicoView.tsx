@@ -15,6 +15,7 @@ import ChatPinnedBar from './ChatPinnedBar'
 import ChatReportDialog from './ChatReportDialog'
 import ChatReportsPanel from './ChatReportsPanel'
 import ChatRestrictionsPanel from './ChatRestrictionsPanel'
+import ChatReviewPanel from './ChatReviewPanel'
 
 interface Props {
   topic: PublicChatTopic
@@ -37,6 +38,8 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
   const [reportTarget, setReportTarget] = useState<string | null>(null)
   const [reportsOpen, setReportsOpen] = useState(false)
   const [restrictionsOpen, setRestrictionsOpen] = useState(false)
+  const [reviewScope, setReviewScope] = useState<'mine' | 'staff' | null>(null)
+  const reviewTriggerRef = useRef<HTMLButtonElement | null>(null)
   const [restrictionTarget, setRestrictionTarget] = useState<{ userId: string; label: string } | null>(null)
   const [restriction, setRestriction] = useState(initialRestriction)
   const [restrictionNow, setRestrictionNow] = useState(Date.now())
@@ -74,6 +77,11 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
     const timer = setTimeout(() => setRestrictionNow(Date.now()), delay)
     return () => clearTimeout(timer)
   }, [restriction, restrictionNow])
+  useEffect(() => {
+    if (reviewScope || !reviewTriggerRef.current) return
+    reviewTriggerRef.current.focus()
+    reviewTriggerRef.current = null
+  }, [reviewScope])
 
   const scrollToBottom = useCallback((smooth: boolean) => {
     const el = listRef.current
@@ -196,9 +204,13 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-neutral-900">
-      {canModerate && topic.owner_id && <div className="flex shrink-0 justify-end gap-2 border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:px-6">
-        <button type="button" onClick={() => setReportsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Revisar reportes</button>
-        <button type="button" onClick={() => setRestrictionsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Restricciones</button>
+      {topic.owner_type === 'community' && topic.owner_id && identity && identity.kind !== 'guest' && <div className="flex shrink-0 flex-wrap justify-end gap-2 border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:px-6">
+        <button type="button" onClick={(event) => { reviewTriggerRef.current = event.currentTarget; setReviewScope('mine') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Mis revisiones</button>
+        {canModerate && <>
+          <button type="button" onClick={() => setReportsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Revisar reportes</button>
+          <button type="button" onClick={(event) => { reviewTriggerRef.current = event.currentTarget; setReviewScope('staff') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Solicitudes</button>
+          <button type="button" onClick={() => setRestrictionsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Restricciones</button>
+        </>}
       </div>}
       <ChatPinnedBar messages={pinned} />
       <ChatMessageList messages={messages} identity={identity} locallySent={locallySentRef.current}
@@ -215,6 +227,8 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
       {reportsOpen && topic.owner_id && <ChatReportsPanel communityId={topic.owner_id} onClose={() => setReportsOpen(false)} />}
       {restrictionsOpen && topic.owner_id && <ChatRestrictionsPanel communityId={topic.owner_id} canBlock={canBlock}
         target={restrictionTarget} onClose={() => { setRestrictionsOpen(false); setRestrictionTarget(null) }} />}
+      {reviewScope && topic.owner_id && <ChatReviewPanel communityId={topic.owner_id} scope={reviewScope}
+        restriction={activeRestriction} canBlock={canBlock} onClose={() => setReviewScope(null)} />}
     </div>
   )
 }

@@ -159,6 +159,21 @@ export interface CommunityChatRestriction {
   version: number
 }
 
+export interface CommunityChatReview {
+  id: string
+  community_id: string
+  user_id: string
+  restriction_version: number
+  stage: 'defense' | 'appeal'
+  statement: string
+  status: 'open' | 'upheld' | 'lifted' | 'superseded'
+  submitted_at: string
+  reviewed_at: string | null
+  review_reason: string | null
+  displayName?: string
+  restrictionKind?: 'suspend' | 'block'
+}
+
 /** Derived display info so the view doesn't branch on sender_kind everywhere. */
 export interface ResolvedMessageAuthor {
   label: string

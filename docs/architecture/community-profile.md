@@ -314,7 +314,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados. Sección oculta y borrador con descripción, historia y ubicación guardados/recargados en localhost; RLS anónimo verificado. Pendiente publicación/lectura multirol y medios reales. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. Pendiente QA autenticado y reproducción/portada real. |
-| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Historial y realtime existentes. Lectura pública sin cuenta y escritura comunitaria autenticada; RLS ahora exige audiencia también en INSERT directo y bloquea usuarios expulsados. Respuestas, fijado, reportes, retiro con redacción y restauración conectados; SQL rollback verifica roles y auditoría. Suspensiones de 1–72 h por moderador, hasta 30 días o bloqueo reversible por administrador, con motivo, auditoría privada y aviso en el compositor; bandeja responsive de restricciones activas. Prueba SQL con rollback cubre denegación y levantamiento; UI vacía verificada en localhost. Pendiente QA multiusuario real, notificación/apelación y retiro/restauración desde UI. |
+| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Historial y realtime existentes. RLS exige audiencia en INSERT y rechaza usuarios expulsados o restringidos. Respuestas, fijado, reportes, retiro y restauración conectados. Suspensiones y bloqueos por comunidad tienen motivo y auditoría. Notificación transaccional al afectado, descargos, revisión y apelación interna con visibilidad acotada por RLS; bandejas responsive en el chat. Pruebas SQL con rollback y UI vacía en localhost. Pendiente QA multiusuario real, advertencia previa y revisión independiente para completar la escala del Manual; retiro/restauración desde UI. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Lectura pública y privacidad dinámica de comunidad verificadas con RLS; escritura autenticada, moderación por roles del perfil y bloqueo de fijar/cerrar para autores comunes. Citar un mensaje concreto precarga su autor, contenido e ID en el editor y la vista previa, verificado en localhost. La base limita INSERT a tema/autor/contenido y UPDATE a contenido, asigna fecha de edición y rechaza más de 20 000 caracteres. Reportes privados e idempotentes, con snapshot para auditoría y bandeja de revisión del propietario/moderador; la resolución puede retirar el post o descartar el reporte con motivo. Borrar al reportante elimina su reporte; borrar al autor redacta el snapshot. Prueba SQL con rollback cubre roles, privacidad, resolución y redacción; diálogos y foco probados en localhost, incluido móvil. Pendiente envío de respuesta citada y pruebas funcionales multirol de moderación desde UI. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | CRUD con borrador/publicación, imagen de biblioteca Cloudflare, orden, paginación, enlace seguro, RLS y auditoría implementados. SQL rollback y guardado/recarga de borrador en localhost verificados. Pendiente publicación con imagen real y lectura multirol. |
 | 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs, rutas y UI de preguntas, categorías, respuestas oficiales, FAQ y moderación conectados. Búsqueda, pregunta privada guardada/recargada, borrador de respuesta y cierre/reapertura verificados en localhost. Pendiente E2E multirol de publicación, FAQ y moderación. |
@@ -725,5 +725,29 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - El advisor de seguridad marca las dos RPC `SECURITY DEFINER` públicas para
   usuarios autenticados; es intencional porque las tablas no conceden escritura
   directa y ambas RPC validan `auth.uid()` y capacidad institucional en SQL.
-  Pendiente: prueba multiusuario real de los estados restringidos, notificación y
-  apelación interna para cumplir el debido proceso del Manual de Convivencia.
+  Pendiente: prueba multiusuario real de los estados restringidos y de la revisión.
+- Una notificación de sistema se crea en la misma transacción que cada decisión
+  o levantamiento; su vínculo lleva al chat de la comunidad. La tabla de
+  solicitudes permite un descargo por versión y una apelación tras mantener la
+  decisión. El usuario ve sus propias solicitudes; moderadores ven descargos
+  y solo propietarios/administradores ven apelaciones. No hay escritura directa
+  del cliente a esta tabla; las RPC verifican identidad y capacidad en Postgres.
+  Una decisión reemplazada cierra solicitudes anteriores, y un reintento del
+  mismo descargo devuelve su ID sin crear otra notificación.
+- El asesor de seguridad identifica las nuevas RPC `SECURITY DEFINER`
+  ejecutables por `authenticated`; es intencional para mantener tablas sin
+  escritura directa. Las comprobaciones de usuario, capacidad, versión y
+  audiencia se ejecutan en SQL y se probaron con roles reales y rollback.
+- `chat-review.sql` pasó en Supabase con rollback: aviso, aislamiento, deduplicación,
+  secuencia descargo→apelación, denegación a terceros/moderadores, respuesta,
+  levantamiento y cierre de solicitudes obsoletas. La acción de restringir
+  envía un UUID estable por intento; repetirlo no extiende la suspensión ni
+  duplica auditoría/notificación. La RPC anterior permanece para compatibilidad
+  durante el despliegue y todavía no tiene esa garantía. Tres pruebas nuevas de UI
+  comprueban envío, apelación y resolución; otra verifica el aviso de sistema.
+  La bandeja vacía se revisó en
+  localhost a ancho de escritorio y móvil sin sancionar usuarios reales.
+- Esta vía de revisión ocurre después de aplicar la limitación. El Manual de
+  Convivencia art. 18 también exige advertencia y etapas previas salvo urgencia;
+  faltan la escala previa, un revisor independiente cuando el propietario impuso
+  la decisión, y E2E con dos cuentas. No se declara cumplimiento legal completo.

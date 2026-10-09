@@ -6,7 +6,8 @@ import type { CommunityChatRestriction } from '../types'
 
 const reason = z.string().trim().min(10).max(500)
 const scope = z.object({ communityId: z.uuid(), userId: z.uuid() })
-const restrictSchema = scope.extend({ kind: z.enum(['suspend','block']), hours: z.number().int().min(1).max(720).nullable(), reason })
+const restrictSchema = scope.extend({ requestId: z.uuid(),
+  kind: z.enum(['suspend','block']), hours: z.number().int().min(1).max(720).nullable(), reason })
 const releaseSchema = scope.extend({ reason })
 type Result = { ok: true } | { ok: false; error: string }
 export type RestrictionItem = CommunityChatRestriction & { displayName: string }
@@ -28,6 +29,7 @@ export async function setCommunityChatRestriction(input: unknown): Promise<Resul
   const { error } = await client.rpc('set_community_chat_restriction', {
     target_community: value.communityId, target_user: value.userId,
     restriction_kind: value.kind, duration_hours: value.hours, decision_reason: value.reason,
+    decision_request_id: value.requestId,
   })
   return error ? { ok: false, error: 'No se pudo aplicar la restricción. Revisa tus permisos.' } : { ok: true }
 }

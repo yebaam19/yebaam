@@ -3,7 +3,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
-import type { Notification } from '../interfaces/notification.interfaces';
+import { NotificationType, type Notification } from '../interfaces/notification.interfaces';
 
 interface NotificationContentProps {
   notification: Notification;
@@ -23,16 +23,18 @@ export default function NotificationContent({ notification }: NotificationConten
   // server-provided string if a new type lands without a translation key yet
   // (next-intl in dev throws on missing keys, so guard with `t.has`).
   const typeKey = notification.type as string;
-  const message = (t as unknown as { has: (k: string) => boolean }).has(typeKey)
+  const message = notification.type === NotificationType.SYSTEM && notification.message
+    ? notification.message
+    : (t as unknown as { has: (k: string) => boolean }).has(typeKey)
     ? t(typeKey)
     : notification.message;
 
   return (
     <div className="flex-1 min-w-0">
       <p className="text-sm text-neutral-900 dark:text-neutral-100">
-        <span className="font-semibold">
+        {notification.actor.displayName && <><span className="font-semibold">
           {notification.actor.displayName}
-        </span>{' '}
+        </span>{' '}</>}
         <span className="text-neutral-700 dark:text-neutral-300">
           {message}
         </span>

@@ -138,6 +138,12 @@ dist/
 !supabase/migrations/20261009011635_community_chat_restriction_queue.sql
 !supabase/migrations/20261009011954_community_chat_restriction_hardening.sql
 !supabase/migrations/20261009012139_community_chat_restriction_fk_indexes.sql
+!supabase/migrations/20261009013202_community_chat_decision_notice.sql
+!supabase/migrations/20261009013207_community_chat_review_requests.sql
+!supabase/migrations/20261009013306_community_chat_review_idempotency.sql
+!supabase/migrations/20261009013551_community_chat_review_access.sql
+!supabase/migrations/20261009014234_community_chat_decision_idempotency.sql
+!supabase/migrations/20261009014401_community_chat_decision_ledger_private.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)

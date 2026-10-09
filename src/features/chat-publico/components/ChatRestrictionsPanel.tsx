@@ -16,6 +16,7 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
   onClose: () => void
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const requestIdRef = useRef(crypto.randomUUID())
   const [items, setItems] = useState<RestrictionItem[]>([])
   const [cursor, setCursor] = useState<Cursor | null>(null)
   const [selection, setSelection] = useState<Selection | null>(target
@@ -41,23 +42,26 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
       if (result.ok) { setItems(result.items); setCursor(result.nextCursor) }
       else setError(result.error)
       setLoading(false)
-    })
+    }).catch(() => { if (active) { setError('No se pudieron cargar las restricciones.'); setLoading(false) } })
     return () => { active = false }
   }, [communityId])
 
   const loadMore = async () => {
     if (!cursor || loadingMore) return
     setLoadingMore(true)
-    const result = await listCommunityChatRestrictions(communityId, cursor)
-    if (result.ok) {
-      setItems((previous) => [...previous, ...result.items.filter((item) =>
-        !previous.some((old) => old.user_id === item.user_id))])
-      setCursor(result.nextCursor)
-    } else setError(result.error)
-    setLoadingMore(false)
+    try {
+      const result = await listCommunityChatRestrictions(communityId, cursor)
+      if (result.ok) {
+        setItems((previous) => [...previous, ...result.items.filter((item) =>
+          !previous.some((old) => old.user_id === item.user_id))])
+        setCursor(result.nextCursor)
+      } else setError(result.error)
+    } catch { setError('No se pudo cargar la página siguiente.') }
+    finally { setLoadingMore(false) }
   }
 
   const select = (next: Selection) => {
+    requestIdRef.current = crypto.randomUUID()
     setSelection(next)
     setReason('')
     setError(null)
@@ -70,18 +74,24 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
     setError(null)
     setSuccess(false)
     startTransition(async () => {
-      const result = selection.operation === 'release'
-        ? await releaseCommunityChatRestriction({ communityId, userId: selection.userId, reason })
-        : await setCommunityChatRestriction({ communityId, userId: selection.userId,
-          kind: duration === 'block' ? 'block' : 'suspend',
-          hours: duration === 'block' ? null : Number(duration), reason })
-      if (!result.ok) { setError(result.error); return }
-      setSelection(null)
-      setReason('')
-      setSuccess(true)
-      const refreshed = await listCommunityChatRestrictions(communityId)
-      if (refreshed.ok) { setItems(refreshed.items); setCursor(refreshed.nextCursor) }
-      else setError(refreshed.error)
+      try {
+        const result = selection.operation === 'release'
+          ? await releaseCommunityChatRestriction({ communityId, userId: selection.userId, reason })
+          : await setCommunityChatRestriction({ communityId, userId: selection.userId,
+            kind: duration === 'block' ? 'block' : 'suspend',
+            hours: duration === 'block' ? null : Number(duration), reason,
+            requestId: requestIdRef.current })
+        if (!result.ok) { setError(result.error); return }
+        setSelection(null)
+        requestIdRef.current = crypto.randomUUID()
+        setReason('')
+        setSuccess(true)
+      } catch { setError('No se pudo enviar la decisión. Reintenta sin cambiar el formulario.'); return }
+      try {
+        const refreshed = await listCommunityChatRestrictions(communityId)
+        if (refreshed.ok) { setItems(refreshed.items); setCursor(refreshed.nextCursor) }
+        else setError(refreshed.error)
+      } catch { setError('La decisión se guardó; reabre el panel para actualizar la lista.') }
     })
   }
 
@@ -112,20 +122,24 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
       {selection && <form onSubmit={submit} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-secondary-900/40 dark:bg-primary-950/30">
         <p className="text-sm font-semibold text-primary-950 dark:text-primary-100">{selection.operation === 'release' ? 'Levantar restricción de' : 'Restringir a'} {selection.label}</p>
         {selection.operation === 'restrict' && <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Duración
-          <select value={duration} onChange={(event) => setDuration(event.target.value)}
+          <select value={duration} disabled={pending} onChange={(event) => {
+            requestIdRef.current = crypto.randomUUID(); setDuration(event.target.value)
+          }}
             className="mt-1 block min-h-10 w-full rounded-lg border border-primary-200 bg-white px-3 text-sm dark:border-primary-800 dark:bg-neutral-900">
             <option value="24">24 horas</option><option value="72">72 horas</option>
             {canBlock && <><option value="168">7 días</option><option value="720">30 días</option><option value="block">Bloqueo hasta revisión</option></>}
           </select>
         </label>}
         <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Motivo
-          <textarea value={reason} onChange={(event) => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} required
+          <textarea value={reason} disabled={pending} onChange={(event) => {
+            requestIdRef.current = crypto.randomUUID(); setReason(event.target.value)
+          }} minLength={10} maxLength={500} rows={3} required
             className="mt-1 block w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-600 dark:border-primary-800 dark:bg-neutral-900" />
         </label>
         <div className="flex flex-wrap gap-2">
           <button type="submit" disabled={pending || reason.trim().length < 10}
             className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{pending ? 'Guardando…' : 'Confirmar decisión'}</button>
-          <button type="button" onClick={() => setSelection(null)} className="rounded-lg px-3 py-2 text-xs font-medium text-primary-800 dark:text-primary-200">Cancelar</button>
+          <button type="button" disabled={pending} onClick={() => setSelection(null)} className="rounded-lg px-3 py-2 text-xs font-medium text-primary-800 disabled:opacity-50 dark:text-primary-200">Cancelar</button>
         </div>
       </form>}
       {success && <p role="status" className="text-sm text-primary-800 dark:text-primary-200">Decisión guardada.</p>}
