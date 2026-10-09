@@ -9,7 +9,9 @@ vi.mock('@/lib/cloudflare/community-documents', () => ({ deleteLibraryDocument: 
 const uuid = '11111111-1111-4111-8111-111111111111';
 const job = { id: '1', kind: 'image', media_id: uuid, lease_token: uuid, attempts: 1 };
 function references(data: { id: string }[] | null, error: unknown = null) {
-  const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), is: vi.fn().mockReturnThis(), limit: vi.fn().mockResolvedValue({ data, error }) };
+  const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(), or: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue({ data, error }) };
   mocks.from.mockReturnValue(query);
   return query;
 }
@@ -38,6 +40,23 @@ describe('retired community media worker', () => {
     expect(await processAssetCleanup()).toMatchObject({ retrying: 1, completed: 0 });
     expect(mocks.image).not.toHaveBeenCalled();
     expect(mocks.rpc).toHaveBeenLastCalledWith('finish_community_asset_deletion', expect.objectContaining({ succeeded: false }));
+  });
+  it('keeps an image still used as a community header', async () => {
+    const library = references([]);
+    const header = references([{ id: 'community' }]);
+    mocks.from.mockImplementation((table) => table === 'communities' ? header : library);
+    expect(await processAssetCleanup()).toMatchObject({ retrying: 1, completed: 0 });
+    expect(header.or).toHaveBeenCalledWith(`cover_image.eq.${uuid},profile_image.eq.${uuid}`);
+    expect(mocks.image).not.toHaveBeenCalled();
+    expect(mocks.rpc).toHaveBeenLastCalledWith('finish_community_asset_deletion',
+      expect.objectContaining({ failure_code: 'active_reference', succeeded: false }));
+  });
+  it('fails closed when a community header lookup fails', async () => {
+    const library = references([]);
+    const header = references(null, { message: 'offline' });
+    mocks.from.mockImplementation((table) => table === 'communities' ? header : library);
+    expect(await processAssetCleanup()).toMatchObject({ retrying: 1, completed: 0 });
+    expect(mocks.image).not.toHaveBeenCalled();
   });
   it('retains failures without saving provider errors or credentials', async () => {
     mocks.image.mockRejectedValue(new Error('token=DO_NOT_STORE'));

@@ -223,7 +223,9 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
 - Los registros completados se conservan como tombstones mínimos. Un trigger con
   bloqueo por identificador remoto impide reinsertar un objeto retirado, incluso
   si una validación remota anterior llega tarde. El worker comprueba además que
-  no exista referencia activa; si esa consulta falla, no elimina. Las claves R2
+  no exista referencia activa en biblioteca, portada o logo; si alguna consulta
+  falla, no elimina. La RPC de cabecera comparte el bloqueo por ID remoto y
+  rechaza una imagen ya puesta en el outbox. Las claves R2
   se restringen al namespace de documentos de Comunidades. Los errores guardados
   son códigos estables, sin respuestas del proveedor, credenciales ni contenido.
 - RPCs de reclamar/confirmar exclusivas de `service_role`; el cliente no elige
@@ -581,6 +583,8 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   La escritura usa una RPC exclusiva de `service_role` que vuelve a comprobar
   propietario o administrador delegado con membresía activa bajo bloqueo, y solo
   modifica la imagen solicitada. No amplía la política UPDATE de `communities`.
+  Una referencia nueva no puede usar un ID retirado por la biblioteca; la
+  migración y la prueba de rollback comprueban el rechazo sin alterar la portada.
   El actor verificado queda en la auditoría; conflicto de versión y reintento
   idéntico se resuelven dentro de la transacción.
 - `uploadService.uploadImage` se llama al guardar. Su ID se retiene ante error de

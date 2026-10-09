@@ -41,7 +41,14 @@ export async function processAssetCleanup() {
         .eq('kind', job.kind).eq('media_id', job.media_id).is('deleted_at', null).limit(1);
       if (active.error || !active.data) failure = 'reference_check_failed';
       else if (active.data?.length) failure = 'active_reference';
-      else await removeRemote(job);
+      else if (job.kind === 'image' && !isCloudflareImageId(job.media_id)) failure = 'invalid_identifier';
+      else if (job.kind === 'image') {
+        const header = await client.from('communities').select('id')
+          .or(`cover_image.eq.${job.media_id},profile_image.eq.${job.media_id}`).limit(1);
+        if (header.error || !header.data) failure = 'reference_check_failed';
+        else if (header.data.length) failure = 'active_reference';
+        else await removeRemote(job);
+      } else await removeRemote(job);
     } catch { failure = 'remote_delete_failed'; }
     // If acknowledgement is lost, the lease expires and the idempotent delete
     // runs again. Never erase the tombstone or log raw provider error/secrets.

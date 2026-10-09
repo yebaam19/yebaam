@@ -73,6 +73,18 @@ begin
       '{"x":50,"y":50,"zoom":1}',rev)<>rev+1 then raise exception 'Admin save failed'; end if;
   if public.save_community_header_image(org,stranger_id,'cover','header-test-aaaaaaaaaaaaaaaa',
       '{"x":50,"y":50,"zoom":1}',rev)<>rev+1 then raise exception 'Admin retry failed'; end if;
+  reset role;
+  insert into public.community_asset_deletions(kind,media_id)
+    values('image','header-test-bbbbbbbbbbbbbbbb');
+  set local role service_role;
+  begin
+    perform public.save_community_header_image(org,stranger_id,'cover','header-test-bbbbbbbbbbbbbbbb',
+      '{"x":50,"y":50,"zoom":1}',rev+1);
+    raise exception 'Retired image became a new header';
+  exception when check_violation then null; end;
+  if (select cover_image from public.communities where id=org)<>'header-test-aaaaaaaaaaaaaaaa' then
+    raise exception 'Rejected header replacement changed the stored image';
+  end if;
   begin
     perform public.save_community_header_image(org,stranger_id,'cover','header-test-aaaaaaaaaaaaaaaa',
       '{"x":60,"y":50,"zoom":1}',rev);
