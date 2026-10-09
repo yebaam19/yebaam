@@ -49,12 +49,11 @@ export async function editPost(input: {
   const { data: auth } = await client.auth.getUser()
   if (!auth?.user) return { ok: false, error: 'Debes iniciar sesión.' }
 
-  const editedAt = new Date().toISOString()
   const { data, error } = await client
     .from('forum_posts')
-    .update({ content, edited_at: editedAt })
+    .update({ content })
     .eq('id', input.postId)
-    .select('id, topic_id')
+    .select('id, topic_id, edited_at')
     .maybeSingle()
   if (error) return { ok: false, error: error.message }
   if (!data) return { ok: false, error: 'No tienes permiso para editar este mensaje.' }
@@ -63,7 +62,7 @@ export async function editPost(input: {
   if (path) {
     revalidatePath(`/foro/${path.space_slug}/${path.forum_slug}/${path.topic_slug}`)
   }
-  return { ok: true, editedAt }
+  return { ok: true, editedAt: (data as { edited_at: string }).edited_at }
 }
 
 export async function deletePost(postId: string): Promise<{ ok: boolean; error?: string }> {
