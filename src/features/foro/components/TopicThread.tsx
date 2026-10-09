@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
 import { formatRelativeDate } from '@/features/foro/utils/format'
@@ -14,6 +15,7 @@ import ReplyForm from './TopicThread/ReplyForm'
 import { useTopicThread, type TopicThreadProps } from './TopicThread/useTopicThread'
 
 export default function TopicThread(props: TopicThreadProps) {
+  const router = useRouter()
   const { space, forum, topic, isModerator, page, pageSize, totalPosts, ownerBack } = props
   const t = useTranslations('foro')
   const {
@@ -135,7 +137,7 @@ export default function TopicThread(props: TopicThreadProps) {
 
       {toolbar}
 
-      {user && <ReplyForm ref={replyRef} topicId={topic.id} isLocked={isLocked} />}
+      {user && <ReplyForm ref={replyRef} topicId={topic.id} isLocked={isLocked} onPosted={() => router.refresh()} />}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-xs dark:border-neutral-800">
         <Link

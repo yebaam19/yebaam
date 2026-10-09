@@ -78,6 +78,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
   return (
     <div className="container mx-auto max-w-5xl px-4 py-6">
       <TopicThread
+        key={`${result.topic.id}:${postsPage.total}`}
         space={result.space}
         forum={result.forum}
         topic={result.topic}
