@@ -11,6 +11,8 @@ import {
 } from '@/features/communities/hooks/useCommunities';
 import { CommunitiesGrid } from '@/features/communities/components';
 import { CreateCommunityDialog } from '@/features/communities/components/CreateCommunityDialog';
+import { SecretCommunityInvitations } from '@/features/communities/components/SecretCommunityInvitations';
+import type { SecretCommunityInvitationPage } from '@/features/communities/server/communities/communities-invitations.server';
 import {
   Community,
 } from '@/features/communities/types/community.types';
@@ -27,6 +29,7 @@ interface CommunitiesTabsClientProps {
   initialPopular: Community[];
   initialMine: Community[];
   initialSuggested: Community[];
+  initialInvitations: SecretCommunityInvitationPage;
   canCreate: boolean;
 }
 
@@ -34,6 +37,7 @@ export function CommunitiesTabsClient({
   initialPopular,
   initialMine,
   initialSuggested,
+  initialInvitations,
   canCreate,
 }: CommunitiesTabsClientProps) {
   const t = useTranslations('communities');
@@ -119,6 +123,8 @@ export function CommunitiesTabsClient({
           </button>
         )}
       </div>
+
+      <SecretCommunityInvitations key={initialInvitations.items.map((item) => item.id).join(',')} initialPage={initialInvitations} />
 
       <div className="mb-5 overflow-x-auto border-b border-neutral-200 dark:border-neutral-700">
         <nav className="-mb-px flex min-w-max gap-5" aria-label={t('list.title')}>

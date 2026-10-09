@@ -1,6 +1,7 @@
 import {
   listMyCommunities,
   listPopularCommunities,
+  listSecretCommunityInvitations,
   listSuggestedCommunities,
 } from '@/features/communities/server/communities.server';
 import { getServerClient } from '@/utils/supabase/server';
@@ -11,10 +12,11 @@ export default async function CommunitiesPage() {
   const { data: userData } = await client.auth.getUser();
   const canCreate = !!userData.user;
 
-  const [popular, mine, suggested] = await Promise.all([
+  const [popular, mine, suggested, invitations] = await Promise.all([
     listPopularCommunities(12),
     listMyCommunities(),
     listSuggestedCommunities(12),
+    listSecretCommunityInvitations(),
   ]);
 
   return (
@@ -23,6 +25,7 @@ export default async function CommunitiesPage() {
         initialPopular={popular}
         initialMine={mine}
         initialSuggested={suggested}
+        initialInvitations={invitations}
         canCreate={canCreate}
       />
     </div>

@@ -3,6 +3,15 @@
     "title": "Communities",
     "subtitle": "Join communities of people with similar interests",
     "joinError": "Could not join the community. Please try again.",
+    "invitations": {
+      "title": "Invitations",
+      "description": "Only you can see these invitations.",
+      "secretLabel": "Secret community",
+      "review": "Review invitation",
+      "more": "See more invitations",
+      "loading": "Loading…",
+      "loadError": "Could not load more invitations. Please try again."
+    },
     "tabs": {
       "discover": "Discover",
       "myCommunities": "My Communities",

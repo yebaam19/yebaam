@@ -13,6 +13,7 @@ import 'server-only';
  */
 
 export * from './communities/communities-list.server';
+export * from './communities/communities-invitations.server';
 export * from './communities/communities-detail.server';
 export * from './communities/communities-access-preview.server';
 export * from './communities/communities-posts.server';

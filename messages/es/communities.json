@@ -3,6 +3,15 @@
     "title": "Comunidades",
     "subtitle": "Únete a comunidades de personas con intereses similares",
     "joinError": "No se pudo unir a la comunidad. Inténtalo de nuevo.",
+    "invitations": {
+      "title": "Invitaciones",
+      "description": "Solo tú puedes ver estas invitaciones.",
+      "secretLabel": "Comunidad secreta",
+      "review": "Revisar invitación",
+      "more": "Ver más invitaciones",
+      "loading": "Cargando…",
+      "loadError": "No se pudieron cargar más invitaciones. Inténtalo de nuevo."
+    },
     "tabs": {
       "discover": "Descubrir",
       "myCommunities": "Mis Comunidades",
