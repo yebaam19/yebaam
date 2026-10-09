@@ -5,7 +5,8 @@ import { ensureBlogChatTopic, getBlogOwnerId } from '@/lib/api/blogs'
 import { getRoomIdentity } from '../lib/identity'
 import { hashSessionToken } from '../lib/session'
 import { capabilitiesFor } from '../lib/permissions'
-import type { SendPublicMessageResult, SoftDeletePublicMessageResult } from '../types'
+import { getActiveCommunityChatRestriction } from '../server/community-chat-restrictions.server'
+import type { CommunityChatRestriction, SendPublicMessageResult, SoftDeletePublicMessageResult } from '../types'
 
 /**
  * Provisions (or finds) the public-chat topic for a blog and returns its slug
@@ -116,7 +117,7 @@ export async function sendChatMessage(
 
   const service = await getServiceClient()
   const { data: topic, error: topicError } = await service.from('public_chat_topics')
-    .select('owner_type').eq('id', roomId).maybeSingle()
+    .select('owner_type,owner_id').eq('id', roomId).maybeSingle()
   if (topicError || !topic) return { ok: false, error: 'unauthorized' }
   let writer = service
   if (topic.owner_type === 'community') {
@@ -128,6 +129,11 @@ export async function sendChatMessage(
     const { data: visible } = await client.from('public_chat_topics')
       .select('id').eq('id', roomId).maybeSingle()
     if (!visible) return { ok: false, error: 'unauthorized' }
+    if (!topic.owner_id) return { ok: false, error: 'unauthorized' }
+    let restriction: CommunityChatRestriction | null
+    try { restriction = await getActiveCommunityChatRestriction(topic.owner_id, auth.user.id) }
+    catch { return { ok: false, error: 'db_error' } }
+    if (restriction) return { ok: false, error: 'restricted', restriction }
     // A community message must pass RLS at INSERT time, after any role change.
     writer = client
   }
@@ -178,6 +184,12 @@ export async function sendChatMessage(
     .maybeSingle()
 
   if (error) {
+    if (topic.owner_type === 'community' && topic.owner_id && senderUserId) {
+      try {
+        const restriction = await getActiveCommunityChatRestriction(topic.owner_id, senderUserId)
+        if (restriction) return { ok: false, error: 'restricted', restriction }
+      } catch { /* Preserve the original insert error. */ }
+    }
     if (error.message?.toLowerCase().includes('rate_limited')) {
       return { ok: false, error: 'rate_limited', retryAfterMs: WINDOW_MS }
     }

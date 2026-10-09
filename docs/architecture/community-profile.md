@@ -314,7 +314,7 @@ extremo; existencia de un componente anterior no equivale a verificación.
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados. Sección oculta y borrador con descripción, historia y ubicación guardados/recargados en localhost; RLS anónimo verificado. Pendiente publicación/lectura multirol y medios reales. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada; falta verificación autenticada integral. |
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. Pendiente QA autenticado y reproducción/portada real. |
-| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Historial y realtime existentes. Lectura pública sin cuenta, escritura comunitaria autenticada y RLS por privacidad verificados. Respuestas probadas desde localhost. Fijado con permisos de propietario/moderador, reportes privados e idempotentes y bandeja paginada de revisión conectados; SQL con rollback verifica roles, retiro con redacción, auditoría y restauración. Los identificadores de reporter/moderador se anonimizan al borrar cuentas. Una migración posterior oculta mensajes borrados antiguos y redacta texto/medios de nuevas bajas antes de emitirlas en realtime; el original queda privado para restauración administrativa. SQL rollback verifica visitante, autor y administrador, incluida la restauración. En localhost se fijó un mensaje, se reportó y se descartó el reporte desde la bandeja; el sidebar se desplazó en viewport corto. Pendiente bloqueo/suspensión y QA de retiro/restauración desde la UI. |
+| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Historial y realtime existentes. Lectura pública sin cuenta y escritura comunitaria autenticada; RLS ahora exige audiencia también en INSERT directo y bloquea usuarios expulsados. Respuestas, fijado, reportes, retiro con redacción y restauración conectados; SQL rollback verifica roles y auditoría. Suspensiones de 1–72 h por moderador, hasta 30 días o bloqueo reversible por administrador, con motivo, auditoría privada y aviso en el compositor; bandeja responsive de restricciones activas. Prueba SQL con rollback cubre denegación y levantamiento; UI vacía verificada en localhost. Pendiente QA multiusuario real, notificación/apelación y retiro/restauración desde UI. |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Lectura pública y privacidad dinámica de comunidad verificadas con RLS; escritura autenticada, moderación por roles del perfil y bloqueo de fijar/cerrar para autores comunes. Citar un mensaje concreto precarga su autor, contenido e ID en el editor y la vista previa, verificado en localhost. La base limita INSERT a tema/autor/contenido y UPDATE a contenido, asigna fecha de edición y rechaza más de 20 000 caracteres. Reportes privados e idempotentes, con snapshot para auditoría y bandeja de revisión del propietario/moderador; la resolución puede retirar el post o descartar el reporte con motivo. Borrar al reportante elimina su reporte; borrar al autor redacta el snapshot. Prueba SQL con rollback cubre roles, privacidad, resolución y redacción; diálogos y foco probados en localhost, incluido móvil. Pendiente envío de respuesta citada y pruebas funcionales multirol de moderación desde UI. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | CRUD con borrador/publicación, imagen de biblioteca Cloudflare, orden, paginación, enlace seguro, RLS y auditoría implementados. SQL rollback y guardado/recarga de borrador en localhost verificados. Pendiente publicación con imagen real y lectura multirol. |
 | 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs, rutas y UI de preguntas, categorías, respuestas oficiales, FAQ y moderación conectados. Búsqueda, pregunta privada guardada/recargada, borrador de respuesta y cierre/reapertura verificados en localhost. Pendiente E2E multirol de publicación, FAQ y moderación. |
@@ -702,3 +702,28 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   `is_published=false` en Supabase. Se conserva auditoría; no se borró historial.
 - Revisor independiente: **ship** para las ocho capturas y el código de la interfaz
   Q&A. No certifica el PDF completo ni sustituye la auditoría de autorización SQL.
+
+### Restricciones del chat comunitario
+
+- `community_chat_insert_audience` cierra una escritura directa que antes solo
+  comprobaba `sender_id`: ahora RLS exige la audiencia de la sala en cada INSERT.
+  `community_chat_restrictions` agrega suspensión temporal o bloqueo de escritura
+  por comunidad, sin congelar la cuenta. El moderador puede suspender hasta 72 h;
+  propietario/administrador hasta 30 días o bloquear hasta revisión. No pueden
+  sancionarse a sí mismos, al propietario ni a un administrador de plataforma;
+  el moderador no puede anular un bloqueo administrativo.
+- Cada decisión y levantamiento exigen motivo y quedan en auditoría privada. La
+  persona afectada puede leer su decisión y ve motivo/vencimiento en el compositor;
+  el resto del chat sigue legible según su audiencia. Los snapshots de auditoría
+  excluyen IDs de quien decidió para respetar su borrado de cuenta. Lectura de
+  listas limitada a 25 entradas con cursor; índices cubren audiencia y FKs.
+- `supabase/tests/communities/chat-restrictions.sql` pasó en Supabase con rollback:
+  visitante ajeno, expulsado, moderador, propietario, bloqueo, levantamiento,
+  intento contra administrador de plataforma y auditoría. Dos pruebas de UI y seis
+  de acción pasan. En localhost se verificó la bandeja vacía en escritorio y móvil,
+  sin aplicar restricciones a usuarios reales de la comunidad de prueba.
+- El advisor de seguridad marca las dos RPC `SECURITY DEFINER` públicas para
+  usuarios autenticados; es intencional porque las tablas no conceden escritura
+  directa y ambas RPC validan `auth.uid()` y capacidad institucional en SQL.
+  Pendiente: prueba multiusuario real de los estados restringidos, notificación y
+  apelación interna para cumplir el debido proceso del Manual de Convivencia.

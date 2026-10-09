@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime'
-import type { ClientChatIdentity, PinnedChatMessage, PublicChatTopic, PublicMessageRow, PublicMessageSender, PublicMessageWithSender } from '../types'
+import type { ClientChatIdentity, CommunityChatRestriction, PinnedChatMessage, PublicChatTopic, PublicMessageRow, PublicMessageSender, PublicMessageWithSender } from '../types'
 import { sendChatMessage, softDeletePublicMessage } from '../actions/chat-publico.actions'
 import { setCommunityChatPin } from '../actions/community-chat.actions'
 import { capabilitiesFor } from '../lib/permissions'
@@ -14,6 +14,7 @@ import ChatMessageComposer from './ChatMessageComposer'
 import ChatPinnedBar from './ChatPinnedBar'
 import ChatReportDialog from './ChatReportDialog'
 import ChatReportsPanel from './ChatReportsPanel'
+import ChatRestrictionsPanel from './ChatRestrictionsPanel'
 
 interface Props {
   topic: PublicChatTopic
@@ -21,11 +22,13 @@ interface Props {
   initialPinnedMessages?: PinnedChatMessage[]
   identity: ClientChatIdentity | null
   canModerate?: boolean
+  canBlock?: boolean
+  initialRestriction?: CommunityChatRestriction | null
 }
 
 const PAGE_SIZE = 30
 
-export default function ChatPublicoView({ topic, initialMessages, initialPinnedMessages = [], identity, canModerate = false }: Props) {
+export default function ChatPublicoView({ topic, initialMessages, initialPinnedMessages = [], identity, canModerate = false, canBlock = false, initialRestriction = null }: Props) {
   const t = useTranslations('chat.public.view')
   const [messages, setMessages] = useState<PublicMessageWithSender[]>(() => [...initialMessages].reverse())
   const [draft, setDraft] = useState('')
@@ -33,6 +36,10 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
   const [pinned, setPinned] = useState<PinnedChatMessage[]>(initialPinnedMessages)
   const [reportTarget, setReportTarget] = useState<string | null>(null)
   const [reportsOpen, setReportsOpen] = useState(false)
+  const [restrictionsOpen, setRestrictionsOpen] = useState(false)
+  const [restrictionTarget, setRestrictionTarget] = useState<{ userId: string; label: string } | null>(null)
+  const [restriction, setRestriction] = useState(initialRestriction)
+  const [restrictionNow, setRestrictionNow] = useState(Date.now())
   const [pinBusyId, setPinBusyId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [cooldownUntil, setCooldownUntil] = useState(0)
@@ -48,7 +55,9 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
       .map((message) => [message.sender_id as string, message.sender as PublicMessageSender]),
   ))
 
-  const canChat = capabilitiesFor(identity).canChat
+  const activeRestriction = restriction && (!restriction.expires_at || new Date(restriction.expires_at).getTime() > restrictionNow)
+    ? restriction : null
+  const canChat = capabilitiesFor(identity).canChat && !activeRestriction
   const remainingMs = Math.max(0, cooldownUntil - cooldownNow)
   const cooling = remainingMs > 0
 
@@ -57,6 +66,14 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
     const timer = setInterval(() => setCooldownNow(Date.now()), 250)
     return () => clearInterval(timer)
   }, [cooling])
+  useEffect(() => {
+    if (!restriction?.expires_at) return
+    const remaining = new Date(restriction.expires_at).getTime() - Date.now()
+    if (remaining <= 0) return
+    const delay = Math.min(60_000, remaining + 100)
+    const timer = setTimeout(() => setRestrictionNow(Date.now()), delay)
+    return () => clearTimeout(timer)
+  }, [restriction, restrictionNow])
 
   const scrollToBottom = useCallback((smooth: boolean) => {
     const el = listRef.current
@@ -148,6 +165,9 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
         setCooldownUntil(Date.now() + ms)
         setCooldownNow(Date.now())
         setError(t('errors.rateLimited', { seconds: Math.ceil(ms / 1000) }))
+      } else if (result.error === 'restricted') {
+        if (result.restriction) setRestriction(result.restriction)
+        setError(t('errors.restricted'))
       } else if (result.error === 'invalid') setError(t('errors.invalid'))
       else if (result.error === 'unauthorized') setError(t('errors.unauthorized'))
       else setError(t('errors.sendFailed'))
@@ -176,20 +196,25 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-neutral-900">
-      {canModerate && topic.owner_id && <div className="flex shrink-0 justify-end border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:px-6">
+      {canModerate && topic.owner_id && <div className="flex shrink-0 justify-end gap-2 border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:px-6">
         <button type="button" onClick={() => setReportsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Revisar reportes</button>
+        <button type="button" onClick={() => setRestrictionsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Restricciones</button>
       </div>}
       <ChatPinnedBar messages={pinned} />
       <ChatMessageList messages={messages} identity={identity} locallySent={locallySentRef.current}
         listRef={listRef} hasMore={hasMore} isLoadingOlder={isLoadingOlder} onScroll={handleScroll}
         onLoadOlder={loadOlder} onDelete={handleDelete} onReply={setReplyTo}
-        canModerate={canModerate} canReport={topic.owner_type === 'community' && !!identity && identity.kind !== 'guest'}
-        pinBusyId={pinBusyId} onPin={handlePin} onReport={setReportTarget} />
+        canModerate={canModerate} canReply={canChat} canReport={topic.owner_type === 'community' && !!identity && identity.kind !== 'guest'}
+        pinBusyId={pinBusyId} onPin={handlePin} onReport={setReportTarget}
+        onRestrict={(userId, label) => { setRestrictionTarget({ userId, label }); setRestrictionsOpen(true) }} />
       <ChatMessageComposer topic={topic} identity={identity} draft={draft} setDraft={setDraft}
         replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onSend={send}
-        isPending={isPending} cooling={cooling} remainingMs={remainingMs} error={error} canChat={canChat} />
+        isPending={isPending} cooling={cooling} remainingMs={remainingMs} error={error} canChat={canChat}
+        restriction={activeRestriction} />
       {reportTarget && <ChatReportDialog messageId={reportTarget} onClose={() => setReportTarget(null)} />}
       {reportsOpen && topic.owner_id && <ChatReportsPanel communityId={topic.owner_id} onClose={() => setReportsOpen(false)} />}
+      {restrictionsOpen && topic.owner_id && <ChatRestrictionsPanel communityId={topic.owner_id} canBlock={canBlock}
+        target={restrictionTarget} onClose={() => { setRestrictionsOpen(false); setRestrictionTarget(null) }} />}
     </div>
   )
 }

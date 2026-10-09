@@ -19,10 +19,12 @@ interface Props {
   onDelete: (id: string) => void
   onReply: (message: PublicMessageWithSender) => void
   canModerate: boolean
+  canReply: boolean
   canReport: boolean
   pinBusyId: string | null
   onPin: (message: PublicMessageWithSender) => void
   onReport: (id: string) => void
+  onRestrict: (userId: string, label: string) => void
 }
 
 function resolveAuthor(message: PublicMessageWithSender, fallbackUser: string, fallbackGuest: string): ResolvedMessageAuthor {
@@ -47,7 +49,7 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function ChatMessageList({ messages, identity, locallySent, listRef, hasMore, isLoadingOlder, onScroll, onLoadOlder, onDelete, onReply, canModerate, canReport, pinBusyId, onPin, onReport }: Props) {
+export default function ChatMessageList({ messages, identity, locallySent, listRef, hasMore, isLoadingOlder, onScroll, onLoadOlder, onDelete, onReply, canModerate, canReply, canReport, pinBusyId, onPin, onReport, onRestrict }: Props) {
   const t = useTranslations('chat.public.view')
   const parentById = useMemo(() => new Map(messages.map((message) => [message.id, message])), [messages])
 
@@ -98,9 +100,10 @@ export default function ChatMessageList({ messages, identity, locallySent, listR
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 px-1 text-xs text-neutral-500 dark:text-neutral-400">
                   <time dateTime={message.created_at}>{formatTime(message.created_at)}</time>
-                  {!message.is_deleted && identity && <button type="button" onClick={() => onReply(message)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline dark:text-primary-300">Responder</button>}
+                  {!message.is_deleted && canReply && <button type="button" onClick={() => onReply(message)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline dark:text-primary-300">Responder</button>}
                   {!message.is_deleted && canReport && <button type="button" onClick={() => onReport(message.id)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline dark:text-primary-300">Reportar</button>}
                   {!message.is_deleted && canModerate && <button type="button" disabled={pinBusyId === message.id} onClick={() => onPin(message)} className="inline-flex min-h-7 items-center font-medium text-primary-700 hover:underline disabled:opacity-50 dark:text-primary-300">{message.is_pinned ? 'Desfijar' : 'Fijar'}</button>}
+                  {!message.is_deleted && canModerate && author.userId && !isOwn && <button type="button" onClick={() => onRestrict(author.userId!, author.label)} className="inline-flex min-h-7 items-center font-medium text-red-700 hover:underline dark:text-red-400">Restringir</button>}
                   {isOwn && !message.is_deleted && identity?.kind !== 'guest' && <button type="button" onClick={() => onDelete(message.id)} className="inline-flex min-h-7 items-center font-medium text-red-700 hover:underline dark:text-red-400">Eliminar</button>}
                 </div>
               </div>

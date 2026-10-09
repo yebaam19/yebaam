@@ -8,6 +8,7 @@ import ChatEntryGate from '@/features/chat-publico/components/ChatEntryGate'
 import ChatPublicoShell from '@/features/chat-publico/components/ChatPublicoShell'
 import ChatPublicoView from '@/features/chat-publico/components/ChatPublicoView'
 import { getRoomIdentity } from '@/features/chat-publico/lib/identity'
+import { getActiveCommunityChatRestriction } from '@/features/chat-publico/server/community-chat-restrictions.server'
 import { readPreferredNickname } from '@/features/chat-publico/lib/session'
 import {
   getTopicBySlug,
@@ -56,11 +57,16 @@ export default async function ChatPublicoTopicPage({
     ])
 
   let canModerate = false
+  let canBlock = false
   if (topic.owner_type === 'community' && topic.owner_id && authedUser) {
     const client = await getServerClient()
     const { data } = await client.rpc('community_profile_capabilities', { target_community: topic.owner_id })
-    canModerate = !!(data as { moderation?: boolean } | null)?.moderation
+    const capabilities = data as { moderation?: boolean; settings?: boolean } | null
+    canModerate = !!capabilities?.moderation
+    canBlock = !!capabilities?.settings
   }
+  const initialRestriction = topic.owner_type === 'community' && topic.owner_id && authedUser
+    ? await getActiveCommunityChatRestriction(topic.owner_id, authedUser.id) : null
 
   const communityIdentity = topic.owner_type === 'community' && identity?.kind === 'guest'
     ? null
@@ -143,6 +149,8 @@ export default async function ChatPublicoTopicPage({
           initialPresence={initialPresence}
           identity={clientIdentity}
           canModerate={canModerate}
+          canBlock={canBlock}
+          initialRestriction={initialRestriction}
         />
       </div>
     </div>

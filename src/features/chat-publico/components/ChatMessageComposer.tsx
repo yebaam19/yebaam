@@ -1,8 +1,8 @@
 'use client'
 
 import type { FormEvent, KeyboardEvent } from 'react'
-import { useTranslations } from 'next-intl'
-import type { ClientChatIdentity, PublicChatTopic, PublicMessageWithSender } from '../types'
+import { useFormatter, useTranslations } from 'next-intl'
+import type { ClientChatIdentity, CommunityChatRestriction, PublicChatTopic, PublicMessageWithSender } from '../types'
 
 interface Props {
   topic: PublicChatTopic
@@ -17,12 +17,14 @@ interface Props {
   remainingMs: number
   error: string | null
   canChat: boolean
+  restriction: CommunityChatRestriction | null
 }
 
 const MAX_LENGTH = 2000
 
-export default function ChatMessageComposer({ topic, identity, draft, setDraft, replyTo, onCancelReply, onSend, isPending, cooling, remainingMs, error, canChat }: Props) {
+export default function ChatMessageComposer({ topic, identity, draft, setDraft, replyTo, onCancelReply, onSend, isPending, cooling, remainingMs, error, canChat, restriction }: Props) {
   const t = useTranslations('chat.public.view')
+  const format = useFormatter()
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); onSend() }
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); onSend() }
@@ -30,6 +32,11 @@ export default function ChatMessageComposer({ topic, identity, draft, setDraft, 
 
   return (
     <form onSubmit={submit} className="shrink-0 border-t border-primary-100 bg-white px-3 py-3 sm:px-6 dark:border-primary-900/50 dark:bg-neutral-900">
+      {restriction && <p role="status" className="mb-2 rounded-lg border border-secondary-200 bg-secondary-50 px-3 py-2 text-xs leading-relaxed text-primary-950 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-100">
+        {restriction.kind === 'block' ? t('restriction.blocked')
+          : t('restriction.suspendedUntil', { date: format.dateTime(new Date(restriction.expires_at!), { dateStyle: 'medium', timeStyle: 'short' }) })}
+        {' '}{t('restriction.reason', { reason: restriction.reason })}
+      </p>}
       {replyTo && (
         <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border-l-2 border-primary-600 bg-primary-50 px-3 py-2 text-xs text-primary-800 dark:bg-primary-950/40 dark:text-primary-200">
           <div className="min-w-0"><span className="font-semibold">Respuesta</span><p className="truncate">{replyTo.content}</p></div>

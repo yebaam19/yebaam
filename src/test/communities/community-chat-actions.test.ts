@@ -8,11 +8,13 @@ const mocks = vi.hoisted(() => ({
   visibleTopic: vi.fn(),
   serviceInsert: vi.fn(),
   sessionInsert: vi.fn(),
+  restriction: vi.fn(),
 }))
 
 vi.mock('@/features/chat-publico/lib/identity', () => ({ getRoomIdentity: mocks.identity }))
 vi.mock('@/features/chat-publico/lib/session', () => ({ hashSessionToken: () => 'session-hash' }))
 vi.mock('@/features/chat-publico/lib/permissions', () => ({ capabilitiesFor: () => ({ canChat: true }) }))
+vi.mock('@/features/chat-publico/server/community-chat-restrictions.server', () => ({ getActiveCommunityChatRestriction: mocks.restriction }))
 vi.mock('@/utils/supabase/server', () => ({
   getServiceClient: async () => ({
     from: (table: string) => table === 'public_chat_topics'
@@ -36,10 +38,11 @@ const parentId = '33333333-3333-4333-8333-333333333333'
 
 beforeEach(() => {
   vi.resetAllMocks()
-  mocks.topic.mockResolvedValue({ data: { owner_type: 'community' }, error: null })
+  mocks.topic.mockResolvedValue({ data: { owner_type: 'community', owner_id: '44444444-4444-4444-8444-444444444444' }, error: null })
   mocks.visibleTopic.mockResolvedValue({ data: { id: roomId }, error: null })
   mocks.getUser.mockResolvedValue({ data: { user: { id: userId } } })
   mocks.sessionInsert.mockReturnValue({ select: () => ({ maybeSingle: async () => ({ data: { id: 'message-id' }, error: null }) }) })
+  mocks.restriction.mockResolvedValue(null)
 })
 
 describe('community chat writes', () => {
@@ -61,6 +64,13 @@ describe('community chat writes', () => {
     mocks.identity.mockResolvedValue({ kind: 'profile', userId, displayName: 'Miembro', avatarUrl: null, sessionToken: 'token' })
     mocks.visibleTopic.mockResolvedValue({ data: null, error: null })
     expect(await sendChatMessage(roomId, 'Hola')).toMatchObject({ ok: false, error: 'unauthorized' })
+    expect(mocks.sessionInsert).not.toHaveBeenCalled()
+  })
+
+  it('returns the active sanction without attempting a message write', async () => {
+    mocks.identity.mockResolvedValue({ kind: 'profile', userId, displayName: 'Miembro', avatarUrl: null, sessionToken: 'token' })
+    mocks.restriction.mockResolvedValue({ kind: 'suspend', reason: 'Moderation decision', expires_at: '2099-01-01T00:00:00Z' })
+    expect(await sendChatMessage(roomId, 'Hola')).toMatchObject({ ok: false, error: 'restricted' })
     expect(mocks.sessionInsert).not.toHaveBeenCalled()
   })
 

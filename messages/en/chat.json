@@ -167,10 +167,16 @@
       "hintNick": " · Nick: text + images",
       "fallbackUser": "User",
       "fallbackGuest": "Guest",
+      "restriction": {
+        "blocked": "You are blocked from participating in this chat.",
+        "suspendedUntil": "You are suspended from this chat until {date}.",
+        "reason": "Reason: {reason}"
+      },
       "errors": {
         "rateLimited": "Wait {seconds}s before sending another message.",
         "invalid": "The message cannot be empty or exceed 2000 characters.",
         "unauthorized": "You must enter the room to send messages.",
+        "restricted": "You cannot send messages while the restriction is active.",
         "sendFailed": "Could not send the message. Try again.",
         "deleteFailed": "Could not delete the message."
       }

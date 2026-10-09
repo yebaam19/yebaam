@@ -148,6 +148,17 @@ export interface CommunityChatReport {
   message: { content: string | null; is_deleted: boolean; moderation_hidden_at: string | null } | null
 }
 
+export interface CommunityChatRestriction {
+  community_id: string
+  user_id: string
+  kind: 'suspend' | 'block'
+  expires_at: string | null
+  reason: string
+  decided_at: string
+  revoked_at: string | null
+  version: number
+}
+
 /** Derived display info so the view doesn't branch on sender_kind everywhere. */
 export interface ResolvedMessageAuthor {
   label: string
@@ -158,7 +169,7 @@ export interface ResolvedMessageAuthor {
 
 export type SendPublicMessageResult =
   | { ok: true; messageId?: string }
-  | { ok: false; error: 'invalid' | 'unauthorized' | 'rate_limited' | 'db_error'; retryAfterMs?: number; message?: string }
+  | { ok: false; error: 'invalid' | 'unauthorized' | 'rate_limited' | 'db_error' | 'restricted'; retryAfterMs?: number; message?: string; restriction?: CommunityChatRestriction }
 
 export type SoftDeletePublicMessageResult =
   | { ok: true }
