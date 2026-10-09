@@ -36,14 +36,14 @@ export function EventDetail({ event, slug, canManage, attendance, initialNow }: 
     </section>}
     {event.is_published && <EventAttendance key={`${event.id}:${attendance.attending}`} eventId={event.id} signedIn={attendance.signedIn} initialAttending={attendance.attending}
       allowed={event.rsvp_enabled && status !== 'finished' && status !== 'cancelled'} />}
-    <Button outline onClick={async () => {
+    {event.is_published && <><Button outline onClick={async () => {
       try {
         const url = new URL(`/feed/comunidades/${slug}/eventos/${event.id}`, window.location.origin).href;
         if (navigator.share) await navigator.share({ title: event.title, url });
         else { await navigator.clipboard.writeText(url); setShareMessage(t('copied')); }
       } catch (error) { if (!(error instanceof Error && error.name === 'AbortError')) setShareMessage(t('shareError')); }
     }}>{t('share')}</Button>
-    <p role="status" className="text-sm text-neutral-600 dark:text-neutral-300">{shareMessage}</p>
+    <p role="status" className="text-sm text-neutral-600 dark:text-neutral-300">{shareMessage}</p></>}
     {canManage && <EventActions event={event} slug={slug} />}
   </article>;
 }

@@ -6,6 +6,7 @@ import messages from '../../../messages/es/communities.json';
 import { EventForm } from '@/features/communities/components/events/EventForm';
 import { EventAttendance } from '@/features/communities/components/events/EventAttendance';
 import { EventActions } from '@/features/communities/components/events/EventActions';
+import { EventDetail } from '@/features/communities/components/events/EventDetail';
 import { EventsIndex } from '@/features/communities/components/events/EventsIndex';
 import type { CommunityEvent } from '@/features/communities/types/communityEvent.types';
 const mocks = vi.hoisted(() => ({ save: vi.fn(), change: vi.fn(), attendance: vi.fn(), load: vi.fn(), library: vi.fn(), refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }));
@@ -21,6 +22,14 @@ beforeEach(() => {
   mocks.library.mockResolvedValue({ ok: true, data: { items: [], nextCursor: null } });
 });
 describe('Events interaction', () => {
+  it('shares only published events, since visitors cannot open draft links', () => {
+    const draft = { ...event, is_published: false };
+    const { rerender } = show(<EventDetail event={draft} slug="test" canManage attendance={{ signedIn: true, attending: false }} initialNow="2026-09-30T10:00:00Z" />);
+    expect(screen.queryByRole('button', { name: 'Compartir evento' })).not.toBeInTheDocument();
+    rerender(<NextIntlClientProvider locale="es" messages={{ communities: messages }}><EventDetail event={event} slug="test" canManage={false}
+      attendance={{ signedIn: true, attending: false }} initialNow="2026-09-30T10:00:00Z" /></NextIntlClientProvider>);
+    expect(screen.getByRole('button', { name: 'Compartir evento' })).toBeInTheDocument();
+  });
   it('keeps drafts private and preserves fields and creation id after a failed save', async () => {
     show(<EventForm communityId={id} slug="test" initial={null} organizer="Comunidad" />);
     expect(screen.getByLabelText(/Publicar evento/)).not.toBeChecked();
