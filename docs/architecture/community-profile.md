@@ -553,6 +553,7 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - Revisión autenticada real en Comunidad MVP test: sección Líderes sin configurar, sin publicar ni modificar contenido.
 - Sidebar global comprobado hasta Perfil profesional en escritorio y móvil (390px CSS); en móvil scrollTop 265 y último enlace dentro del viewport (734.7 / 750px).
 - Sidebar local limitado a la altura disponible en escritorio con scroll independiente: a 1440×450px, 411px de contenido en 354px de área; Gestionar comunidad accesible tras desplazar 56px. En móvil conserva su disclosure.
+- La portada conserva el encuadre 3:1 del editor, pero el lienzo se limita a 90rem en monitores anchos; a ~2078px pasó de ~692px a 480px de alto y deja visible el contenido principal. En móvil mantiene 16:9 y el botón de unión queda sobre el espacio libre de la tarjeta de identidad. Revisado en localhost en ambos tamaños.
 - Las capturas históricas con fixtures no prueban persistencia autenticada; esta revisión real tampoco ejecutó uploads ni publicó líderes.
 - Validación tras la corrección de paleta: 117 tests de comunidades pasan; TypeScript y lint de archivos cambiados pasan; build de producción pasa.
 

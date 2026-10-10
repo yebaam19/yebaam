@@ -100,7 +100,7 @@ export function CommunityLayoutShell({
 
   return (
     <div style={communityThemeStyle(theme)} className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      {!isArticleRoute && <div className={`relative overflow-hidden bg-[var(--community-primary)] ${c.coverImageUrl ? 'aspect-video sm:aspect-[3/1]' : 'h-40 sm:h-52'}`}>
+      {!isArticleRoute && <div className="bg-[var(--community-primary)]"><div className={`relative mx-auto w-full max-w-[90rem] overflow-hidden ${c.coverImageUrl ? 'aspect-video sm:aspect-[3/1]' : 'h-40 sm:h-52'}`}>
         {c.coverImageUrl && (
           <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}
@@ -110,7 +110,7 @@ export function CommunityLayoutShell({
           </div>
         )}
         {viewerState.kind === 'guest' ? (
-          <div className="absolute right-4 bottom-4 z-10">
+          <div className="absolute right-4 bottom-4 z-10 sm:bottom-20">
             <Link
               href={`/login?redirect=${encodeURIComponent(`/feed/comunidades/${c.slug}`)}`}
               className="inline-flex min-h-10 items-center rounded-lg bg-primary-800 px-5 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
@@ -119,7 +119,7 @@ export function CommunityLayoutShell({
             </Link>
           </div>
         ) : viewerState.kind !== 'owner' && (
-          <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-1">
+          <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-1 sm:bottom-20">
             <button
               onClick={handleJoinClick}
               disabled={joinButtonDisabled}
@@ -140,7 +140,7 @@ export function CommunityLayoutShell({
             )}
           </div>
         )}
-      </div>}
+      </div></div>}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {isArticleRoute ? <nav aria-label="Contexto de la comunidad" className="flex min-w-0 items-center gap-2 py-4 text-sm">
