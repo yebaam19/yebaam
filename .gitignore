@@ -102,48 +102,8 @@ dist/
 
 # SQL dumps and scratch queries
 *.sql
-# Reviewed schema changes are committed one migration at a time.
-!supabase/migrations/20260918010000_music_archive_editors.sql
-!supabase/migrations/20260930041641_harden_timeline_posts_identity_visibility.sql
-!supabase/migrations/20261008224758_community_article_drafts.sql
-!supabase/migrations/20261008224800_community_article_writes.sql
-!supabase/migrations/20261008224802_community_article_moderation.sql
-!supabase/migrations/20261008225236_community_article_remove_legacy_touch.sql
-!supabase/migrations/20261008231144_community_profile_role_lifecycle.sql
-!supabase/migrations/20261008232232_community_related_links.sql
-!supabase/migrations/20261008234842_community_chat_privacy.sql
-!supabase/migrations/20261008235834_community_forum_public_read_roles.sql
-!supabase/migrations/20261009000148_community_forum_privacy_alignment.sql
-!supabase/migrations/20261009000252_community_forum_role_grant_hardening.sql
-!supabase/migrations/20261009001046_revoke_client_table_ddl_privileges.sql
-!supabase/migrations/20261009001225_chat_reply_boundary.sql
-!supabase/migrations/20261009001405_chat_reply_counter_privilege.sql
-!supabase/migrations/20261009001842_chat_reply_counter_soft_delete.sql
-!supabase/migrations/20261009002110_community_chat_pin.sql
-!supabase/migrations/20261009002200_community_chat_reports.sql
-!supabase/migrations/20261009002557_community_chat_review.sql
-!supabase/migrations/20261009003016_community_chat_audit_account_erasure.sql
-!supabase/migrations/20261009003647_chat_soft_delete_redaction.sql
-!supabase/migrations/20261009003856_chat_delete_restore_snapshot.sql
-!supabase/migrations/20261009003940_chat_community_restore_cleanup.sql
-!supabase/migrations/20261009004552_forum_post_column_privileges.sql
-!supabase/migrations/20261009005337_community_forum_reports.sql
-!supabase/migrations/20261009005730_community_forum_report_actor_indexes.sql
-!supabase/migrations/20261009005912_community_forum_report_erasure.sql
-!supabase/migrations/20261009010222_community_sections_featured.sql
-!supabase/migrations/20261009010244_community_profile_brand_theme.sql
-!supabase/migrations/20261009010623_community_sections_private_read.sql
-!supabase/migrations/20261009011300_community_chat_insert_audience.sql
-!supabase/migrations/20261009011447_community_chat_restrictions.sql
-!supabase/migrations/20261009011635_community_chat_restriction_queue.sql
-!supabase/migrations/20261009011954_community_chat_restriction_hardening.sql
-!supabase/migrations/20261009012139_community_chat_restriction_fk_indexes.sql
-!supabase/migrations/20261009013202_community_chat_decision_notice.sql
-!supabase/migrations/20261009013207_community_chat_review_requests.sql
-!supabase/migrations/20261009013306_community_chat_review_idempotency.sql
-!supabase/migrations/20261009013551_community_chat_review_access.sql
-!supabase/migrations/20261009014234_community_chat_decision_idempotency.sql
-!supabase/migrations/20261009014401_community_chat_decision_ledger_private.sql
+# Keep applied schema changes visible to Git; do not hide new migrations.
+!supabase/migrations/*.sql
 !supabase/tests/communities/articles.sql
 
 # MCP config (contains API keys)
@@ -199,10 +159,6 @@ tokens.json
 !.impeccable/surfaces/community-articles.md
 !docs/architecture/community-profile.md
 # Reviewed schema and authorization contracts belong with application changes.
-!supabase/migrations/*_community_profile_*.sql
-!supabase/migrations/*_community_plan_*.sql
-!supabase/migrations/*_community_header_*.sql
-!supabase/migrations/*_community_top_tabs*.sql
 !supabase/tests/communities/*.sql
 !src/features/communities/components/plans/DESIGN.md
 !src/features/communities/components/library/DESIGN.md
