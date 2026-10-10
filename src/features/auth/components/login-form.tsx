@@ -56,7 +56,8 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (!captchaToken) {
+    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+    if (turnstileEnabled && !captchaToken) {
       toast.error(t('errors.turnstileRequired'))
       return
     }

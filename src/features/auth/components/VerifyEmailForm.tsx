@@ -27,6 +27,7 @@ export default function VerifyEmailForm() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null)
   const { resendOtp, isLoading: isResending } = useAuthStore()
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   const {
     register,
@@ -60,7 +61,7 @@ export default function VerifyEmailForm() {
   }
 
   const handleResendCode = async () => {
-    if (!captchaToken) {
+    if (turnstileEnabled && !captchaToken) {
       toast.error(t('verifyEmail.turnstileResendError'))
       return
     }
@@ -166,7 +167,7 @@ export default function VerifyEmailForm() {
             <button
               type="button"
               onClick={handleResendCode}
-              disabled={isResending || !captchaToken}
+              disabled={isResending || (turnstileEnabled && !captchaToken)}
               className="text-sm font-medium text-green-600 transition-colors hover:text-green-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isResending ? (

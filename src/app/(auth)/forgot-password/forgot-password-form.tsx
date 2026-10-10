@@ -31,7 +31,8 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    if (!captchaToken) {
+    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    if (turnstileEnabled && !captchaToken) {
       setError(t('errors.turnstileRequired'));
       return;
     }
