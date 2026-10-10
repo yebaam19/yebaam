@@ -5,11 +5,11 @@ import messages from '../../../messages/es/communities.json';
 import { LibraryWorkspace } from '@/features/communities/components/library/LibraryWorkspace';
 import type { LibraryAsset } from '@/features/communities/types/communityLibrary.types';
 
-const mocks = vi.hoisted(() => ({ save: vi.fn(), remove: vi.fn(), finalize: vi.fn(), refresh: vi.fn(), push: vi.fn() }));
+const mocks = vi.hoisted(() => ({ save: vi.fn(), remove: vi.fn(), finalize: vi.fn(), load: vi.fn(), refresh: vi.fn(), push: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mocks.refresh, push: mocks.push }) }));
 vi.mock('@/features/communities/actions/library/content.actions', () => ({ saveLibraryAsset: mocks.save, deleteLibraryAsset: mocks.remove,
   finalizeLibraryAsset: mocks.finalize, saveAssetFolder: vi.fn(), deleteAssetFolder: vi.fn() }));
-vi.mock('@/features/communities/actions/library/queries.actions', () => ({ loadLibraryAssets: vi.fn(), loadAssetFolders: vi.fn() }));
+vi.mock('@/features/communities/actions/library/queries.actions', () => ({ loadLibraryAssets: mocks.load, loadAssetFolders: vi.fn() }));
 const asset: LibraryAsset = { id: 'asset', community_id: 'community', kind: 'document', folder_id: 'folder-not-in-first-page',
   title: 'Informe anual', description: 'Resultados de la comunidad', media_id: 'owner/report.pdf', original_name: 'report.pdf',
   content_type: 'application/pdf', size_bytes: 1024, duration_seconds: null, uploaded_by: 'owner', visibility: 'editors',
@@ -24,6 +24,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   Element.prototype.scrollIntoView = vi.fn();
   mocks.save.mockResolvedValue({ ok: false, error: 'No se pudo guardar. Inténtalo de nuevo.' });
+  mocks.load.mockResolvedValue({ ok: true, data: { items: [asset], nextCursor: null } });
 });
 
 describe('library editor protections', () => {
@@ -61,5 +62,14 @@ describe('library editor protections', () => {
     expect(screen.queryByText('Opciones')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Descargar' })).toHaveAttribute('href', '/api/communities/community/assets/asset/file');
     expect(screen.getByRole('link', { name: /Vista previa/ })).toHaveAttribute('href', '/api/communities/community/assets/asset/file?preview=1');
+  });
+  it('shows freshly loaded assets when the upload panel closes', async () => {
+    const newest = { ...asset, id: 'new-asset', title: 'Nuevo documento' };
+    mocks.load.mockResolvedValue({ ok: true, data: { items: [newest, asset], nextCursor: null } });
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: 'Subir archivos' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Nuevo documento' })).toBeVisible());
+    expect(mocks.load).toHaveBeenCalledWith(expect.objectContaining({ communityId: 'community', kind: 'document', cursor: null }));
   });
 });

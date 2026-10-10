@@ -30,5 +30,6 @@ export function useLibraryPage<T extends { id: string }>(initial: Page<T>, load:
       finally { inFlight.current = false; }
     });
   }
-  return { ...page, pending, error, loadMore };
+  function replace(next: Page<T>) { setPage(next); setError(null); }
+  return { ...page, pending, error, loadMore, replace };
 }

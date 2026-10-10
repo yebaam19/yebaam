@@ -36,6 +36,7 @@ async function uploadToCloudflare(
     xhr.addEventListener('abort', () => reject(new Error('Cloudflare upload was interrupted')));
     xhr.addEventListener('timeout', () => reject(new Error('Cloudflare upload timed out')));
     xhr.open('POST', uploadURL);
+    xhr.timeout = file.type.startsWith('video/') ? 10 * 60_000 : 2 * 60_000;
     xhr.send(form);
   });
 }

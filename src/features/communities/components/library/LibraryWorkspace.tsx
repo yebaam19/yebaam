@@ -37,7 +37,14 @@ export function LibraryWorkspace({ communityId, kind, initial, folders, canEdit,
     setEditor(value);
     requestAnimationFrame(() => { panel.current?.scrollIntoView({ block: 'nearest' }); panel.current?.focus(); });
   }
-  function close() { setEditor(null); requestAnimationFrame(() => origin.current?.focus()); }
+  function close() {
+    setEditor(null);
+    router.refresh();
+    void loadLibraryAssets({ communityId, kind, folderId, search, cursor: null, pdfOnly })
+      .then((result) => { if (result.ok) page.replace(result.data); })
+      .catch(() => { /* router.refresh() remains the fallback. */ });
+    requestAnimationFrame(() => origin.current?.focus());
+  }
   function filter(form: FormData) {
     if (blocked) return;
     const query = new URLSearchParams();

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/ui/Button';
 import { DOCUMENT_ACCEPT } from '@/lib/upload-documents';
@@ -13,7 +12,6 @@ export function LibraryUploadPanel({ communityId, kind, replacement, pdfOnly, on
   communityId: string; kind: AssetKind; replacement?: LibraryAsset; pdfOnly: boolean; onClose: () => void;
 }) {
   const t = useTranslations('communities.library');
-  const router = useRouter();
   const [items, setItems] = useState<LibraryUpload[]>([]);
   const queue = useRef<LibraryUpload[]>([]);
   const running = useRef(false);
@@ -53,7 +51,7 @@ export function LibraryUploadPanel({ communityId, kind, replacement, pdfOnly, on
     running.current = false;
     setBusy(false);
   }
-  function close() { onClose(); router.refresh(); }
+  function close() { onClose(); }
   const limit = kind === 'image' ? MAX_IMAGE_BYTES : kind === 'video' ? MAX_VIDEO_BYTES : MAX_DOCUMENT_BYTES;
   const accept = kind === 'image' ? 'image/jpeg,image/png,image/webp,image/gif,image/avif' : kind === 'video'
     ? 'video/mp4,video/quicktime,video/webm,video/x-msvideo,video/x-matroska' : pdfOnly ? '.pdf,application/pdf' : DOCUMENT_ACCEPT;
