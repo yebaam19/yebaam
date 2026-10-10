@@ -191,7 +191,7 @@ begin
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
   set local role authenticated;
   perform public.set_community_chat_restriction(org,member_id,'suspend',12,
-    'New disruptive messages after the prior review.');
+    'New disruptive messages after the prior review.',gen_random_uuid());
   reset role;
   select version into current_version from public.community_chat_restrictions
     where community_id=org and user_id=member_id;
@@ -203,7 +203,7 @@ begin
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
   set local role authenticated;
   perform public.set_community_chat_restriction(org,member_id,'suspend',24,
-    'Additional evidence changed the restriction decision.');
+    'Additional evidence changed the restriction decision.',gen_random_uuid());
   reset role;
   if not exists(select 1 from public.community_chat_review_requests
     where id=request_id and status='superseded') then

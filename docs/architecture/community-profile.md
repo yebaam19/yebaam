@@ -838,8 +838,10 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   secuencia descargo→apelación, denegación a terceros/moderadores, respuesta,
   levantamiento y cierre de solicitudes obsoletas. La acción de restringir
   envía un UUID estable por intento; repetirlo no extiende la suspensión ni
-  duplica auditoría/notificación. La RPC anterior permanece para compatibilidad
-  durante el despliegue y todavía no tiene esa garantía. Tres pruebas nuevas de UI
+  duplica auditoría/notificación. La RPC antigua de cinco argumentos ya no
+  concede `EXECUTE` a `authenticated`; la versión con UUID sigue disponible y
+  la llama internamente. `chat-restrictions.sql` y `chat-review.sql` volvieron
+  a pasar con rollback en Supabase. Tres pruebas nuevas de UI
   comprueban envío, apelación y resolución; otra verifica el aviso de sistema.
   La bandeja vacía se revisó en
   localhost a ancho de escritorio y móvil sin sancionar usuarios reales.

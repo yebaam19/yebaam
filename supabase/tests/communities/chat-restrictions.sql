@@ -6,6 +6,16 @@ declare
   org uuid:=gen_random_uuid(); private_org uuid:=gen_random_uuid();
   room uuid:=gen_random_uuid(); private_room uuid:=gen_random_uuid();
 begin
+  if has_function_privilege('authenticated',
+    'public.set_community_chat_restriction(uuid,uuid,text,integer,text)',
+    'EXECUTE') then
+    raise exception 'Legacy non-idempotent restriction RPC is public';
+  end if;
+  if not has_function_privilege('authenticated',
+    'public.set_community_chat_restriction(uuid,uuid,text,integer,text,uuid)',
+    'EXECUTE') then
+    raise exception 'Idempotent restriction RPC is unavailable';
+  end if;
   select array_agg(id) into people from (
     select u.id from auth.users u join public.profiles p on p.id=u.id
     order by u.id limit 4
@@ -52,7 +62,7 @@ begin
   set local role authenticated;
   begin
     perform public.set_community_chat_restriction(org,member_id,'suspend',24,
-      'Unauthorized attempt to suspend another member');
+      'Unauthorized attempt to suspend another member',gen_random_uuid());
     raise exception 'Outsider moderated chat';
   exception when insufficient_privilege then null; end;
   reset role;
@@ -60,14 +70,14 @@ begin
   perform set_config('request.jwt.claim.sub',moderator_id::text,true);
   set local role authenticated;
   perform public.set_community_chat_restriction(org,member_id,'suspend',24,
-    'Repeated disruptive messages in the community chat');
+    'Repeated disruptive messages in the community chat',gen_random_uuid());
   if not exists(select 1 from public.community_chat_restrictions
     where community_id=org and user_id=member_id and kind='suspend' and revoked_at is null) then
     raise exception 'Moderator suspension missing';
   end if;
   begin
     perform public.set_community_chat_restriction(org,member_id,'block',null,
-      'Attempt to make permanent block');
+      'Attempt to make permanent block',gen_random_uuid());
     raise exception 'Moderator made permanent block';
   exception when check_violation then null; end;
   reset role;
@@ -108,13 +118,13 @@ begin
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
   set local role authenticated;
   perform public.set_community_chat_restriction(org,member_id,'block',null,
-    'Repeated serious violations after prior suspension');
+    'Repeated serious violations after prior suspension',gen_random_uuid());
   reset role;
   perform set_config('request.jwt.claim.sub',moderator_id::text,true);
   set local role authenticated;
   begin
     perform public.set_community_chat_restriction(org,member_id,'suspend',1,
-      'Attempt to replace an administrative block');
+      'Attempt to replace an administrative block',gen_random_uuid());
     raise exception 'Moderator replaced administrative block';
   exception when insufficient_privilege then null; end;
   begin
@@ -132,7 +142,7 @@ begin
   set local role authenticated;
   begin
     perform public.set_community_chat_restriction(org,outsider_id,'block',null,
-      'Attempt to prevent platform oversight of this chat');
+      'Attempt to prevent platform oversight of this chat',gen_random_uuid());
     raise exception 'Community blocked a platform administrator';
   exception when insufficient_privilege then null; end;
   reset role;
