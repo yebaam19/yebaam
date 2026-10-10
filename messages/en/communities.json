@@ -822,6 +822,7 @@
     "clearFilters": "Clear filters",
     "manageCategories": "Manage categories",
     "empty": "No matching questions. Try different filters or ask a question.",
+    "emptyGuest": "No matching questions. Try different filters or sign in to ask a question.",
     "loading": "Loading…",
     "moreQuestions": "Load more questions",
     "loadError": "Content could not be loaded. Please try again.",

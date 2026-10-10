@@ -822,6 +822,7 @@
     "clearFilters": "Limpiar filtros",
     "manageCategories": "Gestionar categorías",
     "empty": "No hay preguntas que coincidan. Puedes cambiar los filtros o hacer una pregunta.",
+    "emptyGuest": "No hay preguntas que coincidan. Prueba con otros filtros o inicia sesión para hacer una pregunta.",
     "loading": "Cargando…",
     "moreQuestions": "Cargar más preguntas",
     "loadError": "No se pudo cargar el contenido. Inténtalo de nuevo.",

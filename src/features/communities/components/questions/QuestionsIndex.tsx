@@ -46,7 +46,7 @@ export function QuestionsIndex({ slug, query, initial, categories, category, sig
       </div>
     </form>
     {canAnswer && <Button plain href={`${base}/categorias`}>{t('manageCategories')}</Button>}
-    {!page.items.length && <p className="py-4 text-sm text-neutral-600 dark:text-neutral-300">{t('empty')}</p>}
+    {!page.items.length && <p className="py-4 text-sm text-neutral-600 dark:text-neutral-300">{t(signedIn ? 'empty' : 'emptyGuest')}</p>}
     <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">{page.items.map((question) => <li key={question.id} className="space-y-2 py-4">
       <QuestionStatus isPublished={question.is_published} closed={question.is_closed} faq={question.is_faq} hidden={!!question.hidden_at} />
       <h3 className="wrap-anywhere font-semibold"><Link href={`${base}/${question.id}` as Route} className="text-primary-800 underline-offset-4 hover:underline dark:text-primary-300">{question.title}</Link></h3>
