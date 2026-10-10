@@ -31,8 +31,7 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    if (turnstileEnabled && !captchaToken) {
+    if (!captchaToken) {
       setError(t('errors.turnstileRequired'));
       return;
     }
@@ -52,8 +51,8 @@ export function ForgotPasswordForm() {
       }
       toast.success(result.message);
       router.push(`/reset-password?email=${encodeURIComponent(parsed.data.email)}`);
-    } catch (err: any) {
-      const msg = err?.message ?? t('passwordReset.forgotSendError');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t('passwordReset.forgotSendError');
       setError(msg);
       toast.error(msg);
       setCaptchaToken(null);

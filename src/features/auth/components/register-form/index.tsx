@@ -80,8 +80,7 @@ export function RegisterForm() {
       return;
     }
 
-    const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    if (turnstileEnabled && !captchaToken) {
+    if (!captchaToken) {
       toast.error(t('errors.turnstileRequired'));
       return;
     }

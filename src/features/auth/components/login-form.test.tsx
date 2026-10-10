@@ -20,9 +20,11 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() },
 }));
 
-// Stub the Turnstile widget so the real Cloudflare script never loads.
+// Stub the widget with an explicit challenge completion step.
 vi.mock('@/components/auth/TurnstileWidget', () => ({
-  TurnstileWidget: () => null,
+  TurnstileWidget: ({ onSuccess }: { onSuccess: (token: string) => void }) => (
+    <button type="button" onClick={() => onSuccess('test-token')}>Complete security check</button>
+  ),
 }));
 
 vi.mock('../store/auth.store', () => ({
@@ -31,16 +33,16 @@ vi.mock('../store/auth.store', () => ({
 
 import { LoginForm } from './login-form';
 
-function submitLogin(email = 'user@example.com', password = 'Password123') {
+function submitLogin(email = 'user@example.com', password = 'Password123', completeChallenge = true) {
   fireEvent.change(screen.getByLabelText('login.emailLabel'), { target: { value: email } });
   fireEvent.change(screen.getByLabelText('login.passwordLabel'), { target: { value: password } });
+  if (completeChallenge) fireEvent.click(screen.getByRole('button', { name: 'Complete security check' }));
   fireEvent.click(screen.getByRole('button', { name: 'login.submit' }));
 }
 
 describe('LoginForm — unverified-email recovery', () => {
   beforeEach(() => {
-    // Disable Turnstile gating so submit reaches login() deterministically.
-    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'test-site-key');
     pushMock.mockReset();
     loginMock.mockReset();
   });
@@ -56,7 +58,7 @@ describe('LoginForm — unverified-email recovery', () => {
     submitLogin('user@example.com');
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith('/verify-email?email=user%40example.com');
+      expect(pushMock).toHaveBeenCalledWith('/verify-email?email=user%40example.com&redirect=%2Ffeed');
     });
   });
 
@@ -75,7 +77,7 @@ describe('LoginForm — unverified-email recovery', () => {
 
 describe('LoginForm — redirect sanitization', () => {
   beforeEach(() => {
-    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'test-site-key');
     pushMock.mockReset();
     loginMock.mockReset();
   });
@@ -94,5 +96,14 @@ describe('LoginForm — redirect sanitization', () => {
       expect(pushMock).toHaveBeenCalledWith('/feed');
     });
     expect(pushMock).not.toHaveBeenCalledWith(expect.stringContaining('evil.com'));
+  });
+
+  it('does not submit without a Turnstile token even when the public key is missing', () => {
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
+    render(<LoginForm />);
+
+    submitLogin('user@example.com', 'Password123', false);
+
+    expect(loginMock).not.toHaveBeenCalled();
   });
 });

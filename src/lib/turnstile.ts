@@ -22,10 +22,7 @@ export async function verifyTurnstileToken(
 ): Promise<{ ok: true } | { ok: false; reason: string }> {
   const secret = process.env.TURNSTILE_SECRET_KEY
   if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      return { ok: false, reason: 'TURNSTILE_SECRET_KEY missing on server' }
-    }
-    return { ok: true }
+    return { ok: false, reason: 'TURNSTILE_SECRET_KEY missing on server' }
   }
 
   if (!token) {
@@ -66,7 +63,7 @@ export async function verifyTurnstileToken(
     return { ok: false, reason: `Verificación CAPTCHA fallida (${codes})` }
   }
 
-  if (options.expectedAction && json.action && json.action !== options.expectedAction) {
+  if (options.expectedAction && json.action !== options.expectedAction) {
     return { ok: false, reason: 'Acción CAPTCHA no coincide' }
   }
 
