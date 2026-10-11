@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { from, query } = vi.hoisted(() => {
+const { from, publicFrom, viewer, query } = vi.hoisted(() => {
   const query = {
     select: vi.fn(), eq: vi.fn(), not: vi.fn(), order: vi.fn(), maybeSingle: vi.fn(),
   };
-  return { from: vi.fn(), query };
+  return { from: vi.fn(), publicFrom: vi.fn(), viewer: vi.fn(), query };
 });
 vi.mock('@/utils/supabase/server', () => ({ getServerClient: async () => ({ from }) }));
+vi.mock('@/utils/supabase/public-server', () => ({ getPublicServerClient: () => ({ from: publicFrom }) }));
+vi.mock('@/features/auth/actions/auth.actions', () => ({ getCachedAuthUser: () => viewer() }));
+vi.mock('next/cache', () => ({ unstable_cache: (fn: unknown) => fn }));
 vi.mock('react', () => ({ cache: (fn: unknown) => fn }));
 
 import { getMusicClubBySlug, listMusicClubs } from './metadata.server';
@@ -23,13 +26,23 @@ function club(id: string, name: string, albumCount = 0, memberCount = 0) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  viewer.mockResolvedValue({ id: 'member' });
   from.mockReturnValue(query);
+  publicFrom.mockReturnValue(query);
   query.select.mockReturnValue(query);
   query.eq.mockReturnValue(query);
   query.not.mockReturnValue(query);
 });
 
 describe('music club counts', () => {
+  it('shares only anonymous club rows without using the session client', async () => {
+    viewer.mockResolvedValue(null);
+    query.order.mockResolvedValue({ data: [club('public', 'Public')] });
+    expect((await listMusicClubs()).map((row) => row.id)).toEqual(['public']);
+    expect(publicFrom).toHaveBeenCalledExactlyOnceWith('clubs');
+    expect(from).not.toHaveBeenCalled();
+  });
+
   it('uses one RLS-bound query with embedded counts and preserves sorting/shape', async () => {
     query.order.mockResolvedValue({ data: [club('b', 'Beta', 2), club('a', 'Alpha', 1501, 2500)] });
     const clubs = await listMusicClubs();

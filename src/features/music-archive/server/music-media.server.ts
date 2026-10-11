@@ -1,6 +1,8 @@
 import 'server-only';
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { getServerClient } from '@/utils/supabase/server';
+import { getPublicServerClient } from '@/utils/supabase/public-server';
 import type {
   MusicMediaAlbumRef,
   MusicMediaArtistRef,
@@ -27,6 +29,18 @@ type BaseRow = {
 
 const BASE_SELECT =
   'id, kind, source, cf_image_id, cf_stream_uid, embed_url, embed_provider, thumbnail_cf_image_id, caption, duration_seconds, uploaded_by, created_at';
+
+export const MUSIC_MEDIA_CACHE_TAG = 'public-music-media';
+
+const loadLatestMediaRows = unstable_cache(async (limit: number): Promise<BaseRow[]> => {
+  const { data, error } = await getPublicServerClient()
+    .from('music_media')
+    .select(BASE_SELECT)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as BaseRow[];
+}, ['public-music-media-v1'], { revalidate: 60, tags: [MUSIC_MEDIA_CACHE_TAG] });
 
 /** Read each pivot and its visible parent labels together. Inner joins preserve
  *  the old behavior of omitting associations hidden by parent-table RLS. */
@@ -112,14 +126,14 @@ async function hydrateRows(
  *  Used by /musica. */
 export const listLatestMusicMedia = cache(
   async (limit = 24): Promise<MusicMediaItem[]> => {
-    const client = await getServerClient();
-    const { data, error } = await client
-      .from('music_media')
-      .select(BASE_SELECT)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-    if (error || !data) return [];
-    return hydrateRows(client, data as BaseRow[]);
+    let rows: BaseRow[];
+    try {
+      rows = await loadLatestMediaRows(limit);
+    } catch {
+      return [];
+    }
+    if (rows.length === 0) return [];
+    return hydrateRows(await getServerClient(), rows);
   },
 );
 

@@ -1,6 +1,9 @@
 import 'server-only';
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { getServerClient } from '@/utils/supabase/server';
+import { getPublicServerClient } from '@/utils/supabase/public-server';
+import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import {
   CLUB_SELECT,
   mapClubRow,
@@ -24,19 +27,16 @@ export interface MusicClubRow {
   member_count: number;
 }
 
-/** Lookup of every genre-club + its album count + its member count.
- *  Ordered by album count desc so the densest clubs lead. `react.cache()` so
- *  the same render doesn't double-query. */
-export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
-  const client = await getServerClient();
+/** Anonymous rows are safe to share; a signed-in viewer can see private clubs. */
+async function readMusicClubs(client: Awaited<ReturnType<typeof getServerClient>>): Promise<MusicClubRow[]> {
   const { data: clubs, error } = await client
     .from('clubs')
     .select(CLUB_SELECT)
     .eq('category', 'MUSICA')
     .not('music_genre_id', 'is', null)
     .order('name', { ascending: true });
-  if (error || !clubs) return [];
-  const rows = clubs as unknown as ClubRowRaw[];
+  if (error) throw error;
+  const rows = (clubs ?? []) as unknown as ClubRowRaw[];
 
   // Embedded counts remain session/RLS-scoped, transfer no member/link rows,
   // and aren't truncated by PostgREST's row limit on those related tables.
@@ -48,6 +48,22 @@ export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
       }),
     )
     .sort((a, b) => b.album_count - a.album_count || a.name.localeCompare(b.name));
+}
+
+const loadPublicMusicClubs = unstable_cache(
+  async () => readMusicClubs(getPublicServerClient()),
+  ['public-music-clubs-v1'],
+  { revalidate: 60 },
+);
+
+/** Shared for anonymous crawlers; session/RLS-bound for signed-in viewers. */
+export const listMusicClubs = cache(async (): Promise<MusicClubRow[]> => {
+  try {
+    const viewer = await getCachedAuthUser();
+    return await (viewer ? readMusicClubs(await getServerClient()) : loadPublicMusicClubs());
+  } catch {
+    return [];
+  }
 });
 
 export const getMusicClubBySlug = cache(async (slug: string): Promise<MusicClubRow | null> => {

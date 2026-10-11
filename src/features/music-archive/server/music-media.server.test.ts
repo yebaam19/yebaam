@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { from, results, queries } = vi.hoisted(() => ({
-  from: vi.fn(), results: new Map<string, { data: unknown; error?: unknown }>(),
+const { from, publicFrom, results, queries } = vi.hoisted(() => ({
+  from: vi.fn(), publicFrom: vi.fn(), results: new Map<string, { data: unknown; error?: unknown }>(),
   queries: new Map<string, { select: ReturnType<typeof vi.fn>; in: ReturnType<typeof vi.fn> }>(),
 }));
 vi.mock('@/utils/supabase/server', () => ({ getServerClient: async () => ({ from }) }));
+vi.mock('@/utils/supabase/public-server', () => ({ getPublicServerClient: () => ({ from: publicFrom }) }));
+vi.mock('next/cache', () => ({ unstable_cache: (fn: unknown) => fn }));
 vi.mock('react', () => ({ cache: (fn: unknown) => fn }));
 
 import { listLatestMusicMedia } from './music-media.server';
@@ -19,6 +21,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   results.clear();
   queries.clear();
+  publicFrom.mockImplementation((table: string) => from(table));
   from.mockImplementation((table: string) => {
     const query = {
       select: vi.fn(), order: vi.fn(), limit: vi.fn(), in: vi.fn(),
@@ -47,6 +50,7 @@ describe('music media association hydration', () => {
     expect(from.mock.calls.map(([table]) => table)).toEqual([
       'music_media', 'music_media_artists', 'music_media_albums', 'music_media_clubs',
     ]);
+    expect(publicFrom).toHaveBeenCalledExactlyOnceWith('music_media');
     expect(queries.get('music_media_clubs')?.select)
       .toHaveBeenCalledWith('media_id, ref:clubs!inner(id, name, slug)');
     expect(queries.get('music_media_clubs')?.in).toHaveBeenCalledWith('media_id', ['media']);

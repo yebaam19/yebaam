@@ -28,6 +28,12 @@ begin
   if rev<>1 or (select is_published from public.community_showcases where id=org) then raise exception 'Initial state wrong'; end if;
   if (select count(*) from public.community_showcase_videos where community_id=org)<>4 then raise exception 'Missing selected videos'; end if;
   begin
+    perform public.save_community_showcase(org,1,'Private videos',true,videos);
+    raise exception 'Private videos were published in the showcase';
+  exception when sqlstate 'YB001' then null; end;
+  if (select version from public.community_showcases where id=org)<>1 then
+    raise exception 'Rejected publication changed the showcase'; end if;
+  begin
     update public.community_showcases set is_published=true where id=org;
     raise exception 'Direct mutation bypassed atomic RPC';
   exception when insufficient_privilege then null; end;
@@ -59,6 +65,9 @@ begin
     perform public.save_community_showcase(org,1,'Bad',true,array[null::uuid]);
     raise exception 'Null video accepted';
   exception when check_violation then null; end;
+  reset role;
+  update public.community_library_assets set is_published=true,visibility='public' where id=any(videos);
+  set local role authenticated;
   rev:=public.save_community_showcase(org,1,'Published',true,array[videos[4],videos[2],videos[1],videos[3]]);
   set constraints all immediate;
   if rev<>2 or (select asset_id from public.community_showcase_videos where community_id=org and position=0)<>videos[4] then
@@ -79,15 +88,17 @@ begin
   perform set_config('request.jwt.claim.sub','',true);
   set local role anon;
   if not exists(select 1 from public.community_showcases where id=org) then raise exception 'Published introduction hidden'; end if;
-  if exists(select 1 from public.community_showcase_videos where community_id=org) then raise exception 'Private video reference leaked'; end if;
+  if (select count(*) from public.community_showcase_videos where community_id=org)<>4 then
+    raise exception 'Public featured videos are hidden'; end if;
   begin
     perform public.save_community_showcase(org,2,'Anonymous',true,'{}');
     raise exception 'Anonymous write accepted';
   exception when insufficient_privilege then null; end;
   reset role;
-  update public.community_library_assets set is_published=true,visibility='public' where id=videos[1];
+  update public.community_library_assets set is_published=false,visibility='editors' where id=videos[2];
   set local role anon;
-  if (select count(*) from public.community_showcase_videos where community_id=org)<>1 then raise exception 'Published asset visibility wrong'; end if;
+  if (select count(*) from public.community_showcase_videos where community_id=org)<>3 then
+    raise exception 'Private featured video remained visible'; end if;
   reset role;
   update public.communities set privacy='PRIVATE' where id=org;
   set local role anon;
