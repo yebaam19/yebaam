@@ -1,4 +1,14 @@
 {
+  "timeline": {
+    "loadError": "No pudimos cargar las publicaciones.",
+    "refreshError": "No pudimos actualizar el feed. Puedes seguir viendo las publicaciones cargadas.",
+    "moreError": "No pudimos cargar más publicaciones. Intenta de nuevo.",
+    "retry": "Reintentar",
+    "retrying": "Reintentando…",
+    "loadMore": "Ver más publicaciones",
+    "loadingMore": "Cargando más publicaciones…",
+    "end": "Has visto todas las publicaciones de tu feed."
+  },
   "postDetail": {
     "headerTitle": "Publicación de {name}"
   },
@@ -54,6 +64,7 @@
     "shareLinkCopied": "Enlace copiado",
     "shareLinkError": "No se pudo copiar el enlace",
     "menu": {
+      "open": "Opciones de la publicación de {author}",
       "edit": "Editar publicación",
       "delete": "Eliminar publicación",
       "report": "Reportar publicación",

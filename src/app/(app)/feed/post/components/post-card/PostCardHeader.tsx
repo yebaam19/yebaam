@@ -10,7 +10,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@/components/icons/heroicons-shim'
-import { getUserInitials } from '@/lib/user-helpers'
+import { getUserDisplayName, getUserInitials } from '@/lib/user-helpers'
 import { cn } from '@/lib/utils'
 import { useDateFnsLocale } from '@/lib/utils/date-fns-locale'
 import Avatar from '@/ui/Avatar'
@@ -110,7 +110,12 @@ export function PostCardHeader({ post, isOwner, isOptimistic, onEdit, onDeleteCl
       </div>
 
       <Menu as="div" className="relative z-10">
-        <MenuButton className="rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+        <MenuButton
+          aria-label={t('post.menu.open', {
+            author: (isBusiness && post.businessName) || getUserDisplayName(post.author),
+          })}
+          className="rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        >
           <EllipsisHorizontalIcon className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
         </MenuButton>
         <MenuItems className="ring-opacity-5 absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-xl ring-1 ring-black focus:outline-none dark:bg-neutral-800 dark:ring-neutral-700">

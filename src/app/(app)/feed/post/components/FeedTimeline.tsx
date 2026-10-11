@@ -5,45 +5,27 @@ import { usePostSocketEvents } from '../hooks/usePostSocketEvents';
 import { useReactionSocket, useReactionStore } from '@/app/(app)/feed/reacions';
 import { useAuth } from '@/features/auth';
 import PostCard from './PostCard';
-import { usePosts, useSuggestedPosts } from '../hooks/usePosts';
-import { setCached } from '@/lib/hooks/cacheStore';
+import { useSuggestedPosts } from '../hooks/usePosts';
+import { useTranslations } from 'next-intl';
+import { useTimelinePosts, type TimelineSeed } from '../hooks/useTimelinePosts';
+import FeedLoadFeedback from './FeedLoadFeedback';
 import type { Post } from '../interfaces/post.interfaces';
 import FeedTimelineSkeleton from './FeedTimelineSkeleton';
 
 interface FeedTimelineProps {
-  initialPosts?: Post[];
+  initialPage?: TimelineSeed;
 }
 
-const TIMELINE_CACHE_KEY = 'posts::timeline';
-
-// The RSC payload last written into the cache. On back/forward navigation Next
-// restores the segment from its router cache, so FeedTimeline remounts with the
-// very same `initialPosts` array; by then the client cache may be newer
-// (createPost / reactions are mirrored into it), so that payload must not win.
-let lastSeededInitialPosts: Post[] | undefined;
-
-export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
-  // Seed the shared cache with the server-rendered posts on every fresh visit:
-  // a new RSC payload is the source of truth over whatever the previous visit
-  // left cached, so `usePosts` (same cache via useSyncExternalStore) starts
-  // fresh and, within its staleTime, skips the client refetch. A layout effect
-  // runs before `useFetch`'s passive effect (which decides whether to fetch)
-  // and before paint; `setCached` does not bump the invalidate version, so
-  // re-seeding cannot loop the fetch. Until it runs, `posts` below falls back
-  // to `initialPosts` directly.
-  useLayoutEffect(() => {
-    if (!initialPosts?.length || lastSeededInitialPosts === initialPosts) return;
-    setCached(TIMELINE_CACHE_KEY, { data: initialPosts, fetchedAt: Date.now() });
-    lastSeededInitialPosts = initialPosts;
-  }, [initialPosts]);
-
-  const query = usePosts({ enabled: true });
-  const posts: Post[] = query.data ?? initialPosts ?? [];
+export default function FeedTimeline({ initialPage }: FeedTimelineProps = {}) {
+  const t = useTranslations('feed.timeline');
+  const initialPosts = initialPage?.posts;
+  const query = useTimelinePosts(initialPage);
+  const posts = query.data;
   const isLoading = posts.length === 0 && query.isLoading;
   const error = query.error;
 
   // Fetch suggestions only when the friends-feed came back empty.
-  const showSuggestions = !isLoading && !error && posts.length === 0;
+  const showSuggestions = !isLoading && !error && !query.hasMore && posts.length === 0;
   const suggestionsQuery = useSuggestedPosts({ enabled: showSuggestions });
   const suggestedPosts: Post[] = suggestionsQuery.data ?? [];
 
@@ -74,33 +56,8 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
     void fetchMyReactionsForPosts(visibleIds.split(','));
   }, [user?.id, visibleIds, fetchMyReactionsForPosts]);
 
-  // Mostrar mensaje de error si falla la carga
-  if (error) {
-    return (
-      <div className="bg-red-50 dark:bg-red-900/10 rounded-xl p-6 text-center">
-        <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-          <svg
-            className="h-7 w-7 text-red-600 dark:text-red-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-2">
-          Error al cargar posts
-        </h3>
-        <p className="text-sm text-red-700 dark:text-red-300">
-          {error.message || 'Ocurrió un error al cargar el feed. Por favor, intenta de nuevo.'}
-        </p>
-      </div>
-    );
+  if (error && posts.length === 0) {
+    return <FeedLoadFeedback message={t('loadError')} onRetry={query.refetch} pending={query.isFetching} />;
   }
 
   // Mostrar skeleton mientras carga
@@ -110,25 +67,10 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
 
   return (
     <div className="space-y-4">
+      {error && <FeedLoadFeedback message={t('refreshError')} onRetry={query.refetch} pending={query.isFetching} />}
       {/* Feed de Posts */}
-      {posts.length > 0 ? (
+      {posts.length > 0 || query.hasMore ? (
         <>
-          {/* Header del Feed 
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
-                Posts Recientes
-              </h2>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                  {posts.length} {posts.length === 1 ? 'post' : 'posts'}
-                </span>
-              </div>
-            </div>
-          </div>*/}
-
-          {/* Lista de Posts */}
           {posts.map((post, postIndex) => (
             <PostCard key={post.id} post={post} lcpCandidate={postIndex === 0} />
           ))}
@@ -178,6 +120,18 @@ export default function FeedTimeline({ initialPosts }: FeedTimelineProps = {}) {
           )}
         </>
       )}
+      {query.moreError && <FeedLoadFeedback message={t('moreError')} onRetry={query.loadMore} pending={query.isFetching} />}
+      {query.hasMore && !query.moreError && (
+        <button
+          type="button"
+          onClick={() => void query.loadMore()}
+          disabled={query.isFetching}
+          className="w-full rounded-xl border border-primary-200 bg-white px-4 py-3 font-medium text-primary-800 hover:bg-primary-50 disabled:opacity-60 dark:border-primary-800 dark:bg-neutral-900 dark:text-primary-200"
+        >
+          {query.isLoadingMore ? t('loadingMore') : t('loadMore')}
+        </button>
+      )}
+      {!query.hasMore && posts.length > 0 && <p className="py-4 text-center text-sm text-neutral-500 dark:text-neutral-400">{t('end')}</p>}
     </div>
   );
 }

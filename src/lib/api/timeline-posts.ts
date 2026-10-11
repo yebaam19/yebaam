@@ -28,6 +28,11 @@ export async function loadTimelinePosts(
   const rows = (data ?? []) as PostRow[];
   if (!rows.length) return { data: [], error: null };
 
+  return hydrateTimelineRows(client, userId, rows);
+}
+
+export async function hydrateTimelineRows(client: SessionClient, userId: string, rows: PostRow[]): Promise<TimelineResult> {
+  if (!rows.length) return { data: [], error: null };
   // The legacy SECURITY DEFINER RPC bypasses RLS and omits page_id. Check
   // positively against the caller's visible rows before rendering or hydrating
   // any returned content. Unlike a deny-list, this also fails closed when RLS

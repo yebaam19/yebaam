@@ -1,4 +1,14 @@
 {
+  "timeline": {
+    "loadError": "We could not load the posts.",
+    "refreshError": "We could not refresh your feed. Your loaded posts are still available.",
+    "moreError": "We could not load more posts. Please try again.",
+    "retry": "Try again",
+    "retrying": "Retrying…",
+    "loadMore": "Load more posts",
+    "loadingMore": "Loading more posts…",
+    "end": "You have seen all posts in your feed."
+  },
   "postDetail": {
     "headerTitle": "{name}'s post"
   },
@@ -54,6 +64,7 @@
     "shareLinkCopied": "Link copied",
     "shareLinkError": "Could not copy the link",
     "menu": {
+      "open": "Options for {author}'s post",
       "edit": "Edit post",
       "delete": "Delete post",
       "report": "Report post",
