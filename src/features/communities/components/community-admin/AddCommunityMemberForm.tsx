@@ -8,7 +8,7 @@ import { addCommunityMemberByUsernameAction } from '@/features/communities/actio
 import { invalidate } from '@/lib/hooks/cacheStore';
 
 /**
- * Owner/admin "Agregar persona" control: an @username input that directly adds
+ * Owner-only "Agregar persona" control: an @username input that directly adds
  * an existing user to the community as a MEMBER. Distinct from the invitation
  * flow — the target is added immediately, no acceptance required.
  */

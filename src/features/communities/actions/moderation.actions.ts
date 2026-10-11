@@ -1,7 +1,8 @@
 'use server';
 
 import { getServerClient, getServiceClient } from '@/utils/supabase/server';
-import { canPublishCommunityArticle } from '../server/community-articles.server';
+import { z } from 'zod';
+import { requireCommunityOwner } from '../server/community-roles.server';
 
 import {
   type ActionResult,
@@ -86,11 +87,10 @@ export async function inviteToCommunity(input: {
 }
 
 /**
- * Owner / admin directly adds an existing user to the community by @username —
+ * The owner directly adds an existing user to the community by @username —
  * the "Agregar persona" flow, distinct from the invitation flow above.
  *
- * Authorization reuses {@link canPublishCommunityArticle} (true for the owner or
- * an OWNER/ADMIN community_members row). The membership row is inserted with the
+ * The membership row is inserted with the
  * SERVICE client because the community_members INSERT RLS requires
  * auth.uid() = user_id, so a session-bound client cannot add *another* user.
  *
@@ -101,16 +101,14 @@ export async function addCommunityMemberByUsernameAction(
   communityId: string,
   username: string,
 ): Promise<ActionResult<{ user: { id: string; username: string } }>> {
-  const userId = await requireUserId();
-  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
-
-  const allowed = await canPublishCommunityArticle(communityId);
-  if (!allowed) return { ok: false, error: 'No tienes permiso para agregar miembros.' };
+  if (!z.uuid().safeParse(communityId).success) return { ok: false, error: 'Comunidad inválida.' };
+  const owner = await requireCommunityOwner(communityId);
+  if (!owner.ok) return { ok: false, error: owner.error };
 
   const normalized = username.trim().replace(/^@/, '');
   if (!normalized) return { ok: false, error: 'Ingresa un usuario.' };
 
-  const client = await getServerClient();
+  const client = owner.session.client;
   const { data: profile } = await client
     .from('profiles')
     .select('id, username')
@@ -141,11 +139,6 @@ export async function addCommunityMemberByUsernameAction(
     return { ok: false, error: error.message };
   }
 
-  const { data: c } = await client
-    .from('communities')
-    .select('slug')
-    .eq('id', communityId)
-    .maybeSingle();
-  revalidateCommunityPaths((c as { slug?: string } | null)?.slug);
+  revalidateCommunityPaths(owner.slug);
   return { ok: true, data: { user: p } };
 }

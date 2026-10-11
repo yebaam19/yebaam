@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { joinCommunity } from '@/features/communities/actions/members.actions';
+import { addCommunityMemberByUsernameAction } from '@/features/communities/actions/moderation.actions';
 
 const mocks = vi.hoisted(() => ({
-  getClient: vi.fn(), requireUserId: vi.fn(), revalidate: vi.fn(),
+  getClient: vi.fn(), getServiceClient: vi.fn(), requireUserId: vi.fn(), revalidate: vi.fn(), owner: vi.fn(),
 }));
-vi.mock('@/utils/supabase/server', () => ({ getServerClient: mocks.getClient }));
+vi.mock('@/utils/supabase/server', () => ({ getServerClient: mocks.getClient, getServiceClient: mocks.getServiceClient }));
+vi.mock('@/features/communities/server/community-roles.server', () => ({ requireCommunityOwner: mocks.owner }));
 vi.mock('@/features/communities/actions/_shared', () => ({
   requireUserId: mocks.requireUserId,
   revalidateCommunityPaths: mocks.revalidate,
@@ -23,6 +25,44 @@ function query(result: { data: unknown; error: unknown }) {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.requireUserId.mockResolvedValue(actorId);
+  mocks.owner.mockResolvedValue({ ok: false, error: 'Solo el propietario puede gestionar los roles.' });
+});
+
+describe('direct community admission', () => {
+  it('rejects a malformed community id before checking permissions', async () => {
+    expect((await addCommunityMemberByUsernameAction('invalid', 'persona')).ok).toBe(false);
+    expect(mocks.owner).not.toHaveBeenCalled();
+    expect(mocks.getServiceClient).not.toHaveBeenCalled();
+  });
+
+  it('denies a delegated admin before a service-role write', async () => {
+    expect(await addCommunityMemberByUsernameAction(communityId, 'persona')).toEqual({
+      ok: false, error: 'Solo el propietario puede gestionar los roles.',
+    });
+    expect(mocks.getServiceClient).not.toHaveBeenCalled();
+  });
+
+  it('lets the verified owner add an existing non-member', async () => {
+    const profile = query({ data: { id: '33333333-3333-4333-8333-333333333333', username: 'persona' }, error: null });
+    const members = query({ data: null, error: null });
+    const ownerFrom = vi.fn((table: string) => {
+      if (table === 'profiles') return { select: () => ({ ilike: () => ({ maybeSingle: profile.maybeSingle }) }) };
+      if (table === 'community_members') return members;
+      throw new Error(`Unexpected table: ${table}`);
+    });
+    mocks.owner.mockResolvedValue({ ok: true, session: { userId: actorId, client: { from: ownerFrom } }, slug: 'test' });
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    const serviceFrom = vi.fn().mockReturnValue({ insert });
+    mocks.getServiceClient.mockReturnValue({ from: serviceFrom });
+
+    expect(await addCommunityMemberByUsernameAction(communityId, '@persona')).toEqual({
+      ok: true, data: { user: { id: '33333333-3333-4333-8333-333333333333', username: 'persona' } },
+    });
+    expect(insert).toHaveBeenCalledWith({
+      community_id: communityId, user_id: '33333333-3333-4333-8333-333333333333', role: 'MEMBER', status: 'active',
+    });
+    expect(mocks.revalidate).toHaveBeenCalledWith('test');
+  });
 });
 
 describe('community admission action', () => {

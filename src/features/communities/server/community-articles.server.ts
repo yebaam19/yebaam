@@ -2,7 +2,6 @@ import 'server-only';
 import { cache } from 'react';
 import { z } from 'zod';
 import { getServerClient } from '@/utils/supabase/server';
-import { getCachedAuthUser } from '@/features/auth/actions/auth.actions';
 import { imageUrl, withImageVariant } from '@/lib/media/urls';
 import { sanitizeCommunityArticleContent, splitCommunityArticleContent } from '../lib/article-content';
 import { parseArticleCursor } from '../lib/article-cursor';
@@ -132,19 +131,6 @@ export const getCommunityArticleBySlug = cache(async (
 
 export async function getCommunityArticleForEdit(communityId: string, slug: string): Promise<CommunityArticle | null> {
   return getCommunityArticleBySlug(communityId, slug);
-}
-
-// Legacy moderation actions also call this helper for membership administration.
-// Keep its original owner/admin rule separate from the content-editor capability.
-export async function canPublishCommunityArticle(communityId: string): Promise<boolean> {
-  const user = await getCachedAuthUser();
-  if (!user?.id) return false;
-  const client = await getServerClient();
-  const { data: community } = await client.from('communities').select('owner_id').eq('id', communityId).maybeSingle();
-  if (community?.owner_id === user.id) return true;
-  const { data: member } = await client.from('community_members').select('role')
-    .eq('community_id', communityId).eq('user_id', user.id).eq('status', 'active').maybeSingle();
-  return member?.role === 'OWNER' || member?.role === 'ADMIN';
 }
 
 export async function canManageCommunityArticle(communityId: string): Promise<boolean> {
