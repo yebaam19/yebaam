@@ -4,6 +4,7 @@ import { getServerClient } from '@/utils/supabase/server';
 import { z } from 'zod';
 import { isValidWebsite } from '@/lib/safe-href';
 import { requireCommunityOwner } from '../server/community-roles.server';
+import { scheduleAssetCleanup } from '../server/schedule-asset-cleanup.server';
 import type { UpdateCommunityDto } from '../types/community.types';
 import {
   type ActionResult,
@@ -68,6 +69,7 @@ export async function deleteCommunity(id: string): Promise<ActionResult<{ id: st
     .delete().eq('id', id).select('id').maybeSingle();
   if (error || !data) return { ok: false, error: 'No se pudo eliminar la comunidad.' };
 
+  scheduleAssetCleanup();
   revalidateCommunityPaths(owner.slug);
   return { ok: true, data: { id } };
 }

@@ -218,7 +218,13 @@
     "title": "Miembros y Seguidores",
     "total": "{count} en total",
     "empty": "No hay miembros disponibles.",
-    "restricted": "La lista de integrantes es privada. Solo el equipo que administra o modera esta comunidad puede verla."
+    "restricted": "La lista de integrantes es privada. Solo el equipo que administra o modera esta comunidad puede verla.",
+    "loadError": "No se pudo cargar la lista de integrantes.",
+    "retry": "Reintentar",
+    "pagination": "Páginas de miembros",
+    "pageStatus": "Página {page} de {pageCount}",
+    "previous": "Anterior",
+    "next": "Siguiente"
   },
   "comingSoon": {
     "defaultDescription": "Esta sección estará disponible próximamente.",
@@ -296,7 +302,7 @@
       "manage": "Gestionar",
       "deleteCommunity": "Eliminar comunidad",
       "deleteTitle": "Eliminar comunidad",
-      "deleteConfirm": "¿Eliminar “{name}”? Se borrarán todos sus posts, miembros y artículos. Esta acción no se puede deshacer.",
+      "deleteConfirm": "¿Eliminar “{name}”? Sus publicaciones, miembros, planes y archivos dejarán de estar disponibles en Yebaam. Esta acción no se puede deshacer.",
       "cancel": "Cancelar",
       "delete": "Eliminar",
       "deleting": "Eliminando..."

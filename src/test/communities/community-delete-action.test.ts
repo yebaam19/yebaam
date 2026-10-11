@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deleteCommunity } from '@/features/communities/actions/update.actions';
 
-const mocks = vi.hoisted(() => ({ owner: vi.fn(), revalidate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ owner: vi.fn(), revalidate: vi.fn(), cleanup: vi.fn() }));
 vi.mock('@/features/communities/server/community-roles.server', () => ({ requireCommunityOwner: mocks.owner }));
+vi.mock('@/features/communities/server/schedule-asset-cleanup.server', () => ({ scheduleAssetCleanup: mocks.cleanup }));
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidate }));
 
 const communityId = '22222222-2222-4222-8222-222222222222';
@@ -28,6 +29,7 @@ describe('deleteCommunity', () => {
     mocks.owner.mockResolvedValue({ ok: false, error: 'Solo el propietario puede gestionar los roles.' });
     expect((await deleteCommunity(communityId)).ok).toBe(false);
     expect(mocks.revalidate).not.toHaveBeenCalled();
+    expect(mocks.cleanup).not.toHaveBeenCalled();
   });
 
   it('does not report success when RLS deletes zero rows', async () => {
@@ -35,6 +37,7 @@ describe('deleteCommunity', () => {
     expect((await deleteCommunity(communityId)).ok).toBe(false);
     expect(chain.eq).toHaveBeenCalledWith('id', communityId);
     expect(mocks.revalidate).not.toHaveBeenCalled();
+    expect(mocks.cleanup).not.toHaveBeenCalled();
   });
 
   it('reports and revalidates a confirmed deletion', async () => {
@@ -42,5 +45,6 @@ describe('deleteCommunity', () => {
     expect(await deleteCommunity(communityId)).toEqual({ ok: true, data: { id: communityId } });
     expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades');
     expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/comunidad-test');
+    expect(mocks.cleanup).toHaveBeenCalledOnce();
   });
 });

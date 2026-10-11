@@ -81,7 +81,7 @@ export async function getCommunityPosts(
     .order('id', { ascending: false })
     .range(from, to);
 
-  if (error) console.error('[getCommunityPosts]', error);
+  if (error) throw new Error('No se pudieron cargar las publicaciones.');
   const rows = (data ?? []) as CommunityPostRow[];
   return {
     posts: await mapCommunityPostRows(communityId, rows, client),

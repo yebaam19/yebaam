@@ -218,7 +218,13 @@
     "title": "Members and Followers",
     "total": "{count} total",
     "empty": "No members available.",
-    "restricted": "The member list is private. Only the team managing or moderating this community can view it."
+    "restricted": "The member list is private. Only the team managing or moderating this community can view it.",
+    "loadError": "The member list could not be loaded.",
+    "retry": "Retry",
+    "pagination": "Member pages",
+    "pageStatus": "Page {page} of {pageCount}",
+    "previous": "Previous",
+    "next": "Next"
   },
   "comingSoon": {
     "defaultDescription": "This section will be available soon.",
@@ -296,7 +302,7 @@
       "manage": "Manage",
       "deleteCommunity": "Delete community",
       "deleteTitle": "Delete community",
-      "deleteConfirm": "Delete “{name}”? All its posts, members, and articles will be erased. This action cannot be undone.",
+      "deleteConfirm": "Delete “{name}”? Its posts, members, plans, and files will no longer be available on Yebaam. This action cannot be undone.",
       "cancel": "Cancel",
       "delete": "Delete",
       "deleting": "Deleting..."

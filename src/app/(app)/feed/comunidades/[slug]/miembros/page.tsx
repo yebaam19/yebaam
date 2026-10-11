@@ -8,10 +8,15 @@ import { CommunityMembersPanel } from '@/features/communities/components/Communi
 
 export default async function CommunityMembersPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ page?: string }>;
 }) {
   const { slug } = await params;
+  const rawPage = (await searchParams)?.page;
+  const requestedPage = rawPage && /^\d{1,4}$/.test(rawPage) ? Number(rawPage) : 1;
+  const page = requestedPage >= 1 && requestedPage <= 1000 ? requestedPage : 1;
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
@@ -19,7 +24,8 @@ export default async function CommunityMembersPage({
   if (!capabilities.moderation) {
     return <CommunityMembersPanel members={[]} total={community.stats.membersCount} restricted />;
   }
-  const { members, total } = await getCommunityMembers(community.id, { page: 1, limit: 60 });
+  const visiblePage = Math.min(page, Math.max(1, Math.ceil(community.stats.membersCount / 60)));
+  const { members, total } = await getCommunityMembers(community.id, { page: visiblePage, limit: 60 });
 
-  return <CommunityMembersPanel members={members} total={total} />;
+  return <CommunityMembersPanel members={members} total={total} page={visiblePage} pageSize={60} slug={slug} />;
 }

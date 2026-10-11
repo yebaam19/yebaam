@@ -3,12 +3,9 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { deleteCommunity } from '@/features/communities/actions/update.actions';
-import {
-  EllipsisHorizontalIcon,
-  TrashIcon,
-} from '@/components/icons/heroicons-shim';
+import { TrashIcon } from '@/components/icons/heroicons-shim';
 
 interface CommunityOwnerMenuProps {
   communityId: string;
@@ -36,28 +33,11 @@ export function CommunityOwnerMenu({ communityId, communityName }: CommunityOwne
   };
 
   return <>
-    <Menu as="div" className="relative">
-      <MenuButton
-        aria-label={t('admin.owner.manageAria')}
-        title={t('admin.owner.manageAria')}
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-primary-700 bg-primary-800 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 sm:px-4"
-      >
-        <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
-        <span className="hidden sm:inline">{t('admin.owner.manage')}</span>
-      </MenuButton>
-      <MenuItems className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-md border border-neutral-200 bg-white p-1 shadow-lg outline-none dark:border-neutral-700 dark:bg-neutral-800">
-        <MenuItem>
-          <button
-            type="button"
-            onClick={() => setConfirmOpen(true)}
-            className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-red-700 data-focus:bg-red-50 dark:text-red-300 dark:data-focus:bg-red-950"
-          >
-            <TrashIcon className="h-4 w-4" aria-hidden="true" />
-            {t('admin.owner.deleteCommunity')}
-          </button>
-        </MenuItem>
-      </MenuItems>
-    </Menu>
+    <button type="button" onClick={() => setConfirmOpen(true)}
+      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 dark:border-red-900 dark:bg-neutral-800 dark:text-red-300 dark:hover:bg-red-950/40">
+      <TrashIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      {t('admin.owner.deleteCommunity')}
+    </button>
     <Dialog open={confirmOpen} onClose={() => { if (!isPending) { setConfirmOpen(false); setError(null); } }} className="relative z-50">
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center overflow-y-auto p-4">

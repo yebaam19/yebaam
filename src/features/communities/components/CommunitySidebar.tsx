@@ -52,11 +52,7 @@ function buildItems(slug: string): SidebarItem[] {
 
 interface CommunitySidebarProps {
   slug: string;
-  /**
-   * When the viewer is the community owner we render the management entry
-   * (delete community, etc.) under the section nav. Defaults to false so guest
-   * /member views are unaffected.
-   */
+  /** Owner-only deletion control beneath the section nav. */
   isOwner?: boolean;
   /** Required to power the owner-only management actions. */
   communityId?: string;

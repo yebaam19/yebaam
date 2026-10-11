@@ -79,22 +79,26 @@ export async function getCommunityMembers(
   const to = from + limit - 1;
 
   const client = await getServerClient();
-  const { data, count } = await client
+  const { data, count, error } = await client
     .from('community_members')
     .select('community_id,user_id,role,status,joined_at', { count: 'exact' })
     .eq('community_id', communityId)
     .eq('status', 'active')
     .order('joined_at', { ascending: true })
+    .order('user_id', { ascending: true })
     .range(from, to);
+
+  if (error) throw new Error('No se pudo cargar la lista de miembros.');
 
   const rows = (data ?? []) as CommunityMemberRow[];
   if (rows.length === 0) return { members: [], total: count ?? 0 };
 
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-  const { data: profiles } = await client
+  const { data: profiles, error: profileError } = await client
     .from('profiles')
     .select('id,username,first_name,last_name,avatar_url')
     .in('id', userIds);
+  if (profileError) throw new Error('No se pudieron cargar los perfiles de miembros.');
   const profileMap = new Map<string, ProfileLite>();
   for (const p of (profiles ?? []) as ProfileLite[]) profileMap.set(p.id, p);
 

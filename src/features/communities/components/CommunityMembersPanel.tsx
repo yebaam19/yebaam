@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import type { Route } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { CheckBadgeIcon } from '@/components/icons/heroicons-shim';
 import {
@@ -11,10 +13,15 @@ interface CommunityMembersPanelProps {
   members: CommunityMember[];
   total: number;
   restricted?: boolean;
+  page?: number;
+  pageSize?: number;
+  slug?: string;
 }
 
-export async function CommunityMembersPanel({ members, total, restricted = false }: CommunityMembersPanelProps) {
+export async function CommunityMembersPanel({ members, total, restricted = false, page = 1, pageSize = 60, slug }: CommunityMembersPanelProps) {
   const t = await getTranslations('communities');
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const basePath = slug ? `/feed/comunidades/${encodeURIComponent(slug)}/miembros` : null;
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
@@ -73,6 +80,15 @@ export async function CommunityMembersPanel({ members, total, restricted = false
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center text-sm text-gray-600 dark:text-gray-400">
           {t('members.empty')}
         </div>
+      )}
+      {!restricted && basePath && pageCount > 1 && (
+        <nav aria-label={t('members.pagination')} className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-sm dark:border-neutral-700">
+          <span className="text-neutral-600 dark:text-neutral-300">{t('members.pageStatus', { page, pageCount })}</span>
+          <div className="flex gap-2">
+            {page > 1 && <Link href={(page === 2 ? basePath : `${basePath}?page=${page - 1}`) as Route} className="inline-flex min-h-11 items-center rounded-lg border border-primary-200 px-4 font-medium text-primary-800 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 dark:border-primary-700 dark:text-primary-200 dark:hover:bg-primary-900/30">{t('members.previous')}</Link>}
+            {page < pageCount && <Link href={`${basePath}?page=${page + 1}` as Route} className="inline-flex min-h-11 items-center rounded-lg bg-primary-800 px-4 font-medium text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">{t('members.next')}</Link>}
+          </div>
+        </nav>
       )}
     </div>
   );

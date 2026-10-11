@@ -14,6 +14,13 @@ import type {
   CommunityPost,
 } from '../types/community.types';
 
+function boundedInteger(value: number, max: number): number {
+  if (!Number.isSafeInteger(value) || value < 1 || value > max) {
+    throw new RangeError(`El valor debe estar entre 1 y ${max}.`);
+  }
+  return value;
+}
+
 /**
  * Read wrappers — thin `'use server'` entry points over the cached server reads
  * in `../server/communities.server`, called by client hooks via the service
@@ -25,11 +32,11 @@ export async function getMyCommunitiesAction(): Promise<Community[]> {
 }
 
 export async function getSuggestedCommunitiesAction(limit = 12): Promise<Community[]> {
-  return listSuggestedCommunities(limit);
+  return listSuggestedCommunities(boundedInteger(limit, 50));
 }
 
 export async function getPopularCommunitiesAction(limit = 12): Promise<Community[]> {
-  return listPopularCommunities(limit);
+  return listPopularCommunities(boundedInteger(limit, 50));
 }
 
 export async function getCommunityBySlugAction(slug: string): Promise<Community | null> {
@@ -41,7 +48,9 @@ export async function getCommunityPostsAction(
   page = 1,
   limit = 10,
 ): Promise<{ posts: CommunityPost[]; total: number }> {
-  return getCommunityPosts(communityId, { page, limit });
+  return getCommunityPosts(communityId, {
+    page: boundedInteger(page, 1000), limit: boundedInteger(limit, 50),
+  });
 }
 
 export async function getCommunityMembersAction(
@@ -49,5 +58,7 @@ export async function getCommunityMembersAction(
   page = 1,
   limit = 20,
 ): Promise<{ members: CommunityMember[]; total: number }> {
-  return getCommunityMembers(communityId, { page, limit });
+  return getCommunityMembers(communityId, {
+    page: boundedInteger(page, 1000), limit: boundedInteger(limit, 60),
+  });
 }
