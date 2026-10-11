@@ -17,7 +17,7 @@ const params = Promise.resolve({ slug: 'qa' });
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.community.mockResolvedValue({ id: 'community-id', stats: { membersCount: 12 } });
-  mocks.members.mockResolvedValue({ members: [{ id: 'member-id' }], total: 12 });
+  mocks.members.mockResolvedValue({ members: [{ id: 'member-id' }], total: 12, page: 1 });
 });
 
 it('shows the count but never loads the roster for ordinary readers', async () => {
@@ -40,7 +40,7 @@ it('loads the bounded roster for staff with moderation capability', async () => 
 it('loads the requested staff page without exposing the roster to ordinary readers', async () => {
   mocks.capabilities.mockResolvedValueOnce({ moderation: true }).mockResolvedValueOnce({ moderation: false });
   mocks.community.mockResolvedValue({ id: 'community-id', stats: { membersCount: 121 } });
-  mocks.members.mockResolvedValue({ members: [{ id: 'member-id' }], total: 121 });
+  mocks.members.mockResolvedValue({ members: [{ id: 'member-id' }], total: 121, page: 2 });
   const searchParams = Promise.resolve({ page: '2' });
   const staffPanel = await CommunityMembersPage({ params, searchParams }) as ReactElement<{ page: number }>;
   expect(staffPanel.props.page).toBe(2);
@@ -61,4 +61,12 @@ it('shows the first page when a staff page is out of range', async () => {
   const panel = await CommunityMembersPage({ params, searchParams: Promise.resolve({ page: '2' }) }) as ReactElement<{ page: number }>;
   expect(panel.props.page).toBe(1);
   expect(mocks.members).toHaveBeenCalledWith('community-id', { page: 1, limit: 60 });
+});
+
+it('renders the recovered page after the roster shrinks during navigation', async () => {
+  mocks.capabilities.mockResolvedValue({ moderation: true });
+  mocks.community.mockResolvedValue({ id: 'community-id', stats: { membersCount: 121 } });
+  const panel = await CommunityMembersPage({ params, searchParams: Promise.resolve({ page: '3' }) }) as ReactElement<{ page: number; total: number }>;
+  expect(mocks.members).toHaveBeenCalledWith('community-id', { page: 3, limit: 60 });
+  expect(panel.props).toMatchObject({ page: 1, total: 12 });
 });

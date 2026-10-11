@@ -1,5 +1,6 @@
 'use server';
 
+import { boundedInteger } from '@/lib/bounded-integer';
 import {
   listMyCommunities,
   listSuggestedCommunities,
@@ -13,13 +14,6 @@ import type {
   CommunityMember,
   CommunityPost,
 } from '../types/community.types';
-
-function boundedInteger(value: number, max: number): number {
-  if (!Number.isSafeInteger(value) || value < 1 || value > max) {
-    throw new RangeError(`El valor debe estar entre 1 y ${max}.`);
-  }
-  return value;
-}
 
 /**
  * Read wrappers — thin `'use server'` entry points over the cached server reads
@@ -57,7 +51,7 @@ export async function getCommunityMembersAction(
   communityId: string,
   page = 1,
   limit = 20,
-): Promise<{ members: CommunityMember[]; total: number }> {
+): Promise<{ members: CommunityMember[]; total: number; page: number }> {
   return getCommunityMembers(communityId, {
     page: boundedInteger(page, 1000), limit: boundedInteger(limit, 60),
   });

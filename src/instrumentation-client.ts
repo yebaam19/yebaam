@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/nextjs';
+import { SENTRY_ENVIRONMENT } from '@/config/sentry';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NEXT_PUBLIC_ENV ?? process.env.NODE_ENV,
+  environment: SENTRY_ENVIRONMENT,
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   // Read when the replay integration attaches (lazy-loaded below).
   // Kept very low: a session replay runs a continuous rrweb MutationObserver +

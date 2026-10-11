@@ -2,10 +2,18 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import path from 'node:path'
+import { resolveSentryEnvironment } from './src/lib/sentry-environment'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT: resolveSentryEnvironment(
+      process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+      process.env.NEXT_PUBLIC_ENV,
+      process.env.VERCEL_ENV,
+    ),
+  },
   experimental: {
     // Rewrites `import { Foo } from 'pkg'` into per-icon deep imports so a route
     // only bundles the glyphs/components it renders. Matters most for the icon

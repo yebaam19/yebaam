@@ -145,8 +145,8 @@ class CommunitiesService {
     page = 1,
     limit = 20,
   ): Promise<CommunityMembersResponse> {
-    const { members, total } = await getCommunityMembersAction(communityId, page, limit);
-    return { success: true, data: members, total, page, limit };
+    const { members, total, page: loadedPage } = await getCommunityMembersAction(communityId, page, limit);
+    return { success: true, data: members, total, page: loadedPage, limit };
   }
 }
 

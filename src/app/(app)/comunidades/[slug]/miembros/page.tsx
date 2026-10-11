@@ -25,7 +25,7 @@ export default async function CommunityMembersPage({
     return <CommunityMembersPanel members={[]} total={community.stats.membersCount} restricted />;
   }
   const visiblePage = Math.min(page, Math.max(1, Math.ceil(community.stats.membersCount / 60)));
-  const { members, total } = await getCommunityMembers(community.id, { page: visiblePage, limit: 60 });
+  const { members, total, page: loadedPage } = await getCommunityMembers(community.id, { page: visiblePage, limit: 60 });
 
-  return <CommunityMembersPanel members={members} total={total} page={visiblePage} pageSize={60} slug={slug} />;
+  return <CommunityMembersPanel members={members} total={total} page={loadedPage} pageSize={60} slug={slug} />;
 }
