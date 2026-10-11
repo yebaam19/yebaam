@@ -8,12 +8,10 @@ import { getViewerId, loadCommunityContext, mapRows, COMMUNITY_COLUMNS } from '.
 export const getCommunityBySlug = cache(async (slug: string): Promise<Community | null> => {
   if (!slug) return null;
   const client = await getServerClient();
-  const viewerId = await getViewerId();
-  const { data } = await client
-    .from('communities')
-    .select(COMMUNITY_COLUMNS)
-    .eq('slug', slug)
-    .maybeSingle();
+  const [viewerId, { data }] = await Promise.all([
+    getViewerId(),
+    client.from('communities').select(COMMUNITY_COLUMNS).eq('slug', slug).maybeSingle(),
+  ]);
   if (!data) return null;
   const rows = [data as CommunityRow];
   const ctx = await loadCommunityContext(rows, viewerId);

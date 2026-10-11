@@ -17,16 +17,18 @@ async function mapCommunityPostRows(
   communityId: string,
   rows: CommunityPostRow[],
   client: Awaited<ReturnType<typeof getServerClient>>,
+  knownSlug?: string,
 ): Promise<CommunityPost[]> {
   if (rows.length === 0) return [];
   const authorIds = Array.from(new Set(rows.map((r) => r.author_id)));
   const [{ data: profiles }, { data: communityRow }] = await Promise.all([
     client.from('profiles').select('id,username,first_name,last_name,avatar_url').in('id', authorIds),
-    client.from('communities').select('slug').eq('id', communityId).maybeSingle(),
+    knownSlug ? Promise.resolve({ data: null }) :
+      client.from('communities').select('slug').eq('id', communityId).maybeSingle(),
   ]);
   const profileMap = new Map<string, ProfileLite>();
   for (const p of (profiles ?? []) as ProfileLite[]) profileMap.set(p.id, p);
-  const communitySlug = (communityRow as { slug: string } | null)?.slug;
+  const communitySlug = knownSlug ?? (communityRow as { slug: string } | null)?.slug;
   return rows.map((row) => mapPost(row, profileMap.get(row.author_id), communitySlug));
 }
 
@@ -34,6 +36,7 @@ async function getCursorPostPage(
   communityId: string,
   cursor: CommunityPostCursor | null,
   pageSize: number,
+  knownSlug?: string,
 ): Promise<{ posts: CommunityPost[]; nextCursor: CommunityPostCursor | null }> {
   const client = await getServerClient();
   let query = client.from('community_posts').select(POST_COLUMNS)
@@ -48,14 +51,14 @@ async function getCursorPostPage(
   const visibleRows = rows.slice(0, pageSize);
   const last = visibleRows.at(-1);
   return {
-    posts: await mapCommunityPostRows(communityId, visibleRows, client),
+    posts: await mapCommunityPostRows(communityId, visibleRows, client, knownSlug),
     nextCursor: rows.length > pageSize && last
       ? { createdAt: last.created_at, id: last.id } : null,
   };
 }
 
-export const getCommunityHomePosts = cache((communityId: string, cursor: CommunityPostCursor | null) =>
-  getCursorPostPage(communityId, cursor, HOME_PAGE_SIZE));
+export const getCommunityHomePosts = cache((communityId: string, cursor: CommunityPostCursor | null, knownSlug?: string) =>
+  getCursorPostPage(communityId, cursor, HOME_PAGE_SIZE, knownSlug));
 
 export const getCommunityLegacyPosts = cache((communityId: string, cursor: CommunityPostCursor | null) =>
   getCursorPostPage(communityId, cursor, LEGACY_PAGE_SIZE));

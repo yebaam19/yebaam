@@ -51,7 +51,7 @@ export async function CommunityHomeMain({
   const showComposer = isMember && (c.allowMemberPosts || isOwner);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <CommunityTopTabs slug={c.slug} config={topTabs} canManage={canManageTheme} />
 
       {(isOwner || (canManageTheme && c.privacy === 'PRIVATE')) && (
@@ -67,7 +67,7 @@ export async function CommunityHomeMain({
       {canManageTheme && <CommunityThemeSettings initial={theme} />}
       {canManageTheme && <CommunityTopTabSettings communityId={c.id} slug={c.slug} config={topTabs} />}
 
-      <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5">
+      <section className="rounded-lg bg-white p-4 shadow-sm sm:p-5 dark:bg-gray-800">
         <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
           {t('detail.aboutTitle')}
         </h2>

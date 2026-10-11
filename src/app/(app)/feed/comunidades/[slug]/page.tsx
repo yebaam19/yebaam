@@ -24,7 +24,7 @@ export default async function CommunityHomePage({ params, searchParams }: PagePr
   if (!community) notFound();
 
   const [posts, viewerState, pendingRequests, sections, capabilities, theme, topTabs] = await Promise.all([
-    getCommunityHomePosts(community.id, cursor),
+    getCommunityHomePosts(community.id, cursor, community.slug),
     getViewerJoinState(community.id),
     getPendingJoinRequests(community.id),
     getCommunitySections(community.id),

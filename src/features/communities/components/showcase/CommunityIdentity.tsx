@@ -12,10 +12,10 @@ export function CommunityIdentity({ community: c, canManageHeader, stacked, head
   const t = useTranslations('communities');
   const websiteHref = safeExternalHref(c.website);
   return (
-            <div className={stacked ? "flex flex-col gap-4" : "flex flex-col md:flex-row gap-5"}>
+            <div className={stacked ? "flex flex-col gap-4" : "flex items-start gap-3 sm:gap-5"}>
               <div className="shrink-0">
-                <div className="relative w-20 h-20">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-neutral-800">
+                <div className="relative h-14 w-14 sm:h-20 sm:w-20">
+                  <div className="h-14 w-14 overflow-hidden rounded-full border-4 border-white sm:h-20 sm:w-20 dark:border-neutral-800">
                     {c.profileImageUrl ? (
                       <FramedImage src={c.profileImageUrl} alt={c.name} framing={headerImages?.profile.framing} />
                     ) : (

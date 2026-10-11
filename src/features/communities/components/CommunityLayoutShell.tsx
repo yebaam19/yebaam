@@ -98,9 +98,35 @@ export function CommunityLayoutShell({
     viewerState.kind === 'request_declined' ||
     (viewerState.kind === 'none' && c.privacy === 'SECRET');
 
+  const joinAction = viewerState.kind === 'guest' ? (
+    <Link
+      href={`/login?redirect=${encodeURIComponent(`/feed/comunidades/${c.slug}`)}`}
+      className="inline-flex min-h-10 items-center rounded-lg bg-primary-800 px-5 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
+    >
+      {joinButtonLabel}
+    </Link>
+  ) : viewerState.kind !== 'owner' ? (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={handleJoinClick}
+        disabled={joinButtonDisabled}
+        className={`rounded-lg px-5 py-2 text-sm font-medium shadow-md transition-colors ${
+          viewerState.kind === 'member' || c.isMember
+            ? 'bg-white text-neutral-700 hover:bg-neutral-100'
+            : viewerState.kind === 'request_pending'
+              ? 'bg-secondary-500 text-neutral-900 hover:bg-secondary-400'
+              : 'bg-primary-800 text-white hover:bg-primary-900'
+        } disabled:cursor-not-allowed disabled:opacity-50`}
+      >
+        {joinButtonLabel}
+      </button>
+      {joinError && <p className="max-w-xs rounded bg-white/90 px-2 py-1 text-right text-xs text-red-600">{joinError}</p>}
+    </div>
+  ) : null;
+
   return (
     <div style={communityThemeStyle(theme)} className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      {!isArticleRoute && <div className="bg-[var(--community-primary)]"><div className={`relative mx-auto w-full max-w-[90rem] overflow-hidden ${c.coverImageUrl ? 'aspect-video sm:aspect-[3/1]' : 'h-40 sm:h-52'}`}>
+      {!isArticleRoute && <div className="bg-[var(--community-primary)]"><div className={`relative mx-auto w-full max-w-[90rem] overflow-hidden ${c.coverImageUrl ? 'h-40 sm:h-56 lg:h-72' : 'h-32 sm:h-44'}`}>
         {c.coverImageUrl && (
           <FramedImage src={c.coverImageUrl} alt={c.name} framing={headerImages?.cover.framing} priority />
         )}
@@ -109,37 +135,7 @@ export function CommunityLayoutShell({
             <CommunityHeaderImageButton communityId={c.id} target="cover" images={headerImages} currentUrl={c.coverImageUrl} />
           </div>
         )}
-        {viewerState.kind === 'guest' ? (
-          <div className="absolute right-4 bottom-4 z-10 sm:bottom-20">
-            <Link
-              href={`/login?redirect=${encodeURIComponent(`/feed/comunidades/${c.slug}`)}`}
-              className="inline-flex min-h-10 items-center rounded-lg bg-primary-800 px-5 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
-            >
-              {joinButtonLabel}
-            </Link>
-          </div>
-        ) : viewerState.kind !== 'owner' && (
-          <div className="absolute right-4 bottom-4 z-10 flex flex-col items-end gap-1 sm:bottom-20">
-            <button
-              onClick={handleJoinClick}
-              disabled={joinButtonDisabled}
-              className={`px-5 py-2 rounded-lg font-medium text-sm shadow-md transition-colors ${
-                viewerState.kind === 'member' || c.isMember
-                  ? 'bg-white text-neutral-700 hover:bg-neutral-100'
-                  : viewerState.kind === 'request_pending'
-                    ? 'bg-secondary-500 text-neutral-900 hover:bg-secondary-400'
-                    : 'bg-primary-800 text-white hover:bg-primary-900'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {joinButtonLabel}
-            </button>
-            {joinError && (
-              <p className="text-xs text-red-600 bg-white/90 rounded px-2 py-1 max-w-xs text-right">
-                {joinError}
-              </p>
-            )}
-          </div>
-        )}
+        {joinAction && <div className="absolute right-4 bottom-20 z-10 hidden sm:block">{joinAction}</div>}
       </div></div>}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -148,7 +144,8 @@ export function CommunityLayoutShell({
           <span aria-hidden="true" className="text-neutral-400">/</span>
           <span className="shrink-0 text-neutral-600 dark:text-neutral-300">Artículos</span>
         </nav> : <>
-          <div className="relative -mt-16 pb-6">{profileHeader}</div>
+          <div className="relative -mt-10 pb-3 sm:-mt-14 sm:pb-5">{profileHeader}</div>
+          {joinAction && <div className="flex justify-end pb-4 sm:hidden">{joinAction}</div>}
           {institutionalNavigation}
         </>}
         <div className={`grid grid-cols-1 gap-6 pb-12 lg:grid-cols-[240px_1fr] ${isArticleRoute ? 'lg:pt-2' : ''}`}>

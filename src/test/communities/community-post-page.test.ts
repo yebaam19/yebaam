@@ -4,7 +4,7 @@ import { getCommunityHomePosts, getCommunityLegacyPosts } from '@/features/commu
 const mocks = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock('react', () => ({ cache: (fn: unknown) => fn }));
 vi.mock('@/utils/supabase/server', () => ({ getServerClient: async () => ({ from: mocks.from }) }));
-vi.mock('@/lib/api/communities', () => ({ mapPost: (row: { id: string }) => ({ id: row.id }) }));
+vi.mock('@/lib/api/communities', () => ({ mapPost: (row: { id: string }, _profile: unknown, slug: string) => ({ id: row.id, slug }) }));
 
 const communityId = '11111111-1111-4111-8111-111111111111';
 const createdAt = '2026-05-02T03:55:44.672499+00:00';
@@ -15,6 +15,7 @@ const rows = Array.from({ length: 11 }, (_, index) => ({
 }));
 
 function database(data = rows) {
+  mocks.from.mockClear();
   const postQuery = {
     select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(),
@@ -48,6 +49,13 @@ describe('community home post pagination', () => {
     expect(query.or).toHaveBeenCalledWith(
       `created_at.lt.${createdAt},and(created_at.eq.${createdAt},id.lt.${cursor.id})`,
     );
+  });
+
+  it('uses the known community slug for article links without another community lookup', async () => {
+    database();
+    const page = await getCommunityHomePosts(communityId, null, 'comunidad-mvp-test');
+    expect(page.posts[0]).toMatchObject({ slug: 'comunidad-mvp-test' });
+    expect(mocks.from).not.toHaveBeenCalledWith('communities');
   });
 
   it('pages legacy galleries without a fixed fifty-post cutoff', async () => {
