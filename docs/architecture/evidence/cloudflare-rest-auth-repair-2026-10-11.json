@@ -1,0 +1,46 @@
+{
+  "verified_at": "2026-10-11T05:03:57.826780+00:00",
+  "account_id": "97e7fd9a393f52945ed697222f9ec3e2",
+  "repair": "Renewed the configured cloudflare MCP OAuth authorization with codex mcp login cloudflare; user completed Cloudflare consent.",
+  "verification_method": "Fresh MCP connection through the installed Codex app-server protocol; called Cloudflare execute directly. No agent/model turn was started. Temporary verification connection closed after the check.",
+  "results": [
+    {
+      "path": "/accounts/97e7fd9a393f52945ed697222f9ec3e2/images/v1/stats",
+      "result": {
+        "count": {
+          "current": 1144,
+          "allowed": 100000
+        }
+      },
+      "success": true,
+      "errors": [],
+      "messages": [],
+      "status": 200
+    },
+    {
+      "path": "/accounts/97e7fd9a393f52945ed697222f9ec3e2/stream/storage-usage",
+      "result": {
+        "creator": "",
+        "videoCount": 20,
+        "totalStorageMinutes": 11.9,
+        "totalStorageMinutesLimit": 1000
+      },
+      "success": true,
+      "errors": [],
+      "messages": [],
+      "status": 200
+    },
+    {
+      "path": "/accounts/97e7fd9a393f52945ed697222f9ec3e2/stream/usage",
+      "error": "Error: Cloudflare API error: 10003: Not Found: The requested resource or operation was not found."
+    }
+  ],
+  "conclusion": "Images stats and Stream storage usage now return HTTP 200 through the official Cloudflare MCP. This verifies repaired REST access, not merely an alternate analytics query.",
+  "remaining_endpoint_difference": "GET /stream/usage now returns 10003 Not Found, not an authorization error. Playback analytics use the documented streamMinutesViewedAdaptiveGroups GraphQL dataset, already verified successfully.",
+  "session_note": "The previously open tool connection retained the old authorization and still failed immediately after login. Verification used a new connection loading the renewed saved credentials. Existing open clients may need their MCP connection reloaded.",
+  "secrets": "No access tokens or refresh tokens recorded.",
+  "sources": [
+    "https://developers.cloudflare.com/agents/model-context-protocol/cloudflare/servers-for-cloudflare/",
+    "https://developers.cloudflare.com/stream/getting-analytics/fetching-bulk-analytics/"
+  ]
+}

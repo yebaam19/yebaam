@@ -1,0 +1,197 @@
+{
+  "date_utc": "2026-10-11",
+  "account_id": "97e7fd9a393f52945ed697222f9ec3e2",
+  "method": "Read-only Cloudflare MCP execute, POST /graphql; Images fields discovered through live GraphQL introspection; Stream query based on official documentation.",
+  "window_utc": {
+    "from": "2026-10-04T04:55:00Z",
+    "to_exclusive": "2026-10-11T04:55:00Z"
+  },
+  "resolution": "Media delivery analytics are accessible through the existing MCP GraphQL authorization. REST product endpoints still return authentication errors; their authorization was not modified or repaired.",
+  "queries": [
+    {
+      "purpose": "Images delivery status and cache",
+      "query": "query { viewer { accounts(filter:{accountTag:\"97e7fd9a393f52945ed697222f9ec3e2\"}) { imagesHostedRequestsAdaptiveGroups(limit:100,filter:{datetime_geq:\"2026-10-04T04:55:00Z\",datetime_lt:\"2026-10-11T04:55:00Z\"}) { count dimensions {cacheStatus httpStatus} } } } }",
+      "response": {
+        "success": true,
+        "status": 200,
+        "result": {
+          "viewer": {
+            "accounts": [
+              {
+                "imagesHostedRequestsAdaptiveGroups": [
+                  {
+                    "count": 14,
+                    "dimensions": {
+                      "cacheStatus": "MISS",
+                      "httpStatus": 304
+                    }
+                  },
+                  {
+                    "count": 968,
+                    "dimensions": {
+                      "cacheStatus": "HIT",
+                      "httpStatus": 200
+                    }
+                  },
+                  {
+                    "count": 407,
+                    "dimensions": {
+                      "cacheStatus": "MISS",
+                      "httpStatus": 200
+                    }
+                  },
+                  {
+                    "count": 2292,
+                    "dimensions": {
+                      "cacheStatus": "HIT",
+                      "httpStatus": 304
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "errors": [],
+        "messages": []
+      }
+    },
+    {
+      "purpose": "Images referrer/variant distribution and Stream delivered minutes",
+      "query": "query { viewer { accounts(filter:{accountTag:\"97e7fd9a393f52945ed697222f9ec3e2\"}) { streamMinutesViewedAdaptiveGroups(limit:10,filter:{datetime_geq:\"2026-10-04T04:55:00Z\",datetime_lt:\"2026-10-11T04:55:00Z\"}) { sum { minutesViewed } } imagesHostedRequestsAdaptiveGroups(limit:100,filter:{datetime_geq:\"2026-10-04T04:55:00Z\",datetime_lt:\"2026-10-11T04:55:00Z\"}) { count dimensions { clientRefererHost variant } } } } }",
+      "response": {
+        "success": true,
+        "status": 200,
+        "result": {
+          "viewer": {
+            "accounts": [
+              {
+                "imagesHostedRequestsAdaptiveGroups": [
+                  {
+                    "count": 1,
+                    "dimensions": {
+                      "clientRefererHost": "127.0.0.1",
+                      "variant": "avatar"
+                    }
+                  },
+                  {
+                    "count": 351,
+                    "dimensions": {
+                      "clientRefererHost": "",
+                      "variant": "avatar"
+                    }
+                  },
+                  {
+                    "count": 4,
+                    "dimensions": {
+                      "clientRefererHost": "",
+                      "variant": "cover"
+                    }
+                  },
+                  {
+                    "count": 73,
+                    "dimensions": {
+                      "clientRefererHost": "www.yebaam.com",
+                      "variant": "public"
+                    }
+                  },
+                  {
+                    "count": 1,
+                    "dimensions": {
+                      "clientRefererHost": "localhost",
+                      "variant": "cover"
+                    }
+                  },
+                  {
+                    "count": 1807,
+                    "dimensions": {
+                      "clientRefererHost": "",
+                      "variant": "thumbnail"
+                    }
+                  },
+                  {
+                    "count": 452,
+                    "dimensions": {
+                      "clientRefererHost": "www.yebaam.com",
+                      "variant": "thumbnail"
+                    }
+                  },
+                  {
+                    "count": 31,
+                    "dimensions": {
+                      "clientRefererHost": "localhost",
+                      "variant": "thumbnail"
+                    }
+                  },
+                  {
+                    "count": 290,
+                    "dimensions": {
+                      "clientRefererHost": "localhost",
+                      "variant": "avatar"
+                    }
+                  },
+                  {
+                    "count": 12,
+                    "dimensions": {
+                      "clientRefererHost": "127.0.0.1",
+                      "variant": "public"
+                    }
+                  },
+                  {
+                    "count": 248,
+                    "dimensions": {
+                      "clientRefererHost": "localhost",
+                      "variant": "public"
+                    }
+                  },
+                  {
+                    "count": 103,
+                    "dimensions": {
+                      "clientRefererHost": "www.yebaam.com",
+                      "variant": "avatar"
+                    }
+                  },
+                  {
+                    "count": 308,
+                    "dimensions": {
+                      "clientRefererHost": "",
+                      "variant": "public"
+                    }
+                  }
+                ],
+                "streamMinutesViewedAdaptiveGroups": [
+                  {
+                    "sum": {
+                      "minutesViewed": 0
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "errors": [],
+        "messages": []
+      }
+    }
+  ],
+  "summary": {
+    "images_estimated_requests": 3681,
+    "images_cache_hits": 3260,
+    "images_cache_hit_percent": 88.56,
+    "images_http_errors_in_returned_groups": 0,
+    "stream_delivered_minutes": 0
+  },
+  "limitations": [
+    "Images counts are adaptive sampling estimates, not an exact browser capture.",
+    "HTTP 304 is successful cache revalidation, not an error.",
+    "Referrer values are not authoritative caller attribution; an empty referrer does not identify the origin.",
+    "These metrics do not prove the absence of repeated requests or measure the separate music-cache Worker's cache hit ratio.",
+    "Storage inventory and REST product authorization remain outside the recovered delivery metrics.",
+    "No code, deployment, token or permission changes were needed."
+  ],
+  "sources": [
+    "https://developers.cloudflare.com/stream/getting-analytics/fetching-bulk-analytics/",
+    "https://developers.cloudflare.com/analytics/graphql-api/features/discovery/introspection/"
+  ]
+}

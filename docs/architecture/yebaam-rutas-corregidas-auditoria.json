@@ -309,10 +309,58 @@
     },
     "cloudflare": {
       "account_verified": true,
-      "workers_list": [],
-      "images_stats": "Authentication error code 10000",
-      "stream_usage": "Authentication error code 10000",
-      "limitation": "MCP can list account/workers but cannot read Images/Stream analytics with current connector authorization. No volume conclusion possible; no permissions changed."
+      "account_id": "97e7fd9a393f52945ed697222f9ec3e2",
+      "worker": "yebaam-music-cache",
+      "workers_list_caveat": "General MCP returned []; specialized Observability MCP and dashboard confirmed the Worker exists.",
+      "workers_metrics": {
+        "method": "Cloudflare MCP GraphQL Analytics, workersInvocationsAdaptive",
+        "window_utc": {
+          "from": "2026-10-04T04:55:00Z",
+          "to": "2026-10-11T04:55:00Z"
+        },
+        "requests": 66,
+        "runtime_errors": 0,
+        "subrequests": 0,
+        "evidence": "evidence/cloudflare-worker-metrics-2026-10-11.json"
+      },
+      "images_stats": {
+        "http_status": 200,
+        "current": 1144,
+        "allowed": 100000
+      },
+      "stream_usage": "REST /stream/usage returns 10003 Not Found with renewed authorization. Playback analytics use the verified documented GraphQL dataset.",
+      "limitation": "REST Images stats and Stream storage usage are verified accessible after OAuth renewal. Delivery analytics are verified through GraphQL. Aggregates cannot establish absence of request loops or the music-cache Worker cache-hit ratio.",
+      "media_delivery_metrics": {
+        "method": "Cloudflare MCP GraphQL Analytics using existing authorization",
+        "window_utc": {
+          "from": "2026-10-04T04:55:00Z",
+          "to_exclusive": "2026-10-11T04:55:00Z"
+        },
+        "images_estimated_requests": 3681,
+        "images_cache_hits": 3260,
+        "images_cache_hit_percent": 88.56,
+        "images_http_statuses": [
+          200,
+          304
+        ],
+        "stream_delivered_minutes": 0,
+        "evidence": "evidence/cloudflare-media-metrics-2026-10-11.json"
+      },
+      "historical_rest_auth_errors": {
+        "images_stats": "Authentication error code 10000",
+        "stream_usage": "Authentication error code 10000"
+      },
+      "stream_storage_usage": {
+        "http_status": 200,
+        "video_count": 20,
+        "storage_minutes": 11.9,
+        "storage_minutes_limit": 1000
+      },
+      "authorization_repair": {
+        "status": "renewed and verified from a fresh MCP connection",
+        "evidence": "evidence/cloudflare-rest-auth-repair-2026-10-11.json",
+        "existing_clients": "Open connections using the prior token may need MCP reload."
+      }
     }
   },
   "follow_up": {
@@ -320,7 +368,7 @@
     "proxy_optimization": "Public allowed routes: 0 role reads; private pages: platform_admins only; admin pages: all three role reads. No role cache or RLS changes.",
     "evidence": "evidence/proxy-role-queries-2026-10-11/requests.json",
     "original_artifacts": "Original HAR and screenshot links reference local Downloads files; not included in the repository.",
-    "status": "implemented and verified; Cloudflare metrics blocked by connector authentication",
+    "status": "implemented and verified; Cloudflare MCP OAuth renewed; Images and Stream REST storage reads verified HTTP 200; delivery analytics audited",
     "tests": {
       "full_suite_passed": 766,
       "full_suite_failed": 0,
@@ -335,7 +383,7 @@
       "production_build": "passed; exit 0"
     },
     "cities_tests": "Allow additional cities while asserting all 8 original seed slugs remain visible to the anonymous client; no database records changed.",
-    "cloudflare": "Retry via MCP still returned authentication error 10000 for Images stats and Stream usage. Reconnecting the connector with access to those products remains pending.",
+    "cloudflare": "Actual authorization repair completed and verified: Images REST stats and Stream REST storage usage now return HTTP 200 using a fresh MCP connection. Stored inventory: 1144 images, 20 videos, 11.9 video minutes. Playback analytics remain on the documented GraphQL API; /stream/usage returns Not Found rather than an auth error. Evidence: evidence/cloudflare-rest-auth-repair-2026-10-11.json.",
     "nextjs": {
       "entrypoint": "src/proxy.ts, named export proxy, Node.js runtime",
       "helper": "src/utils/supabase/middleware.ts is an internal session helper, not a Next.js entrypoint; kept at the canonical path defined in AGENTS.md.",

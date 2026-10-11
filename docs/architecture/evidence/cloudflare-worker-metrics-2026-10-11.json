@@ -1,0 +1,61 @@
+{
+  "date_utc": "2026-10-11",
+  "method": "Read-only Cloudflare MCP: Observability worker lookup and GraphQL Analytics via cloudflare.request",
+  "account_id": "97e7fd9a393f52945ed697222f9ec3e2",
+  "worker": "yebaam-music-cache",
+  "worker_id": "86d643a311464a9f96afd4831b17b5c0",
+  "window_utc": {
+    "from": "2026-10-04T04:55:00Z",
+    "to": "2026-10-11T04:55:00Z"
+  },
+  "graphql_query": "query { viewer { accounts(filter:{accountTag:\"97e7fd9a393f52945ed697222f9ec3e2\"}) { workersInvocationsAdaptive(limit:10, filter:{scriptName:\"yebaam-music-cache\", datetime_geq:\"2026-10-04T04:55:00Z\", datetime_leq:\"2026-10-11T04:55:00Z\"}) { sum { requests errors subrequests } quantiles { cpuTimeP50 cpuTimeP99 } dimensions { scriptName status } } } } }",
+  "graphql_response": {
+    "success": true,
+    "status": 200,
+    "result": {
+      "viewer": {
+        "accounts": [
+          {
+            "workersInvocationsAdaptive": [
+              {
+                "dimensions": {
+                  "scriptName": "yebaam-music-cache",
+                  "status": "success"
+                },
+                "quantiles": {
+                  "cpuTimeP50": 4250,
+                  "cpuTimeP99": 8764
+                },
+                "sum": {
+                  "errors": 0,
+                  "requests": 66,
+                  "subrequests": 0
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "errors": [],
+    "messages": []
+  },
+  "other_observations": {
+    "general_workers_list": "Returned an empty list despite the worker being visible in Observability and the dashboard; not evidence of absence.",
+    "observability_logs": "Queries returned no events. Local wrangler.jsonc disables automatic invocation logs; absence of log results does not demonstrate absence of traffic.",
+    "worker_settings": "No access to specified resource",
+    "images_stats": "Authentication error code 10000",
+    "stream_usage": "Authentication error code 10000"
+  },
+  "interpretation": "The queried dataset reports low request volume and no runtime errors for this Worker during this window. It does not demonstrate excessive Worker invocations.",
+  "limitations": [
+    "Worker-specific aggregate analytics, not all YEBAAM traffic or a browser request trace.",
+    "Zero runtime errors does not establish that every HTTP response was successful.",
+    "No cache hit ratio or endpoint breakdown measured; no cache-efficiency conclusion.",
+    "CPU quantiles are preserved as raw API values; units were not independently verified and no conversion is claimed.",
+    "The adaptive analytics dataset may use sampling.",
+    "Images and Stream volume remains unverified due to the observed authorization errors."
+  ],
+  "source": "https://developers.cloudflare.com/analytics/graphql-api/tutorials/querying-workers-metrics/",
+  "remote_changes": "None: no deployment, configuration, permissions or database changes."
+}
