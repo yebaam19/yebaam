@@ -29,12 +29,12 @@
   },
   "verification": {
     "full_tests": {
-      "passed": 766,
+      "passed": 769,
       "failed": 0
     },
     "typecheck": "passed",
     "build": "passed after all changes; pnpm build exited 0",
-    "changed_files_lint": "passed",
+    "changed_files_lint": "New regression test and genre cache files pass. Chat provider retains 6 pre-existing errors and 3 warnings; no new lint findings. Full repository totals unchanged.",
     "full_lint": {
       "status": "pre-existing failures remain",
       "errors": 257,
@@ -292,17 +292,20 @@
           "calls_24h": 13700,
           "calls_last_hour": 1551,
           "file": "src/proxy.ts:180",
-          "proposal": "Read forum/music roles only for admin routes; alternatively session-bound RPC. Preserve platform admin routing and role revocation; test owner/non-owner/admin. No cross-user role cache."
+          "proposal": "Read forum/music roles only for admin routes; alternatively session-bound RPC. Preserve platform admin routing and role revocation; test owner/non-owner/admin. No cross-user role cache.",
+          "resolution": "Implemented and verified earlier: see follow_up.proxy_optimization and capture_result."
         },
         {
           "finding": "Music endpoints dominate 24-hour logs, but current code already has public taxonomy and anonymous club caching",
           "calls_24h": 77296,
           "share_percent": 73.57,
-          "proposal": "Verify deployment/cache hit rate before rewriting. Recent hour has 61 genre, 61 media and 82 club requests. Historical pg_stat_statements is cumulative since April and cannot demonstrate a current loop."
+          "proposal": "Verify deployment/cache hit rate before rewriting. Recent hour has 61 genre, 61 media and 82 club requests. Historical pg_stat_statements is cumulative since April and cannot demonstrate a current loop.",
+          "resolution": "Recent sample supports the existing minute caches. Stable genre taxonomy TTL extended to one hour with existing immediate mutation invalidation; see follow_up.music_taxonomy_optimization."
         },
         {
           "finding": "Nested ChatNotificationProvider in application layout and SocialPageLayout",
-          "proposal": "Remove duplicate provider after reproducing duplicated UI events; socket singleton means this alone does not prove duplicate network connections."
+          "proposal": "Remove duplicate provider after reproducing duplicated UI events; socket singleton means this alone does not prove duplicate network connections.",
+          "resolution": "Reproduced two UI defects with nested real providers: two browser permission requests and separate open-conversation state. Fixed ChatNotificationProvider to reuse an existing parent; standalone visitor layouts still create an owner. No duplicated network connection claimed."
         }
       ],
       "caveat": "Project-wide counts include development and other callers. The three-role table totals do not prove that every call originated in the proxy. Recent and daily samples are not controlled before/after measurements."
@@ -370,15 +373,15 @@
     "original_artifacts": "Original HAR and screenshot links reference local Downloads files; not included in the repository.",
     "status": "implemented and verified; Cloudflare MCP OAuth renewed; Images and Stream REST storage reads verified HTTP 200; delivery analytics audited",
     "tests": {
-      "full_suite_passed": 766,
+      "full_suite_passed": 769,
       "full_suite_failed": 0,
       "permission_tests": 130,
       "typecheck": "passed",
-      "changed_files_lint": "passed",
+      "changed_files_lint": "New regression test and genre cache files pass. Chat provider retains 6 pre-existing errors and 3 warnings; no new lint findings. Full repository totals unchanged.",
       "full_repository_lint": {
         "errors": 257,
         "warnings": 335,
-        "status": "pre-existing failures remain; changed code files pass lint"
+        "status": "Pre-existing failures remain; unchanged full counts after provider correction."
       },
       "production_build": "passed; exit 0"
     },
@@ -421,7 +424,106 @@
       "rea": "evidence/proxy-role-queries-2026-10-11/rea.json",
       "latency_limit": "No whole-page speed improvement claimed. Per-request role count is the measured result."
     },
-    "screenshot_local": "/Users/ellis/Downloads/localhost_3000_comunidades.png"
+    "screenshot_local": "/Users/ellis/Downloads/localhost_3000_comunidades.png",
+    "music_taxonomy_optimization": {
+      "date": "2026-10-11",
+      "evidence": "evidence/music-taxonomy-cache-2026-10-11.json",
+      "change": "Public genre cache TTL increased from 60 to 3600 seconds; immediate tag invalidation on admin create/update/delete retained.",
+      "basis": "Recent one-hour Supabase sample contains 60 music_genres reads, consistent with the prior one-minute TTL. Aggregate traffic includes multiple callers and is not a controlled before/after trace.",
+      "deployment": "Local change prepared; production impact must be measured after deployment.",
+      "chat_provider_review": "Reproduced two UI defects with nested real providers: two browser permission requests and separate open-conversation state. Fixed ChatNotificationProvider to reuse an existing parent; standalone visitor layouts still create an owner. No duplicated network connection claimed."
+    },
+    "code_report_crosscheck": {
+      "date": "2026-10-11",
+      "reviewed_reports": [
+        "docs/architecture/yebaam-rutas-corregidas-auditoria.json",
+        "docs/architecture/evidence/music-taxonomy-cache-2026-10-11.json"
+      ],
+      "implemented_in_code": [
+        {
+          "finding": "Canonical routes and legacy redirects",
+          "status": "confirmed already implemented",
+          "files": [
+            "next.config.ts",
+            "src/app/(app)/comunidades",
+            "src/proxy.ts",
+            "src/features/communities/components/SuggestedGroupsCard.tsx"
+          ]
+        },
+        {
+          "finding": "Duplicate pet and community-article previews",
+          "status": "confirmed shared hook and stable callbacks used by both components",
+          "files": [
+            "src/lib/hooks/useLinkPreview.ts",
+            "src/lib/coalesce-pending.ts",
+            "src/app/(app)/feed/post/components/PostPetLinkPreview.tsx",
+            "src/app/(app)/feed/post/components/PostArticleLinkPreview.tsx"
+          ]
+        },
+        {
+          "finding": "NotificationItem accessibility and awaited onRead",
+          "status": "confirmed native button, separate actions and Promise<void> callback implemented",
+          "files": [
+            "src/features/notification/components/NotificationItem.tsx",
+            "src/features/notification/store/notification.store.ts"
+          ]
+        },
+        {
+          "finding": "Proxy role-query scope",
+          "status": "confirmed public allowed routes skip role reads; private pages read platform_admins; admin routes read all three",
+          "files": [
+            "src/proxy.ts",
+            "src/test/proxy-permissions.test.ts"
+          ]
+        },
+        {
+          "finding": "Public global chat visitor access",
+          "status": "migration checked and matching live SELECT policy verified through Supabase MCP; no new DB changes",
+          "files": [
+            "supabase/migrations/20261011041503_restore_public_chat_global_visitors.sql"
+          ]
+        },
+        {
+          "finding": "Stable public genre taxonomy cache",
+          "status": "3600-second TTL implemented; successful mutations still updateTag immediately; live public read policy confirmed",
+          "files": [
+            "src/features/music-archive/server/genres.server.ts",
+            "src/features/music-archive/actions/genres.actions.ts",
+            "src/features/music-archive/server/genres.server.test.ts"
+          ]
+        },
+        {
+          "finding": "Nested chat notification providers",
+          "status": "fixed in this review; parent reused without changing standalone visitor behavior",
+          "files": [
+            "src/features/chat/context/chat-notification.context.tsx",
+            "src/test/chat/chat-notification-provider.test.tsx"
+          ]
+        }
+      ],
+      "cloudflare": "Authorization repair was connector configuration, not application source. Existing HTTP 200 verification is retained; aggregate metrics do not justify changing Worker code.",
+      "supabase_advisors": {
+        "status": "performance advisory counts refreshed through MCP; remain unresolved and must not be represented as implemented fixes",
+        "counts": {
+          "unindexed_foreign_keys": 132,
+          "auth_rls_initplan": 36,
+          "unused_index": 153,
+          "multiple_permissive_policies": 202
+        },
+        "scope": "Project-wide inventory includes excluded repositories and modules outside the route/request fixes. No blanket index deletion, policy merging or permission change applied from aggregate counts."
+      },
+      "verification": {
+        "regression_before": "2 failed, 1 passed",
+        "regression_after": "3 passed",
+        "full_tests_passed": 769,
+        "typecheck": "passed",
+        "build": "passed; pnpm build exit 0",
+        "browser": "/musica catalog and message popover rendered; /comunidades and /cities rendered with exactly one notification container each (read-only DOM counts).",
+        "lint": "257 errors and 335 warnings unchanged; chat provider retains 6 pre-existing errors and 3 warnings.",
+        "focused_lint": "New regression test and two genre cache files passed; provider pre-existing lint findings unchanged."
+      },
+      "deployment": "Source changes remain local; no app deployment or DB migration in this review."
+    }
   },
   "historical_verification_before_proxy_follow_up": {
     "focused_tests_latest": 37,

@@ -32,9 +32,9 @@ beforeEach(() => {
 });
 
 describe('shared public music taxonomy', () => {
-  it('declares a short, explicitly tagged cache', () => {
+  it('keeps the stable taxonomy for an hour with explicit invalidation', () => {
     expect(cached).toHaveBeenCalledWith(expect.any(Function), ['public-music-genres-v1'], {
-      revalidate: 60, tags: [MUSIC_GENRES_CACHE_TAG],
+      revalidate: 3600, tags: [MUSIC_GENRES_CACHE_TAG],
     });
   });
 

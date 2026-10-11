@@ -22,6 +22,9 @@ function compareGenreNames(a: string, b: string): number {
 
 /** Only the public taxonomy is shared across requests. The anonymous client
  * cannot contribute user-specific rows; club/member/media reads stay RLS-bound.
+ * Genre actions invalidate the tag immediately, so this stable catalog does
+ * not need minute-by-minute refreshes. Direct DB edits wait for revalidation
+ * triggered by a request after the hourly interval expires.
  * Throw inside the cache so transient failures never become cached empty lists. */
 const loadPublicMusicGenres = unstable_cache(
   async (): Promise<MusicGenreRow[]> => {
@@ -31,7 +34,7 @@ const loadPublicMusicGenres = unstable_cache(
     return (data ?? []) as MusicGenreRow[];
   },
   ['public-music-genres-v1'],
-  { revalidate: 60, tags: [MUSIC_GENRES_CACHE_TAG] },
+  { revalidate: 3600, tags: [MUSIC_GENRES_CACHE_TAG] },
 );
 
 /** All genres, sorted alphabetically by `name` (Spanish collation). Rows with

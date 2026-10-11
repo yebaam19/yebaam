@@ -28,6 +28,14 @@ interface ChatNotificationContextValue {
 const ChatNotificationContext = createContext<ChatNotificationContextValue | null>(null);
 
 export function ChatNotificationProvider({ children }: { children: ReactNode }) {
+  const parent = useContext(ChatNotificationContext);
+  // Public layouts also render without the authenticated app shell. Create
+  // state only when there is no outer owner, so both entry paths share it.
+  if (parent) return children;
+  return <ChatNotificationOwner>{children}</ChatNotificationOwner>;
+}
+
+function ChatNotificationOwner({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<MessageNotification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [openConversations, setOpenConversations] = useState<Set<string>>(new Set());

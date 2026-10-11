@@ -1,0 +1,87 @@
+{
+  "date_utc": "2026-10-11",
+  "window_utc": {
+    "from": "2026-10-11T04:00:00Z",
+    "to": "2026-10-11T05:00:00Z"
+  },
+  "source": "Supabase MCP query_logs, project-wide edge_logs",
+  "sql": "SELECT log_attributes['request.path'] AS path, count() AS calls, countIf(toInt32OrZero(log_attributes['response.status_code']) >= 400) AS errors, round(avg(toFloat64OrZero(log_attributes['response.origin_time'])),2) AS avg_origin_ms FROM logs WHERE source = 'edge_logs' AND log_attributes['request.path'] IN ('/rest/v1/clubs','/rest/v1/music_genres','/rest/v1/music_media','/rest/v1/platform_admins','/rest/v1/forum_global_roles','/rest/v1/music_archive_editors','/rest/v1/notifications') GROUP BY path ORDER BY calls DESC",
+  "rows": [
+    {
+      "avg_origin_ms": 204.31,
+      "calls": 251,
+      "errors": 0,
+      "path": "/rest/v1/platform_admins"
+    },
+    {
+      "avg_origin_ms": 199.18,
+      "calls": 240,
+      "errors": 0,
+      "path": "/rest/v1/forum_global_roles"
+    },
+    {
+      "avg_origin_ms": 199.5,
+      "calls": 193,
+      "errors": 0,
+      "path": "/rest/v1/music_archive_editors"
+    },
+    {
+      "avg_origin_ms": 184.81,
+      "calls": 164,
+      "errors": 0,
+      "path": "/rest/v1/notifications"
+    },
+    {
+      "avg_origin_ms": 297.61,
+      "calls": 82,
+      "errors": 0,
+      "path": "/rest/v1/clubs"
+    },
+    {
+      "avg_origin_ms": 291.35,
+      "calls": 60,
+      "errors": 0,
+      "path": "/rest/v1/music_genres"
+    },
+    {
+      "avg_origin_ms": 308.88,
+      "calls": 60,
+      "errors": 0,
+      "path": "/rest/v1/music_media"
+    }
+  ],
+  "decision": {
+    "public_music_genres": {
+      "before_revalidate_seconds": 60,
+      "after_revalidate_seconds": 3600,
+      "reason": "Stable public taxonomy; create/update/delete Server Actions already immediately expire the music-genres tag.",
+      "expected_effect": "Under steady traffic, time-based refreshes fall from roughly 60 to roughly 1 per hour per effective cache entry, excluding explicit invalidation, cold starts and separate cache partitions.",
+      "measured_production_reduction": false,
+      "out_of_band_edits": "Direct database changes outside the admin actions may remain cached until the next timed revalidation."
+    },
+    "music_media_and_clubs": "Retain current 60-second public cache and session-scoped/RLS-bound private reads; do not infer a live loop from historical totals.",
+    "duplicate_chat_notification_provider": "Reproduced two UI defects with nested real providers: two browser permission requests and separate open-conversation state. Fixed ChatNotificationProvider to reuse an existing parent; standalone visitor layouts still create an owner. No duplicated network connection claimed."
+  },
+  "verification": {
+    "full_tests_passed": 766,
+    "full_tests_failed": 0,
+    "typecheck": "passed",
+    "browser": "Existing authenticated Chrome tab navigated from /comunidades to /musica; album catalog, club cards and genre groups rendered.",
+    "full_lint": {
+      "errors": 257,
+      "warnings": 335,
+      "status": "pre-existing; unchanged from prior audit"
+    },
+    "build": "passed",
+    "changed_files_lint": "passed"
+  },
+  "sources": [
+    "https://github.com/vercel/next.js/blob/v16.2.2/docs/01-app/03-api-reference/04-functions/updateTag.mdx"
+  ],
+  "scope": "Local source change only. No deployment, production writes, auth/RLS changes or unrelated refactor.",
+  "follow_up_code_review": {
+    "report": "../yebaam-rutas-corregidas-auditoria.json",
+    "section": "follow_up.code_report_crosscheck",
+    "note": "Genre cache was already implemented. Subsequent provider correction is source code, not a JSON configuration change."
+  }
+}
