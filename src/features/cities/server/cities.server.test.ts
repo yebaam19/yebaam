@@ -1,14 +1,14 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getPublicServerClient } from '@/utils/supabase/public-server';
 import { fetchCities, fetchGlobalStats } from './cities.server';
 
 /**
  * These tests hit the real Supabase project (anon role) and rely on the
- * Phase 0 seed: 8 Latin American cities, 5 distinct countries. RLS for
+ * Phase 0 seed: 8 Latin American cities, plus cities added later. RLS for
  * the `cities` table grants `select` to `anon`, so the publishable key
  * is sufficient and using the service role would mask RLS regressions.
  */
-function makeAnonClient(): SupabaseClient {
+function makeAnonClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !anon) {
@@ -16,21 +16,25 @@ function makeAnonClient(): SupabaseClient {
       'Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in env',
     );
   }
-  return createClient(url, anon, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  return getPublicServerClient();
 }
 
+type PublicClient = ReturnType<typeof makeAnonClient>;
+const seededCitySlugs = [
+  'popayan', 'bogota', 'medellin', 'cali', 'lima',
+  'ciudad-de-mexico', 'buenos-aires', 'santiago',
+];
+
 describe('fetchCities', () => {
-  let client: SupabaseClient;
+  let client: PublicClient;
 
   beforeAll(() => {
     client = makeAnonClient();
   });
 
-  it('returns the 8 seeded cities sorted featured-first', async () => {
+  it('includes the seeded cities and sorts featured-first as the catalog grows', async () => {
     const cities = await fetchCities(client);
-    expect(cities).toHaveLength(8);
+    expect(cities.map((city) => city.slug)).toEqual(expect.arrayContaining(seededCitySlugs));
 
     // Featured cities (Popayán, Bogotá) must precede non-featured.
     const firstNonFeaturedIdx = cities.findIndex((c) => !c.isFeatured);
@@ -64,15 +68,16 @@ describe('fetchCities', () => {
 });
 
 describe('fetchGlobalStats', () => {
-  let client: SupabaseClient;
+  let client: PublicClient;
 
   beforeAll(() => {
     client = makeAnonClient();
   });
 
-  it('returns numeric totals with 8 seeded cities', async () => {
+  it('returns numeric totals that include the seeded cities', async () => {
     const stats = await fetchGlobalStats(client);
-    expect(stats.totalCities).toBe(8);
+    expect(Number.isInteger(stats.totalCities)).toBe(true);
+    expect(stats.totalCities).toBeGreaterThanOrEqual(seededCitySlugs.length);
     expect(typeof stats.totalUsers).toBe('number');
     expect(typeof stats.totalMedia).toBe('number');
     expect(stats.totalUsers).toBeGreaterThanOrEqual(0);

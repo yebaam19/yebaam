@@ -1,0 +1,179 @@
+{
+  "method": "Temporary observation installed before navigation, wrapping only the session-bound Supabase client used by src/proxy.ts; removed after capture. Every matched request is counted independently, including additional requests triggered by the development client. No whole-page speed claim.",
+  "requests": [
+    {
+      "capture": "before-feed",
+      "request_id": "b0ae9f1b-0852-4309-8b01-230c43ae3d09",
+      "route": "/feed",
+      "role_queries": 3,
+      "endpoints": [
+        "forum_global_roles",
+        "music_archive_editors",
+        "platform_admins"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-feed",
+      "request_id": "c01dc647-1d9b-4ac7-8605-f400dac0ac23",
+      "route": "/feed",
+      "role_queries": 3,
+      "endpoints": [
+        "music_archive_editors",
+        "forum_global_roles",
+        "platform_admins"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-feed",
+      "request_id": "161e5a93-6482-4e02-9666-330f91093b71",
+      "route": "/feed",
+      "role_queries": 3,
+      "endpoints": [
+        "forum_global_roles",
+        "music_archive_editors",
+        "platform_admins"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-feed",
+      "request_id": "d519d1b3-ce1e-441c-8ec0-596ebe98d99c",
+      "route": "/feed",
+      "role_queries": 3,
+      "endpoints": [
+        "platform_admins",
+        "forum_global_roles",
+        "music_archive_editors"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-communities",
+      "request_id": "33334830-03fa-4696-b031-52437cb32d50",
+      "route": "/comunidades",
+      "role_queries": 3,
+      "endpoints": [
+        "music_archive_editors",
+        "platform_admins",
+        "forum_global_roles"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-communities",
+      "request_id": "01b9a29c-d1c1-476a-a2d4-9c2f5fb98461",
+      "route": "/comunidades",
+      "role_queries": 3,
+      "endpoints": [
+        "forum_global_roles",
+        "music_archive_editors",
+        "platform_admins"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-communities",
+      "request_id": "f3838595-ee48-4506-9eb2-b6094027976c",
+      "route": "/comunidades",
+      "role_queries": 3,
+      "endpoints": [
+        "platform_admins",
+        "music_archive_editors",
+        "forum_global_roles"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "before-admin",
+      "request_id": "21c2e9a8-0142-48ca-bc12-99b29f018e3b",
+      "route": "/admin/foros",
+      "role_queries": 3,
+      "endpoints": [
+        "platform_admins",
+        "music_archive_editors",
+        "forum_global_roles"
+      ],
+      "total_fetches": 3
+    },
+    {
+      "capture": "after-feed",
+      "request_id": "5458efbb-be75-4bc7-a5f0-3e8b57d07f5a",
+      "route": "/feed",
+      "role_queries": 1,
+      "endpoints": [
+        "jwks.json",
+        "platform_admins"
+      ],
+      "total_fetches": 2
+    },
+    {
+      "capture": "after-feed",
+      "request_id": "3b04ae22-118a-4f3f-aeaf-4bbb7996ff3d",
+      "route": "/feed",
+      "role_queries": 1,
+      "endpoints": [
+        "platform_admins"
+      ],
+      "total_fetches": 1
+    },
+    {
+      "capture": "after-feed",
+      "request_id": "0cfad986-956b-4c76-9579-1ff4df6c7ae8",
+      "route": "/feed",
+      "role_queries": 1,
+      "endpoints": [
+        "platform_admins"
+      ],
+      "total_fetches": 1
+    },
+    {
+      "capture": "after-feed",
+      "request_id": "ebaed8fa-151d-4d0b-a44a-836caffff6d2",
+      "route": "/feed",
+      "role_queries": 1,
+      "endpoints": [
+        "platform_admins"
+      ],
+      "total_fetches": 1
+    },
+    {
+      "capture": "after-communities",
+      "request_id": "ca958a81-5573-4e2a-b3a6-baf30485354b",
+      "route": "/comunidades",
+      "role_queries": 0,
+      "endpoints": [],
+      "total_fetches": 0
+    },
+    {
+      "capture": "after-communities",
+      "request_id": "11cea63a-08b1-48ee-82ce-cf294f3f494a",
+      "route": "/comunidades",
+      "role_queries": 0,
+      "endpoints": [],
+      "total_fetches": 0
+    },
+    {
+      "capture": "after-communities",
+      "request_id": "130796c3-9573-49f7-884c-2c639bbe6290",
+      "route": "/comunidades",
+      "role_queries": 0,
+      "endpoints": [],
+      "total_fetches": 0
+    },
+    {
+      "capture": "after-admin",
+      "request_id": "506de59d-4b17-4c75-b3f9-79788ac25e7c",
+      "route": "/admin/foros",
+      "role_queries": 3,
+      "endpoints": [
+        "platform_admins",
+        "forum_global_roles",
+        "music_archive_editors"
+      ],
+      "total_fetches": 3
+    }
+  ],
+  "authentication_note": "The first after-feed request also fetched public signing keys (jwks.json). This is authentication traffic, not a role query; kept in the HAR and total_fetches."
+}

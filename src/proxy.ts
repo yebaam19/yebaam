@@ -152,7 +152,7 @@ export async function proxy(request: NextRequest) {
   // shell render — not the auth lookup — was the dominant Active CPU cost on
   // `/` (Vercel Observability showed `/` burning ~6x the CPU/request of
   // `/login`, which sits under the much lighter (auth) layout). Doing it here
-  // also skips the two admin-role queries below for this path.
+  // also skips all role queries below for this path.
   if (pathname === '/') {
     return redirectWithCookies(new URL(hasSession ? '/feed' : '/login', request.url), client)
   }
@@ -176,18 +176,19 @@ export async function proxy(request: NextRequest) {
     !isPrivateCityNewsRoute &&
     AUTH_ALLOWED_PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
-  if (hasSession && user) {
+  // These public routes allow every verified user, regardless of role. Private
+  // pages need platform-admin routing; delegated roles only affect /admin/**.
+  if (hasSession && user && !isAuthAllowedPublic) {
+    const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/')
+    const isMusicAdminRoute = pathname === '/admin/music' || pathname.startsWith('/admin/music/')
     const [{ data: adminRow }, { data: forumRoleRow }, { data: musicEditorRow }] = await Promise.all([
       supabase.from('platform_admins').select('user_id').eq('user_id', user.id).maybeSingle(),
-      supabase.from('forum_global_roles').select('role').eq('user_id', user.id).maybeSingle(),
-      supabase.from('music_archive_editors').select('user_id').eq('user_id', user.id).maybeSingle(),
+      isAdminRoute ? supabase.from('forum_global_roles').select('role').eq('user_id', user.id).maybeSingle() : { data: null },
+      isAdminRoute ? supabase.from('music_archive_editors').select('user_id').eq('user_id', user.id).maybeSingle() : { data: null },
     ])
     const isPlatformAdmin = Boolean(adminRow)
     const hasForumAccess = isPlatformAdmin || Boolean(forumRoleRow)
     const hasMusicAdminAccess = isPlatformAdmin || Boolean(musicEditorRow)
-
-    const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/')
-    const isMusicAdminRoute = pathname === '/admin/music' || pathname.startsWith('/admin/music/')
 
     // Explicit "ver como público" link from the admin panel (e.g. the user
     // detail's "Ver perfil público"). Without this the corral below would bounce
@@ -222,7 +223,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Every matched request costs a local JWT verification (`getClaims()`)
-    // plus, for signed-in users, two role queries — so anything that isn't a
+    // plus 0–3 role queries depending on the route — so anything that isn't a
     // page must be excluded. (Before the `getClaims()` migration this was a
     // full GoTrue `getUser()` network round-trip per request; the role queries
     // are still real DB calls, so the exclusions below still matter.)

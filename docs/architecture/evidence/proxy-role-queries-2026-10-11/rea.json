@@ -1,0 +1,18 @@
+{
+  "before": {
+    "evidence_id": "ev_3e877c727625beb5d6502d5330e846a5dba755278655bb9186760258740b5189",
+    "sha256": "fa3e11ff08c6162c1a00d3adc55a10cca8db93b389091d2403664b0b7bb03d3b",
+    "records": 24
+  },
+  "after": {
+    "evidence_id": "ev_b9d5b2558205ce9524ed0a228c9f526b781107cf889277f0adbabbffbc54021d",
+    "sha256": "23b22d464fb0f08e4f5c564ee7c509d5e74fd51dc6630ee4029dfeb987c296b9",
+    "records": 8
+  },
+  "limitations": [
+    "This is retained producer evidence, without live browser transaction IDs, scenario provenance, execution attribution or deployment authenticity. Recorded URLs are never fetched.",
+    "Every record is decoded before selection; no partial success is returned on malformed input or a resource limit.",
+    "Known authentication headers/cookies and explicitly marked literal values are excluded. Unknown extension names do not establish sensitivity.",
+    "A 32 MiB input, 96 MiB reply and 64-level nesting budget bound complete evidence. HAR uses a 192 MiB Node old-generation heap; native decoding uses a 768 MiB Linux address-space limit. Each owned command has a 30-second deadline with independent cleanup."
+  ]
+}

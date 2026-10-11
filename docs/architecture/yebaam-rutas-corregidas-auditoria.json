@@ -1,0 +1,445 @@
+{
+  "captured_at": "2026-10-11T04:30:00Z",
+  "scope": "YEBAAM repository routes; excludes negocios, artistas, escuelas",
+  "fixes": {
+    "canonical_routes": [
+      "/comunidades",
+      "/profiles",
+      "/friends",
+      "/clubs",
+      "/blogs",
+      "/familias",
+      "/professional-profile",
+      "/chat-publico"
+    ],
+    "legacy_redirects": "308; deep paths and query preserved",
+    "community_suggestions": "/comunidades/:slug",
+    "preview_requests": {
+      "pet": {
+        "before": 2,
+        "after": 1
+      },
+      "community_article": {
+        "before": 2,
+        "after": 1
+      }
+    },
+    "chat_visitor_policy": "Public global, open, unexpired, nonarchived topics only; anonymous writes remain denied",
+    "notification_accessibility": "Native button with content label; separate delete/friend actions; keyboard focus; removed redundant fragment; onRead typed Promise<void>"
+  },
+  "verification": {
+    "full_tests": {
+      "passed": 766,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "build": "passed after all changes; pnpm build exited 0",
+    "changed_files_lint": "passed",
+    "full_lint": {
+      "status": "pre-existing failures remain",
+      "errors": 257,
+      "warnings": 335
+    },
+    "browser": "Feed and Communities render; ordinary user is redirected away from /admin/foros before and after. All roles and revoked privileges covered by automated tests."
+  },
+  "runtime_evidence": {
+    "har": "/Users/ellis/Downloads/yebaam-feed-routes-fixed.har",
+    "rea_evidence": "ev_3af122fb8edce5f76bd23e7f9a977b0321aba84165e629ce0fa0c3d04d2b3258",
+    "preview_ordinals": [
+      83,
+      98
+    ],
+    "http_errors": 0,
+    "load_ms": {
+      "before": 3291.2,
+      "after": 2374.932
+    },
+    "caveat": "Single local-development observation, not a controlled performance benchmark; browser extensions inject hydration errors"
+  },
+  "audit": {
+    "supabase": {
+      "window_utc": {
+        "from": "2026-10-10T04:30:00Z",
+        "to": "2026-10-11T04:30:00Z"
+      },
+      "edge_records": 105071,
+      "top_paths": [
+        {
+          "avg_origin_ms": 129.2,
+          "calls": 37999,
+          "errors": 0,
+          "path": "/rest/v1/clubs"
+        },
+        {
+          "avg_origin_ms": 134.3,
+          "calls": 20275,
+          "errors": 0,
+          "path": "/rest/v1/music_genres"
+        },
+        {
+          "avg_origin_ms": 135.91,
+          "calls": 19022,
+          "errors": 0,
+          "path": "/rest/v1/music_media"
+        },
+        {
+          "avg_origin_ms": 148.57,
+          "calls": 4634,
+          "errors": 1,
+          "path": "/rest/v1/platform_admins"
+        },
+        {
+          "avg_origin_ms": 155.68,
+          "calls": 4632,
+          "errors": 2,
+          "path": "/rest/v1/forum_global_roles"
+        },
+        {
+          "avg_origin_ms": 148.92,
+          "calls": 4434,
+          "errors": 0,
+          "path": "/rest/v1/music_archive_editors"
+        },
+        {
+          "avg_origin_ms": 128.43,
+          "calls": 1895,
+          "errors": 0,
+          "path": "/rest/v1/music_album_clubs"
+        },
+        {
+          "avg_origin_ms": 170.57,
+          "calls": 1633,
+          "errors": 0,
+          "path": "/rest/v1/profiles"
+        },
+        {
+          "avg_origin_ms": 146.66,
+          "calls": 1330,
+          "errors": 0,
+          "path": "/rest/v1/music_albums"
+        },
+        {
+          "avg_origin_ms": 158.38,
+          "calls": 1033,
+          "errors": 1,
+          "path": "/rest/v1/community_members"
+        },
+        {
+          "avg_origin_ms": 174.5,
+          "calls": 807,
+          "errors": 0,
+          "path": "/rest/v1/communities"
+        },
+        {
+          "avg_origin_ms": 243,
+          "calls": 484,
+          "errors": 0,
+          "path": "/auth/v1/user"
+        },
+        {
+          "avg_origin_ms": 185.19,
+          "calls": 391,
+          "errors": 0,
+          "path": "/rest/v1/rpc/community_profile_capabilities"
+        },
+        {
+          "avg_origin_ms": 189.22,
+          "calls": 353,
+          "errors": 0,
+          "path": "/rest/v1/friendships"
+        },
+        {
+          "avg_origin_ms": 220.16,
+          "calls": 308,
+          "errors": 0,
+          "path": "/rest/v1/community_sections"
+        },
+        {
+          "avg_origin_ms": 174.7,
+          "calls": 283,
+          "errors": 0,
+          "path": "/rest/v1/notifications"
+        },
+        {
+          "avg_origin_ms": 240.4,
+          "calls": 255,
+          "errors": 0,
+          "path": "/rest/v1/cities"
+        },
+        {
+          "avg_origin_ms": 190.09,
+          "calls": 246,
+          "errors": 0,
+          "path": "/rest/v1/community_profile_theme"
+        },
+        {
+          "avg_origin_ms": 177.21,
+          "calls": 244,
+          "errors": 0,
+          "path": "/rest/v1/rpc/community_uses_structured_rules"
+        },
+        {
+          "avg_origin_ms": 209.75,
+          "calls": 243,
+          "errors": 0,
+          "path": "/rest/v1/community_showcases"
+        },
+        {
+          "avg_origin_ms": 192.85,
+          "calls": 224,
+          "errors": 0,
+          "path": "/rest/v1/conversation_participants"
+        },
+        {
+          "avg_origin_ms": 122.96,
+          "calls": 222,
+          "errors": 0,
+          "path": "/rest/v1/community_plan_axes"
+        },
+        {
+          "avg_origin_ms": 177.79,
+          "calls": 189,
+          "errors": 0,
+          "path": "/auth/v1/.well-known/jwks.json"
+        },
+        {
+          "avg_origin_ms": 212.76,
+          "calls": 166,
+          "errors": 0,
+          "path": "/rest/v1/rpc/community_top_tabs_configured"
+        },
+        {
+          "avg_origin_ms": 215.8,
+          "calls": 166,
+          "errors": 0,
+          "path": "/rest/v1/community_top_tabs"
+        }
+      ],
+      "recent_hour": [
+        {
+          "agent_group": "node",
+          "calls": 534,
+          "path": "/rest/v1/forum_global_roles",
+          "role": "authenticated"
+        },
+        {
+          "agent_group": "node",
+          "calls": 534,
+          "path": "/rest/v1/platform_admins",
+          "role": "authenticated"
+        },
+        {
+          "agent_group": "node",
+          "calls": 483,
+          "path": "/rest/v1/music_archive_editors",
+          "role": "authenticated"
+        },
+        {
+          "agent_group": "node",
+          "calls": 65,
+          "path": "/rest/v1/clubs",
+          "role": ""
+        },
+        {
+          "agent_group": "node",
+          "calls": 61,
+          "path": "/rest/v1/music_media",
+          "role": ""
+        },
+        {
+          "agent_group": "node",
+          "calls": 61,
+          "path": "/rest/v1/music_genres",
+          "role": ""
+        },
+        {
+          "agent_group": "node",
+          "calls": 17,
+          "path": "/rest/v1/clubs",
+          "role": "authenticated"
+        }
+      ],
+      "statement_stats_reset": "2026-04-13T22:10:24.708252Z",
+      "advisors": [
+        {
+          "name": "unindexed_foreign_keys",
+          "count": 132,
+          "public_findings": 75,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+        },
+        {
+          "name": "auth_rls_initplan",
+          "count": 36,
+          "public_findings": 34,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+        },
+        {
+          "name": "unused_index",
+          "count": 153,
+          "public_findings": 126,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "multiple_permissive_policies",
+          "count": 202,
+          "public_findings": 167,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+        }
+      ],
+      "priorities": [
+        {
+          "finding": "Proxy runs 3 role reads on every matched authenticated page/RSC request",
+          "calls_24h": 13700,
+          "calls_last_hour": 1551,
+          "file": "src/proxy.ts:180",
+          "proposal": "Read forum/music roles only for admin routes; alternatively session-bound RPC. Preserve platform admin routing and role revocation; test owner/non-owner/admin. No cross-user role cache."
+        },
+        {
+          "finding": "Music endpoints dominate 24-hour logs, but current code already has public taxonomy and anonymous club caching",
+          "calls_24h": 77296,
+          "share_percent": 73.57,
+          "proposal": "Verify deployment/cache hit rate before rewriting. Recent hour has 61 genre, 61 media and 82 club requests. Historical pg_stat_statements is cumulative since April and cannot demonstrate a current loop."
+        },
+        {
+          "finding": "Nested ChatNotificationProvider in application layout and SocialPageLayout",
+          "proposal": "Remove duplicate provider after reproducing duplicated UI events; socket singleton means this alone does not prove duplicate network connections."
+        }
+      ],
+      "caveat": "Project-wide counts include development and other callers. The three-role table totals do not prove that every call originated in the proxy. Recent and daily samples are not controlled before/after measurements."
+    },
+    "cloudflare": {
+      "account_verified": true,
+      "workers_list": [],
+      "images_stats": "Authentication error code 10000",
+      "stream_usage": "Authentication error code 10000",
+      "limitation": "MCP can list account/workers but cannot read Images/Stream analytics with current connector authorization. No volume conclusion possible; no permissions changed."
+    }
+  },
+  "follow_up": {
+    "date": "2026-10-11",
+    "proxy_optimization": "Public allowed routes: 0 role reads; private pages: platform_admins only; admin pages: all three role reads. No role cache or RLS changes.",
+    "evidence": "evidence/proxy-role-queries-2026-10-11/requests.json",
+    "original_artifacts": "Original HAR and screenshot links reference local Downloads files; not included in the repository.",
+    "status": "implemented and verified; Cloudflare metrics blocked by connector authentication",
+    "tests": {
+      "full_suite_passed": 766,
+      "full_suite_failed": 0,
+      "permission_tests": 130,
+      "typecheck": "passed",
+      "changed_files_lint": "passed",
+      "full_repository_lint": {
+        "errors": 257,
+        "warnings": 335,
+        "status": "pre-existing failures remain; changed code files pass lint"
+      },
+      "production_build": "passed; exit 0"
+    },
+    "cities_tests": "Allow additional cities while asserting all 8 original seed slugs remain visible to the anonymous client; no database records changed.",
+    "cloudflare": "Retry via MCP still returned authentication error 10000 for Images stats and Stream usage. Reconnecting the connector with access to those products remains pending.",
+    "nextjs": {
+      "entrypoint": "src/proxy.ts, named export proxy, Node.js runtime",
+      "helper": "src/utils/supabase/middleware.ts is an internal session helper, not a Next.js entrypoint; kept at the canonical path defined in AGENTS.md.",
+      "sources": [
+        "https://github.com/vercel/next.js/blob/v16.2.2/docs/01-app/02-guides/upgrading/version-16.mdx",
+        "https://github.com/vercel/next.js/blob/v16.2.2/docs/01-app/02-guides/authentication.mdx"
+      ],
+      "documentation_method": "Context7, Next.js 16.2.2 (nearest available version to installed 16.2.3)",
+      "scope": "Reduces unnecessary DB reads. Retains one platform-admin lookup on private routes for existing routing behavior and all three role lookups on admin routes. Does not claim all role checks have moved out of Proxy; authorization in actions/handlers and RLS is unchanged."
+    },
+    "governance": "Macro Reglamento Art. 2: existing privacy/RLS boundaries retained; no privilege cache or service-role use.",
+    "capture_result": {
+      "role_queries_per_request": {
+        "feed": {
+          "before": 3,
+          "after": 1
+        },
+        "comunidades": {
+          "before": 3,
+          "after": 0
+        },
+        "admin_foros": {
+          "before": 3,
+          "after": 3
+        }
+      },
+      "sample_size": {
+        "feed": 4,
+        "comunidades": 3,
+        "admin_foros": 1
+      },
+      "sample_size_note": "Same number of matched requests before and after; includes development client-triggered requests. Not independent performance trials.",
+      "admin_browser_result": "Ordinary authenticated user redirected to /feed both before and after. Other role combinations verified in tests, not by changing real accounts.",
+      "all_fetch_http_status": 200,
+      "rea": "evidence/proxy-role-queries-2026-10-11/rea.json",
+      "latency_limit": "No whole-page speed improvement claimed. Per-request role count is the measured result."
+    },
+    "screenshot_local": "/Users/ellis/Downloads/localhost_3000_comunidades.png"
+  },
+  "historical_verification_before_proxy_follow_up": {
+    "focused_tests_latest": 37,
+    "focused_previous": 43,
+    "full_tests": {
+      "passed": 633,
+      "failed": 2,
+      "reason": "Pre-existing cities seed assertions expect 8, receive 9"
+    },
+    "typecheck": "passed; final production build also completed TypeScript verification",
+    "build": "passed after all changes (pnpm build, exit 0)",
+    "lint": "NotificationItem clean; repository full lint still has pre-existing errors",
+    "rls_tests": "anonymous/authenticated selection, private/secret/closed/expired/archived exclusion and anonymous INSERT rejection passed; fixtures rolled back",
+    "security_advisor": {
+      "before": [
+        {
+          "name": "rls_enabled_no_policy",
+          "count": 13
+        },
+        {
+          "name": "function_search_path_mutable",
+          "count": 10
+        },
+        {
+          "name": "extension_in_public",
+          "count": 1
+        },
+        {
+          "name": "anon_security_definer_function_executable",
+          "count": 165
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "count": 204
+        },
+        {
+          "name": "auth_leaked_password_protection",
+          "count": 1
+        }
+      ],
+      "after": [
+        {
+          "name": "rls_enabled_no_policy",
+          "count": 13
+        },
+        {
+          "name": "function_search_path_mutable",
+          "count": 10
+        },
+        {
+          "name": "extension_in_public",
+          "count": 1
+        },
+        {
+          "name": "anon_security_definer_function_executable",
+          "count": 165
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "count": 204
+        },
+        {
+          "name": "auth_leaked_password_protection",
+          "count": 1
+        }
+      ]
+    }
+  }
+}
