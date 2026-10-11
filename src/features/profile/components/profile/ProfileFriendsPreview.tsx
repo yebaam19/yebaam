@@ -1,13 +1,13 @@
 'use client';
 
+import { useAuth } from '@/features/auth/context/auth-context';
+import { friendshipsService,type Friend } from '@/features/friendships/services/friendships.service';
+import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import Avatar from '@/ui/Avatar';
-import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
 import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '@/features/auth/context/auth-context';
-import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
-import { friendshipsService, type Friend } from '@/features/friendships/services/friendships.service';
+import Link from 'next/link';
+import { useEffect,useMemo,useState } from 'react';
 
 interface ProfileFriendsPreviewProps {
   userId: string;
@@ -71,7 +71,7 @@ export default function ProfileFriendsPreview({ userId, username }: ProfileFrien
           </p>
           {isOwnProfile && (
             <Link
-              href={'/feed/friends?tab=suggestions' as Route}
+              href={'/friends?tab=suggestions' as Route}
               className="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               {t('explorePeople')}

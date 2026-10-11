@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname,useRouter,useSearchParams } from 'next/navigation';
+import { useEffect,useState } from 'react';
 import EditProfileModal from './EditProfileModal';
-import ProfileCover from './ProfileHeader/ProfileCover';
-import ProfileAvatar from './ProfileHeader/ProfileAvatar';
-import ProfileIdentity from './ProfileHeader/ProfileIdentity';
 import ProfileActions from './ProfileHeader/ProfileActions';
+import ProfileAvatar from './ProfileHeader/ProfileAvatar';
+import ProfileCover from './ProfileHeader/ProfileCover';
+import ProfileIdentity from './ProfileHeader/ProfileIdentity';
 
 type EditTab = 'general' | 'work-education' | 'contact' | 'interests';
 const VALID_EDIT_TABS: readonly EditTab[] = ['general', 'work-education', 'contact', 'interests'];
@@ -60,7 +60,7 @@ export default function ProfileHeader({
   const searchParams = useSearchParams();
 
   // Deep-link: ?edit=profile (optionally &tab=interests|general|...) auto-opens
-  // the edit modal on the requested tab. Used by /feed/friends "Tu progreso"
+  // the edit modal on the requested tab. Used by /friends "Tu progreso"
   // steps so users land directly in the right form.
   useEffect(() => {
     if (!isOwnProfile) return;

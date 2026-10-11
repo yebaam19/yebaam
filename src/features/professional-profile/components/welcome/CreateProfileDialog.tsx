@@ -6,15 +6,14 @@
 
 'use client'
 
-import { createProfileAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
+import { createProfileAction } from '@/app/(app)/(social)/professional-profile/server/profile.actions'
+import { ArrowPathIcon,GlobeAltIcon,LockClosedIcon,UserGroupIcon,XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useMyProfile } from '@/features/user/hooks/useUserProfile'
 import { cn } from '@/lib/utils'
 import { Button } from '@/ui/Button'
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { GlobeAltIcon, LockClosedIcon, UserGroupIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
+import { Dialog,DialogPanel,DialogTitle,Transition,TransitionChild } from '@headlessui/react'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState,useTransition } from 'react'
 import { toast } from 'sonner'
 import type { ProfessionalProfileVisibility } from '../../interfaces/professional-profile.interfaces'
 
@@ -66,7 +65,7 @@ export function CreateProfileDialog({ isOpen, onClose }: CreateProfileDialogProp
       toast.success('Perfil profesional creado correctamente')
       onClose()
       const username = myProfile?.username || result.data?.userId
-      router.push(`/feed/professional-profile/${username}`)
+      router.push(`/professional-profile/${username}`)
       router.refresh()
     })
   }

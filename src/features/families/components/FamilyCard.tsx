@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
 import { UserGroupIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 import type { FamilyWithViewer } from '../types/family.types';
 
 export async function FamilyCard({ family }: { family: FamilyWithViewer }) {
@@ -15,7 +15,7 @@ export async function FamilyCard({ family }: { family: FamilyWithViewer }) {
     : t('card.personOther', { count: family.person_count });
   return (
     <Link
-      href={`/feed/familias/${family.slug}`}
+      href={`/familias/${family.slug}`}
       className="group block overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
     >
       <div className="relative h-32 w-full bg-gradient-to-br from-emerald-200 to-teal-300 dark:from-emerald-900 dark:to-teal-800">

@@ -1,14 +1,14 @@
 'use client'
 
-import { CheckBadgeIcon, DocumentTextIcon, EyeIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
+import { CheckBadgeIcon,DocumentTextIcon,EyeIcon,UserGroupIcon } from '@/components/icons/heroicons-shim'
+import { resolveImageRef } from '@/lib/media/urls'
+import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
-import type { Route } from 'next'
 import { FC } from 'react'
-import { useTranslations } from 'next-intl'
-import { resolveImageRef } from '@/lib/media/urls'
 import type { Blog } from '../types/blog.types'
-import { formatFollowersCount, formatViewsCount, getCategoryColor, getCategoryLabel } from '../utils/blogHelpers'
+import { formatFollowersCount,formatViewsCount,getCategoryColor,getCategoryLabel } from '../utils/blogHelpers'
 
 interface BlogCardProps {
   blog: Blog
@@ -20,7 +20,7 @@ interface BlogCardProps {
   basePath?: string
 }
 
-export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoading = false, basePath = '/feed/blogs' }) => {
+export const BlogCard: FC<BlogCardProps> = ({ blog, onFollow, onUnfollow, isLoading = false, basePath = '/blogs' }) => {
   const t = useTranslations('blogs.card')
   // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
   const coverSrc = resolveImageRef(blog.coverImageUrl, 'cover')

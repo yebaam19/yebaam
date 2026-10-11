@@ -25,6 +25,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      ...['profiles', 'friends', 'clubs', 'blogs', 'familias', 'professional-profile', 'chat-publico'].map((route) => ({
+        source: `/feed/${route}/:path*`,
+        destination: `/${route}/:path*`,
+        permanent: true,
+      })),
+      { source: '/feed/amigos', destination: '/friends', permanent: true },
+      { source: '/feed/profile/:username', destination: '/:username', permanent: true },
       { source: '/messages/:id', destination: '/chat/:id', permanent: true },
       { source: '/messages', destination: '/feed', permanent: true },
       { source: '/feed/cities', destination: '/cities', permanent: true },

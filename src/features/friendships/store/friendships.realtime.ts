@@ -1,5 +1,5 @@
+import { subscribeToTable,unsubscribe } from '@/utils/supabase/realtime';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 import { useFriendshipsStore } from './friendships.store';
 
 /**
@@ -20,7 +20,7 @@ import { useFriendshipsStore } from './friendships.store';
  *
  * Exactly ONE channel exists per browser tab regardless of how many components
  * mount `useFriendships()` (RightSidebar rail, FriendRequestsCard, every
- * /feed/friends tab…): the channel is module-scoped and refcounted — the first
+ * /friends tab…): the channel is module-scoped and refcounted — the first
  * acquirer opens it, the last release closes it.
  */
 

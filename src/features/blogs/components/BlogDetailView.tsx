@@ -1,18 +1,18 @@
 'use client'
 
-import { type TabType } from '@/features/blogs/components/BlogTabs'
-import { BlogDetailHero } from '@/features/blogs/components/BlogDetailView/BlogDetailHero'
-import { BlogDetailTabs } from '@/features/blogs/components/BlogDetailView/BlogDetailTabs'
-import { BlogDetailSideMenu } from '@/features/blogs/components/BlogDetailView/BlogDetailSideMenu'
-import { type BlogSideMenuItem } from '@/features/blogs/components/detail/BlogSideMenu'
-import { EditBlogModal } from '@/features/blogs/components/EditBlogModal'
-import { useBlogBySlug, useBlogPosts, useFollowBlog, useUnfollowBlog } from '@/features/blogs/hooks/useBlogs'
 import { useAuth } from '@/features/auth/context/auth-context'
-import { ensureBlogChatTopicAction } from '@/features/chat-publico/actions/chat-publico.actions'
+import { BlogDetailHero } from '@/features/blogs/components/BlogDetailView/BlogDetailHero'
+import { BlogDetailSideMenu } from '@/features/blogs/components/BlogDetailView/BlogDetailSideMenu'
+import { BlogDetailTabs } from '@/features/blogs/components/BlogDetailView/BlogDetailTabs'
+import { type TabType } from '@/features/blogs/components/BlogTabs'
+import { EditBlogModal } from '@/features/blogs/components/EditBlogModal'
+import { type BlogSideMenuItem } from '@/features/blogs/components/detail/BlogSideMenu'
+import { useBlogBySlug,useBlogPosts,useFollowBlog,useUnfollowBlog } from '@/features/blogs/hooks/useBlogs'
 import { computeBlogStars } from '@/features/blogs/utils/rating'
-import { useRouter } from 'next/navigation'
+import { ensureBlogChatTopicAction } from '@/features/chat-publico/actions/chat-publico.actions'
 import type { Route } from 'next'
-import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMemo,useState } from 'react'
 
 interface BlogDetailViewProps {
   /** Blog slug to load. Passed by the route page so this component is mount-agnostic. */
@@ -106,12 +106,12 @@ export function BlogDetailView({ slug, embedded = false }: BlogDetailViewProps) 
       if (blog.isOwner) {
         const result = await ensureBlogChatTopicAction(blog.id)
         if (result?.topicSlug) {
-          router.push(`/feed/chat-publico/${result.topicSlug}` as Route)
+          router.push(`/chat-publico/${result.topicSlug}` as Route)
           return
         }
       }
       const fallbackSlug = `blog-${blog.slug}`
-      router.push(`/feed/chat-publico/${fallbackSlug}` as Route)
+      router.push(`/chat-publico/${fallbackSlug}` as Route)
       return
     }
     setOpenedMenu(item)

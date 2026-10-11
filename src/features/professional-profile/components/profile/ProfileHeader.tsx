@@ -6,16 +6,17 @@
 
 'use client'
 
-import { followProfileAction, unfollowProfileAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
-import { CheckBadgeIcon, Cog6ToothIcon, ShareIcon, UserMinusIcon, UserPlusIcon } from '@/components/icons/heroicons-shim'
+import { followProfileAction,unfollowProfileAction } from '@/app/(app)/(social)/professional-profile/server/profile.actions'
+import { CheckBadgeIcon,Cog6ToothIcon,ShareIcon,UserMinusIcon,UserPlusIcon } from '@/components/icons/heroicons-shim'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { useState, useTransition } from 'react'
+import { useState,useTransition } from 'react'
 import { toast } from 'sonner'
 import type { ProfessionalProfile } from '../../interfaces/professional-profile.interfaces'
 import { getHighestVerifiedDegree } from '../../lib/credentials'
 import { DegreeBadge } from './DegreeBadge'
+import { shareProfessionalProfile } from './shareProfessionalProfile'
 
 interface ProfileHeaderProps {
   profile: ProfessionalProfile
@@ -67,41 +68,7 @@ export function ProfileHeader({ profile, user, isOwner, initialIsFollowing = fal
     })
   }
 
-  // Generar la URL completa del perfil
-  const profileUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/feed/professional-profile/${user.username}` : ''
-
-  // Handler para copiar/compartir URL
-  const handleShareProfile = async () => {
-    try {
-      // Copiar URL al clipboard
-      await navigator.clipboard.writeText(profileUrl)
-      toast.success('¡URL copiada al portapapeles!', {
-        description: profileUrl,
-        duration: 4000,
-      })
-    } catch (error) {
-      console.error('Error copying to clipboard:', error)
-
-      // Fallback manual si clipboard API falla
-      const textArea = document.createElement('textarea')
-      textArea.value = profileUrl
-      textArea.style.position = 'fixed'
-      textArea.style.left = '-999999px'
-      document.body.appendChild(textArea)
-      textArea.select()
-
-      try {
-        document.execCommand('copy')
-        toast.success('¡URL copiada al portapapeles!')
-      } catch (err) {
-        toast.error('No se pudo copiar la URL. Por favor, cópiala manualmente.')
-        console.error('Fallback copy failed:', err)
-      }
-
-      document.body.removeChild(textArea)
-    }
-  }
+  const handleShareProfile = () => shareProfessionalProfile(user.username)
 
   return (
     <div className="relative min-w-0 max-w-full">

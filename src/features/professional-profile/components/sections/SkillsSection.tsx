@@ -6,17 +6,17 @@
 
 'use client'
 
-import { addSkillAction, deleteSkillAction, updateSkillAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
+import { addSkillAction,deleteSkillAction,updateSkillAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { LightBulbIcon,PencilIcon,TrashIcon } from '@/components/icons/heroicons-shim'
 import { cn } from '@/lib/utils'
-import { LightBulbIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { Skill, SkillFormData } from '../../interfaces/professional-profile.interfaces'
+import type { Skill,SkillFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { SkillDialog } from '../dialogs/SkillDialog'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface SkillsSectionProps {
   profileId: string

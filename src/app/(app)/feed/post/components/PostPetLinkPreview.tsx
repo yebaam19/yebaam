@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { PawIcon } from '@/components/icons/PawIcon';
+import {
+getPetPreviewByUsernameAndSlug,
+} from '@/features/pets/actions/pets.actions';
+import { useLinkPreview } from '@/lib/hooks/useLinkPreview';
+import { imageUrl } from '@/lib/media/urls';
+import type { Route } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Route } from 'next';
-import { PawIcon } from '@/components/icons/PawIcon';
-import { imageUrl } from '@/lib/media/urls';
-import { coalescePending } from '@/lib/coalesce-pending';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import {
-  getPetPreviewByUsernameAndSlug,
-  type PetLinkPreview,
-} from '@/features/pets/actions/pets.actions';
+import { useCallback } from 'react';
 
 /**
  * Matches a canonical pet URL with or without origin:
@@ -44,26 +42,8 @@ interface PostPetLinkPreviewProps {
 }
 
 export function PostPetLinkPreview({ username, slug }: PostPetLinkPreviewProps) {
-  const [preview, setPreview] = useState<PetLinkPreview | null | 'loading' | 'error'>('loading');
-  const viewerId = useAuthStore((state) => state.user?.id);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await coalescePending(
-          `pet-preview:${viewerId ?? 'guest'}:${username}:${slug}`,
-          () => getPetPreviewByUsernameAndSlug(username, slug),
-        );
-        if (!cancelled) setPreview(result);
-      } catch {
-        if (!cancelled) setPreview('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [username, slug, viewerId]);
+  const loadPreview = useCallback(() => getPetPreviewByUsernameAndSlug(username, slug), [username, slug]);
+  const preview = useLinkPreview(`pet-preview:${username}:${slug}`, loadPreview);
 
   if (preview === 'loading') {
     return (

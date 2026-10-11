@@ -1,9 +1,9 @@
 'use client'
 
-import Link from 'next/link'
+import { cn } from '@/lib/utils'
 import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
-import { cn } from '@/lib/utils'
+import Link from 'next/link'
 import type { PublicChatTopic } from '../types'
 
 interface Props {
@@ -27,7 +27,7 @@ export default function RoomsSidebar({ topics, activeSlug }: Props) {
           )}
           {topics.map((topic) => {
             const isActive = topic.slug === activeSlug
-            const href = `/feed/chat-publico/${topic.slug}` as Route
+            const href = `/chat-publico/${topic.slug}` as Route
             const isSub = !!topic.parent_topic_id
             return (
               <li key={topic.id}>

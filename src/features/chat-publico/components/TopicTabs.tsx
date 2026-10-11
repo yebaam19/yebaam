@@ -1,9 +1,9 @@
 'use client'
 
-import Link from 'next/link'
+import { cn } from '@/lib/utils'
 import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
-import { cn } from '@/lib/utils'
+import Link from 'next/link'
 import type { PublicChatTopic } from '../types'
 
 interface Props {
@@ -22,7 +22,7 @@ export default function TopicTabs({ topics, activeSlug }: Props) {
       <ul className="flex gap-1 overflow-x-auto px-3 py-2 sm:px-6">
         {topics.map((topic) => {
           const isActive = topic.slug === activeSlug
-          const href = `/feed/chat-publico/${topic.slug}` as Route
+          const href = `/chat-publico/${topic.slug}` as Route
           return (
             <li key={topic.id} className="shrink-0">
               <Link

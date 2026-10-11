@@ -17,7 +17,7 @@ vi.mock('@/utils/supabase/middleware', () => ({
 }));
 
 describe('public community routes', () => {
-  it.each(['/comunidades', '/comunidades/una-comunidad/fotos'])(
+  it.each(['/comunidades', '/comunidades/una-comunidad/fotos', '/chat-publico', '/chat-publico/general'])(
     'lets a visitor read %s without a login redirect', async (path) => {
       const response = await proxy(new NextRequest(`http://localhost:3000${path}`));
       expect(response.status).toBe(200);
@@ -25,9 +25,10 @@ describe('public community routes', () => {
     },
   );
 
-  it('keeps unrelated feed routes behind login', async () => {
-    const response = await proxy(new NextRequest('http://localhost:3000/feed'));
+  it.each(['/feed', '/friends', '/clubs', '/blogs', '/familias', '/profiles', '/professional-profile', '/chat-publico-private'])(
+    'keeps private routes behind login: %s', async (path) => {
+    const response = await proxy(new NextRequest(`http://localhost:3000${path}`));
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('http://localhost:3000/login?redirect=%2Ffeed');
+    expect(response.headers.get('location')).toBe(`http://localhost:3000/login?redirect=${encodeURIComponent(path)}`);
   });
 });

@@ -6,16 +6,16 @@
 
 'use client'
 
-import { addExperienceAction, deleteExperienceAction, updateExperienceAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
-import { BriefcaseIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
-import { useLocale, useTranslations } from 'next-intl'
+import { addExperienceAction,deleteExperienceAction,updateExperienceAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { BriefcaseIcon,PencilIcon,TrashIcon } from '@/components/icons/heroicons-shim'
+import { useLocale,useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { Experience, ExperienceFormData } from '../../interfaces/professional-profile.interfaces'
+import type { Experience,ExperienceFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { ExperienceDialog } from '../dialogs/ExperienceDialog'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface ExperienceSectionProps {
   profileId: string

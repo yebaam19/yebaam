@@ -6,18 +6,18 @@
 
 'use client'
 
-import { addStudyAction, deleteStudyAction, updateStudyAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
-import { BookOpenIcon, CheckBadgeIcon, PencilIcon, ShieldCheckIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { addStudyAction,deleteStudyAction,updateStudyAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { BookOpenIcon,CheckBadgeIcon,PencilIcon,ShieldCheckIcon,TrashIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { Study, StudyFormData } from '../../interfaces/professional-profile.interfaces'
+import type { Study,StudyFormData } from '../../interfaces/professional-profile.interfaces'
+import { composeStudyLine } from '../../lib/credentials'
+import { CredentialUploadDialog } from '../dialogs/CredentialUploadDialog'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { StudyDialog } from '../dialogs/StudyDialog'
-import { CredentialUploadDialog } from '../dialogs/CredentialUploadDialog'
-import { composeStudyLine } from '../../lib/credentials'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface StudiesSectionProps {
   profileId: string

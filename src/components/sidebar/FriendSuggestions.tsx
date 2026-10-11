@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
 import { UserPlusIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
-import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface FriendSuggestion {
   id: string;
@@ -48,7 +48,7 @@ export default function FriendSuggestions({ suggestions, onSendRequest }: Friend
           {t('friendSuggestions')}
         </h3>
         <Link
-          href="/feed/friends?tab=suggestions"
+          href="/friends?tab=suggestions"
           className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
           {t('viewAllSuggestions')}

@@ -1,18 +1,18 @@
 import {
-  AcademicCapIcon,
-  BookOpenIcon,
-  BuildingOffice2Icon,
-  BuildingStorefrontIcon,
-  GlobeAmericasIcon,
-  HomeIcon,
-  KeyIcon,
-  MusicalNoteIcon,
-  NewspaperIcon,
-  PaintBrushIcon,
-  RectangleStackIcon,
-  SparklesIcon,
-  StarIcon,
-  UserGroupIcon,
+AcademicCapIcon,
+BookOpenIcon,
+BuildingOffice2Icon,
+BuildingStorefrontIcon,
+GlobeAmericasIcon,
+HomeIcon,
+KeyIcon,
+MusicalNoteIcon,
+NewspaperIcon,
+PaintBrushIcon,
+RectangleStackIcon,
+SparklesIcon,
+StarIcon,
+UserGroupIcon,
 } from '@/components/icons/heroicons-shim';
 import type { FeatureFlag } from './features-flag';
 import type { MenuSectionConfig } from './menuConfig';
@@ -25,9 +25,9 @@ export const principalMenu: MenuSectionConfig[] = [
         {
           icon: RectangleStackIcon,
           labelKey: 'items.profilesAndSpaces',
-          href: '{basePath}/profiles',
+          href: '/profiles',
         },
-        { icon: UserGroupIcon, labelKey: 'items.friends', href: '{basePath}/friends', badge: '{badgeFriendRequests}' },
+        { icon: UserGroupIcon, labelKey: 'items.friends', href: '/friends', badge: '{badgeFriendRequests}' },
         {
           // El Umbral (clave-1.pdf marketing stunt): the entry point members
           // share from; the page itself carries the "Enviar este enlace" CTA.
@@ -52,13 +52,13 @@ export const principalMenu: MenuSectionConfig[] = [
         {
           icon: SparklesIcon,
           labelKey: 'items.clubs',
-          href: '{basePath}/clubs',
+          href: '/clubs',
           featureFlag: 'CLUBES_ENABLED' as FeatureFlag,
         },
         {
           icon: BookOpenIcon,
           labelKey: 'items.blogs',
-          href: '{basePath}/blogs',
+          href: '/blogs',
           featureFlag: 'BLOGS_ENABLED' as FeatureFlag,
         },
         {

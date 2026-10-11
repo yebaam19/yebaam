@@ -4,19 +4,20 @@
 
 'use client'
 
+import { ArrowPathIcon } from '@/components/icons/heroicons-shim'
 import { Button } from '@/ui/Button'
 import Select from '@/ui/Select'
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { ArrowPathIcon, ClipboardDocumentIcon } from '@/components/icons/heroicons-shim'
-import { useEffect, useMemo } from 'react'
+import { Dialog,DialogPanel,DialogTitle,Transition,TransitionChild } from '@headlessui/react'
 import { useTranslations } from 'next-intl'
-import { Controller, useForm } from 'react-hook-form'
+import { useEffect,useMemo } from 'react'
+import { Controller,useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type {
-  ProfessionalProfile,
-  ProfessionalProfileVisibility,
+ProfessionalProfile,
+ProfessionalProfileVisibility,
 } from '../../interfaces/professional-profile.interfaces'
 import { ImageUpload } from './ImageUpload'
+import { ProfessionalProfileUrlField } from './ProfessionalProfileUrlField'
 
 interface EditProfileDialogProps {
   isOpen: boolean
@@ -70,7 +71,7 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
   // Generar URL del perfil
   const profileUrl =
     typeof window !== 'undefined' && profile.user
-      ? `${window.location.origin}/feed/professional-profile/${profile.user.username}`
+      ? `${window.location.origin}/professional-profile/${profile.user.username}`
       : ''
 
   // Handler para copiar URL
@@ -155,31 +156,7 @@ export function EditProfileDialog({ isOpen, profile, onClose, onSubmit }: EditPr
 
               <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit(submit)}>
                 <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-6">
-                  {/* URL del Perfil - Solo lectura */}
-                  <div>
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      {t('urlLabel')}
-                    </label>
-                    <div className="mt-1 flex gap-2">
-                      <input
-                        type="text"
-                        value={profileUrl}
-                        readOnly
-                        className="flex-1 rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleCopyUrl}
-                        className="inline-flex items-center rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                        title={t('copyUrlTitle')}
-                      >
-                        <ClipboardDocumentIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <p className="mt-1 text-xs text-neutral-500">
-                      {t('urlHint')}
-                    </p>
-                  </div>
+                  <ProfessionalProfileUrlField profileUrl={profileUrl} onCopy={handleCopyUrl} />
 
                   <div>
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">

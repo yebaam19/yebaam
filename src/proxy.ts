@@ -1,14 +1,14 @@
 import { MUSIC_CLUB_ENABLED } from '@/features/music-archive/config'
 import { hasAdminViewParam } from '@/lib/auth/admin-view'
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
-import { getAuthClaimsUser, type AuthClaimsUser } from '@/utils/supabase/claims'
+import { getAuthClaimsUser,type AuthClaimsUser } from '@/utils/supabase/claims'
 import {
-  createClient,
-  isAnonymousSessionError,
-  isInvalidRefreshTokenError,
-  redirectWithCookies,
+createClient,
+isAnonymousSessionError,
+isInvalidRefreshTokenError,
+redirectWithCookies,
 } from '@/utils/supabase/middleware'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse,type NextRequest } from 'next/server'
 
 const PUBLIC_ROUTES = [
   '/',
@@ -20,7 +20,7 @@ const PUBLIC_ROUTES = [
   '/auth/callback',
   // Public chat: guests and authenticated users can enter. Identity (profile /
   // nickname / guest) is resolved inside the page via ChatEntryGate.
-  '/feed/chat-publico',
+  '/chat-publico',
   // Public community profiles are readable by visitors; community RLS hides
   // private/secret content and every write still verifies the caller.
   '/comunidades',
@@ -66,7 +66,7 @@ const PUBLIC_ROUTES = [
 // Subset of PUBLIC_ROUTES that authenticated users (including admins) should
 // also be able to use without being bounced to /feed or /admin/foros.
 const AUTH_ALLOWED_PUBLIC_ROUTES = [
-  '/feed/chat-publico',
+  '/chat-publico',
   '/comunidades',
   '/foro',
   '/verification/certificate',

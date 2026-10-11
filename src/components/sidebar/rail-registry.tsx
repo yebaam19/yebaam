@@ -28,7 +28,7 @@ export interface RailVariant {
 
 export const RAIL_VARIANTS: RailVariant[] = [
   {
-    pathname: '/feed/friends',
+    pathname: '/friends',
     blocks: [HighlightedSuggestions],
   },
 ]

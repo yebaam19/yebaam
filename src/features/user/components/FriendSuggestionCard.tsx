@@ -1,14 +1,13 @@
 'use client'
 
-import { CheckIcon, UserGroupIcon, UserPlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/heroicons-shim'
+import { CheckIcon,UserGroupIcon,UserPlusIcon,XMarkIcon } from '@/components/icons/heroicons-shim'
+import { getUserDisplayName } from '@/lib/user-helpers'
+import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
-import { getUserDisplayName } from '@/lib/user-helpers'
-import type { Route } from 'next';
 
 type FriendRequestsApi = ReturnType<typeof useFriendRequests>
 
@@ -140,117 +139,4 @@ export function FriendSuggestionCard({
  * Componente de carrusel de sugerencias
  * Estilo Facebook-like con scroll horizontal
  */
-export function FriendSuggestionsCompact({ limit = 6 }: { limit?: number }) {
-  const { suggestions, isLoadingSuggestions, sendRequest, isSending, sentRequests } = useFriendRequests()
-  const t = useTranslations('friendships.suggestionCard')
-  const [hiddenSuggestions, setHiddenSuggestions] = useState<Set<string>>(new Set())
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-
-  const handleHide = (userId: string) => {
-    setHiddenSuggestions((prev) => new Set(prev).add(userId))
-  }
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 176 // card width (160px) + gap (16px)
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      })
-    }
-  }
-
-  // Validación defensiva: asegurar que suggestions sea un array
-  const safeSuggestions = Array.isArray(suggestions) ? suggestions : []
-
-  const visibleSuggestions = safeSuggestions
-    .filter((s) => s && s.id && !hiddenSuggestions.has(s.id)) // Filtrar sugerencias válidas
-    .slice(0, limit)
-
-
-
-  if (isLoadingSuggestions) {
-    return (
-      <div className="p-3">
-        <div className="flex gap-3 overflow-hidden">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={`suggestion-skeleton-${i}`} className="w-40 shrink-0 animate-pulse">
-              <div className="h-28 rounded-t-xl bg-gray-200 dark:bg-gray-700" />
-              <div className="space-y-2 rounded-b-xl border border-t-0 border-gray-200 p-2.5 dark:border-gray-700">
-                <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
-                <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
-                <div className="h-7 w-full rounded bg-gray-200 dark:bg-gray-700" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (visibleSuggestions.length === 0) {
-    return null
-  }
-
-  return (
-    <div className="relative rounded-xl bg-white p-4 shadow-sm dark:bg-neutral-900">
-      {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h3>
-        <Link
-          href={'/feed/friends?tab=suggestions' as Route}
-          className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
-        >
-          Ver más
-        </Link>
-      </div>
-
-      {/* Carrusel */}
-      <div className="group relative">
-        {/* Botón scroll izquierda */}
-        <button
-          onClick={() => scroll('left')}
-          className="absolute top-1/2 left-1 z-10 -translate-y-1/2 rounded-full border border-gray-200 bg-white p-1.5 opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
-          aria-label={t('prevAria')}
-        >
-          <ChevronLeftIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-        </button>
-
-        {/* Container con scroll */}
-        <div
-          ref={scrollContainerRef}
-          className="scrollbar-hide flex gap-3 overflow-x-auto scroll-smooth py-1"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {visibleSuggestions
-            .filter((suggestion) => suggestion && suggestion.id && suggestion.username)
-            .map((suggestion) => (
-              <FriendSuggestionCard
-                key={suggestion.id}
-                userId={suggestion.id}
-                username={suggestion.username}
-                firstName={suggestion.firstName || ''}
-                lastName={suggestion.lastName || ''}
-                avatar={suggestion.avatar}
-                mutualFriends={suggestion.mutualFriends || 0}
-                reason={suggestion.reason || ''}
-                onHide={handleHide}
-                sendRequest={sendRequest}
-                isSending={isSending}
-                sentRequests={sentRequests}
-              />
-            ))}
-        </div>
-
-        {/* Botón scroll derecha */}
-        <button
-          onClick={() => scroll('right')}
-          className="absolute top-1/2 right-1 z-10 -translate-y-1/2 rounded-full border border-gray-200 bg-white p-1.5 opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
-          aria-label={t('nextAria')}
-        >
-          <ChevronRightIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-        </button>
-      </div>
-    </div>
-  )
-}
+export { FriendSuggestionsCompact } from './FriendSuggestionsCompact'

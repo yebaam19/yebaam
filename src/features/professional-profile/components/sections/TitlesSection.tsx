@@ -6,18 +6,18 @@
 
 'use client'
 
-import { addTitleAction, deleteTitleAction, updateTitleAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
-import { AcademicCapIcon, CheckBadgeIcon, PencilIcon, ShieldCheckIcon, TrashIcon } from '@/components/icons/heroicons-shim'
+import { addTitleAction,deleteTitleAction,updateTitleAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { AcademicCapIcon,CheckBadgeIcon,PencilIcon,ShieldCheckIcon,TrashIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useMemo,useState } from 'react'
 import { toast } from 'sonner'
-import type { Title, TitleFormData } from '../../interfaces/professional-profile.interfaces'
+import type { Title,TitleFormData } from '../../interfaces/professional-profile.interfaces'
+import { composeTitleLine } from '../../lib/credentials'
+import { CredentialUploadDialog } from '../dialogs/CredentialUploadDialog'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { TitleDialog } from '../dialogs/TitleDialog'
-import { CredentialUploadDialog } from '../dialogs/CredentialUploadDialog'
-import { composeTitleLine } from '../../lib/credentials'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface TitlesSectionProps {
   profileId: string

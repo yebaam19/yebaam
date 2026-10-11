@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { ClockIcon,NewspaperIcon } from '@/components/icons/heroicons-shim';
+import {
+getCommunityArticlePreview,
+} from '@/features/communities/actions/communityArticles.actions';
+import { useLinkPreview } from '@/lib/hooks/useLinkPreview';
+import type { Route } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Route } from 'next';
-import { ClockIcon, NewspaperIcon } from '@/components/icons/heroicons-shim';
-import { coalescePending } from '@/lib/coalesce-pending';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import {
-  getCommunityArticlePreview,
-  type CommunityArticlePreview,
-} from '@/features/communities/actions/communityArticles.actions';
+import { useCallback } from 'react';
 
 /**
  * Matches a community article URL with or without origin:
@@ -46,28 +44,8 @@ export function PostArticleLinkPreview({
   communitySlug,
   articleSlug,
 }: PostArticleLinkPreviewProps) {
-  const [preview, setPreview] = useState<CommunityArticlePreview | null | 'loading' | 'error'>(
-    'loading',
-  );
-  const viewerId = useAuthStore((state) => state.user?.id);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await coalescePending(
-          `article-preview:${viewerId ?? 'guest'}:${communitySlug}:${articleSlug}`,
-          () => getCommunityArticlePreview(communitySlug, articleSlug),
-        );
-        if (!cancelled) setPreview(result);
-      } catch {
-        if (!cancelled) setPreview('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [communitySlug, articleSlug, viewerId]);
+  const loadPreview = useCallback(() => getCommunityArticlePreview(communitySlug, articleSlug), [communitySlug, articleSlug]);
+  const preview = useLinkPreview(`article-preview:${communitySlug}:${articleSlug}`, loadPreview);
 
   if (preview === 'loading') {
     return (

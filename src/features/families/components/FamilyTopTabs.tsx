@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import type { Route } from 'next';
-import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 type TabKey =
   | 'home'
@@ -24,7 +24,7 @@ interface TabItem {
 }
 
 function buildTabs(slug: string, isAdmin: boolean): TabItem[] {
-  const base = `/feed/familias/${slug}`;
+  const base = `/familias/${slug}`;
   const tabs: TabItem[] = [
     { id: 'home', labelKey: 'home', href: base },
     { id: 'miembros', labelKey: 'members', href: `${base}/miembros` },

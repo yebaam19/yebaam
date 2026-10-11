@@ -6,17 +6,17 @@
 
 'use client'
 
-import { addLanguageAction, deleteLanguageAction, updateLanguageAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
+import { addLanguageAction,deleteLanguageAction,updateLanguageAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { LanguageIcon,PencilIcon,TrashIcon } from '@/components/icons/heroicons-shim'
 import { cn } from '@/lib/utils'
-import { LanguageIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { Language, LanguageFormData } from '../../interfaces/professional-profile.interfaces'
+import type { Language,LanguageFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { LanguageDialog } from '../dialogs/LanguageDialog'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface LanguagesSectionProps {
   profileId: string

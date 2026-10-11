@@ -1,44 +1,44 @@
 'use client';
 
-import { FC, useCallback, useState } from 'react';
-import dynamic from 'next/dynamic';
 import type { Route } from 'next';
-import type { Page } from '../../../types/page.types';
+import dynamic from 'next/dynamic';
+import { FC,useCallback,useState } from 'react';
 import {
-  getPageTabs,
-  COMING_SOON_COPY,
-  type PageTabId,
-} from '../../../config/page-tabs';
-import {
-  getPageSideMenu,
-  SIDE_SECTION_COMING_SOON,
-  type PageSideSectionId,
+SIDE_SECTION_COMING_SOON,
+getPageSideMenu,
+type PageSideSectionId,
 } from '../../../config/page-side-menu';
-import { PageCover } from './PageCover';
-import { PageProfilePhoto } from './PageProfilePhoto';
-import { PageDetailsCard } from './PageDetailsCard';
-import { PageSideMenu } from './PageSideMenu';
-import { PageBadgesStrip } from './PageBadgesStrip';
-import { PageSectionChips } from './PageSectionChips';
-import { PageFeatured } from './PageFeatured';
-import { PageContactPanel } from './PageContactPanel';
 import {
-  PageAskMePanel,
-  PageAuditionsPanel,
-  PageEventsPanel,
-  PageRelatedPanel,
-  PageExternalModulePanel,
-} from './PageSidePanels';
+COMING_SOON_COPY,
+getPageTabs,
+type PageTabId,
+} from '../../../config/page-tabs';
+import type { Page } from '../../../types/page.types';
+import { readPageQuery,replacePageQuery } from '../../../utils/pageUrlState';
+import { PageDetailCommunity } from '../../community/PageDetailCommunity';
+import { PageDetailPhotos } from '../../photos/PageDetailPhotos';
+import { PageComingSoon } from '../PageComingSoon';
 import { PageDetailAbout } from '../PageDetailAbout';
+import { PageDetailArticles } from '../PageDetailArticles';
+import { PageDetailArtists } from '../PageDetailArtists';
 import { PageDetailPosts } from '../PageDetailPosts';
 import { PageDetailTeam } from '../PageDetailTeam';
 import { PageDetailVideos } from '../PageDetailVideos';
-import { PageDetailArtists } from '../PageDetailArtists';
-import { PageDetailArticles } from '../PageDetailArticles';
-import { PageComingSoon } from '../PageComingSoon';
-import { PageDetailPhotos } from '../../photos/PageDetailPhotos';
-import { PageDetailCommunity } from '../../community/PageDetailCommunity';
-import { readPageQuery, replacePageQuery } from '../../../utils/pageUrlState';
+import { PageBadgesStrip } from './PageBadgesStrip';
+import { PageContactPanel } from './PageContactPanel';
+import { PageCover } from './PageCover';
+import { PageDetailsCard } from './PageDetailsCard';
+import { PageFeatured } from './PageFeatured';
+import { PageProfilePhoto } from './PageProfilePhoto';
+import { PageSectionChips } from './PageSectionChips';
+import { PageSideMenu } from './PageSideMenu';
+import {
+PageAskMePanel,
+PageAuditionsPanel,
+PageEventsPanel,
+PageExternalModulePanel,
+PageRelatedPanel,
+} from './PageSidePanels';
 
 /** Arrastra socket.io: sólo se monta cuando el propietario abre "Mensajes". */
 const PageMessagesTest = dynamic(
@@ -201,8 +201,8 @@ export const PageArtistShell: FC<PageArtistShellProps> = ({ page, isOwner, unrea
                 }
                 href={
                   (page.chatPublicoRoomSlug
-                    ? `/feed/chat-publico/${page.chatPublicoRoomSlug}`
-                    : '/feed/chat-publico') as Route
+                    ? `/chat-publico/${page.chatPublicoRoomSlug}`
+                    : '/chat-publico') as Route
                 }
                 cta="Abrir Chat Público"
               />

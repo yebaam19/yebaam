@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
 interface CreateServiceGateProps {
   eligibility: { eligible: boolean; hasProfile: boolean; professionalProfileId: string | null } | null
@@ -30,7 +30,7 @@ export function CreateServiceGate({ eligibility }: CreateServiceGateProps) {
           : 'Primero crea tu perfil profesional y autentica al menos un título o estudio ante la plataforma. La autenticación tiene un costo; abrir el perfil no.'}
       </p>
       <Link
-        href="/feed/professional-profile"
+        href="/professional-profile"
         className="mt-4 inline-flex rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-700"
       >
         {eligibility.hasProfile ? 'Autenticar mis títulos' : 'Crear mi perfil profesional'}

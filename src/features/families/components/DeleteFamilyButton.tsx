@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useState,useTransition } from 'react';
 import { deleteFamily } from '../actions/families.actions';
 
 export function DeleteFamilyButton({
@@ -30,7 +30,7 @@ export function DeleteFamilyButton({
         setError(res.error);
         return;
       }
-      router.push('/feed/familias');
+      router.push('/familias');
       router.refresh();
     });
   }

@@ -1,20 +1,20 @@
 'use client'
 
+import SocialHeader from '@/components/Header/SocialHeader'
 import Aside from '@/components/aside'
 import ChatBubbleTray from '@/components/chat/ChatBubbleTray'
 import AnonymousChatRoot from '@/features/anonymous-chat/components/AnonymousChatRoot'
-import SocialHeader from '@/components/Header/SocialHeader'
 
 import { CurrentUserProvider } from '@/features/auth/context/current-user.context'
-import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
 import { CallProvider } from '@/features/chat/calls/CallProvider'
+import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
 import { useNotificationSync } from '@/features/notification/hooks/useNotificationSync'
 import { usePresenceSync } from '@/features/presence/hooks/usePresenceSync'
 import UploadProgress from '@/features/profile/components/media/UploadProgress'
 
+import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
-import { useTranslations } from 'next-intl'
 
 interface User {
   id: string
@@ -43,7 +43,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
 
   // Si estamos en /messages, no mostrar sidebars (tiene su propio layout)
   const isMessengerRoute = pathname?.startsWith('/messages')
-  const isChatShellRoute = pathname?.startsWith('/chat')
+  const isChatShellRoute = pathname === '/chat' || pathname?.startsWith('/chat/')
 
   // Messenger-style /chat: sin footer ni padding estrecho; el contenido arma dos columnas
   if (isChatShellRoute) {
@@ -101,6 +101,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   const segments = pathname?.split('/').filter(Boolean) ?? []
   const firstSegment = segments[0]
   const hasOwnChrome =
+    ['profiles', 'friends', 'clubs', 'blogs', 'familias', 'professional-profile', 'chat-publico'].includes(firstSegment) ||
     firstSegment === 'feed' ||
     firstSegment === 'cities' ||
     firstSegment === 'comunidades' ||

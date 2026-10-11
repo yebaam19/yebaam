@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useState,useTransition } from 'react';
 import { leaveFamily } from '../actions/families.actions';
 
 export function LeaveFamilyButton({ familyId, familyName }: { familyId: string; familyName: string }) {
@@ -20,7 +20,7 @@ export function LeaveFamilyButton({ familyId, familyName }: { familyId: string; 
         setError(res.error);
         return;
       }
-      router.push('/feed/familias');
+      router.push('/familias');
       router.refresh();
     });
   }

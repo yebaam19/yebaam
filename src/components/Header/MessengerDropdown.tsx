@@ -1,21 +1,21 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Popover } from '@headlessui/react';
-import { ChatBubbleLeftRightIcon, PencilSquareIcon } from '@/components/icons/heroicons-shim';
-import { cn } from '@/lib/utils';
 import NewMessageDialog from '@/components/chat/NewMessageDialog';
+import { ChatBubbleLeftRightIcon,PencilSquareIcon } from '@/components/icons/heroicons-shim';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChat } from '@/features/chat/hooks/useChat';
-import { useChatStore } from '@/features/chat/store/chat.store';
-import { ConversationType, type Conversation } from '@/features/chat/types';
 import { chatHrefForConversation } from '@/features/chat/lib/chatHrefForConversation';
+import { useChatStore } from '@/features/chat/store/chat.store';
+import { ConversationType,type Conversation } from '@/features/chat/types';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 import { useIsXl } from '@/lib/hooks/useIsXl';
-import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
+import { Popover } from '@headlessui/react';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMemo,useState } from 'react';
 import { MessengerConversationRow } from './MessengerConversationRow';
 
 export default function MessengerDropdown() {
@@ -144,7 +144,7 @@ export default function MessengerDropdown() {
                           {t('noConversations')}
                         </p>
                         <Link
-                          href={'/feed/friends' as Route}
+                          href={'/friends' as Route}
                           onClick={() => close()}
                           className="mt-2 inline-block text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
                         >

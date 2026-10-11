@@ -1,21 +1,22 @@
 'use client'
 
-import { Dialog, Transition } from '@headlessui/react'
-import { useRouter } from 'next/navigation'
-import type { Route } from 'next'
-import { Fragment, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
-import { useDeleteBlog, useUpdateBlog } from '../hooks/useBlogs'
-import { uploadService } from '@/lib/service/upload.service'
-import { resolveImageRef } from '@/lib/media/urls'
 import { type ArtistSelection } from '@/features/music-archive/components/upload/ArtistAutocomplete'
+import { resolveImageRef } from '@/lib/media/urls'
+import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
+import { useEffect,useState } from 'react'
+import { toast } from 'sonner'
+import { useDeleteBlog,useUpdateBlog } from '../hooks/useBlogs'
 import type { Blog } from '../types/blog.types'
-import { BlogFormFields, type BlogFormData } from './BlogFormFields'
-import { EditBlogModalHeader } from './EditBlogModal/EditBlogModalHeader'
-import { MiMusicaArtistField } from './EditBlogModal/MiMusicaArtistField'
-import { BlogImagesSection } from './EditBlogModal/BlogImagesSection'
+import { BlogFormFields,type BlogFormData } from './BlogFormFields'
 import { BlogDangerZone } from './EditBlogModal/BlogDangerZone'
+import { BlogImagesSection } from './EditBlogModal/BlogImagesSection'
+import { EditBlogDialog } from './EditBlogModal/EditBlogDialog'
+import { EditBlogModalHeader } from './EditBlogModal/EditBlogModalHeader'
+import { EditBlogSubmitButtons } from './EditBlogModal/EditBlogSubmitButtons'
+import { MiMusicaArtistField } from './EditBlogModal/MiMusicaArtistField'
+import { uploadBlogImages } from './EditBlogModal/uploadBlogImages'
 
 interface EditBlogModalProps {
   isOpen: boolean
@@ -27,7 +28,6 @@ interface EditBlogModalProps {
 export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModalProps) => {
   const router = useRouter()
   const t = useTranslations('blogs.editModal')
-  const tActions = useTranslations('blogs.actions')
   const updateBlogMutation = useUpdateBlog()
   const deleteBlogMutation = useDeleteBlog()
   const [uploadingImages, setUploadingImages] = useState(false)
@@ -105,28 +105,6 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
     setCoverPreview(resolveImageRef(blog.coverImageUrl, 'cover'))
   }
 
-  const uploadImages = async (): Promise<{ profileImageUrl?: string; coverImageUrl?: string }> => {
-    const urls: { profileImageUrl?: string; coverImageUrl?: string } = {}
-
-    try {
-      // Upload to Cloudflare Images (every image in the app goes to Cloudflare).
-      // House rule: persist the bare Cloudflare id, never the delivery URL —
-      // readers rebuild the URL at render time via resolveImageRef().
-      if (avatarFile) {
-        setUploadingImages(true)
-        urls.profileImageUrl = (await uploadService.uploadImage(avatarFile)).id
-      }
-      if (coverFile) {
-        setUploadingImages(true)
-        urls.coverImageUrl = (await uploadService.uploadImage(coverFile)).id
-      }
-    } finally {
-      setUploadingImages(false)
-    }
-
-    return urls
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -137,7 +115,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
 
     try {
       // Primero subir imágenes nuevas si existen
-      const imageUrls = await uploadImages()
+      const imageUrls = await uploadBlogImages(avatarFile, coverFile, setUploadingImages)
 
       await updateBlogMutation.mutateAsync({
         blogId: blog.id,
@@ -191,7 +169,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
       await deleteBlogMutation.mutateAsync(blog.id)
       toast.success(t('successDeleted'))
       onClose()
-      router.push('/feed/blogs' as Route)
+      router.push('/blogs' as Route)
     } catch (error) {
       console.error('[EditBlogModal] delete error:', error)
       toast.error(error instanceof Error ? error.message : t('errorDeleting'))
@@ -199,32 +177,7 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
   }
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/25 dark:bg-black/50" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all dark:bg-neutral-800">
+    <EditBlogDialog isOpen={isOpen} onClose={handleClose}>
                 {/* Header */}
                 <EditBlogModalHeader
                   title={t('title')}
@@ -262,30 +215,13 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                     uploadingHint={t('uploadingHint')}
                   />
 
-                  {/* Actions */}
-                  <div className="flex gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <button
-                      type="button"
-                      onClick={handleClose}
-                      disabled={updateBlogMutation.isPending || uploadingImages || deleteBlogMutation.isPending}
-                      className="flex-1 rounded-lg border border-neutral-300 px-4 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                    >
-                      {tActions('cancel')}
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={
-                        updateBlogMutation.isPending || uploadingImages || deleteBlogMutation.isPending || !formData.name || !formData.description
-                      }
-                      className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {uploadingImages
-                        ? t('uploadingButton')
-                        : updateBlogMutation.isPending
-                          ? t('saving')
-                          : t('save')}
-                    </button>
-                  </div>
+                  <EditBlogSubmitButtons
+                    onClose={handleClose}
+                    isSaving={updateBlogMutation.isPending}
+                    isDeleting={deleteBlogMutation.isPending}
+                    uploadingImages={uploadingImages}
+                    hasRequiredFields={!!formData.name && !!formData.description}
+                  />
 
                   {/* Danger zone */}
                   <BlogDangerZone
@@ -303,11 +239,6 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
                     disabled={updateBlogMutation.isPending || uploadingImages || deleteBlogMutation.isPending}
                   />
                 </form>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </div>
-      </Dialog>
-    </Transition>
+    </EditBlogDialog>
   )
 }

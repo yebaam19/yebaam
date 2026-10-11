@@ -1,14 +1,14 @@
 'use client'
 
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useCreateClub } from '@/features/clubs/hooks/useClubs'
 import { useClubsUIStore } from '@/features/clubs/store/clubsUIStore'
 import type { CreateClubDto } from '@/features/clubs/types/club.types'
-import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon } from '@/components/icons/heroicons-shim'
-import { useRouter } from 'next/navigation'
+import { Dialog,Transition } from '@headlessui/react'
 import { useTranslations } from 'next-intl'
-import { Fragment, useState } from 'react'
-import { CreateClubStep1, CreateClubStep2, CreateClubStep3, CreateClubStep4 } from './create-club'
+import { useRouter } from 'next/navigation'
+import { Fragment,useState } from 'react'
+import { CreateClubStep1,CreateClubStep2,CreateClubStep3,CreateClubStep4 } from './create-club'
 
 export function CreateClubModal() {
   const t = useTranslations('clubes')
@@ -46,7 +46,7 @@ export function CreateClubModal() {
       resetModal()
       // Navegar al club recién creado usando el slug
       if (club.slug) {
-        router.push(`/feed/clubs/${club.slug}`)
+        router.push(`/clubs/${club.slug}`)
       }
     } catch (error) {
       console.error('Error creating club:', error)

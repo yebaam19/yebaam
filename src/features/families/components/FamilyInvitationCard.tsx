@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { acceptFamilyInvitation, declineFamilyInvitation } from '../actions/families.actions';
+import { useRouter } from 'next/navigation';
+import { useState,useTransition } from 'react';
+import { acceptFamilyInvitation,declineFamilyInvitation } from '../actions/families.actions';
 
 export interface FamilyInvitationViewModel {
   id: string;
@@ -29,7 +29,7 @@ export function FamilyInvitationCard({ invite }: { invite: FamilyInvitationViewM
         return;
       }
       setDone('accepted');
-      router.push(`/feed/familias/${invite.familySlug}`);
+      router.push(`/familias/${invite.familySlug}`);
       router.refresh();
     });
   }

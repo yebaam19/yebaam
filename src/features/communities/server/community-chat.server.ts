@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { getServerClient, getServiceClient } from '@/utils/supabase/server';
+import { getServerClient,getServiceClient } from '@/utils/supabase/server';
 
 export interface CommunityChatTopic {
   id: string;
@@ -11,7 +11,7 @@ export interface CommunityChatTopic {
 /**
  * Returns the chat-publico topic dedicated to a community, creating it on
  * first call. The topic slug is the route segment users land on at
- * `/feed/chat-publico/<topicSlug>` so the existing chat UI/identity flow can
+ * `/chat-publico/<topicSlug>` so the existing chat UI/identity flow can
  * be reused unchanged.
  *
  * Uses the service-role client for the SELECT (the topic may not yet exist

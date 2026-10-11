@@ -2,10 +2,10 @@
 
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import Avatar from '@/ui/Avatar'
-import Link from 'next/link'
 import type { Route } from 'next'
-import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useState } from 'react'
 
 const MAX_VISIBLE = 3
 
@@ -43,7 +43,7 @@ export function FriendRequestsCard() {
           {t('title')}
         </h3>
         <Link
-          href={'/feed/friends?tab=requests' as Route}
+          href={'/friends?tab=requests' as Route}
           className="text-xs font-medium text-primary-600 hover:underline"
         >
           {t('viewAll')}

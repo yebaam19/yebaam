@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { useState } from 'react'
-import { useSuggestedCommunities, useJoinCommunity } from '@/features/communities/hooks/useCommunities'
 import { PlusIcon } from '@/components/icons/heroicons-shim'
 import { isFeatureEnabled } from '@/config/features-flag'
+import { useJoinCommunity,useSuggestedCommunities } from '@/features/communities/hooks/useCommunities'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useState } from 'react'
 
 const MAX_VISIBLE = 3
 
@@ -43,9 +43,9 @@ export function SuggestedGroupsCard() {
     <div className="rounded-xl bg-white shadow-sm dark:bg-neutral-900">
       <div className="flex items-center justify-between px-4 pt-4">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          Grupos sugeridos
+          Comunidades sugeridas
         </h3>
-        <Link href="/grupos" className="text-xs font-medium text-primary-600 hover:underline">
+        <Link href="/comunidades" className="text-xs font-medium text-primary-600 hover:underline">
           Ver todos
         </Link>
       </div>
@@ -56,7 +56,7 @@ export function SuggestedGroupsCard() {
           return (
             <li key={c.id} className="flex items-start gap-3">
               <Link
-                href={`/grupos/${c.slug}` as never}
+                href={`/comunidades/${c.slug}` as never}
                 className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800"
               >
                 {cover ? (
@@ -69,7 +69,7 @@ export function SuggestedGroupsCard() {
               </Link>
               <div className="min-w-0 flex-1">
                 <Link
-                  href={`/grupos/${c.slug}` as never}
+                  href={`/comunidades/${c.slug}` as never}
                   className="block truncate text-sm font-semibold text-neutral-900 hover:underline dark:text-neutral-100"
                 >
                   {c.name}

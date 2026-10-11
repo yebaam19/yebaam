@@ -1,12 +1,12 @@
 'use client'
 
+import { XMarkIcon } from '@/components/icons/heroicons-shim'
+import { useFriendships } from '@/features/friendships/hooks/useFriendships'
+import { cn } from '@/lib/utils'
+import Avatar from '@/ui/Avatar'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useState } from 'react'
-import Avatar from '@/ui/Avatar'
-import { XMarkIcon } from '@/components/icons/heroicons-shim'
-import { cn } from '@/lib/utils'
-import { useFriendships } from '@/features/friendships/hooks/useFriendships'
-import { useTranslations } from 'next-intl'
 
 export function HighlightedSuggestions() {
   const t = useTranslations('nav')
@@ -47,7 +47,7 @@ export function HighlightedSuggestions() {
           {t('highlightedSuggestions')}
         </h3>
         <Link
-          href="/feed/friends?tab=suggestions"
+          href="/friends?tab=suggestions"
           className="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
         >
           {t('viewAllSuggestions')}

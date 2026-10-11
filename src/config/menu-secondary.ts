@@ -1,18 +1,18 @@
 import {
-  ArrowTrendingUpIcon,
-  BookmarkIcon,
-  BriefcaseIcon,
-  BuildingOfficeIcon,
-  ChatBubbleLeftRightIcon,
-  ClockIcon,
-  EnvelopeIcon,
-  FlagIcon,
-  HeartIcon,
-  LifebuoyIcon,
-  MegaphoneIcon,
-  RectangleStackIcon,
-  UserIcon,
-  UsersIcon,
+ArrowTrendingUpIcon,
+BookmarkIcon,
+BriefcaseIcon,
+BuildingOfficeIcon,
+ChatBubbleLeftRightIcon,
+ClockIcon,
+EnvelopeIcon,
+FlagIcon,
+HeartIcon,
+LifebuoyIcon,
+MegaphoneIcon,
+RectangleStackIcon,
+UserIcon,
+UsersIcon,
 } from '@/components/icons/heroicons-shim';
 import type { FeatureFlag } from './features-flag';
 import type { MenuSectionConfig } from './menuConfig';
@@ -49,7 +49,7 @@ export const secondaryMenu: MenuSectionConfig[] = [
         {
           icon: ChatBubbleLeftRightIcon,
           labelKey: 'items.publicChat',
-          href: '{basePath}/chat-publico',
+          href: '/chat-publico',
           featureFlag: 'CHAT_PUBLICO_ENABLED' as FeatureFlag,
         },
         {
@@ -137,7 +137,7 @@ export const secondaryMenu: MenuSectionConfig[] = [
         {
           icon: BriefcaseIcon,
           labelKey: 'items.professionalProfile',
-          href: '{basePath}/professional-profile',
+          href: '/professional-profile',
           badgeHideOnMobile: true,
           featureFlag: 'PERFIL_PROFESIONAL_ENABLED' as FeatureFlag,
         },

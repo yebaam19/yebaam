@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import type { Route } from 'next';
 import { BriefcaseIcon } from '@/components/icons/heroicons-shim';
+import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 interface ProfessionalProfileButtonProps {
   username: string;
@@ -23,8 +23,8 @@ export default function ProfessionalProfileButton({
 
   const href = (
     hasProfessionalProfile
-      ? `/feed/professional-profile/${username}`
-      : '/feed/professional-profile'
+      ? `/professional-profile/${username}`
+      : '/professional-profile'
   ) as Route;
 
   const label = hasProfessionalProfile

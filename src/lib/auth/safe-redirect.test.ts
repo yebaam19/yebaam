@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe,expect,it } from 'vitest';
 import { sanitizeRedirectPath } from './safe-redirect';
 
 describe('sanitizeRedirectPath', () => {
   it('allows normal in-app paths', () => {
     expect(sanitizeRedirectPath('/feed')).toBe('/feed');
-    expect(sanitizeRedirectPath('/feed/familias?tab=mine')).toBe('/feed/familias?tab=mine');
+    expect(sanitizeRedirectPath('/familias?tab=mine')).toBe('/familias?tab=mine');
   });
 
   it('blocks protocol-relative and external redirects', () => {

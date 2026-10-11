@@ -6,16 +6,16 @@
 
 'use client'
 
-import { addLicenseAction, deleteLicenseAction, updateLicenseAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
-import { DocumentTextIcon, PencilIcon, TrashIcon } from '@/components/icons/heroicons-shim'
-import { useLocale, useTranslations } from 'next-intl'
+import { addLicenseAction,deleteLicenseAction,updateLicenseAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { DocumentTextIcon,PencilIcon,TrashIcon } from '@/components/icons/heroicons-shim'
+import { useLocale,useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { License, LicenseFormData } from '../../interfaces/professional-profile.interfaces'
+import type { License,LicenseFormData } from '../../interfaces/professional-profile.interfaces'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
 import { LicenseDialog } from '../dialogs/LicenseDialog'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface LicensesSectionProps {
   profileId: string

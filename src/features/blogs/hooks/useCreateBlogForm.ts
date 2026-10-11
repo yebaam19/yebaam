@@ -1,12 +1,12 @@
 'use client'
 
+import { uploadService } from '@/lib/service/upload.service'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
-import { useCreateBlog } from './useBlogs'
-import { uploadService } from '@/lib/service/upload.service'
 import type { BlogFormData } from '../components/BlogFormFields'
+import { useCreateBlog } from './useBlogs'
 
 const EMPTY_FORM: BlogFormData = {
   name: '',
@@ -130,7 +130,7 @@ export function useCreateBlogForm(onClose: () => void) {
 
       toast.success(t('create.success'))
       handleClose()
-      router.push(`/feed/blogs/${blog.slug}`)
+      router.push(`/blogs/${blog.slug}`)
     } catch (error) {
       console.error('Error creating blog:', error)
       toast.error(error instanceof Error ? error.message : t('create.errorCreating'))

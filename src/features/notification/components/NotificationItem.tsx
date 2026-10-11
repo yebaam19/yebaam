@@ -1,16 +1,16 @@
 'use client';
 
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/lib/utils';
-import { NotificationType, type Notification } from '../interfaces/notification.interfaces';
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { useNotificationNavigation } from '../hooks/useNotificationNavigation';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import NotificationIcon from './NotificationIcon';
-import NotificationContent from './NotificationContent';
+import { NotificationType,type Notification } from '../interfaces/notification.interfaces';
 import FriendRequestActions from './FriendRequestActions';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import NotificationContent from './NotificationContent';
+import NotificationIcon from './NotificationIcon';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -73,7 +73,7 @@ export default function NotificationItem({
       }
     }
     if (isFriendRequest && requestId) {
-      router.push(`/feed/friendships/requests/${requestId}`)
+      router.push(`/friendships/requests/${requestId}`)
     } else {
       handleNavigationClick()
     }

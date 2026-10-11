@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import { imageUrl } from '@/lib/media/urls';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 import type { FamilyWithViewer } from '../types/family.types';
 
 export async function FamilyHeader({ family }: { family: FamilyWithViewer }) {
@@ -12,7 +12,7 @@ export async function FamilyHeader({ family }: { family: FamilyWithViewer }) {
       <div className="relative h-44 w-full bg-gradient-to-br from-emerald-200 to-teal-300 dark:from-emerald-900 dark:to-teal-800">
         {cover && <img src={cover} alt={family.name} className="h-full w-full object-cover" decoding="async" loading="lazy" />}
         <Link
-          href="/feed/familias"
+          href="/familias"
           className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 text-xs font-medium text-white backdrop-blur hover:bg-black/60"
         >
           <ArrowLeftIcon className="h-3.5 w-3.5" />

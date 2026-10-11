@@ -1,16 +1,16 @@
 'use server'
 
-import { getServerClient, getServiceClient } from '@/utils/supabase/server'
-import { ensureBlogChatTopic, getBlogOwnerId } from '@/lib/api/blogs'
+import { ensureBlogChatTopic,getBlogOwnerId } from '@/lib/api/blogs'
+import { getServerClient,getServiceClient } from '@/utils/supabase/server'
 import { getRoomIdentity } from '../lib/identity'
-import { hashSessionToken } from '../lib/session'
 import { capabilitiesFor } from '../lib/permissions'
+import { hashSessionToken } from '../lib/session'
 import { getActiveCommunityChatRestriction } from '../server/community-chat-restrictions.server'
-import type { CommunityChatRestriction, SendPublicMessageResult, SoftDeletePublicMessageResult } from '../types'
+import type { CommunityChatRestriction,SendPublicMessageResult,SoftDeletePublicMessageResult } from '../types'
 
 /**
  * Provisions (or finds) the public-chat topic for a blog and returns its slug
- * so the caller can route to `/feed/chat-publico/<topicSlug>`.
+ * so the caller can route to `/chat-publico/<topicSlug>`.
  *
  * Takes only the blog id: ownership is decided against the blog row's own
  * `owner_id`, and the topic's name/slug are derived from that row rather than

@@ -1,7 +1,7 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { getServerClient } from '@/utils/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 async function requireAdmin() {
   const sb = await getServerClient();
@@ -61,7 +61,7 @@ export async function reviewCredentialRequestAction(input: ReviewInput) {
   revalidatePath('/admin/professional-credentials');
   // The owner's profile path is parameterized by username and not known here.
   // Use a layout-level revalidation so any visited profile re-renders.
-  revalidatePath('/feed/professional-profile/[username]', 'layout');
+  revalidatePath('/professional-profile/[username]', 'layout');
 }
 
 /**
@@ -133,7 +133,7 @@ export async function decideMaterialEditReviewAction(input: {
   }
 
   revalidatePath('/admin/professional-credentials');
-  revalidatePath('/feed/professional-profile/[username]', 'layout');
+  revalidatePath('/professional-profile/[username]', 'layout');
 }
 
 export async function getCredentialEvidenceUrlAction(requestId: string): Promise<string> {

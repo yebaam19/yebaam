@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import {
-  MagnifyingGlassIcon,
-  UserGroupIcon,
-  UserPlusIcon,
-  EllipsisVerticalIcon,
+EllipsisVerticalIcon,
+MagnifyingGlassIcon,
+UserGroupIcon,
+UserPlusIcon,
 } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import type { Route } from 'next';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useState } from 'react';
 
 interface Friend {
   id: string;
@@ -64,7 +64,7 @@ export default function ProfileFriendsFull({
 
           {isOwnProfile && (
             <Link
-              href={'/feed/friends?tab=requests' as Route}
+              href={'/friends?tab=requests' as Route}
               className="flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
             >
               <UserPlusIcon className="w-5 h-5" />

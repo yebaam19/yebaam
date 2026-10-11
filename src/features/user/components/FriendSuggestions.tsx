@@ -1,13 +1,12 @@
 'use client'
 
-import { UserPlusIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
-import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
+import { CheckCircleIcon,UserPlusIcon,XMarkIcon } from '@/components/icons/heroicons-shim'
+import type { Route } from 'next'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useFriendRequests } from '../hooks/useFriendRequests'
-import type { Route } from 'next';
 
 /**
  * Componente FriendSuggestions
@@ -67,7 +66,7 @@ export function FriendSuggestions() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Personas que quizás conozcas</h2>
         <Link
-          href={'/feed/friends?tab=suggestions' as Route}
+          href={'/friends?tab=suggestions' as Route}
           className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           Ver todo

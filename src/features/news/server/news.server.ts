@@ -1,9 +1,9 @@
 import 'server-only'
 
-import { cache } from 'react'
-import { getServerClient } from '@/utils/supabase/server'
 import { imageUrl } from '@/lib/media/urls'
-import type { NewsAd, NewsArticle, NewsComment, NewsModuleSettings, NewsReplica, NewsScope, NewsSection, NewsSource } from '../types'
+import { getServerClient } from '@/utils/supabase/server'
+import { cache } from 'react'
+import type { NewsAd,NewsArticle,NewsComment,NewsModuleSettings,NewsReplica,NewsScope,NewsSection,NewsSource } from '../types'
 
 const DEFAULT_SETTINGS: NewsModuleSettings = {
   newsEnabled: true,
@@ -191,7 +191,7 @@ export const getNewsReplicas = cache(async (articleId: string): Promise<NewsRepl
   const professionals = new Map(professionalRows.map((row) => {
     const profile = profiles.get(row.user_id) ?? null
     const username = typeof profile?.username === 'string' ? profile.username : null
-    return [row.id, { name: displayName(profile, 'Perfil profesional verificado'), href: username ? `/feed/professional-profile/${username}` : null }]
+    return [row.id, { name: displayName(profile, 'Perfil profesional verificado'), href: username ? `/professional-profile/${username}` : null }]
   }))
   const pages = new Map(((pageResult.data ?? []) as Array<{ id: string; name: string; slug: string }>).map((page) => [page.id, { name: page.name, href: `/paginas/${page.slug}` }]))
 

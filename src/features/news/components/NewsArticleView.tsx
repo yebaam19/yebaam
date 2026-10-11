@@ -1,13 +1,13 @@
-import Link from 'next/link'
-import type { Route } from 'next'
-import { ArrowLeft } from 'lucide-react'
-import { sanitizeRichText } from '@/lib/html/sanitize-rich-text'
 import { StreamVideo } from '@/components/media/StreamVideo'
-import { NewsInteractions } from './NewsInteractions'
-import { NewsReportForm } from './NewsReportForm'
-import { NewsReplicaForm } from './NewsReplicaForm'
+import { sanitizeRichText } from '@/lib/html/sanitize-rich-text'
+import { ArrowLeft } from 'lucide-react'
+import type { Route } from 'next'
+import Link from 'next/link'
 import { newsCoverUrl } from '../server/news.server'
-import type { NewsArticle, NewsComment, NewsReplica, NewsReplicaEntity } from '../types'
+import type { NewsArticle,NewsComment,NewsReplica,NewsReplicaEntity } from '../types'
+import { NewsInteractions } from './NewsInteractions'
+import { NewsReplicaForm } from './NewsReplicaForm'
+import { NewsReportForm } from './NewsReportForm'
 
 const replicaLabels: Record<NewsReplica['entityType'], string> = {
   professional_profile: 'Perfil profesional',
@@ -29,7 +29,7 @@ export function NewsArticleView({ article, comments, replicas = [], replicaEntit
     <p className="mt-8 text-sm font-semibold text-primary-700 dark:text-primary-400">{article.section.name} · {scopeLabels[article.scope]}</p>
     <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">{article.title}</h1>
     <p className="mt-5 text-lg leading-8 text-neutral-600 dark:text-neutral-300">{article.excerpt}</p>
-    <p className="mt-5 text-sm leading-6 text-neutral-500 dark:text-neutral-400">Por {article.author.username ? <Link href={`/feed/professional-profile/${article.author.username}`} className="rounded font-semibold text-neutral-800 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-neutral-200 dark:hover:text-primary-300">{article.author.name}</Link> : article.author.name} · Fuente: <Link href={`/noticias/fuentes/${article.source.id}`} className="rounded font-semibold text-primary-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-primary-400">{article.source.name}</Link> · {new Intl.DateTimeFormat('es-CO', { dateStyle: 'long' }).format(new Date(article.publishedAt))}</p>
+    <p className="mt-5 text-sm leading-6 text-neutral-500 dark:text-neutral-400">Por {article.author.username ? <Link href={`/professional-profile/${article.author.username}`} className="rounded font-semibold text-neutral-800 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-neutral-200 dark:hover:text-primary-300">{article.author.name}</Link> : article.author.name} · Fuente: <Link href={`/noticias/fuentes/${article.source.id}`} className="rounded font-semibold text-primary-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-primary-400">{article.source.name}</Link> · {new Intl.DateTimeFormat('es-CO', { dateStyle: 'long' }).format(new Date(article.publishedAt))}</p>
     {article.isSponsored && <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">#Publicidad · Contenido patrocinado identificado.</p>}
     {article.aiDisclosure && <p className="mt-4 rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-900 dark:bg-indigo-950 dark:text-indigo-100">Este contenido declara el uso de IA generativa.</p>}
     {cover && <div className="mt-8 overflow-hidden rounded-2xl"><img src={cover} alt={`Imagen principal de ${article.title}`} className="w-full object-cover" /></div>}

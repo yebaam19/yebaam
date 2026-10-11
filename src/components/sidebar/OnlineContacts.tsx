@@ -2,12 +2,12 @@
 
 import { EllipsisHorizontalIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
-import { Search01Icon, UserAdd01Icon, UserMultiple02Icon } from '@hugeicons/core-free-icons';
+import { Popover,PopoverButton,PopoverPanel } from '@headlessui/react';
+import { Search01Icon,UserAdd01Icon,UserMultiple02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
 
 interface OnlineContact {
   id: string;
@@ -72,7 +72,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                   {showOnlineOnly ? t('showAll') : t('onlineOnly')}
                 </button>
                 <Link
-                  href="/feed/friends"
+                  href="/friends"
                   onClick={() => close()}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700"
                 >
@@ -85,7 +85,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                   {t('viewAllFriends')}
                 </Link>
                 <Link
-                  href="/feed/friends?tab=suggestions"
+                  href="/friends?tab=suggestions"
                   onClick={() => close()}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700"
                 >
@@ -98,7 +98,7 @@ export default function OnlineContacts({ contacts, onContactClick }: OnlineConta
                   {t('addFriends')}
                 </Link>
                 <Link
-                  href="/feed/friends?tab=search"
+                  href="/friends?tab=search"
                   onClick={() => close()}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700"
                 >

@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { ArrowPathIcon, HomeIcon } from '@/components/icons/heroicons-shim';
-import { imageUrl } from '@/lib/media/urls';
+import { ArrowPathIcon,HomeIcon } from '@/components/icons/heroicons-shim';
 import { getFamiliesForProfileAction } from '@/features/families/actions/families.actions';
 import type { FamilyWithViewer } from '@/features/families/types/family.types';
+import { imageUrl } from '@/lib/media/urls';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useEffect,useState } from 'react';
 
 interface UserFamiliesProps {
   userId: string;
@@ -59,7 +59,7 @@ export default function UserFamilies({ userId, isOwnProfile }: UserFamiliesProps
               {t('emptyOwnSubtitle')}
             </p>
             <Link
-              href="/feed/familias"
+              href="/familias"
               className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
               {t('goToFamilies')}
@@ -99,7 +99,7 @@ function FamilyMiniCard({ family }: { family: FamilyWithViewer }) {
 
   return (
     <Link
-      href={`/feed/familias/${family.slug}`}
+      href={`/familias/${family.slug}`}
       className="group flex overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
     >
       <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center bg-emerald-50 dark:bg-emerald-900/20">

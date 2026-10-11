@@ -1,33 +1,33 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback,useEffect,useState } from 'react'
 
+import { listPublicProfilesAction } from '@/app/(app)/(social)/professional-profile/server/profile.actions'
 import { useAuth } from '@/features/auth'
-import { listPublicProfilesAction } from '@/app/(app)/feed/professional-profile/server/profile.actions'
 import type { ProfessionalProfile } from '@/features/professional-profile/interfaces/professional-profile.interfaces'
 
+import { servicesByUserIdAction } from '../actions/services.actions'
 import { useServices } from '../hooks/useServices'
 import { useFeaturedServices } from '../hooks/useStats'
-import { servicesByUserIdAction } from '../actions/services.actions'
 import {
-  City,
-  ProfessionalServiceBasic,
-  ProfessionalServiceCategory,
-  ProfessionalServiceFilters,
-  State,
+City,
+ProfessionalServiceBasic,
+ProfessionalServiceCategory,
+ProfessionalServiceFilters,
+State,
 } from '../interfaces/professional-service.interfaces'
 import { useProfessionalServicesUIStore } from '../store/professionalServicesUI.store'
 import {
-  CreateServiceModal,
-  ProfilesGrid,
-  ServicesFilterBar,
-  ServicesGrid,
-  ServicesHero,
-  ServicesTabs,
+CreateServiceModal,
+ProfilesGrid,
+ServicesFilterBar,
+ServicesGrid,
+ServicesHero,
+ServicesTabs,
 } from './listing'
-import { ServicesLoadingSkeleton } from './listing/container/ServicesLoadingSkeleton'
-import { ServicesEmptyState } from './listing/container/ServicesEmptyState'
 import { SearchResultsHeader } from './listing/container/SearchResultsHeader'
+import { ServicesEmptyState } from './listing/container/ServicesEmptyState'
+import { ServicesLoadingSkeleton } from './listing/container/ServicesLoadingSkeleton'
 
 interface ProfessionalServicesListingContainerProps {
   initialServices: ProfessionalServiceBasic[]

@@ -1,21 +1,21 @@
 'use client';
 
-import { FC } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import {
-  UsersIcon,
-  CheckBadgeIcon,
-  GlobeAltIcon,
-  LockClosedIcon,
+CheckBadgeIcon,
+GlobeAltIcon,
+LockClosedIcon,
+UsersIcon,
 } from '@/components/icons/heroicons-shim';
 import { resolveImageRef } from '@/lib/media/urls';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import Link from 'next/link';
+import { FC } from 'react';
 import type { Club } from '../types/club.types';
 import {
-  getCategoryLabel,
-  getCategoryColor,
-  formatMembersCount,
+formatMembersCount,
+getCategoryColor,
+getCategoryLabel,
 } from '../utils/clubHelpers';
 
 interface ClubCardProps {
@@ -55,7 +55,7 @@ export const ClubCard: FC<ClubCardProps> = ({ club }) => {
   const profileSrc = resolveImageRef(club.profileImageUrl, 'avatar');
 
   return (
-    <Link href={`/feed/clubs/${club.slug}`} className="group block h-full">
+    <Link href={`/clubs/${club.slug}`} className="group block h-full">
       <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:ring-emerald-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-emerald-700 dark:hover:ring-emerald-900/40">
         {/* Cover */}
         <div className="relative h-32 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500">

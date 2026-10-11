@@ -1,23 +1,22 @@
 'use client';
 
-import { useFetch } from '@/lib/hooks/useFetch';
-import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { cacheKey, getVersion, invalidate, setCached } from '@/lib/hooks/cacheStore';
+import { useResolvedViewer } from '@/features/auth/hooks/useResolvedViewer';
 import { coalescePending } from '@/lib/coalesce-pending';
+import { cacheKey,getVersion,invalidate,setCached } from '@/lib/hooks/cacheStore';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useFetch } from '@/lib/hooks/useFetch';
 import { useEffect } from 'react';
-import { useAuth } from '@/features/auth/context/auth-context';
-import { useOptionalCurrentUser } from '@/features/auth/context/current-user.context';
 import { communitiesService } from '../services/communities.service';
 import { COMMUNITY_SUGGESTIONS_LIMIT } from '../suggestions.config';
 import {
-  Community,
-  CommunitiesListResponse,
-  CommunityResponse,
-  CommunityMembersResponse,
-  CommunityPostsResponse,
-  SearchCommunitiesParams,
-  CreateCommunityDto,
-  UpdateCommunityDto,
+CommunitiesListResponse,
+Community,
+CommunityMembersResponse,
+CommunityPostsResponse,
+CommunityResponse,
+CreateCommunityDto,
+SearchCommunitiesParams,
+UpdateCommunityDto,
 } from '../types/community.types';
 
 /**
@@ -58,11 +57,7 @@ export function useMyCommunities(initial?: Community[]) {
 }
 
 export function useSuggestedCommunities(limit = COMMUNITY_SUGGESTIONS_LIMIT, initial?: Community[], initialViewerId?: string | null) {
-  const { user, isInitialized } = useAuth();
-  const serverUser = useOptionalCurrentUser();
-  // The server identity is available before client auth finishes restoring.
-  // Once initialized, the live session wins, including logout and account switches.
-  const viewerId = (isInitialized ? user?.id : serverUser?.id) ?? null;
+  const { viewerId, isReady } = useResolvedViewer();
   const key = [...communitiesKeys.suggested(limit), viewerId ?? 'guest'];
   const flatKey = cacheKey(...key);
   const seed = initialViewerId === viewerId ? initial : undefined;
@@ -81,7 +76,7 @@ export function useSuggestedCommunities(limit = COMMUNITY_SUGGESTIONS_LIMIT, ini
       () => communitiesService.getSuggestedCommunities(limit),
     ),
     {
-      enabled: isInitialized || !!serverUser,
+      enabled: isReady,
       initialData: listInitial(seed),
       staleTime: 5 * 60_000,
     },

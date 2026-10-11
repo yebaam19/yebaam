@@ -1,7 +1,7 @@
-import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { MedalIcon,ShieldUserIcon,UserIcon,UserMultiple02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { MedalIcon, ShieldUserIcon, UserIcon, UserMultiple02Icon } from '@hugeicons/core-free-icons'
+import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 interface ProfileMenuSectionProps {
   username: string
@@ -35,7 +35,7 @@ export default function ProfileMenuSection({
 
       {/* Mis Amigos */}
       <Link
-        href="/feed/friends"
+        href="/friends"
         className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-primary-500/50 dark:hover:bg-neutral-700"
       >
         <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">

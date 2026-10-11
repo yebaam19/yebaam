@@ -4,7 +4,7 @@ import { getUserDisplayName } from '@/lib/user-helpers'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { useState } from 'react'
-import { ProfessionalService, ServiceMediaType } from '../../../interfaces/professional-service.interfaces'
+import { ProfessionalService,ServiceMediaType } from '../../../interfaces/professional-service.interfaces'
 import type { OwnerArticleCard } from '../../../server/owner-content.server'
 import { ServiceCV } from '../../ServiceCV'
 import { ServicePortfolio } from '../../ServicePortfolio'
@@ -122,7 +122,7 @@ function ProfessionalProfilePanel({ service }: { service: ProfessionalService })
 
         {username && (
           <Link
-            href={`/feed/professional-profile/${username}`}
+            href={`/professional-profile/${username}`}
             className="mt-4 inline-block rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
           >
             Ver perfil profesional

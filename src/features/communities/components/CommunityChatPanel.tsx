@@ -1,12 +1,12 @@
-import Link from 'next/link';
-import type { Route } from 'next';
 import {
-  ChatBubbleLeftRightIcon,
-  LockClosedIcon,
+ChatBubbleLeftRightIcon,
+LockClosedIcon,
 } from '@/components/icons/heroicons-shim';
-import { getOrCreateCommunityChatTopic } from '@/features/communities/server/community-chat.server';
 import type { ViewerJoinState } from '@/features/communities/server/communities.server';
+import { getOrCreateCommunityChatTopic } from '@/features/communities/server/community-chat.server';
 import type { Community } from '@/features/communities/types/community.types';
+import type { Route } from 'next';
+import Link from 'next/link';
 
 interface CommunityChatPanelProps {
   community: Community;
@@ -61,7 +61,7 @@ export async function CommunityChatPanel({ community, viewerState }: CommunityCh
             Sala de chat público en tiempo real de la comunidad.
           </p>
           <Link
-            href={`/feed/chat-publico/${topic.slug}` as Route}
+            href={`/chat-publico/${topic.slug}` as Route}
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-800 px-4 py-2 text-sm font-medium text-white hover:bg-primary-900"
           >
             <ChatBubbleLeftRightIcon className="h-4 w-4" />

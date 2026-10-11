@@ -6,16 +6,16 @@
 
 'use client'
 
-import { addAssociationAction, deleteAssociationAction, updateAssociationAction } from '@/app/(app)/feed/professional-profile/server/entities.actions'
-import { PencilIcon, TrashIcon, UserGroupIcon } from '@/components/icons/heroicons-shim'
+import { addAssociationAction,deleteAssociationAction,updateAssociationAction } from '@/app/(app)/(social)/professional-profile/server/entities.actions'
+import { PencilIcon,TrashIcon,UserGroupIcon } from '@/components/icons/heroicons-shim'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { Association, AssociationFormData } from '../../interfaces/professional-profile.interfaces'
+import type { Association,AssociationFormData } from '../../interfaces/professional-profile.interfaces'
 import { AssociationDialog } from '../dialogs/AssociationDialog'
 import { DeleteConfirmDialog } from '../dialogs/DeleteConfirmDialog'
-import { EmptyState, SectionHeader } from './shared'
+import { EmptyState,SectionHeader } from './shared'
 
 interface AssociationsSectionProps {
   profileId: string

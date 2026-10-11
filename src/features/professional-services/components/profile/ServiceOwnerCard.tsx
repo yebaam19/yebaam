@@ -61,7 +61,7 @@ export function ServiceOwnerCard({ owner }: ServiceOwnerCardProps) {
       {/* Botón de contacto */}
       <div className="mt-4">
         <Link
-          href={`/feed/professional-profile/${displayUsername}`}
+          href={`/professional-profile/${displayUsername}`}
           className="block w-full rounded-lg bg-primary-500 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-primary-600"
         >
           Ver perfil profesional
