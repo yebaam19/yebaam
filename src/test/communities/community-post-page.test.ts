@@ -64,11 +64,12 @@ describe('community home post pagination', () => {
       author_id: communityId, created_at: createdAt,
     }));
     const query = database(history);
-    const first = await getCommunityLegacyPosts(communityId, null);
+    const first = await getCommunityLegacyPosts(communityId, null, 'comunidad-mvp-test');
     expect(first.posts).toHaveLength(50);
     expect(first.nextCursor).toEqual({ createdAt, id: history[49].id });
     expect(query.limit).toHaveBeenCalledWith(51);
-    await getCommunityLegacyPosts(communityId, first.nextCursor);
+    expect(mocks.from).not.toHaveBeenCalledWith('communities');
+    await getCommunityLegacyPosts(communityId, first.nextCursor, 'comunidad-mvp-test');
     expect(query.or).toHaveBeenCalledWith(
       `created_at.lt.${createdAt},and(created_at.eq.${createdAt},id.lt.${history[49].id})`,
     );

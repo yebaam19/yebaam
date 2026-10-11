@@ -11,10 +11,10 @@ begin
     'EXECUTE') then
     raise exception 'Legacy non-idempotent restriction RPC is public';
   end if;
-  if not has_function_privilege('authenticated',
+  if has_function_privilege('authenticated',
     'public.set_community_chat_restriction(uuid,uuid,text,integer,text,uuid)',
     'EXECUTE') then
-    raise exception 'Idempotent restriction RPC is unavailable';
+    raise exception 'Direct restriction RPC is still public';
   end if;
   select array_agg(id) into people from (
     select u.id from auth.users u join public.profiles p on p.id=u.id
@@ -68,7 +68,7 @@ begin
   reset role;
 
   perform set_config('request.jwt.claim.sub',moderator_id::text,true);
-  set local role authenticated;
+  -- Privileged fixture: ordinary clients must now use reviewed cases.
   perform public.set_community_chat_restriction(org,member_id,'suspend',24,
     'Repeated disruptive messages in the community chat',gen_random_uuid());
   if not exists(select 1 from public.community_chat_restrictions
@@ -116,7 +116,7 @@ begin
   reset role;
 
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
-  set local role authenticated;
+  -- Privileged fixture for release and audit regression checks.
   perform public.set_community_chat_restriction(org,member_id,'block',null,
     'Repeated serious violations after prior suspension',gen_random_uuid());
   reset role;

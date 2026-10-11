@@ -1,7 +1,9 @@
 'use server';
 
 import { getServerClient } from '@/utils/supabase/server';
+import { z } from 'zod';
 import { isValidWebsite } from '@/lib/safe-href';
+import { requireCommunityOwner } from '../server/community-roles.server';
 import type { UpdateCommunityDto } from '../types/community.types';
 import {
   type ActionResult,
@@ -58,21 +60,14 @@ export async function updateCommunity(
 }
 
 export async function deleteCommunity(id: string): Promise<ActionResult<{ id: string }>> {
-  const userId = await requireUserId();
-  if (!userId) return { ok: false, error: 'Debes iniciar sesión.' };
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: 'Comunidad inválida.' };
+  const owner = await requireCommunityOwner(id);
+  if (!owner.ok) return { ok: false, error: 'Solo el propietario puede eliminar la comunidad.' };
 
-  const client = await getServerClient();
-  const { data: existing } = await client
-    .from('communities')
-    .select('slug, owner_id')
-    .eq('id', id)
-    .maybeSingle();
+  const { data, error } = await owner.session.client.from('communities')
+    .delete().eq('id', id).select('id').maybeSingle();
+  if (error || !data) return { ok: false, error: 'No se pudo eliminar la comunidad.' };
 
-  if (!existing) return { ok: false, error: 'Comunidad no encontrada.' };
-
-  const { error } = await client.from('communities').delete().eq('id', id);
-  if (error) return { ok: false, error: error.message };
-
-  revalidateCommunityPaths((existing as { slug: string }).slug);
+  revalidateCommunityPaths(owner.slug);
   return { ok: true, data: { id } };
 }

@@ -217,7 +217,8 @@
   "members": {
     "title": "Members and Followers",
     "total": "{count} total",
-    "empty": "No members available."
+    "empty": "No members available.",
+    "restricted": "The member list is private. Only the team managing or moderating this community can view it."
   },
   "comingSoon": {
     "defaultDescription": "This section will be available soon.",

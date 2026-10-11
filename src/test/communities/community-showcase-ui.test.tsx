@@ -9,10 +9,13 @@ import type { LibraryAsset } from '@/features/communities/types/communityLibrary
 import type { Community } from '@/features/communities/types/community.types';
 import type { ReactNode } from 'react';
 const mocks = vi.hoisted(() => ({ save: vi.fn(), refresh: vi.fn(), assets: vi.fn(),
-  player: { play: vi.fn(), muted: false, volume: 1 } }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
+  pathname: '/feed/comunidades/test', player: { play: vi.fn(), muted: false, volume: 1 } }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mocks.refresh }), usePathname: () => mocks.pathname }));
 vi.mock('@/features/communities/actions/showcase.actions', () => ({ saveCommunityShowcase: mocks.save }));
-vi.mock('next/dynamic', () => ({ default: () => function Player(props: { src: string; onEnded: () => void; onError: () => void;
+vi.mock('next/dynamic', () => ({ default: (loader: () => Promise<unknown>) =>
+  String(loader).includes('ShowcaseEditor') ? function Editor({ onClose }: { onClose: () => void }) {
+    return <button onClick={onClose}>Cancelar</button>;
+  } : function Player(props: { src: string; onEnded: () => void; onError: () => void;
   onLoadedMetaData: () => void; streamRef: { current: typeof mocks.player | undefined } }) {
   props.streamRef.current = mocks.player;
   return <div data-testid="stream" data-uid={props.src}><button onClick={props.onEnded}>End video</button>
@@ -28,6 +31,7 @@ function view(node: ReactNode) {
   return render(<NextIntlClientProvider locale="es" messages={{ communities: translations }}>{node}</NextIntlClientProvider>);
 }
 beforeEach(() => { vi.clearAllMocks(); mocks.player.muted = false; mocks.player.play.mockReset().mockResolvedValue(undefined);
+  mocks.pathname = '/feed/comunidades/test';
   mocks.assets.mockResolvedValue({ ok: true, data: { items: videos, nextCursor: null } });
   mocks.save.mockResolvedValue({ ok: false, error: 'Conflicto: vuelve a intentarlo' }); });
 describe('Showcase playback', () => {
@@ -124,5 +128,17 @@ describe('Showcase editing', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Editar presentación' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Editar presentación' })).toHaveFocus());
+  });
+  it('shows the video on the profile home and a compact link on interior pages', () => {
+    const community = { id: communityId, slug: 'test', description: 'Description' } as Community;
+    const showcase = { id: communityId, community_id: communityId, version: 1, introduction: 'Presentation', is_published: true,
+      videos: [{ id: videos[0].id, asset_id: videos[0].id, community_id: communityId, position: 0, asset: videos[0] }] };
+    const home = view(<CommunityProfileHeader community={community} canManageHeader={false} canEdit={false} showcase={showcase} />);
+    expect(screen.getByRole('button', { name: 'Reproducir Video 1' })).toBeTruthy();
+    home.unmount();
+    mocks.pathname = '/feed/comunidades/test/archivos';
+    view(<CommunityProfileHeader community={community} canManageHeader={false} canEdit={false} showcase={showcase} />);
+    expect(screen.queryByRole('button', { name: 'Reproducir Video 1' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Ver presentación' })).toHaveAttribute('href', '/feed/comunidades/test');
   });
 });

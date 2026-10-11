@@ -1,10 +1,11 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import ChatPublicoView from './ChatPublicoView'
-import MediaGallery, { type MediaMode } from './MediaGallery'
+import type { MediaMode } from './MediaGallery'
 import RoomUserList from './RoomUserList'
 import RoomsSidebar from './RoomsSidebar'
 import type {
@@ -16,6 +17,7 @@ import type {
   RoomPresenceRow,
 } from '../types'
 
+const MediaGallery = dynamic(() => import('./MediaGallery'))
 type ViewMode = 'chat' | MediaMode
 
 interface Props {
@@ -27,6 +29,7 @@ interface Props {
   identity: ClientChatIdentity
   canModerate?: boolean
   canBlock?: boolean
+  canReviewPlatform?: boolean
   initialRestriction?: CommunityChatRestriction | null
 }
 
@@ -43,6 +46,7 @@ export default function ChatPublicoShell({
   identity,
   canModerate = false,
   canBlock = false,
+  canReviewPlatform = false,
   initialRestriction = null,
 }: Props) {
   const [roomsOpen, setRoomsOpen] = useState(true)
@@ -135,6 +139,7 @@ export default function ChatPublicoShell({
               identity={identity}
               canModerate={canModerate}
               canBlock={canBlock}
+              canReviewPlatform={canReviewPlatform}
               initialRestriction={initialRestriction}
             />
           </div>

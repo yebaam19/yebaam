@@ -217,7 +217,8 @@
   "members": {
     "title": "Miembros y Seguidores",
     "total": "{count} en total",
-    "empty": "No hay miembros disponibles."
+    "empty": "No hay miembros disponibles.",
+    "restricted": "La lista de integrantes es privada. Solo el equipo que administra o modera esta comunidad puede verla."
   },
   "comingSoon": {
     "defaultDescription": "Esta sección estará disponible próximamente.",
@@ -671,6 +672,7 @@
     "playError": "No se pudo reproducir el video.",
     "retry": "Reintentar",
     "edit": "Editar presentación",
+    "view": "Ver presentación",
     "introduction": "Presentación institucional",
     "selectionHint": "El primer video será el tráiler. Selecciona hasta cuatro videos y guarda para aplicar los cambios.",
     "trailer": "Tráiler principal",

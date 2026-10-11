@@ -60,8 +60,8 @@ async function getCursorPostPage(
 export const getCommunityHomePosts = cache((communityId: string, cursor: CommunityPostCursor | null, knownSlug?: string) =>
   getCursorPostPage(communityId, cursor, HOME_PAGE_SIZE, knownSlug));
 
-export const getCommunityLegacyPosts = cache((communityId: string, cursor: CommunityPostCursor | null) =>
-  getCursorPostPage(communityId, cursor, LEGACY_PAGE_SIZE));
+export const getCommunityLegacyPosts = cache((communityId: string, cursor: CommunityPostCursor | null, knownSlug?: string) =>
+  getCursorPostPage(communityId, cursor, LEGACY_PAGE_SIZE, knownSlug));
 
 export async function getCommunityPosts(
   communityId: string,

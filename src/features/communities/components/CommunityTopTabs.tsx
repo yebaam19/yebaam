@@ -25,7 +25,7 @@ export function CommunityTopTabs({ slug, config, canManage }: {
 
   if (!tabs.length) return null;
   return <nav ref={navigation} aria-label={t('topTabs.ariaLabel')}
-    className="flex items-center gap-1 overflow-x-auto rounded-lg border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-800">
+    className="thin-scrollbar flex items-center gap-1 overflow-x-auto rounded-lg border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-800">
     {tabs.map((tab) => {
       const isActive = tab.tab_key === 'posts' ? pathname === tab.href : pathname.startsWith(tab.href);
       return <Link key={tab.tab_key} href={tab.href as Route} aria-current={isActive ? 'page' : undefined}

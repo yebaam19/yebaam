@@ -11,7 +11,8 @@ export function LibraryFolderSelect({ communityId, kind, initial, value, include
   communityId: string; kind: AssetKind; initial: FolderPage; value?: string | null; includeAll?: boolean; disabled?: boolean;
 }) {
   const t = useTranslations('communities.library');
-  const folders = useLibraryPage(initial, (cursor) => loadAssetFolders({ communityId, kind, cursor }));
+  const refreshKey = JSON.stringify([initial.nextCursor, initial.items.map((folder) => [folder.id, folder.version])]);
+  const folders = useLibraryPage(initial, (cursor) => loadAssetFolders({ communityId, kind, cursor }), undefined, refreshKey);
   return <div className="min-w-0 space-y-1">
     <label className="block text-sm font-medium">{t('folder')}
       <Select name="folderId" defaultValue={value ?? (includeAll ? 'all' : 'none')} disabled={disabled} className="mt-1.5">

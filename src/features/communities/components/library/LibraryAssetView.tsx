@@ -24,7 +24,7 @@ export function LibraryAssetView({ asset, canEdit, children }: {
       {asset.description && <p className="whitespace-pre-line break-words text-sm text-neutral-600 dark:text-neutral-300">{asset.description}</p>}
       <p className="flex flex-wrap gap-x-2 text-xs text-neutral-600 dark:text-neutral-400">
         <time dateTime={asset.created_at}>{format.dateTime(new Date(asset.created_at), { day: 'numeric', month: 'short', year: 'numeric' })}</time>
-        {asset.size_bytes !== null && <span>{formatBytes(asset.size_bytes)}</span>}
+        {asset.size_bytes !== null && <span>{asset.size_bytes < 1024 ? `${asset.size_bytes} B` : formatBytes(asset.size_bytes)}</span>}
         {document && <span>{asset.original_name.split('.').at(-1)?.toUpperCase()}</span>}
         {asset.uploader_name && <span>{t('uploadedBy', { name: asset.uploader_name })}</span>}
         {canEdit && <span>{!asset.is_published && <span className="text-secondary-900 dark:text-secondary-300">{t('draft')} · </span>}{t(`audience.${asset.visibility}`)}</span>}

@@ -108,8 +108,8 @@ export function CommunitySidebar({
         {navigation}
       </details>
       {isOwner && communityId && communityName && (
-        <div className="mt-1 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
+        <div className="mt-1 flex items-center justify-between gap-2 rounded-md border border-primary-200 bg-primary-50/70 p-2.5 lg:block lg:p-3 dark:border-primary-800 dark:bg-primary-900/20">
+          <p className="min-w-0 text-[11px] font-semibold uppercase tracking-wide text-primary-800 lg:mb-2 dark:text-primary-300">
             {t('sidebar.ownerOnly')}
           </p>
           <CommunityOwnerMenu communityId={communityId} communityName={communityName} />

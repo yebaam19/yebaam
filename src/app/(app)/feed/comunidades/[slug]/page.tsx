@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import {
   getCommunityBySlug,
   getCommunityHomePosts,
-  getPendingJoinRequests,
   getViewerJoinState,
 } from '@/features/communities/server/communities.server';
 import { CommunityHomeMain } from '@/features/communities/components/CommunityHomeMain';
@@ -22,11 +21,12 @@ export default async function CommunityHomePage({ params, searchParams }: PagePr
   const cursor = parseCommunityPostCursor(postsCursor);
   const community = await getCommunityBySlug(slug);
   if (!community) notFound();
+  const postsPromise = getCommunityHomePosts(community.id, cursor, community.slug);
+  // The posts boundary observes this promise after the faster profile reads finish.
+  void postsPromise.catch(() => {});
 
-  const [posts, viewerState, pendingRequests, sections, capabilities, theme, topTabs] = await Promise.all([
-    getCommunityHomePosts(community.id, cursor, community.slug),
+  const [viewerState, sections, capabilities, theme, topTabs] = await Promise.all([
     getViewerJoinState(community.id),
-    getPendingJoinRequests(community.id),
     getCommunitySections(community.id),
     getCommunityProfileCapabilities(community.id),
     getCommunityTheme(community.id),
@@ -36,11 +36,9 @@ export default async function CommunityHomePage({ params, searchParams }: PagePr
   return (
     <CommunityHomeMain
       community={community}
-      posts={posts.posts}
-      nextPostsCursor={posts.nextCursor}
-      isFirstPostsPage={!cursor}
+      postsPromise={postsPromise}
+      postsCursor={cursor}
       viewerState={viewerState}
-      pendingRequests={pendingRequests}
       sections={sections}
       topTabs={topTabs}
       theme={theme}

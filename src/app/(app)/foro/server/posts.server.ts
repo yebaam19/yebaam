@@ -90,11 +90,11 @@ async function loadAuthorMeta(ids: string[]): Promise<Map<string, {
   const client = await getServerClient()
   const [profilesRes, countsRes] = await Promise.all([
     client.from('profiles').select('*').in('id', unique),
-    client.from('forum_posts').select('author_id').in('author_id', unique),
+    client.rpc('forum_visible_post_counts', { p_author_ids: unique }),
   ])
   const counts = new Map<string, number>()
-  for (const row of (countsRes.data ?? []) as { author_id: string }[]) {
-    counts.set(row.author_id, (counts.get(row.author_id) ?? 0) + 1)
+  for (const row of (countsRes.data ?? []) as { author_id: string; post_count: number }[]) {
+    counts.set(row.author_id, Number(row.post_count))
   }
   for (const p of (profilesRes.data ?? []) as Record<string, unknown>[]) {
     const id = p.id as string

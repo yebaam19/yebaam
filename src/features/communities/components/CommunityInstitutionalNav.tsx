@@ -19,7 +19,7 @@ export function CommunityInstitutionalNav({ slug, sections, canManage, legacyRul
       hidden: section ? !section.is_visible : canManage && !(kind === 'rules' && legacyRules) }];
   }).sort((a, b) => a.position - b.position || a.kind.localeCompare(b.kind));
   if (!tabs.length) return null;
-  return <nav aria-label={t('navigation')} className="mb-6 flex gap-1 overflow-x-auto border-b border-neutral-200 dark:border-neutral-700">
+  return <nav aria-label={t('navigation')} className="thin-scrollbar mb-6 flex gap-1 overflow-x-auto border-b border-neutral-200 dark:border-neutral-700">
     {tabs.map((tab) => {
       const href = tab.kind === 'about' || tab.kind === 'leaders'
         ? `/feed/comunidades/${encodeURIComponent(slug)}/${tab.kind === 'about' ? 'acerca' : 'lideres'}` : planPath(slug, tab.kind);

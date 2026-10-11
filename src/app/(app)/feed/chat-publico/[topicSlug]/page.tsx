@@ -58,12 +58,17 @@ export default async function ChatPublicoTopicPage({
 
   let canModerate = false
   let canBlock = false
+  let canReviewPlatform = false
   if (topic.owner_type === 'community' && topic.owner_id && authedUser) {
     const client = await getServerClient()
-    const { data } = await client.rpc('community_profile_capabilities', { target_community: topic.owner_id })
+    const [{ data }, { data: platformAdmin }] = await Promise.all([
+      client.rpc('community_profile_capabilities', { target_community: topic.owner_id }),
+      client.rpc('is_platform_admin'),
+    ])
     const capabilities = data as { moderation?: boolean; settings?: boolean } | null
     canModerate = !!capabilities?.moderation
     canBlock = !!capabilities?.settings
+    canReviewPlatform = platformAdmin === true
   }
   const initialRestriction = topic.owner_type === 'community' && topic.owner_id && authedUser
     ? await getActiveCommunityChatRestriction(topic.owner_id, authedUser.id) : null
@@ -150,6 +155,7 @@ export default async function ChatPublicoTopicPage({
           identity={clientIdentity}
           canModerate={canModerate}
           canBlock={canBlock}
+          canReviewPlatform={canReviewPlatform}
           initialRestriction={initialRestriction}
         />
       </div>

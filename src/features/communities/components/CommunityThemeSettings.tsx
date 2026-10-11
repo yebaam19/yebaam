@@ -35,8 +35,8 @@ export function CommunityThemeSettings({ initial }: { initial: CommunityTheme })
     });
   };
 
-  return <details className="rounded-xl border border-primary-100 bg-white p-4 shadow-sm dark:border-primary-900/50 dark:bg-neutral-800">
-    <summary className="min-h-11 cursor-pointer text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-100">{t('title')}</summary>
+  return <details className="rounded-xl border border-primary-100 bg-white px-3 py-2 shadow-sm dark:border-primary-900/50 dark:bg-neutral-800 sm:px-4">
+    <summary className="flex min-h-10 cursor-pointer items-center text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-100">{t('title')}</summary>
     <form onSubmit={submit} className="mt-3 space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-700">
       <p className="max-w-prose text-xs leading-relaxed text-neutral-600 dark:text-neutral-300">{t('hint')}</p>
       <div className="grid gap-4 sm:grid-cols-2">

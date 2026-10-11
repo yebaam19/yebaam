@@ -31,7 +31,7 @@ begin
     values(org,moderator_id,'moderator'),(org,admin_a,'admin'),(org,admin_b,'admin');
 
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
-  set local role authenticated;
+  -- Privileged fixture: the direct sanction RPC is no longer client-executable.
   perform public.set_community_chat_restriction(org,member_id,'suspend',24,
     'Repeated disruption in the community chat',decision_key);
   perform public.set_community_chat_restriction(org,member_id,'suspend',24,
@@ -189,7 +189,7 @@ begin
   end if;
 
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
-  set local role authenticated;
+  -- Privileged fixture for the post-decision review regression.
   perform public.set_community_chat_restriction(org,member_id,'suspend',12,
     'New disruptive messages after the prior review.',gen_random_uuid());
   reset role;
@@ -201,7 +201,7 @@ begin
     'I want to explain the new incident separately.');
   reset role;
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
-  set local role authenticated;
+  -- Privileged fixture for superseding an older review.
   perform public.set_community_chat_restriction(org,member_id,'suspend',24,
     'Additional evidence changed the restriction decision.',gen_random_uuid());
   reset role;

@@ -54,9 +54,9 @@ export function CommunityArticleCard({ communitySlug, article }: CommunityArticl
       <div className="flex flex-1 flex-col gap-2 p-4">
         {!article.isPublished && <span className="text-xs font-semibold text-secondary-900 dark:text-secondary-200">Borrador privado</span>}
         {article.category && <span className="text-xs font-medium text-primary-800 dark:text-primary-300">{article.category}</span>}
-        <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-primary-800 dark:text-white dark:group-hover:text-primary-300">
+        <h2 className="line-clamp-2 text-lg font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-primary-800 dark:text-white dark:group-hover:text-primary-300">
           {article.title}
-        </h3>
+        </h2>
         {article.subtitle && (
             <p className="line-clamp-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
             {article.subtitle}

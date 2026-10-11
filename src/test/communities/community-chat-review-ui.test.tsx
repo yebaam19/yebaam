@@ -39,11 +39,11 @@ beforeEach(() => {
 })
 
 describe('community chat review panel', () => {
-  it('lets the affected member submit a defense and clears the form after success', async () => {
+  it('lets the affected member request a review and clears the form after success', async () => {
     render(<ChatReviewPanel communityId={communityId} scope="mine"
       restriction={restriction} canBlock={false} onClose={vi.fn()} />)
     await screen.findByText('No hay solicitudes.')
-    fireEvent.change(screen.getByRole('textbox', { name: 'Presentar descargos' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Solicitar revisión' }), {
       target: { value: 'Quiero explicar el contexto de mis mensajes.' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar solicitud' }))
@@ -51,7 +51,7 @@ describe('community chat review panel', () => {
       communityId, statement: 'Quiero explicar el contexto de mis mensajes.',
     }))
     expect(await screen.findByRole('status')).toHaveTextContent('Tu solicitud quedó registrada.')
-    expect(screen.getByRole('textbox', { name: 'Presentar descargos' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Solicitar revisión' })).toHaveValue('')
   })
 
   it('offers an appeal only after the defense was upheld', async () => {

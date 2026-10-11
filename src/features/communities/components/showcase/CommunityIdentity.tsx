@@ -7,17 +7,18 @@ import type { Community } from '../../types/community.types';
 import { formatMembersCount, getCategoryLabel, COMMUNITY_CATEGORY_BADGE_CLASS, getPrivacyLabel } from '../../utils/communityHelpers';
 import { CommunityHeaderImageButton } from '../CommunityHeaderImageButton';
 import { safeExternalHref } from '@/lib/safe-href';
+import { withImageVariant } from '@/lib/media/urls';
 
 export function CommunityIdentity({ community: c, canManageHeader, stacked, headerImages }: { community: Community; canManageHeader: boolean; stacked?: boolean; headerImages?: HeaderImages | null }) {
   const t = useTranslations('communities');
   const websiteHref = safeExternalHref(c.website);
   return (
-            <div className={stacked ? "flex flex-col gap-4" : "flex items-start gap-3 sm:gap-5"}>
+            <div className={stacked ? "flex items-start gap-3 sm:gap-4 xl:flex-col" : "flex items-start gap-3 sm:gap-5"}>
               <div className="shrink-0">
                 <div className="relative h-14 w-14 sm:h-20 sm:w-20">
                   <div className="h-14 w-14 overflow-hidden rounded-full border-4 border-white sm:h-20 sm:w-20 dark:border-neutral-800">
                     {c.profileImageUrl ? (
-                      <FramedImage src={c.profileImageUrl} alt={c.name} framing={headerImages?.profile.framing} />
+                      <FramedImage src={withImageVariant(c.profileImageUrl, 'thumbnail')} alt={c.name} framing={headerImages?.profile.framing} />
                     ) : (
                       <div className="w-full h-full bg-[var(--community-secondary)] text-[var(--community-primary)] flex items-center justify-center">
                         <span className="font-bold text-2xl">

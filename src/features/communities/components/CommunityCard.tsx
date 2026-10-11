@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Community } from '../types/community.types';
+import { withImageVariant } from '@/lib/media/urls';
 import { formatMembersCount, getCategoryLabel, COMMUNITY_CATEGORY_BADGE_CLASS } from '../utils/communityHelpers';
 import {
   UserGroupIcon, CheckBadgeIcon, LockClosedIcon, ArrowTrendingUpIcon, DocumentTextIcon,
@@ -42,7 +43,7 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
         <div className="px-4 pb-3">
           <div className="relative -mt-7 mb-3 flex size-14 items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-secondary-100 text-primary-900 dark:border-neutral-900">
             {community.profileImageUrl ? (
-              <Image src={community.profileImageUrl} alt="" fill sizes="56px" className="object-cover" unoptimized />
+              <Image src={withImageVariant(community.profileImageUrl, 'thumbnail')} alt="" fill sizes="56px" className="object-cover" unoptimized />
             ) : (
               <span aria-hidden="true" className="text-xl font-bold">{community.name.charAt(0)}</span>
             )}

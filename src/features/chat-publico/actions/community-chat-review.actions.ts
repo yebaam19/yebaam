@@ -54,10 +54,12 @@ export async function listCommunityChatReviews(
   const { data: auth } = await client.auth.getUser()
   if (!auth.user) return { ok: false, error: 'Inicia sesión para continuar.' }
   if (scope === 'staff') {
-    const { data: capability } = await client.rpc('community_profile_capabilities', {
-      target_community: communityId,
-    })
-    if (!(capability as { moderation?: boolean } | null)?.moderation) {
+    const [{ data: capability }, { data: platformAdmin }] = await Promise.all([
+      client.rpc('community_profile_capabilities', { target_community: communityId }),
+      client.rpc('is_platform_admin'),
+    ])
+    if (!(capability as { moderation?: boolean } | null)?.moderation
+      && platformAdmin !== true) {
       return { ok: false, error: 'No tienes permiso para revisar solicitudes.' }
     }
   }

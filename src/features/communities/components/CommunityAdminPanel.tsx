@@ -49,8 +49,8 @@ export function CommunityAdminPanel({
   };
 
   return (
-    <details className="group mb-6 overflow-hidden rounded-xl border border-primary-100 bg-white shadow-sm dark:border-primary-900/50 dark:bg-neutral-800">
-      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-2 px-5 py-3 text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary-800 dark:text-primary-100 [&::-webkit-details-marker]:hidden">
+    <details className="group overflow-hidden rounded-xl border border-primary-100 bg-white shadow-sm dark:border-primary-900/50 dark:bg-neutral-800">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 py-2 text-sm font-semibold text-primary-900 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary-800 dark:text-primary-100 [&::-webkit-details-marker]:hidden">
         <CheckBadgeIcon aria-hidden="true" className="size-5 shrink-0 text-primary-800 dark:text-primary-300" />
         <span className="min-w-0 flex-1">{t('admin.panel.title')}</span>
         {pendingRequests.items.length > 0 && <span className="rounded-full bg-secondary-100 px-2 py-0.5 text-xs text-secondary-900 dark:bg-secondary-900/30 dark:text-secondary-200">{pendingRequests.items.length}{pendingRequests.nextCursor ? '+' : ''}</span>}

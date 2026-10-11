@@ -114,8 +114,8 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
       <div><h2 id="community-chat-review-title" className="text-base font-semibold text-primary-900 dark:text-primary-100">
         {scope === 'mine' ? 'Mis revisiones del chat' : 'Solicitudes de revisión'}
       </h2><p className="mt-0.5 text-xs text-neutral-600 dark:text-neutral-300">
-        {scope === 'mine' ? 'Presenta descargos y, si se mantiene la decisión, una apelación.'
-          : 'Lee los descargos y registra el motivo de tu decisión.'}
+        {scope === 'mine' ? 'Solicita una revisión de la restricción y, si se mantiene, una apelación.'
+          : 'Lee las solicitudes y registra el motivo de tu decisión.'}
       </p></div>
       <button type="button" onClick={onClose} className="rounded-lg border border-primary-200 px-2.5 py-1.5 text-xs font-medium text-primary-800 dark:border-primary-800 dark:text-primary-200">Cerrar</button>
     </div>
@@ -126,7 +126,7 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold text-primary-900 dark:text-primary-100">
             {scope === 'staff' && item.displayName ? item.displayName + ' · ' : ''}
-            {item.stage === 'defense' ? 'Descargos' : 'Apelación'}
+            {item.stage === 'defense' ? 'Revisión' : 'Apelación'}
           </p>
           <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs text-primary-800 dark:bg-primary-950/40 dark:text-primary-200">
             {item.status === 'open' ? 'Pendiente' : item.status === 'upheld' ? 'Decisión mantenida'
@@ -151,7 +151,7 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
       </button>}
       {scope === 'mine' && nextStage && <form onSubmit={send} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-primary-800 dark:bg-primary-950/30">
         <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">
-          {nextStage === 'defense' ? 'Presentar descargos' : 'Presentar apelación'}
+          {nextStage === 'defense' ? 'Solicitar revisión' : 'Presentar apelación'}
           <textarea value={statement} disabled={pending} onChange={(event) => setStatement(event.target.value)}
             minLength={10} maxLength={2000} rows={4} required
             className="mt-1 block w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-600 dark:border-primary-800 dark:bg-neutral-900" />

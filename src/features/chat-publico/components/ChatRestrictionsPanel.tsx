@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useTransition } from 'react'
 import {
   listCommunityChatRestrictions, releaseCommunityChatRestriction,
-  setCommunityChatRestriction, type RestrictionItem,
+  type RestrictionItem,
 } from '../actions/community-chat-restrictions.actions'
+import { openCommunityChatCase } from '../actions/community-chat-cases.actions'
 
 type Cursor = { decidedAt: string; userId: string }
 type Selection = { userId: string; label: string; operation: 'restrict' | 'release' }
@@ -77,21 +78,21 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
       try {
         const result = selection.operation === 'release'
           ? await releaseCommunityChatRestriction({ communityId, userId: selection.userId, reason })
-          : await setCommunityChatRestriction({ communityId, userId: selection.userId,
+          : await openCommunityChatCase({ communityId, userId: selection.userId,
             kind: duration === 'block' ? 'block' : 'suspend',
             hours: duration === 'block' ? null : Number(duration), reason,
-            requestId: requestIdRef.current })
+            caseId: requestIdRef.current })
         if (!result.ok) { setError(result.error); return }
         setSelection(null)
         requestIdRef.current = crypto.randomUUID()
         setReason('')
         setSuccess(true)
-      } catch { setError('No se pudo enviar la decisión. Reintenta sin cambiar el formulario.'); return }
+      } catch { setError('No se pudo abrir el expediente. Reintenta sin cambiar el formulario.'); return }
       try {
         const refreshed = await listCommunityChatRestrictions(communityId)
         if (refreshed.ok) { setItems(refreshed.items); setCursor(refreshed.nextCursor) }
         else setError(refreshed.error)
-      } catch { setError('La decisión se guardó; reabre el panel para actualizar la lista.') }
+      } catch { setError('La operación se guardó; reabre el panel para actualizar la lista.') }
     })
   }
 
@@ -99,8 +100,8 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
     aria-labelledby="community-chat-restrictions-title"
     className="m-auto max-h-[min(85dvh,720px)] w-[min(38rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl border border-primary-100 bg-white p-0 text-neutral-900 shadow-xl backdrop:bg-neutral-950/50 dark:border-primary-900 dark:bg-neutral-900 dark:text-neutral-100">
     <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-primary-100 bg-white px-4 py-3 dark:border-primary-900 dark:bg-neutral-900">
-      <div><h2 id="community-chat-restrictions-title" className="text-base font-semibold text-primary-900 dark:text-primary-100">Restricciones del chat</h2>
-        <p className="mt-0.5 text-xs text-neutral-600 dark:text-neutral-300">Limita solo la escritura en esta comunidad. Cada decisión queda registrada.</p></div>
+      <div><h2 id="community-chat-restrictions-title" className="text-base font-semibold text-primary-900 dark:text-primary-100">Moderación del chat</h2>
+        <p className="mt-0.5 text-xs text-neutral-600 dark:text-neutral-300">Abre un expediente antes de limitar la escritura. Las restricciones activas pueden levantarse.</p></div>
       <button type="button" onClick={onClose} className="rounded-lg border border-primary-200 px-2.5 py-1.5 text-xs font-medium text-primary-800 dark:border-primary-800 dark:text-primary-200">Cerrar</button>
     </div>
     <div className="space-y-3 p-4">
@@ -120,7 +121,7 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
         {loadingMore ? 'Cargando…' : 'Cargar más'}
       </button>}
       {selection && <form onSubmit={submit} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-secondary-900/40 dark:bg-primary-950/30">
-        <p className="text-sm font-semibold text-primary-950 dark:text-primary-100">{selection.operation === 'release' ? 'Levantar restricción de' : 'Restringir a'} {selection.label}</p>
+        <p className="text-sm font-semibold text-primary-950 dark:text-primary-100">{selection.operation === 'release' ? 'Levantar restricción de' : 'Abrir expediente para'} {selection.label}</p>
         {selection.operation === 'restrict' && <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Duración
           <select value={duration} disabled={pending} onChange={(event) => {
             requestIdRef.current = crypto.randomUUID(); setDuration(event.target.value)
@@ -138,11 +139,11 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
         </label>
         <div className="flex flex-wrap gap-2">
           <button type="submit" disabled={pending || reason.trim().length < 10}
-            className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{pending ? 'Guardando…' : 'Confirmar decisión'}</button>
+            className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{pending ? 'Guardando…' : selection.operation === 'release' ? 'Levantar restricción' : 'Abrir expediente'}</button>
           <button type="button" disabled={pending} onClick={() => setSelection(null)} className="rounded-lg px-3 py-2 text-xs font-medium text-primary-800 disabled:opacity-50 dark:text-primary-200">Cancelar</button>
         </div>
       </form>}
-      {success && <p role="status" className="text-sm text-primary-800 dark:text-primary-200">Decisión guardada.</p>}
+      {success && <p role="status" className="text-sm text-primary-800 dark:text-primary-200">Operación guardada. Si abriste un expediente, aún no se aplicó una restricción.</p>}
       {error && <p role="alert" className="text-sm text-red-700 dark:text-red-400">{error}</p>}
     </div>
   </dialog>

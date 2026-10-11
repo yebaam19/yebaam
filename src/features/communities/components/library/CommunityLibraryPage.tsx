@@ -23,18 +23,20 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
   if (!community) notFound();
   const search = typeof searchParams.q === 'string' ? searchParams.q.trim().slice(0, 100) : '';
   const folderId = searchParams.carpeta === 'none' ? null : z.uuid().safeParse(searchParams.carpeta).success ? searchParams.carpeta : undefined;
-  const [initial, folders, capabilities, t, selectedFolder, topTabs] = await Promise.all([
+  const legacyCursor = parseCommunityPostCursor(searchParams.legacyCursor);
+  const loadLegacy = kind !== 'document' && (legacyCursor !== null || searchParams.legacyPage === 'recent');
+  const [initial, folders, capabilities, t, selectedFolder, topTabs, legacy] = await Promise.all([
     getLibraryAssets(community.id, kind, folderId, search, null, pdfOnly), getAssetFolders(community.id, kind),
     getCommunityProfileCapabilities(community.id), getTranslations('communities.library'),
     folderId ? getAssetFolder(community.id, folderId, kind) : null,
     getCommunityTopTabs(community.id),
+    loadLegacy ? getCommunityLegacyPosts(community.id, legacyCursor, slug) : null,
   ]);
   if (folderId && !selectedFolder) notFound();
   const initialFolders = selectedFolder && !folders.items.some((folder) => folder.id === selectedFolder.id)
     ? { ...folders, items: [selectedFolder, ...folders.items] } : folders;
   const path = pdfOnly ? 'pdf' : kind === 'image' ? 'fotos' : kind === 'video' ? 'videos' : 'archivos';
-  const legacyCursor = parseCommunityPostCursor(searchParams.legacyCursor);
-  const legacy = kind !== 'document' ? await getCommunityLegacyPosts(community.id, legacyCursor) : null;
+  const workspaceKey = JSON.stringify([community.id, kind, pdfOnly, folderId === undefined ? 'all' : folderId ?? 'none', search]);
   function legacyHref(cursor: CommunityPostCursor | null): Route {
     const query = new URLSearchParams();
     if (search) query.set('q', search);
@@ -46,9 +48,16 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
   }
   return <div className="space-y-5">
     <CommunityTopTabs slug={slug} config={topTabs} canManage={capabilities.settings} />
-    <LibraryWorkspace key={crypto.randomUUID()} communityId={community.id} kind={kind} initial={initial} folders={initialFolders}
+    <LibraryWorkspace key={workspaceKey} communityId={community.id} kind={kind} initial={initial} folders={initialFolders}
       canEdit={capabilities.content} basePath={`/feed/comunidades/${slug}/${path}`} search={search} folderId={folderId} pdfOnly={pdfOnly} />
-    {legacy && <details id="compartidos-publicaciones" open={Boolean(legacyCursor || searchParams.legacyPage === 'recent')} className="scroll-mt-6 rounded-xl bg-white p-4 dark:bg-neutral-800">
+    {kind !== 'document' && !legacy && <section id="compartidos-publicaciones" className="scroll-mt-6 rounded-xl bg-white p-4 dark:bg-neutral-800">
+      <Link href={legacyHref(null)} prefetch={false}
+        className="inline-flex min-h-11 items-center text-sm font-semibold text-primary-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-300">
+        {t('fromPosts')}
+      </Link>
+      <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('fromPostsHint')}</p>
+    </section>}
+    {legacy && <details id="compartidos-publicaciones" open className="scroll-mt-6 rounded-xl bg-white p-4 dark:bg-neutral-800">
       <summary className="min-h-11 cursor-pointer text-sm font-medium text-neutral-700 focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 dark:text-neutral-200">{t('fromPosts')}</summary>
       <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-300">{t('fromPostsHint')}</p>
       {kind === 'image' ? <CommunityPhotosPanel posts={legacy.posts} /> : <CommunityVideosPanel posts={legacy.posts} />}

@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
@@ -12,10 +13,11 @@ import { profileAvatarUrl, resolveMessageSenderAvatars } from '../lib/avatar'
 import ChatMessageList from './ChatMessageList'
 import ChatMessageComposer from './ChatMessageComposer'
 import ChatPinnedBar from './ChatPinnedBar'
-import ChatReportDialog from './ChatReportDialog'
-import ChatReportsPanel from './ChatReportsPanel'
-import ChatRestrictionsPanel from './ChatRestrictionsPanel'
-import ChatReviewPanel from './ChatReviewPanel'
+const ChatReportDialog = dynamic(() => import('./ChatReportDialog'))
+const ChatReportsPanel = dynamic(() => import('./ChatReportsPanel'))
+const ChatRestrictionsPanel = dynamic(() => import('./ChatRestrictionsPanel'))
+const ChatReviewPanel = dynamic(() => import('./ChatReviewPanel'))
+const ChatCasePanel = dynamic(() => import('./ChatCasePanel'))
 
 interface Props {
   topic: PublicChatTopic
@@ -24,12 +26,13 @@ interface Props {
   identity: ClientChatIdentity | null
   canModerate?: boolean
   canBlock?: boolean
+  canReviewPlatform?: boolean
   initialRestriction?: CommunityChatRestriction | null
 }
 
 const PAGE_SIZE = 30
 
-export default function ChatPublicoView({ topic, initialMessages, initialPinnedMessages = [], identity, canModerate = false, canBlock = false, initialRestriction = null }: Props) {
+export default function ChatPublicoView({ topic, initialMessages, initialPinnedMessages = [], identity, canModerate = false, canBlock = false, canReviewPlatform = false, initialRestriction = null }: Props) {
   const t = useTranslations('chat.public.view')
   const [messages, setMessages] = useState<PublicMessageWithSender[]>(() => [...initialMessages].reverse())
   const [draft, setDraft] = useState('')
@@ -39,7 +42,9 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
   const [reportsOpen, setReportsOpen] = useState(false)
   const [restrictionsOpen, setRestrictionsOpen] = useState(false)
   const [reviewScope, setReviewScope] = useState<'mine' | 'staff' | null>(null)
+  const [caseScope, setCaseScope] = useState<'mine' | 'staff' | null>(null)
   const reviewTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const caseTriggerRef = useRef<HTMLButtonElement | null>(null)
   const [restrictionTarget, setRestrictionTarget] = useState<{ userId: string; label: string } | null>(null)
   const [restriction, setRestriction] = useState(initialRestriction)
   const [restrictionNow, setRestrictionNow] = useState(Date.now())
@@ -82,6 +87,11 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
     reviewTriggerRef.current.focus()
     reviewTriggerRef.current = null
   }, [reviewScope])
+  useEffect(() => {
+    if (caseScope || !caseTriggerRef.current) return
+    caseTriggerRef.current.focus()
+    caseTriggerRef.current = null
+  }, [caseScope])
 
   const scrollToBottom = useCallback((smooth: boolean) => {
     const el = listRef.current
@@ -204,13 +214,13 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-neutral-900">
-      {topic.owner_type === 'community' && topic.owner_id && identity && identity.kind !== 'guest' && <div className="flex shrink-0 flex-wrap justify-end gap-2 border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:px-6">
+      {topic.owner_type === 'community' && topic.owner_id && identity && identity.kind !== 'guest' && <div role="toolbar" aria-label="Herramientas del chat comunitario" className="thin-scrollbar flex min-w-0 shrink-0 flex-nowrap justify-start gap-2 overflow-x-auto whitespace-nowrap border-b border-primary-100 px-3 py-1.5 dark:border-primary-900/50 sm:justify-end sm:px-6">
+        <button type="button" onClick={(event) => { caseTriggerRef.current = event.currentTarget; setCaseScope('mine') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Mis expedientes</button>
         <button type="button" onClick={(event) => { reviewTriggerRef.current = event.currentTarget; setReviewScope('mine') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Mis revisiones</button>
-        {canModerate && <>
-          <button type="button" onClick={() => setReportsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Revisar reportes</button>
-          <button type="button" onClick={(event) => { reviewTriggerRef.current = event.currentTarget; setReviewScope('staff') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Solicitudes</button>
-          <button type="button" onClick={() => setRestrictionsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Restricciones</button>
-        </>}
+        {(canModerate || canReviewPlatform) && <button type="button" onClick={(event) => { caseTriggerRef.current = event.currentTarget; setCaseScope('staff') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Expedientes</button>}
+        {canModerate && <button type="button" onClick={() => setReportsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Revisar reportes</button>}
+        {(canModerate || canReviewPlatform) && <button type="button" onClick={(event) => { reviewTriggerRef.current = event.currentTarget; setReviewScope('staff') }} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Solicitudes</button>}
+        {canModerate && <button type="button" onClick={() => setRestrictionsOpen(true)} className="rounded-lg px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-950/50">Restricciones</button>}
       </div>}
       <ChatPinnedBar messages={pinned} />
       <ChatMessageList messages={messages} identity={identity} locallySent={locallySentRef.current}
@@ -228,7 +238,9 @@ export default function ChatPublicoView({ topic, initialMessages, initialPinnedM
       {restrictionsOpen && topic.owner_id && <ChatRestrictionsPanel communityId={topic.owner_id} canBlock={canBlock}
         target={restrictionTarget} onClose={() => { setRestrictionsOpen(false); setRestrictionTarget(null) }} />}
       {reviewScope && topic.owner_id && <ChatReviewPanel communityId={topic.owner_id} scope={reviewScope}
-        restriction={activeRestriction} canBlock={canBlock} onClose={() => setReviewScope(null)} />}
+        restriction={activeRestriction} canBlock={canBlock || canReviewPlatform} onClose={() => setReviewScope(null)} />}
+      {caseScope && topic.owner_id && <ChatCasePanel communityId={topic.owner_id} scope={caseScope}
+        onClose={() => setCaseScope(null)} />}
     </div>
   )
 }

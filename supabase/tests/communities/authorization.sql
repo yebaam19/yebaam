@@ -63,8 +63,12 @@ begin
   delete from public.community_plan_points where id = point_a;
   get diagnostics affected = row_count;
   if affected <> 0 then raise exception 'Outsider deleted another organization content'; end if;
-  insert into public.community_members(community_id, user_id, role, status)
-    values (community_a, outsider_id, 'ADMIN', 'active');
+  begin
+    insert into public.community_members(community_id, user_id, role, status)
+      values (community_a, outsider_id, 'ADMIN', 'active');
+    raise exception 'Self promotion to legacy admin allowed';
+  exception when insufficient_privilege then null;
+  end;
   if community_private.can_manage_profile(community_a, 'plans') then
     raise exception 'Untrusted legacy membership granted institutional permissions';
   end if;
@@ -73,6 +77,8 @@ begin
       values (community_a, outsider_id, 'admin');
     raise exception 'Self promotion allowed';
   exception when insufficient_privilege then null;
+  when raise_exception then
+    if sqlerrm <> 'Institutional roles require active membership' then raise; end if;
   end;
   insert into public.community_sections(id, community_id, kind, title, is_visible)
     values (section_b, community_b, 'government', 'Private plan', true);

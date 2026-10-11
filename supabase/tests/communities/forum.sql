@@ -13,6 +13,8 @@ declare
   topic_id uuid := gen_random_uuid();
   post_id uuid := gen_random_uuid();
   affected integer;
+  public_count bigint;
+  private_count bigint;
 begin
   select array_agg(id) into people from (
     select u.id from auth.users u join public.profiles p on p.id=u.id
@@ -42,6 +44,11 @@ begin
     or not exists(select 1 from public.forum_posts where id=post_id) then
     raise exception 'Public forum was unreadable to a visitor';
   end if;
+  select coalesce(post_count,0) into public_count
+    from public.forum_visible_post_counts(array[member_id]) where author_id=member_id;
+  if coalesce(public_count,0)<1 then
+    raise exception 'Visible author post count was missing';
+  end if;
   reset role;
 
   update public.communities set privacy='PRIVATE' where id=community_id;
@@ -51,12 +58,21 @@ begin
     or exists(select 1 from public.forum_posts where id=post_id) then
     raise exception 'Privacy change did not hide forum content';
   end if;
+  select coalesce(post_count,0) into private_count
+    from public.forum_visible_post_counts(array[member_id]) where author_id=member_id;
+  if coalesce(private_count,0)<>public_count-1 then
+    raise exception 'Author post count leaked private forum content';
+  end if;
   reset role;
 
   perform set_config('request.jwt.claim.sub',member_id::text,true);
   set local role authenticated;
   if not exists(select 1 from public.forum_topics where id=topic_id) then
     raise exception 'Active member cannot read private forum';
+  end if;
+  if not exists(select 1 from public.forum_visible_post_counts(array[member_id])
+    where author_id=member_id and post_count>=public_count) then
+    raise exception 'Member could not count visible private forum posts';
   end if;
   update public.forum_topics set is_pinned=true where id=topic_id;
   get diagnostics affected=row_count;

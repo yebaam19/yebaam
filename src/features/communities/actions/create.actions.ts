@@ -165,7 +165,9 @@ export async function createCommunityPost(input: {
     .single();
 
   if (error || !data) {
-    return { ok: false, error: error?.message ?? 'No se pudo publicar.' };
+    return { ok: false, error: error?.code === '42501'
+      ? 'No tienes permiso para publicar en esta comunidad.'
+      : error?.message ?? 'No se pudo publicar.' };
   }
 
   // Revalidate the community detail page.

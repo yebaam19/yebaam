@@ -6,8 +6,6 @@ import type { CommunityChatRestriction } from '../types'
 
 const reason = z.string().trim().min(10).max(500)
 const scope = z.object({ communityId: z.uuid(), userId: z.uuid() })
-const restrictSchema = scope.extend({ requestId: z.uuid(),
-  kind: z.enum(['suspend','block']), hours: z.number().int().min(1).max(720).nullable(), reason })
 const releaseSchema = scope.extend({ reason })
 type Result = { ok: true } | { ok: false; error: string }
 export type RestrictionItem = CommunityChatRestriction & { displayName: string }
@@ -15,24 +13,6 @@ type Cursor = { decidedAt: string; userId: string }
 type Page = { ok: true; items: RestrictionItem[]; nextCursor: Cursor | null } | { ok: false; error: string }
 const COLUMNS = 'community_id,user_id,kind,expires_at,reason,decided_at,revoked_at,version'
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/
-
-export async function setCommunityChatRestriction(input: unknown): Promise<Result> {
-  const parsed = restrictSchema.safeParse(input)
-  if (!parsed.success || (parsed.data.kind === 'block' && parsed.data.hours !== null)
-    || (parsed.data.kind === 'suspend' && parsed.data.hours === null)) {
-    return { ok: false, error: 'Elige una duración y explica el motivo.' }
-  }
-  const client = await getServerClient()
-  const { data: auth } = await client.auth.getUser()
-  if (!auth.user) return { ok: false, error: 'Inicia sesión para continuar.' }
-  const value = parsed.data
-  const { error } = await client.rpc('set_community_chat_restriction', {
-    target_community: value.communityId, target_user: value.userId,
-    restriction_kind: value.kind, duration_hours: value.hours, decision_reason: value.reason,
-    decision_request_id: value.requestId,
-  })
-  return error ? { ok: false, error: 'No se pudo aplicar la restricción. Revisa tus permisos.' } : { ok: true }
-}
 
 export async function releaseCommunityChatRestriction(input: unknown): Promise<Result> {
   const parsed = releaseSchema.safeParse(input)

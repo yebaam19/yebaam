@@ -66,18 +66,18 @@ export default function NotificationBell() {
     // Si llegamos al 80% del scroll y hay más notificaciones
     if (scrollPosition >= scrollHeight * 0.8 && hasMore && !isLoadingMore && !isLoading) {
       setIsLoadingMore(true);
-      const filter = selectedTab === 'all' ? 'all' : 'unread';
       await loadMore();
       setIsLoadingMore(false);
     }
-  }, [hasMore, isLoadingMore, isLoading, loadMore, selectedTab]);
+  }, [hasMore, isLoadingMore, isLoading, loadMore]);
 
   return (
     <Popover className="relative">
-      {({ open }) => (
+      {() => (
         <>
           {/* Botón de campana */}
           <Popover.Button
+              aria-label={t('viewAll')}
               className={cn(
                 'relative rounded-full p-2 transition-colors',
                 'hover:bg-neutral-100 dark:hover:bg-neutral-800',

@@ -149,7 +149,7 @@ export function CommunityLayoutShell({
           {institutionalNavigation}
         </>}
         <div className={`grid grid-cols-1 gap-6 pb-12 lg:grid-cols-[240px_1fr] ${isArticleRoute ? 'lg:pt-2' : ''}`}>
-          <aside className={`${isArticleRoute ? 'hidden lg:block ' : ''}lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem-env(safe-area-inset-bottom,0px))] lg:self-start lg:overflow-y-auto lg:overscroll-y-contain`}>
+          <aside className={`${isArticleRoute ? 'hidden lg:block ' : ''}lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem-env(safe-area-inset-bottom,0px))] lg:self-start lg:overflow-y-auto lg:overscroll-y-contain lg:thin-scrollbar`}>
             <CommunitySidebar
               slug={c.slug}
               isOwner={viewerState.kind === 'owner'}

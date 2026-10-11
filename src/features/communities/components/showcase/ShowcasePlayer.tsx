@@ -50,7 +50,7 @@ export function ShowcasePlayer({ videos }: { videos: LibraryAsset[] }) {
       }
     }
   }
-  return <div className="min-w-0 space-y-3">
+  return <div className="min-w-0 space-y-2 sm:space-y-3">
     <div className="relative aspect-video overflow-hidden rounded-xl bg-neutral-950">
       {activated ? <Stream key={`${current.media_id}:${attempt}`} src={current.media_id} title={current.title}
         streamRef={player} controls autoplay muted={sound.muted} volume={sound.volume}
@@ -87,7 +87,7 @@ export function ShowcasePlayer({ videos }: { videos: LibraryAsset[] }) {
               <img src={streamThumb(video.media_id)} alt="" loading="lazy" className="h-full w-full object-contain" />
               {duration(video.duration_seconds) && <span className="absolute right-1 bottom-1 rounded bg-black/80 px-1 text-xs text-white tabular-nums">{duration(video.duration_seconds)}</span>}
             </span>
-            <span className="mt-1 block wrap-anywhere text-xs font-medium text-neutral-700 dark:text-neutral-200">{video.title}</span>
+            <span className="mt-1 block line-clamp-2 wrap-anywhere text-xs font-medium text-neutral-700 dark:text-neutral-200">{video.title}</span>
           </button>
         </li>)}
       </ul>

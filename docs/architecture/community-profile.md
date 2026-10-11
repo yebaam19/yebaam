@@ -1,7 +1,7 @@
 # Perfil institucional de Comunidades
 
 Fuente funcional: `perfil-de-comunidades.pdf`, versión 1.0, 15 páginas.
-Estado a 2026-10-09: implementación en curso; no se considera terminado el PDF.
+Estado a 2026-10-10: implementación en curso; no se considera terminado el PDF.
 
 ## Arquitectura
 
@@ -14,6 +14,11 @@ Supabase Postgres es la autoridad para contenido y permisos. RLS se aplica tambi
 a llamadas directas a PostgREST. Los medios se almacenan en Cloudflare Images y
 Stream; los documentos, en R2. Todo nuevo upload debe pasar por `uploadService`.
 La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
+La migración `20261010100010_community_helper_rpc_privacy.sql` ata las respuestas
+privadas de cuatro funciones auxiliares RPC a `auth.uid()`; una consulta anónima
+o de un tercero ya no puede averiguar membresía, administración o invitaciones
+de otra persona. Conserva la lectura anónima de comunidades públicas. La prueba
+SQL con rollback `helper-rpc-privacy.sql` pasó en el proyecto Supabase activo.
 
 ### Implementado en esta fase
 
@@ -21,8 +26,8 @@ La base de datos guarda IDs/UIDs/keys, sin URLs de entrega ni URLs firmadas.
   institucional: administrador, editor o moderador; edición de planes optativa.
   Requiere membresía activa para ejercer una concesión. El propietario conserva
   autoridad. No se confía en el rol legado de `community_members` para conceder
-  estos nuevos permisos: su política actual permite inserciones propias y no
-  demuestra que un rol elevado haya sido concedido por el propietario.
+  estos nuevos permisos; su política actual rechaza además la autoasignación
+  de roles elevados. La prueba de autorización cubre ambas condiciones.
 - `community_sections`: identidad funcional estable, título, orden y visibilidad
   por organización. Tipos: acerca de, reglas, gobierno, economía y dirigentes.
   Las secciones nacen ocultas. Solo propietario/administrador cambia configuración.
@@ -313,6 +318,136 @@ autenticación: una prueba SQL no demuestra que el borrado remoto esté operativ
 No se añade Workers KV/D1/Hyperdrive: ya existe Postgres vía PostgREST y no se ha
 demostrado una carga que requiera duplicar datos o coordinar otro sistema de caché.
 
+Revisión local del 10 de octubre: el layout muestra un esqueleto neutro mediante
+`Suspense` mientras termina la lectura con RLS. En la compilación de producción
+local, la primera respuesta de `/feed/comunidades/comunidad-mvp-test/archivos`
+pasó de unos 0,75 s a unos 0,02 s en caliente; la carga completa sigue tardando
+aproximadamente 0,7 s y requiere medición en el despliegue real antes de fijar
+un objetivo de rendimiento. La consulta inicial de `communities` ahora incluye
+encuadre y versión de las imágenes, evitando una segunda lectura de la misma fila.
+Una traza de Chrome DevTools sobre `next start` en localhost, sin limitar CPU ni
+red y con la portada de Cloudflare en caché, dio LCP de 0,76 s y otra de 1,52 s;
+ambas tuvieron CLS 0. La portada fue el LCP y se solicitó después de resolver
+el perfil. Un preload probado en el layout no adelantó la petición ni mejoró la
+traza, así que se retiró. El HTML público comprimido midió alrededor de 100 KB.
+Estas cifras locales no prueban rendimiento en móvil ni en el despliegue real.
+Una traza adicional a 390 × 844, CPU 4× y red Fast 4G dio LCP de 1,14 s y
+CLS 0; la portada siguió siendo el LCP, con 687 ms de espera antes de solicitarla.
+La portada ya carga con prioridad alta. Sigue faltando medición de usuarios
+reales y de una primera visita sin caché de Cloudflare.
+La auditoría Lighthouse móvil de accesibilidad en `next start` pasó de 90 a 100
+al dar nombre accesible a la campana de notificaciones y asegurar contraste en
+la referencia a artículos del feed comunitario. No incluye una prueba manual
+con lector de pantalla. Los avisos restantes del informe corresponden a scripts
+de Vercel redirigidos por login local, indexación y `llms.txt`.
+Las pestañas y el lateral conservan desplazamiento con barras discretas; el
+control de gestión usa verde YEBAAM y mantiene el rojo solo en la eliminación.
+En la vista móvil con cuatro videos, el logo acompaña al nombre en la misma fila,
+los espacios se reducen y los títulos de las tres miniaturas ocupan como máximo
+dos líneas; se conservan el título completo en el nombre accesible del botón y
+los cuatro videos. Los editores de portada y presentación se descargan al
+abrirlos, no durante la lectura inicial. La prueba de foco al cerrar ambos
+editores, 13 tests de UI, TypeScript y lint dirigido pasan. Tres lecturas
+anónimas consecutivas de Inicio en el servidor de producción local dieron
+primer byte de 0,015–0,017 s y respuesta completa de 0,65–0,76 s. Son medidas
+locales sin latencia móvil real ni garantía de velocidad en producción.
+Inicio inicia la lectura paginada de publicaciones en paralelo con la identidad
+y la configuración, pero la entrega bajo un límite `Suspense` propio; la
+administración privada también se entrega aparte. Así el propietario no espera
+por roles y solicitudes para ver la navegación o la descripción. Las solicitudes
+se leen solo en comunidades privadas y los roles solo para el propietario.
+El servidor sigue aplicando RLS y caché limitada a la petición; no se introdujo
+caché compartida de contenido privado. La paginación conserva el cursor y el
+regreso a publicaciones recientes. Tras el cambio, tres lecturas anónimas
+calientes de Inicio en producción local dieron 0,011–0,018 s hasta el primer
+byte y 0,61–0,74 s de respuesta total; el navegador autenticado mostró las
+cinco publicaciones y los roles del propietario sin errores de la app.
+En el perfil de prueba, el logo de 48–80 px pedía la variante `/public`
+de 106 287 bytes. La variante `/thumbnail` mide 300 × 300 px y pesa 8 687
+bytes, incluso con el encuadre máximo de 3× a 80 px. Se usa esta variante
+en la vista de comunidad y sus tarjetas: el ahorro comprobado para este
+activo es 97 600 bytes (92 %). La portada permanece en `/public` porque
+la variante `/cover` de ese mismo activo resultó mayor. Se verificó la URL
+efectiva y la presentación móvil en localhost:3000. La advertencia de
+hidratación de este navegador muestra únicamente el atributo
+`__processed_...` añadido al `<body>` por una extensión; no se modificó
+React para ocultarla.
+La compilación de producción pasó después de este cambio. Cuatro peticiones
+anónimas de Inicio en `next start` local devolvieron HTTP 200; las tres
+calientes dieron primer byte en 0,013–0,025 s y respuesta completa en
+0,61–0,74 s. Esta medida de servidor local no equivale a LCP/INP ni a
+rendimiento móvil de producción.
+
+Pasada visual del 10 de octubre: en Inicio, el panel de administración cerrado
+ocupa 49 px y los ajustes de color y pestañas cerrados ocupan 57 px cada uno;
+comparten fila desde `sm`. La descripción completa se conserva debajo del feed,
+mientras que la cabecera sigue mostrando el resumen. En la compilación de
+producción local, el compositor y la primera publicación quedaron visibles
+después de esos controles en móvil y escritorio. TypeScript, ESLint dirigido,
+los 264 tests de comunidades y `pnpm build` pasaron. Esta reducción de espacio
+no modifica las métricas de carga medidas antes; falta INP de usuarios reales.
+
+Fotos y Videos ya no esperan a que terminen biblioteca, carpetas, permisos y
+pestañas para iniciar la lectura del historial heredado. Además, pasan el slug
+conocido al mapeo de publicaciones y evitan otra consulta de `communities`.
+La prueba del paginador confirma que se conserva el cursor y no se consulta de
+nuevo el slug. En tres peticiones anónimas a `/fotos` en `next start`, las dos
+respuestas calientes pasaron de 0,99 s antes a 0,67–0,68 s después; el primer
+byte se mantuvo alrededor de 0,02 s. Son muestras locales pequeñas, no una
+estimación de rendimiento de producción ni prueba causal aislada.
+En el navegador autenticado, Fotos cargó las dos imágenes privadas existentes,
+abrió el historial de publicaciones y navegó a Videos, donde aparecieron los
+cuatro borradores de Stream; no hubo errores de consola. Los 264 tests de
+comunidades, TypeScript, ESLint dirigido y la compilación pasaron tras el cambio.
+
+El historial heredado de Fotos y Videos ahora se consulta únicamente cuando el
+lector abre “Compartidos en publicaciones” o sigue un cursor. El enlace inicial
+desactiva el prefetch de Next.js para que un simple scroll no haga la consulta.
+La navegación mantiene filtros, ancla y páginas de 50 publicaciones; el botón
+Atrás devuelve a la galería ligera. En producción local, las dos lecturas
+calientes iniciales de `/fotos` pasaron de 0,62–0,70 s a 0,60–0,64 s; la muestra
+es demasiado pequeña para atribuir una mejora perceptible, pero la prueba
+confirma que se evita la lectura de 50 filas cuando el panel está cerrado.
+Navegador autenticado, 267 tests de comunidades, TypeScript, ESLint dirigido y
+`pnpm build` pasaron; no hubo errores de consola en abrir/volver.
+
+La biblioteca ya no recibe una clave aleatoria en cada render de servidor:
+mantiene su estado para la misma vista y se reinicia al cambiar comunidad,
+tipo, carpeta o búsqueda. Una prueba dirigida comprueba ambas situaciones.
+
+La presentación de cuatro videos permanece visible en Inicio. En páginas
+interiores la cabecera muestra identidad compacta y un enlace de regreso a la
+presentación, evitando que el reproductor y sus miniaturas desplacen el
+contenido específico por debajo de la primera pantalla de tableta. Una prueba
+de UI cubre ambas rutas; en localhost se vio Archivos en la primera pantalla
+de tableta y móvil, y “Ver presentación” devolvió al reproductor en Inicio sin
+errores de consola. Pasaron 269 tests comunitarios y `pnpm build`.
+
+El asesor de rendimiento de Supabase señaló dos índices idénticos de
+`community_articles.author_id` y siete claves foráneas de expedientes,
+moderación y auditoría comunitaria sin índice. Las migraciones
+`20261010100011` y `20261010100012` se aplicaron al proyecto activo: queda un
+solo índice de autor, y los siete índices de FK cubren las operaciones de
+`SET NULL`/`CASCADE` al borrar cuentas o comunidades. La nueva lectura del
+[asesor de rendimiento](https://supabase.com/docs/guides/database/database-linter)
+no muestra duplicados ni claves foráneas sin índice en tablas `community_*`.
+
+Al abrir un tema del foro, el metadato de autores ya no descarga todas las
+respuestas históricas de los participantes: `forum_visible_post_counts` las
+agrupa en Postgres con los permisos RLS del lector y el índice de autor
+existente. La migración `20261010100013` está aplicada. La prueba SQL con
+rollback confirmó que un visitante deja de contar el aporte al privatizar la
+comunidad y que un miembro conserva acceso. Pasaron 267 tests comunitarios,
+TypeScript, ESLint dirigido y `pnpm build`; el tema existente se abrió en
+escritorio y móvil sin errores de consola y mantuvo el contador visible.
+
+En esta revisión la carga de PDF, DOCX, ZIP y TXT desde `localhost:3020` falló
+antes del PUT. El preflight de R2 devolvió 204 con origen `localhost:3000` y
+403 con `localhost:3020`; por tanto, la prueba no demuestra un fallo del formato.
+El puerto 3000 estaba ocupado por otra aplicación. Falta repetir la prueba de
+estos formatos desde un origen autorizado por CORS y configurar/activar la
+limpieza programada cuando estén disponibles los secretos del despliegue.
+
 ### Páginas relacionadas
 
 - `community_related_links` reemplaza la única URL del perfil por una lista
@@ -343,7 +478,7 @@ demostrado una carga que requiera duplicar datos o coordinar otro sistema de cac
 Todos los puntos siguen abiertos hasta tener una prueba funcional de extremo a
 extremo; existencia de un componente anterior no equivale a verificación.
 
-Paridad de migraciones: las 46 migraciones aplicadas desde el 9 de octubre tienen
+Paridad de migraciones: las migraciones aplicadas desde el 9 de octubre tienen
 archivo versionado y el mismo SQL efectivo en Supabase (las diferencias de hash
 son comentarios o formato). Diez migraciones anteriores de Noticias y Comidas
 también estaban aplicadas, pero `*.sql` las ocultaba de Git; se incorporan al
@@ -358,28 +493,46 @@ consultas SQL sueltas.
 | 3.1 | Acerca de: historia, misión, visión, objetivos, valores, fundación, ubicación, contacto y redes | Modelo privado, editor enriquecido, contacto/redes y medios de biblioteca implementados. Sección oculta y borrador con descripción, historia y ubicación guardados/recargados en localhost; RLS anónimo verificado. Pendiente publicación/lectura multirol y medios reales. |
 | 3.2–3.4; aceptación 5–7 | Reglas y dos planes independientes; capítulos/ejes/puntos, borradores, ocultación, drag-and-drop y traslado | SQL, acciones, editor/lectura reutilizable e importación privada implementados. Adjuntos conectados con biblioteca, vistas previas por lote, paginación y desvinculación confirmada. En localhost, las dos reglas heredadas se importaron conservando texto y orden; el editor ahora las llama capítulos y artículos. El propietario creó dos ejes y dos puntos privados en Plan de Gobierno, trasladó un punto entre ejes y reordenó los ejes; todo persistió tras recargar. También arrastró un eje antes del otro, un punto hacia otro eje y un punto antes de otro dentro del mismo eje: la UI y Supabase conservaron orden y destino tras recarga. Plan Económico conserva por separado una sección oculta, un eje y un punto borrador. Supabase confirmó los tres conjuntos y sus estados; una petición anónima sigue viendo ambas reglas públicas pero no los borradores económicos. La vista móvil del plan se revisó sin desbordamiento horizontal del documento y se corrigió el ajuste del título del eje. Pendiente publicación/lectura multirol y adjuntos reales. |
 | 3.5; aceptación 8 | Dirigentes con ficha, foto, cargo, biografía, trayectoria, portada, video, redes/contacto/perfil; categorías, orden y visibilidad | Modelo y UI de categorías, tarjetas/ficha, textos, orden numérico, medios y contacto optativo implementados. El propietario creó una sección oculta y una ficha privada que persistió tras recarga; visitante sin sesión no recibió su contenido en lista ni URL directa. Pendiente QA de publicación y otros roles, con portada/video reales. |
-| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Historial y realtime existentes. RLS exige audiencia en INSERT y rechaza usuarios expulsados o restringidos. Respuestas, fijado, reportes, retiro y restauración conectados. Suspensiones y bloqueos por comunidad tienen motivo y auditoría. Notificación transaccional al afectado, descargos, revisión y apelación interna con visibilidad acotada por RLS; bandejas responsive en el chat. La base impide que quien sancionó revise los descargos y que quien revisó los descargos decida la apelación; notifica a revisores habilitados. Prueba SQL con seis usuarios y rollback aplicada en Supabase. Pendiente QA multiusuario desde UI, advertencia previa y plazo de defensa antes de sancionar según el Manual, ruta de revisión para comunidades sin un segundo administrador, y retiro/restauración desde UI. |
+| 4.1; aceptación 10 | Chat: historial, replies, fijar, reportes, moderación, bloqueo/suspensión | Historial y realtime existentes; RLS controla audiencia y escritura. Respuestas, fijado, reportes y retiro/restauración conectados. El moderador abre un expediente previo; correo aceptado inicia 48 h para descargos. Otra persona revisa tras ese plazo y decide archivo, advertencia o restricción; la primera falta exige advertencia y el bloqueo, una suspensión previa. La RPC antigua de sanción inmediata ya no es ejecutable por `authenticated`. Expedientes, revisión y apelación tienen bandejas responsive y pruebas SQL/UI. Un administrador de plataforma elegible puede revisar cuando no hay revisor comunitario; la primera persona que revisó no puede decidir la apelación. En localhost se comprobaron las bandejas vacías y la barra móvil desplazable. **No se ha comprobado entrega real de correo ni el flujo multiusuario en navegador; el cron de reintento permanece inactivo hasta configurar el secreto en el despliegue.** |
 | 4.2; aceptación 11 | Foro: categorías, temas, replies, edición propia, fijar/cerrar, reportes/moderación | Lectura pública y privacidad dinámica de comunidad verificadas con RLS; escritura autenticada, moderación por roles del perfil y bloqueo de fijar/cerrar para autores comunes. Citar precarga autor, contenido e ID; la respuesta citada se envió, se mostró con enlace al original y persistió tras recarga en localhost. Tras publicar otra respuesta, el contador se actualizó de 2 a 3 sin recarga manual. La base limita INSERT a tema/autor/contenido y UPDATE a contenido, asigna fecha de edición y rechaza más de 20 000 caracteres. Reportes privados e idempotentes, con snapshot para auditoría y bandeja de revisión del propietario/moderador; la resolución puede retirar el post o descartar el reporte con motivo. Borrar al reportante elimina su reporte; borrar al autor redacta el snapshot. Prueba SQL con rollback cubre roles, privacidad, resolución y redacción; diálogos y foco probados en localhost, incluido móvil. Pendientes pruebas funcionales multirol de moderación desde UI. |
 | 4.3; aceptación 14 | Páginas relacionadas: imagen, nombre, descripción y enlace | CRUD con borrador/publicación, imagen de biblioteca Cloudflare, orden, paginación, enlace seguro, RLS y auditoría implementados. SQL rollback y guardado/recarga de borrador en localhost verificados. Pendiente publicación con imagen real y lectura multirol. |
 | 4.4; aceptación 12 | Q&A: categorías, búsqueda, respuesta oficial, FAQ, cerrar y moderar | Modelo privado, RPCs, rutas y UI de preguntas, categorías, respuestas oficiales, FAQ y moderación conectados. Búsqueda, pregunta privada guardada/recargada y cierre/reapertura verificados en localhost. El propietario creó otra pregunta QA privada y una respuesta oficial en borrador; ninguna fue legible sin sesión. Publicó la pregunta y la respuesta, confirmó ambas en la vista pública, marcó la pregunta como frecuente y verificó el filtro FAQ. Después quitó la marca y volvió a guardar la pregunta como privada: un visitante recibe “Pregunta no disponible” y no ve la respuesta, aunque esta conserva `is_published=true` en Supabase. La pregunta QA permanece privada para pruebas posteriores. Pendiente E2E multirol de moderación y categorías. |
 | 4.5; aceptación 13 | Eventos: portada, detalles, ubicación/enlace, fechas, organizador, inscripción, estados, lista/calendario, RSVP y compartir | Modelo, CRUD versionado, portada de biblioteca, lista/calendario, asistencia privada y compartir implementados. Borrador privado guardado y recargado en localhost; detalle, lista y calendario poblados verificados. En localhost, el propietario publicó temporalmente el evento de QA, confirmó asistencia, comprobó su persistencia tras recarga y la retiró. Un visitante sin sesión abrió el evento publicado y vio el control de compartir; la vista borrador no ofrece compartir y RLS niega su lectura anónima. Un enlace directo a evento inexistente o privado ahora muestra un estado genérico sin revelar el título, probado como visitante; devuelve 200 con `noindex` porque el `notFound()` previo renderizaba una página blanca en esta ruta. El evento volvió a borrador con RSVP desactivado y cero asistentes en Supabase. Pendiente QA de portada real, publicación/lectura con otros roles y entrega efectiva del enlace compartido. |
-| 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada. Las fotos de biblioteca y las heredadas de publicaciones abren un visor ampliado con cierre por botón/Escape y retorno del foco; foto heredada probada en escritorio y móvil. El historial heredado pagina con cursor, 50 publicaciones por página, sin corte fijo; navegación y regreso probados en localhost. El propietario subió `yebaam.png` y `crown.png` a Cloudflare Images como borradores privados: persistieron tras recargar, el visor de biblioteca abrió la primera y la segunda apareció al cerrar la carga sin recarga manual. Un visitante sin sesión no recibió los borradores en el HTML de `/fotos`. Pendiente QA de álbumes y publicación con otros roles. |
+| 5.1; aceptación 9 | Fotos: carga múltiple, álbumes, títulos/descripciones, edición, organización y galería | Backend privado y biblioteca/álbumes con UI conectada. Las fotos de biblioteca y las heredadas de publicaciones abren un visor ampliado con cierre por botón/Escape y retorno del foco; foto heredada probada en escritorio y móvil. El historial heredado pagina con cursor, 50 publicaciones por página, sin corte fijo; navegación y regreso probados en localhost. El propietario subió `yebaam.png` y `crown.png` a Cloudflare Images como borradores privados: persistieron tras recargar, el visor de biblioteca abrió la primera y la segunda apareció al cerrar la carga sin recarga manual. Un visitante sin sesión no recibió los borradores en el HTML de `/fotos`. El propietario creó el álbum oculto «QA álbum privado», movió allí una imagen sintética ya alojada en Cloudflare Images y comprobó tras recargar que el filtro devolvía solo esa foto. Una consulta con rol `anon` devolvió cero filas tanto para la carpeta como para su imagen. Pendiente publicación con otros roles. |
 | 5.2; aceptación 9 | Videos: biblioteca, títulos/descripciones, colecciones, miniaturas y selección de destacados | Backend, UI de biblioteca/colecciones y Stream conectados; videos heredados comparten paginación por cursor sin corte fijo. Cuatro MP4 sintéticos se subieron desde localhost a Cloudflare Stream y quedaron como borradores privados en la biblioteca; uno mostró fotogramas al reproducirse y los cuatro se seleccionaron para la cabecera, con orden persistente tras recargar. Pendiente QA de colecciones, publicación y otros roles. |
 | 5.3; aceptación 9 | Artículos: enriquecido, portada/resumen, autor/fecha, categorías/tags, adjuntos, borradores y publicación | Migraciones aplicadas: borradores privados, RPC versionado y moderación auditada; lectura RLS, paginación/búsqueda, editor, selectores de biblioteca y lector conectados. Dos artículos previos conservados. En localhost, el propietario creó un artículo QA con título, subtítulo, resumen, categoría, etiquetas y cuerpo; el borrador era inaccesible sin sesión. Lo publicó desde el editor: apareció en el listado y su cuerpo fue legible sin sesión. Volvió a borrador y desapareció de ambas vistas públicas; luego lo eliminó con confirmación. Supabase confirmó `is_published=false` y borrado lógico, y la URL dejó de revelar el texto. Prueba SQL con rollback pasa. Pendiente QA con medios/adjuntos reales y validación multirol. |
-| 5.4; aceptación 9 | Documentos PDF/Office/TXT/ZIP: upload, reemplazo, carpetas, metadata, preview/descarga y visibilidad | Backend R2, UI y consumidor de retiro implementados. El bucket local acepta PUT firmado con tamaño exacto y rechaza con 403 un tamaño distinto; el objeto sintético de esa prueba se retiró. La ruta de firma rechaza sin sesión con 401 y no crea recibo. El propietario subió un TXT sintético desde `/archivos`: persistió como borrador privado tras recargar y su vista previa autenticada mostró el texto correcto; sin sesión, descarga y preview devolvieron 404. La ruta desplegada de limpieza devuelve 503 por falta de secreto y el cron sigue inactivo, sin cola pendiente. La carga abandonada se registra y pasa al outbox tras 24 horas; borrado por cascada espera el vencimiento de la firma. Migración aplicada y prueba SQL con rollback. Pendiente configurar secretos/activar cron y QA de PDF, Office, ZIP, carpetas y reemplazo. |
-| 6; aceptación 15 y 17 | Roles y permisos verificados en servidor; visitantes y miembros | Panel del propietario para asignar, editar y revocar administradores, editores y moderadores. El administrador delegado activo ve solicitudes privadas y puede aprobar/rechazar; las herramientas de alta directa y de roles siguen visibles solo al propietario. La acción de alta directa también exige propietario verificado antes de usar service role; una prueba rechaza al delegado sin efectuar la escritura. RLS/RPC y una prueba del componente comprueban esta separación; la prueba SQL con rollback confirmó aprobación delegada y rechazo al moderador. Pendiente adopción de estos permisos en todos los módulos existentes y QA multirol real. |
+| 5.4; aceptación 9 | Documentos PDF/Office/TXT/ZIP: upload, reemplazo, carpetas, metadata, preview/descarga y visibilidad | Backend R2, UI y consumidor de retiro implementados. El bucket local acepta PUT firmado con tamaño exacto y rechaza con 403 un tamaño distinto; el objeto sintético de esa prueba se retiró. La ruta de firma rechaza sin sesión con 401 y no crea recibo. El propietario subió un TXT sintético desde `/archivos`: persistió como borrador privado tras recargar y su vista previa autenticada mostró el texto correcto; sin sesión, descarga y preview devolvieron 404. La ruta desplegada de limpieza devuelve 503 por falta de secreto y el cron sigue inactivo, sin cola pendiente. La carga abandonada se registra y pasa al outbox tras 24 horas; borrado por cascada espera el vencimiento de la firma. Migración aplicada y prueba SQL con rollback. Desde localhost:3000 el propietario subió PDF, DOCX y ZIP sintéticos: quedaron como borradores privados y persistieron tras recargar. El PDF abrió en vista previa y las descargas de DOCX y ZIP coincidieron byte por byte; sin sesión las tres rutas devolvieron 404. El propietario creó una carpeta oculta, movió allí el PDF y reemplazó el objeto desde localhost:3000: el registro conservó ID, título, carpeta, borrador y audiencia; cambió a una nueva clave R2 y el visor mostró el contenido nuevo. La retirada del objeto antiguo quedó completada en el outbox y un visitante siguió recibiendo 404. La prueba del selector cubre que una carpeta nueva aparezca tras refrescar sin reconstruir toda la biblioteca. También se subieron XLSX y PPTX sintéticos como borradores privados: persistieron tras recargar, Supabase solo conserva sus claves R2 y las descargas verificadas coincidieron en SHA-256 con los originales. Las copias descargadas para la prueba se borraron del equipo. Pendiente configurar secretos y activar el cron de limpieza en producción. |
+| 6; aceptación 15 y 17 | Roles y permisos verificados en servidor; visitantes y miembros | Panel del propietario para asignar, editar y revocar administradores, editores y moderadores. El administrador delegado activo ve solicitudes privadas y puede aprobar/rechazar; las herramientas de alta directa y de roles siguen visibles solo al propietario. La acción de alta directa también exige propietario verificado antes de usar service role; una prueba rechaza al delegado sin efectuar la escritura. RLS/RPC y una prueba del componente comprueban esta separación; la prueba SQL con rollback confirmó aprobación delegada y rechazo al moderador. La política de INSERT de publicaciones ahora exige autor autenticado y propietario o miembro activo con `allow_member_posts=true`; antes un miembro podía publicar por llamada directa aunque el compositor estuviera oculto. Se reprodujo el bypass con rollback, se aplicó la migración en Supabase y pasó la prueba transaccional para propietario, miembro habilitado/deshabilitado, miembro expulsado, ajeno y anónimo. La lista de integrantes de una comunidad pública era legible para `anon` (3 filas en la comunidad QA). La nueva política RLS reserva la lista completa al propietario, administradores y moderadores; cada miembro ordinario solo puede consultar su propia membresía. La pantalla pública muestra el conteo sin consultar el listado y explica la restricción. La migración se aplicó en Supabase y una prueba transaccional confirmó los cinco tipos de lector; `anon` ahora recibe cero filas en la comunidad QA. Pendiente adopción de los demás permisos en módulos existentes y QA multirol real. |
 | 7; aceptación 5 | Colores, pestañas ordenables/ocultables, títulos por organización y secciones destacadas | Colores por comunidad restringidos a verde/dorado YEBAAM; cabecera, pestañas, navegación, compositor, tarjetas de artículo y controles administrativos usan la paleta. Descubrimiento, tarjetas y formulario de creación también usan verde/dorado; la vista se revisó en escritorio y móvil. Las seis pestañas superiores admiten título, orden con controles de teclado y visibilidad por comunidad; se guardan juntas con versión y RLS. Una RPC devuelve solo el dato de si la configuración existe, para que una fila oculta por RLS no reaparezca como pestaña predeterminada. Guardado/restauración verificados en localhost, incluso en móvil; prueba SQL con rollback y prueba del render cubren lectura anónima y visibilidad. Las secciones institucionales conservan título, posición, visibilidad, destaque y auditoría independientes; Inicio enlaza solo las visibles y destacadas. Pendiente QA visual de tarjetas destacadas pobladas. |
-| 8 | CRUD, separación, validación/optimización/procesamiento, paginación/búsqueda, historial, confirmaciones y borradores | Inicio pagina publicaciones de 10 en 10 y el historial multimedia heredado de 50 en 50 con cursor estable `(created_at, id)` e índice aplicado; ambos permiten volver a recientes sin conteo exacto por página. Browser QA con cursor real de la comunidad MVP confirmó navegación y regreso en inicio/fotos. Se comprobaron cargas reales de imágenes a Cloudflare Images, cuatro videos a Stream y TXT a R2 como borradores privados; faltan búsquedas y adopción transversal. |
+| 8 | CRUD, separación, validación/optimización/procesamiento, paginación/búsqueda, historial, confirmaciones y borradores | Inicio pagina publicaciones de 10 en 10 y el historial multimedia heredado de 50 en 50 con cursor estable `(created_at, id)` e índice aplicado; ambos permiten volver a recientes sin conteo exacto por página. Browser QA con cursor real de la comunidad MVP confirmó navegación y regreso en inicio/fotos. Se comprobaron cargas reales de imágenes a Cloudflare Images, cuatro videos a Stream y TXT a R2 como borradores privados. La eliminación de comunidad comprueba propietario y fila borrada antes de responder éxito; prueba de acción cubre no propietario y borrado sin filas por RLS. Las búsquedas de artículos, archivos y preguntas están conectadas; falta adopción transversal de permisos y QA multirol. |
 | 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. El panel de administración se pliega por defecto para dejar visibles antes las publicaciones; apertura/foco revisados en localhost. Se verificó el desplazamiento real del sidebar en escritorio y en móvil con viewport bajo; el panel de colores se adapta a una columna. Pendiente flujo multirol. |
 | aceptación 18 | Persistencia tras recarga | SQL, pregunta privada Q&A, borrador y orden de ejes/puntos del Plan de Gobierno, traslado entre ejes por botón y por arrastre, borrador del Plan Económico, introducción privada y cuatro videos ordenados de la cabecera, imágenes de galería, TXT de biblioteca y ciclo de publicación/privacidad de artículos verificados en localhost; pendiente cobertura UI de los demás módulos. |
+
+El menú de eliminación del propietario usa un menú y diálogo con nombres
+accesibles, foco restaurado al cancelar, error anunciado y controles táctiles de
+44 px. Dos pruebas de UI cubren cancelación y error sin borrar datos reales.
+En `next start` se verificaron a 768 × 1024 las vistas públicas de Inicio,
+Archivos, Artículos, Eventos y Preguntas sin desbordamiento horizontal. A
+1280 × 400, el lateral medía 304 px y sus 346 px de contenido se desplazaron
+42 px al hacer scroll programático. Falta repetir la revisión visual con sesión
+de propietario y con secciones institucionales publicadas.
+Lighthouse móvil marcó 100 en accesibilidad para Archivos y, tras corregir el
+orden `h1`→`h2` de las tarjetas, también 100 para Artículos. Estas auditorías
+no sustituyen pruebas de lector de pantalla con contenido y controles privados.
 
 Los enlaces directos a preguntas, artículos y planes inexistentes ahora muestran
 un estado de YEBAAM compartido, traducido y accesible, en lugar de dejar vacío
 el contenido del perfil. La misma vista cubre registros ocultos por RLS sin
 revelar títulos ni otros campos. Se verificaron rutas inexistentes en localhost,
 incluida la vista móvil de artículos a 390 px. Estas respuestas llevan `noindex`;
-siguen devolviendo HTTP 200, porque `notFound()` bajo el layout actual deja el
-contenido vacío. Queda pendiente resolver ese comportamiento para recuperar 404.
+siguen devolviendo HTTP 200: [Next.js devuelve 200 tras empezar a transmitir una
+respuesta](https://nextjs.org/docs/app/api-reference/file-conventions/loading#status-codes),
+y el `Suspense` del perfil emite el esqueleto antes de resolver el contenido.
+Un `not-found.tsx` local no cambió ese estado en la prueba del 10 de octubre y
+se retiró. La ruta de artículo inexistente mostró la recuperación con `noindex`
+en el navegador. Si se necesita un 404 estricto para analítica, habrá que
+comprobar existencia antes de transmitir, con el coste de retrasar la primera
+respuesta o agregar una consulta temprana.
 Las rutas de comunidad inexistente también conservan la vista de recuperación
 del layout, y ahora llevan `noindex`; la vista mínima de acceso a una comunidad
 privada o secreta invitada lleva la misma directiva.
@@ -848,14 +1001,63 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
   secuencia descargo→apelación, denegación a terceros/moderadores, respuesta,
   levantamiento y cierre de solicitudes obsoletas. La acción de restringir
   envía un UUID estable por intento; repetirlo no extiende la suspensión ni
-  duplica auditoría/notificación. La RPC antigua de cinco argumentos ya no
-  concede `EXECUTE` a `authenticated`; la versión con UUID sigue disponible y
-  la llama internamente. `chat-restrictions.sql` y `chat-review.sql` volvieron
+  duplica auditoría/notificación. Las RPC antiguas de sanción inmediata, tanto de cinco como de seis argumentos,
+  ya no conceden `EXECUTE` a `authenticated`; las pruebas SQL usan una identidad
+  privilegiada solo para preparar sus fixtures. `chat-restrictions.sql` y `chat-review.sql` volvieron
   a pasar con rollback en Supabase. Tres pruebas nuevas de UI
   comprueban envío, apelación y resolución; otra verifica el aviso de sistema.
   La bandeja vacía se revisó en
   localhost a ancho de escritorio y móvil sin sancionar usuarios reales.
-- Esta vía de revisión ocurre después de aplicar la limitación. El Manual de
-  Convivencia art. 18 también exige advertencia y etapas previas salvo urgencia;
-  faltan la escala previa, un revisor independiente cuando el propietario impuso
-  la decisión, y E2E con dos cuentas. No se declara cumplimiento legal completo.
+- La nueva vía previa abre `community_chat_cases` sin limitar la escritura. El
+  outbox privado conserva el destinatario del correo; solo la aceptación del
+  proveedor marca `notified_at` e inicia 48 h de descargos. Una RPC de resolución
+  exige otra persona, plazo cumplido y advertencia previa antes de restringir; un
+  bloqueo también exige suspensión anterior. Para un expediente abierto por el
+  propietario, solo un administrador de plataforma puede resolver. La RPC de
+  sanción inmediata queda revocada a clientes autenticados. El correo usa
+  `RESEND_FROM_EMAIL` o el remitente común `Yebaam <noreply@yebaam.com>`.
+- Prueba `chat-case-resolution.sql` pasada en Supabase con rollback: acceso,
+  correo/plazo, revisor distinto, progresividad y cinco días hábiles sin festivos.
+  Los índices de bandeja siguen `(community_id, created_at, id)` y
+  `(community_id, user_id, created_at, id)` en orden descendente para los cursores.
+  `chat-restrictions.sql` y `chat-review.sql` volvieron a pasar tras revocar la
+  sanción directa. TypeScript, UI de expedientes y acciones pasan; localhost
+  mostró bandejas vacías en escritorio y móvil y barra de controles desplazable.
+- Los paneles de moderación y la galería del chat se cargan al abrirse para no
+  incluirlos en el código inicial de la conversación. El remitente del aviso
+  comparte `RESEND_FROM_EMAIL` con el servicio de correo existente.
+- La vía de respaldo para la revisión posterior permite a administradores de
+  plataforma leer y decidir cuando no hay revisor comunitario independiente.
+  La notificación de respaldo solo se envía si no existe revisor local elegible.
+  `chat-review-platform-fallback.sql` pasó con rollback en Supabase: un
+  administrador revisó una restricción impuesta por el propietario y otro
+  distinto levantó el bloqueo al resolver la apelación; autor, primer revisor
+  y tercero quedaron excluidos. También se probó la ruta de una comunidad
+  privada: la notificación apunta directamente a la sala y el revisor de
+  plataforma la puede leer por RLS. El chat muestra las bandejas a administradores
+  de plataforma sin concederles controles de moderación comunitaria ajenos a
+  esta revisión. Un expediente abierto por el propietario avisa a los
+  administradores de plataforma; uno abierto por un moderador avisa al
+  propietario, sin duplicar avisos al reintentar. `chat-case-reviewer-notice.sql`
+  pasó con rollback en una comunidad privada. Falta E2E visual con una sesión
+  real de ese rol.
+- Verificación del 10 de octubre: `community-chat-case-mail` y
+  `community-asset-cleanup` existen en Supabase Cron pero están inactivos;
+  Vault tiene `community_cleanup_url` y aún no tiene
+  `community_cleanup_secret`. El outbox de expedientes tiene cero pendientes,
+  entregados y detenidos. En `next start` local, POST al worker sin configurar
+  devuelve 503; no se envió ningún correo.
+- La Edge Function `send-email` existente tampoco puede servir de respaldo
+  inmediato: una petición sin secreto devolvió 500 `Server misconfigured`, lo
+  que confirma que falta `EMAIL_WEBHOOK_SECRET` en ese despliegue. No se envió
+  correo ni se incorporó esta función al flujo de expedientes.
+- Para activar los reintentos tras desplegar esta versión: configurar
+  `COMMUNITY_CLEANUP_SECRET` (mínimo 32 caracteres) en el servidor y guardar el
+  mismo valor en Vault como `community_cleanup_secret`; confirmar que
+  `RESEND_API_KEY` y el remitente están configurados en producción; probar POST
+  sin token (401) y con Bearer válido (200, cola vacía); luego activar ambos
+  jobs de Cron y revisar respuestas HTTP de `pg_net` junto al outbox. No se debe
+  activar un job antes de comprobar que la ruta desplegada acepta su token.
+- Pendiente: acceso al proyecto de despliegue para configurar el secreto,
+  verificar entrega real de correo y completar E2E con cuentas de afectado,
+  moderador y revisor independiente. No se declara cumplimiento legal completo.

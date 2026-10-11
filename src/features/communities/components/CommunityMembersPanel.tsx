@@ -10,9 +10,10 @@ import type { CommunityMember } from '@/features/communities/types/community.typ
 interface CommunityMembersPanelProps {
   members: CommunityMember[];
   total: number;
+  restricted?: boolean;
 }
 
-export async function CommunityMembersPanel({ members, total }: CommunityMembersPanelProps) {
+export async function CommunityMembersPanel({ members, total, restricted = false }: CommunityMembersPanelProps) {
   const t = await getTranslations('communities');
   return (
     <div className="space-y-4">
@@ -24,7 +25,11 @@ export async function CommunityMembersPanel({ members, total }: CommunityMembers
           {t('members.total', { count: total })}
         </span>
       </header>
-      {members.length > 0 ? (
+      {restricted ? (
+        <div className="rounded-xl border border-primary-100 bg-primary-50/60 px-5 py-6 text-sm leading-relaxed text-primary-900 dark:border-primary-800 dark:bg-primary-900/20 dark:text-primary-100">
+          {t('members.restricted')}
+        </div>
+      ) : members.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {members.map((member) => (
             <div
