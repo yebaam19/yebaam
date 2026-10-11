@@ -16,6 +16,7 @@ interface NotificationTabsProps {
   selectedTab: 'all' | 'unread';
   onTabChange: (tab: 'all' | 'unread') => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  onNavigate?: () => void;
   onRead: (notificationId: string) => Promise<void>;
   onDelete: (notificationId: string) => Promise<void>;
 }
@@ -31,6 +32,7 @@ export default function NotificationTabs({
   onTabChange,
   onScroll,
   onRead,
+  onNavigate,
   onDelete,
 }: NotificationTabsProps) {
   const t = useTranslations('notification');
@@ -42,18 +44,18 @@ export default function NotificationTabs({
       <Tab.List className="flex border-b border-neutral-200 dark:border-neutral-800">
         <Tab className={({ selected }) => cn(
           'flex-1 py-3 text-sm font-medium transition-colors',
-          'focus:outline-none',
+          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-800',
           selected
-            ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
+            ? 'border-b-2 border-primary-600 text-primary-800 dark:text-primary-400'
             : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
         )}>
           {t('tabs.all')}
         </Tab>
         <Tab className={({ selected }) => cn(
           'flex-1 py-3 text-sm font-medium transition-colors',
-          'focus:outline-none',
+          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-800',
           selected
-            ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
+            ? 'border-b-2 border-primary-600 text-primary-800 dark:text-primary-400'
             : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
         )}>
           {unreadCount > 0 ? t('tabs.unreadWithCount', { count: unreadCount }) : t('tabs.unread')}
@@ -75,6 +77,7 @@ export default function NotificationTabs({
             }}
             onScroll={onScroll}
             onRead={onRead}
+                  onNavigate={onNavigate}
             onDelete={onDelete}
           />
         </Tab.Panel>
@@ -93,6 +96,7 @@ export default function NotificationTabs({
             }}
             onScroll={onScroll}
             onRead={onRead}
+                  onNavigate={onNavigate}
             onDelete={onDelete}
           />
         </Tab.Panel>

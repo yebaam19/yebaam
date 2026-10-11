@@ -168,6 +168,7 @@ export interface GetNotificationsFilters {
   type?: NotificationType;
   isRead?: boolean;
   since?: string; // ISO date
+  before?: { createdAt: string; id: string };
 }
 
 /**

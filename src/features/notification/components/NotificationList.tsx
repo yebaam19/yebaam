@@ -17,6 +17,7 @@ interface NotificationListProps {
     description: string;
   };
   onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
+  onNavigate?: () => void;
   onRead: (notificationId: string) => Promise<void>;
   onDelete: (notificationId: string) => Promise<void>;
 }
@@ -29,31 +30,17 @@ export default function NotificationList({
   emptyMessage,
   onScroll,
   onRead,
+  onNavigate,
   onDelete,
 }: NotificationListProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('notification.list');
 
-  // Log para debugging
-  console.log('[NotificationList] Renderizando con:', {
-    notificationsCount: notifications.length,
-    isLoading,
-    isLoadingMore,
-    hasMore,
-    notificationsPreview: notifications.slice(0, 3).map(n => ({
-      id: n.id,
-      type: n.type,
-      isRead: n.isRead,
-      message: n.message,
-      targetUrl: n.targetUrl,
-      metadata: n.metadata
-    }))
-  });
-
   return (
     <div 
       ref={scrollContainerRef}
-      className="max-h-[480px] overflow-y-auto"
+      className="max-h-[min(480px,60dvh)] overflow-y-auto overscroll-contain"
+      aria-busy={isLoading || isLoadingMore}
       onScroll={onScroll}
     >
       {isLoading && notifications.length === 0 ? (
@@ -66,19 +53,12 @@ export default function NotificationList({
         <>
           <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
             {notifications.map((notification) => {
-              console.log('[NotificationList] Renderizando notificacion:', {
-                id: notification.id,
-                type: notification.type,
-                message: notification.message,
-                targetUrl: notification.targetUrl,
-                actor: notification.actor,
-                fullNotification: notification
-              });
               return (
                 <NotificationItem
                   key={notification.id}
                   notification={notification}
                   onRead={onRead}
+                  onNavigate={onNavigate}
                   onDelete={onDelete}
                 />
               );

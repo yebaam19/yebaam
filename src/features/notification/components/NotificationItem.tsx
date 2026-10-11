@@ -18,6 +18,7 @@ interface NotificationItemProps {
   onRead: (id: string) => Promise<void>;
   onDelete: (id: string) => void;
   onClick?: (notification: Notification) => void;
+  onNavigate?: () => void;
 }
 
 export default function NotificationItem({
@@ -25,6 +26,7 @@ export default function NotificationItem({
   onRead,
   onDelete,
   onClick,
+  onNavigate,
 }: NotificationItemProps) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -61,19 +63,10 @@ export default function NotificationItem({
     onDelete,
   });
 
-  // Mark-as-read BEFORE navigating, otherwise the await races with unmount
-  // and the bell popover's next fetchNotifications resurrects the unread
-  // state from the DB. Run unconditionally — legacy friend_request rows can
-  // have a NULL related_id, so requestId may be missing even though the row
-  // is still a valid unread notification.
-  const handleNotificationClick = async () => {
-    if (!notification.isRead) {
-      try {
-        await onRead(notification.id)
-      } catch {
-        // swallow — navigation proceeds either way
-      }
-    }
+  // The store owns the write, so client navigation can proceed immediately.
+  const handleNotificationClick = () => {
+    if (!notification.isRead) void onRead(notification.id).catch(() => {});
+    onNavigate?.();
     if (isFriendRequest && requestId) {
       router.push(`/feed/friendships/requests/${requestId}`)
     } else {
@@ -105,14 +98,14 @@ export default function NotificationItem({
       {!notification.isRead && (
         <div className="absolute left-2 top-1/2 -translate-y-1/2">
           <div className="relative">
-            <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
-            <div className="absolute inset-0 h-2.5 w-2.5 rounded-full bg-green-500 animate-ping opacity-75" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary-800" />
           </div>
         </div>
       )}
 
       {/* Avatar con badge de tipo */}
       <NotificationIcon 
+        actorName={notification.actor.displayName || notification.actor.username}
         avatarSrc={notification.actor.avatar} 
         type={notification.type} 
       />
@@ -121,6 +114,7 @@ export default function NotificationItem({
       <div className="flex-1 min-w-0">
         <div id={contentId}>
           <NotificationContent notification={notification} />
+          {!notification.isRead && <span className="sr-only">{t('unreadLabel')}</span>}
         </div>
 
         <button

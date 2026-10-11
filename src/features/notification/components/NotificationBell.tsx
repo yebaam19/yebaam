@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, Fragment, useState, useCallback } from 'react';
+import { useEffect, Fragment, useState, useCallback, useRef } from 'react';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { usePathname } from 'next/navigation';
+import { useNotificationRealtime } from '../hooks/useNotificationRealtime';
 import Link from 'next/link';
 import { Popover, Transition } from '@headlessui/react';
 import { BellIcon } from '@/components/icons/heroicons-shim';
 import { useNotificationStore } from '../store/notification.store';
 import NotificationHeader from './NotificationHeader';
+import type { GetNotificationsFilters } from '../interfaces/notification.interfaces';
 import NotificationTabs from './NotificationTabs';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -21,36 +25,26 @@ export default function NotificationBell() {
     markOneAsRead,
     markAllAsRead,
     deleteNotification,
-    startPolling,
-    stopPolling,
+    error,
+    pendingWrites,
   } = useNotificationStore();
 
+  useNotificationRealtime();
+  const userId = useAuthStore(state => state.user?.id);
+  const pathname = usePathname();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const pageFilters = useRef<GetNotificationsFilters | null>(null);
+  const feedback = useTranslations('notification.feedback');
   const t = useTranslations('notification.bell');
 
   const [selectedTab, setSelectedTab] = useState<'all' | 'unread'>('all');
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Cargar notificaciones cuando cambia el tab
   useEffect(() => {
-    const filter = selectedTab === 'all' ? 'all' : 'unread';
-    fetchNotifications({ page: 1, limit: 20, filter });
-  }, [selectedTab, fetchNotifications]);
-
-  // Iniciar polling al montar el componente
-  useEffect(() => {
-    startPolling();
-    
-    return () => {
-      stopPolling();
-    };
-  }, [startPolling, stopPolling]);
-
-  const handleMarkAllAsRead = async () => {
-    await markAllAsRead();
-    // Recargar notificaciones después de marcar como leídas
-    const filter = selectedTab === 'all' ? 'all' : 'unread';
-    await fetchNotifications({ page: 1, limit: 20, filter });
-  };
+    if (userId && (panelOpen || pathname !== '/notifications')) {
+      void fetchNotifications({ page: 1, limit: 20, filter: selectedTab });
+    }
+  }, [selectedTab, userId, panelOpen, pathname, fetchNotifications]);
 
   // Filtrar notificaciones según el tab seleccionado
   const displayedNotifications = selectedTab === 'unread' 
@@ -73,7 +67,7 @@ export default function NotificationBell() {
 
   return (
     <Popover className="relative">
-      {() => (
+      {({ close }) => (
         <>
           {/* Botón de campana */}
           <Popover.Button
@@ -88,7 +82,7 @@ export default function NotificationBell() {
               
               {/* Badge de contador */}
               {unreadCount > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-xs font-bold text-white">
+                <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary-800 text-xs font-bold text-white">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -103,22 +97,35 @@ export default function NotificationBell() {
               leave="transition ease-in duration-150"
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1"
-              afterEnter={() => {
-                // Cargar notificaciones cuando el panel se abre
-                const filter = selectedTab === 'all' ? 'all' : 'unread';
-                fetchNotifications({ page: 1, limit: 20, filter });
+              beforeEnter={() => {
+                pageFilters.current = useNotificationStore.getState().activeFilters;
+                setPanelOpen(true);
+              }}
+              afterLeave={() => {
+                setPanelOpen(false);
+                if (pathname === '/notifications' && pageFilters.current) {
+                  void fetchNotifications({ ...pageFilters.current, page: 1, before: undefined });
+                }
+                pageFilters.current = null;
               }}
             >
-              <Popover.Panel className="absolute right-0 z-50 mt-2 w-[420px] max-w-md">
+              <Popover.Panel className="absolute right-0 z-50 mt-2 w-[420px] max-w-[calc(100vw-2rem)]">
                 <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-neutral-900 dark:ring-neutral-700">
                   {/* Header */}
                   <NotificationHeader
                     unreadCount={unreadCount}
-                    onMarkAllAsRead={handleMarkAllAsRead}
+                    onMarkAllAsRead={markAllAsRead}
+                    disabled={pendingWrites > 0}
                   />
 
+                  {error && (
+                    <div role="alert" className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">
+                      <span>{feedback('loadError')}</span>
+                      <button className="font-semibold text-primary-800 dark:text-primary-400" onClick={() => void fetchNotifications({ page: 1, limit: 20, filter: selectedTab }, true)}>{feedback('retry')}</button>
+                    </div>
+                  )}
                   {/* Tabs */}
-                  <NotificationTabs
+                  {(!error || notifications.length > 0) && <NotificationTabs
                     allNotifications={displayedNotifications}
                     unreadNotifications={displayedNotifications}
                     unreadCount={unreadCount}
@@ -128,16 +135,18 @@ export default function NotificationBell() {
                     selectedTab={selectedTab}
                     onTabChange={setSelectedTab}
                     onScroll={handleScroll}
+                    onNavigate={close}
                     onRead={markOneAsRead}
                     onDelete={deleteNotification}
-                  />
+                  />}
 
                   {/* Footer - Ver todas */}
                   {notifications.length > 0 && (
                     <div className="border-t border-neutral-200 dark:border-neutral-800">
                       <Link
                         href="/notifications"
-                        className="block py-3 text-center text-sm font-semibold text-primary-600 hover:bg-neutral-50 dark:text-primary-400 dark:hover:bg-neutral-800 transition-colors"
+                        onClick={() => { close(); setSelectedTab('all'); }}
+                        className="block py-3 text-center text-sm font-semibold text-primary-800 hover:bg-neutral-50 dark:text-primary-400 dark:hover:bg-neutral-800 transition-colors"
                       >
                         {t('viewAll')}
                       </Link>

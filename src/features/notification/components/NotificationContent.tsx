@@ -65,9 +65,9 @@ export default function NotificationContent({ notification }: NotificationConten
       )}
 
       <div className="mt-1 flex items-center gap-2">
-        <span className="text-xs text-primary-600 dark:text-primary-400 font-medium">
+        <time dateTime={notification.createdAt} title={new Date(notification.createdAt).toLocaleString(locale)} className="text-xs text-neutral-500 dark:text-neutral-400">
           {timeAgo}
-        </span>
+        </time>
       </div>
     </div>
   );

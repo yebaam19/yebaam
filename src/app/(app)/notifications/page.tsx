@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const feedback = useTranslations('notification.feedback');
   const t = useTranslations('notification.page');
   const {
     activeFilter,
@@ -18,6 +19,9 @@ export default function NotificationsPage() {
     isLoading,
     isLoadingMore,
     hasMore,
+    error,
+    pendingWrites,
+    retry,
     unreadCount,
     scrollContainerRef,
     handleScroll,
@@ -56,6 +60,7 @@ export default function NotificationsPage() {
             {/* Marcar todas como leídas */}
             {unreadCount > 0 && (
               <button
+                disabled={pendingWrites > 0}
                 onClick={handleMarkAllAsRead}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
               >
@@ -74,7 +79,7 @@ export default function NotificationsPage() {
                 className={cn(
                   'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
                   activeFilter === tab.id
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-primary-800 text-white'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 )}
               >
@@ -104,7 +109,13 @@ export default function NotificationsPage() {
         className="mx-auto max-w-4xl min-w-0 overflow-y-auto px-3 py-6 sm:px-6 lg:px-8"
         style={{ maxHeight: 'calc(100dvh - 12rem - env(safe-area-inset-top, 0px))' }}
       >
-        {isLoading ? (
+        {error && (
+          <div role="alert" className="mb-4 flex items-center justify-between gap-3 text-sm text-neutral-700 dark:text-neutral-300">
+            <span>{feedback('loadError')}</span>
+            <button onClick={retry} className="font-semibold text-primary-800 dark:text-primary-400">{feedback('retry')}</button>
+          </div>
+        )}
+        {error && filteredNotifications.length === 0 ? null : isLoading && filteredNotifications.length === 0 ? (
           // Skeleton loading
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (

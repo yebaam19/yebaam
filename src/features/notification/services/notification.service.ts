@@ -73,7 +73,13 @@ export class NotificationService {
       .select('*', { count: 'exact' })
       .eq('recipient_id', userId)
       .order('created_at', { ascending: false })
-      .range(from, to);
+      .order('id', { ascending: false })
+      .range(filters?.before ? 0 : from, filters?.before ? limit - 1 : to);
+
+    if (filters?.before) {
+      const { createdAt, id } = filters.before;
+      query = query.or(`created_at.lt.${createdAt},and(created_at.eq.${createdAt},id.lt.${id})`);
+    }
 
     const dbType = mapClientTypeToDb(filters?.type);
     if (dbType) query = query.eq('type', dbType);
@@ -84,7 +90,12 @@ export class NotificationService {
 
     if (filters?.since) query = query.gte('created_at', filters.since);
 
-    const { data, error, count } = await query;
+    const [{ data, error, count }, unread] = await Promise.all([
+      query,
+      supabase.from('notifications').select('id', { count: 'exact', head: true })
+        .eq('recipient_id', userId).eq('is_read', false),
+    ]);
+    if (unread.error) throw new Error(unread.error.message);
     if (error || !data) {
       throw new Error(error?.message || 'Error al obtener notificaciones');
     }
@@ -93,20 +104,14 @@ export class NotificationService {
     const actors = await this.hydrateActors(rows);
     const notifications = rows.map((r) => this.rowToNotification(r, actors));
 
-    const { count: unreadCount } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('recipient_id', userId)
-      .eq('is_read', false);
-
     return {
       notifications,
       pagination: {
         page,
         limit,
         total: count ?? notifications.length,
-        unreadCount: unreadCount ?? 0,
-        hasMore: (count ?? 0) > to + 1,
+        unreadCount: unread.count ?? 0,
+        hasMore: (count ?? 0) > (filters?.before ? limit : to + 1),
       },
     };
   }
@@ -134,17 +139,18 @@ export class NotificationService {
       };
     }
 
-    const { count: total } = await supabase
+    const { count: total, error: totalError } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', userId);
 
-    const { count: unread } = await supabase
+    const { count: unread, error: unreadError } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', userId)
       .eq('is_read', false);
 
+    if (totalError || unreadError) throw new Error(totalError?.message || unreadError?.message);
     return {
       totalCount: total ?? 0,
       unreadCount: unread ?? 0,
@@ -169,10 +175,10 @@ export class NotificationService {
     return this.markAsRead([notificationId]);
   }
 
-  async markAllAsRead(): Promise<void> {
-    const res = await markAllNotificationsReadAction();
+  async markAllAsRead(before?: string): Promise<void> {
+    const res = await markAllNotificationsReadAction(before);
     if (!res.ok) {
-      if (res.error === 'unauthorized') return;
+      if (res.error === 'unauthorized') throw new Error('No authenticated user');
       throw new Error(res.message || 'Error al marcar todas como leídas');
     }
   }

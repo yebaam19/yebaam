@@ -39,7 +39,9 @@ export async function markNotificationsRead(
 }
 
 /** Mark every unread notification for the caller as read. */
-export async function markAllNotificationsRead(): Promise<MarkReadResult> {
+export async function markAllNotificationsRead(before?: string): Promise<MarkReadResult> {
+  const cutoff = before ? new Date(before) : new Date()
+  if (!Number.isFinite(cutoff.getTime())) return { ok: false, updated: 0, error: 'invalid' }
   const client = await getServerClient()
   const { data: auth } = await client.auth.getUser()
   const user = auth?.user
@@ -50,6 +52,7 @@ export async function markAllNotificationsRead(): Promise<MarkReadResult> {
     .update({ is_read: true, read_at: new Date().toISOString() })
     .eq('recipient_id', user.id)
     .eq('is_read', false)
+    .lte('created_at', cutoff.toISOString())
     .select('id')
 
   if (error) {

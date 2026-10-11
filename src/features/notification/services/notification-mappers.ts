@@ -128,9 +128,9 @@ export function profileToActor(profile: DbProfile | undefined, fallbackId: strin
     return { id: fallbackId, username: '', displayName: '', avatar: undefined };
   }
   const displayName =
-    profile.display_name ??
-    [profile.first_name, profile.last_name].filter(Boolean).join(' ') ??
-    profile.username ??
+    profile.display_name?.trim() ||
+    [profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
+    profile.username ||
     '';
   return {
     id: profile.id,

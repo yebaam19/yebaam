@@ -9,6 +9,12 @@ export interface NotificationState {
   isLoading: boolean;
   error: string | null;
   
+  activeFilters: GetNotificationsFilters;
+  lastFetchedAt: number;
+  revision: number;
+  sessionVersion: number;
+  pendingWrites: number;
+
   // Paginación
   currentPage: number;
   hasMore: boolean;
@@ -18,7 +24,7 @@ export interface NotificationState {
   pollingInterval: number; // en ms
   
   // Acciones de lectura
-  fetchNotifications: (filters?: GetNotificationsFilters) => Promise<void>;
+  fetchNotifications: (filters?: GetNotificationsFilters, force?: boolean) => Promise<void>;
   fetchStats: () => Promise<void>;
   fetchPreferences: () => Promise<void>;
   loadMore: () => Promise<void>;

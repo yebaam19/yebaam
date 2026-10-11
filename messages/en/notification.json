@@ -17,7 +17,8 @@
   },
   "item": {
     "requestSentWaiting": "Request sent - Waiting for response",
-    "deleteLabel": "Delete notification"
+    "deleteLabel": "Delete notification",
+    "unreadLabel": "Unread"
   },
   "friendRequest": {
     "nowFriends": "You are now friends!",
@@ -73,5 +74,9 @@
     "emptyAllTitle": "You have no notifications",
     "emptyDescription": "Notifications about your activity will appear here",
     "noMore": "No more notifications"
+  },
+  "feedback": {
+    "loadError": "We could not update your notifications.",
+    "retry": "Try again"
   }
 }
