@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ interface ChatBubbleProps {
   onClose: () => void;
   position: number;
   baseOffset?: number;
+  openRequest?: number;
   /** For group bubbles: the conversation id + group flag (no single peer to resolve). */
   conversationId?: string;
   isGroup?: boolean;
@@ -37,10 +38,16 @@ export default function ChatBubble({
   onClose,
   position = 0,
   baseOffset = 320,
+  openRequest = 0,
   conversationId: groupConversationId,
   isGroup = false,
 }: ChatBubbleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [lastOpenRequest, setLastOpenRequest] = useState(openRequest);
+  if (lastOpenRequest !== openRequest) {
+    setLastOpenRequest(openRequest);
+    setIsMinimized(false);
+  }
   const [groupComposerOpen, setGroupComposerOpen] = useState(false);
   const meId = useAuthStore((state) => state.user?.id);
   const [participants, setParticipants] = useState<GroupParticipant[]>([]);
@@ -117,10 +124,14 @@ export default function ChatBubble({
   return (
     <div
       className={cn(
-        'fixed bottom-0 z-[150] flex w-[328px] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-900',
+        'fixed bottom-0 right-2 z-[150] flex w-[min(328px,calc(100vw-16px))] max-h-[calc(100dvh-80px)] xl:right-[var(--chat-compact-right)] 2xl:right-[var(--chat-right)] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-900',
         isMinimized ? 'h-14' : 'h-[480px]',
+        position > 0 && 'max-xl:hidden',
       )}
-      style={{ right: `${rightPosition}px` }}
+      style={{
+        '--chat-right': `${rightPosition}px`,
+        '--chat-compact-right': `${16 + position * stackStepPx}px`,
+      } as CSSProperties}
     >
       <ChatBubbleHeader
         contactName={contactName}

@@ -11,6 +11,7 @@ export interface OpenBubble {
   contactName: string;
   contactAvatar: string;
   isOnline: boolean;
+  openRequest?: number;
   /** Explicit conversation id — set for group bubbles (no single peer to resolve from). */
   conversationId?: string;
   /** Defaults to direct when omitted. */
@@ -142,8 +143,14 @@ export const useChatStore = create<ChatState>()(
       openBubbles: [],
       openBubble: (contact) => {
         set((state) => {
-          if (state.openBubbles.some((b) => b.contactId === contact.contactId)) {
-            return state;
+          const existing = state.openBubbles.find((b) => b.contactId === contact.contactId);
+          if (existing) {
+            return {
+              openBubbles: [
+                ...state.openBubbles.filter((b) => b.contactId !== contact.contactId),
+                { ...existing, ...contact, openRequest: (existing.openRequest ?? 0) + 1 },
+              ],
+            };
           }
           const next =
             state.openBubbles.length >= MAX_OPEN_BUBBLES

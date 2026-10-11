@@ -8,7 +8,6 @@ import { chatHrefForConversation } from '@/features/chat/lib/chatHrefForConversa
 import { useChatStore } from '@/features/chat/store/chat.store';
 import { ConversationType,type Conversation } from '@/features/chat/types';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
-import { useIsXl } from '@/lib/hooks/useIsXl';
 import { cn } from '@/lib/utils';
 import { Popover } from '@headlessui/react';
 import type { Route } from 'next';
@@ -25,7 +24,6 @@ export default function MessengerDropdown() {
   const { conversations, totalUnreadCount } = useChat();
   const openBubble = useChatStore((s) => s.openBubble);
   const onlineUserIds = usePresenceStore((s) => s.onlineUserIds);
-  const isXl = useIsXl();
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
 
   const sorted = useMemo(() => {
@@ -39,14 +37,7 @@ export default function MessengerDropdown() {
   const handleRowClick = (conv: Conversation, close: () => void) => {
     if (!user) return;
 
-    // Group conversations open as a floating bubble on desktop (keyed by the
-    // conversation id); mobile (< xl, no tray) falls back to the full page.
     if (conv.type === ConversationType.GROUP) {
-      if (!isXl) {
-        router.push(chatHrefForConversation(conv, user.id) as Route);
-        close();
-        return;
-      }
       openBubble({
         contactId: conv.id,
         conversationId: conv.id,
@@ -55,13 +46,6 @@ export default function MessengerDropdown() {
         contactAvatar: conv.avatar ?? '',
         isOnline: false,
       });
-      close();
-      return;
-    }
-
-    // Mobile (< xl) has no bubble tray — fall back to navigation.
-    if (!isXl) {
-      router.push(chatHrefForConversation(conv, user.id) as Route);
       close();
       return;
     }
@@ -75,6 +59,7 @@ export default function MessengerDropdown() {
 
     openBubble({
       contactId: otherId,
+      conversationId: conv.id,
       contactName: conv.name ?? t('user'),
       contactAvatar: conv.avatar ?? '',
       isOnline: onlineUserIds.has(otherId),

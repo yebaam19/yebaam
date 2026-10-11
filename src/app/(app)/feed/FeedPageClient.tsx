@@ -32,7 +32,7 @@ export default function FeedPageClient({ timeline }: FeedPageClientProps) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[min(640px,100%)] px-3 pt-5 pb-8 sm:px-6 sm:pt-7">
       <div className="space-y-3 sm:space-y-4">
-        <header className="relative overflow-hidden rounded-2xl border border-primary-200 bg-primary-50 px-5 py-5 dark:border-primary-900/70 dark:bg-primary-950/40 sm:px-6 sm:py-6">
+        <header className="relative overflow-hidden rounded-2xl border border-primary-200 bg-primary-50 px-5 py-5 dark:border-primary-900/70 dark:bg-primary-900 sm:px-6 sm:py-6">
           <div className="absolute -right-10 -top-12 size-32 rounded-full bg-secondary-300/40 blur-2xl dark:bg-secondary-700/20" />
           <div className="relative">
             <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-primary-800 dark:text-primary-200">

@@ -40,7 +40,7 @@ export default function ChatBubbleTray() {
   const baseOffset = hasRightRail(pathname) ? 320 : 16;
 
   return (
-    <div className="hidden xl:contents">
+    <div className="contents">
       {openBubbles.map((b, i) => (
         <ChatBubble
           key={b.contactId}
@@ -50,7 +50,8 @@ export default function ChatBubbleTray() {
           isOnline={b.isOnline}
           conversationId={b.conversationId}
           isGroup={b.type === ConversationType.GROUP}
-          position={i}
+          position={openBubbles.length - 1 - i}
+          openRequest={b.openRequest}
           baseOffset={baseOffset}
           onClose={() => closeBubble(b.contactId)}
         />
