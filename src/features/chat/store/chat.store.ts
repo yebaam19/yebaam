@@ -23,12 +23,16 @@ const MAX_OPEN_BUBBLES = 3;
 // so concurrent initial mounts collapse into ONE /api/conversations request
 // instead of firing the ~2s endpoint multiple times in parallel.
 let loadConversationsInFlight: Promise<void> | null = null;
+let lastLoadedAt = 0;
+let lastLoadedFor: string | null = null;
+let sessionGeneration = 0;
+const INBOX_FRESH_MS = 15_000;
 
 interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
   isLoadingConversations: boolean;
-  loadConversations: () => Promise<void>;
+  loadConversations: (force?: boolean) => Promise<void>;
   setActiveConversation: (conversationId: string | null) => void;
   updateConversation: (conversation: Conversation) => void;
   addConversation: (conversation: Conversation) => void;
@@ -48,41 +52,35 @@ export const useChatStore = create<ChatState>()(
       conversations: [],
       activeConversationId: null,
       isLoadingConversations: false,
-      loadConversations: async () => {
+      loadConversations: async (force = false) => {
+        const userId = useAuthStore.getState().user?.id;
+        if (!userId) return;
         if (loadConversationsInFlight) return loadConversationsInFlight;
-        loadConversationsInFlight = (async () => {
-        set({ isLoadingConversations: true });
-        try {
-          const conversations = await chatService.getConversations();
-
-          // Prime the conversation-id cache: opening a chat for a known peer can
-          // then skip the resolve round-trips and go straight to fetching/showing
-          // messages (Messenger-style fast open).
-          const meId = useAuthStore.getState().user?.id;
-          if (meId) {
+        if (!force && lastLoadedFor === userId && Date.now() - lastLoadedAt < INBOX_FRESH_MS) return;
+        const generation = sessionGeneration;
+        const request = (async () => {
+          set({ isLoadingConversations: get().conversations.length === 0 });
+          try {
+            const conversations = await chatService.getConversations();
+            if (generation !== sessionGeneration) return;
             for (const conv of conversations) {
               if (conv.type !== ConversationType.DIRECT) continue;
-              const peerId = conv.participantIds?.find((id) => id !== meId);
+              const peerId = conv.participantIds?.find((id) => id !== userId);
               if (peerId) conversationCache.setConvId(peerId, conv.id);
             }
+            conversations.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+            lastLoadedFor = userId;
+            lastLoadedAt = Date.now();
+            set({ conversations, isLoadingConversations: false });
+          } catch (error) {
+            if (generation !== sessionGeneration) return;
+            console.error('[CHAT STORE] Error loading conversations:', error);
+            set({ isLoadingConversations: false });
           }
-
-          // Ordenar por última actividad
-          conversations.sort((a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-          );
-
-          set({ conversations, isLoadingConversations: false });
-        } catch (error) {
-          console.error(' [CHAT STORE] Error loading conversations:', error);
-          set({ isLoadingConversations: false });
-        }
         })();
-        try {
-          await loadConversationsInFlight;
-        } finally {
-          loadConversationsInFlight = null;
-        }
+        loadConversationsInFlight = request;
+        try { await request; }
+        finally { if (loadConversationsInFlight === request) loadConversationsInFlight = null; }
       },
       setActiveConversation: (conversationId) => {
         set({ activeConversationId: conversationId });
@@ -163,3 +161,12 @@ export const useChatStore = create<ChatState>()(
     { name: 'ChatStore' }
   )
 );
+
+useAuthStore.subscribe((state, previous) => {
+  if (state.user?.id === previous.user?.id) return;
+  sessionGeneration++;
+  lastLoadedAt = 0;
+  lastLoadedFor = null;
+  loadConversationsInFlight = null;
+  useChatStore.setState({ conversations: [], openBubbles: [], activeConversationId: null, isLoadingConversations: false });
+});

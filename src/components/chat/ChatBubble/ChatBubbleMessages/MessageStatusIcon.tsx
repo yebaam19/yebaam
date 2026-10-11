@@ -14,19 +14,19 @@ export function MessageStatusIcon({
   switch (status) {
     case 'read':
       return (
-        <span className="ml-1 text-xs font-bold text-white/80" title={labels.read}>
+        <span className="ml-1 text-xs font-bold text-white/90" title={labels.read}>
           ✓✓
         </span>
       );
     case 'delivered':
       return (
-        <span className="ml-1 text-xs font-bold text-white/70" title={labels.delivered}>
+        <span className="ml-1 text-xs font-bold text-white/90" title={labels.delivered}>
           ✓
         </span>
       );
     case 'sent':
       return (
-        <span className="ml-1 text-xs font-bold text-white/60" title={labels.sent}>
+        <span className="ml-1 text-xs font-bold text-white/90" title={labels.sent}>
           ✓
         </span>
       );

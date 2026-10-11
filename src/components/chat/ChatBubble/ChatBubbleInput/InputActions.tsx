@@ -42,7 +42,7 @@ export function InputActions({
           className="rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
           title={labels.emoji}
         >
-          <FaceSmileIcon className="h-6 w-6 text-[#0084ff] dark:text-blue-400" />
+          <FaceSmileIcon className="h-6 w-6 text-primary-800 dark:text-primary-400" />
         </button>
         <ChatEmojiPopover
           open={emojiOpen}
@@ -65,14 +65,14 @@ export function InputActions({
             className="rounded-full p-2 transition-colors hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
             title={labels.sendLike}
           >
-            <HandThumbUpIcon className="h-7 w-7 text-[#0084ff] dark:text-blue-400" aria-hidden />
+            <HandThumbUpIcon className="h-7 w-7 text-primary-800 dark:text-primary-400" aria-hidden />
           </button>
         </>
       ) : (
         <button
           type="submit"
           disabled={isSending || isUploading}
-          className="rounded-full bg-[#0084ff] p-2 text-white shadow-sm transition-colors hover:bg-[#1877f2] disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
+          className="rounded-full bg-primary-800 p-2 text-white shadow-sm transition-colors hover:bg-primary-900 disabled:opacity-50 dark:bg-primary-800 dark:hover:bg-primary-900"
           title={labels.send}
         >
           <PaperAirplaneIcon className="h-5 w-5 rtl:rotate-180" aria-hidden />

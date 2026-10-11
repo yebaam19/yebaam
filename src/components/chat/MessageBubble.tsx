@@ -148,7 +148,7 @@ export default function MessageBubble({
                 type="button"
                 onClick={submitEdit}
                 title={t('save')}
-                className="rounded-md bg-primary-600 p-1 text-white hover:bg-primary-700"
+                className="rounded-md bg-primary-800 p-1 text-white hover:bg-primary-900"
               >
                 <CheckIcon className="h-4 w-4" />
               </button>

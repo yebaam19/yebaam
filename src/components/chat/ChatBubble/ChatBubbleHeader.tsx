@@ -39,7 +39,7 @@ export function ChatBubbleHeader({
   const t = useTranslations('chat.bubble.header');
 
   return (
-    <div className="flex items-center justify-between rounded-t-xl border-b border-neutral-200/90 bg-[#f0f2f5] px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
+    <div className="flex items-center justify-between rounded-t-xl border-b border-neutral-200/90 bg-neutral-50 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <div className="relative shrink-0">
           <Avatar
@@ -52,7 +52,7 @@ export function ChatBubbleHeader({
               .slice(0, 2)}
           />
           {isOnline && (
-            <div className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-[#f0f2f5] bg-emerald-500 dark:border-neutral-900" />
+            <div className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-neutral-50 bg-emerald-500 dark:border-neutral-900" />
           )}
         </div>
         <div className="min-w-0 flex-1 py-0.5">

@@ -29,7 +29,7 @@ export default function MessageContent({
       className={cn(
         'max-w-md rounded-2xl overflow-hidden',
         isOwn
-          ? 'bg-primary-600 text-white rounded-br-sm'
+          ? 'bg-primary-800 text-white rounded-br-sm'
           : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm'
       )}
     >

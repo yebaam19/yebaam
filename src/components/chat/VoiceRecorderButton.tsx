@@ -80,7 +80,7 @@ export default function VoiceRecorderButton({
         'flex h-9 min-w-9 items-center justify-center rounded-full px-2 transition-colors',
         isRecording
           ? 'bg-red-500 text-white'
-          : 'text-[#0084ff] hover:bg-black/5 dark:text-blue-400 dark:hover:bg-white/10',
+          : 'text-primary-800 hover:bg-black/5 dark:text-primary-400 dark:hover:bg-white/10',
         (disabled || uploading) && 'opacity-50',
       )}
     >

@@ -2,13 +2,11 @@
 
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
-import MessageImage from '../../MessageImage';
-import AudioMessage from '../../AudioMessage';
-import FileMessage from '../../FileMessage';
 import type { MessageMedia } from '@/features/chat/types';
 import { CheckIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { MessageActionsMenu } from '../MessageActionsMenu';
-import { MessageStatusIcon, type MessageStatusLabels } from './MessageStatusIcon';
+import { MessageRowContent } from './MessageRowContent';
+import type { MessageStatusLabels } from './MessageStatusIcon';
 import {
   getContentText,
   incomingBubbleRadii,
@@ -166,7 +164,7 @@ export function MessageRow({
                 }
               }}
               aria-label={labels.editAria}
-              className="max-h-28 w-full resize-none rounded-lg border-0 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 dark:bg-neutral-900 dark:text-white"
+              className="max-h-28 w-full resize-none rounded-lg border-0 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus-visible:ring-2 focus-visible:ring-primary-800 dark:focus-visible:ring-primary-400 dark:bg-neutral-900 dark:text-white"
             />
             <div className="flex justify-end gap-1">
               <button
@@ -181,84 +179,15 @@ export function MessageRow({
                 type="button"
                 onClick={() => onSubmitEdit(msg.id)}
                 title={labels.save}
-                className="rounded-md bg-[#0084ff] p-1 text-white hover:bg-[#1877f2]"
+                className="rounded-md bg-primary-800 p-1 text-white hover:bg-primary-900"
               >
                 <CheckIcon className="h-4 w-4" />
               </button>
             </div>
           </div>
         ) : (
-          (() => {
-            const hasImage =
-              msg.media?.type === 'image' && Boolean(msg.media?.cf_image_id);
-            const hasAudio =
-              msg.media?.type === 'audio' && Boolean(msg.media?.r2_key);
-            const hasFile =
-              msg.media?.type === 'file' && Boolean(msg.media?.r2_key);
-            return (
-              <div
-                className={cn(
-                  'overflow-hidden',
-                  bubbleRadii,
-                  isOwn
-                    ? 'bg-linear-to-br from-[#0084ff] to-[#5a67d8] text-white shadow-sm dark:from-[#2374e8] dark:to-[#4f5fcf]'
-                    : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white',
-                )}
-              >
-                {hasImage && (
-                  <MessageImage
-                    media={msg.media as MessageMedia}
-                    onClick={() => onZoom(msg.media as MessageMedia)}
-                  />
-                )}
-                {hasAudio && (
-                  <AudioMessage
-                    media={msg.media as MessageMedia}
-                    conversationId={msg.conversationId}
-                  />
-                )}
-                {hasFile && (
-                  <FileMessage
-                    media={msg.media as MessageMedia}
-                    conversationId={msg.conversationId}
-                  />
-                )}
-                <div className="px-3 py-2">
-                  {contentText && (
-                    <p className="wrap-break-word text-sm whitespace-pre-wrap">
-                      {contentText}
-                    </p>
-                  )}
-                  <div
-                    className={cn(
-                      'flex items-center gap-1',
-                      contentText && 'mt-1',
-                    )}
-                  >
-                    <p
-                      className={cn(
-                        'text-xs',
-                        isOwn ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400',
-                      )}
-                    >
-                      {formatTime(msg.createdAt)}
-                    </p>
-                    {msg.editedAt && (
-                      <span
-                        className={cn(
-                          'text-[10px]',
-                          isOwn ? 'text-white/70' : 'text-neutral-400 dark:text-neutral-500',
-                        )}
-                      >
-                        · {labels.edited}
-                      </span>
-                    )}
-                    {isOwn && <MessageStatusIcon status={msg.status} labels={labels.status} />}
-                  </div>
-                </div>
-              </div>
-            );
-          })()
+          <MessageRowContent msg={msg} contentText={contentText} bubbleRadii={bubbleRadii}
+            isOwn={isOwn} labels={labels} formatTime={formatTime} onZoom={onZoom} />
         )}
       </div>
     </div>

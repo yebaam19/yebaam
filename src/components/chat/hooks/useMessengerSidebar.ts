@@ -37,44 +37,23 @@ export function useMessengerSidebar() {
     if (!isLoadingConversations) setHasLoadedOnce(true);
   }, [isLoadingConversations]);
 
-  // Cargar información de todos los participantes cuando cambien las conversaciones
+  // Message/read-receipt updates change conversations, but not the profile lookup.
+  const participantKey = JSON.stringify([...new Set(conversations.flatMap((conversation) =>
+    conversation.participantIds?.filter((id) => id && id !== currentUser?.id) ?? [],
+  ))].sort());
   useEffect(() => {
-    if (!conversations || conversations.length === 0 || !currentUser?.id) {
-      setIsLoadingUsers(false);
-      return;
-    }
-
-    // Flip loading on synchronously so the consumer's combined loading flag
-    // stays truthy across the gap between "conversations arrived" and "user
-    // profiles arrived" — that gap is what causes the avatar/name flicker.
-    setIsLoadingUsers(true);
-
+    let active = true;
     const loadUsersData = async () => {
       try {
-        // Obtener todos los IDs únicos de participantes (excluyendo el usuario actual)
-        const allParticipantIds = new Set<string>();
-        conversations.forEach(conv => {
-          // Validar que participantIds existe y es un array
-          if (conv && conv.participantIds && Array.isArray(conv.participantIds)) {
-            conv.participantIds.forEach(id => {
-              if (id && id !== currentUser.id) {
-                allParticipantIds.add(id);
-              }
-            });
-          }
-        });
-
-        if (allParticipantIds.size === 0) {
-          setIsLoadingUsers(false);
-          return;
-        }
-
-        const userIds = Array.from(allParticipantIds);
+        const userIds = JSON.parse(participantKey) as string[];
+        if (!currentUser?.id || userIds.length === 0) { setUsersMap(new Map()); return; }
+        setIsLoadingUsers(true);
         const { data: rows, error } = await supabase
           .from('profiles')
           .select('id, username, first_name, last_name, avatar_url')
           .in('id', userIds);
 
+        if (!active) return;
         if (error || !rows) {
           if (error) console.warn('Failed to load participant profiles:', error);
           setIsLoadingUsers(false);
@@ -97,12 +76,13 @@ export function useMessengerSidebar() {
       } catch (error) {
         console.error('Error loading users data:', error);
       } finally {
-        setIsLoadingUsers(false);
+        if (active) setIsLoadingUsers(false);
       }
     };
 
-    loadUsersData();
-  }, [conversations, currentUser?.id]);
+    void loadUsersData();
+    return () => { active = false; };
+  }, [participantKey, currentUser?.id]);
 
   // Helper: Obtener el otro participante (para chats 1-a-1)
   const getOtherParticipantId = (participantIds: string[] | undefined) => {

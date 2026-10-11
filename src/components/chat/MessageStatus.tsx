@@ -35,7 +35,7 @@ export default function MessageStatus({ status, variant = 'bubble' }: MessageSta
     switch (status) {
       case 'read':
         return (
-          <span className="text-xs text-blue-500 font-bold" title="Leído">
+          <span className="text-xs text-primary-800 dark:text-primary-400 font-bold" title="Leído">
             ✓✓
           </span>
         );

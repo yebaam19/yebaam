@@ -42,7 +42,7 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-neutral-200 bg-[#f0f2f5] px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900"
+      className="border-t border-neutral-200 bg-neutral-50 px-2 py-2 dark:border-neutral-800 dark:bg-neutral-900"
     >
       {selectedFile && (
         <AttachmentPreview
@@ -60,6 +60,7 @@ export function ChatBubbleInput(props: ChatBubbleInputProps) {
 
       <div className="flex items-end gap-1.5">
         <AttachButtons
+          compact={!trimmedEmpty}
           fileInputRef={fileInputRef}
           isUploading={isUploading}
           isSending={isSending}

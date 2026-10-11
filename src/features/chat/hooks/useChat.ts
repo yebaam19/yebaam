@@ -14,9 +14,7 @@ export function useChat() {
     loadConversations,
     setActiveConversation,
     updateConversation,
-    getTotalUnreadCount,
     resetUnreadCount,
-    incrementUnreadCount,
   } = useChatStore();
 
   const totalUnreadCount = conversations.reduce((total, conv) => total + conv.unreadCount, 0);
@@ -67,7 +65,7 @@ export function useChat() {
       } else {
         // Conversación nueva, recargar lista
         console.log('[useChat] Conversación nueva detectada, recargando...');
-        loadConversations();
+        loadConversations(true);
       }
     },
     
@@ -78,8 +76,8 @@ export function useChat() {
     },
   });
   useEffect(() => {
-    loadConversations();
-  }, [loadConversations]);
+    if (user?.id) void loadConversations();
+  }, [loadConversations, user?.id]);
   const sendMessage = async (
     conversationId: string,
     content?: string,

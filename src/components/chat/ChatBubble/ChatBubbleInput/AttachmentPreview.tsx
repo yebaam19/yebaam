@@ -34,7 +34,7 @@ export function AttachmentPreview({
     return (
       <div className="mb-2 px-1">
         <div className="relative flex w-fit max-w-full items-center gap-2 overflow-hidden rounded-lg bg-white px-3 py-2 pr-9 shadow-sm dark:bg-neutral-800">
-          <ChipIcon className="h-5 w-5 shrink-0 text-[#0084ff] dark:text-blue-400" aria-hidden />
+          <ChipIcon className="h-5 w-5 shrink-0 text-primary-800 dark:text-primary-400" aria-hidden />
           <span className="min-w-0">
             <span className="block max-w-44 truncate text-sm text-neutral-800 dark:text-neutral-100">
               {fileName}
