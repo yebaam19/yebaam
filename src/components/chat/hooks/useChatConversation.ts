@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import type { ChatMessage } from '@/features/chat/types';
+import { rowToMessage, mergeMessages, type DbMessageRow } from '@/features/chat/lib/messageRows';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
@@ -15,48 +17,6 @@ interface UseChatConversationProps {
   conversationId?: string;
 }
 
-type DbMessageRow = {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  media: unknown;
-  status: string;
-  reply_to_id: string | null;
-  is_deleted: boolean;
-  edited_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-function rowToMessage(row: DbMessageRow) {
-  return {
-    id: row.id,
-    conversationId: row.conversation_id,
-    senderId: row.sender_id,
-    content: row.content,
-    media: row.media ?? null,
-    status: row.status ?? 'sent',
-    replyToId: row.reply_to_id,
-    isDeleted: Boolean(row.is_deleted),
-    editedAt: row.edited_at ?? null,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at ?? row.created_at),
-  };
-}
-
-const byCreatedAt = (a: any, b: any) =>
-  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-
-/** Merge two message lists by id (dedup), keeping chronological order. */
-function mergeMessages(prev: any[], incoming: any[]): any[] {
-  if (prev.length === 0) return [...incoming].sort(byCreatedAt);
-  const seen = new Set(prev.map((m) => m.id));
-  const merged = [...prev];
-  for (const m of incoming) if (!seen.has(m.id)) merged.push(m);
-  return merged.sort(byCreatedAt);
-}
-
 /**
  * Loads + lives an open chat conversation. Messenger-style fast path: if we've
  * already opened this thread this session, render the cached conversation id +
@@ -69,7 +29,7 @@ export function useChatConversation({ contactId, conversationId: explicitConvId 
   const cachedMessages = cachedConvId ? conversationCache.getMessages(cachedConvId) : null;
 
   const [conversationId, setConversationId] = useState<string | null>(cachedConvId);
-  const [messages, setMessages] = useState<any[]>(cachedMessages ?? []);
+  const [messages, setMessages] = useState<ChatMessage[]>(cachedMessages ?? []);
   // Only show the spinner when we have nothing to paint yet.
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(
     !(cachedMessages && cachedMessages.length > 0),
@@ -150,7 +110,7 @@ export function useChatConversation({ contactId, conversationId: explicitConvId 
         // Mark unread inbound as read (best-effort, non-blocking).
         if (user?.id) {
           const hasUnread = result.messages.some(
-            (msg: any) => msg.senderId !== user.id && msg.status !== 'read',
+            (msg) => msg.senderId !== user.id && msg.status !== 'read',
           );
           if (hasUnread) {
             void fetch(`/api/conversations/${convId}/read`, {

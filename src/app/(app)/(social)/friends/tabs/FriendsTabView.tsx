@@ -51,7 +51,7 @@ export function FriendsTabView({
       {friends.map((friend) => (
         <FriendCard
           key={friend.friendId}
-          friend={friend as any}
+          friend={{ ...friend, firstName: friend.firstName ?? '', lastName: friend.lastName ?? '' }}
           onToggleCloseFriend={onToggleCloseFriend}
           onRemove={onRemove}
           onChat={onChat}

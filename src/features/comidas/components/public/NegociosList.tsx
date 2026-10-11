@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useMemo } from 'react'
 import type { Business } from '../../types'
 import { BusinessCard } from './BusinessCard'
@@ -39,7 +40,7 @@ export function NegociosList({
     if (activeTab === 'whatsapp') list = list.filter((b) => Boolean(b.whatsapp))
     if (activeTab === 'seguidos') list = list.filter((b) => followedIds?.has(b.id))
     return list
-  }, [businesses, initialQuery, activeTab])
+  }, [businesses, initialQuery, activeTab, followedIds])
 
   const followedCount = useMemo(
     () => businesses.filter((b) => followedIds?.has(b.id)).length,
@@ -137,12 +138,12 @@ function EmptyState({ query }: { query: string }) {
           : 'Cuando se registren negocios aparecerán aquí.'}
       </p>
       {query && (
-        <a
+        <Link
           href="/negocios"
           className="rounded-full bg-primary-700 px-6 py-2 text-sm font-semibold text-white transition hover:bg-primary-800"
         >
           Ver todos los negocios
-        </a>
+        </Link>
       )}
     </div>
   )

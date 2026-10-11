@@ -6,6 +6,8 @@ import { cacheKey, invalidate, updateCached } from '@/lib/hooks/cacheStore';
 import { pagesService } from '../services/pages.service';
 import type {
   CreatePageDto,
+  Page,
+  PageRole,
   UpdatePageDto,
   SearchPagesParams,
 } from '../types/page.types';
@@ -116,7 +118,7 @@ export function useUpdatePage() {
       pagesService.updatePage(pageId, data),
     {
       onSuccess: (updatedPage) => {
-        updateCached<CachedRecord<any>>(
+        updateCached<CachedRecord<{ page: Page }>>(
           cacheKey('pages', 'detail', updatedPage.id),
           (record) => ({
             data: { ...(record?.data ?? {}), page: updatedPage },
@@ -193,8 +195,8 @@ export function usePageReaction() {
 
 export function useAssignRole() {
   return useAsyncAction(
-    ({ pageId, userId, role }: { pageId: string; userId: string; role: string }) =>
-      pagesService.assignRole(pageId, { userId, role: role as any }),
+    ({ pageId, userId, role }: { pageId: string; userId: string; role: PageRole }) =>
+      pagesService.assignRole(pageId, { userId, role }),
     {
       onSuccess: (_, { pageId }) => {
         invalidate(`pages::team::${pageId}`);

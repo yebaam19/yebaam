@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { useEffect, useState } from 'react';
+import { useHydrated } from '@/hooks/useHydrated';
 
 interface SidebarExpandedState {
   isExpanded: boolean;
@@ -29,12 +29,9 @@ const useSidebarExpandedStore = create<SidebarExpandedState>()(
  * Con hidratación correcta para evitar hydration mismatch
  */
 export function useSidebarExpanded() {
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useHydrated();
   const store = useSidebarExpandedStore();
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   return {
     isExpanded: isHydrated ? store.isExpanded : false,

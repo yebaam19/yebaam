@@ -11,6 +11,6 @@ export interface PropertyType {
   value: string
 }
 
-export interface ClassOfProperties extends PropertyType {}
+export type ClassOfProperties = PropertyType
 
 export type DateRage = [Date | null, Date | null]

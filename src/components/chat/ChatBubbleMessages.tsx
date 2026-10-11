@@ -1,8 +1,9 @@
+import type { ChatMessage } from '@/features/chat/types';
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ChatBubbleMessagesProps {
-  messages: any[];
+  messages: ChatMessage[];
   isLoadingConversation: boolean;
   currentUserId?: string;
 }

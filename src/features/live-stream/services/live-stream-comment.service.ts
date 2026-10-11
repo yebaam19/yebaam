@@ -31,7 +31,7 @@ export const liveStreamCommentService = {
    * POST /live-streams/:streamId/comments
    */
   async createComment(streamId: string, data: CreateCommentRequest): Promise<LiveStreamComment> {
-    const response = await axios.post(`/live-streams/${streamId}/comments`, data);
+    const response = await axios.post<LiveStreamComment>(`/live-streams/${streamId}/comments`, data);
     return response.data;
   },
 
@@ -47,7 +47,7 @@ export const liveStreamCommentService = {
     if (options?.limit) params.append('limit', options.limit.toString());
     if (options?.cursor) params.append('cursor', options.cursor);
     
-    const response = await axios.get(
+    const response = await axios.get<LiveStreamComment[]>(
       `/live-streams/${streamId}/comments${params.toString() ? `?${params.toString()}` : ''}`
     );
     return response.data;

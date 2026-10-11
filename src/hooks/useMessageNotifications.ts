@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useBrowserNotificationPermission } from '@/features/chat/hooks/useBrowserNotificationPermission';
+import { playNotificationSound } from '@/features/chat/lib/notificationSound';
+import { useState, useCallback } from 'react';
 
 interface MessageNotification {
   id: string;
@@ -13,20 +15,9 @@ interface MessageNotification {
 
 export function useMessageNotifications() {
   const [notifications, setNotifications] = useState<MessageNotification[]>([]);
-  const [hasPermission, setHasPermission] = useState(false);
+  const hasPermission = useBrowserNotificationPermission();
 
-  // Solicitar permiso para notificaciones del navegador
-  useEffect(() => {
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
-        setHasPermission(true);
-      } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then((permission) => {
-          setHasPermission(permission === 'granted');
-        });
-      }
-    }
-  }, []);
+
 
   // Agregar una notificación
   const addNotification = useCallback((notification: MessageNotification) => {
@@ -65,17 +56,7 @@ export function useMessageNotifications() {
   }, []);
 
   // Reproducir sonido de notificación
-  const playNotificationSound = useCallback(() => {
-    try {
-      const audio = new Audio('/sounds/notification.mp3');
-      audio.volume = 0.5;
-      audio.play().catch((error) => {
-        console.log('No se pudo reproducir el sonido:', error);
-      });
-    } catch (error) {
-      console.log('Error al reproducir sonido:', error);
-    }
-  }, []);
+
 
   return {
     notifications,

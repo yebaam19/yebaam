@@ -1,5 +1,7 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
 import { useTranslations } from 'next-intl'
 import type { Comment } from '../../interfaces/comment.interfaces'
 
@@ -45,8 +47,4 @@ export function CommentRepliesSection({
   )
 }
 
-// Lazy import para evitar importación circular
-const CommentReplyListLazy = (props: any) => {
-  const { CommentReplyList } = require('../CommentReplyList')
-  return <CommentReplyList {...props} />
-}
+const CommentReplyListLazy = dynamic(() => import('../CommentReplyList').then((module) => module.CommentReplyList), { ssr: false })

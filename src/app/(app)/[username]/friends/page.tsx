@@ -15,12 +15,12 @@ export default function UserFriendsPage() {
   const { profile: user, isLoading: isProfileLoading } = useProfile(username);
 
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [isLoadingFriends, setIsLoadingFriends] = useState(true);
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
+  const isLoadingFriends = loadedUserId !== user?.userId;
 
   useEffect(() => {
     if (!user?.userId) return;
     let cancelled = false;
-    setIsLoadingFriends(true);
     friendshipsService
       .getFriendsOf(user.userId)
       .then((res) => {
@@ -33,7 +33,7 @@ export default function UserFriendsPage() {
       })
       .finally(() => {
         if (cancelled) return;
-        setIsLoadingFriends(false);
+        setLoadedUserId(user.userId);
       });
     return () => {
       cancelled = true;

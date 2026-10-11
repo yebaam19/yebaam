@@ -11,8 +11,8 @@ import { usePageMessagesWebSocket } from '../../hooks/usePageMessagesWebSocket';
 import { MessageType } from '../../interfaces/page-message.interface';
 import { PaperAirplaneIcon } from '@/components/icons/heroicons-shim';
 import { CheckIcon } from '@/components/icons/heroicons-shim';
-import { formatDistanceToNow } from 'date-fns';
-import { useDateFnsLocale } from '@/lib/utils/date-fns-locale';
+import { PageChatEmptyState } from './PageChatEmptyState';
+import { PageMessageList } from './PageMessageList';
 
 interface ActiveConversation {
   id: string;
@@ -39,7 +39,6 @@ export function PageMessengerChatView({
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const dateLocale = useDateFnsLocale();
 
   // Queries
   const { data: messagesData, isLoading } = useConversationMessages(
@@ -50,6 +49,10 @@ export function PageMessengerChatView({
   // Mutations
   const sendMessage = useSendMessageAsPage(pageId);
   const markAsRead = useMarkMessagesAsRead(pageId, activeConversation?.id || '');
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // WebSocket
   const { isConnected, emitTyping } = usePageMessagesWebSocket({
@@ -83,9 +86,6 @@ export function PageMessengerChatView({
     }
   }, [activeConversation?.id]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const handleSendMessage = async () => {
     if (!messageText.trim() || !activeConversation) return;
@@ -121,25 +121,7 @@ export function PageMessengerChatView({
 
   // Empty state
   if (!activeConversation) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-900 text-neutral-500">
-        <svg
-          className="w-24 h-24 mb-4 text-neutral-300 dark:text-neutral-700"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-        <p className="text-lg font-medium">{t('emptyTitle')}</p>
-        <p className="text-sm">{t('emptyDescription')}</p>
-      </div>
-    );
+    return <PageChatEmptyState />;
   }
 
   return (
@@ -202,46 +184,7 @@ export function PageMessengerChatView({
           </div>
         ) : (
           <>
-            {messages.map((msg) => {
-              const isFromPage = msg.senderType === 'page';
-              const timeAgo = formatDistanceToNow(new Date(msg.createdAt), {
-                addSuffix: true,
-                locale: dateLocale,
-              });
-
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex ${isFromPage ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                      isFromPage
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap break-words">
-                      {msg.message}
-                    </p>
-                    <div className="flex items-center justify-end gap-1 mt-1">
-                      <span
-                        className={`text-xs ${
-                          isFromPage ? 'text-blue-100' : 'text-neutral-500'
-                        }`}
-                      >
-                        {timeAgo}
-                      </span>
-                      {isFromPage && (
-                        <span className="text-xs">
-                          {msg.isRead ? '✓✓' : '✓'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            <PageMessageList messages={messages} />
             <div ref={messagesEndRef} />
           </>
         )}

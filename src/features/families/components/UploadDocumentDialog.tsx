@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DocumentIcon } from '@/components/icons/heroicons-shim';
-import { supabase } from '@/utils/supabase/client';
 import { uploadService } from '@/lib/service/upload.service';
 import { addDocument } from '../actions/families.actions';
 import type { FamilyDocKind } from '../types/family.types';
@@ -59,16 +58,9 @@ export function UploadDocumentDialog({ familyId }: { familyId: string }) {
         const result = await uploadService.uploadImage(file);
         cfImageId = result.id;
       } else {
-        // PDF → Supabase Storage privado, path <familyId>/<uuid>.pdf
         setProgress(t('progress.uploadingPdf'));
-        const path = `${familyId}/${crypto.randomUUID()}.pdf`;
-        const { error: uploadErr } = await supabase.storage
-          .from('family-documents')
-          .upload(path, file, { contentType: 'application/pdf', upsert: false });
-        if (uploadErr) {
-          throw new Error(uploadErr.message);
-        }
-        storagePath = path;
+        const result = await uploadService.uploadDocument(file, undefined, { familyId });
+        storagePath = `r2:${result.key}`;
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.uploadFailed'));
@@ -86,6 +78,7 @@ export function UploadDocumentDialog({ familyId }: { familyId: string }) {
       });
       if (!res.ok) {
         setError(res.error);
+        setProgress(null);
         return;
       }
       close();

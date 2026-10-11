@@ -16,10 +16,14 @@ interface Props {
   onClose: () => void
 }
 
-export function RequestReviewDialog({ request, open, onClose }: Props) {
+export function RequestReviewDialog(props: Props) {
+  return props.open ? <RequestReviewForm key={props.request.id} {...props} /> : null
+}
+
+function RequestReviewForm({ request, open, onClose }: Props) {
   const router = useRouter()
   const [urls, setUrls] = useState<string[]>([])
-  const [loadingUrls, setLoadingUrls] = useState(false)
+  const [loadingUrls, setLoadingUrls] = useState(request.supportingCfImageIds.length > 0)
   const [reason, setReason] = useState('')
   const [overrideMissingEvidence, setOverrideMissingEvidence] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,12 +34,8 @@ export function RequestReviewDialog({ request, open, onClose }: Props) {
 
   useEffect(() => {
     if (!open) return
-    if (request.supportingCfImageIds.length === 0) {
-      setUrls([])
-      return
-    }
+    if (request.supportingCfImageIds.length === 0) return
     let cancelled = false
-    setLoadingUrls(true)
     ;(async () => {
       const res = await getBadgeRequestSupportingUrls(request.id)
       if (cancelled) return

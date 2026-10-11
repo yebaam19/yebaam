@@ -2,7 +2,7 @@ import { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { useForm } from 'react-hook-form';
-import { PageProduct, CreateProductDto } from '@/interfaces/page-product.interface';
+import { PageProduct, CreateProductDto, UpdateProductDto } from '@/interfaces/page-product.interface';
 import { useUpdateProduct } from '@/hooks/usePageProducts';
 import { ProductFormFields } from './ProductFormFields';
 import { ProductImagesUpload } from './ProductImagesUpload';
@@ -89,7 +89,7 @@ export function EditProductModal({
       setSubmitting(true);
       
       // Clean up optional fields
-      const cleanedData: any = {
+      const cleanedData: UpdateProductDto = {
         name: data.name,
         price: data.price,
         currency: data.currency || 'USD',

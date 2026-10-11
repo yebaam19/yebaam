@@ -47,8 +47,8 @@ export function createRequestsActions(
         }));
 
         toast.success('Solicitud de amistad enviada');
-      } catch (error: any) {
-        const errorMsg = error?.message || 'Error al enviar solicitud';
+      } catch (error) {
+        const errorMsg = getErrorMessage(error, 'Error al enviar solicitud');
         set({ error: errorMsg });
 
         if (error instanceof FriendRequestBlockedError) {

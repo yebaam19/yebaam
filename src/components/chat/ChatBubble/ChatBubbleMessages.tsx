@@ -1,5 +1,6 @@
 'use client';
 
+import type { ChatMessage } from '@/features/chat/types';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import ImageModal from '../ImageModal';
@@ -9,7 +10,7 @@ import { TypingIndicator } from './ChatBubbleMessages/TypingIndicator';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface ChatBubbleMessagesProps {
-  messages: any[];
+  messages: ChatMessage[];
   isLoading: boolean;
   isTyping: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;

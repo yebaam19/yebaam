@@ -7,6 +7,26 @@ import { useAuthStore } from '@/features/auth';
 import type { Post } from '../interfaces/post.interfaces';
 import { toast } from 'sonner';
 
+type CreatedPostEvent = Omit<Post, 'id' | 'author' | 'privacy'> & {
+  id: string;
+  _id?: string;
+  authorId: string;
+  authorUsername: string;
+  authorFirstName: string;
+  authorLastName: string;
+  authorAvatar?: string;
+  privacy: Post['privacy'] | Post['privacy']['value'];
+  myReaction?: Post['currentUserReaction'];
+};
+type UpdatedPostEvent = Pick<Post, 'content' | 'backgroundColor'> & {
+  postId: string;
+  privacy?: Post['privacy']['value'];
+};
+type ReactionPostEvent = Pick<Post, 'id' | 'reactionsCount'> & {
+  _id?: string;
+  myReaction?: Post['currentUserReaction'];
+};
+
 /**
  * Realtime listeners for the posts namespace. The backend (PostGateway) emits:
  * post_created / post_updated / post_deleted / post_add_reaction /
@@ -20,7 +40,7 @@ export function usePostSocketEvents() {
   useEffect(() => {
     if (!postsSocket || !isPostsConnected) return;
 
-    const handlePostCreated = (data: any) => {
+    const handlePostCreated = (data: CreatedPostEvent) => {
       const newPost: Post = {
         id: data._id || data.id,
         content: data.content,
@@ -67,7 +87,7 @@ export function usePostSocketEvents() {
       toast.success(`${authorName} publicó algo nuevo`, { duration: 3000 });
     };
 
-    const handlePostUpdated = (data: any) => {
+    const handlePostUpdated = (data: UpdatedPostEvent) => {
       const updates: Partial<Post> = {
         content: data.content,
         backgroundColor: data.backgroundColor,
@@ -95,21 +115,21 @@ export function usePostSocketEvents() {
       }
     };
 
-    const handleAddReaction = (post: any) => {
+    const handleAddReaction = (post: ReactionPostEvent) => {
       updatePostInList(post._id || post.id, {
         reactionsCount: post.reactionsCount,
         currentUserReaction: post.myReaction,
       });
     };
 
-    const handleRemoveReaction = (post: any) => {
+    const handleRemoveReaction = (post: ReactionPostEvent) => {
       updatePostInList(post._id || post.id, {
         reactionsCount: post.reactionsCount,
         currentUserReaction: post.myReaction,
       });
     };
 
-    const handleUploadMedia = (data: { postId: string; mediaFiles: any[] }) => {
+    const handleUploadMedia = (data: { postId: string; mediaFiles: Post['mediaFiles'] }) => {
       const { posts } = usePostStore.getState();
       const post = posts.find(p => p.id === data.postId);
 
@@ -119,7 +139,7 @@ export function usePostSocketEvents() {
       }
     };
 
-    const handleReplaceMedia = (data: { postId: string; mediaFiles: any[] }) => {
+    const handleReplaceMedia = (data: { postId: string; mediaFiles: Post['mediaFiles'] }) => {
       updatePostInList(data.postId, { mediaFiles: data.mediaFiles });
     };
 

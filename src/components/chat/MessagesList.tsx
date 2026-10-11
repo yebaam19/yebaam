@@ -1,9 +1,10 @@
+import type { ChatMessage } from '@/features/chat/types';
 import { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 
 interface MessagesListProps {
-  messages: any[];
+  messages: ChatMessage[];
   isLoading: boolean;
   isTyping?: boolean;
   currentUserId?: string;

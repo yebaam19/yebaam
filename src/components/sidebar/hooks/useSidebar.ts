@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { useEffect, useState } from 'react';
+import { useHydrated } from '@/hooks/useHydrated';
 
 interface SidebarState {
   isCollapsed: boolean;
@@ -29,12 +29,9 @@ const useSidebarStore = create<SidebarState>()(
  * Con hidratación correcta para evitar hydration mismatch
  */
 export function useSidebar() {
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useHydrated();
   const store = useSidebarStore();
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   return {
     isCollapsed: isHydrated ? store.isCollapsed : false,

@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import type { ChatMessage } from '@/features/chat/types';
+import { useState, useEffect } from 'react';
 import { useChat, chatService } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useSocket } from '@/providers/socket-provider';
-import type { MessageMedia } from '@/features/chat/types';
+import type { MessageMedia, MessageReceivedEvent, MessagesReadEvent } from '@/features/chat/types';
 
 interface UseChatBubbleProps {
   contactId: string;
@@ -11,7 +12,7 @@ interface UseChatBubbleProps {
 export function useChatBubble({ contactId }: UseChatBubbleProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoadingConversation, setIsLoadingConversation] = useState(true);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const user = useAuthStore((state) => state.user);
   const { chatSocket } = useSocket();
@@ -41,8 +42,8 @@ export function useChatBubble({ contactId }: UseChatBubbleProps) {
         
         // Cargar mensajes
         const result = await chatService.getConversationMessages(conversation.id, 50, 0);
-        console.log(' [useChatBubble] Mensajes recibidos:', result.messages.map((m: any) => ({ id: m.id?.slice(0, 8), media: m.media })));
-        const sortedMessages = result.messages.sort((a: any, b: any) => {
+        console.log(' [useChatBubble] Mensajes recibidos:', result.messages.map((m) => ({ id: m.id?.slice(0, 8), media: m.media })));
+        const sortedMessages = result.messages.sort((a, b) => {
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         });
         setMessages(sortedMessages);
@@ -70,7 +71,7 @@ export function useChatBubble({ contactId }: UseChatBubbleProps) {
   useEffect(() => {
     if (!chatSocket || !conversationId) return;
 
-    const handleMessageReceived = (event: any) => {
+    const handleMessageReceived = (event: MessageReceivedEvent) => {
       if (event.conversationId === conversationId) {
         setMessages(prev => {
           const exists = prev.some(m => m.id === event.message.id);
@@ -89,7 +90,7 @@ export function useChatBubble({ contactId }: UseChatBubbleProps) {
       }
     };
 
-    const handleMessagesRead = (event: any) => {
+    const handleMessagesRead = (event: MessagesReadEvent) => {
       if (event.conversationId === conversationId && event.userId !== user?.id) {
         setMessages(prev =>
           prev.map(msg => {

@@ -1,20 +1,21 @@
+import { useMessengerSubscriptions } from './useMessengerSubscriptions';
 import { useState, useRef, useEffect } from 'react';
 import { useSocket } from '@/providers/socket-provider';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
 import { chatService } from '@/features/chat/services/chat.service';
-import type { MessageMedia } from '@/features/chat/types';
+import type { MessageMedia, ChatMessage, Conversation } from '@/features/chat/types';
 
 interface UseMessengerChatProps {
   contactId: string;
-  activeChat: any;
+  activeChat: { id: string } | null;
 }
 
 export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [conversation, setConversation] = useState<any>(null);
+  const [conversation, setConversation] = useState<Conversation | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,7 +50,7 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
 
         const result = await chatService.getConversationMessages(conversation.id, 50, 0);
 
-        const sortedMessages = result.messages.sort((a: any, b: any) => {
+        const sortedMessages = result.messages.sort((a, b) => {
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         });
 
@@ -60,7 +61,7 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
           
 
           const hasUnreadMessages = sortedMessages.some(
-            (msg: any) => msg.senderId !== user?.id && msg.status !== 'read'
+            (msg) => msg.senderId !== user?.id && msg.status !== 'read'
           );
 
           if (hasUnreadMessages) {
@@ -88,112 +89,10 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
     };
   }, [contactId, chatSocket, markConversationAsOpen, markConversationAsClosed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (!usersSocket || !contactId) {
-      return;
-    }
-
-    const handleUserTyping = (event: any) => {
- 
-
-      // Solo actualizar si el evento es del contacto con quien estamos chateando
-      if (event.userId === contactId) {
-        setIsTyping(event.isTyping);
-
-        if (event.isTyping) {
-          // Auto-clear después de 3 segundos por si no llega typing_stop
-          if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-          }
-          typingTimeoutRef.current = setTimeout(() => {
-            setIsTyping(false);
-          }, 3000);
-        } else {
-          // Limpiar timeout si recibimos typing_stop
-          if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-          }
-        }
-      }
-    };
-
-    usersSocket.on('user_typing', handleUserTyping);
-
-    return () => {
-      usersSocket.off('user_typing', handleUserTyping);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [usersSocket, contactId]);
-
-  // ============================================================================
-  // WEBSOCKET: ESCUCHAR EVENTOS DE CHAT (mensajes, leídos)
-  // ============================================================================
-  useEffect(() => {
-    if (!chatSocket || !conversationId) {
-      return;
-    }
-
-    const handleMessageReceived = (event: any) => {
-
-
-      if (event.conversationId === conversationId) {
- 
-        setMessages(prev => {
-          const exists = prev.some(m => m.id === event.message.id);
-          if (exists) {
-            return prev;
-          }
-
-          const newMessages = [...prev, event.message];
-          return newMessages.sort((a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        });
-
-        if (chatSocket && event.message.senderId !== user?.id) {
-     
-          chatSocket.emit('mark_as_read', { conversationId });
-        }
-      }
-    };
-
-    const handleMessagesRead = (event: any) => {
-
-
-      if (event.conversationId === conversationId && event.userId !== user?.id) {
-     
-
-        setMessages(prev => {
-          const updated = prev.map(msg => {
-            if (msg.senderId === user?.id && msg.status !== 'read') {
-             
-              return { ...msg, status: 'read' };
-            }
-            return msg;
-          });
-          
-
-          return updated;
-        });
-      } else {
-   
-      }
-    };
-
-  
-    chatSocket.on('message_received', handleMessageReceived);
-    chatSocket.on('messages_read', handleMessagesRead);
-
-
-
-    return () => {
-
-      chatSocket.off('message_received', handleMessageReceived);
-      chatSocket.off('messages_read', handleMessagesRead);
-    };
-  }, [chatSocket, conversationId, user?.id]);
+  useMessengerSubscriptions({
+    usersSocket, chatSocket, contactId, conversationId, userId: user?.id,
+    setIsTyping, setMessages, typingTimeoutRef,
+  });
 
   // ============================================================================
   // ENVIAR MENSAJE
@@ -204,7 +103,7 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
     messageContent?: string,
     media?: MessageMedia
   ): Promise<boolean> => {
-    if (!messageContent?.trim() && !media) {
+    if (!user?.id || (!messageContent?.trim() && !media)) {
       return false;
     }
 
@@ -223,12 +122,12 @@ export function useMessengerChat({ contactId, activeChat }: UseMessengerChatProp
     }
 
     const tempId = `temp-${Date.now()}`;
-    const tempMessage = {
+    const tempMessage: ChatMessage = {
       id: tempId,
       content: messageContent || '',
       media: media || null,
       conversationId: currentConversationId,
-      senderId: user?.id,
+      senderId: user.id,
       createdAt: new Date().toISOString(),
       status: 'sending',
       isTemporary: true,

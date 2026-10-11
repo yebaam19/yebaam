@@ -45,5 +45,9 @@ export interface CommunityDocumentUploadOptions {
 }
 
 
+export interface FamilyDocumentUploadOptions {
+  familyId: string;
+}
+
 export type MultipartUpload = (url: string, file: File, onProgress?: (progress: number) => void) => Promise<void>;
 export type R2Upload = (url: string, body: File | Blob, contentType: string, onProgress?: (progress: number) => void) => Promise<void>;

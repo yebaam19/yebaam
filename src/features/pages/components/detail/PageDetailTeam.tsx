@@ -56,7 +56,7 @@ export const PageDetailTeam: FC<PageDetailTeamProps> = ({ page }) => {
       );
 
     return [owner, ...team];
-  }, [data, page.ownerId, page.ownerName, page.ownerUsername, page.ownerAvatar]);
+  }, [data, page.ownerId, page.ownerName, page.ownerUsername, page.ownerAvatar, page.ownerBio]);
 
   if (isLoading) {
     return (

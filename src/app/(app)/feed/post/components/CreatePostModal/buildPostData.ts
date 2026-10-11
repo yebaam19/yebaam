@@ -1,4 +1,4 @@
-import type { PostFeeling, PostLocation, PostGif } from '../../interfaces/post.interfaces'
+import type { PostFeeling, PostLocation, PostGif, CreatePostDTO } from '../../interfaces/post.interfaces'
 
 /** Media file shape produced by the upload step, forwarded into the post payload. */
 export interface ComposerMediaFile {
@@ -50,7 +50,7 @@ export function buildPostData({
     /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
 
   // Construir el objeto de datos asegurándose de que no haya referencias circulares
-  const postData: any = {
+  const postData: CreatePostDTO = {
     content: content?.trim() || undefined,
     privacy: selectedVisibility,
     backgroundColor: isValidHexColor ? backgroundColor : undefined,

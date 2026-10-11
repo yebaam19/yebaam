@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/features/friendships/store/friendships.helpers';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { friendsService, type Friend, type GetFriendsResponse } from '../services/friends.service';
 import { toast } from 'sonner';
@@ -89,8 +90,8 @@ export function useFriends() {
       } else {
         toast.success('Removido de amigos cercanos');
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al actualizar';
+    } catch (error) {
+      const message = getErrorMessage(error, 'Error al actualizar');
       toast.error(message);
       throw error;
     }
@@ -119,8 +120,8 @@ export function useFriends() {
       setTotal(prev => prev - 1);
       
       console.log('Amigo eliminado localmente:', friendshipId);
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al eliminar amigo';
+    } catch (error) {
+      const message = getErrorMessage(error, 'Error al eliminar amigo');
       toast.error(message);
       throw error;
     }
@@ -133,7 +134,7 @@ export function useFriends() {
 
 
     // Listener: Cuando alguien te elimina de sus amigos
-    const handleFriendRemoved = (data: any) => {
+    const handleFriendRemoved = (data: { removedBy: string; userProfile?: Pick<Friend, 'firstName' | 'lastName' | 'username'> }) => {
       console.log(' [useFriends] Evento friend_removed recibido:', data);
       
       const { removedBy, userProfile } = data;
@@ -163,7 +164,7 @@ export function useFriends() {
     };
 
     // Listener: Cuando aceptan tu solicitud de amistad
-    const handleFriendRequestAccepted = (data: any) => {
+    const handleFriendRequestAccepted = (data: { acceptorProfile?: Pick<Friend, 'firstName' | 'lastName'> }) => {
 
       const acceptorName = data.acceptorProfile 
         ? `${data.acceptorProfile.firstName} ${data.acceptorProfile.lastName}` 

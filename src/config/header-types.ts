@@ -1,3 +1,5 @@
+import type { ComponentType } from 'react';
+
 export interface User {
   id: string;
   email: string;
@@ -18,7 +20,7 @@ export interface User {
 }
 
 export interface MenuItem {
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
   label: string;
   href: string;
   badge?: string | null;

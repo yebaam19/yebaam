@@ -6,6 +6,7 @@
 
 'use client';
 
+import { getErrorMessage } from '@/features/friendships/store/friendships.helpers';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { 
@@ -69,9 +70,9 @@ export default function FriendRequestDetailPage() {
       // Cargar perfil completo del usuario
       const profile = await profileService.getProfileByUsername(requestData.profile.username);
       setUserProfile(profile);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error loading friend request:', err);
-      setError(err.message || 'Error al cargar la solicitud');
+      setError(getErrorMessage(err, 'Error al cargar la solicitud'));
     } finally {
       setIsLoading(false);
     }
@@ -85,9 +86,9 @@ export default function FriendRequestDetailPage() {
       await friendshipsService.acceptFriendRequest(friendshipId);
       toast.success('¡Solicitud aceptada! Ahora son amigos 🎉');
       router.push('/feed');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error accepting friend request:', error);
-      toast.error(error.message || 'Error al aceptar la solicitud');
+      toast.error(getErrorMessage(error, 'Error al aceptar la solicitud'));
       setActionLoading(null);
     }
   };
@@ -100,9 +101,9 @@ export default function FriendRequestDetailPage() {
       await friendshipsService.rejectFriendRequest(friendshipId);
       toast.success('Solicitud rechazada');
       router.push('/feed');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error rejecting friend request:', error);
-      toast.error(error.message || 'Error al rechazar la solicitud');
+      toast.error(getErrorMessage(error, 'Error al rechazar la solicitud'));
       setActionLoading(null);
     }
   };
@@ -115,9 +116,9 @@ export default function FriendRequestDetailPage() {
       await friendshipsService.cancelFriendRequest(friendshipId);
       toast.success('Solicitud cancelada');
       router.push('/feed');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error canceling friend request:', error);
-      toast.error(error.message || 'Error al cancelar la solicitud');
+      toast.error(getErrorMessage(error, 'Error al cancelar la solicitud'));
       setActionLoading(null);
     }
   };

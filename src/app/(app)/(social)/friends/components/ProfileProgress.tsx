@@ -7,6 +7,7 @@ import { useProfileStore } from '@/features/profile/store/profile.store'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { useEffect } from 'react'
 
 type StepKey = 'avatar' | 'basics' | 'interests' | 'connect5' | 'verified'
@@ -172,7 +173,7 @@ export function ProfileProgress() {
                     </span>
                   ) : (
                     <Link
-                      href={step.href as any}
+                      href={step.href as Route}
                       aria-label={t('stepIncompleteA11y', { label })}
                       className={cn(
                         'flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -mx-1.5 -my-0.5 text-xs sm:text-sm',

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import {
   ProfileAbout,
   ProfilePhotosGrid,
@@ -17,8 +18,8 @@ interface ProfileSidebarProps {
   mutualFriendsCount?: number;
   isOwnProfile: boolean;
   friendsCount: number;
-  mockPhotos: any[];
-  mockFriends: any[];
+  mockPhotos: ComponentProps<typeof ProfilePhotosGrid>['photos'];
+  mockFriends: ComponentProps<typeof ProfileFriendsGrid>['friends'];
 }
 
 /**

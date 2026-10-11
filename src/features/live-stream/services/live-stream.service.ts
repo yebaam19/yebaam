@@ -1,3 +1,4 @@
+import type { LiveStream, RecordedStreamsResponse } from './live-stream-list.types';
 import { getAxiosInstance } from '@/lib/http/legacy-client';
 
 const axios = getAxiosInstance();
@@ -38,19 +39,19 @@ export interface StartLiveStreamResponse {
 export const liveStreamService = {
   // Obtener información del canal IVS
   async getChannelInfo(): Promise<LiveStreamChannel> {
-    const response = await axios.get('/api/live-streams/channel');
+    const response = await axios.get<LiveStreamChannel>('/api/live-streams/channel');
     return response.data;
   },
 
   // Obtener estado actual del stream
   async getStreamStatus(): Promise<LiveStreamStatus> {
-    const response = await axios.get('/api/live-streams/status');
+    const response = await axios.get<LiveStreamStatus>('/api/live-streams/status');
     return response.data;
   },
 
   // Iniciar una transmisión en vivo
   async startLiveStream(data: StartLiveStreamRequest): Promise<StartLiveStreamResponse> {
-    const response = await axios.post('/api/live-streams/start', data);
+    const response = await axios.post<StartLiveStreamResponse>('/api/live-streams/start', data);
     return response.data;
   },
 
@@ -62,7 +63,7 @@ export const liveStreamService = {
 
   // Obtener streams activos
   async getActiveStreams() {
-    const response = await axios.get('/api/live-streams/active');
+    const response = await axios.get<{ streams: LiveStream[] }>('/api/live-streams/active');
     return response.data;
   },
 
@@ -73,7 +74,7 @@ export const liveStreamService = {
     if (cursor) {
       params.append('cursor', cursor);
     }
-    const response = await axios.get(`/api/live-streams/recorded?${params.toString()}`);
+    const response = await axios.get<RecordedStreamsResponse>(`/api/live-streams/recorded?${params.toString()}`);
     return response.data;
   },
 

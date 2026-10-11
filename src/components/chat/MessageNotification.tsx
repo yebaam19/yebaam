@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
@@ -23,24 +23,25 @@ export default function MessageNotification({
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
-  useEffect(() => {
-    // Animación de entrada
-    setTimeout(() => setIsVisible(true), 10);
-
-    // Auto cerrar después de 5 segundos
-    const timer = setTimeout(() => {
-      handleClose();
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleClose = () => {
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleClose = useCallback(() => {
+    if (closeTimer.current) return;
     setIsLeaving(true);
-    setTimeout(() => {
-      onClose();
-    }, 300);
-  };
+    closeTimer.current = setTimeout(onClose, 300);
+  }, [onClose]);
+
+  useEffect(() => {
+    const enterTimer = setTimeout(() => setIsVisible(true), 10);
+    const timer = setTimeout(handleClose, 5000);
+    return () => {
+      clearTimeout(enterTimer);
+      clearTimeout(timer);
+    };
+  }, [handleClose]);
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
 
   const handleClick = () => {
     if (onClick) {

@@ -7,6 +7,7 @@
  * - Actualización de notificaciones
  */
 
+import { notificationError } from '../services/notification-error';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { friendRequestService } from '@/features/user/services/friend-request.service';
@@ -52,9 +53,9 @@ export const useNotificationActions = ({
       }, 1000);
       
       console.log('[useNotificationActions]  Solicitud aceptada exitosamente');
-    } catch (error: any) {
+    } catch (error) {
       console.error('[useNotificationActions]  Error al aceptar:', error);
-      toast.error(error.response?.data?.message || error.message || 'Error al aceptar solicitud');
+      toast.error(notificationError(error).message || 'Error al aceptar solicitud');
       setIsProcessing(false);
     }
   };
@@ -80,9 +81,9 @@ export const useNotificationActions = ({
       }, 1000);
       
       console.log('[useNotificationActions]  Solicitud rechazada exitosamente');
-    } catch (error: any) {
+    } catch (error) {
       console.error('[useNotificationActions]  Error al rechazar:', error);
-      toast.error(error.response?.data?.message || error.message || 'Error al rechazar solicitud');
+      toast.error(notificationError(error).message || 'Error al rechazar solicitud');
       setIsProcessing(false);
     }
   };

@@ -26,21 +26,20 @@ export function HeaderSearchDropdown() {
   const t = useTranslations('header')
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const [results, setResults] = useState<UserResult[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [response, setResponse] = useState<{ query: string; results: UserResult[] } | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const debouncedQuery = useDebouncedValue(query, 200)
 
+  const q = debouncedQuery.trim()
+  const valid = query.trim().length >= 2 && q.length >= 2
+  const current = valid && response?.query === q ? response : null
+  const results = current?.results ?? []
+  const isLoading = query.trim().length >= 2 && (!current || query.trim() !== q)
+
   // Live user search as the user types.
   useEffect(() => {
-    const q = debouncedQuery.trim()
-    if (q.length < 2) {
-      setResults([])
-      setIsLoading(false)
-      return
-    }
+    if (!valid) return
     const controller = new AbortController()
-    setIsLoading(true)
     fetch(`/api/search/users?q=${encodeURIComponent(q)}&limit=8`, {
       credentials: 'include',
       signal: controller.signal,
@@ -48,16 +47,13 @@ export function HeaderSearchDropdown() {
       .then((r) => (r.ok ? r.json() : { results: [] }))
       .then((payload: { results?: UserResult[] }) => {
         if (controller.signal.aborted) return
-        setResults(payload.results ?? [])
+        setResponse({ query: q, results: payload.results ?? [] })
       })
       .catch(() => {
-        if (!controller.signal.aborted) setResults([])
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
+        if (!controller.signal.aborted) setResponse({ query: q, results: [] })
       })
     return () => controller.abort()
-  }, [debouncedQuery])
+  }, [q, valid])
 
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {

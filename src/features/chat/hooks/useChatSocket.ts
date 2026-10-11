@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { rowToMessage, type DbMessageRow } from '../lib/messageRows';
+import { jsonRequest } from '../lib/chatJsonRequest';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 import { fetchDecryptedContent, isEncryptedContent } from '../lib/messageCipher';
 import { useChatStore } from '../store/chat.store';
@@ -8,7 +10,6 @@ import {
   CreateMessageDto,
   MessageReceivedEvent,
   MessagesReadEvent,
-  MessageStatus,
 } from '../types';
 
 interface UseChatSocketProps {
@@ -26,96 +27,11 @@ interface UseChatSocketReturn {
   isConnected: boolean;
 }
 
-type DbMessageRow = {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  media: unknown;
-  status: string;
-  reply_to_id: string | null;
-  is_deleted: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
 type DbParticipantRow = {
   conversation_id: string;
   user_id: string;
   last_read_at: string | null;
 };
-
-function rowToMessage(row: DbMessageRow): Message {
-  return {
-    id: row.id,
-    conversationId: row.conversation_id,
-    senderId: row.sender_id,
-    content: row.content,
-    media: (row.media ?? null) as Message['media'],
-    status: (row.status as MessageStatus) ?? MessageStatus.SENT,
-    replyToId: row.reply_to_id,
-    isDeleted: Boolean(row.is_deleted),
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at ?? row.created_at),
-  };
-}
-
-async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
-  const method = (init?.method ?? 'GET').toUpperCase();
-  const isIdempotent = method === 'GET' || method === 'HEAD';
-  const maxAttempts = isIdempotent ? 4 : 2;
-
-  let lastError: Error | null = null;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        ...init,
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(init?.headers ?? {}),
-        },
-      });
-    } catch (err) {
-      const networkError =
-        err instanceof Error ? err : new Error('Network error while contacting chat API');
-      if (!isIdempotent || attempt === maxAttempts - 1) {
-        throw new Error(networkError.message || 'Network error while contacting chat API');
-      }
-      lastError = networkError;
-      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
-      continue;
-    }
-
-    if (response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      return payload as T;
-    }
-
-    const rawText = await response.text().catch(() => '');
-    let parsedError: string | null = null;
-    try {
-      const json = JSON.parse(rawText) as { error?: string };
-      parsedError = json?.error ?? null;
-    } catch {
-      // not JSON
-    }
-    const message = parsedError || `Request failed (${response.status})`;
-    const retriable =
-      response.status === 502 ||
-      response.status === 503 ||
-      response.status === 504 ||
-      /schema cache|recovery mode|bad gateway/i.test(message) ||
-      /schema cache|recovery mode|bad gateway/i.test(rawText);
-    if (!retriable || attempt === maxAttempts - 1) {
-      throw new Error(message);
-    }
-    lastError = new Error(message);
-    await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
-  }
-  throw lastError ?? new Error('Network request failed');
-}
 
 export function useChatSocket({
   onMessageReceived,
@@ -131,9 +47,11 @@ export function useChatSocket({
   const instanceId = useId();
   // Supabase's realtime connection is per-channel and lazy; we treat the
   // socket as "connected" for UI purposes as long as we have a channel.
-  const [isConnected, setIsConnected] = useState(false);
+  const isConnected = Boolean(currentUserId);
   const callbacksRef = useRef({ onMessageReceived, onMessagesRead, onError });
-  callbacksRef.current = { onMessageReceived, onMessagesRead, onError };
+  useEffect(() => {
+    callbacksRef.current = { onMessageReceived, onMessagesRead, onError };
+  }, [onMessageReceived, onMessagesRead, onError]);
 
   // Keep a stable Set of the conversation IDs we care about so the realtime
   // handler can filter inbound message rows client-side without recreating
@@ -143,7 +61,9 @@ export function useChatSocket({
     [conversations],
   );
   const conversationIdSetRef = useRef(conversationIdSet);
-  conversationIdSetRef.current = conversationIdSet;
+  useEffect(() => {
+    conversationIdSetRef.current = conversationIdSet;
+  }, [conversationIdSet]);
 
   // One channel on the `messages` table listens for new messages across
   // every conversation the user is a participant in. We could also filter
@@ -179,11 +99,9 @@ export function useChatSocket({
         });
       },
     });
-    setIsConnected(true);
 
     return () => {
       unsubscribe(channel);
-      setIsConnected(false);
     };
   }, [currentUserId, instanceId]);
 

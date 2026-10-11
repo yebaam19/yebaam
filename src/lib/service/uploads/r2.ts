@@ -1,6 +1,6 @@
 import { MAX_AUDIO_BYTES, MAX_DOCUMENT_BYTES, formatBytes } from '@/lib/upload-limits';
 import { documentContentType } from '@/lib/upload-documents';
-import type { R2AudioUploadResult, R2DocumentUploadResult, R2Upload, CommunityDocumentUploadOptions } from './types';
+import type { R2AudioUploadResult, R2DocumentUploadResult, R2Upload, CommunityDocumentUploadOptions, FamilyDocumentUploadOptions } from './types';
 
 export async function detectAudioDuration(file: File, timeoutMs = 8000): Promise<number> {
   return new Promise((resolve) => {
@@ -96,11 +96,12 @@ export function createR2Uploads(putToR2: R2Upload) {
   async function uploadDocument(
     file: File,
     onProgress?: (progress: number) => void,
-    options?: CommunityDocumentUploadOptions,
+    options?: CommunityDocumentUploadOptions | FamilyDocumentUploadOptions,
   ): Promise<R2DocumentUploadResult> {
-    const contentType = options ? documentContentType(file.name, file.type) : file.type;
-    if (!contentType || (!options && contentType !== 'application/pdf')) {
-      throw new Error(options ? 'El formato del documento no es compatible.' : 'Solo se permiten documentos PDF.');
+    const communityOptions = options && 'communityId' in options ? options : undefined;
+    const contentType = communityOptions ? documentContentType(file.name, file.type) : file.type;
+    if (!contentType || (!communityOptions && contentType !== 'application/pdf')) {
+      throw new Error(communityOptions ? 'El formato del documento no es compatible.' : 'Solo se permiten documentos PDF.');
     }
     // El servidor rechaza >10 MB al firmar — fallar aquí primero, con el
     // mismo mensaje formateado, evita el roundtrip.
@@ -116,11 +117,15 @@ export function createR2Uploads(putToR2: R2Upload) {
     const maxAttempts = 2;
     let lastError: unknown = null;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const endpoint = options ? `/api/communities/${encodeURIComponent(options.communityId)}/documents/upload-url` : '/api/upload/file-url';
+      const endpoint = communityOptions
+        ? `/api/communities/${encodeURIComponent(communityOptions.communityId)}/documents/upload-url`
+        : options && 'familyId' in options
+          ? `/api/families/${encodeURIComponent(options.familyId)}/documents/upload-url`
+          : '/api/upload/file-url';
       const signRes = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType, sizeBytes: file.size, ...(options ? { uploadId: options.uploadId, fileName: file.name } : {}) }),
+        body: JSON.stringify({ contentType, sizeBytes: file.size, ...(communityOptions ? { uploadId: communityOptions.uploadId, fileName: file.name } : {}) }),
       });
       const signPayload = await signRes.json().catch(() => null);
       if (!signRes.ok || !signPayload?.data?.url) {

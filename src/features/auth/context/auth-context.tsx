@@ -20,6 +20,7 @@
 'use client';
 
 import ServerErrorPage from '@/components/ServerErrorPage';
+import { isAuthConnectionError } from '@/lib/auth/connection-error';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthSync } from '../hooks/useAuthSync';
 import type {
@@ -44,7 +45,7 @@ interface AuthContextType {
 
   // Acciones
   login: (credentials: LoginDTO) => Promise<void>;
-  register: (userData: RegisterDTO) => Promise<void>;
+  register: ReturnType<typeof useAuthStore.getState>['register'];
   logout: () => Promise<void>;
   verifyEmail: (data: VerifyEmailRequest) => Promise<void>;
   resendOtp: (data: ResendOtpRequest) => Promise<void>;
@@ -68,11 +69,10 @@ interface AuthProviderProps {
  * Proveedor de autenticación
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [serverError, setServerError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const [initialization, setInitialization] = useState<'checking' | 'ready' | 'unavailable'>('checking');
+  const isInitialized = initialization !== 'checking';
 
-  // Sincronizar Auth con Profile Store solo tras checkAuth (evita getCurrentUser con sesión aún no hidratada)
+  // Limpiar el perfil al cerrar sesión, una vez verificado el estado de autenticación.
   useAuthSync({ authReady: isInitialized });
 
   // Obtener estado y acciones del store
@@ -88,7 +88,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     resendOtp,
     checkAuth,
     clearError,
-    setUser,
   } = useAuthStore();
 
   /**
@@ -96,61 +95,51 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Verifica si hay una sesión activa
    */
   useEffect(() => {
+    let cancelled = false;
+    let retryCount = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
     const initAuth = async () => {
       try {
-        setServerError(false);
-        await checkAuth();
-        setRetryCount(0); // Reset retry count on success
-      } catch (error: any) {
+        await checkAuth({ throwOnConnectionError: true });
+      } catch (error: unknown) {
+        if (cancelled) return;
         console.error('[AuthProvider] Error al inicializar autenticación:', error);
 
-        // Detectar errores de conexión con el servidor
-        const isConnectionError =
-          error?.message?.includes('fetch failed') ||
-          error?.message?.includes('ECONNREFUSED') ||
-          error?.message?.includes('Network') ||
-          error?.code === 'ECONNREFUSED';
+        const isConnectionError = isAuthConnectionError(error);
 
         if (isConnectionError && retryCount < 3) {
-          // Si es error de conexión y no hemos superado los reintentos
-          console.warn(`[AuthProvider] Reintentando... (${retryCount + 1}/3)`);
-          setRetryCount((prev) => prev + 1);
-          // Esperar antes de reintentar (backoff exponencial)
-          setTimeout(
-            () => {
-              initAuth();
-            },
-            Math.min(1000 * Math.pow(2, retryCount), 5000)
-          );
+          const delayMs = Math.min(1000 * Math.pow(2, retryCount), 5000);
+          retryCount += 1;
+          console.warn(`[AuthProvider] Reintentando... (${retryCount}/3)`);
+          retryTimer = setTimeout(() => { void initAuth(); }, delayMs);
           return;
-        } else if (isConnectionError) {
-          // Si superamos los reintentos, mostrar página de error
-          setServerError(true);
         }
-      } finally {
-        setIsInitialized(true);
+        setInitialization(isConnectionError ? 'unavailable' : 'ready');
+        return;
       }
+      if (!cancelled) setInitialization('ready');
     };
 
-    initAuth();
-  }, []); // Solo ejecutar una vez al montar
+    void initAuth();
+    return () => {
+      cancelled = true;
+      clearTimeout(retryTimer);
+    };
+  }, [checkAuth]);
 
   /**
    * Reintentar conexión manualmente
    */
   const handleRetry = async () => {
-    setIsInitialized(false);
-    setServerError(false);
-    setRetryCount(0);
+    setInitialization('checking');
 
     try {
-      await checkAuth();
-      setServerError(false);
+      await checkAuth({ throwOnConnectionError: true });
+      setInitialization('ready');
     } catch (error) {
       console.error('[AuthProvider] Error en retry:', error);
-      setServerError(true);
-    } finally {
-      setIsInitialized(true);
+      setInitialization('unavailable');
     }
   };
 
@@ -159,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const refreshUser = async () => {
     try {
-      const currentUser = await checkAuth();
+      await checkAuth();
       // checkAuth ya actualiza el store, solo necesitamos llamarlo
     } catch (error) {
       console.error('Error al refrescar usuario:', error);
@@ -183,7 +172,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Mostrar error de servidor si no se puede conectar
-  if (serverError && isInitialized) {
+  if (initialization === 'unavailable') {
     return (
       <ServerErrorPage
         onRetry={handleRetry}

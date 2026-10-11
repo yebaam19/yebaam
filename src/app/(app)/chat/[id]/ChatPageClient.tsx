@@ -1,5 +1,7 @@
 'use client';
 
+import type { ChatMessage } from '@/features/chat/types';
+import { rowToMessage, mergeMessages, type DbMessageRow } from '@/features/chat/lib/messageRows';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { useCallback, useEffect, useState } from 'react';
@@ -20,55 +22,13 @@ interface ChatPageClientProps {
   contactId: string;
 }
 
-type DbMessageRow = {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  media: unknown;
-  status: string;
-  reply_to_id: string | null;
-  is_deleted: boolean;
-  edited_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-function rowToMessage(row: DbMessageRow) {
-  return {
-    id: row.id,
-    conversationId: row.conversation_id,
-    senderId: row.sender_id,
-    content: row.content,
-    media: row.media ?? null,
-    status: row.status ?? 'sent',
-    replyToId: row.reply_to_id,
-    isDeleted: Boolean(row.is_deleted),
-    editedAt: row.edited_at ?? null,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at ?? row.created_at),
-  };
-}
-
-const byCreatedAt = (a: { createdAt: Date | string }, b: { createdAt: Date | string }) =>
-  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-
-/** Merge two message lists by id (dedup), keeping chronological order. */
-function mergeMessages(prev: any[], incoming: any[]): any[] {
-  if (prev.length === 0) return [...incoming].sort(byCreatedAt);
-  const seen = new Set(prev.map((m) => m.id));
-  const merged = [...prev];
-  for (const m of incoming) if (!seen.has(m.id)) merged.push(m);
-  return merged.sort(byCreatedAt);
-}
-
 export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const router = useRouter();
   const t = useTranslations('chat');
   const user = useAuthStore((state) => state.user);
 
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [headerEncrypted, setHeaderEncrypted] = useState(false);
   const [peerUserId, setPeerUserId] = useState<string | null>(null);
@@ -203,7 +163,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
 
     try {
       const sent = await chatService.sendMessage(conversationId, trimmed ?? '', undefined, media);
-      setMessages((prev) => (prev.some((m: any) => m?.id === sent.id) ? prev : mergeMessages(prev, [sent])));
+      setMessages((prev) => (prev.some((m) => m?.id === sent.id) ? prev : mergeMessages(prev, [sent])));
       return true;
     } catch (error) {
       console.error('Error sending message:', error);

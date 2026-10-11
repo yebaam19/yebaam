@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { addFamilyParents } from '../actions/families.actions';
@@ -35,20 +35,17 @@ const EMPTY_PARENT: ParentFormState = {
   deathDate: '',
 };
 
-export function AddParentsDialog({ familyId, child, existingPersons, onClose }: Props) {
+export function AddParentsDialog(props: Props) {
+  return props.child ? <AddParentsForm key={props.child.id} {...props} /> : null;
+}
+
+function AddParentsForm({ familyId, child, existingPersons, onClose }: Props) {
   const router = useRouter();
   const t = useTranslations('familias.dialogs.addParents');
   const [father, setFather] = useState<ParentFormState>({ ...EMPTY_PARENT });
   const [mother, setMother] = useState<ParentFormState>({ ...EMPTY_PARENT });
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    if (!child) return;
-    setFather({ ...EMPTY_PARENT });
-    setMother({ ...EMPTY_PARENT });
-    setError(null);
-  }, [child?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!child) return null;
 

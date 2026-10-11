@@ -1,17 +1,10 @@
 'use client';
 
-import { useChatNotifications } from '@/features/chat/context/chat-notification.context';
+import { useOptionalChatNotifications } from '@/features/chat/context/chat-notification.context';
 
 export default function UnreadMessagesBadge() {
-  let unreadCount = 0;
-
-  try {
-    const { notifications } = useChatNotifications();
-    unreadCount = notifications.length;
-  } catch {
-    // Si no hay provider, no mostrar nada
-    return null;
-  }
+  const context = useOptionalChatNotifications();
+  const unreadCount = context?.notifications.length ?? 0;
 
   if (unreadCount === 0) return null;
 

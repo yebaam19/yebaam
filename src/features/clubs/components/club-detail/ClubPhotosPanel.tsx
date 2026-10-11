@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { HeartIcon } from '@/components/icons/heroicons-shim';
 import type { ClubPost } from '@/features/clubs/server/clubs.server';
@@ -48,11 +48,9 @@ export function ClubPhotosPanel({ posts }: ClubPhotosPanelProps) {
   const [pending, startTransition] = useTransition();
 
   // If the photo list shrinks (e.g. a post is removed) keep the open index valid.
-  useEffect(() => {
-    if (openIndex !== null && openIndex >= photos.length) {
-      setOpenIndex(photos.length ? photos.length - 1 : null);
-    }
-  }, [photos.length, openIndex]);
+  if (openIndex !== null && openIndex >= photos.length) {
+    setOpenIndex(photos.length ? photos.length - 1 : null);
+  }
 
   const toggleLike = useCallback((postId: string) => {
     setLikes((prev) => ({ ...prev, [postId]: flip(prev[postId] ?? { liked: false, count: 0 }) }));

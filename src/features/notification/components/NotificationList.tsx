@@ -46,7 +46,6 @@ export default function NotificationList({
       isRead: n.isRead,
       message: n.message,
       targetUrl: n.targetUrl,
-      actionUrl: (n as any).actionUrl,
       metadata: n.metadata
     }))
   });
@@ -72,7 +71,6 @@ export default function NotificationList({
                 type: notification.type,
                 message: notification.message,
                 targetUrl: notification.targetUrl,
-                actionUrl: (notification as any).actionUrl,
                 actor: notification.actor,
                 fullNotification: notification
               });

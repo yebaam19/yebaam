@@ -1,3 +1,4 @@
+import type { ChatMessage } from '@/features/chat/types';
 import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
@@ -5,8 +6,8 @@ import type { MessageMedia } from '@/features/chat/types';
 
 interface UseChatMessagesProps {
   conversationId: string | null;
-  messages: any[];
-  setMessages: Dispatch<SetStateAction<any[]>>;
+  messages: ChatMessage[];
+  setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
 }
 
 /**
@@ -33,16 +34,16 @@ export function useChatMessages({
     media?: MessageMedia,
   ): Promise<boolean> => {
     const trimmed = content?.trim() ?? '';
-    if (!conversationId) return false;
+    if (!conversationId || !user?.id) return false;
     if (!trimmed && !media) return false;
 
     const tempId = `temp-${Date.now()}`;
-    const tempMessage = {
+    const tempMessage: ChatMessage = {
       id: tempId,
       content: trimmed,
       media: media ?? null,
       conversationId,
-      senderId: user?.id,
+      senderId: user.id,
       createdAt: new Date().toISOString(),
       status: 'sending',
       isTemporary: true,

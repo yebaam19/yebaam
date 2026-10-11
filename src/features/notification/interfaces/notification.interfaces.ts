@@ -180,7 +180,7 @@ export interface MarkAsReadDTO {
 /**
  * DTO para actualizar preferencias
  */
-export interface UpdatePreferencesDTO extends Partial<NotificationPreferences> {}
+export type UpdatePreferencesDTO = Partial<NotificationPreferences>;
 
 /**
  * Estadísticas de notificaciones

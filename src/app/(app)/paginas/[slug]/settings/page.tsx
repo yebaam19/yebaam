@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -24,16 +23,15 @@ export default function PageSettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageSlug = params.slug as string;
-  const [activeSection, setActiveSection] = useState<SettingsSection>('general');
   const currentUser = useAuthStore((state) => state.user);
-
-  // Check for section query param and set initial section
-  useEffect(() => {
-    const section = searchParams.get('section') as SettingsSection;
-    if (section && ['general', 'appearance', 'products', 'roles', 'stats', 'danger'].includes(section)) {
-      setActiveSection(section);
-    }
-  }, [searchParams]);
+  const section = searchParams.get('section');
+  const activeSection: SettingsSection = section && ['general', 'appearance', 'products', 'roles', 'stats', 'danger'].includes(section)
+    ? section as SettingsSection : 'general';
+  const setActiveSection = (nextSection: SettingsSection) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set('section', nextSection);
+    router.replace(`/paginas/${pageSlug}/settings?${nextParams}` as Route, { scroll: false });
+  };
 
   // Obtener la página real desde el backend
   const { data: pageResponse, isLoading, error } = usePageBySlug(pageSlug);

@@ -1,3 +1,4 @@
+import type { Post } from '../interfaces/post.interfaces';
 import { useEffect, useCallback } from 'react';
 import { useSocket } from '@/providers/socket-provider';
 import { usePostStore } from '../stores/post.store';
@@ -6,11 +7,11 @@ export function usePostSocket() {
   const { postsSocket, isPostsConnected } = useSocket();
   const { addPostToList, updatePostInList, removePostFromList } = usePostStore();
 
-  const handlePostCreated = useCallback((post: any) => {
+  const handlePostCreated = useCallback((post: Post) => {
     addPostToList(post);
   }, [addPostToList]);
 
-  const handlePostUpdated = useCallback((post: any) => {
+  const handlePostUpdated = useCallback((post: Post) => {
     updatePostInList(post.id, post);
   }, [updatePostInList]);
 
@@ -18,23 +19,12 @@ export function usePostSocket() {
     removePostFromList(data.postId);
   }, [removePostFromList]);
 
-  const handlePostReaction = useCallback((_data: {
-    postId: string;
-    userId: string;
-    reactionType: string;
-    userName?: string;
-    userAvatar?: string;
-  }) => {
-    // Reaction count handled by usePostSocketEvents.ts via post_add_reaction.
+  const handlePostReaction = useCallback(() => {
+    // Reaction counts are handled by usePostSocketEvents.
   }, []);
 
-  const handlePostComment = useCallback((_data: {
-    postId: string;
-    commentId: string;
-    userId: string;
-    content: string;
-  }) => {
-    // Comment count handled by comment store WS subscription.
+  const handlePostComment = useCallback(() => {
+    // Comment counts are handled by the comment store subscription.
   }, []);
 
   useEffect(() => {

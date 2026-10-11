@@ -47,7 +47,7 @@ export function CreateProductModal({
       setSubmitting(true);
       
       // Clean up optional fields - remove empty strings, 0, null, undefined
-      const cleanedData: any = {
+      const cleanedData: CreateProductDto = {
         ...data,
         // Required fields
         name: data.name,

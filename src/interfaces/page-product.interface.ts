@@ -100,11 +100,11 @@ export interface PaginatedProducts {
  */
 export interface CreateProductDto {
   name: string;
-  description: string;
+  description?: string;
   price: number;
   compareAtPrice?: number;
   currency?: string;
-  categoryMain: string;
+  categoryMain?: string;
   categorySub?: string;
   images?: ProductImage[];
   stock?: {

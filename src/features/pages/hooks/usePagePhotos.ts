@@ -1,5 +1,6 @@
 'use client';
 
+import { pageErrorMessage } from '../utils/pageErrorMessage';
 import { useFetch } from '@/lib/hooks/useFetch';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { cacheKey, invalidate, updateCached } from '@/lib/hooks/cacheStore';
@@ -52,9 +53,9 @@ export function useUploadPagePhoto(pageId: string) {
 
         toast.success('Foto subida exitosamente');
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         console.error('Error uploading photo:', error);
-        toast.error(error.response?.data?.message || 'Error al subir la foto');
+        toast.error(pageErrorMessage(error, 'Error al subir la foto'));
       },
     }
   );
@@ -78,9 +79,9 @@ export function useDeletePagePhoto(pageId: string) {
         invalidate(`page-photos::count::${pageId}`);
         toast.success('Foto eliminada');
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         console.error('Error deleting photo:', error);
-        toast.error(error.response?.data?.message || 'Error al eliminar la foto');
+        toast.error(pageErrorMessage(error, 'Error al eliminar la foto'));
         invalidate(`page-photos::list::${pageId}`);
       },
     }

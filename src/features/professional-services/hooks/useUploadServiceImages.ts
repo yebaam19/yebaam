@@ -35,8 +35,8 @@ export function useUploadServiceImages() {
 
       setUploadState({ isUploading: false, progress: 100, error: null })
       return url
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al subir la imagen'
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al subir la imagen'
       setUploadState({ isUploading: false, progress: 0, error: errorMessage })
       throw error
     }

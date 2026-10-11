@@ -5,7 +5,7 @@ import { resolveImageRef } from '@/lib/media/urls'
 import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useEffect,useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { useDeleteBlog,useUpdateBlog } from '../hooks/useBlogs'
 import type { Blog } from '../types/blog.types'
@@ -25,7 +25,11 @@ interface EditBlogModalProps {
   onSuccess?: () => void
 }
 
-export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModalProps) => {
+export const EditBlogModal = (props: EditBlogModalProps) => {
+  return props.isOpen ? <EditBlogForm key={props.blog.id} {...props} /> : null
+}
+
+const EditBlogForm = ({ isOpen, onClose, blog, onSuccess }: EditBlogModalProps) => {
   const router = useRouter()
   const t = useTranslations('blogs.editModal')
   const updateBlogMutation = useUpdateBlog()
@@ -33,8 +37,8 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
   const [uploadingImages, setUploadingImages] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(resolveImageRef(blog.profileImageUrl, 'avatar'))
+  const [coverPreview, setCoverPreview] = useState<string | null>(resolveImageRef(blog.coverImageUrl, 'cover'))
   const [confirmDeleteText, setConfirmDeleteText] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [artist, setArtist] = useState<ArtistSelection>({
@@ -53,25 +57,6 @@ export const EditBlogModal = ({ isOpen, onClose, blog, onSuccess }: EditBlogModa
     facebook: blog.social?.facebook || '',
     twitter: blog.social?.twitter || '',
   })
-
-  // Actualizar form cuando cambie el blog
-  useEffect(() => {
-    setFormData({
-      name: blog.name,
-      description: blog.description,
-      category: blog.category as BlogFormData['category'],
-      subcategory: blog.subcategory || '',
-      website: blog.website || '',
-      tags: blog.tags?.join(', ') || '',
-      instagram: blog.social?.instagram || '',
-      youtube: blog.social?.youtube || '',
-      facebook: blog.social?.facebook || '',
-      twitter: blog.social?.twitter || '',
-    })
-    setAvatarPreview(resolveImageRef(blog.profileImageUrl, 'avatar'))
-    setCoverPreview(resolveImageRef(blog.coverImageUrl, 'cover'))
-    setArtist({ existingId: blog.musicArtistId ?? null, name: blog.musicArtist?.name ?? '' })
-  }, [blog])
 
   const handleAvatarChange = (file: File | null) => {
     if (file) {

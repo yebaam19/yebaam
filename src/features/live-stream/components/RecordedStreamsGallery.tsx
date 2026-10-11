@@ -1,32 +1,10 @@
 'use client';
 
+import type { RecordedStream } from '../services/live-stream-list.types';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { liveStreamService } from '../services/live-stream.service';
 import { PlayIcon, ClockIcon, EyeIcon } from '@/components/icons/heroicons-shim';
-
-interface RecordedStream {
-  id: string;
-  title: string;
-  description?: string;
-  playbackUrl?: string;
-  recordingUrl?: string;
-  author: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName?: string;
-    avatar?: string;
-  };
-  stats: {
-    duration: number;
-    viewerCount: number;
-    peakViewerCount: number;
-    endedAt?: string;
-  };
-  privacy: string;
-  createdAt: string;
-}
 
 interface RecordedStreamsGalleryProps {
   onPlayStream?: (stream: RecordedStream) => void;

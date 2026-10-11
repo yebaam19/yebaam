@@ -101,7 +101,7 @@ export function useSendMessageToPage(pageId: string) {
 
         toast.success('Mensaje enviado');
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         console.error('Error sending message:', error);
         toast.error('Error al enviar el mensaje');
       },
@@ -139,7 +139,7 @@ export function useSendMessageAsPage(pageId: string) {
 
         toast.success('Respuesta enviada');
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         console.error('Error sending message as page:', error);
         toast.error('Error al enviar la respuesta');
       },
@@ -155,7 +155,7 @@ export function useMarkMessagesAsRead(pageId: string, conversationId: string) {
         invalidate(`page-messages::messages::${pageId}::${conversationId}`);
         invalidate('page-messages::conversations');
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         console.error('Error marking messages as read:', error);
       },
     }

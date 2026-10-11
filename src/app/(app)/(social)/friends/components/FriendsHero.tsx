@@ -95,7 +95,7 @@ export function FriendsHero({ onFindFriends }: FriendsHeroProps = {}) {
   const firstName = user?.firstName || user?.username || t('fallbackName')
 
   const pool = [...(friends || []), ...(suggestions || [])]
-  const avatars: NetworkAvatar[] = pool.slice(0, 5).map((p: any) => ({
+  const avatars: NetworkAvatar[] = pool.slice(0, 5).map((p) => ({
     src: p.avatar,
     initials: `${(p.firstName?.[0] || p.username?.[0] || '?').toUpperCase()}${(p.lastName?.[0] || '').toUpperCase()}`,
   }))

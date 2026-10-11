@@ -1,5 +1,6 @@
 'use client';
 
+import type { ChatMessage } from '@/features/chat/types';
 import { useTranslations } from 'next-intl';
 
 import ChatHeader from '@/components/chat/ChatHeader';
@@ -20,7 +21,7 @@ interface ConversationPaneProps {
   peerUserId: string | null;
   isGroup: boolean;
   headerEncrypted: boolean;
-  messages: any[];
+  messages: ChatMessage[];
   isLoading: boolean;
   currentUserId?: string;
   participants: ParticipantDisplay[];

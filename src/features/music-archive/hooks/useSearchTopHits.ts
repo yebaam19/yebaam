@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useDebouncedMusicSearch } from './useDebouncedMusicSearch';
 import { searchMusicTopHitsAction } from '../actions/search.actions';
 import type { MusicSearchHit } from '../types/music.types';
 
@@ -47,95 +47,18 @@ interface Options {
   debounceMs?: number;
 }
 
-/** Search-as-you-type with the four techniques that matter for cost control:
- *  - **Debounce** so quick keystrokes coalesce.
- *  - **Min-length gate** so single-letter queries don't fire.
- *  - **AbortController** so a stale request never overwrites a newer result.
- *  - **LRU cache** so repeated queries (back/forward, retyping) don't re-hit
- *    the server.
- *  Returns just data + status — the bar component owns the UI state. */
+async function searchCached(query: string) {
+  const cached = cacheGet(query);
+  if (cached) return { ok: true as const, data: cached };
+  const response = await searchMusicTopHitsAction(query);
+  if (response.ok) cacheSet(query, response.data);
+  return response;
+}
+
+/** Debounced search with a bounded TTL cache and stale-response protection. */
 export function useSearchTopHits(query: string, options?: Options): State {
-  const minLength = options?.minLength ?? 2;
-  const debounceMs = options?.debounceMs ?? 300;
-
-  const [state, setState] = useState<State>({
-    hits: [],
-    pending: false,
-    error: null,
-    hasQuery: false,
-  });
-
-  const abortRef = useRef<AbortController | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Monotonic id so an old in-flight resolution that races past the abort
-  // can't still overwrite the newest state.
-  const tickRef = useRef(0);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    const trimmed = query.trim().toLowerCase();
-    if (trimmed.length < minLength) {
-      // Cancel any pending request and reset.
-      if (abortRef.current) abortRef.current.abort();
-      setState({ hits: [], pending: false, error: null, hasQuery: false });
-      return;
-    }
-
-    // Synchronous cache hit — no fetch, no debounce, no flicker.
-    const cached = cacheGet(trimmed);
-    if (cached) {
-      if (abortRef.current) abortRef.current.abort();
-      setState({ hits: cached, pending: false, error: null, hasQuery: true });
-      return;
-    }
-
-    setState((prev) => ({ ...prev, pending: true, error: null, hasQuery: true }));
-
-    debounceRef.current = setTimeout(() => {
-      // Each fetch gets a fresh AbortController; abort the previous one.
-      if (abortRef.current) abortRef.current.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      const myTick = ++tickRef.current;
-
-      // Server actions don't natively respect AbortController, but we honour
-      // it here by discarding the response if a newer fetch has started or
-      // the controller was aborted.
-      void searchMusicTopHitsAction(trimmed)
-        .then((res) => {
-          if (controller.signal.aborted) return;
-          if (tickRef.current !== myTick) return;
-          if (!res.ok) {
-            setState({ hits: [], pending: false, error: res.error, hasQuery: true });
-            return;
-          }
-          cacheSet(trimmed, res.data);
-          setState({ hits: res.data, pending: false, error: null, hasQuery: true });
-        })
-        .catch((err) => {
-          if (controller.signal.aborted) return;
-          if (tickRef.current !== myTick) return;
-          setState({
-            hits: [],
-            pending: false,
-            error: err instanceof Error ? err.message : 'Error de búsqueda',
-            hasQuery: true,
-          });
-        });
-    }, debounceMs);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [query, minLength, debounceMs]);
-
-  // Abort any in-flight request when the component unmounts.
-  useEffect(() => {
-    return () => {
-      if (abortRef.current) abortRef.current.abort();
-    };
-  }, []);
-
-  return state;
+  const { results, loading, error, hasQuery } = useDebouncedMusicSearch(
+    query.toLowerCase(), searchCached, options?.debounceMs ?? 300, options?.minLength ?? 2,
+  );
+  return { hits: results, pending: loading, error, hasQuery };
 }

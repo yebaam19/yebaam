@@ -7,7 +7,7 @@
  * habla el usuario. Los idiomas se guardan como `text[]` en `profiles.languages`.
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { OCCUPATIONS } from '@/features/auth/constants/occupations'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
@@ -22,7 +22,7 @@ interface EditWorkEducationDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export default function EditWorkEducationDialog({
+function EditWorkEducationDialogForm({
   user,
   open,
   onOpenChange,
@@ -37,15 +37,7 @@ export default function EditWorkEducationDialog({
 
   const { updateProfile, isLoading } = useProfileStore()
 
-  useEffect(() => {
-    if (open) {
-      setWorkPlace(user.workPlace || '')
-      setWorkPosition(user.workPosition || '')
-      setOccupation(user.occupation || '')
-      setStudyPlace(user.studyPlace || '')
-      setLanguages(user.languages ?? [])
-    }
-  }, [open, user])
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -139,4 +131,8 @@ export default function EditWorkEducationDialog({
       </div>
     </BaseDialog>
   )
+}
+
+export default function EditWorkEducationDialog(props: EditWorkEducationDialogProps) {
+  return props.open ? <EditWorkEducationDialogForm key={props.user.userId} {...props} /> : null
 }

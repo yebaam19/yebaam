@@ -78,7 +78,7 @@ export function InviteFriends() {
   const openShareSheet = async () => {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
-        await (navigator as any).share({ title: 'Yebaam', text: inviteText, url })
+        await navigator.share({ title: 'Yebaam', text: inviteText, url })
         return
       } catch {
         /* fall through to copy link */

@@ -33,8 +33,8 @@ export function RecentActivity() {
   const dateLocale = useDateFnsLocale()
 
   const items: ActivityItem[] = (friends || [])
-    .filter((f: any) => !!f.friendSince)
-    .map((f: any) => {
+    .filter((f) => !!f.friendSince)
+    .map((f) => {
       const name = `${f.firstName || ''} ${f.lastName || ''}`.trim() || f.username
       const initials = `${(f.firstName?.[0] || f.username?.[0] || '?').toUpperCase()}${(f.lastName?.[0] || '').toUpperCase()}`
       return {

@@ -10,7 +10,7 @@
  *  - `messagesByConv`:  conversationId → last rendered message list. Lets us
  *    paint the thread instantly on reopen.
  */
-type CachedMessage = { id: string } & Record<string, unknown>;
+import type { ChatMessage as CachedMessage } from '../types';
 
 const convIdByContact = new Map<string, string>();
 const messagesByConv = new Map<string, CachedMessage[]>();

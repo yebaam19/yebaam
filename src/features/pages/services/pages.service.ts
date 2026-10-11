@@ -19,19 +19,19 @@ export const pagesService = {
   // CRUD Operations
   async getMyPages(): Promise<Page[]> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/my-pages`);
+    const { data } = await axios.get<Page[]>(`${API_BASE}/my-pages`);
     return data;
   },
 
   async getFollowedPages(): Promise<Page[]> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/followed`);
+    const { data } = await axios.get<Page[]>(`${API_BASE}/followed`);
     return data;
   },
 
   async getSuggestedPages(limit = 10): Promise<Page[]> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/suggested`, {
+    const { data } = await axios.get<Page[]>(`${API_BASE}/suggested`, {
       params: { limit },
     });
     return data;
@@ -39,39 +39,39 @@ export const pagesService = {
 
   async searchPages(params: SearchPagesParams): Promise<PagesListResponse> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/search`, { params });
+    const { data } = await axios.get<PagesListResponse>(`${API_BASE}/search`, { params });
     return data;
   },
 
   async getPageById(pageId: string): Promise<PageResponse> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${pageId}`);
+    const { data } = await axios.get<Page>(`${API_BASE}/${pageId}`);
     // Backend devuelve el objeto directamente, no envuelto en { page: ... }
-    return { page: data, isFollowing: data.isFollowing, userRole: data.userRole };
+    return { page: data, isFollowing: data.isFollowing ?? false, userRole: data.userRole };
   },
 
   async getPageBySlug(slug: string): Promise<PageResponse> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${slug}`);
+    const { data } = await axios.get<Page>(`${API_BASE}/${slug}`);
     // Backend devuelve el objeto directamente, no envuelto en { page: ... }
-    return { page: data, isFollowing: data.isFollowing, userRole: data.userRole };
+    return { page: data, isFollowing: data.isFollowing ?? false, userRole: data.userRole };
   },
 
   async getPageByUsername(username: string): Promise<PageResponse> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/username/${username}`);
+    const { data } = await axios.get<PageResponse>(`${API_BASE}/username/${username}`);
     return data;
   },
 
   async createPage(pageData: CreatePageDto): Promise<Page> {
     const axios = getAxiosInstance();
-    const { data } = await axios.post(API_BASE, pageData);
+    const { data } = await axios.post<Page>(API_BASE, pageData);
     return data;
   },
 
   async updatePage(pageId: string, pageData: UpdatePageDto): Promise<Page> {
     const axios = getAxiosInstance();
-    const { data } = await axios.put(`${API_BASE}/${pageId}`, pageData);
+    const { data } = await axios.put<Page>(`${API_BASE}/${pageId}`, pageData);
     return data;
   },
 
@@ -93,13 +93,13 @@ export const pagesService = {
 
   async reactToPage(pageId: string, type: PageReactionType): Promise<PageReactionResult> {
     const axios = getAxiosInstance();
-    const { data } = await axios.post(`${API_BASE}/${pageId}/reactions`, { type });
+    const { data } = await axios.post<PageReactionResult>(`${API_BASE}/${pageId}/reactions`, { type });
     return data;
   },
 
   async unreactToPage(pageId: string, type: PageReactionType): Promise<PageReactionResult> {
     const axios = getAxiosInstance();
-    const { data } = await axios.delete(`${API_BASE}/${pageId}/reactions`, {
+    const { data } = await axios.delete<PageReactionResult>(`${API_BASE}/${pageId}/reactions`, {
       params: { type },
     });
     return data;
@@ -108,14 +108,14 @@ export const pagesService = {
   // Followers
   async getFollowers(pageId: string): Promise<PageFollower[]> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${pageId}/followers`);
+    const { data } = await axios.get<PageFollower[]>(`${API_BASE}/${pageId}/followers`);
     return data;
   },
 
   // Team Management
   async getTeamMembers(pageId: string): Promise<PageMember[]> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(`${API_BASE}/${pageId}/team`);
+    const { data } = await axios.get<PageMember[]>(`${API_BASE}/${pageId}/team`);
     return data;
   },
 

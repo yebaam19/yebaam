@@ -29,11 +29,17 @@ function countResults(results: AggregatedSearchResults | null, type: SearchResul
 export function useSearch() {
   const [query, setQuery] = useState('');
   const [type, setType] = useState<SearchResultType>('all');
-  const [results, setResults] = useState<AggregatedSearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
+  const [response, setResponse] = useState<{
+    key: string; results: AggregatedSearchResults | null; error: Error | null;
+  } | null>(null);
   const debouncedQuery = useDebouncedValue(query, 300);
+  const q = debouncedQuery.trim();
+  const key = JSON.stringify([q, type]);
+  const valid = query.trim().length >= 2 && q.length >= 2;
+  const current = valid && response?.key === key ? response : null;
+  const results = current?.results ?? null;
+  const error = current?.error ?? null;
+  const loading = valid && !current;
 
   const search = useCallback((searchQuery: string, filters?: SearchFilters) => {
     setQuery(searchQuery);
@@ -43,38 +49,23 @@ export function useSearch() {
   const clear = useCallback(() => {
     setQuery('');
     setType('all');
-    setResults(null);
-    setError(null);
-    setLoading(false);
+    setResponse(null);
   }, []);
 
   useEffect(() => {
-    const q = debouncedQuery.trim();
-    // Mismo umbral que los route handlers: con <2 chars devuelven vacío.
-    if (q.length < 2) {
-      setResults(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
+    if (!valid) return;
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
     fetchSearchResults(q, type, controller.signal)
-      .then((res) => {
-        if (!controller.signal.aborted) setResults(res);
+      .then((results) => {
+        if (!controller.signal.aborted) setResponse({ key, results, error: null });
       })
-      .catch((err) => {
-        if (controller.signal.aborted) return;
-        setResults(null);
-        setError(err instanceof Error ? err : new Error(String(err)));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) setResponse({
+          key, results: null, error: err instanceof Error ? err : new Error(String(err)),
+        });
       });
     return () => controller.abort();
-  }, [debouncedQuery, type]);
+  }, [q, type, key, valid]);
 
   const getCountByType = useCallback(
     (t: SearchResultType): number => countResults(results, t),

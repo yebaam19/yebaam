@@ -1,5 +1,7 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
 interface CommentReplyComposerProps {
   postId: string
   parentCommentId: string
@@ -33,8 +35,4 @@ export function CommentReplyComposer({
   )
 }
 
-// Lazy import para evitar importación circular
-const CommentReplyInputLazy = (props: any) => {
-  const { CommentReplyInput } = require('../CommentReplyInput')
-  return <CommentReplyInput {...props} />
-}
+const CommentReplyInputLazy = dynamic(() => import('../CommentReplyInput').then((module) => module.CommentReplyInput), { ssr: false })

@@ -1,17 +1,12 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { getServerClient } from '@/utils/supabase/server'
+import { getDashboardStats } from '@/features/admin/server/dashboard-stats.server'
 import {
   ChatBubbleLeftRightIcon,
   Squares2X2Icon,
   UsersIcon,
 } from '@/components/icons/heroicons-shim'
-import {
-  getOccupationDistribution,
-  getOccupationByDepartment,
-  getOccupationByGender,
-} from '@/features/admin/server/occupation-stats.server'
 import { OccupationDistributionChart } from '@/features/admin/components/charts/OccupationDistributionChart'
 import { OccupationByDepartmentChart } from '@/features/admin/components/charts/OccupationByDepartmentChart'
 import { OccupationByGenderChart } from '@/features/admin/components/charts/OccupationByGenderChart'
@@ -81,30 +76,8 @@ function StatCard({ href, label, value, hint, tone = 'primary', icon: Icon }: St
 }
 
 export default async function AdminOverviewPage() {
-  const client = await getServerClient()
   const t = await getTranslations('admin.dashboard')
-
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-
-  const [
-    spacesEnabled,
-    spacesDisabled,
-    topicsWeek,
-    postsWeek,
-    adminsCount,
-    distribution,
-    byDepartment,
-    byGender,
-  ] = await Promise.all([
-    client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', true),
-    client.from('forum_spaces').select('id', { count: 'exact', head: true }).eq('enabled', false),
-    client.from('forum_topics').select('id', { count: 'exact', head: true }).gte('created_at', since),
-    client.from('forum_posts').select('id', { count: 'exact', head: true }).gte('created_at', since),
-    client.from('platform_admins').select('user_id', { count: 'exact', head: true }),
-    getOccupationDistribution(),
-    getOccupationByDepartment(),
-    getOccupationByGender(),
-  ])
+  const { spacesEnabled, spacesDisabled, topicsWeek, postsWeek, adminsCount, distribution, byDepartment, byGender } = await getDashboardStats()
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">

@@ -14,6 +14,7 @@
 
 'use client';
 
+import { getErrorMessage } from '@/features/friendships/store/friendships.helpers';
 import { useEffect, useState } from 'react';
 import { XMarkIcon } from '@/components/icons/heroicons-shim';
 import { formatDistanceToNow } from 'date-fns';
@@ -58,9 +59,9 @@ export default function FriendRequestDetailModal({
     try {
       const response = await friendshipsService.getRequesterProfile(friendshipId);
       setData(response);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error loading friend request profile:', error);
-      toast.error(error.message || t('errorLoad'));
+      toast.error(getErrorMessage(error, t('errorLoad')));
       onClose();
     } finally {
       setIsLoading(false);
@@ -76,9 +77,9 @@ export default function FriendRequestDetailModal({
       toast.success(t('successAccepted'));
       onActionComplete?.();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error accepting friend request:', error);
-      toast.error(error.message || t('errorAccept'));
+      toast.error(getErrorMessage(error, t('errorAccept')));
     } finally {
       setActionLoading(null);
     }
@@ -93,9 +94,9 @@ export default function FriendRequestDetailModal({
       toast.success(t('successRejected'));
       onActionComplete?.();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error rejecting friend request:', error);
-      toast.error(error.message || t('errorReject'));
+      toast.error(getErrorMessage(error, t('errorReject')));
     } finally {
       setActionLoading(null);
     }
@@ -110,9 +111,9 @@ export default function FriendRequestDetailModal({
       toast.success(t('successCancelled'));
       onActionComplete?.();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error canceling friend request:', error);
-      toast.error(error.message || t('errorCancel'));
+      toast.error(getErrorMessage(error, t('errorCancel')));
     } finally {
       setActionLoading(null);
     }

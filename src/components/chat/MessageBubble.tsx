@@ -8,10 +8,10 @@ import MessageContent from './MessageContent';
 import MessageStatus from './MessageStatus';
 import ImageModal from './ImageModal';
 import { MessageActionsMenu } from './ChatBubble/MessageActionsMenu';
-import type { Message } from '@/features/chat/types';
+import type { ChatMessage } from '@/features/chat/types';
 
 interface MessageBubbleProps {
-  message: Message;
+  message: ChatMessage;
   isOwn: boolean;
   contactAvatar?: string;
   contactName?: string;

@@ -6,25 +6,18 @@ import useOnlineStatus from '@/hooks/useOnlineStatus';
 
 export default function OfflineIndicator() {
   const isOnline = useOnlineStatus();
-  const [show, setShow] = useState(false);
-  const [wasOffline, setWasOffline] = useState(false);
-
+  const [previousOnline, setPreviousOnline] = useState(isOnline);
+  const [restored, setRestored] = useState(false);
+  if (previousOnline !== isOnline) {
+    setPreviousOnline(isOnline);
+    setRestored(isOnline);
+  }
   useEffect(() => {
-    if (!isOnline) {
-      setShow(true);
-      setWasOffline(true);
-    } else if (wasOffline) {
-      // Mostrar mensaje de "conexión restaurada" brevemente
-      setShow(true);
-      const timer = setTimeout(() => {
-        setShow(false);
-        setWasOffline(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    } else {
-      setShow(false);
-    }
-  }, [isOnline, wasOffline]);
+    if (!restored) return;
+    const timer = setTimeout(() => setRestored(false), 3000);
+    return () => clearTimeout(timer);
+  }, [restored]);
+  const show = !isOnline || restored;
 
   if (!show) return null;
 

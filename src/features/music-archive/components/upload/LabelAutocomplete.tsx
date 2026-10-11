@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { searchLabelsAction } from '../../actions/search.actions';
 import type { MusicLabelRow } from '../../types/music.types';
+import { useDebouncedMusicSearch } from '../../hooks/useDebouncedMusicSearch';
 import { inputCls } from './constants';
 
 export interface LabelSelection {
@@ -19,32 +20,9 @@ interface Props {
 
 export function LabelAutocomplete({ value, onChange }: Props) {
   const t = useTranslations('musica');
-  const [hits, setHits] = useState<MusicLabelRow[]>([]);
-  const [open, setOpen] = useState(false);
-  const [, startTransition] = useTransition();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { results: hits } = useDebouncedMusicSearch<MusicLabelRow>(value.existingId ? '' : value.name, searchLabelsAction, 250);
+  const [open, setOpen] = useState(!value.existingId && value.name.trim().length >= 2);
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const trimmed = value.name.trim();
-    if (trimmed.length < 2 || value.existingId) {
-      setHits([]);
-      return;
-    }
-    debounceRef.current = setTimeout(() => {
-      startTransition(async () => {
-        const res = await searchLabelsAction(trimmed);
-        if (res.ok) {
-          setHits(res.data);
-          setOpen(true);
-        }
-      });
-    }, 250);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [value.name, value.existingId]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -59,7 +37,7 @@ export function LabelAutocomplete({ value, onChange }: Props) {
       <input
         type="text"
         value={value.name}
-        onChange={(e) => onChange({ existingId: null, name: e.target.value })}
+        onChange={(e) => { onChange({ existingId: null, name: e.target.value }); setOpen(true); }}
         onFocus={() => hits.length > 0 && setOpen(true)}
         placeholder={t('upload.labelPlaceholder')}
         className={inputCls}

@@ -23,10 +23,6 @@ interface ClubHeaderProps {
   onMessage: () => void;
 }
 
-function privacyIcon(p: Club['privacy']): typeof GlobeAltIcon {
-  return p === 'PUBLIC' ? GlobeAltIcon : LockClosedIcon;
-}
-
 function privacyKey(p: Club['privacy']): 'public' | 'private' | 'secret' | 'affiliation' {
   switch (p) {
     case 'PUBLIC':
@@ -49,7 +45,7 @@ export function ClubHeader({
   onMessage,
 }: ClubHeaderProps) {
   const t = useTranslations('clubes');
-  const PrivIcon = privacyIcon(club.privacy);
+  const PrivIcon = club.privacy === 'PUBLIC' ? GlobeAltIcon : LockClosedIcon;
   const privLabel = t(`detail.privacy.${privacyKey(club.privacy)}`);
   // Rows store either a bare Cloudflare id (new) or a full URL (legacy).
   const coverSrc = resolveImageRef(club.coverImageUrl, 'hero');

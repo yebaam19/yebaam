@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useEffect } from 'react';
+import { FC, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -15,8 +15,8 @@ import {
 } from '@/components/icons/heroicons-shim';
 import { HeartIcon as HeartSolidIcon } from '@/components/icons/heroicons-shim';
 import { Post } from '@/app/(app)/feed/post/interfaces/post.interfaces';
-import { getUserDisplayName } from '@/lib/user-helpers';
-import Image from 'next/image';
+import { ReelIdentity } from './ReelIdentity';
+import { useReelPlayback } from './useReelPlayback';
 
 interface ReelViewerModalProps {
   isOpen: boolean;
@@ -36,53 +36,11 @@ export const ReelViewerModal: FC<ReelViewerModalProps> = ({
   onShare,
 }) => {
   const t = useTranslations('pages.reels.viewer');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-
-  useEffect(() => {
-    if (isOpen && videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    }
-  }, [isOpen, reel?.id]);
-
-  const togglePlayPause = () => {
-    if (!videoRef.current) return;
-
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(!isMuted);
-  };
-
-  const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
-    setCurrentTime(videoRef.current.currentTime);
-  };
-
-  const handleLoadedMetadata = () => {
-    if (!videoRef.current) return;
-    setDuration(videoRef.current.duration);
-  };
-
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!videoRef.current) return;
-    const time = parseFloat(e.target.value);
-    videoRef.current.currentTime = time;
-    setCurrentTime(time);
-  };
+  const {
+    videoRef, isPlaying, setIsPlaying, isMuted, currentTime, duration,
+    togglePlayPause, toggleMute, handleTimeUpdate, handleLoadedMetadata, handleSeek
+  } = useReelPlayback(isOpen, reel?.id);
 
   const handleLike = () => {
     if (!reel) return;
@@ -159,6 +117,8 @@ export const ReelViewerModal: FC<ReelViewerModalProps> = ({
                       className="w-full h-full object-cover"
                       loop
                       playsInline
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
                       onTimeUpdate={handleTimeUpdate}
                       onLoadedMetadata={handleLoadedMetadata}
                       onClick={togglePlayPause}
@@ -176,35 +136,7 @@ export const ReelViewerModal: FC<ReelViewerModalProps> = ({
                       </div>
                     )}
 
-                    {/* User Info Overlay */}
-                    <div className="absolute bottom-20 left-4 right-20 text-white">
-                      <div className="flex items-center gap-3 mb-3">
-                        {reel.author?.avatar ? (
-                          <Image
-                            src={reel.author.avatar}
-                            alt={reel.author.username}
-                            width={40}
-                            height={40}
-                            className="rounded-full object-cover"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-semibold">
-                              {reel.author?.username?.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-semibold">{getUserDisplayName(reel.author)}</p>
-                        </div>
-                      </div>
-
-                      {/* Caption */}
-                      {reel.content && (
-                        <p className="text-sm line-clamp-2 mb-2">{reel.content}</p>
-                      )}
-                    </div>
+                    <ReelIdentity reel={reel} />
 
                     {/* Action Buttons - Right Side */}
                     <div className="absolute bottom-20 right-4 flex flex-col gap-4">

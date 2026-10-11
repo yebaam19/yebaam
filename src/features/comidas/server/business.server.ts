@@ -106,7 +106,7 @@ export const getMyBusinesses = cache(async (): Promise<MyBusiness[]> => {
   const client = await getServerClient()
   const { data, error } = await client.rpc('get_my_businesses')
   if (error) throw new Error(error.message)
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: MyBusiness) => ({
     business: r.business as Business,
     is_primary: r.is_primary,
     can_edit_business: r.can_edit_business,

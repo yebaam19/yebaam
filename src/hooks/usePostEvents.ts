@@ -15,6 +15,7 @@
  * ```
  */
 
+import type { MediaFile } from '@/app/(app)/feed/post/interfaces/post.interfaces';
 import { useEffect, useState } from 'react';
 import { useSocket } from '@/providers/socket-provider';
 
@@ -28,7 +29,7 @@ interface PostEventData {
     username: string;
     avatarUrl?: string;
   };
-  mediaFiles?: any[];
+  mediaFiles?: MediaFile[];
   createdAt: string;
   updatedAt: string;
 }

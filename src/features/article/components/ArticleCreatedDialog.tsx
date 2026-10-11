@@ -13,8 +13,9 @@ import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react
 import { ArrowTopRightOnSquareIcon, CheckIcon, ClipboardDocumentIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { CheckCircleIcon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useBrowserOrigin } from '../hooks/useBrowserSnapshot'
 import type { Route } from 'next';
 
 interface ArticleCreatedDialogProps {
@@ -30,13 +31,8 @@ export function ArticleCreatedDialog({ isOpen, onClose, article }: ArticleCreate
   const t = useTranslations('article.created')
   const [copiedId, setCopiedId] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState(false)
-  const [fullUrl, setFullUrl] = useState('')
-
-  useEffect(() => {
-    if (article && typeof window !== 'undefined') {
-      setFullUrl(`${window.location.origin}/feed/article/${article.id}`)
-    }
-  }, [article])
+  const origin = useBrowserOrigin()
+  const fullUrl = article && origin ? `${origin}/feed/article/${article.id}` : ''
 
   const handleCopyId = useCallback(async () => {
     if (!article) return

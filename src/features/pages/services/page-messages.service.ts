@@ -6,7 +6,6 @@ import type {
   GetMessagesQuery,
 } from '../interfaces/page-message.interface';
 import type {
-  PageConversation,
   GetConversationsResponse,
   GetConversationsQuery,
 } from '../interfaces/page-conversation.interface';
@@ -26,7 +25,7 @@ export const pageMessagesService = {
     query?: GetConversationsQuery,
   ): Promise<GetConversationsResponse> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(
+    const { data } = await axios.get<GetConversationsResponse>(
       `${API_BASE}/${pageId}/conversations`,
       { params: query },
     );
@@ -42,7 +41,7 @@ export const pageMessagesService = {
     query?: GetMessagesQuery,
   ): Promise<GetMessagesResponse> {
     const axios = getAxiosInstance();
-    const { data } = await axios.get(
+    const { data } = await axios.get<GetMessagesResponse>(
       `${API_BASE}/${pageId}/messages/${conversationId}`,
       { params: query },
     );
@@ -57,7 +56,7 @@ export const pageMessagesService = {
     message: SendMessageDto,
   ): Promise<PageMessage> {
     const axios = getAxiosInstance();
-    const { data } = await axios.post(
+    const { data } = await axios.post<PageMessage>(
       `${API_BASE}/${pageId}/messages`,
       message,
     );
@@ -73,7 +72,7 @@ export const pageMessagesService = {
     message: SendMessageDto,
   ): Promise<PageMessage> {
     const axios = getAxiosInstance();
-    const { data } = await axios.post(
+    const { data } = await axios.post<PageMessage>(
       `${API_BASE}/${pageId}/messages/send-as-page`,
       message,
     );
@@ -88,7 +87,7 @@ export const pageMessagesService = {
     conversationId: string,
   ): Promise<{ success: boolean }> {
     const axios = getAxiosInstance();
-    const { data } = await axios.patch(
+    const { data } = await axios.patch<{ success: boolean }>(
       `${API_BASE}/${pageId}/messages/${conversationId}/read`,
     );
     return data;

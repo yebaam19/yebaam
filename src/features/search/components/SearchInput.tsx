@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, KeyboardEvent } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -45,6 +45,12 @@ export function SearchInput({
   const [isFocused, setIsFocused] = useState(false);
   const effectivePlaceholder = placeholder ?? t('placeholder');
 
+  const handleClear = useCallback(() => {
+    onChange('');
+    onClear?.();
+    inputRef.current?.focus();
+  }, [onChange, onClear]);
+
   // Auto-focus al montar
   useEffect(() => {
     if (autoFocus && inputRef.current) {
@@ -69,13 +75,8 @@ export function SearchInput({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [value]);
+  }, [value, handleClear]);
 
-  const handleClear = () => {
-    onChange('');
-    onClear?.();
-    inputRef.current?.focus();
-  };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && value.trim()) {

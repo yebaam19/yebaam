@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import {
   ProfilePostsList,
   ProfileAboutFull,
@@ -23,9 +24,9 @@ interface ProfileMainContentProps {
   website?: string;
   languages?: string[];
   interests?: string[];
-  mockPhotos: any[];
-  mockFriends: any[];
-  mockVideos: any[];
+  mockPhotos: ComponentProps<typeof ProfilePhotosFull>['photos'];
+  mockFriends: ComponentProps<typeof ProfileFriendsFull>['friends'];
+  mockVideos: ComponentProps<typeof ProfileVideosFull>['videos'];
 }
 
 /**

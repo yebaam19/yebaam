@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import type { ClubPost, ClubPostKind } from '@/features/clubs/server/clubs.server';
 import { clubPostThumb } from './postMedia';
@@ -40,7 +40,11 @@ export function ClubPostsGrid({ posts, filterKind, viewMode, onOpen }: ClubPosts
 
   // Reset pagination when the active filter changes, otherwise the current page
   // index can point past the end of the newly filtered list (empty page).
-  useEffect(() => setPage(0), [filterKind]);
+  const [previousFilter, setPreviousFilter] = useState(filterKind);
+  if (previousFilter !== filterKind) {
+    setPreviousFilter(filterKind);
+    setPage(0);
+  }
 
   const filtered = useMemo(
     () => (filterKind ? posts.filter((p) => p.kind === filterKind) : posts),

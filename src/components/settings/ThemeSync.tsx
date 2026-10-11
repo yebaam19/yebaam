@@ -1,42 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { usePreferencesStore } from '@/stores/preferences.store';
 
+const query = '(prefers-color-scheme: dark)';
+function subscribe(onChange: () => void) {
+  const media = window.matchMedia(query);
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+}
+const getSnapshot = () => window.matchMedia(query).matches;
+const getServerSnapshot = () => false;
+
 export function ThemeSync() {
-  const theme = usePreferencesStore((s) => s.theme);
-  const [systemDark, setSystemDark] = useState(false);
-
+  const isDark = useIsDarkMode();
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    setSystemDark(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const isDark = theme === 'dark' || (theme === 'system' && systemDark);
-    const root = document.documentElement;
-    if (isDark) root.classList.add('dark');
-    else root.classList.remove('dark');
-  }, [theme, systemDark]);
-
+    document.documentElement.classList.toggle('dark', isDark);
+  }, [isDark]);
   return null;
 }
 
 export function useIsDarkMode(): boolean {
   const theme = usePreferencesStore((s) => s.theme);
-  const [systemDark, setSystemDark] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    setSystemDark(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
+  const systemDark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   return theme === 'dark' || (theme === 'system' && systemDark);
 }

@@ -141,3 +141,13 @@ export interface JoinConversationResponse {
   conversationId?: string;
   error?: string;
 }
+
+/** Messages rendered locally also include optimistic sends and serialized dates. */
+export type ChatMessage = Omit<Message, 'status' | 'createdAt' | 'updatedAt' | 'replyToId' | 'isDeleted'> & {
+  status: `${MessageStatus}` | 'sending' | 'failed';
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+  replyToId?: string | null;
+  isDeleted?: boolean;
+  isTemporary?: boolean;
+};

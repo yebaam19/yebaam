@@ -1,13 +1,13 @@
 'use client'
 
 import { Dialog, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
-import { FC, Fragment, ReactNode, useEffect, useState } from 'react'
+import { FC, Fragment, ReactNode, useState } from 'react'
 import { Button } from './Button'
 import ButtonClose from './ButtonClose'
 
 export interface NcModalProps {
   renderContent: () => ReactNode
-  renderTrigger?: (openModal: Function) => ReactNode
+  renderTrigger?: (openModal: () => void) => ReactNode
   contentExtraClass?: string
   contentPaddingClass?: string
   triggerText?: ReactNode
@@ -26,7 +26,8 @@ const NcModal: FC<NcModalProps> = ({
   isOpenProp,
   onCloseModal,
 }) => {
-  let [isOpen, setIsOpen] = useState(!!isOpenProp)
+  const [localIsOpen, setIsOpen] = useState(false)
+  const isOpen = isOpenProp ?? localIsOpen
 
   function closeModal() {
     if (typeof isOpenProp !== 'boolean') {
@@ -41,9 +42,6 @@ const NcModal: FC<NcModalProps> = ({
     }
   }
 
-  useEffect(() => {
-    setIsOpen(!!isOpenProp)
-  }, [isOpenProp])
 
   return (
     <div className="nc-NcModal">

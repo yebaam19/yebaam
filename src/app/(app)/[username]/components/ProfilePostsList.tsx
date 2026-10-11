@@ -9,12 +9,11 @@ interface ProfilePostsListProps {
 }
 
 export default function ProfilePostsList({
-  username,
   displayName,
   isOwnProfile,
 }: ProfilePostsListProps) {
   // TODO: Integrar con el backend para obtener posts reales
-  const posts: any[] = [];
+  const posts: { id: string }[] = [];
 
   return (
     <div className="space-y-5">

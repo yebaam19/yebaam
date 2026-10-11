@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { Review } from '../../../types'
 
 function relativeDate(iso: string) {
@@ -99,14 +100,14 @@ export function SchoolReviewsTab({ reviews, avgRating, reviewCount, isAuthentica
                 Inicia sesión para dejar tu reseña y ayudar a otros estudiantes a tomar su decisión.
               </p>
               <div className="mt-4 space-y-3">
-                <a href="/login"
+                <Link href="/login"
                   className="flex h-11 w-full items-center justify-center rounded-xl bg-primary-700 text-sm font-black text-white transition hover:bg-primary-800">
                   Iniciar sesión
-                </a>
-                <a href="/signup"
+                </Link>
+                <Link href="/signup"
                   className="flex h-11 w-full items-center justify-center rounded-xl border border-primary-200 bg-white text-sm font-black text-neutral-700 transition hover:border-primary-700 hover:text-primary-700">
                   Crear cuenta gratis
-                </a>
+                </Link>
               </div>
             </div>
           )}

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/features/friendships/store/friendships.helpers';
 import { useState, useCallback, useEffect } from 'react';
 import {
   friendRequestService,
@@ -7,7 +8,7 @@ import {
 import { FriendRequestBlockedError } from '@/features/friendships/services/friendships.service';
 import { useFriendshipsStore } from '@/features/friendships/store/friendships.store';
 import { toast } from 'sonner';
-import { useSocket } from '@/providers/socket-provider';
+import { useFriendRequestEvents } from './useFriendRequestEvents';
 
 export function useFriendRequests() {
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
@@ -32,8 +33,6 @@ export function useFriendRequests() {
   
   const [requestsError, setRequestsError] = useState<Error | null>(null);
 
-  // Obtener socket de usuarios para eventos en tiempo real
-  const { usersSocket } = useSocket();
 
   // Cargar solicitudes de amistad
   const fetchRequests = useCallback(async () => {
@@ -80,7 +79,7 @@ export function useFriendRequests() {
       
       // RETORNAR la respuesta con requestId
       return response;
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof FriendRequestBlockedError) {
         const isQuota =
           error.reason === 'hourly_limit' ||
@@ -99,7 +98,7 @@ export function useFriendRequests() {
           toast.error(error.message);
         }
       } else {
-        const message = error?.message || error?.response?.data?.message || 'Error al enviar solicitud';
+        const message = getErrorMessage(error, 'Error al enviar solicitud');
         toast.error(message);
       }
 
@@ -124,9 +123,9 @@ export function useFriendRequests() {
         setTotalRequests(data.total);
 
       });
-    } catch (error: any) {
+    } catch (error) {
      
-      const message = error.response?.data?.message || 'Error al aceptar solicitud';
+      const message = getErrorMessage(error, 'Error al aceptar solicitud');
       toast.error(message);
       throw error;
     } finally {
@@ -148,8 +147,8 @@ export function useFriendRequests() {
         setSentRequests(data.sent);
         setTotalRequests(data.total);
       });
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al rechazar solicitud';
+    } catch (error) {
+      const message = getErrorMessage(error, 'Error al rechazar solicitud');
       toast.error(message);
       throw error;
     } finally {
@@ -173,8 +172,8 @@ export function useFriendRequests() {
       
       // The cancelled person may become a suggestion again
       await storeFetchSuggestions();
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al cancelar solicitud';
+    } catch (error) {
+      const message = getErrorMessage(error, 'Error al cancelar solicitud');
       toast.error(message);
       throw error;
     } finally {
@@ -182,74 +181,7 @@ export function useFriendRequests() {
     }
   }, [storeFetchSuggestions]);
 
-  // Escuchar eventos de WebSocket en tiempo real
-  useEffect(() => {
-    if (!usersSocket) return;
-
-    // Listener: Nueva solicitud de amistad recibida
-    const handleFriendRequestReceived = (data: any) => {
-
-      
-      // Actualizar el contador y la lista
-      setTotalRequests(prev => prev + 1);
-      
-      // Recargar solicitudes para tener datos frescos
-      friendRequestService.getFriendRequests().then(response => {
-        setReceivedRequests(response.received);
-        setSentRequests(response.sent);
-        setTotalRequests(response.total);
-   
-      }).catch(console.error);
-      console.log('Nueva solicitud de amistad recibida por WebSocket:', data);
-      
-      // Mostrar notificación
-      const senderName = data.senderProfile 
-        ? `${data.senderProfile.firstName} ${data.senderProfile.lastName}` 
-        : 'Alguien';
-      
-      toast.info(`${senderName} te envió una solicitud de amistad`, {
-        duration: 5000,
-      });
-    };
-
-    // Listener: Solicitud aceptada (cuando alguien acepta tu solicitud)
-    const handleFriendRequestAccepted = (data: any) => {
-
-      
-      // Actualizar estado - remover de solicitudes enviadas
-      setSentRequests(prev => {
-        const filtered = prev.filter(req => req.requestId !== data.requestId);
-    
-        return filtered;
-      });
-      
-      setTotalRequests(prev => {
-        const newTotal = Math.max(0, prev - 1);
-   
-        return newTotal;
-      });
-      
-      // Recargar para estar seguros
-      friendRequestService.getFriendRequests().then(response => {
-        setReceivedRequests(response.received);
-        setSentRequests(response.sent);
-        setTotalRequests(response.total);
-      
-      }).catch(console.error);
-    };
-
-    // Registrar listeners
-    usersSocket.on('friend_request_received', handleFriendRequestReceived);
-    usersSocket.on('friend_request_accepted', handleFriendRequestAccepted);
-
-
-    // Cleanup
-    return () => {
-
-      usersSocket.off('friend_request_received', handleFriendRequestReceived);
-      usersSocket.off('friend_request_accepted', handleFriendRequestAccepted);
-    };
-  }, [usersSocket]); // Solo depende de usersSocket
+  useFriendRequestEvents({ setReceivedRequests, setSentRequests, setTotalRequests });
 
   // Cargar datos iniciales. Suggestions only if the store hasn't got them yet
   // (useFriendships() in the app-shell rail normally loads them first; a

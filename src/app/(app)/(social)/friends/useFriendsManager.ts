@@ -3,7 +3,7 @@
 import { useFriendships } from '@/features/friendships';
 import { useTranslations } from 'next-intl';
 import { useRouter,useSearchParams } from 'next/navigation';
-import { useCallback,useEffect,useMemo,useRef,useState } from 'react';
+import { useCallback,useMemo,useRef,useState } from 'react';
 import type { TabType } from './components';
 
 interface OpenChat {
@@ -48,13 +48,14 @@ export function useFriendsManager() {
     });
   }, [router]);
 
-  useEffect(() => {
-    const t = searchParams?.get('tab');
-    if (t && (VALID_TABS as string[]).includes(t)) {
-      setActiveTab(t as TabType);
+  const [previousTabParam, setPreviousTabParam] = useState(tabParam);
+  if (previousTabParam !== tabParam) {
+    setPreviousTabParam(tabParam);
+    if (tabParam && (VALID_TABS as string[]).includes(tabParam)) {
+      setActiveTab(tabParam as TabType);
       setManagerOpen(true);
     }
-  }, [searchParams]);
+  }
 
   const [searchQuery, setSearchQuery] = useState('');
   const [openChats, setOpenChats] = useState<OpenChat[]>([]);

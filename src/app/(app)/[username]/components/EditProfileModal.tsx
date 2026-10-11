@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { 
   XMarkIcon,
   UserIcon,
@@ -10,6 +10,8 @@ import {
 } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 import { GeneralTab, WorkEducationTab, ContactTab, InterestsTab } from './EditProfile';
+
+export type ProfileUpdate = Partial<Record<'firstName' | 'lastName' | 'bio' | 'city' | 'phone' | 'website', string>>;
 
 type TabType = 'general' | 'work-education' | 'contact' | 'interests';
 
@@ -32,7 +34,7 @@ interface EditProfileModalProps {
     languages?: string[];
     interests?: string[];
   };
-  onSave: (updatedProfile: any) => void;
+  onSave: (updatedProfile: ProfileUpdate) => void;
   initialTab?: TabType;
 }
 
@@ -45,8 +47,8 @@ export default function EditProfileModal({
 }: EditProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
   const [formData, setFormData] = useState(currentProfile);
-  const [coverPreview, setCoverPreview] = useState<string | null>(currentProfile.coverPhoto || null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(currentProfile.profilePhoto || null);
+  const [coverPreview] = useState<string | null>(currentProfile.coverPhoto || null);
+  const [avatarPreview] = useState<string | null>(currentProfile.profilePhoto || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -81,7 +83,7 @@ export default function EditProfileModal({
 
       // Filtrar valores undefined
       const cleanData = Object.fromEntries(
-        Object.entries(updateData).filter(([_, v]) => v !== undefined && v !== '')
+        Object.entries(updateData).filter(([, v]) => v !== undefined && v !== '')
       );
 
       await onSave(cleanData);

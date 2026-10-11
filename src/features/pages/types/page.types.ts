@@ -216,6 +216,6 @@ export interface PagesListResponse {
 
 export interface PageResponse {
   page: Page;
-  userRole?: PageRole;
+  userRole?: Page['userRole'];
   isFollowing: boolean;
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Image from 'next/image'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
@@ -24,20 +24,17 @@ export function UserSearchToGrant({ badgeId, badgeSlug, badgeName, evidenceRequi
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-  const searchTimer = useRef<number | null>(null)
 
   useEffect(() => {
-    if (searchTimer.current) window.clearTimeout(searchTimer.current)
-    if (query.trim().length < 2) {
-      setResults([])
-      return
-    }
-    searchTimer.current = window.setTimeout(async () => {
+    if (query.trim().length < 2) return
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
       const out = await lookupUserAction(query)
-      setResults(out)
+      if (!cancelled) setResults(out)
     }, 250)
     return () => {
-      if (searchTimer.current) window.clearTimeout(searchTimer.current)
+      cancelled = true
+      window.clearTimeout(timer)
     }
   }, [query])
 
@@ -70,6 +67,7 @@ export function UserSearchToGrant({ badgeId, badgeSlug, badgeName, evidenceRequi
         value={query}
         onChange={(e) => {
           setQuery(e.target.value)
+          setResults([])
           setSelected(null)
         }}
         placeholder="Username, email o UUID…"

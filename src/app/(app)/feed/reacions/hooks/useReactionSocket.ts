@@ -54,12 +54,12 @@ export function useReactionSocket() {
      * Evento: Reacción eliminada
      * Se dispara cuando cualquier usuario quita su reacción
      */
-    const handleReactionRemoved = (data: { postId: string; userId: string; type: string }) => {
+    const handleReactionRemoved = (data: { postId: string; userId: string; type: Reaction['type'] }) => {
       removeReaction(data.postId, data.userId);
       
       // Actualizar contador en el post
       if (data.type) {
-        decrementReactionCount(data.postId, data.type as any);
+        decrementReactionCount(data.postId, data.type);
       }
       
       // Si es el usuario actual, quitar su reacción
@@ -72,12 +72,12 @@ export function useReactionSocket() {
      * Evento: Reacción actualizada
      * Se dispara cuando un usuario cambia su tipo de reacción
      */
-    const handleReactionUpdated = (data: { reaction: Reaction; oldType: string }) => {
+    const handleReactionUpdated = (data: { reaction: Reaction; oldType: Reaction['type'] }) => {
       updateReactionInList(data.reaction);
       
       // Decrementar contador anterior
       if (data.oldType) {
-        decrementReactionCount(data.reaction.postId, data.oldType as any);
+        decrementReactionCount(data.reaction.postId, data.oldType);
       }
       
       // Incrementar nuevo contador

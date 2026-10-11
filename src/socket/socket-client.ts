@@ -16,10 +16,10 @@ export interface LegacySocket {
   connected: boolean;
   disconnected: boolean;
   id?: string;
-  on(event: string, listener: (...args: any[]) => void): LegacySocket;
-  once(event: string, listener: (...args: any[]) => void): LegacySocket;
-  off(event?: string, listener?: (...args: any[]) => void): LegacySocket;
-  emit(event: string, ...args: any[]): LegacySocket;
+  on<Args extends unknown[]>(event: string, listener: (...args: Args) => void): LegacySocket;
+  once<Args extends unknown[]>(event: string, listener: (...args: Args) => void): LegacySocket;
+  off<Args extends unknown[]>(event?: string, listener?: (...args: Args) => void): LegacySocket;
+  emit(event: string, ...args: unknown[]): LegacySocket;
   connect(): LegacySocket;
   disconnect(): LegacySocket;
   removeAllListeners(event?: string): LegacySocket;
@@ -27,6 +27,7 @@ export interface LegacySocket {
 
 export const socketManager = {
   getSocket(_namespace: string): LegacySocket | null {
+    void _namespace;
     return null;
   },
   disconnectAll(): void {},

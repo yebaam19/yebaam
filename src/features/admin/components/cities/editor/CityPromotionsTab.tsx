@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server'
+import { getNow, getTranslations } from 'next-intl/server'
 import type { AdminCityDetail } from '@/features/admin/server/cities.server'
 import { listCityPromotionsForAdmin } from '@/features/admin/server/cities.server'
 import { FilterChipsCommon } from './FilterChipsCommon'
@@ -24,7 +24,7 @@ export async function CityPromotionsTab({ city, statusFilter, page }: Props) {
     pageSize: 20,
   })
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const now = Date.now()
+  const now = (await getNow()).getTime()
 
   const statusCls: Record<Status, string> = {
     active: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',

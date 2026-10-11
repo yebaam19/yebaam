@@ -59,7 +59,7 @@ export function useTypingIndicator({ conversationId }: UseTypingIndicatorProps) 
         },
       );
     },
-    [conversationId, user?.id],
+    [conversationId, user],
   );
 
   const startTyping = useCallback(() => publishTyping(true), [publishTyping]);

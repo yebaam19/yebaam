@@ -37,15 +37,10 @@ export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = f
   const t = useTranslations('musica');
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialValue.trim().length >= 2);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const { hits, pending, error, hasQuery } = useSearchTopHits(value);
-
-  // Open the dropdown whenever a new query has results.
-  useEffect(() => {
-    if (hasQuery && hits.length > 0) setOpen(true);
-  }, [hits, hasQuery]);
 
   // Close on outside click.
   useEffect(() => {
@@ -90,7 +85,7 @@ export function MusicSearchBar({ initialValue = '', size = 'hero', autoFocus = f
         <input
           type="search"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => { setValue(e.target.value); setOpen(true); }}
           onFocus={() => hits.length > 0 && setOpen(true)}
           placeholder={t('search.barPlaceholder')}
           autoFocus={autoFocus}

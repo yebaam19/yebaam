@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { searchArtistsAction } from '../../actions/search.actions';
 import type { MusicArtistRow } from '../../types/music.types';
+import { useDebouncedMusicSearch } from '../../hooks/useDebouncedMusicSearch';
 import { inputCls } from './constants';
 
 export interface ArtistSelection {
@@ -24,32 +25,9 @@ interface Props {
  *  inline-create fields (país, born/died years, photo). */
 export function ArtistAutocomplete({ value, onChange, placeholder }: Props) {
   const t = useTranslations('musica');
-  const [hits, setHits] = useState<MusicArtistRow[]>([]);
-  const [open, setOpen] = useState(false);
-  const [, startTransition] = useTransition();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { results: hits } = useDebouncedMusicSearch<MusicArtistRow>(value.existingId ? '' : value.name, searchArtistsAction, 250);
+  const [open, setOpen] = useState(!value.existingId && value.name.trim().length >= 2);
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const trimmed = value.name.trim();
-    if (trimmed.length < 2 || value.existingId) {
-      setHits([]);
-      return;
-    }
-    debounceRef.current = setTimeout(() => {
-      startTransition(async () => {
-        const res = await searchArtistsAction(trimmed);
-        if (res.ok) {
-          setHits(res.data);
-          setOpen(true);
-        }
-      });
-    }, 250);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [value.name, value.existingId]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -64,7 +42,7 @@ export function ArtistAutocomplete({ value, onChange, placeholder }: Props) {
       <input
         type="text"
         value={value.name}
-        onChange={(e) => onChange({ existingId: null, name: e.target.value })}
+        onChange={(e) => { onChange({ existingId: null, name: e.target.value }); setOpen(true); }}
         onFocus={() => hits.length > 0 && setOpen(true)}
         placeholder={placeholder ?? t('upload.artistPlaceholder')}
         className={inputCls}

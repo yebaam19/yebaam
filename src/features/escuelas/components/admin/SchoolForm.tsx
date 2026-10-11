@@ -127,7 +127,7 @@ export function SchoolForm({ school }: Props) {
             className={INPUT + ' resize-none'}
           />
           <p className="mt-1 text-xs text-neutral-400">
-            Se muestra en la pestaña "Contacto" del perfil público de la escuela.
+            Se muestra en la pestaña &quot;Contacto&quot; del perfil público de la escuela.
           </p>
         </div>
       </section>

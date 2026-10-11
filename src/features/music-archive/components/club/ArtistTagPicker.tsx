@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { useDebouncedMusicSearch } from '../../hooks/useDebouncedMusicSearch';
 import { searchArtistsForTag } from '../../actions/music-articles.actions';
 
 interface ArtistRef {
@@ -21,40 +22,13 @@ interface Props {
 export function ArtistTagPicker({ value, onChange }: Props) {
   const t = useTranslations('musica.tags.artists');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ArtistRef[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    debounceRef.current = setTimeout(async () => {
-      const res = await searchArtistsForTag(q);
-      setLoading(false);
-      if (!res.ok) {
-        setError(res.error);
-        setResults([]);
-        return;
-      }
-      const selectedIds = new Set(value.map((v) => v.id));
-      setResults(res.data.filter((r) => !selectedIds.has(r.id)));
-    }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [query, value]);
+  const { results: matches, loading, error } = useDebouncedMusicSearch<ArtistRef>(query, searchArtistsForTag);
+  const selectedIds = new Set(value.map((item) => item.id));
+  const results = matches.filter((item) => !selectedIds.has(item.id));
 
   function add(a: ArtistRef) {
     onChange([...value, a]);
     setQuery('');
-    setResults([]);
   }
 
   function remove(id: string) {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useHydrated } from '@/hooks/useHydrated';
 import type { SearchHistoryItem, SearchResultType } from '../interfaces/search.interfaces';
 
 const SEARCH_HISTORY_KEY = 'search_history';
@@ -14,23 +15,19 @@ const MAX_HISTORY_ITEMS = 10;
  * const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory();
  */
 export function useSearchHistory() {
-  const [history, setHistory] = useState<SearchHistoryItem[]>([]);
-
-  // Cargar historial al montar
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedHistory = localStorage.getItem(SEARCH_HISTORY_KEY);
-      if (savedHistory) {
-        try {
-          const parsed = JSON.parse(savedHistory);
-          setHistory(parsed);
-        } catch (error) {
-          console.error('[useSearchHistory] Error al cargar historial:', error);
-          setHistory([]);
-        }
-      }
+  const hydrated = useHydrated();
+  const [storedHistory, setHistory] = useState<SearchHistoryItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const parsed: unknown = JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) ?? '[]');
+      return Array.isArray(parsed) ? parsed.filter((item): item is SearchHistoryItem =>
+        typeof item?.id === 'string' && typeof item?.query === 'string' &&
+        typeof item?.type === 'string' && typeof item?.timestamp === 'string') : [];
+    } catch {
+      return [];
     }
-  }, []);
+  });
+  const history = hydrated ? storedHistory : [];
 
   /**
    * Guardar historial en localStorage

@@ -11,7 +11,7 @@ interface UseLiveStreamSocketParams {
 
 interface StreamEvents {
   onCommentCreated?: (comment: LiveStreamComment) => void;
-  onReactionAdded?: (reaction: any) => void;
+  onReactionAdded?: (reaction: unknown) => void;
   onReactionRemoved?: (data: { userId: string }) => void;
   onViewerCountUpdate?: (data: { viewerCount: number }) => void;
   onViewerJoined?: (data: { userId: string; username: string }) => void;
@@ -33,6 +33,8 @@ export function useLiveStreamSocket(
   _params: UseLiveStreamSocketParams,
   _events: StreamEvents = {}
 ) {
+  void _params;
+  void _events;
   return {
     socket: null,
     isConnected: false,

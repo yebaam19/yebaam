@@ -70,7 +70,7 @@ export function FriendRequestCard({ request, onAccept, onReject }: FriendRequest
           {request.message && (
             <div className="mt-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-sm text-neutral-700 dark:text-neutral-300 italic">
-                "{request.message}"
+                &quot;{request.message}&quot;
               </p>
             </div>
           )}

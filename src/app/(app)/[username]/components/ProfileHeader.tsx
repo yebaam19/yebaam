@@ -1,8 +1,9 @@
 'use client';
 
 import { usePathname,useRouter,useSearchParams } from 'next/navigation';
-import { useEffect,useState } from 'react';
-import EditProfileModal from './EditProfileModal';
+import { useEffect, useState } from 'react';
+import type { Route } from 'next';
+import EditProfileModal, { type ProfileUpdate } from './EditProfileModal';
 import ProfileActions from './ProfileHeader/ProfileActions';
 import ProfileAvatar from './ProfileHeader/ProfileAvatar';
 import ProfileCover from './ProfileHeader/ProfileCover';
@@ -29,7 +30,7 @@ interface ProfileHeaderProps {
   work?: string;
   education?: string;
   relationship?: string;
-  onProfileUpdate?: (updatedProfile: any) => void;
+  onProfileUpdate?: (updatedProfile: ProfileUpdate) => void;
   friendshipStatus?: FriendshipStatus;
   onFriendshipChange?: (status: FriendshipStatus) => void;
 }
@@ -53,35 +54,36 @@ export default function ProfileHeader({
   onFriendshipChange,
 }: ProfileHeaderProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [initialEditTab, setInitialEditTab] = useState<EditTab | undefined>(undefined);
+  const [initialEditTab, setInitialEditTab] = useState<EditTab>();
+  const [handledRequest, setHandledRequest] = useState<string | null>(null);
 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Deep-link: ?edit=profile (optionally &tab=interests|general|...) auto-opens
-  // the edit modal on the requested tab. Used by /friends "Tu progreso"
-  // steps so users land directly in the right form.
-  useEffect(() => {
-    if (!isOwnProfile) return;
-    if (searchParams?.get('edit') !== 'profile') return;
-
-    const requestedTab = searchParams.get('tab');
-    const tab =
-      requestedTab && (VALID_EDIT_TABS as readonly string[]).includes(requestedTab)
-        ? (requestedTab as EditTab)
-        : 'general';
-
-    setInitialEditTab(tab);
-    setIsEditModalOpen(true);
-
-    // Strip the deeplink params so refreshes/back navigation don't re-open it.
-    if (pathname) {
-      router.replace(pathname as any, { scroll: false });
+  const editRequested = isOwnProfile && searchParams?.get('edit') === 'profile';
+  const requestedTab = searchParams?.get('tab');
+  const deepLinkTab = requestedTab && (VALID_EDIT_TABS as readonly string[]).includes(requestedTab)
+    ? requestedTab as EditTab : 'general';
+  const editRequest = editRequested ? `${username}:${searchParams.toString()}` : null;
+  if (editRequest !== handledRequest) {
+    setHandledRequest(editRequest);
+    if (editRequest) {
+      setInitialEditTab(deepLinkTab);
+      setIsEditModalOpen(true);
     }
-  }, [isOwnProfile, pathname, router, searchParams]);
+  }
 
-  const handleSaveProfile = (updatedProfile: any) => {
+  // Consume the deep link after the form has captured its requested tab.
+  useEffect(() => {
+    if (!editRequested || !pathname) return;
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('edit');
+    nextParams.delete('tab');
+    router.replace(`${pathname}${nextParams.size ? `?${nextParams}` : ''}` as Route, { scroll: false });
+  }, [editRequested, pathname, router, searchParams]);
+
+  const handleSaveProfile = (updatedProfile: ProfileUpdate) => {
     if (onProfileUpdate) {
       onProfileUpdate(updatedProfile);
     }
@@ -153,9 +155,9 @@ export default function ProfileHeader({
       </div>
 
       {/* Edit Profile Modal */}
-      {isOwnProfile && (
+      {isOwnProfile && isEditModalOpen && (
         <EditProfileModal
-          isOpen={isEditModalOpen}
+          isOpen={true}
           onClose={() => setIsEditModalOpen(false)}
           initialTab={initialEditTab}
           currentProfile={{

@@ -29,7 +29,7 @@ export const SettingsProducts: FC<SettingsProductsProps> = ({ pageId }) => {
             </div>
             <div>
               <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Crear Producto</p>
-              <p className="text-xs text-blue-600 dark:text-blue-400">Click en "Nuevo Producto"</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">Click en &quot;Nuevo Producto&quot;</p>
             </div>
           </div>
         </div>

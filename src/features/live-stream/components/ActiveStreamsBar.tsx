@@ -1,5 +1,6 @@
 'use client';
 
+import type { LiveStream } from '../services/live-stream-list.types';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { getAxiosInstance } from '@/lib/http/legacy-client';
@@ -8,25 +9,6 @@ import { SignalIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
 
 const axios = getAxiosInstance();
-
-interface LiveStream {
-  _id: string;
-  title: string;
-  description?: string;
-  author: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName?: string;
-    avatar?: string;
-  };
-  playbackUrl: string;
-  stats: {
-    viewerCount: number;
-    peakViewerCount: number;
-  };
-  createdAt: string;
-}
 
 export default function ActiveStreamsBar() {
   const [streams, setStreams] = useState<LiveStream[]>([]);
@@ -42,7 +24,7 @@ export default function ActiveStreamsBar() {
 
   const fetchActiveStreams = async () => {
     try {
-      const response = await axios.get('/live-streams/active');
+      const response = await axios.get<{ streams: LiveStream[] }>('/live-streams/active');
       console.log(' [ActiveStreams] Streams activos:', response.data);
       setStreams(response.data.streams || []);
     } catch (error) {

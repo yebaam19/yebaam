@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { useDebouncedMusicSearch } from '../../hooks/useDebouncedMusicSearch';
 import { searchAlbumsForTag } from '../../actions/music-media.actions';
 
 export interface AlbumRef {
@@ -20,34 +21,9 @@ interface Props {
 export function AlbumTagPicker({ value, onChange, max = 4 }: Props) {
   const t = useTranslations('musica.tags.albums');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<AlbumRef[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (debounce.current) clearTimeout(debounce.current);
-    const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    debounce.current = setTimeout(async () => {
-      const res = await searchAlbumsForTag(q);
-      setLoading(false);
-      if (!res.ok) {
-        setError(res.error);
-        return;
-      }
-      const taken = new Set(value.map((v) => v.id));
-      setResults(res.data.filter((r) => !taken.has(r.id)));
-    }, 300);
-    return () => {
-      if (debounce.current) clearTimeout(debounce.current);
-    };
-  }, [query, value]);
+  const { results: matches, loading, error } = useDebouncedMusicSearch<AlbumRef>(query, searchAlbumsForTag);
+  const selectedIds = new Set(value.map((item) => item.id));
+  const results = matches.filter((item) => !selectedIds.has(item.id));
 
   return (
     <div>
@@ -89,8 +65,7 @@ export function AlbumTagPicker({ value, onChange, max = 4 }: Props) {
                     onClick={() => {
                       onChange([...value, r]);
                       setQuery('');
-                      setResults([]);
-                    }}
+                                      }}
                     className="block w-full px-3 py-1.5 text-left text-sm hover:bg-amber-50 dark:hover:bg-amber-900/30"
                   >
                     {r.title}

@@ -19,6 +19,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { authService } from '../services/auth.service';
+import { isAuthConnectionError } from '@/lib/auth/connection-error';
 import { socketManager } from '@/socket/socket-client';
 import { disconnectRealtime, resetRealtimeFailure } from '@/utils/supabase/realtime';
 import type { 
@@ -42,11 +43,11 @@ interface AuthState {
   // Acciones
   login: (credentials: LoginDTO) => Promise<void>;
   loginWithGoogle: (redirectTo?: string) => Promise<void>;
-  register: (userData: RegisterDTO) => Promise<any>;
+  register: (userData: RegisterDTO) => ReturnType<typeof authService.register>;
   logout: () => Promise<void>;
   verifyEmail: (data: VerifyEmailRequest) => Promise<void>;
   resendOtp: (data: ResendOtpRequest) => Promise<void>;
-  checkAuth: () => Promise<void>;
+  checkAuth: (options?: { throwOnConnectionError?: boolean }) => Promise<void>;
   clearError: () => void;
   setUser: (user: AuthUser | null) => void;
 }
@@ -196,7 +197,7 @@ export const useAuthStore = create<AuthState>()(
          * Verifica si el usuario está autenticado
          * Útil para restaurar sesión al cargar la app
          */
-        checkAuth: async () => {
+        checkAuth: async (options) => {
           set({ isLoading: true });
           try {
             const user = await authService.getCurrentUser();
@@ -205,8 +206,10 @@ export const useAuthStore = create<AuthState>()(
             } else {
               set({ user: null, isAuthenticated: false, isLoading: false });
             }
-          } catch {
+          } catch (error) {
             set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+            // The provider owns retries; existing callers keep the no-throw contract.
+            if (options?.throwOnConnectionError && isAuthConnectionError(error)) throw error;
           }
         },
 

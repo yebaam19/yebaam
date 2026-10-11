@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { FC, useState, useEffect } from 'react';
+import { FC, useState } from 'react';
 import type { CreatePageDto } from '../../types/page.types';
 import { validateUsername, generateUsernameFromName } from '../../utils/pageHelpers';
 
@@ -12,28 +12,12 @@ interface CreatePageStep1Props {
 export const CreatePageStep1: FC<CreatePageStep1Props> = ({ data, onUpdate, onNext }) => {
   const t = useTranslations('pages.create.step1');
   const [name, setName] = useState(data.name || '');
-  const [slug, setSlug] = useState(data.slug || '');
+  const [manualSlug, setSlug] = useState(data.slug || '');
   const [description, setDescription] = useState(data.description || '');
-  const [slugError, setSlugError] = useState('');
-  const [isSlugManual, setIsSlugManual] = useState(false);
+  const [isSlugManual, setIsSlugManual] = useState(!!data.slug);
 
-  // Auto-generar slug desde el nombre
-  useEffect(() => {
-    if (name && !isSlugManual) {
-      const generated = generateUsernameFromName(name);
-      setSlug(generated);
-    }
-  }, [name, isSlugManual]);
-
-  // Validar slug
-  useEffect(() => {
-    if (slug) {
-      const validation = validateUsername(slug);
-      setSlugError(validation.error || '');
-    } else {
-      setSlugError('');
-    }
-  }, [slug]);
+  const slug = isSlugManual ? manualSlug : generateUsernameFromName(name);
+  const slugError = slug ? validateUsername(slug).error || '' : '';
 
   const handleNext = () => {
     if (!name.trim()) {

@@ -27,7 +27,6 @@ export default function AudioMessage({
 
   useEffect(() => {
     if (!media.r2_key || !conversationId) {
-      setFailed(true);
       return;
     }
     let cancelled = false;
@@ -52,7 +51,7 @@ export default function AudioMessage({
     };
   }, [media.r2_key, conversationId]);
 
-  if (failed) {
+  if (failed || !media.r2_key || !conversationId) {
     return <div className="px-3 py-2 text-xs opacity-70">🎤 {fmt(media.duration) || 'audio'}</div>;
   }
   if (!url) {

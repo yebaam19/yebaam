@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { fileInputCls } from './constants';
 
@@ -16,17 +16,14 @@ interface Props {
  *  network round-trip — it just shows what the user just dropped. */
 export function CoverDropZone({ file, onChange, showPreview = true }: Props) {
   const t = useTranslations('musica');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null);
-      return;
-    }
+    if (!file || !showPreview || !previewRef.current) return;
     const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    previewRef.current.src = url;
     return () => URL.revokeObjectURL(url);
-  }, [file]);
+  }, [file, showPreview]);
 
   return (
     <div>
@@ -36,9 +33,9 @@ export function CoverDropZone({ file, onChange, showPreview = true }: Props) {
         onChange={(e) => onChange(e.target.files?.[0] ?? null)}
         className={fileInputCls}
       />
-      {showPreview && previewUrl && (
+      {showPreview && file && (
         <img
-          src={previewUrl}
+          ref={previewRef}
           alt={t('upload.previewAlt')}
           className="mt-2 h-24 w-24 rounded-md border border-zinc-200 object-cover dark:border-zinc-800"
           decoding="async"

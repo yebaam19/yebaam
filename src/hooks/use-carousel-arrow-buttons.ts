@@ -1,5 +1,5 @@
 import { EmblaCarouselType } from 'embla-carousel'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
 type UsePrevNextButtonsType = {
   prevBtnDisabled: boolean
@@ -9,34 +9,18 @@ type UsePrevNextButtonsType = {
 }
 
 export const useCarouselArrowButtons = (emblaApi: EmblaCarouselType | undefined): UsePrevNextButtonsType => {
-  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
-  const [nextBtnDisabled, setNextBtnDisabled] = useState(true)
-
-  const onPrevButtonClick = useCallback(() => {
-    if (!emblaApi) return
-    emblaApi.scrollPrev()
+  const subscribe = useCallback((notify: () => void) => {
+    emblaApi?.on('reInit', notify).on('select', notify)
+    return () => { emblaApi?.off('reInit', notify).off('select', notify) }
   }, [emblaApi])
-
-  const onNextButtonClick = useCallback(() => {
-    if (!emblaApi) return
-    emblaApi.scrollNext()
-  }, [emblaApi])
-
-  const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
-    setPrevBtnDisabled(!emblaApi.canScrollPrev())
-    setNextBtnDisabled(!emblaApi.canScrollNext())
-  }, [])
-
-  useEffect(() => {
-    if (!emblaApi) return
-
-    onSelect(emblaApi)
-    emblaApi.on('reInit', onSelect).on('select', onSelect)
-  }, [emblaApi, onSelect])
-
+  const getSnapshot = useCallback(() =>
+    (emblaApi?.canScrollPrev() ? 1 : 0) | (emblaApi?.canScrollNext() ? 2 : 0), [emblaApi])
+  const available = useSyncExternalStore(subscribe, getSnapshot, () => 0)
+  const onPrevButtonClick = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
+  const onNextButtonClick = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
   return {
-    prevBtnDisabled,
-    nextBtnDisabled,
+    prevBtnDisabled: !(available & 1),
+    nextBtnDisabled: !(available & 2),
     onPrevButtonClick,
     onNextButtonClick,
   }

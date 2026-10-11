@@ -26,34 +26,34 @@ export function useNotificationSync() {
 
 
     // Cuando llega una nueva friend request
-    const handleFriendRequestReceived = (data: any) => {
+    const handleFriendRequestReceived = () => {
 
       // Refrescar notificaciones
       fetchNotifications({ page: 1, limit: 20 });
     };
 
     // Cuando aceptan tu friend request
-    const handleFriendRequestAccepted = (data: any) => {
+    const handleFriendRequestAccepted = () => {
 
       // Refrescar notificaciones
       fetchNotifications({ page: 1, limit: 20 });
     };
 
     // Cuando rechazan tu friend request
-    const handleFriendRequestRejected = (data: any) => {
+    const handleFriendRequestRejected = () => {
 
       // Refrescar notificaciones
       fetchNotifications({ page: 1, limit: 20 });
     };
 
     // Cuando te eliminan como amigo
-    const handleFriendRemoved = (data: any) => {
+    const handleFriendRemoved = () => {
 
       fetchNotifications({ page: 1, limit: 20 });
     };
 
     // Cuando se actualizan las notificaciones (ej: marcar como leídas)
-    const handleNotificationsUpdated = (data: any) => {
+    const handleNotificationsUpdated = () => {
       fetchNotifications({ page: 1, limit: 20 });
     };
 

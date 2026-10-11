@@ -48,8 +48,8 @@ export function ResetPasswordForm() {
       }
       toast.success(t('passwordReset.resetSuccessToast'));
       router.push('/login?reset=true');
-    } catch (err: any) {
-      const msg = err?.message ?? t('passwordReset.resetUpdateError');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('passwordReset.resetUpdateError');
       setError(msg);
       toast.error(msg);
     } finally {

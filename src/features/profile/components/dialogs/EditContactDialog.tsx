@@ -9,7 +9,7 @@
  * pero no se expone en el perfil público.
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import type { UserProfile } from '../../interfaces/profile.interfaces'
 import { useProfileStore } from '../../store/profile.store'
@@ -32,16 +32,14 @@ const initialFor = (user: UserProfile) => ({
   facebookUrl: user.facebookUrl || '',
 })
 
-export default function EditContactDialog({ user, open, onOpenChange }: EditContactDialogProps) {
+function EditContactDialogForm({ user, open, onOpenChange }: EditContactDialogProps) {
   const t = useTranslations('profile.dialogs.editContact')
   const tc = useTranslations('profile.dialogs.common')
   const [formData, setFormData] = useState(() => initialFor(user))
 
   const { updateProfile, isLoading } = useProfileStore()
 
-  useEffect(() => {
-    if (open) setFormData(initialFor(user))
-  }, [open, user])
+
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -163,4 +161,8 @@ export default function EditContactDialog({ user, open, onOpenChange }: EditCont
       </div>
     </BaseDialog>
   )
+}
+
+export default function EditContactDialog(props: EditContactDialogProps) {
+  return props.open ? <EditContactDialogForm key={props.user.userId} {...props} /> : null
 }

@@ -3,88 +3,30 @@
 import { CheckBadgeIcon, ShieldCheckIcon } from '@/components/icons/heroicons-shim';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { supabase } from '@/utils/supabase/client';
+import { loadVerificationBanner, type VerificationBannerState } from '../queries/verification-banner';
 import VerifyProfileDialog from './VerifyProfileDialog';
-import type { VerificationStatus } from '../types';
 
 interface Props {
   ownerUserId: string;
 }
 
-interface State {
-  status: VerificationStatus;
-  isVerified: boolean;
-  uniqueIdCode: string | null;
-  pioneerNumber: number | null;
-  rejectionReason: string | null;
-  checklist: { requiredInfo: boolean; photos: number; terms: boolean; pending: boolean };
-}
-
 export default function CompleteAuthenticationBanner({ ownerUserId }: Props) {
   const t = useTranslations('verification.banner');
-  const [state, setState] = useState<State | null>(null);
+  const [state, setState] = useState<VerificationBannerState | null>(null);
   const [open, setOpen] = useState(false);
 
   const refresh = useCallback(async () => {
-    const [profileRes, photosRes, pendingRes, rejectedRes] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select(
-          'verification_status, is_verified, unique_id_code, pioneer_number, terms_accepted_at, birth_place, birth_date, residence_country, residence_state, residence_city, study_place, work_place, first_name, last_name',
-        )
-        .eq('id', ownerUserId)
-        .maybeSingle(),
-      supabase
-        .from('verification_photos')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', ownerUserId),
-      supabase
-        .from('verification_requests')
-        .select('id')
-        .eq('user_id', ownerUserId)
-        .eq('status', 'pending')
-        .maybeSingle(),
-      supabase
-        .from('verification_requests')
-        .select('rejection_reason')
-        .eq('user_id', ownerUserId)
-        .eq('status', 'rejected')
-        .order('reviewed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-
-    const profile = profileRes.data;
-    if (!profile) return;
-    const requiredInfo = Boolean(
-      profile.first_name &&
-        profile.last_name &&
-        profile.birth_date &&
-        profile.birth_place &&
-        profile.residence_country &&
-        profile.residence_state &&
-        profile.residence_city &&
-        profile.study_place &&
-        profile.work_place,
-    );
-    setState({
-      status: (profile.verification_status as VerificationStatus) ?? 'unstarted',
-      isVerified: profile.is_verified ?? false,
-      uniqueIdCode: profile.unique_id_code,
-      pioneerNumber: profile.pioneer_number,
-      rejectionReason: rejectedRes.data?.rejection_reason ?? null,
-      checklist: {
-        requiredInfo,
-        photos: photosRes.count ?? 0,
-        terms: Boolean(profile.terms_accepted_at),
-        pending: Boolean(pendingRes.data),
-      },
-    });
+    const next = await loadVerificationBanner(ownerUserId);
+    setState(next);
   }, [ownerUserId]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void loadVerificationBanner(ownerUserId).then((next) => {
+      if (!cancelled) setState(next);
+    });
+    return () => { cancelled = true; };
+  }, [ownerUserId]);
 
   if (!state) return null;
   if (state.isVerified) {

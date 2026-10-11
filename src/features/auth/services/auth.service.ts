@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect';
+import { isAuthConnectionError } from '@/lib/auth/connection-error';
 import { parseISODate } from '@/lib/utils/date';
 import { withImageVariant } from '@/lib/media/urls';
 import {
@@ -163,7 +164,8 @@ export class AuthService {
 
   async getCurrentUser(): Promise<AuthUser | null> {
     if (typeof window === 'undefined') return null;
-    const { data } = await this.supabase.auth.getUser();
+    const { data, error } = await this.supabase.auth.getUser();
+    if (isAuthConnectionError(error)) throw error;
     const user = data?.user;
     if (!user) return null;
     const profile = await fetchProfile(this.supabase, user.id);

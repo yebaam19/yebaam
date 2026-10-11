@@ -8,11 +8,12 @@
  */
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useArticleActions } from '../hooks/useArticleActions'
 import { Article } from '../interfaces'
 import { ArticleComments } from './ArticleComments'
+import { useHydrated } from '@/hooks/useHydrated'
 import { ArticleHeader } from './ArticleHeader'
 import { ArticleMobileActions } from './ArticleMobileActions'
 import { ArticleSidebarActions } from './ArticleSidebarActions'
@@ -24,7 +25,7 @@ interface ArticleViewProps {
 
 export function ArticleView({ article, currentUserId }: ArticleViewProps) {
   const t = useTranslations('article.view')
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
 
   const {
     isLiked,
@@ -49,7 +50,6 @@ export function ArticleView({ article, currentUserId }: ArticleViewProps) {
   }
 
   useEffect(() => {
-    setMounted(true)
     recordView()
   }, [recordView])
 
