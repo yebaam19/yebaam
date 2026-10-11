@@ -5,16 +5,17 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useId } from 'react';
 import { useNotificationActions } from '../hooks/useNotificationActions';
 import { useNotificationNavigation } from '../hooks/useNotificationNavigation';
-import { NotificationType,type Notification } from '../interfaces/notification.interfaces';
+import { NotificationType, type Notification } from '../interfaces/notification.interfaces';
 import FriendRequestActions from './FriendRequestActions';
 import NotificationContent from './NotificationContent';
 import NotificationIcon from './NotificationIcon';
 
 interface NotificationItemProps {
   notification: Notification;
-  onRead: (id: string) => void;
+  onRead: (id: string) => Promise<void>;
   onDelete: (id: string) => void;
   onClick?: (notification: Notification) => void;
 }
@@ -28,6 +29,7 @@ export default function NotificationItem({
   const router = useRouter();
   const { user } = useAuthStore();
   const t = useTranslations('notification.item');
+  const contentId = useId();
 
   // `String(... ?? '')` — a malformed row can arrive with `type` undefined;
   // calling .toUpperCase() on it would crash the whole notification list.
@@ -73,7 +75,7 @@ export default function NotificationItem({
       }
     }
     if (isFriendRequest && requestId) {
-      router.push(`/friendships/requests/${requestId}`)
+      router.push(`/feed/friendships/requests/${requestId}`)
     } else {
       handleNavigationClick()
     }
@@ -92,15 +94,13 @@ export default function NotificationItem({
   };
 
   return (
-    <>
-      <div
-        onClick={handleNotificationClick}
-        className={cn(
-          'group relative flex gap-3 p-4 cursor-pointer transition-colors',
-          'hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
-          !notification.isRead && 'bg-primary-50/30 dark:bg-primary-900/10'
-        )}
-      >
+    <div
+      className={cn(
+        'group relative flex gap-3 p-4 cursor-pointer transition-colors',
+        'hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
+        !notification.isRead && 'bg-primary-50/30 dark:bg-primary-900/10'
+      )}
+    >
       {/* Indicador circular verde para notificaciones no leídas */}
       {!notification.isRead && (
         <div className="absolute left-2 top-1/2 -translate-y-1/2">
@@ -119,18 +119,29 @@ export default function NotificationItem({
 
       {/* Contenido */}
       <div className="flex-1 min-w-0">
-        <NotificationContent notification={notification} />
+        <div id={contentId}>
+          <NotificationContent notification={notification} />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleNotificationClick}
+          aria-labelledby={contentId}
+          className="absolute inset-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-600"
+        />
 
         {/* Botones de aceptar/rechazar para solicitudes de amistad */}
         {/* SOLO mostrar si el usuario es el DESTINATARIO (no el remitente) */}
         {isFriendRequest && isRecipient && requestId && (
-          <FriendRequestActions
-            isProcessing={isProcessing}
-            isAccepted={isAccepted}
-            isRejected={isRejected}
-            onAccept={handleAcceptFriendRequest}
-            onReject={handleRejectFriendRequest}
-          />
+          <div className="relative">
+            <FriendRequestActions
+              isProcessing={isProcessing}
+              isAccepted={isAccepted}
+              isRejected={isRejected}
+              onAccept={handleAcceptFriendRequest}
+              onReject={handleRejectFriendRequest}
+            />
+          </div>
         )}
 
         {/* Si es una solicitud que YO ENVIÉ, mostrar estado */}
@@ -144,10 +155,11 @@ export default function NotificationItem({
       {/* Botón de eliminar - solo si NO es solicitud de amistad */}
       {!isFriendRequest && (
         <button
+          type="button"
           onClick={handleDelete}
           className={cn(
-            'shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
-            'opacity-0 group-hover:opacity-100 transition-opacity',
+            'relative shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
+            'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity',
             'hover:bg-neutral-200 dark:hover:bg-neutral-700'
           )}
           aria-label={t('deleteLabel')}
@@ -155,7 +167,6 @@ export default function NotificationItem({
           <XMarkIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
         </button>
       )}
-      </div>
-    </>
+    </div>
   );
 }

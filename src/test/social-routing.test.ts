@@ -11,6 +11,14 @@ vi.mock('next-intl/plugin', () => ({ default: () => (config: NextConfig) => conf
 const routes = ['profiles', 'friends', 'clubs', 'blogs', 'familias', 'professional-profile', 'chat-publico'];
 
 describe('independent social modules', () => {
+  it('keeps friendship request routes outside the friends redirect', async () => {
+    const response = await unstable_getResponseFromNextConfig({
+      url: 'http://localhost:3000/feed/friendships/requests/example', nextConfig,
+    });
+    expect(getRedirectUrl(response)).toBeNull();
+    expect(namespacesForPath('/feed/friendships/requests/example')).toContain('feed');
+  });
+
   it.each(routes)('preserves old %s deep links and query parameters', async (route) => {
     for (const suffix of ['', '/example/details?tab=all&page=2']) {
       const response = await unstable_getResponseFromNextConfig({
