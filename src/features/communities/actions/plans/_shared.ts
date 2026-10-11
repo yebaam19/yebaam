@@ -24,7 +24,7 @@ export async function runPlanAction<T extends { communityId: string }, R>(
     const auth = await requireProfileSession(parsed.data.communityId, capability);
     if (!auth.ok) return { ok: false, error: auth.error };
     const result = await operation(auth.session, parsed.data);
-    if (result.ok && options.revalidate !== false) revalidatePath('/feed/comunidades/[slug]', 'layout');
+    if (result.ok && options.revalidate !== false) revalidatePath('/comunidades/[slug]', 'layout');
     return result;
   } catch {
     return { ok: false, error: 'No se pudo completar la operación. Inténtalo de nuevo.' };

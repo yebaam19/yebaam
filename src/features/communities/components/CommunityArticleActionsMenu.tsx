@@ -23,7 +23,7 @@ export function CommunityArticleActionsMenu({ articleId, communitySlug, articleS
       try {
         const result = await deleteCommunityArticle(articleId);
         if (!result.ok) { setError(result.error); return; }
-        router.replace(`/feed/comunidades/${communitySlug}/articulos` as Route);
+        router.replace(`/comunidades/${communitySlug}/articulos` as Route);
         router.refresh();
       } catch {
         setError('No se pudo eliminar el artículo. Inténtalo de nuevo.');
@@ -39,7 +39,7 @@ export function CommunityArticleActionsMenu({ articleId, communitySlug, articleS
       </MenuButton>
       <MenuItems className="absolute right-0 z-20 mt-1 w-44 rounded-lg bg-white p-1 shadow-lg outline-none dark:bg-neutral-800">
         <MenuItem>
-          <button type="button" onClick={() => router.push(`/feed/comunidades/${communitySlug}/articulos/${articleSlug}/editar` as Route)}
+          <button type="button" onClick={() => router.push(`/comunidades/${communitySlug}/articulos/${articleSlug}/editar` as Route)}
             className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-left text-sm text-neutral-900 data-focus:bg-secondary-100 dark:text-white dark:data-focus:bg-primary-900">
             <PencilSquareIcon className="size-4" aria-hidden="true" /> {t('admin.article.edit')}
           </button>

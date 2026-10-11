@@ -10,7 +10,7 @@ interface CommunityArticleCardProps {
 }
 
 export function CommunityArticleCard({ communitySlug, article }: CommunityArticleCardProps) {
-  const href = `/feed/comunidades/${communitySlug}/articulos/${article.slug}` as Route;
+  const href = `/comunidades/${communitySlug}/articulos/${article.slug}` as Route;
   const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('es-MX', {
     day: 'numeric',
     month: 'short',

@@ -90,7 +90,7 @@ describe('Question workflows', () => {
     fireEvent.change(screen.getByLabelText('Mostrar'), { target: { value: 'mine' } });
     fireEvent.change(screen.getByLabelText('Categoría'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
-    expect(mocks.push).toHaveBeenCalledWith('/feed/comunidades/test/preguntas?view=mine&state=all&category=none');
+    expect(mocks.push).toHaveBeenCalledWith('/comunidades/test/preguntas?view=mine&state=all&category=none');
     fireEvent.change(screen.getByLabelText('Buscar preguntas'), { target: { value: 'sin enviar' } });
     fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
     expect(screen.getByLabelText('Buscar preguntas')).toHaveValue('');

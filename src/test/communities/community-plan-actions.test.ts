@@ -60,7 +60,7 @@ describe('plan mutation boundaries', () => {
       community_id: id, section_id: sectionId, axis_id: axisId,
       content: '<p>Trabajo <strong>digno</strong></p>', is_published: false,
     }));
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/[slug]', 'layout');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/[slug]', 'layout');
   });
 
   it('scopes edits by tenant, section, identity and expected version', async () => {

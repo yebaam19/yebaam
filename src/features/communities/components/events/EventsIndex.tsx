@@ -21,7 +21,7 @@ export function EventsIndex({ communityId, slug, initial, month, initialView, ca
   const [view, setView] = useState(initialView); const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(initial); const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const base = `/feed/comunidades/${slug}/eventos`;
+  const base = `/comunidades/${slug}/eventos`;
   const events = selected && view === 'calendar' ? page.items.filter((event) => eventOccursOn(event, selected)) : page.items;
   return <section className="space-y-5 rounded-xl bg-white p-4 text-neutral-900 sm:p-5 dark:bg-neutral-800 dark:text-white">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-semibold">{t('title')}</h2><p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{t('timezone')}</p></div>

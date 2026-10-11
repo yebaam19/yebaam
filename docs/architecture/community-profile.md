@@ -1069,3 +1069,124 @@ Limpieza: [Next.js after](https://nextjs.org/docs/app/api-reference/functions/af
 - Pendiente: acceso al proyecto de despliegue para configurar el secreto,
   verificar entrega real de correo y completar E2E con cuentas de afectado,
   moderador y revisor independiente. No se declara cumplimiento legal completo.
+
+
+## Ruta independiente y captura REA — 2026-10-10
+
+Comunidades vive ahora en `/comunidades/**`, fuera del árbol de `/feed`.
+`next.config.ts` mantiene una redirección 308 desde `/feed/comunidades/:path*`,
+conservando subrutas y parámetros. Esto también mantiene operativos los enlaces
+históricos de notificaciones generadas por SQL; no se reescribieron registros ni
+migraciones anteriores. Los enlaces nuevos de la aplicación, el menú, la selección
+de traducciones y las invalidaciones de caché usan la ruta independiente. El
+parser de artículos compartidos acepta ambos prefijos.
+
+El marco visual y su lógica de sesión se comparten en
+`src/components/layout/SocialPageLayout.tsx`. Comunidades permite visitantes;
+Feed conserva su restricción y Chat Público conserva la vista de pantalla completa.
+La lista y el perfil de una comunidad se verificaron en la pestaña autenticada
+existente mediante Computer Use, incluyendo la redirección desde la URL anterior.
+
+### Evidencia previa al cambio de ruta
+
+Se abrió Network antes de recargar Comunidades y se exportó un HAR sanitizado del
+Chrome existente. REA analizó el archivo retenido; no efectuó los clics ni observó
+en vivo esa pestaña. El HAR original está en
+`/Users/ellis/Downloads/yebaam-comunidades-before.har` (835 registros exportados;
+el contador de DevTools llegó a 850, incluyendo actividad no conservada en el HAR).
+
+Para cumplir el límite de entrada de 32 MiB de REA se compactó el JSON. Su parser
+rechazaba el `serverIPAddress` IPv6 de Chrome: se normalizó `[::1]` a `::1` y se
+omitieron los dos valores vacíos de ese campo opcional. Se conservaron todos los
+registros y su orden en `yebaam-comunidades-before.normalized.har`. El original
+permanece intacto. Esta normalización cambia la identidad del archivo analizado.
+
+- Evidencia REA principal: `ev_7d62d6f62ae912e7a742b75b1048976ca7ad5e65f111c6aa934477f25d694668`.
+  El registro 0 contiene `GET /feed/comunidades`, HTTP 200, 2955.6 ms totales,
+  con 2942.1 ms de espera de respuesta. El HAR informa DOMContentLoaded de
+  3080.2 ms y load de 3776.8 ms. Son datos de desarrollo, sin throttling y con
+  extensiones; no equivalen a métricas de producción ni a LCP/INP/CLS.
+- Del inventario completo del HAR: 373 POST al resolvedor
+  `/__nextjs_original-stack-frames` y 354 POST a `/monitoring` (727/835 registros).
+  De estos últimos, 348 cuerpos mencionan `M_ID`. Los estados exportados son
+  767 respuestas 200, 66 respuestas 304 y 2 upgrades 101; esto no prueba que no
+  existieran peticiones fallidas fuera de la ventana o ausentes del HAR.
+- La consola leída con Computer Use y la captura aportada por el usuario muestran
+  `Cannot read properties of undefined (reading 'M_ID')`. La traza completa apunta
+  a `chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/executors/200.js`, líneas
+  minificadas 1:761 y 1:1442. La atribución a la extensión procede de esta traza,
+  no del nombre abreviado `200.js` ni de una inferencia sobre código de YEBAAM.
+- Evidencia REA de repetición: `ev_947da9a66966c3855e5bdd433b94d071890e4982a6e6d76e81421a95ab4f3f46`.
+  Los registros 156, 276 y 339 repiten el mismo identificador de Server Action,
+  con HTTP 200 y duraciones de 1388.8, 1900.0 y 2143.0 ms. El manifiesto local
+  de Next lo asocia a `getSuggestedCommunitiesAction`. Esto demuestra repetición
+  de la acción durante la recarga, pero no determina todavía qué montajes o
+  cambios de sesión originaron cada llamada. No se modificó esa lógica.
+
+### Validación y límites
+
+- Pruebas nuevas: redirección de raíz y subrutas, preservación de query string,
+  ausencia de bucles, menú independiente, catálogos i18n y artículos antiguos/nuevos.
+- Solicitudes HTTP sin cookies: `/comunidades` responde 200; `/feed` redirige al
+  login; los perfiles privado y secreto de prueba renderizan “Comunidad no disponible”.
+  El endpoint de firma de documentos rechaza una petición válida sin sesión con 401.
+  Estas comprobaciones son acotadas y no sustituyen una matriz completa de RLS
+  con dueño, miembro, no miembro y administrador.
+- `pnpm exec tsc --noEmit`, lint de todos los archivos modificados y `pnpm build`
+  pasan. Todos los archivos de código creados/modificados quedan en 250 líneas o menos.
+- Suite completa: 593 pruebas pasan y 2 fallan en `cities.server.test.ts` porque
+  esperan 8 ciudades sembradas y reciben 9. Lint global: 261 errores y 335 warnings;
+  el lint de los archivos de este cambio termina sin errores ni warnings.
+
+
+## Sugerencias: hidratación sin consultas duplicadas — 2026-10-10
+
+Los tres POST de sugerencias del HAR anterior llevaban argumentos `[12]`, `[12]`
+y `[6]`. La lista recibía 12 sugerencias del servidor pero `useFetch.initialData`
+solo servía como fallback visual; la caché seguía vacía. Además, la identidad de
+Zustand cambiaba al inicializarse la sesión y la barra lateral usaba otro límite.
+
+`useSuggestedCommunities` ahora usa la identidad del contexto servidor hasta que
+AuthProvider termina de inicializarse y, después, la sesión cliente actual. La
+instantánea inicial incluye el ID del usuario verificado que la obtuvo y solo se
+siembra bajo esa identidad. La salida de sesión y el cambio de cuenta usan claves
+distintas y no reutilizan la instantánea anterior. Sin sesión servidor, la lectura
+espera la inicialización de AuthProvider.
+
+`COMMUNITY_SUGGESTIONS_LIMIT` centraliza el lote de 12 para servidor, lista y barra
+lateral. La barra lateral mantiene sus tres tarjetas visibles. Se eliminó su
+`refetch()` posterior a unirse: la mutación ya invalida la caché compartida. Las
+invalidaciones siguen provocando una lectura nueva y las respuestas anteriores
+abortadas no sustituyen el resultado vigente. No se alteraron RLS ni autorizaciones.
+
+### Recaptura en el Chrome existente
+
+Network se activó antes de recargar `/comunidades`; el HAR posterior está en
+`/Users/ellis/Downloads/yebaam-comunidades-after.har`. REA inspeccionó la copia
+`yebaam-comunidades-after.normalized.har` con la misma normalización del campo IP
+que la captura previa. Evidencia:
+`ev_0f719fb6d9bd25f58edfcca385da1fe1b1560457c246492dda9030389f71bf75`.
+
+- 116 registros exportados. En el inventario completo hay **0 Server Actions de
+  sugerencias**, frente a 3 anteriormente. Persisten dos acciones distintas
+  (registros 86 y 106), correspondientes a las otras listas; no se presentan como
+  duplicados de sugerencias.
+- Documento HTTP 200, 2062.3 ms totales y 2048.2 ms de espera de respuesta.
+  DOMContentLoaded: 2203.4 ms; load: 2613.4 ms.
+- Solo cinco POST a `/monitoring` y ninguno al resolvedor de stack frames en el
+  HAR exportado. No se deshabilitó ni modificó ninguna extensión. Por ello, la
+  reducción global de peticiones y de tiempo de carga no se atribuye por completo
+  a la corrección de sugerencias. Sigue siendo una medida de desarrollo.
+
+### Regresión
+
+La nueva prueba de hidratación fallaba en cuatro casos antes de corregir el hook.
+Después pasan sus siete casos y la prueba existente de concurrencia/invalidation:
+reutilización SSR, montaje tardío de sidebar, inicialización de sesión, espera de
+auth, invalidación, logout/cambio de cuenta y resultado vacío. La suite completa
+pasa 600 pruebas y conserva los dos fallos de Ciudades ya documentados.
+
+Validación final de la corrección: `pnpm exec tsc --noEmit`, ESLint de los
+archivos afectados y `pnpm build` terminan correctamente. Tras centralizar el
+límite compartido se repitieron las ocho pruebas específicas y la compilación.
+Todos los archivos de código modificados permanecen en 250 líneas o menos.

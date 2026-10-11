@@ -73,7 +73,7 @@ export function CommunityAccessPreview({
                     ? t('privatePreview.cancel') : t('detail.joinButton.requestAccess')}
               </button>
             )}
-            <Link href="/feed/comunidades" className="inline-flex min-h-10 items-center text-sm font-medium text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-primary-300">
+            <Link href="/comunidades" className="inline-flex min-h-10 items-center text-sm font-medium text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-primary-300">
               {t('privatePreview.back')}
             </Link>
           </div>

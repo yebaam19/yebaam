@@ -17,7 +17,7 @@ export function QuestionForm({ communityId, slug, initial, categories, category 
   const t = useTranslations('communities.questions'); const router = useRouter();
   const mutation = usePlanMutation(); const id = useRef(initial?.id ?? null);
   const [categoryId, setCategoryId] = useState(initial?.category_id ?? '');
-  const base = `/feed/comunidades/${slug}/preguntas`;
+  const base = `/comunidades/${slug}/preguntas`;
   return <section className="space-y-4 rounded-xl bg-white p-4 text-neutral-900 sm:p-5 dark:bg-neutral-800 dark:text-white">
     <h2 className="text-xl font-semibold">{t(initial ? 'editQuestion' : 'ask')}</h2>
     <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('privateHint')}</p>

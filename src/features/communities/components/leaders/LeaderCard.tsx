@@ -13,7 +13,7 @@ export function LeaderCard({ leader, slug, canEdit }: { leader: LeaderSummary; s
   const interaction = usePlanInteraction();
   const locked = interaction.busy || !!interaction.editor;
   const image = leader.portrait?.asset;
-  return <Link href={`/feed/comunidades/${encodeURIComponent(slug)}/lideres/${leader.id}` as Route}
+  return <Link href={`/comunidades/${encodeURIComponent(slug)}/lideres/${leader.id}` as Route}
     aria-disabled={locked || undefined} onClick={(event) => { if (locked) event.preventDefault(); }}
     className="group min-w-0 overflow-hidden rounded-xl border border-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 dark:border-neutral-700">
     <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900">

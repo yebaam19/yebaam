@@ -48,7 +48,7 @@ export function normalizeArticleFields(input: unknown):
 }
 
 export function revalidateCommunityArticlePaths(): void {
-  revalidatePath('/feed/comunidades/[slug]', 'page');
-  revalidatePath('/feed/comunidades/[slug]/articulos', 'page');
-  revalidatePath('/feed/comunidades/[slug]/articulos/[articleSlug]', 'page');
+  revalidatePath('/comunidades/[slug]', 'page');
+  revalidatePath('/comunidades/[slug]/articulos', 'page');
+  revalidatePath('/comunidades/[slug]/articulos/[articleSlug]', 'page');
 }

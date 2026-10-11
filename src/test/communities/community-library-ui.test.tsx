@@ -17,7 +17,7 @@ const asset: LibraryAsset = { id: 'asset', community_id: 'community', kind: 'doc
 function mount(canEdit = true) {
   return render(<NextIntlClientProvider locale="es" timeZone="America/Bogota" messages={{ communities: messages }}>
     <LibraryWorkspace communityId="community" kind="document" initial={{ items: [asset], nextCursor: null }} folders={{ items: [], nextCursor: null }}
-      canEdit={canEdit} basePath="/feed/comunidades/test/archivos" search="" />
+      canEdit={canEdit} basePath="/comunidades/test/archivos" search="" />
   </NextIntlClientProvider>);
 }
 beforeEach(() => {

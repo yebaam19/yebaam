@@ -21,7 +21,7 @@ export function CommunityArticleView({ communitySlug, article, assets, canManage
   const byId = new Map(assets.map((asset) => [asset.id, asset]));
   const parts = splitCommunityArticleContent(article.content);
   return <article className="mx-auto max-w-4xl space-y-7 pb-10 text-neutral-900 dark:text-white">
-    <Link href={`/feed/comunidades/${communitySlug}/articulos` as Route}
+    <Link href={`/comunidades/${communitySlug}/articulos` as Route}
       className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary-800 underline-offset-4 hover:underline focus-visible:outline-2 dark:text-primary-300">
       <ArrowLeftIcon className="size-4" /> Volver a artículos
     </Link>
@@ -46,7 +46,7 @@ export function CommunityArticleView({ communitySlug, article, assets, canManage
     </header>
     {(article.isPublished || canManage) && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-700">
       {article.isPublished && <CommunityArticleShareButton articleId={article.id} articleTitle={article.title}
-        articlePath={`/feed/comunidades/${communitySlug}/articulos/${article.slug}`}
+        articlePath={`/comunidades/${communitySlug}/articulos/${article.slug}`}
         communitySlug={communitySlug} isAuthor={isAuthor} />}
       {canManage && <CommunityArticleActionsMenu articleId={article.id} communitySlug={communitySlug}
         articleSlug={article.slug} articleTitle={article.title} />}

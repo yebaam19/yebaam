@@ -35,7 +35,7 @@ export function CommunityArticleComposer({ communityId, communitySlug, initialAr
   const [attachments, setAttachments] = useState(initialAttachments);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const base = `/feed/comunidades/${communitySlug}/articulos`;
+  const base = `/comunidades/${communitySlug}/articulos`;
 
   function save(isPublished: boolean) {
     if (pending) return;

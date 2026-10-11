@@ -99,7 +99,7 @@ export function WatchFeed({ videos }: WatchFeedProps) {
                     <>
                       <span aria-hidden>·</span>
                       <Link
-                        href={`/feed/comunidades/${v.community.slug}` as Route}
+                        href={`/comunidades/${v.community.slug}` as Route}
                         className="hover:underline"
                       >
                         {v.community.name}

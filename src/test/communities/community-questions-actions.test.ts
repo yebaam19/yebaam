@@ -17,7 +17,7 @@ describe('Questions server actions', () => {
     expect(mocks.rpc).toHaveBeenCalledWith('save_community_question', {
       target_community: communityId, target_id: id, expected_version: 0, question_title: 'Pregunta', question_body: 'Texto', target_category: null, published: false,
     });
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/[slug]', 'layout');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/[slug]', 'layout');
   });
   it('rejects invalid input before opening a verified session', async () => {
     for (const patch of [{ title: '' }, { body: 'x'.repeat(6001) }, { id: 'bad' }, { expectedVersion: -1 }, { isPublished: 'true' }]) {

@@ -8,7 +8,7 @@ import { CommunitySidebar } from '@/features/communities/components/CommunitySid
 const mocks = vi.hoisted(() => ({ remove: vi.fn(), push: vi.fn(), refresh: vi.fn() }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
-  usePathname: () => '/feed/comunidades/qa',
+  usePathname: () => '/comunidades/qa',
 }));
 vi.mock('@/features/communities/actions/update.actions', () => ({ deleteCommunity: mocks.remove }));
 
@@ -71,7 +71,7 @@ describe('CommunityOwnerMenu', () => {
     await openConfirmation();
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }));
     await waitFor(() => expect(mocks.remove).toHaveBeenCalledExactlyOnceWith(communityId));
-    expect(mocks.push).toHaveBeenCalledWith('/feed/comunidades');
+    expect(mocks.push).toHaveBeenCalledWith('/comunidades');
     expect(mocks.refresh).toHaveBeenCalledOnce();
   });
 });

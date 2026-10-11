@@ -75,7 +75,7 @@ export const PROFILE_FEATURES: ProfileFeature[] = [
     {
         id: 'communities',
         icon: UserGroupIcon,
-        href: '/feed/comunidades',
+        href: '/comunidades',
         bgColor: 'bg-secondary-700',
         iconColor: 'text-secondary-700',
         disabled: false,

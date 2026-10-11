@@ -10,8 +10,8 @@ vi.mock('next-intl/server', () => ({
 it('links authorized staff to the previous and next member pages', async () => {
   render(await CommunityMembersPanel({ members: [], total: 121, page: 2, pageSize: 60, slug: 'qa' }));
   expect(screen.getByText('Página 2 de 3')).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'members.previous' })).toHaveAttribute('href', '/feed/comunidades/qa/miembros');
-  expect(screen.getByRole('link', { name: 'members.next' })).toHaveAttribute('href', '/feed/comunidades/qa/miembros?page=3');
+  expect(screen.getByRole('link', { name: 'members.previous' })).toHaveAttribute('href', '/comunidades/qa/miembros');
+  expect(screen.getByRole('link', { name: 'members.next' })).toHaveAttribute('href', '/comunidades/qa/miembros?page=3');
 });
 
 it('never offers roster navigation in restricted mode', async () => {

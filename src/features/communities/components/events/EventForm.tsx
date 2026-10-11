@@ -20,7 +20,7 @@ export function EventForm({ communityId, slug, initial, organizer }: {
   const [cover, setCover] = useState(initial?.cover ?? null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [error, setError] = useState<string | null>(null); const [pending, startTransition] = useTransition();
-  const base = `/feed/comunidades/${slug}/eventos`;
+  const base = `/comunidades/${slug}/eventos`;
   return <section className="space-y-5 rounded-xl bg-white p-4 text-neutral-900 sm:p-5 dark:bg-neutral-800 dark:text-white">
     <h2 className="text-xl font-semibold">{t(initial ? 'edit' : 'create')}</h2>
     <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('timezone')}</p>

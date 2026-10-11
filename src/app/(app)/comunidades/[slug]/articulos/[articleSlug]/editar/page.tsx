@@ -19,7 +19,7 @@ export default async function EditCommunityArticlePage({ params }: PageProps) {
 
   const canManage = await canManageCommunityArticle(community.id);
   if (!canManage) {
-    redirect(`/feed/comunidades/${slug}/articulos/${articleSlug}`);
+    redirect(`/comunidades/${slug}/articulos/${articleSlug}`);
   }
 
   const article = await getCommunityArticleForEdit(community.id, articleSlug);

@@ -27,7 +27,7 @@ export function CommunityOwnerMenu({ communityId, communityName }: CommunityOwne
         setError(result.error);
         return;
       }
-      router.push('/feed/comunidades');
+      router.push('/comunidades');
       router.refresh();
     });
   };

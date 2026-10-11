@@ -22,7 +22,7 @@ export function QuestionsIndex({ slug, query, initial, categories, category, sig
   const t = useTranslations('communities.questions'); const router = useRouter();
   const [categoryId, setCategoryId] = useState(query.categoryId === undefined ? '*' : query.categoryId ?? '');
   const page = useLibraryPage(initial, (cursor) => loadCommunityQuestions({ ...query, cursor }), t('loadError'));
-  const base = `/feed/comunidades/${slug}/preguntas`;
+  const base = `/comunidades/${slug}/preguntas`;
   return <section className="space-y-5 rounded-xl bg-white p-4 text-neutral-900 sm:p-5 dark:bg-neutral-800 dark:text-white">
     <div className="flex flex-wrap items-start justify-between gap-3"><h2 className="text-xl font-semibold">{t('title')}</h2>
       {signedIn && <Button href={`${base}/nueva`} color="brand">{t('ask')}</Button>}

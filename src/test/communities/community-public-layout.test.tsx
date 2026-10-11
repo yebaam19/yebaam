@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import FeedLayout from '@/app/(app)/feed/layout';
+import CommunitiesLayout from '@/app/(app)/comunidades/layout';
 
-const route = vi.hoisted(() => ({ pathname: '/feed/comunidades' }));
+const route = vi.hoisted(() => ({ pathname: '/comunidades' }));
 vi.mock('next/navigation', () => ({ usePathname: () => route.pathname }));
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 vi.mock('@/features/auth/context/auth-context', () => ({ useAuth: () => ({ user: null }) }));
@@ -15,11 +16,11 @@ vi.mock('@/features/chat/context/chat-notification.context', () => ({
   ChatNotificationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-describe('guest feed layout', () => {
-  beforeEach(() => { route.pathname = '/feed/comunidades'; });
+describe('guest community and feed layouts', () => {
+  beforeEach(() => { route.pathname = '/comunidades'; });
 
   it('renders public community content without a session', () => {
-    render(<FeedLayout><p>Contenido público</p></FeedLayout>);
+    render(<CommunitiesLayout><p>Contenido público</p></CommunitiesLayout>);
     expect(screen.getByText('Contenido público')).toBeTruthy();
   });
 

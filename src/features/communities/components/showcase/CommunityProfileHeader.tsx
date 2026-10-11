@@ -22,7 +22,7 @@ const ShowcaseEditor = dynamic(() => import('./ShowcaseEditor').then((module) =>
 type Props = { community: Community; canManageHeader: boolean; canEdit: boolean; showcase: CommunityShowcase | null; headerImages?: HeaderImages | null };
 export function CommunityProfileHeader(props: Props) {
   const pathname = usePathname();
-  return <PlanInteractionProvider key={pathname}><Header {...props} isHome={pathname === `/feed/comunidades/${props.community.slug}`} /></PlanInteractionProvider>;
+  return <PlanInteractionProvider key={pathname}><Header {...props} isHome={pathname === `/comunidades/${props.community.slug}`} /></PlanInteractionProvider>;
 }
 function Header({ community, canManageHeader, canEdit, showcase, headerImages, isHome }: Props & { isHome: boolean }) {
   const t = useTranslations('communities.showcase');
@@ -37,7 +37,7 @@ function Header({ community, canManageHeader, canEdit, showcase, headerImages, i
         {isHome && (showcase?.introduction || (videos.length > 0 && community.description)) && <p className="max-w-prose whitespace-pre-line wrap-anywhere text-sm leading-relaxed text-neutral-700 dark:text-neutral-200">
           {showcase?.introduction || community.description}
         </p>}
-        {!isHome && showcase && <Link href={`/feed/comunidades/${community.slug}` as Route}
+        {!isHome && showcase && <Link href={`/comunidades/${community.slug}` as Route}
           className="inline-flex min-h-9 items-center text-sm font-medium text-primary-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-300">{t('view')}</Link>}
         {isHome && canEdit && <div className="flex flex-wrap items-center gap-2">
           <Button ref={opener} outline disabled={editing} onClick={() => interaction.beginEdit('showcase')}>{t('edit')}</Button>

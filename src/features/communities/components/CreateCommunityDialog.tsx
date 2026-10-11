@@ -116,7 +116,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
       }
       reset();
       onClose();
-      router.push(`/feed/comunidades/${result.data.slug}`);
+      router.push(`/comunidades/${result.data.slug}`);
       router.refresh();
     } catch {
       setError(t('create.errors.createFailed'));

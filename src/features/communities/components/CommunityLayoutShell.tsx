@@ -43,7 +43,7 @@ export function CommunityLayoutShell({
   const t = useTranslations('communities');
   const router = useRouter();
   const pathname = usePathname();
-  const isArticleRoute = pathname?.startsWith(`/feed/comunidades/${c.slug}/articulos`) ?? false;
+  const isArticleRoute = pathname?.startsWith(`/comunidades/${c.slug}/articulos`) ?? false;
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joinTransition, startJoinTransition] = useTransition();
   const leaveMutation = useLeaveCommunity();
@@ -100,7 +100,7 @@ export function CommunityLayoutShell({
 
   const joinAction = viewerState.kind === 'guest' ? (
     <Link
-      href={`/login?redirect=${encodeURIComponent(`/feed/comunidades/${c.slug}`)}`}
+      href={`/login?redirect=${encodeURIComponent(`/comunidades/${c.slug}`)}`}
       className="inline-flex min-h-10 items-center rounded-lg bg-primary-800 px-5 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
     >
       {joinButtonLabel}
@@ -140,7 +140,7 @@ export function CommunityLayoutShell({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {isArticleRoute ? <nav aria-label="Contexto de la comunidad" className="flex min-w-0 items-center gap-2 py-4 text-sm">
-          <Link href={`/feed/comunidades/${c.slug}` as Route} className="truncate font-semibold text-primary-800 hover:underline focus-visible:outline-2 dark:text-primary-300">{c.name}</Link>
+          <Link href={`/comunidades/${c.slug}` as Route} className="truncate font-semibold text-primary-800 hover:underline focus-visible:outline-2 dark:text-primary-300">{c.name}</Link>
           <span aria-hidden="true" className="text-neutral-400">/</span>
           <span className="shrink-0 text-neutral-600 dark:text-neutral-300">Artículos</span>
         </nav> : <>

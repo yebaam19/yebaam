@@ -41,9 +41,9 @@ export async function CommunityHomePosts({ community: c, viewerState, cursor, po
           </div>}
         {(nextCursor || !firstPage) && <nav aria-label={t('detail.postsPagination')}
           className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          {!firstPage ? <Link href={`/feed/comunidades/${c.slug}#publicaciones`}
+          {!firstPage ? <Link href={`/comunidades/${c.slug}#publicaciones`}
             className="text-sm font-medium text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-primary-300">{t('detail.latestPosts')}</Link> : <span />}
-          {nextCursor && <Link href={`/feed/comunidades/${c.slug}?postsCursor=${encodeURIComponent(JSON.stringify(nextCursor))}#publicaciones`}
+          {nextCursor && <Link href={`/comunidades/${c.slug}?postsCursor=${encodeURIComponent(JSON.stringify(nextCursor))}#publicaciones`}
             className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary-800 px-4 py-2 text-sm font-semibold text-primary-800 transition-colors hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:border-primary-300 dark:text-primary-300 dark:hover:bg-primary-900/30">{t('detail.olderPosts')}</Link>}
         </nav>}
       </div>

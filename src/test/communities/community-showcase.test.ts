@@ -27,7 +27,7 @@ describe('Community showcase', () => {
       target_community: communityId, expected_version: 0, introduction_text: 'Welcome',
       publish_showcase: false, video_assets: [video1],
     });
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/[slug]', 'layout');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/[slug]', 'layout');
   });
   it('rejects invalid scope, duplicates, more than four videos and oversized introductions before auth', async () => {
     for (const patch of [{ communityId: 'bad' }, { videoAssetIds: [video1, video1] },

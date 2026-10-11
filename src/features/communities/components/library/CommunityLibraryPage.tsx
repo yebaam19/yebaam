@@ -44,12 +44,12 @@ export async function CommunityLibraryPage({ slug, kind, searchParams, pdfOnly =
     else if (folderId) query.set('carpeta', folderId);
     if (cursor) query.set('legacyCursor', JSON.stringify(cursor));
     else query.set('legacyPage', 'recent');
-    return `/feed/comunidades/${slug}/${path}${query.size ? `?${query}` : ''}#compartidos-publicaciones` as Route;
+    return `/comunidades/${slug}/${path}${query.size ? `?${query}` : ''}#compartidos-publicaciones` as Route;
   }
   return <div className="space-y-5">
     <CommunityTopTabs slug={slug} config={topTabs} canManage={capabilities.settings} />
     <LibraryWorkspace key={workspaceKey} communityId={community.id} kind={kind} initial={initial} folders={initialFolders}
-      canEdit={capabilities.content} basePath={`/feed/comunidades/${slug}/${path}`} search={search} folderId={folderId} pdfOnly={pdfOnly} />
+      canEdit={capabilities.content} basePath={`/comunidades/${slug}/${path}`} search={search} folderId={folderId} pdfOnly={pdfOnly} />
     {kind !== 'document' && !legacy && <section id="compartidos-publicaciones" className="scroll-mt-6 rounded-xl bg-white p-4 dark:bg-neutral-800">
       <Link href={legacyHref(null)} prefetch={false}
         className="inline-flex min-h-11 items-center text-sm font-semibold text-primary-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-300">

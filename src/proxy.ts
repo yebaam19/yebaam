@@ -23,7 +23,7 @@ const PUBLIC_ROUTES = [
   '/feed/chat-publico',
   // Public community profiles are readable by visitors; community RLS hides
   // private/secret content and every write still verifies the caller.
-  '/feed/comunidades',
+  '/comunidades',
   // Public forum spaces can be read by visitors; RLS hides private spaces and
   // every write still requires a verified account in the server action.
   '/foro',
@@ -67,7 +67,7 @@ const PUBLIC_ROUTES = [
 // also be able to use without being bounced to /feed or /admin/foros.
 const AUTH_ALLOWED_PUBLIC_ROUTES = [
   '/feed/chat-publico',
-  '/feed/comunidades',
+  '/comunidades',
   '/foro',
   '/verification/certificate',
   '/musica',

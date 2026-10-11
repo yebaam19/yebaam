@@ -58,7 +58,7 @@ describe('Directory editing', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar Persona de ejemplo' }));
     expect(mocks.remove).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar eliminación' }));
-    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/feed/comunidades/test/lideres'));
+    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/comunidades/test/lideres'));
     expect(mocks.remove).toHaveBeenCalledWith({ communityId, id, expectedVersion: 2, confirmed: true });
   });
   it('limits each media slot to its allowed library type', async () => {

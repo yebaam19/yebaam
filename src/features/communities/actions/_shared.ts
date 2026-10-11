@@ -34,6 +34,6 @@ export async function requireSession(): Promise<Session | null> {
 
 /** Revalidate the communities list and, when known, the affected detail page. */
 export function revalidateCommunityPaths(slug?: string) {
-  revalidatePath('/feed/comunidades');
-  if (slug) revalidatePath(`/feed/comunidades/${slug}`);
+  revalidatePath('/comunidades');
+  if (slug) revalidatePath(`/comunidades/${slug}`);
 }

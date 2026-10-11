@@ -65,7 +65,7 @@ export function RelatedLinkForm({ communityId, slug, initial, onSaved, onCancel 
           {image ? 'Cambiar imagen' : 'Elegir imagen'}
         </Button>
         {image && <Button plain disabled={pending || pickerOpen} onClick={() => { setImage(null); setImageAssetId(null); }}>Quitar</Button>}
-        <Button plain href={`/feed/comunidades/${slug}/fotos`} target="_blank" rel="noreferrer">Biblioteca de fotos</Button>
+        <Button plain href={`/comunidades/${slug}/fotos`} target="_blank" rel="noreferrer">Biblioteca de fotos</Button>
       </div>
       <p className="text-xs text-neutral-600 dark:text-neutral-300">Para publicar, elige una imagen pública de esta comunidad.</p>
       {pickerOpen && <LibraryAssetPicker communityId={communityId} editorId="related-link" kinds={['image']}

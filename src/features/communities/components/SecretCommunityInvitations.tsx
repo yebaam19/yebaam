@@ -53,7 +53,7 @@ export function SecretCommunityInvitations({
               <p className="text-xs text-neutral-600 dark:text-neutral-300">{t('secretLabel')}</p>
             </div>
             <Link
-              href={`/feed/comunidades/${encodeURIComponent(item.communitySlug)}`}
+              href={`/comunidades/${encodeURIComponent(item.communitySlug)}`}
               className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-primary-800 transition-colors hover:bg-secondary-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-secondary-200 dark:hover:bg-secondary-900/40"
             >
               {t('review')} <ArrowRight className="h-4 w-4" aria-hidden="true" />

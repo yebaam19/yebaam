@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
         destination: '/professional-services/:path*',
         permanent: true,
       },
+      { source: '/feed/comunidades/:path*', destination: '/comunidades/:path*', permanent: true },
       { source: '/feed/paginas', destination: '/paginas', permanent: true },
       { source: '/feed/paginas/:path*', destination: '/paginas/:path*', permanent: true },
     ]

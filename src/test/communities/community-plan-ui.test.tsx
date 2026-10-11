@@ -9,7 +9,7 @@ import { PlanAxes } from '@/features/communities/components/plans/PlanAxes';
 import type { CommunitySection, PlanAxis } from '@/features/communities/types/communityPlan.types';
 
 const mocks = vi.hoisted(() => ({ save: vi.fn(), remove: vi.fn(), move: vi.fn(), refresh: vi.fn() }));
-vi.mock('next/navigation', () => ({ usePathname: () => '/feed/comunidades/test/planes/government', useRouter: () => ({ refresh: mocks.refresh }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/comunidades/test/planes/government', useRouter: () => ({ refresh: mocks.refresh }) }));
 vi.mock('@/features/communities/actions/plans/content.actions', () => ({ savePlanItem: mocks.save, deletePlanItem: mocks.remove, movePlanItem: mocks.move }));
 vi.mock('@/features/communities/actions/plans/queries.actions', () => ({ loadPlanAxes: vi.fn() }));
 

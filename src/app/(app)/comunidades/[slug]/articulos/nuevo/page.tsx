@@ -14,7 +14,7 @@ export default async function NewCommunityArticlePage({ params }: PageProps) {
 
   const canPublish = await canManageCommunityArticle(community.id);
   if (!canPublish) {
-    redirect(`/feed/comunidades/${slug}/articulos`);
+    redirect(`/comunidades/${slug}/articulos`);
   }
 
   return (

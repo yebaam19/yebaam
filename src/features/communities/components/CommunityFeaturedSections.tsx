@@ -10,7 +10,7 @@ export async function CommunityFeaturedSections({ slug, sections }: {
   const featured = sections.filter((section) => section.is_visible && section.is_featured);
   if (!featured.length) return null;
   const t = await getTranslations('communities.detail');
-  const base = `/feed/comunidades/${encodeURIComponent(slug)}`;
+  const base = `/comunidades/${encodeURIComponent(slug)}`;
   return <section aria-labelledby="community-featured-sections" className="space-y-3">
     <h2 id="community-featured-sections" className="text-lg font-semibold text-neutral-900 sm:text-xl dark:text-white">
       {t('featuredSectionsHeading')}

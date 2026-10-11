@@ -22,7 +22,7 @@ export function ArticleAttachments({ communityId, slug, assets, disabled, onChan
     </ul> : <p className="text-sm text-neutral-600 dark:text-neutral-300">Ningún archivo adjunto.</p>}
     <div className="flex flex-wrap gap-2">
       <Button ref={opener} outline disabled={disabled || open || assets.length >= 20} onClick={() => setOpen(true)}>Adjuntar archivo</Button>
-      <Button plain href={`/feed/comunidades/${slug}/archivos`} target="_blank" rel="noreferrer">Biblioteca de documentos</Button>
+      <Button plain href={`/comunidades/${slug}/archivos`} target="_blank" rel="noreferrer">Biblioteca de documentos</Button>
     </div>
     {open && <LibraryAssetPicker communityId={communityId} editorId="article-attachments" kinds={['document']}
       attachedIds={assets.map((asset) => asset.id)}

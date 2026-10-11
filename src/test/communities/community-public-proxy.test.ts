@@ -17,7 +17,7 @@ vi.mock('@/utils/supabase/middleware', () => ({
 }));
 
 describe('public community routes', () => {
-  it.each(['/feed/comunidades', '/feed/comunidades/una-comunidad/fotos'])(
+  it.each(['/comunidades', '/comunidades/una-comunidad/fotos'])(
     'lets a visitor read %s without a login redirect', async (path) => {
       const response = await proxy(new NextRequest(`http://localhost:3000${path}`));
       expect(response.status).toBe(200);

@@ -22,7 +22,7 @@ export function CommunityInstitutionalNav({ slug, sections, canManage, legacyRul
   return <nav aria-label={t('navigation')} className="thin-scrollbar mb-6 flex gap-1 overflow-x-auto border-b border-neutral-200 dark:border-neutral-700">
     {tabs.map((tab) => {
       const href = tab.kind === 'about' || tab.kind === 'leaders'
-        ? `/feed/comunidades/${encodeURIComponent(slug)}/${tab.kind === 'about' ? 'acerca' : 'lideres'}` : planPath(slug, tab.kind);
+        ? `/comunidades/${encodeURIComponent(slug)}/${tab.kind === 'about' ? 'acerca' : 'lideres'}` : planPath(slug, tab.kind);
       const active = pathname === href || (tab.kind === 'leaders' && pathname.startsWith(`${href}/`));
       return <Link key={tab.kind} href={href as Route} aria-current={active ? 'page' : undefined}
         className={`shrink-0 rounded-t-lg px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300 ${active

@@ -15,7 +15,7 @@ describe('community chat decision notice', () => {
       actor: { id: '', username: '', displayName: '' },
       message: 'Se limitó tu participación en el chat de una comunidad.',
       metadata: {}, isRead: false, createdAt: '2026-10-09T01:00:00Z',
-      targetUrl: '/feed/comunidades/prueba/chat',
+      targetUrl: '/comunidades/prueba/chat',
     }} />)
     expect(screen.getByText('Se limitó tu participación en el chat de una comunidad.')).toBeInTheDocument()
     expect(screen.queryByText('Notificación del sistema')).not.toBeInTheDocument()

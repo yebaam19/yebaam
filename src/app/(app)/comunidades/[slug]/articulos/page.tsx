@@ -32,11 +32,11 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
   } catch {
     invalidCursor = true;
   }
-  if (invalidCursor) redirect(`/feed/comunidades/${slug}/articulos${query.size ? `?${query}` : ''}` as Route);
+  if (invalidCursor) redirect(`/comunidades/${slug}/articulos${query.size ? `?${query}` : ''}` as Route);
   const page = await getCommunityArticlePage(community.id, q, category,
     typeof filters.cursor === 'string' ? filters.cursor : null, canManage);
   if (page.nextCursor) query.set('cursor', page.nextCursor);
-  const nextHref = `/feed/comunidades/${slug}/articulos?${query.toString()}`;
+  const nextHref = `/comunidades/${slug}/articulos?${query.toString()}`;
   return <div className="space-y-6">
     <CommunityTopTabs slug={slug} config={topTabs} canManage={capabilities.settings} />
     <header className="flex flex-wrap items-end justify-between gap-3">
@@ -44,7 +44,7 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
         <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">Artículos</h1>
         <p className="text-sm text-neutral-600 dark:text-neutral-300">Ideas, historias y noticias de la comunidad.</p>
       </div>
-      {canManage && <Link href={`/feed/comunidades/${slug}/articulos/nuevo` as Route}
+      {canManage && <Link href={`/comunidades/${slug}/articulos/nuevo` as Route}
         className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary-800 px-4 text-sm font-medium text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800">
         <PencilSquareIcon className="size-4" /> Nuevo artículo
       </Link>}

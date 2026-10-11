@@ -19,7 +19,7 @@ export function QuestionActions({ question, slug, userId, canAnswer, canModerate
   const t = useTranslations('communities.questions'); const router = useRouter(); const interaction = usePlanInteraction();
   const mutation = usePlanMutation('question-category'); const opener = useEditorReturnFocus('question-category');
   const [categoryId, setCategoryId] = useState(question.category_id ?? '');
-  const base = `/feed/comunidades/${slug}/preguntas`;
+  const base = `/comunidades/${slug}/preguntas`;
   const locked = mutation.blocked || !!interaction.editor;
   const scope = { communityId: question.community_id, id: question.id, expectedVersion: question.version };
   if (!canAnswer && !canModerate && userId !== question.author_id) return null;

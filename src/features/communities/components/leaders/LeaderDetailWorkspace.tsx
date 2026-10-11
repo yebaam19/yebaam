@@ -33,7 +33,7 @@ function Detail({ slug, leader, categories: initial, category, contacts, media, 
   const cover = media.find((item) => item.slot === 'cover')?.asset;
   const portrait = media.find((item) => item.slot === 'portrait')?.asset;
   const video = media.find((item) => item.slot === 'video')?.asset;
-  const href = `/feed/comunidades/${encodeURIComponent(slug)}/lideres` as Route;
+  const href = `/comunidades/${encodeURIComponent(slug)}/lideres` as Route;
   const locked = interaction.busy || !!interaction.editor;
   return <article className="min-w-0 overflow-hidden rounded-xl bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
     {cover && <div className="relative aspect-[3/1]"><Image src={imageUrl(cover.media_id)} alt={cover.title} fill unoptimized sizes="100vw" className="object-cover" /></div>}

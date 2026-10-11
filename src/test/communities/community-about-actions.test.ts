@@ -27,7 +27,7 @@ describe('About writes', () => {
     const result = await saveCommunityAbout({ communityId, id, mission: '<p onclick="alert(1)">Mission</p><img src="https://invalid.test/x"><script>x()</script>' });
     expect(result.ok).toBe(true);
     expect(write.insert).toHaveBeenCalledWith(expect.objectContaining({ id, community_id: communityId, mission: '<p>Mission</p>', is_published: false }));
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/[slug]', 'layout');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/[slug]', 'layout');
   });
   it('rejects malformed links, dates and byte-heavy text before constructing a session', async () => {
     for (const patch of [{ website: 'javascript:alert(1)' }, { website: 'https://user:pass@example.test' },

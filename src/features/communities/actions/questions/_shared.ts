@@ -27,7 +27,7 @@ export async function runQuestionMutation<T>(
     if (error) return { ok: false, error: questionError(error.code) };
     const saved = resultSchema.safeParse(data);
     if (!saved.success) return { ok: false, error: questionError() };
-    revalidatePath('/feed/comunidades/[slug]', 'layout');
+    revalidatePath('/comunidades/[slug]', 'layout');
     return { ok: true, data: saved.data };
   } catch { return { ok: false, error: questionError() }; }
 }

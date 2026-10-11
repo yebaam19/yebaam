@@ -50,7 +50,7 @@ export async function saveCommunityRole(input: unknown): Promise<ActionResult<{ 
     can_edit_plans: value.role === 'editor' && value.canEditPlans,
   }, { onConflict: 'community_id,user_id' }).select('user_id').maybeSingle();
   if (error || !saved) return { ok: false, error: 'No se pudo guardar el rol.' };
-  revalidatePath(`/feed/comunidades/${owner.slug}`, 'layout');
+  revalidatePath(`/comunidades/${owner.slug}`, 'layout');
   return { ok: true, data: { userId: targetUserId } };
 }
 
@@ -63,6 +63,6 @@ export async function revokeCommunityRole(input: unknown): Promise<ActionResult<
     .eq('community_id', parsed.data.communityId).eq('user_id', parsed.data.userId)
     .select('user_id').maybeSingle();
   if (error || !data) return { ok: false, error: 'No se pudo revocar el rol.' };
-  revalidatePath(`/feed/comunidades/${owner.slug}`, 'layout');
+  revalidatePath(`/comunidades/${owner.slug}`, 'layout');
   return { ok: true, data: { userId: parsed.data.userId } };
 }

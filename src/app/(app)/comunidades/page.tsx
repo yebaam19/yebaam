@@ -6,6 +6,7 @@ import {
 } from '@/features/communities/server/communities.server';
 import { getServerClient } from '@/utils/supabase/server';
 import { CommunitiesTabsClient } from '@/features/communities/components/CommunitiesTabsClient';
+import { COMMUNITY_SUGGESTIONS_LIMIT } from '@/features/communities/suggestions.config';
 
 export default async function CommunitiesPage() {
   const client = await getServerClient();
@@ -15,7 +16,7 @@ export default async function CommunitiesPage() {
   const [popular, mine, suggested, invitations] = await Promise.all([
     listPopularCommunities(12),
     listMyCommunities(),
-    listSuggestedCommunities(12),
+    listSuggestedCommunities(COMMUNITY_SUGGESTIONS_LIMIT),
     listSecretCommunityInvitations(),
   ]);
 
@@ -25,6 +26,7 @@ export default async function CommunitiesPage() {
         initialPopular={popular}
         initialMine={mine}
         initialSuggested={suggested}
+        initialViewerId={userData.user?.id ?? null}
         initialInvitations={invitations}
         canCreate={canCreate}
       />

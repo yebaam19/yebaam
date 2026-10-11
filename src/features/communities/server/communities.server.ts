@@ -1,7 +1,7 @@
 import 'server-only';
 
 /**
- * Server reads backing the `/feed/comunidades/**` views. Every export keeps its
+ * Server reads backing the `/comunidades/**` views. Every export keeps its
  * `cache()` wrapper so list/detail/posts/members/admin fetches share at most one
  * DB hit per request.
  *

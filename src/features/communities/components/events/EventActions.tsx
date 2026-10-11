@@ -23,7 +23,7 @@ export function EventActions({ event, slug }: { event: CommunityEvent; slug: str
   }, [operation, pending]);
   return <div className="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-700">
     <div className="flex flex-wrap gap-2">
-      <Button ref={editButton} outline disabled={pending || operation !== null} onClick={() => router.push(`/feed/comunidades/${slug}/eventos/${event.id}/editar` as Route)}>{t('edit')}</Button>
+      <Button ref={editButton} outline disabled={pending || operation !== null} onClick={() => router.push(`/comunidades/${slug}/eventos/${event.id}/editar` as Route)}>{t('edit')}</Button>
       {!event.is_cancelled && <Button outline disabled={pending || operation !== null} onClick={(e: MouseEvent<HTMLButtonElement>) => { opener.current = e.currentTarget; setOperation('cancel'); }}>{t('cancelEvent')}</Button>}
       <Button plain disabled={pending || operation !== null} onClick={(e: MouseEvent<HTMLButtonElement>) => { opener.current = e.currentTarget; setOperation('archive'); }}>{t('deleteEvent')}</Button>
     </div>
@@ -34,7 +34,7 @@ export function EventActions({ event, slug }: { event: CommunityEvent; slug: str
           try {
             const result = await changeCommunityEvent({ communityId: event.community_id, id: event.id, expectedVersion: event.version, operation, confirmed: true });
             if (!result.ok) { setError(result.error); return; }
-            if (operation === 'archive') router.push(`/feed/comunidades/${slug}/eventos` as Route);
+            if (operation === 'archive') router.push(`/comunidades/${slug}/eventos` as Route);
             if (operation === 'cancel') restoreFocus.current = editButton.current;
             setOperation(null); router.refresh();
           } catch { setError(t('saveError')); }

@@ -11,7 +11,7 @@ const TAB_PATHS: Record<CommunityTabKey, string> = {
 export function buildCommunityTopTabs(
   slug: string, config: CommunityTopTabConfig, labels: Record<CommunityTabKey, string>, canManage: boolean,
 ): DisplayTab[] {
-  const base = `/feed/comunidades/${encodeURIComponent(slug)}`;
+  const base = `/comunidades/${encodeURIComponent(slug)}`;
   const byKey = new Map(config.items.map((tab) => [tab.tab_key, tab]));
   const keys = config.configured ? config.items.map((tab) => tab.tab_key) : [...COMMUNITY_TAB_KEYS];
   return keys.map((key, index) => ({

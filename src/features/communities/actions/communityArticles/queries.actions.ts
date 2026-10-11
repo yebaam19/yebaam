@@ -73,6 +73,6 @@ export async function getCommunityArticlePreview(
     summary: articleRow.summary,
     coverImageUrl,
     readTime: articleRow.read_time,
-    href: `/feed/comunidades/${communitySlug}/articulos/${articleRow.slug}`,
+    href: `/comunidades/${communitySlug}/articulos/${articleRow.slug}`,
   };
 }

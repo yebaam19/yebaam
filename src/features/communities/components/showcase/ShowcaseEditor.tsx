@@ -69,7 +69,7 @@ export function ShowcaseEditor({ communityId, slug, initial, onClose }: {
     </ol>
     <div className="flex flex-wrap items-center gap-3">
       {videos.length < 4 && <Button outline disabled={pending || picker !== null || remove !== null} onClick={(event: MouseEvent<HTMLButtonElement>) => openPicker(videos.length, event)}>{t('add')}</Button>}
-      <Button outline href={`/feed/comunidades/${slug}/videos`} target="_blank" rel="noreferrer" aria-label={t('libraryNewTab')}>{t('library')}<ArrowTopRightOnSquareIcon className="size-4" /></Button>
+      <Button outline href={`/comunidades/${slug}/videos`} target="_blank" rel="noreferrer" aria-label={t('libraryNewTab')}>{t('library')}<ArrowTopRightOnSquareIcon className="size-4" /></Button>
     </div>
     {picker !== null && <LibraryAssetPicker communityId={communityId} kinds={['video']} editorId="showcase"
       attachedIds={videos.map((video) => video.asset_id)} onClose={() => setPicker(null)} onSelect={(asset) => {

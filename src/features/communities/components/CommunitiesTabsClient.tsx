@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { COMMUNITY_SUGGESTIONS_LIMIT } from '../suggestions.config';
 import {
   useMyCommunities,
   useSuggestedCommunities,
@@ -29,6 +30,7 @@ interface CommunitiesTabsClientProps {
   initialPopular: Community[];
   initialMine: Community[];
   initialSuggested: Community[];
+  initialViewerId: string | null;
   initialInvitations: SecretCommunityInvitationPage;
   canCreate: boolean;
 }
@@ -37,6 +39,7 @@ export function CommunitiesTabsClient({
   initialPopular,
   initialMine,
   initialSuggested,
+  initialViewerId,
   initialInvitations,
   canCreate,
 }: CommunitiesTabsClientProps) {
@@ -48,7 +51,7 @@ export function CommunitiesTabsClient({
   const [createOpen, setCreateOpen] = useState(false);
 
   const { data: myCommunitiesData } = useMyCommunities(initialMine);
-  const { data: suggestedData } = useSuggestedCommunities(12, initialSuggested);
+  const { data: suggestedData } = useSuggestedCommunities(COMMUNITY_SUGGESTIONS_LIMIT, initialSuggested, initialViewerId);
   const { data: popularData } = usePopularCommunities(12, initialPopular);
 
   const joinMutation = useJoinCommunity();

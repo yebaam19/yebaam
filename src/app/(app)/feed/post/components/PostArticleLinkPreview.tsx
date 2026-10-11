@@ -14,11 +14,11 @@ import {
 
 /**
  * Matches a community article URL with or without origin:
- *   /feed/comunidades/<community-slug>/articulos/<article-slug>
+ *   /comunidades/<community-slug>/articulos/<article-slug>
  * Trailing path segments and query strings are tolerated and ignored.
  */
 const ARTICLE_URL_RE =
-  /(?:https?:\/\/[^\s]+)?\/feed\/comunidades\/([a-z0-9-]+)\/articulos\/([a-z0-9-]+)(?=$|[\s/?#])/i;
+  /(?:https?:\/\/[^\s]+)?\/(?:feed\/)?comunidades\/([a-z0-9-]+)\/articulos\/([a-z0-9-]+)(?=$|[\s/?#])/i;
 
 export interface ParsedArticleLink {
   communitySlug: string;
@@ -79,7 +79,7 @@ export function PostArticleLinkPreview({
     // Fallback: render as a plain styled link so users still get something useful.
     return (
       <Link
-        href={`/feed/comunidades/${communitySlug}/articulos/${articleSlug}` as Route}
+        href={`/comunidades/${communitySlug}/articulos/${articleSlug}` as Route}
         className="mt-3 block break-all rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-blue-600 hover:underline dark:border-gray-700 dark:bg-gray-800/40 dark:text-blue-400"
       >
         Abrir artículo

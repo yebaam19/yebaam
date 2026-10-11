@@ -102,7 +102,7 @@ export function CommunityArticleShareButton({
         setDialogOpen(false);
         setShared(false);
         setMessage('');
-        router.push(`/feed/comunidades/${communitySlug}`);
+        router.push(`/comunidades/${communitySlug}`);
       }, 900);
     });
   };

@@ -37,7 +37,7 @@ interface SidebarItem {
 }
 
 function buildItems(slug: string): SidebarItem[] {
-  const base = `/feed/comunidades/${slug}`;
+  const base = `/comunidades/${slug}`;
   return [
     { href: `${base}/miembros`, labelKey: 'members', icon: UserGroupIcon },
     { href: `${base}/chat`, labelKey: 'chat', icon: ChatBubbleLeftRightIcon },

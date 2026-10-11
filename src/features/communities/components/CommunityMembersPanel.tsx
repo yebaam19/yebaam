@@ -21,7 +21,7 @@ interface CommunityMembersPanelProps {
 export async function CommunityMembersPanel({ members, total, restricted = false, page = 1, pageSize = 60, slug }: CommunityMembersPanelProps) {
   const t = await getTranslations('communities');
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
-  const basePath = slug ? `/feed/comunidades/${encodeURIComponent(slug)}/miembros` : null;
+  const basePath = slug ? `/comunidades/${encodeURIComponent(slug)}/miembros` : null;
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">

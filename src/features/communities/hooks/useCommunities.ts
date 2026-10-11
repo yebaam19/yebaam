@@ -2,10 +2,13 @@
 
 import { useFetch } from '@/lib/hooks/useFetch';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { cacheKey, getVersion, invalidate } from '@/lib/hooks/cacheStore';
+import { cacheKey, getVersion, invalidate, setCached } from '@/lib/hooks/cacheStore';
 import { coalescePending } from '@/lib/coalesce-pending';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useEffect } from 'react';
+import { useAuth } from '@/features/auth/context/auth-context';
+import { useOptionalCurrentUser } from '@/features/auth/context/current-user.context';
 import { communitiesService } from '../services/communities.service';
+import { COMMUNITY_SUGGESTIONS_LIMIT } from '../suggestions.config';
 import {
   Community,
   CommunitiesListResponse,
@@ -54,17 +57,34 @@ export function useMyCommunities(initial?: Community[]) {
   );
 }
 
-export function useSuggestedCommunities(limit = 6, initial?: Community[]) {
-  const viewerId = useAuthStore((state) => state.user?.id);
-  const key = [...communitiesKeys.suggested(limit), viewerId];
+export function useSuggestedCommunities(limit = COMMUNITY_SUGGESTIONS_LIMIT, initial?: Community[], initialViewerId?: string | null) {
+  const { user, isInitialized } = useAuth();
+  const serverUser = useOptionalCurrentUser();
+  // The server identity is available before client auth finishes restoring.
+  // Once initialized, the live session wins, including logout and account switches.
+  const viewerId = (isInitialized ? user?.id : serverUser?.id) ?? null;
+  const key = [...communitiesKeys.suggested(limit), viewerId ?? 'guest'];
   const flatKey = cacheKey(...key);
+  const seed = initialViewerId === viewerId ? initial : undefined;
+
+  // useFetch's initialData is only a display fallback. Seed its cache before
+  // its fetch effect, binding the server snapshot to the verified server user.
+  // Invalidation does not rerun this effect, so it still triggers a fresh read.
+  useEffect(() => {
+    if (seed) setCached(flatKey, { data: listInitial(seed), fetchedAt: Date.now() });
+  }, [flatKey, seed]);
+
   return useFetch(
     key,
     () => coalescePending(
       `${flatKey}::${getVersion(flatKey)}`,
       () => communitiesService.getSuggestedCommunities(limit),
     ),
-    { initialData: listInitial(initial), staleTime: 5 * 60_000 },
+    {
+      enabled: isInitialized || !!serverUser,
+      initialData: listInitial(seed),
+      staleTime: 5 * 60_000,
+    },
   );
 }
 

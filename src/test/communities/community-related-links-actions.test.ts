@@ -43,7 +43,7 @@ describe('community related links', () => {
       description: 'Proyecto', href: 'https://example.org', image_asset_id: imageAssetId,
       position: 1, is_published: true });
     expect(insert.mock.calls[0][0]).not.toHaveProperty('ownerId');
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/[slug]', 'layout');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/[slug]', 'layout');
 
     read.maybeSingle.mockResolvedValueOnce({ data: { id, version: 1, deleted_at: null,
       title: 'Aliados', description: 'Proyecto', href: 'https://example.org', image_asset_id: imageAssetId,

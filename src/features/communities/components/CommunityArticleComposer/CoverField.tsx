@@ -23,7 +23,7 @@ export function CoverField({ communityId, slug, coverPreview, coverAssetId, disa
     <div className="flex flex-wrap gap-2">
       <Button ref={opener} outline disabled={disabled || open} onClick={() => setOpen(true)}>Elegir imagen</Button>
       {coverPreview && <Button plain disabled={disabled || open} onClick={() => onChange(null, null)}>Quitar imagen</Button>}
-      <Button plain href={`/feed/comunidades/${slug}/fotos`} target="_blank" rel="noreferrer">Biblioteca de fotos</Button>
+      <Button plain href={`/comunidades/${slug}/fotos`} target="_blank" rel="noreferrer">Biblioteca de fotos</Button>
     </div>
     {open && <LibraryAssetPicker communityId={communityId} editorId="article-cover" kinds={['image']}
       attachedIds={coverAssetId ? [coverAssetId] : []}

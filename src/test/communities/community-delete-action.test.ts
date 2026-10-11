@@ -43,8 +43,8 @@ describe('deleteCommunity', () => {
   it('reports and revalidates a confirmed deletion', async () => {
     ownerWithDelete({ data: { id: communityId }, error: null });
     expect(await deleteCommunity(communityId)).toEqual({ ok: true, data: { id: communityId } });
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades');
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/comunidad-test');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/comunidad-test');
     expect(mocks.cleanup).toHaveBeenCalledOnce();
   });
 });

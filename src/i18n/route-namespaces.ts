@@ -88,7 +88,7 @@ const ROUTE_NAMESPACES: ReadonlyArray<readonly [string, Namespace[]]> = [
   ['/feed/businesses', shell('businesses')],
   ['/feed/chat-publico', shell()],
   ['/feed/clubs', shell('clubes')],
-  ['/feed/comunidades', shell('communities', 'foro', 'article')],
+  ['/comunidades', shell('communities', 'foro', 'article')],
   ['/feed/familias', shell('familias', 'common')],
   ['/feed/friends', shell('feed')],
   ['/feed/friendships', shell('feed', 'profile')],

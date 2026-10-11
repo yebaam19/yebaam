@@ -16,7 +16,7 @@ function formatMemberCount(n: number): string {
 
 export function SuggestedGroupsCard() {
   const enabled = isFeatureEnabled('GRUPOS_ENABLED') || isFeatureEnabled('COMUNIDADES_ENABLED')
-  const { data, refetch } = useSuggestedCommunities(6)
+  const { data } = useSuggestedCommunities()
   const join = useJoinCommunity()
   const [joinedIds, setJoinedIds] = useState<Set<string>>(() => new Set())
 
@@ -30,7 +30,6 @@ export function SuggestedGroupsCard() {
     setJoinedIds((s) => new Set(s).add(id))
     try {
       await join.mutateAsync(id)
-      void refetch()
     } catch {
       setJoinedIds((s) => {
         const next = new Set(s)

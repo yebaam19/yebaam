@@ -103,6 +103,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   const hasOwnChrome =
     firstSegment === 'feed' ||
     firstSegment === 'cities' ||
+    firstSegment === 'comunidades' ||
     firstSegment === 'insignias' ||
     firstSegment === 'noticias' ||
     firstSegment === 'professional-services' ||

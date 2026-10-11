@@ -78,7 +78,7 @@ export async function resolveCommunityChatCase(input: unknown): Promise<Result> 
     : error.message === 'case_defense_open'
       ? 'Espera el aviso por correo y las 48 horas de descargos.'
       : 'No se pudo resolver. Revisa el plazo, tus permisos y el estado del expediente.' }
-  revalidatePath('/feed/comunidades/[slug]/chat', 'page')
+  revalidatePath('/comunidades/[slug]/chat', 'page')
   return { ok: true }
 }
 

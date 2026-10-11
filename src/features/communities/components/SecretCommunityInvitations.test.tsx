@@ -32,7 +32,7 @@ describe('secret community invitation inbox', () => {
     render(<SecretCommunityInvitations initialPage={{ items: [first], nextCursor: 'cursor-1' }} />);
 
     const review = screen.getByRole('link', { name: 'review' });
-    expect(review.getAttribute('href')).toBe('/feed/comunidades/circulo-privado');
+    expect(review.getAttribute('href')).toBe('/comunidades/circulo-privado');
     fireEvent.click(screen.getByRole('button', { name: 'more' }));
     await waitFor(() => expect(screen.getByText('Otro círculo')).toBeTruthy());
     expect(getMoreSecretCommunityInvitations).toHaveBeenCalledWith('cursor-1');

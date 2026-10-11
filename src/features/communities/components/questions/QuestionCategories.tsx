@@ -20,7 +20,7 @@ function Categories({ communityId, slug, initial }: Props) {
   const [editing, setEditing] = useState<QuestionCategory>(); const openerRef = useEditorReturnFocus('category-form');
   const locked = interaction.busy || !!interaction.editor;
   return <section className="space-y-5 rounded-xl bg-white p-4 text-neutral-900 sm:p-5 dark:bg-neutral-800 dark:text-white">
-    <Button plain disabled={locked} onClick={() => router.push(`/feed/comunidades/${slug}/preguntas` as Route)}>{t('back')}</Button>
+    <Button plain disabled={locked} onClick={() => router.push(`/comunidades/${slug}/preguntas` as Route)}>{t('back')}</Button>
     <h2 className="text-xl font-semibold">{t('manageCategories')}</h2>
     <Button ref={editing ? undefined : openerRef} color="brand" disabled={locked} onClick={(e: MouseEvent<HTMLButtonElement>) => {
       openerRef.current = e.currentTarget; setEditing(undefined); interaction.beginEdit('category-form');

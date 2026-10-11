@@ -23,7 +23,7 @@ export async function saveCommunityHeaderImage(input: unknown): Promise<ActionRe
     const framing = value.imageId ? value.framing : DEFAULT_IMAGE_FRAMING;
     // A lost response can be retried without another revision or upload.
     if (row[imageKey] === value.imageId && ['x', 'y', 'zoom'].every((key) => row[framingKey][key] === framing[key as keyof typeof framing])) {
-      revalidatePath('/feed/comunidades/[slug]', 'layout');
+      revalidatePath('/comunidades/[slug]', 'layout');
       return { ok: true, data: { version: row.header_image_version } };
     }
     if (row.header_image_version !== value.expectedVersion) return { ok: false, error: 'Las imágenes cambiaron. Recarga antes de guardar; conserva tu archivo para volver a seleccionarlo.' };
@@ -39,8 +39,8 @@ export async function saveCommunityHeaderImage(input: unknown): Promise<ActionRe
     if (error?.code === '40001') return { ok: false, error: 'Las imágenes cambiaron. Recarga antes de guardar; conserva tu archivo para volver a seleccionarlo.' };
     if (error?.code === '42501') return { ok: false, error: 'Ya no tienes permiso para editar estas imágenes.' };
     if (error || typeof data !== 'number') return { ok: false, error: 'No se pudo guardar la imagen. Inténtalo de nuevo.' };
-    revalidatePath('/feed/comunidades');
-    revalidatePath('/feed/comunidades/[slug]', 'layout');
+    revalidatePath('/comunidades');
+    revalidatePath('/comunidades/[slug]', 'layout');
     return { ok: true, data: { version: data } };
   } catch {
     return { ok: false, error: 'No se pudo guardar la imagen. Tu selección se conserva para reintentar.' };

@@ -5,7 +5,10 @@ import type { CommunitiesListResponse } from '../types/community.types';
 import { useSuggestedCommunities } from './useCommunities';
 
 const { load } = vi.hoisted(() => ({ load: vi.fn() }));
-vi.mock('@/features/auth/store/auth.store', () => ({ useAuthStore: () => 'test-viewer' }));
+vi.mock('@/features/auth/context/auth-context', () => ({
+  useAuth: () => ({ user: { id: 'test-viewer' }, isInitialized: true }),
+}));
+vi.mock('@/features/auth/context/current-user.context', () => ({ useOptionalCurrentUser: () => null }));
 vi.mock('../services/communities.service', () => ({
   communitiesService: { getSuggestedCommunities: load },
 }));

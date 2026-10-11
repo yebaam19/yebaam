@@ -51,7 +51,7 @@ describe('community role actions', () => {
       community_id: communityId, user_id: memberId, role: 'editor', can_edit_plans: true,
     }, { onConflict: 'community_id,user_id' });
     expect(upsert.mock.calls[0][0]).not.toHaveProperty('ownerId');
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/test', 'layout');
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/test', 'layout');
 
     member.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
     expect((await saveCommunityRole(input)).ok).toBe(false);

@@ -11,7 +11,7 @@ describe('community content tabs', () => {
   it('keeps existing communities on the six visible default tabs', () => {
     const tabs = buildCommunityTopTabs('mi comunidad', { items: [], configured: false }, labels, false);
     expect(tabs.map((tab) => tab.title)).toEqual(Object.values(labels));
-    expect(tabs[0].href).toBe('/feed/comunidades/mi%20comunidad');
+    expect(tabs[0].href).toBe('/comunidades/mi%20comunidad');
     expect(tabs.every((tab) => tab.is_visible && tab.version === 0)).toBe(true);
   });
 

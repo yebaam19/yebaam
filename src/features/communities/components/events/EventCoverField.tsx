@@ -20,7 +20,7 @@ export function EventCoverField({ communityId, slug, id, cover, disabled, onChan
     <div className="flex flex-wrap gap-2">
       <Button ref={opener} outline disabled={disabled || open} onClick={() => toggle(true)}>{t('chooseCover')}</Button>
       {id && <Button plain disabled={disabled || open} onClick={() => onChange(null, null)}>{t('removeCover')}</Button>}
-      <Button plain href={`/feed/comunidades/${slug}/fotos`} target="_blank" rel="noreferrer">{t('photoLibrary')}</Button>
+      <Button plain href={`/comunidades/${slug}/fotos`} target="_blank" rel="noreferrer">{t('photoLibrary')}</Button>
     </div>
     {open && <LibraryAssetPicker communityId={communityId} editorId="event" kinds={['image']} attachedIds={id ? [id] : []}
       onSelect={(asset) => onChange(asset.id, { id: asset.id, title: asset.title, media_id: asset.media_id })} onClose={() => toggle(false)} />}

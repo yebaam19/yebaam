@@ -9,7 +9,7 @@ import type { LibraryAsset } from '@/features/communities/types/communityLibrary
 import type { Community } from '@/features/communities/types/community.types';
 import type { ReactNode } from 'react';
 const mocks = vi.hoisted(() => ({ save: vi.fn(), refresh: vi.fn(), assets: vi.fn(),
-  pathname: '/feed/comunidades/test', player: { play: vi.fn(), muted: false, volume: 1 } }));
+  pathname: '/comunidades/test', player: { play: vi.fn(), muted: false, volume: 1 } }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mocks.refresh }), usePathname: () => mocks.pathname }));
 vi.mock('@/features/communities/actions/showcase.actions', () => ({ saveCommunityShowcase: mocks.save }));
 vi.mock('next/dynamic', () => ({ default: (loader: () => Promise<unknown>) =>
@@ -31,7 +31,7 @@ function view(node: ReactNode) {
   return render(<NextIntlClientProvider locale="es" messages={{ communities: translations }}>{node}</NextIntlClientProvider>);
 }
 beforeEach(() => { vi.clearAllMocks(); mocks.player.muted = false; mocks.player.play.mockReset().mockResolvedValue(undefined);
-  mocks.pathname = '/feed/comunidades/test';
+  mocks.pathname = '/comunidades/test';
   mocks.assets.mockResolvedValue({ ok: true, data: { items: videos, nextCursor: null } });
   mocks.save.mockResolvedValue({ ok: false, error: 'Conflicto: vuelve a intentarlo' }); });
 describe('Showcase playback', () => {
@@ -136,9 +136,9 @@ describe('Showcase editing', () => {
     const home = view(<CommunityProfileHeader community={community} canManageHeader={false} canEdit={false} showcase={showcase} />);
     expect(screen.getByRole('button', { name: 'Reproducir Video 1' })).toBeTruthy();
     home.unmount();
-    mocks.pathname = '/feed/comunidades/test/archivos';
+    mocks.pathname = '/comunidades/test/archivos';
     view(<CommunityProfileHeader community={community} canManageHeader={false} canEdit={false} showcase={showcase} />);
     expect(screen.queryByRole('button', { name: 'Reproducir Video 1' })).toBeNull();
-    expect(screen.getByRole('link', { name: 'Ver presentación' })).toHaveAttribute('href', '/feed/comunidades/test');
+    expect(screen.getByRole('link', { name: 'Ver presentación' })).toHaveAttribute('href', '/comunidades/test');
   });
 });

@@ -57,7 +57,7 @@ describe('community chat case actions', () => {
     expect(mocks.rpc).toHaveBeenCalledWith('resolve_community_chat_case', {
       target_case: caseId, decision: 'warn', decision_reason: reason,
     })
-    expect(mocks.revalidate).toHaveBeenCalledWith('/feed/comunidades/[slug]/chat', 'page')
+    expect(mocks.revalidate).toHaveBeenCalledWith('/comunidades/[slug]/chat', 'page')
   })
 
   it('leaves the page untouched when resolution fails', async () => {

@@ -21,7 +21,7 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
 
   return (
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-colors hover:border-primary-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-primary-700">
-      <Link href={`/feed/comunidades/${community.slug}`} className="block flex-1 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-800">
+      <Link href={`/comunidades/${community.slug}`} className="block flex-1 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-800">
         <div className={`relative h-28 ${community.coverImageUrl ? 'bg-secondary-100' : 'bg-primary-900'}`}>
           {community.coverImageUrl ? (
             <Image src={community.coverImageUrl} alt="" fill

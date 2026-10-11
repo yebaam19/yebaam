@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { beforeEach, expect, it, vi } from 'vitest';
-import CommunityMembersPage from '@/app/(app)/feed/comunidades/[slug]/miembros/page';
+import CommunityMembersPage from '@/app/(app)/comunidades/[slug]/miembros/page';
 
 const mocks = vi.hoisted(() => ({ community: vi.fn(), members: vi.fn(), capabilities: vi.fn() }));
 vi.mock('next/navigation', () => ({
