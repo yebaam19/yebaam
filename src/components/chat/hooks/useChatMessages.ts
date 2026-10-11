@@ -1,81 +1,17 @@
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { ChatMessage } from '@/features/chat/types';
-import { useEffect, useRef, Dispatch, SetStateAction } from 'react';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import { chatService } from '@/features/chat/services/chat.service';
-import type { MessageMedia } from '@/features/chat/types';
+import { useOutgoingMessages } from '@/features/chat/hooks/useOutgoingMessages';
 
-interface UseChatMessagesProps {
+export function useChatMessages({ conversationId, messages: received, setMessages }: {
   conversationId: string | null;
   messages: ChatMessage[];
   setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
-}
-
-/**
- * Send + auto-scroll helper for an open chat conversation. Realtime inbound
- * messages are handled by useChatConversation — this hook is intentionally
- * narrow so both hooks don't register duplicate postgres_changes listeners
- * against the same filter.
- */
-export function useChatMessages({
-  conversationId,
-  messages,
-  setMessages,
-}: UseChatMessagesProps) {
-  const user = useAuthStore((state) => state.user);
+}) {
+  const { messages, sendMessage } = useOutgoingMessages(conversationId, received, setMessages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when new messages arrive.
+  const lastId = messages.at(-1)?.id;
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const sendMessage = async (
-    content?: string,
-    media?: MessageMedia,
-  ): Promise<boolean> => {
-    const trimmed = content?.trim() ?? '';
-    if (!conversationId || !user?.id) return false;
-    if (!trimmed && !media) return false;
-
-    const tempId = `temp-${Date.now()}`;
-    const tempMessage: ChatMessage = {
-      id: tempId,
-      content: trimmed,
-      media: media ?? null,
-      conversationId,
-      senderId: user.id,
-      createdAt: new Date().toISOString(),
-      status: 'sending',
-      isTemporary: true,
-    };
-
-    setMessages((prev) => [...prev, tempMessage]);
-
-    try {
-      const newMessage = await chatService.sendMessage(
-        conversationId,
-        trimmed,
-        undefined,
-        media,
-      );
-
-      setMessages((prev) => {
-        const filtered = prev.filter((m) => m.id !== tempId);
-        if (filtered.some((m) => m.id === newMessage.id)) return filtered;
-        return [...filtered, newMessage].sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        );
-      });
-      return true;
-    } catch (error) {
-      console.error('[useChatMessages] sendMessage failed:', error);
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      return false;
-    }
-  };
-
-  return {
-    sendMessage,
-    messagesEndRef,
-  };
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+  }, [lastId]);
+  return { messages, sendMessage, messagesEndRef };
 }

@@ -10,6 +10,7 @@
  *  - `messagesByConv`:  conversationId → last rendered message list. Lets us
  *    paint the thread instantly on reopen.
  */
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { ChatMessage as CachedMessage } from '../types';
 
 const convIdByContact = new Map<string, string>();
@@ -41,3 +42,10 @@ export const conversationCache = {
     messagesByConv.set(conversationId, messages);
   },
 };
+
+useAuthStore.subscribe((state, previous) => {
+  if (state.user?.id !== previous.user?.id) {
+    convIdByContact.clear();
+    messagesByConv.clear();
+  }
+});

@@ -127,8 +127,16 @@ export async function POST(
     content?: string;
     media?: unknown;
     replyToId?: string;
+    clientMessageId?: string;
   };
 
+  if (body.clientMessageId !== undefined && (typeof body.clientMessageId !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.clientMessageId))) {
+    return NextResponse.json({ error: 'Invalid clientMessageId' }, { status: 400 });
+  }
+  if (body.content !== undefined && typeof body.content !== 'string') {
+    return NextResponse.json({ error: 'Invalid content' }, { status: 400 });
+  }
   const content = (body.content ?? '').trim();
   if (!content && !body.media) {
     return NextResponse.json({ error: 'content or media is required' }, { status: 400 });
@@ -177,6 +185,7 @@ export async function POST(
   const { data: inserted, error } = await client
     .from('messages')
     .insert({
+      ...(body.clientMessageId ? { id: body.clientMessageId } : {}),
       conversation_id: conversationId,
       sender_id: senderId,
       content: storedContent || '',
@@ -187,6 +196,16 @@ export async function POST(
     .select('*')
     .maybeSingle();
 
+  // A lost HTTP acknowledgement must not produce a second message on retry.
+  // Never upsert: an existing id may belong to a different sender/thread.
+  if (error?.code === '23505' && body.clientMessageId) {
+    const { data: existing } = await client.from('messages').select('*')
+      .eq('id', body.clientMessageId).eq('sender_id', senderId)
+      .eq('conversation_id', conversationId).maybeSingle();
+    if (existing) return NextResponse.json({ success: true, data: mapMessage(existing as MessageRow) });
+    return NextResponse.json({ error: 'Message id conflict' }, { status: 409 });
+  }
+
   if (error || !inserted) {
     return NextResponse.json(
       { error: error?.message ?? 'Failed to send message' },
@@ -194,10 +213,7 @@ export async function POST(
     );
   }
 
-  await client
-    .from('conversations')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', conversationId);
+  // trg_bump_conversation_updated_at updates the inbox within the INSERT transaction.
 
   return NextResponse.json({ success: true, data: mapMessage(inserted as MessageRow) });
 }

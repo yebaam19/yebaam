@@ -3,6 +3,7 @@
 import type { ChatMessage } from '@/features/chat/types';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { MessageDelivery } from '../MessageDelivery';
 import ImageModal from '../ImageModal';
 import type { MessageMedia } from '@/features/chat/types';
 import { MessageRow, type MessageRowLabels } from './ChatBubbleMessages/MessageRow';
@@ -138,8 +139,7 @@ export function ChatBubbleMessages({
     <div className={scrollPadding}>
       <div className="flex flex-col">
         {messages.map((msg, index) => (
-          <MessageRow
-            key={msg.id || `msg-${index}`}
+          <div key={msg.id || `msg-${index}`}><MessageRow
             msg={msg}
             index={index}
             prev={messages[index - 1]}
@@ -152,8 +152,8 @@ export function ChatBubbleMessages({
             participantsById={participantsById}
             isEditing={editingId === msg.id}
             editValue={editValue}
-            canEditEnabled={Boolean(onEditMessage)}
-            canDeleteEnabled={Boolean(onDeleteMessage)}
+            canEditEnabled={Boolean(onEditMessage) && !msg.isTemporary}
+            canDeleteEnabled={Boolean(onDeleteMessage) && !msg.isTemporary}
             labels={rowLabels}
             formatTime={formatTime}
             onStartEdit={startEdit}
@@ -162,7 +162,7 @@ export function ChatBubbleMessages({
             onCancelEdit={cancelEdit}
             onDelete={deleteMessage}
             onZoom={zoom}
-          />
+          /><MessageDelivery message={msg} /></div>
         ))}
       </div>
 

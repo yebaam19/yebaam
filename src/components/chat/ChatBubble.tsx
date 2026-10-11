@@ -71,7 +71,7 @@ export default function ChatBubble({
     };
   }, [isGroup, conversationId, meId]);
 
-  const { sendMessage, messagesEndRef } = useChatMessages({
+  const { messages: visibleMessages, sendMessage, messagesEndRef } = useChatMessages({
     conversationId,
     messages,
     setMessages,
@@ -138,7 +138,7 @@ export default function ChatBubble({
       {!isMinimized && (
         <>
           <ChatBubbleMessages
-            messages={messages}
+            messages={visibleMessages}
             isLoading={isLoading}
             isTyping={isTyping}
             messagesEndRef={messagesEndRef}

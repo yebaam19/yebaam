@@ -8,10 +8,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
+import { useChatStore } from '@/features/chat/store/chat.store';
+import { conversationCache } from '@/features/chat/lib/conversation-cache';
+import { useOutgoingMessages } from '@/features/chat/hooks/useOutgoingMessages';
 import NewMessageDialog from '@/components/chat/NewMessageDialog';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
-import { type Conversation, type MessageMedia } from '@/features/chat/types';
+import { type Conversation } from '@/features/chat/types';
 import { subscribeToTable, unsubscribe } from '@/utils/supabase/realtime';
 import { fetchDecryptedContent, isEncryptedContent } from '@/features/chat/lib/messageCipher';
 import { loadConversationDisplay, type ParticipantDisplay } from '@/features/chat/lib/conversationDisplay';
@@ -27,6 +30,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   const t = useTranslations('chat');
   const user = useAuthStore((state) => state.user);
 
+  const userId = user?.id;
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +55,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
   );
 
   useEffect(() => {
-    if (!contactId || !user) return;
+    if (!contactId || !userId) return;
 
     let isMounted = true;
     let channel: ReturnType<typeof subscribeToTable> | null = null;
@@ -59,6 +63,8 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
     const loadConversation = async () => {
       try {
         setIsLoading(true);
+        setConversationId(null);
+        setMessages([]);
         setContactInfo({ name: t('conversation.fallbackName'), avatar: '', isOnline: false });
         setHeaderEncrypted(false);
         setPeerUserId(null);
@@ -67,26 +73,36 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
 
         let resolvedConversationId: string;
         let conversationSnapshot: Conversation | null = null;
-        let result: Awaited<ReturnType<typeof chatService.getConversationMessages>>;
+        let historyRequest: ReturnType<typeof chatService.getConversationMessages>;
 
-        const direct = await chatService.findConversationByParticipant(contactId);
-        if (direct) {
+        const known = useChatStore.getState().conversations.find((item) => item.id === contactId);
+        const cachedId = known?.id ?? conversationCache.getConvId(contactId);
+        const direct = known ?? (cachedId ? null : await chatService.findConversationByParticipant(contactId));
+        if (cachedId) {
+          conversationSnapshot = known ?? null;
+          resolvedConversationId = cachedId;
+          setConversationId(cachedId);
+          const cached = conversationCache.getMessages(cachedId);
+          if (cached) { setMessages(cached); setIsLoading(false); }
+          historyRequest = chatService.getConversationMessages(cachedId, 50, 0);
+        } else if (direct) {
           conversationSnapshot = direct;
           resolvedConversationId = direct.id;
-          result = await chatService.getConversationMessages(resolvedConversationId, 50, 0);
+          historyRequest = chatService.getConversationMessages(resolvedConversationId, 50, 0);
         } else {
           try {
-            result = await chatService.getConversationMessages(contactId, 50, 0);
+            const probed = await chatService.getConversationMessages(contactId, 50, 0);
+            historyRequest = Promise.resolve(probed);
             resolvedConversationId = contactId;
           } catch {
             const conversation = await chatService.createOrGetConversation(contactId);
             conversationSnapshot = conversation;
             resolvedConversationId = conversation.id;
-            result = await chatService.getConversationMessages(resolvedConversationId, 50, 0);
+            historyRequest = chatService.getConversationMessages(resolvedConversationId, 50, 0);
           }
         }
 
-        if (!isMounted) return;
+        if (!isMounted) { await historyRequest; return; }
         setConversationId(resolvedConversationId);
 
         // Subscribe BEFORE painting so a message landing mid-load isn't lost.
@@ -126,15 +142,18 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
           },
         });
 
-        const display = await loadConversationDisplay(resolvedConversationId, user.id, conversationSnapshot);
+        const result = await historyRequest;
+        if (!isMounted) return;
+        setMessages((prev) => mergeMessages(prev, result.messages));
+        setIsLoading(false);
+
+        const display = await loadConversationDisplay(resolvedConversationId, userId, conversationSnapshot);
         if (!isMounted) return;
         setContactInfo({ name: display.name, avatar: display.avatar, isOnline: display.isOnline });
         setHeaderEncrypted(display.isEncrypted);
         setPeerUserId(display.peerUserId);
         setIsGroup(display.isGroup);
         setParticipants(display.participants);
-
-        setMessages((prev) => mergeMessages(prev, result.messages));
 
         // Best-effort mark-as-read (non-blocking).
         void fetch(`/api/conversations/${resolvedConversationId}/read`, {
@@ -154,23 +173,13 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
       isMounted = false;
       unsubscribe(channel);
     };
-  }, [contactId, user, t]);
+  }, [contactId, userId, t]);
 
-  const handleSendMessage = async (content?: string, media?: MessageMedia): Promise<boolean> => {
-    if (!conversationId) return false;
-    const trimmed = content?.trim();
-    if (!trimmed && !media) return false;
+  const { messages: visibleMessages, sendMessage: handleSendMessage } = useOutgoingMessages(conversationId, messages, setMessages);
 
-    try {
-      const sent = await chatService.sendMessage(conversationId, trimmed ?? '', undefined, media);
-      setMessages((prev) => (prev.some((m) => m?.id === sent.id) ? prev : mergeMessages(prev, [sent])));
-      return true;
-    } catch (error) {
-      console.error('Error sending message:', error);
-      return false;
-    }
-  };
-
+  useEffect(() => {
+    if (conversationId && !isLoading) conversationCache.setMessages(conversationId, messages);
+  }, [conversationId, isLoading, messages]);
   const handleEditMessage = async (messageId: string, content: string) => {
     const trimmed = content.trim();
     if (!trimmed || !conversationId) return;
@@ -223,7 +232,7 @@ export default function ChatPageClient({ contactId }: ChatPageClientProps) {
         peerUserId={peerUserId}
         isGroup={isGroup}
         headerEncrypted={headerEncrypted}
-        messages={messages}
+        messages={visibleMessages}
         isLoading={isLoading}
         currentUserId={user?.id}
         participants={participants}

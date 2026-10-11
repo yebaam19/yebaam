@@ -7,5 +7,5 @@ interface PageProps {
 export default async function ChatPage({ params }: PageProps) {
   const { id } = await params;
 
-  return <ChatPageClient contactId={id} />;
+  return <ChatPageClient key={id} contactId={id} />;
 }

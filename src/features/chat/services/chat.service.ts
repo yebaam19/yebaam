@@ -172,12 +172,13 @@ class ChatService {
     content: string,
     replyToId?: string,
     media?: MessageMedia,
+    clientMessageId?: string,
   ): Promise<Message> {
     const payload = await jsonFetch<{ data: Message }>(
       `${this.baseUrl}/${conversationId}/messages`,
       {
         method: 'POST',
-        body: JSON.stringify({ content, replyToId, media }),
+        body: JSON.stringify({ content, replyToId, media, clientMessageId }),
       },
     );
     if (!payload?.data?.id) {

@@ -25,7 +25,6 @@ export function MessageStatusIcon({
         </span>
       );
     case 'sent':
-    case 'sending':
       return (
         <span className="ml-1 text-xs font-bold text-white/60" title={labels.sent}>
           ✓

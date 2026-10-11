@@ -1,5 +1,6 @@
 import type { ChatMessage } from '@/features/chat/types';
 import { useEffect, useRef } from 'react';
+import { MessageDelivery } from './MessageDelivery';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 
@@ -32,9 +33,10 @@ export default function MessagesList({
 }: MessagesListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const lastId = messages.at(-1)?.id;
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+  }, [lastId, isTyping]);
 
   if (isLoading && messages.length === 0) {
     return (
@@ -61,16 +63,15 @@ export default function MessagesList({
         const sender = isGroup && !isOwn ? participants.find((p) => p.userId === msg.senderId) : undefined;
 
         return (
-          <MessageBubble
-            key={msg.id || `msg-${index}`}
+          <div key={msg.id || `msg-${index}`}><MessageBubble
             message={msg}
             isOwn={isOwn}
             contactAvatar={sender ? sender.avatar : contactAvatar}
             contactName={sender ? sender.name : contactName}
             senderName={isGroup && !isOwn ? sender?.name ?? contactName : undefined}
-            onEdit={isOwn && onEditMessage ? (content) => onEditMessage(msg.id, content) : undefined}
-            onDelete={isOwn && onDeleteMessage ? () => onDeleteMessage(msg.id) : undefined}
-          />
+            onEdit={isOwn && !msg.isTemporary && onEditMessage ? (content) => onEditMessage(msg.id, content) : undefined}
+            onDelete={isOwn && !msg.isTemporary && onDeleteMessage ? () => onDeleteMessage(msg.id) : undefined}
+          /><MessageDelivery message={msg} /></div>
         );
       })}
       

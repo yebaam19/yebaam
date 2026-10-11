@@ -25,6 +25,9 @@ interface UseChatConversationProps {
  * conversation list) usually lets us skip the resolve round-trips.
  */
 export function useChatConversation({ contactId, conversationId: explicitConvId }: UseChatConversationProps) {
+  const user = useAuthStore((state) => state.user);
+  const identity = `${user?.id}:${explicitConvId ?? contactId}`;
+  const [loadedIdentity, setLoadedIdentity] = useState(identity);
   const cachedConvId = explicitConvId ?? conversationCache.getConvId(contactId);
   const cachedMessages = cachedConvId ? conversationCache.getMessages(cachedConvId) : null;
 
@@ -32,13 +35,18 @@ export function useChatConversation({ contactId, conversationId: explicitConvId 
   const [messages, setMessages] = useState<ChatMessage[]>(cachedMessages ?? []);
   // Only show the spinner when we have nothing to paint yet.
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(
-    !(cachedMessages && cachedMessages.length > 0),
+    cachedMessages === null,
   );
 
-  const user = useAuthStore((state) => state.user);
   const { markConversationAsOpen, markConversationAsClosed } = useChatNotifications();
 
   useEffect(() => {
+    setLoadedIdentity(identity);
+    const initialId = explicitConvId ?? conversationCache.getConvId(contactId);
+    const initialMessages = initialId ? conversationCache.getMessages(initialId) : null;
+    setConversationId(initialId);
+    setMessages(initialMessages ?? []);
+    setIsLoadingMessages(initialMessages === null);
     if (!contactId || !user?.id) return;
     let isMounted = true;
     let channel: ReturnType<typeof subscribeToTable> | null = null;
@@ -133,20 +141,20 @@ export function useChatConversation({ contactId, conversationId: explicitConvId 
       if (openedConvId) markConversationAsClosed(openedConvId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId, explicitConvId, user?.id]);
+  }, [contactId, explicitConvId, user?.id, identity]);
 
   // Keep the cache warm with the latest rendered thread so the next open of
   // this conversation paints instantly.
   useEffect(() => {
-    if (conversationId && messages.length > 0) {
+    if (conversationId && !isLoadingMessages && loadedIdentity === identity) {
       conversationCache.setMessages(conversationId, messages);
     }
-  }, [conversationId, messages]);
+  }, [conversationId, messages, isLoadingMessages, loadedIdentity, identity]);
 
   return {
-    conversationId,
-    messages,
+    conversationId: loadedIdentity === identity ? conversationId : null,
+    messages: loadedIdentity === identity ? messages : [],
     setMessages,
-    isLoading: isLoadingMessages,
+    isLoading: loadedIdentity !== identity || isLoadingMessages,
   };
 }

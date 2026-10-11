@@ -99,6 +99,7 @@
     }
   },
   "message": {
+    "delivery": {"sending": "Enviando…", "failed": "No se pudo confirmar el envío.", "retry": "Reintentar"},
     "actions": "Opciones del mensaje",
     "edit": "Editar",
     "delete": "Eliminar",
