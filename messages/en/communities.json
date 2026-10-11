@@ -36,6 +36,11 @@
     "planTitle": "Plan unavailable",
     "planDescription": "This plan does not exist or you do not have access to it."
   },
+  "loadError": {
+    "title": "Could not load the community",
+    "description": "There was a problem loading this community. Please try again.",
+    "retry": "Try again"
+  },
   "card": {
     "members": "members",
     "posts": "posts",

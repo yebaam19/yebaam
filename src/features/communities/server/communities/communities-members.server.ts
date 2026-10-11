@@ -26,7 +26,7 @@ export const getViewerJoinState = cache(async (communityId: string): Promise<Vie
   const client = await getServerClient();
   // The four lookups are independent — run them in parallel and pick the
   // highest-priority result (owner > member > invited > request).
-  const [{ data: c }, { data: member }, { data: invite }, { data: req }] = await Promise.all([
+  const [communityResult, memberResult, inviteResult, requestResult] = await Promise.all([
     client
       .from('communities')
       .select('owner_id')
@@ -56,6 +56,14 @@ export const getViewerJoinState = cache(async (communityId: string): Promise<Vie
       .limit(1)
       .maybeSingle(),
   ]);
+
+  if (communityResult.error || memberResult.error || inviteResult.error || requestResult.error) {
+    throw new Error('No se pudo cargar tu acceso a la comunidad.');
+  }
+  const c = communityResult.data;
+  const member = memberResult.data;
+  const invite = inviteResult.data;
+  const req = requestResult.data;
 
   if (c && (c as { owner_id: string }).owner_id === userId) return { kind: 'owner' };
   if (member) return { kind: 'member' };

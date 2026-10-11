@@ -18,10 +18,11 @@ export const getCommunityDetailBySlug = cache(async (slug: string): Promise<{
 } | null> => {
   if (!slug) return null;
   const client = await getServerClient();
-  const [viewerId, { data }] = await Promise.all([
+  const [viewerId, { data, error }] = await Promise.all([
     getViewerId(),
     client.from('communities').select(`${COMMUNITY_COLUMNS},cover_framing,profile_framing,header_image_version`).eq('slug', slug).maybeSingle(),
   ]);
+  if (error) throw new Error('No se pudo cargar la comunidad.');
   if (!data) return null;
   const row = data as DetailRow;
   const rows = [row];

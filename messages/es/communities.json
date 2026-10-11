@@ -36,6 +36,11 @@
     "planTitle": "Plan no disponible",
     "planDescription": "Este plan no existe o no tienes acceso para verlo."
   },
+  "loadError": {
+    "title": "No se pudo cargar la comunidad",
+    "description": "Hubo un problema al consultar la comunidad. Inténtalo de nuevo.",
+    "retry": "Reintentar"
+  },
   "card": {
     "members": "miembros",
     "posts": "posts",

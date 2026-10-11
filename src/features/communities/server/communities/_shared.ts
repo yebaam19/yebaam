@@ -48,8 +48,11 @@ export async function loadCommunityContext(rows: CommunityRow[], viewerId: strin
           .select('community_id,user_id,role,status,joined_at')
           .in('community_id', communityIds)
           .eq('user_id', viewerId)
-      : Promise.resolve({ data: [] as CommunityMemberRow[] }),
+      : Promise.resolve({ data: [] as CommunityMemberRow[], error: null }),
   ]);
+  if (profilesRes.error || ownerMembersRes.error || myMembersRes.error) {
+    throw new Error('No se pudo cargar la información de la comunidad.');
+  }
 
   const owners = new Map<string, ProfileLite>();
   for (const p of (profilesRes.data ?? []) as ProfileLite[]) owners.set(p.id, p);

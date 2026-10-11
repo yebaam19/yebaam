@@ -508,9 +508,17 @@ consultas SQL sueltas.
 | 9; aceptación 16 | Escritorio/tablet/móvil; menú lateral desplegable y pestañas desplazables | Menú móvil plegable, pestañas desplazables y planes adaptables implementados. El panel de administración se pliega por defecto para dejar visibles antes las publicaciones; apertura/foco revisados en localhost. Se verificó el desplazamiento real del sidebar en escritorio y en móvil con viewport bajo; el panel de colores se adapta a una columna. Pendiente flujo multirol. |
 | aceptación 18 | Persistencia tras recarga | SQL, pregunta privada Q&A, borrador y orden de ejes/puntos del Plan de Gobierno, traslado entre ejes por botón y por arrastre, borrador del Plan Económico, introducción privada y cuatro videos ordenados de la cabecera, imágenes de galería, TXT de biblioteca y ciclo de publicación/privacidad de artículos verificados en localhost; pendiente cobertura UI de los demás módulos. |
 
-El menú de eliminación del propietario usa un menú y diálogo con nombres
+La opción de eliminación del propietario usa un botón directo y un diálogo con nombres
 accesibles, foco restaurado al cancelar, error anunciado y controles táctiles de
 44 px. Dos pruebas de UI cubren cancelación y error sin borrar datos reales.
+La carga inicial del perfil ahora distingue una consulta fallida de una comunidad
+inexistente: errores de perfil, propietario, membresía o invitación muestran un
+estado localizado con «Reintentar» en vez de presentar un falso 404 o acceso ajeno.
+Consulta directa al proyecto `hwppwxavvamnljfcanje` el 10 de octubre: los 91
+archivos de migración de Comunidades de esta fase figuran aplicados por nombre;
+la política `communities delete` exige `auth.uid() = owner_id`; la cola de retiro
+no tiene elementos pendientes. Ambos jobs de reintento siguen inactivos y Vault
+solo contiene `community_cleanup_url`, no los secretos de autenticación.
 En `next start` se verificaron a 768 × 1024 las vistas públicas de Inicio,
 Archivos, Artículos, Eventos y Preguntas sin desbordamiento horizontal. A
 1280 × 400, el lateral medía 304 px y sus 346 px de contenido se desplazaron
