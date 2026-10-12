@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/features/chat-publico/components/ChatMessageComposer.tsx"
+        ],
+        "createdAt": "2026-10-12T23:51:37.542Z",
+        "reason": "Agent review: the existing left border identifies the quoted message in the reply preview, matching reply quotes in ChatMessageList.tsx; it is a chat quotation cue, not a decorative card accent."
+      }
+    ]
+  }
+}

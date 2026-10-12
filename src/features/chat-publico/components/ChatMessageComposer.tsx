@@ -47,7 +47,7 @@ export default function ChatMessageComposer({ topic, identity, draft, setDraft, 
       <div className="flex items-end gap-2">
         <textarea value={draft} onChange={(event) => setDraft(event.target.value.slice(0, MAX_LENGTH))} onKeyDown={onKeyDown}
           rows={1} maxLength={MAX_LENGTH} disabled={!canChat} aria-label="Mensaje" placeholder={canChat ? t('placeholderActive', { channel: topic.name }) : t('placeholderInactive')}
-          className="min-h-[40px] flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-sm text-primary-950 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 dark:border-primary-900 dark:bg-primary-950/20 dark:text-primary-100" />
+          className="min-h-[40px] min-w-0 flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-base text-primary-950 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 sm:text-sm dark:border-primary-900 dark:bg-primary-950/20 dark:text-primary-100" />
         <button type="submit" disabled={isPending || cooling || !draft.trim() || !canChat}
           className="inline-flex h-10 shrink-0 items-center rounded-xl bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-50">
           {cooling ? t('submitCooldown', { seconds: Math.ceil(remainingMs / 1000) }) : isPending ? t('submitSending') : t('submit')}

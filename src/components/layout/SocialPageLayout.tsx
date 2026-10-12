@@ -9,6 +9,7 @@ import { useOptionalCurrentUser } from '@/features/auth/context/current-user.con
 import { ChatNotificationProvider } from '@/features/chat/context/chat-notification.context'
 import { cn } from '@/lib/utils'
 import { useIsXl } from '@/lib/hooks/useIsXl'
+import { useVisibleViewport } from '@/lib/hooks/useVisibleViewport'
 import { useState } from 'react'
 
 const RightSidebar = dynamic(() => import('@/components/sidebar/RightSidebar'), { ssr: false })
@@ -33,19 +34,21 @@ export default function SocialPageLayout({ children, allowVisitors = false, full
   const { isCollapsed } = useSidebar()
   const isXl = useIsXl()
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const viewportRef = useVisibleViewport(fullscreen)
   if (!hasSession && !allowVisitors) return null
 
   return (
     <ChatNotificationProvider>
       <div
+        ref={viewportRef}
         className={cn(
           'bg-neutral-50 dark:bg-neutral-950',
-          fullscreen ? 'h-screen overflow-hidden' : 'min-h-screen',
+          fullscreen ? 'h-dvh overflow-hidden' : 'min-h-screen',
         )}
       >
         <SocialHeader onMobileMenuClick={() => setIsMobileSidebarOpen(true)} />
 
-        <div className="flex min-w-0">
+        <div className={cn('flex min-w-0', fullscreen && 'h-full min-h-0')}>
           {user && (
             <Sidebar
               user={user}
@@ -64,12 +67,12 @@ export default function SocialPageLayout({ children, allowVisitors = false, full
               hasSession && 'lg:ml-64',
               hasSession && isCollapsed && 'lg:ml-20',
               fullscreen
-                ? 'h-screen overflow-hidden'
+                ? 'flex h-full min-h-0 flex-col overflow-hidden pb-[env(safe-area-inset-bottom,0px)]'
                 : cn('min-h-screen', hasSession && 'xl:mr-80'),
             )}
           >
             {fullscreen ? (
-              <div className="h-[calc(100vh-3.5rem-env(safe-area-inset-top,0px))]">
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 {children}
               </div>
             ) : (
