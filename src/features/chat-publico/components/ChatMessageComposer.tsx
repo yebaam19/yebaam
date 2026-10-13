@@ -32,13 +32,13 @@ export default function ChatMessageComposer({ topic, identity, draft, setDraft, 
 
   return (
     <form onSubmit={submit} className="shrink-0 border-t border-primary-100 bg-white px-3 py-3 sm:px-6 dark:border-primary-900/50 dark:bg-neutral-900">
-      {restriction && <p role="status" className="mb-2 rounded-lg border border-secondary-200 bg-secondary-50 px-3 py-2 text-xs leading-relaxed text-primary-950 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-100">
+      {restriction && <p role="status" className="mb-2 rounded-lg border border-secondary-200 bg-secondary-50 px-3 py-2 text-xs leading-relaxed text-primary-900 dark:border-primary-800 dark:bg-primary-900/40 dark:text-primary-100">
         {restriction.kind === 'block' ? t('restriction.blocked')
           : t('restriction.suspendedUntil', { date: format.dateTime(new Date(restriction.expires_at!), { dateStyle: 'medium', timeStyle: 'short' }) })}
         {' '}{t('restriction.reason', { reason: restriction.reason })}
       </p>}
       {replyTo && (
-        <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border-l-2 border-primary-600 bg-primary-50 px-3 py-2 text-xs text-primary-800 dark:bg-primary-950/40 dark:text-primary-200">
+        <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border-l-2 border-primary-600 bg-primary-50 px-3 py-2 text-xs text-primary-800 dark:bg-primary-900/40 dark:text-primary-200">
           <div className="min-w-0"><span className="font-semibold">Respuesta</span><p className="truncate">{replyTo.content}</p></div>
           <button type="button" onClick={onCancelReply} className="shrink-0 font-medium hover:underline" aria-label="Cancelar respuesta">Cancelar</button>
         </div>
@@ -47,9 +47,9 @@ export default function ChatMessageComposer({ topic, identity, draft, setDraft, 
       <div className="flex items-end gap-2">
         <textarea value={draft} onChange={(event) => setDraft(event.target.value.slice(0, MAX_LENGTH))} onKeyDown={onKeyDown}
           rows={1} maxLength={MAX_LENGTH} disabled={!canChat} aria-label="Mensaje" placeholder={canChat ? t('placeholderActive', { channel: topic.name }) : t('placeholderInactive')}
-          className="min-h-[40px] min-w-0 flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-base text-primary-950 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 sm:text-sm dark:border-primary-900 dark:bg-primary-950/20 dark:text-primary-100" />
+          className="min-h-[40px] min-w-0 flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-base text-primary-900 placeholder:text-neutral-600 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 sm:text-sm dark:border-primary-900 dark:bg-neutral-800 dark:text-primary-100 dark:placeholder:text-neutral-400 dark:focus:bg-neutral-800" />
         <button type="submit" disabled={isPending || cooling || !draft.trim() || !canChat}
-          className="inline-flex h-10 shrink-0 items-center rounded-xl bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-50">
+          className="inline-flex h-10 shrink-0 items-center rounded-xl bg-primary-800 px-4 text-sm font-semibold text-white hover:bg-primary-900 disabled:cursor-not-allowed disabled:opacity-50">
           {cooling ? t('submitCooldown', { seconds: Math.ceil(remainingMs / 1000) }) : isPending ? t('submitSending') : t('submit')}
         </button>
       </div>

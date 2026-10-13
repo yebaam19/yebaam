@@ -113,7 +113,7 @@ export default function ChatCasePanel({ communityId, scope, onClose }: {
     </div>
     <div className="space-y-3 p-4">
       {loading && <p role="status" className="text-sm text-neutral-600">Cargando expedientes…</p>}
-      {!loading && !items.length && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-950/30 dark:text-primary-200">No hay expedientes.</p>}
+      {!loading && !items.length && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-900/30 dark:text-primary-200">No hay expedientes.</p>}
       {items.map((item) => {
         const defenseOpen = item.status !== 'resolved' && !item.defense_statement
           && (!item.defense_deadline || Date.parse(item.defense_deadline) >= Date.now())
@@ -121,11 +121,11 @@ export default function ChatCasePanel({ communityId, scope, onClose }: {
           && Date.parse(item.defense_deadline) <= Date.now()
         return <article key={item.id} className="rounded-xl border border-primary-100 p-3 dark:border-primary-900/60">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <p className="min-w-0 text-sm font-semibold text-primary-950 dark:text-primary-100">
+            <p className="min-w-0 text-sm font-semibold text-primary-900 dark:text-primary-100">
               {scope === 'staff' ? `${item.displayName} · ` : ''}{item.kind === 'block' ? 'Bloqueo propuesto'
                 : `Suspensión propuesta: ${item.duration_hours} h`}
             </p>
-            <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-800 dark:bg-primary-950/40 dark:text-primary-200">
+            <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-800 dark:bg-primary-900/40 dark:text-primary-200">
               {item.status === 'pending_notice' ? 'Correo pendiente' : item.status === 'open'
                 ? 'En revisión' : item.outcome === 'restrict' ? 'Restricción aplicada'
                   : item.outcome === 'warn' ? 'Advertencia' : 'Archivado'}
@@ -139,7 +139,7 @@ export default function ChatCasePanel({ communityId, scope, onClose }: {
           {item.defense_statement && <p className="mt-2 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100">
             <strong>Descargos:</strong> {item.defense_statement}
           </p>}
-          {item.resolution_reason && <p className="mt-2 rounded-lg bg-secondary-50 px-3 py-2 text-sm text-primary-950 dark:bg-primary-950/30 dark:text-primary-100">
+          {item.resolution_reason && <p className="mt-2 rounded-lg bg-secondary-50 px-3 py-2 text-sm text-primary-900 dark:bg-primary-900/30 dark:text-primary-100">
             <strong>Resolución:</strong> {item.resolution_reason}
           </p>}
           {scope === 'mine' && defenseOpen && selected !== item.id && <button type="button"

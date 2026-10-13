@@ -37,7 +37,7 @@ export default function RoomsSidebar({ topics, activeSlug }: Props) {
                   className={cn(
                     'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors',
                     isActive
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-primary-800 text-white'
                       : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
                     isSub && 'pl-5 text-xs',
                   )}

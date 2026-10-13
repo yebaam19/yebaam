@@ -105,7 +105,7 @@ export default function RoomUserList({ roomId, initialUsers, identity }: Props) 
               key={u.id}
               className={cn(
                 'flex items-center gap-2 px-3 py-2 text-sm',
-                isSelf && 'bg-primary-50/60 dark:bg-primary-950/20',
+                isSelf && 'bg-primary-50/60 dark:bg-primary-900/20',
               )}
             >
               <Avatar

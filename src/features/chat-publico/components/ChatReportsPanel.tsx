@@ -102,12 +102,12 @@ export default function ChatReportsPanel({ communityId, onClose }: { communityId
       </div>
       <div className="space-y-3 p-4">
         {loading && <p role="status" className="text-sm text-neutral-500">Cargando reportes…</p>}
-        {!loading && items.length === 0 && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-950/30 dark:text-primary-200">No hay reportes en esta sección.</p>}
+        {!loading && items.length === 0 && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-900/30 dark:text-primary-200">No hay reportes en esta sección.</p>}
         {items.map((report) => (
           <article key={report.id} className="rounded-xl border border-primary-100 p-3 dark:border-primary-900/60">
             <p className="text-xs text-neutral-500">{new Date(report.created_at).toLocaleString()}</p>
-            <p className="mt-1 text-sm font-medium text-primary-950 dark:text-primary-100">{report.reason}</p>
-            <p className="mt-2 rounded-lg bg-primary-50 px-2.5 py-2 text-xs text-primary-900 dark:bg-primary-950/30 dark:text-primary-200">
+            <p className="mt-1 text-sm font-medium text-primary-900 dark:text-primary-100">{report.reason}</p>
+            <p className="mt-2 rounded-lg bg-primary-50 px-2.5 py-2 text-xs text-primary-900 dark:bg-primary-900/30 dark:text-primary-200">
               Mensaje: {report.message?.content ?? 'No disponible'}
             </p>
             {report.reviewer_note && <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">Decisión: {report.reviewer_note}</p>}
@@ -122,7 +122,7 @@ export default function ChatReportsPanel({ communityId, onClose }: { communityId
           className="w-full rounded-lg border border-primary-200 px-3 py-2 text-xs font-semibold text-primary-800 disabled:opacity-50 dark:border-primary-800 dark:text-primary-200">
           {loadingMore ? 'Cargando…' : 'Cargar más reportes'}
         </button>}
-        {selection && <form onSubmit={submit} className="rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-secondary-900/40 dark:bg-primary-950/30">
+        {selection && <form onSubmit={submit} className="rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-secondary-900/40 dark:bg-primary-900/30">
           <label htmlFor="chat-review-note" className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Motivo para {selection.operation === 'hide' ? 'retirar' : selection.operation === 'restore' ? 'restaurar' : 'descartar'}</label>
           <textarea id="chat-review-note" value={note} onChange={(event) => setNote(event.target.value)} minLength={10} maxLength={500} rows={3} required
             className="mt-2 w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-600 dark:border-primary-800 dark:bg-neutral-900" />

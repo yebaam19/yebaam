@@ -193,7 +193,7 @@ function TabButton({
       className={cn(
         'inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition-all duration-200',
         active
-          ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
+          ? 'border-primary-800 bg-primary-800 text-white shadow-sm'
           : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700',
       )}
     >

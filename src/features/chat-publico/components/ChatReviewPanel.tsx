@@ -121,21 +121,21 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
     </div>
     <div className="space-y-3 p-4">
       {loading && <p role="status" className="text-sm text-neutral-600">Cargando solicitudes…</p>}
-      {!loading && !items.length && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-950/30 dark:text-primary-200">No hay solicitudes.</p>}
+      {!loading && !items.length && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-900/30 dark:text-primary-200">No hay solicitudes.</p>}
       {items.map((item) => <article key={item.id} className="rounded-xl border border-primary-100 p-3 dark:border-primary-900/60">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold text-primary-900 dark:text-primary-100">
             {scope === 'staff' && item.displayName ? item.displayName + ' · ' : ''}
             {item.stage === 'defense' ? 'Revisión' : 'Apelación'}
           </p>
-          <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs text-primary-800 dark:bg-primary-950/40 dark:text-primary-200">
+          <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs text-primary-800 dark:bg-primary-900/40 dark:text-primary-200">
             {item.status === 'open' ? 'Pendiente' : item.status === 'upheld' ? 'Decisión mantenida'
               : item.status === 'lifted' ? 'Restricción levantada' : 'Decisión reemplazada'}
           </span>
         </div>
         <p className="mt-1 text-xs text-neutral-500">{new Date(item.submitted_at).toLocaleString()}</p>
         <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-800 dark:text-neutral-100">{item.statement}</p>
-        {item.review_reason && <p className="mt-2 rounded-lg bg-secondary-50 px-2.5 py-2 text-xs text-primary-900 dark:bg-primary-950/30 dark:text-primary-100">Respuesta: {item.review_reason}</p>}
+        {item.review_reason && <p className="mt-2 rounded-lg bg-secondary-50 px-2.5 py-2 text-xs text-primary-900 dark:bg-primary-900/30 dark:text-primary-100">Respuesta: {item.review_reason}</p>}
         {scope === 'staff' && item.status === 'open' && (item.stage === 'defense' || canBlock)
           && <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={() => { setSelection({ requestId: item.id, decision: 'uphold' }); setReason(''); setError(null) }}
@@ -149,7 +149,7 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
         className="w-full rounded-lg border border-primary-200 px-3 py-2 text-xs font-semibold text-primary-800 disabled:opacity-50 dark:border-primary-800 dark:text-primary-200">
         {loadingMore ? 'Cargando…' : 'Cargar más'}
       </button>}
-      {scope === 'mine' && nextStage && <form onSubmit={send} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-primary-800 dark:bg-primary-950/30">
+      {scope === 'mine' && nextStage && <form onSubmit={send} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-primary-800 dark:bg-primary-900/30">
         <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">
           {nextStage === 'defense' ? 'Solicitar revisión' : 'Presentar apelación'}
           <textarea value={statement} disabled={pending} onChange={(event) => setStatement(event.target.value)}
@@ -159,7 +159,7 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
         <button type="submit" disabled={pending || statement.trim().length < 10}
           className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Enviar solicitud</button>
       </form>}
-      {scope === 'staff' && selection && <form onSubmit={decide} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-primary-800 dark:bg-primary-950/30">
+      {scope === 'staff' && selection && <form onSubmit={decide} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-primary-800 dark:bg-primary-900/30">
         <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Motivo de la revisión
           <textarea value={reason} disabled={pending} onChange={(event) => setReason(event.target.value)}
             minLength={10} maxLength={500} rows={3} required

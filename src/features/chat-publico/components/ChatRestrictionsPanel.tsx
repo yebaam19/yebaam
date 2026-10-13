@@ -106,10 +106,10 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
     </div>
     <div className="space-y-3 p-4">
       {loading && <p role="status" className="text-sm text-neutral-600">Cargando restricciones…</p>}
-      {!loading && !items.length && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-950/30 dark:text-primary-200">No hay restricciones activas.</p>}
+      {!loading && !items.length && <p className="rounded-xl bg-primary-50 px-3 py-4 text-sm text-primary-800 dark:bg-primary-900/30 dark:text-primary-200">No hay restricciones activas.</p>}
       {items.map((item) => <article key={item.user_id} className="rounded-xl border border-primary-100 p-3 dark:border-primary-900/60">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0"><p className="break-words text-sm font-semibold text-primary-950 dark:text-primary-100">{item.displayName}</p>
+          <div className="min-w-0"><p className="break-words text-sm font-semibold text-primary-900 dark:text-primary-100">{item.displayName}</p>
             <p className="text-xs text-neutral-600 dark:text-neutral-300">{item.kind === 'block' ? 'Bloqueo sin fecha de fin' : `Suspensión hasta ${new Date(item.expires_at!).toLocaleString()}`}</p></div>
           {(item.kind !== 'block' || canBlock) && <button type="button" onClick={() => select({ userId: item.user_id, label: item.displayName, operation: 'release' })}
             className="rounded-lg border border-primary-200 px-2.5 py-1.5 text-xs font-semibold text-primary-800 hover:bg-primary-50 dark:border-primary-800 dark:text-primary-200">Levantar</button>}
@@ -120,8 +120,8 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
         className="w-full rounded-lg border border-primary-200 px-3 py-2 text-xs font-semibold text-primary-800 disabled:opacity-50 dark:border-primary-800 dark:text-primary-200">
         {loadingMore ? 'Cargando…' : 'Cargar más'}
       </button>}
-      {selection && <form onSubmit={submit} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-secondary-900/40 dark:bg-primary-950/30">
-        <p className="text-sm font-semibold text-primary-950 dark:text-primary-100">{selection.operation === 'release' ? 'Levantar restricción de' : 'Abrir expediente para'} {selection.label}</p>
+      {selection && <form onSubmit={submit} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-secondary-900/40 dark:bg-primary-900/30">
+        <p className="text-sm font-semibold text-primary-900 dark:text-primary-100">{selection.operation === 'release' ? 'Levantar restricción de' : 'Abrir expediente para'} {selection.label}</p>
         {selection.operation === 'restrict' && <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Duración
           <select value={duration} disabled={pending} onChange={(event) => {
             requestIdRef.current = crypto.randomUUID(); setDuration(event.target.value)
