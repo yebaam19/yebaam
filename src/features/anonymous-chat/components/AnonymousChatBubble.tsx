@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { EyeSlashIcon, MinusIcon, XMarkIcon } from '@/components/icons/heroicons-shim';
 import { cn } from '@/lib/utils';
+import { useVisibleViewport } from '@/lib/hooks/useVisibleViewport';
 import { useAnonChatStore } from '../store/anon-chat.store';
 import { useAnonymousConversation } from '../hooks/useAnonymousConversation';
 import type { AnonSession } from '../types';
@@ -32,6 +33,7 @@ export default function AnonymousChatBubble({
   const t = useTranslations('chat.anonymous');
   const closeSession = useAnonChatStore((s) => s.closeSession);
   const [isMinimized, setIsMinimized] = useState(false);
+  const viewportRef = useVisibleViewport(true, 'docked');
 
   const { messages, isPeerTyping, sendText, sendMedia, notifyTyping, leave } = useAnonymousConversation({
     session,
@@ -45,11 +47,13 @@ export default function AnonymousChatBubble({
 
   return (
     <div
+      ref={viewportRef}
       className={cn(
-        'fixed bottom-0 z-[150] flex w-[328px] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] dark:border-neutral-700 dark:bg-neutral-900',
+        'fixed bottom-0 right-2 z-[150] flex max-h-[calc(100dvh-80px)] w-[calc(100vw-16px)] flex-col rounded-t-xl border border-neutral-200/90 bg-white pb-[env(safe-area-inset-bottom,0px)] shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] sm:w-[328px] xl:right-[var(--chat-right)] dark:border-neutral-700 dark:bg-neutral-900',
         isMinimized ? 'h-14' : 'h-[480px]',
+        position > 0 && 'max-xl:hidden',
       )}
-      style={{ right: `${rightPosition}px` }}
+      style={{ '--chat-right': `${rightPosition}px` } as CSSProperties}
     >
       <div className="flex items-center justify-between rounded-t-xl border-b border-neutral-200/90 bg-neutral-50 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
         <div className="flex min-w-0 flex-1 items-center gap-2">

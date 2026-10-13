@@ -26,7 +26,7 @@ export default function MessengerLandingClient() {
   };
 
   return (
-    <div className="relative flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-0 w-full bg-neutral-50 dark:bg-neutral-950">
+    <div className="relative flex h-full min-h-0 w-full bg-neutral-50 dark:bg-neutral-950">
       <div className="flex h-full min-h-0 w-full md:w-auto md:shrink-0">
         <MessengerSidebar
           activeChat={null}

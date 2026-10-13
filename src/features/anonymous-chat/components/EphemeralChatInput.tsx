@@ -99,8 +99,8 @@ export default function EphemeralChatInput({ onSend, onTyping, onSendMedia, lead
   };
 
   return (
-    <div className="border-t border-neutral-200 p-3 dark:border-neutral-800">
-      <div className="flex items-end gap-2">
+    <div className="shrink-0 border-t border-neutral-200 p-3 dark:border-neutral-800">
+      <div className="flex flex-wrap items-end gap-2">
         {leading}
         {onSendMedia && (
           <>
@@ -139,6 +139,8 @@ export default function EphemeralChatInput({ onSend, onTyping, onSendMedia, lead
         <input
           ref={inputRef}
           type="text"
+          inputMode="text"
+          autoCapitalize="sentences"
           value={message}
           onChange={handleChange}
           onKeyDown={(e) => {
@@ -148,7 +150,7 @@ export default function EphemeralChatInput({ onSend, onTyping, onSendMedia, lead
             }
           }}
           placeholder={t('placeholder')}
-          className="min-w-0 flex-1 rounded-full bg-neutral-100 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:bg-neutral-800"
+          className="order-first min-w-0 basis-full rounded-full bg-neutral-100 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:bg-neutral-800"
         />
 
         <button

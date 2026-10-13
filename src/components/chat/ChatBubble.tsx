@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { useVisibleViewport } from '@/lib/hooks/useVisibleViewport';
 import { usePresenceStore } from '@/features/presence/store/presence.store';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { chatService } from '@/features/chat/services/chat.service';
@@ -43,6 +44,7 @@ export default function ChatBubble({
   isGroup = false,
 }: ChatBubbleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const viewportRef = useVisibleViewport(true, 'docked');
   const [lastOpenRequest, setLastOpenRequest] = useState(openRequest);
   if (lastOpenRequest !== openRequest) {
     setLastOpenRequest(openRequest);
@@ -123,8 +125,9 @@ export default function ChatBubble({
 
   return (
     <div
+      ref={viewportRef}
       className={cn(
-        'fixed bottom-0 right-2 z-[150] flex w-[min(328px,calc(100vw-16px))] max-h-[calc(100dvh-80px)] xl:right-[var(--chat-compact-right)] 2xl:right-[var(--chat-right)] flex-col rounded-t-xl border border-neutral-200/90 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-900',
+        'fixed bottom-0 right-2 z-[150] flex w-[calc(100vw-16px)] sm:w-[328px] max-h-[calc(100dvh-80px)] xl:right-[var(--chat-compact-right)] 2xl:right-[var(--chat-right)] flex-col rounded-t-xl border border-neutral-200/90 bg-white pb-[env(safe-area-inset-bottom,0px)] shadow-[0_12px_28px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.08)] dark:border-neutral-700 dark:bg-neutral-900',
         isMinimized ? 'h-14' : 'h-[480px]',
         position > 0 && 'max-xl:hidden',
       )}

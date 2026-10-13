@@ -2,6 +2,7 @@
 
 import type { FormEvent, KeyboardEvent } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
+import { useAutoResizeTextArea } from '@/components/chat/hooks/useAutoResizeTextArea'
 import type { ClientChatIdentity, CommunityChatRestriction, PublicChatTopic, PublicMessageWithSender } from '../types'
 
 interface Props {
@@ -25,6 +26,7 @@ const MAX_LENGTH = 2000
 export default function ChatMessageComposer({ topic, identity, draft, setDraft, replyTo, onCancelReply, onSend, isPending, cooling, remainingMs, error, canChat, restriction }: Props) {
   const t = useTranslations('chat.public.view')
   const format = useFormatter()
+  const textareaRef = useAutoResizeTextArea(draft, 96)
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); onSend() }
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); onSend() }
@@ -45,11 +47,11 @@ export default function ChatMessageComposer({ topic, identity, draft, setDraft, 
       )}
       {error && <p role="alert" className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
       <div className="flex items-end gap-2">
-        <textarea value={draft} onChange={(event) => setDraft(event.target.value.slice(0, MAX_LENGTH))} onKeyDown={onKeyDown}
-          rows={1} maxLength={MAX_LENGTH} disabled={!canChat} aria-label="Mensaje" placeholder={canChat ? t('placeholderActive', { channel: topic.name }) : t('placeholderInactive')}
-          className="min-h-[40px] min-w-0 flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-base text-primary-900 placeholder:text-neutral-600 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 sm:text-sm dark:border-primary-900 dark:bg-neutral-800 dark:text-primary-100 dark:placeholder:text-neutral-400 dark:focus:bg-neutral-800" />
+        <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value.slice(0, MAX_LENGTH))} onKeyDown={onKeyDown}
+          rows={1} inputMode="text" autoCapitalize="sentences" maxLength={MAX_LENGTH} disabled={!canChat} aria-label="Mensaje" placeholder={canChat ? t('placeholderActive', { channel: topic.name }) : t('placeholderInactive')}
+          className="min-h-[44px] min-w-0 flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-base text-primary-900 placeholder:text-neutral-600 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 dark:border-primary-900 dark:bg-neutral-800 dark:text-primary-100 dark:placeholder:text-neutral-400 dark:focus:bg-neutral-800" />
         <button type="submit" disabled={isPending || cooling || !draft.trim() || !canChat}
-          className="inline-flex h-10 shrink-0 items-center rounded-xl bg-primary-800 px-4 text-sm font-semibold text-white hover:bg-primary-900 disabled:cursor-not-allowed disabled:opacity-50">
+          className="inline-flex h-11 shrink-0 items-center rounded-xl bg-primary-800 px-4 text-sm font-semibold text-white hover:bg-primary-900 disabled:cursor-not-allowed disabled:opacity-50">
           {cooling ? t('submitCooldown', { seconds: Math.ceil(remainingMs / 1000) }) : isPending ? t('submitSending') : t('submit')}
         </button>
       </div>

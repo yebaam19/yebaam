@@ -15,6 +15,7 @@ import UploadProgress from '@/features/profile/components/media/UploadProgress'
 import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
+import { useVisibleViewport } from '@/lib/hooks/useVisibleViewport'
 
 interface User {
   id: string
@@ -44,6 +45,7 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
   // Si estamos en /messages, no mostrar sidebars (tiene su propio layout)
   const isMessengerRoute = pathname?.startsWith('/messages')
   const isChatShellRoute = pathname === '/chat' || pathname?.startsWith('/chat/')
+  const chatViewportRef = useVisibleViewport(Boolean(isChatShellRoute))
 
   // Messenger-style /chat: sin footer ni padding estrecho; el contenido arma dos columnas
   if (isChatShellRoute) {
@@ -53,8 +55,8 @@ export function ApplicationLayoutClient({ children, user, isPlatformAdmin }: Pro
           <CallProvider>
             <Aside.Provider>
               <SocialHeader isPlatformAdmin={isPlatformAdmin} />
-              <main className="min-h-0 min-w-0 w-full max-w-full pb-0 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
-                <div className="mx-auto min-h-0 w-full max-w-none">{children}</div>
+              <main ref={chatViewportRef} className="flex h-dvh min-h-0 min-w-0 w-full max-w-full flex-col overflow-hidden pb-[env(safe-area-inset-bottom,0px)] pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
+                <div className="mx-auto min-h-0 w-full max-w-none flex-1">{children}</div>
               </main>
               <AnonymousChatRoot />
               <UploadProgress />

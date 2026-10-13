@@ -10,7 +10,7 @@ import type { AnonSession } from '../types';
 import EphemeralMessagesList from './EphemeralMessagesList';
 import EphemeralChatInput from './EphemeralChatInput';
 
-const SHELL = 'flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] min-h-0 w-full flex-col bg-white dark:bg-neutral-900';
+const SHELL = 'flex h-full min-h-0 w-full flex-col bg-white dark:bg-neutral-900';
 
 /**
  * Full-page surface for an anonymous conversation. The session lives only in

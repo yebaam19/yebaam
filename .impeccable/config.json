@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-10-12T23:51:37.542Z",
         "reason": "Agent review: the existing left border identifies the quoted message in the reply preview, matching reply quotes in ChatMessageList.tsx; it is a chat quotation cue, not a decorative card accent."
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/app/(app)/chat/[id]/ChatPageClient.tsx"
+        ],
+        "createdAt": "2026-10-13T00:15:14.447Z",
+        "reason": "Agent: line 211 is an intentional loading spinner (animate-spin rounded-full border-b-2), not a rounded card; its partial circular border provides the loading motion."
       }
     ]
   }
