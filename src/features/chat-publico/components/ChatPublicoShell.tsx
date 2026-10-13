@@ -99,7 +99,7 @@ export default function ChatPublicoShell({
           onClick={() => setMobileUsersOpen((v) => !v)}
           aria-label={mobileUsersOpen ? 'Ocultar usuarios' : 'Mostrar usuarios'}
           aria-expanded={mobileUsersOpen}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 lg:hidden"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 xl:hidden"
         >
           <UsersIcon />
         </button>
@@ -157,10 +157,10 @@ export default function ChatPublicoShell({
         {/* Right users pane — animated collapse */}
         <div
           className={cn(
-            'shrink-0 overflow-hidden transition-[width,opacity,transform] duration-300 ease-in-out lg:w-56 xl:w-64',
+            'shrink-0 overflow-hidden transition-[width,opacity,transform] duration-300 ease-in-out xl:w-64',
             mobileUsersOpen
-              ? 'absolute inset-y-0 right-0 z-20 w-56 bg-white shadow-lg opacity-100 lg:static lg:shadow-none'
-              : 'w-0 opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto',
+              ? 'absolute inset-y-0 right-0 z-20 w-56 bg-white shadow-lg opacity-100 xl:static xl:shadow-none'
+              : 'w-0 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto',
           )}
         >
           <div className="h-full">
