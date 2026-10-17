@@ -6,6 +6,7 @@ import { ShowcasePlayer } from '@/features/communities/components/showcase/Showc
 import { ShowcaseEditor } from '@/features/communities/components/showcase/ShowcaseEditor';
 import { CommunityProfileHeader } from '@/features/communities/components/showcase/CommunityProfileHeader';
 import type { LibraryAsset } from '@/features/communities/types/communityLibrary.types';
+import { CommunityPrivacy } from '@/features/communities/types/community.types';
 import type { Community } from '@/features/communities/types/community.types';
 import type { ReactNode } from 'react';
 const mocks = vi.hoisted(() => ({ save: vi.fn(), refresh: vi.fn(), assets: vi.fn(),
@@ -141,4 +142,15 @@ describe('Showcase editing', () => {
     expect(screen.queryByRole('button', { name: 'Reproducir Video 1' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Ver presentación' })).toHaveAttribute('href', '/comunidades/test');
   });
+});
+
+
+it.each(Object.values(CommunityPrivacy))('shares only the canonical profile link for a %s community', async (privacy) => {
+  mocks.pathname = '/comunidades/test/archivos';
+  const community = { id: communityId, slug: 'test', name: 'Comunidad de prueba', privacy } as Community;
+  view(<CommunityProfileHeader community={community} canManageHeader={false} canEdit={false} showcase={null} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Compartir enlace' }));
+  const link = await screen.findByRole('textbox', { name: 'Enlace' });
+  expect(link).toHaveValue(`${window.location.origin}/comunidades/test`);
+  expect(screen.getByText('Compartir el enlace no cambia quién puede ver el contenido.')).toBeVisible();
 });

@@ -1,24 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { shareCommunityArticleToFeed } from '@/features/communities/actions/communityArticles.actions';
-import {
-  LinkIcon,
-  ShareIcon,
-  UserGroupIcon,
-} from '@/components/icons/heroicons-shim';
+import { UserGroupIcon } from '@/components/icons/heroicons-shim';
+import { CommunityLinkShareButton } from './CommunityLinkShareButton';
 
 interface CommunityArticleShareButtonProps {
   articleId: string;
   articleTitle: string;
-  /** Path beginning with `/feed/...` — origin is added at click time. */
+  /** Canonical article path — origin is added at click time. */
   articlePath: string;
   communitySlug: string;
   /**
    * Only the article author can share into the community feed. Other viewers
-   * still see the button so they can copy the link externally.
+   * still see the external sharing options.
    */
   isAuthor: boolean;
 }
@@ -32,60 +29,12 @@ export function CommunityArticleShareButton({
 }: CommunityArticleShareButtonProps) {
   const router = useRouter();
   const t = useTranslations('communities');
-  const [menuOpen, setMenuOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [shared, setShared] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const shareRequestId = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (!wrapperRef.current?.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(false), 1800);
-    return () => clearTimeout(t);
-  }, [copied]);
-
-  const handleCopyLink = async () => {
-    const url =
-      typeof window !== 'undefined' ? `${window.location.origin}${articlePath}` : articlePath;
-
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ title: articleTitle, url });
-        return;
-      } catch {
-        /* fall through to clipboard */
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-    } catch {
-      const input = document.createElement('input');
-      input.value = url;
-      document.body.appendChild(input);
-      input.select();
-      try {
-        document.execCommand('copy');
-        setCopied(true);
-      } finally {
-        document.body.removeChild(input);
-      }
-    }
-  };
 
   const handleShareToCommunity = () => {
     setError(null);
@@ -109,63 +58,15 @@ export function CommunityArticleShareButton({
 
   return (
     <>
-      <div ref={wrapperRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-primary-800 hover:bg-secondary-100 focus-visible:outline-2 dark:text-primary-300 dark:hover:bg-primary-900"
-        >
-          {copied ? (
-            <>
-              <LinkIcon className="h-4 w-4" />
-              {t('admin.article.share.copied')}
-            </>
-          ) : (
-            <>
-              <ShareIcon className="h-4 w-4" />
-              {t('admin.article.share.share')}
-            </>
-          )}
-        </button>
-
-        {menuOpen && (
-          <div
-            role="menu"
-            className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-lg bg-white shadow-lg dark:bg-neutral-800"
-          >
-            {isAuthor && (
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setMenuOpen(false);
-                  setError(null);
-                  setShared(false);
-                  setDialogOpen(true);
-                }}
-                className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-neutral-900 hover:bg-secondary-100 focus-visible:outline-2 dark:text-white dark:hover:bg-primary-900"
-              >
-                <UserGroupIcon className="h-4 w-4" />
-                {t('admin.article.share.shareToCommunity')}
-              </button>
-            )}
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuOpen(false);
-                void handleCopyLink();
-              }}
-              className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-neutral-900 hover:bg-secondary-100 focus-visible:outline-2 dark:text-white dark:hover:bg-primary-900"
-            >
-              <LinkIcon className="h-4 w-4" />
-              {t('admin.article.share.copyLink')}
-            </button>
-          </div>
-        )}
-      </div>
+      <CommunityLinkShareButton path={articlePath} title={articleTitle} />
+      {isAuthor && <button type="button" onClick={() => {
+        setError(null);
+        setShared(false);
+        setDialogOpen(true);
+      }} className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-primary-800 hover:bg-secondary-100 focus-visible:outline-2 dark:text-primary-300 dark:hover:bg-primary-900">
+        <UserGroupIcon className="size-4" aria-hidden="true" />
+        {t('admin.article.share.shareToCommunity')}
+      </button>}
 
       {dialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

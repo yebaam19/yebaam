@@ -13,6 +13,7 @@ import { PlanInteractionProvider, usePlanInteraction } from '../plans/PlanIntera
 import { useEditorReturnFocus } from '../../hooks/useEditorReturnFocus';
 import { CommunityIdentity } from './CommunityIdentity';
 import { ShowcasePlayer } from './ShowcasePlayer';
+import { CommunityLinkShareButton } from '../CommunityLinkShareButton';
 
 const ShowcaseEditor = dynamic(() => import('./ShowcaseEditor').then((module) => module.ShowcaseEditor), {
   ssr: false,
@@ -39,6 +40,7 @@ function Header({ community, canManageHeader, canEdit, showcase, headerImages, i
         </p>}
         {!isHome && showcase && <Link href={`/comunidades/${community.slug}` as Route}
           className="inline-flex min-h-9 items-center text-sm font-medium text-primary-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-300">{t('view')}</Link>}
+        <CommunityLinkShareButton path={`/comunidades/${community.slug}`} title={community.name} />
         {isHome && canEdit && <div className="flex flex-wrap items-center gap-2">
           <Button ref={opener} outline disabled={editing} onClick={() => interaction.beginEdit('showcase')}>{t('edit')}</Button>
           {showcase && !showcase.is_published && <span className="text-xs text-secondary-900 dark:text-secondary-300">{t('draft')}</span>}

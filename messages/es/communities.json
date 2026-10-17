@@ -1,4 +1,16 @@
 {
+  "linkShare": {
+    "button": "Compartir enlace",
+    "title": "Compartir en otras redes",
+    "accessHint": "Compartir el enlace no cambia quién puede ver el contenido.",
+    "network": "Compartir en {network} (abre en otra pestaña)",
+    "link": "Enlace",
+    "copy": "Copiar enlace",
+    "copied": "Enlace copiado.",
+    "copyError": "No se pudo copiar. Selecciona el enlace y cópialo manualmente.",
+    "more": "Más opciones…",
+    "shareError": "No se pudo compartir. Elige una red o copia el enlace."
+  },
   "list": {
     "title": "Comunidades",
     "subtitle": "Únete a comunidades de personas con intereses similares",

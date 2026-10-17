@@ -1,4 +1,16 @@
 {
+  "linkShare": {
+    "button": "Share link",
+    "title": "Share on other networks",
+    "accessHint": "Sharing the link does not change who can view the content.",
+    "network": "Share on {network} (opens in a new tab)",
+    "link": "Link",
+    "copy": "Copy link",
+    "copied": "Link copied.",
+    "copyError": "Could not copy. Select the link and copy it manually.",
+    "more": "More options…",
+    "shareError": "Could not share. Choose a network or copy the link."
+  },
   "list": {
     "title": "Communities",
     "subtitle": "Join communities of people with similar interests",

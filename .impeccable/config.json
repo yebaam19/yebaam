@@ -20,6 +20,15 @@
         ],
         "createdAt": "2026-10-13T00:15:14.447Z",
         "reason": "Agent: line 211 is an intentional loading spinner (animate-spin rounded-full border-b-2), not a rounded card; its partial circular border provides the loading motion."
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/features/communities/components/showcase/CommunityProfileHeader.tsx"
+        ],
+        "createdAt": "2026-10-17T06:19:53.307Z",
+        "reason": "Agent review: the pre-existing header accent renders the community primary color configured by CommunityThemeSettings via communityThemeStyle; DESIGN.md preserves rounded panel corners. Keep this intentional community identity treatment unchanged while adding link sharing."
       }
     ]
   }
