@@ -1,5 +1,5 @@
 interface Props {
-  code: string;
+  readonly code: string;
 }
 
 export default function DownloadPdfButton({ code }: Props) {
