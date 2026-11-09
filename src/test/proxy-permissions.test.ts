@@ -98,10 +98,10 @@ describe('query budget and fresh permissions', () => {
     expect(state.lookups.map(({ table }) => table)).toEqual(tables);
   });
 
-  it.each(['/feed', '/admin/music', '/comunidades'])('visitors read no role tables: %s', async (path) => {
+  it.each(['/feed', '/admin/music', '/comunidades', '/musica'])('visitors read no role tables: %s', async (path) => {
     state.user = null;
     const response = await visit(path);
-    expect(response.status).toBe(path === '/comunidades' ? 200 : 307);
+    expect(response.status).toBe(['/comunidades', '/musica'].includes(path) ? 200 : 307);
     expect(state.lookups).toEqual([]);
   });
 
