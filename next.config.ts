@@ -87,6 +87,13 @@ const nextConfig: NextConfig = {
   },
   typedRoutes: true,
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+  outputFileTracingIncludes: {
+    // Chromium resolves these archives at runtime; tracing misses them with pnpm.
+    '/api/verification/certificate/*/pdf': [
+      './node_modules/@sparticuz/chromium/bin/**',
+      './node_modules/.pnpm/@sparticuz+chromium@*/node_modules/@sparticuz/chromium/bin/**',
+    ],
+  },
   images: {
     // AVIF first (25-40% smaller than WebP for photos), WebP fallback. First
     // transform is slower but the long minimumCacheTTL amortizes it.
