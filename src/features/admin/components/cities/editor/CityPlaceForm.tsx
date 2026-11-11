@@ -5,31 +5,29 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition, type ChangeEvent, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { uploadService } from '@/lib/service/upload.service'
+import type { AdminPlaceRow } from '@/features/admin/server/cities/places.server'
 import { upsertCityPlace } from '@/features/admin/actions/city-places.actions'
 
 interface Props {
   cityId: string
+  place?: AdminPlaceRow
+  onSaved?: () => void
 }
 
-/**
- * Create-place form (no edit yet — list rows just show delete). Upload runs
- * via `uploadService.uploadImage`; we keep the CF image id in local state and
- * pass it to `upsertCityPlace`. Saves with status='approved' by default so
- * admin-created places land live without an extra approval step.
- */
-export function CityPlaceForm({ cityId }: Props) {
+/** Create or edit a city place using its existing Cloudflare image ID. */
+export function CityPlaceForm({ cityId, place, onSaved }: Props) {
   const t = useTranslations('admin.ciudades')
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, startTransition] = useTransition()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('')
-  const [address, setAddress] = useState('')
-  const [latitude, setLatitude] = useState('')
-  const [longitude, setLongitude] = useState('')
-  const [cfImageId, setCfImageId] = useState<string | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [name, setName] = useState(place?.name ?? '')
+  const [description, setDescription] = useState(place?.description ?? '')
+  const [category, setCategory] = useState(place?.category ?? '')
+  const [address, setAddress] = useState(place?.address ?? '')
+  const [latitude, setLatitude] = useState(place?.latitude?.toString() ?? '')
+  const [longitude, setLongitude] = useState(place?.longitude?.toString() ?? '')
+  const [cfImageId, setCfImageId] = useState<string | null>(place?.cfImageId ?? null)
+  const [preview, setPreview] = useState<string | null>(place?.imageUrl ?? null)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
@@ -55,30 +53,34 @@ export function CityPlaceForm({ cityId }: Props) {
     e.preventDefault()
     setError(null)
     startTransition(async () => {
-      const res = await upsertCityPlace({
-        cityId,
-        name: name.trim(),
-        description: description.trim() || null,
-        cfImageId,
-        category: category.trim() || null,
-        address: address.trim() || null,
-        latitude: latitude.trim() ? Number(latitude) : null,
-        longitude: longitude.trim() ? Number(longitude) : null,
-        status: 'approved',
-      })
-      if (!res.ok) {
-        setError(t('actionError'))
-        return
-      }
-      setName('')
-      setDescription('')
-      setCategory('')
-      setAddress('')
-      setLatitude('')
-      setLongitude('')
-      setCfImageId(null)
-      setPreview(null)
-      router.refresh()
+      try {
+        const res = await upsertCityPlace({
+          cityId,
+          placeId: place?.id,
+          name: name.trim(),
+          description: description.trim() || null,
+          cfImageId,
+          category: category.trim() || null,
+          address: address.trim() || null,
+          latitude: latitude.trim() ? Number(latitude) : null,
+          longitude: longitude.trim() ? Number(longitude) : null,
+          status: place?.status ?? 'approved',
+        })
+        if (!res.ok) {
+          setError(t('actionError'))
+          return
+        }
+        setName('')
+        setDescription('')
+        setCategory('')
+        setAddress('')
+        setLatitude('')
+        setLongitude('')
+        setCfImageId(null)
+        setPreview(null)
+        router.refresh()
+        onSaved?.()
+      } catch { setError(t('actionError')) }
     })
   }
 
@@ -112,26 +114,30 @@ export function CityPlaceForm({ cityId }: Props) {
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder={t('placeNamePlaceholder')}
+        aria-label={t('placeNamePlaceholder')}
+          placeholder={t('placeNamePlaceholder')}
         className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
       />
       <input
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        placeholder={t('placeCategoryPlaceholder')}
+        aria-label={t('placeCategoryPlaceholder')}
+          placeholder={t('placeCategoryPlaceholder')}
         className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
       />
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={3}
-        placeholder={t('placeDescriptionPlaceholder')}
+        aria-label={t('placeDescriptionPlaceholder')}
+          placeholder={t('placeDescriptionPlaceholder')}
         className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
       />
       <input
         value={address}
         onChange={(e) => setAddress(e.target.value)}
-        placeholder={t('placeAddressPlaceholder')}
+        aria-label={t('placeAddressPlaceholder')}
+          placeholder={t('placeAddressPlaceholder')}
         className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
       />
       <div className="grid grid-cols-2 gap-2">
@@ -140,6 +146,7 @@ export function CityPlaceForm({ cityId }: Props) {
           step="any"
           value={latitude}
           onChange={(e) => setLatitude(e.target.value)}
+          aria-label={t('placeLatPlaceholder')}
           placeholder={t('placeLatPlaceholder')}
           className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
@@ -148,6 +155,7 @@ export function CityPlaceForm({ cityId }: Props) {
           step="any"
           value={longitude}
           onChange={(e) => setLongitude(e.target.value)}
+          aria-label={t('placeLngPlaceholder')}
           placeholder={t('placeLngPlaceholder')}
           className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
@@ -160,9 +168,9 @@ export function CityPlaceForm({ cityId }: Props) {
       <button
         type="submit"
         disabled={pending || !name.trim()}
-        className="w-full rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-500 disabled:opacity-50"
+        className="w-full rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
       >
-        {pending ? t('saving') : t('addPlaceCta')}
+        {pending ? t('saving') : place ? t('savePlaceEdit') : t('addPlaceCta')}
       </button>
     </form>
   )

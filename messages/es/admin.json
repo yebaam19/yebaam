@@ -355,7 +355,9 @@
     "thumbnailEmpty": "Sin imagen",
     "actionError": "La acción falló.",
     "actionSuccess": "Listo.",
-    "tabDirectory": "Directorios"
+    "tabDirectory": "Directorios",
+    "editPlace": "Editar",
+    "savePlaceEdit": "Guardar cambios"
   },
   "userDetail": {
     "title": "Detalle de usuario",

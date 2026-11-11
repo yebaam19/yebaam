@@ -5,6 +5,7 @@ import { listCityPlacesForAdmin } from '@/features/admin/server/cities.server'
 import { FilterChipsCommon } from './FilterChipsCommon'
 import { Pagination } from './Pagination'
 import { CityPlaceForm } from './CityPlaceForm'
+import { EditPlaceButton } from './EditPlaceButton'
 import { DeletePlaceButton } from './DeletePlaceButton'
 
 interface Props {
@@ -94,6 +95,7 @@ export async function CityPlacesTab({ city, statusFilter, page }: Props) {
                 >
                   {statusLabel[p.status]}
                 </span>
+                <EditPlaceButton cityId={city.id} place={p} />
                 <DeletePlaceButton placeId={p.id} />
               </li>
             ))}

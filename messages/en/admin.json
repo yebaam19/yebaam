@@ -355,7 +355,9 @@
     "thumbnailEmpty": "No image",
     "actionError": "Action failed.",
     "actionSuccess": "Done.",
-    "tabDirectory": "Directories"
+    "tabDirectory": "Directories",
+    "editPlace": "Edit",
+    "savePlaceEdit": "Save changes"
   },
   "userDetail": {
     "title": "User detail",

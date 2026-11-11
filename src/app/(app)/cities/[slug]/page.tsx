@@ -42,9 +42,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  *  - Full-width cover up top (eager, no Suspense)
  *  - 2-column body:
  *      - main column (col-span-2): "Explora <city>" picture-card grid over
- *        the `PORTAL_SHORTCUTS` subset — business directory categories +
- *        city history (Cloudflare thumbnail or brand gradient + icon
- *        fallback)
+ *        the available city destinations (Cloudflare thumbnail or brand
+ *        gradient and icon fallback)
  *      - right rail (col-span-1): facts + trending (Suspense-streamed)
  *
  * The only client component on this page is `<FollowCityButton>` (inside the

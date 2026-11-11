@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import {
-  PORTAL_SHORTCUTS,
   resolveHref,
 } from '@/features/cities/data/portal-sections';
+import { CITY_PORTAL_SHORTCUTS } from '@/features/cities/data/portal-navigation';
 import { getDiscoveryThumbnails } from '@/features/cities/server/discovery.server';
 import { DiscoveryTile } from './DiscoveryTile';
 import { getPortalIcon } from './icons';
@@ -12,8 +12,7 @@ interface CityPortalGridProps {
 }
 
 /**
- * Flat picture-card grid over the `PORTAL_SHORTCUTS` subset (business
- * directory categories + city history) for the "Explora <city>" section.
+ * Picture-card grid over the available city destinations for the "Explora <city>" section.
  * Cloudflare cover image when the section has one, otherwise a
  * brand-gradient + icon fallback.
  *
@@ -29,13 +28,14 @@ export async function CityPortalGrid({ citySlug }: CityPortalGridProps) {
 
   return (
     <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-      {PORTAL_SHORTCUTS.map((section) => (
+      {CITY_PORTAL_SHORTCUTS.map((section) => (
         <DiscoveryTile
           key={section.id}
           href={resolveHref(section, citySlug)}
           label={t(`sections.${section.id}.label`)}
           coverImageUrl={thumbnails[section.id]}
           Icon={getPortalIcon(section.icon)}
+          comingSoonLabel={section.comingSoon ? t('comingSoonPill') : undefined}
           sectionId={section.id}
         />
       ))}

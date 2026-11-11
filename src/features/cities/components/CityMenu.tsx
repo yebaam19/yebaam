@@ -1,5 +1,6 @@
 'use client'
 
+import { CITY_PORTAL_SHORTCUTS } from '@/features/cities/data/portal-navigation';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
 import { Bars3Icon } from '@/components/icons/heroicons-shim'
 import Link from 'next/link'
@@ -8,7 +9,6 @@ import type { Route } from 'next'
 import { Fragment } from 'react'
 import { useTranslations } from 'next-intl'
 import {
-  PORTAL_SHORTCUTS,
   resolveHref,
 } from '@/features/cities/data/portal-sections'
 import { getPortalIcon } from './portal/icons'
@@ -22,7 +22,7 @@ interface CityMenuProps {
  *
  * Phase 2 removed the desktop sidebar — the tile grid IS the desktop nav.
  * What stays is the FAB at the bottom-right on `< lg` viewports: a quick-jump
- * dropdown that mirrors the same `PORTAL_SHORTCUTS` the grid renders
+ * dropdown that mirrors the same `CITY_PORTAL_SHORTCUTS` the grid renders
  * (business directory categories + city history), so users on phones do not
  * have to scroll the single-column grid to reach the bottom tiles.
  */
@@ -50,7 +50,7 @@ export function CityMenu({ citySlug }: CityMenuProps) {
           leaveTo="transform opacity-0 scale-95"
         >
           <MenuItems className="absolute right-0 bottom-full mb-2 max-h-[60vh] w-64 origin-bottom-right overflow-y-auto rounded-xl bg-white py-2 shadow-xl ring-1 ring-black/5 focus:outline-none dark:bg-neutral-800 dark:ring-white/10">
-            {PORTAL_SHORTCUTS.map((section) => {
+            {CITY_PORTAL_SHORTCUTS.map((section) => {
               const Icon = getPortalIcon(section.icon)
               const href = resolveHref(section, citySlug)
               const active = isActive(href)

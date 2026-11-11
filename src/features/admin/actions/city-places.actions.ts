@@ -32,6 +32,8 @@ export async function upsertCityPlace(
   if (!input.cityId) return { ok: false, error: 'city_required' }
   const name = (input.name ?? '').trim()
   if (!name) return { ok: false, error: 'name_required' }
+  if (input.latitude != null && (!Number.isFinite(input.latitude) || Math.abs(input.latitude) > 90)) return { ok: false, error: 'invalid_latitude' }
+  if (input.longitude != null && (!Number.isFinite(input.longitude) || Math.abs(input.longitude) > 180)) return { ok: false, error: 'invalid_longitude' }
   const status = input.status ?? 'approved'
   if (!PLACE_STATUSES.has(status)) return { ok: false, error: 'invalid_status' }
 
@@ -48,7 +50,7 @@ export async function upsertCityPlace(
   }
 
   const query = input.placeId
-    ? client.from('city_places').update(payload).eq('id', input.placeId)
+    ? client.from('city_places').update(payload).eq('id', input.placeId).eq('city_id', input.cityId)
     : client.from('city_places').insert(payload)
   const { data, error } = await query.select('id, city_id').maybeSingle()
   if (error) return { ok: false, error: error.message }

@@ -8,9 +8,8 @@ interface Props {
 /**
  * City Portal layout.
  *
- * Phase 2 dropped the desktop sidebar — the shortcut tile grid (business
- * directory categories + city history, see `PORTAL_SHORTCUTS`) IS the
- * desktop nav. `CityMenu` is rendered unconditionally; its own internal
+ * The shortcut grid is the desktop navigation. `CityMenu` is rendered
+ * unconditionally; its own internal
  * wrapper restricts it to `< lg` (mobile FAB only).
  */
 export default async function CityLayout({ children, params }: Props) {
