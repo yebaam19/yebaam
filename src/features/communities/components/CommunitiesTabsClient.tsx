@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -119,7 +120,7 @@ export function CommunitiesTabsClient({
           <button
             type="button"
             onClick={() => setCreateOpen(true)}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
+            className={`${primaryActionColors} inline-flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold`}
           >
             <PlusIcon className="h-4 w-4" />
             {t('create.trigger')}

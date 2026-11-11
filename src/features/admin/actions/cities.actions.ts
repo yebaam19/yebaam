@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   type ActionResult,
   requireAdmin,
@@ -42,80 +41,18 @@ export async function createCity(
   const slugErr = validateSlug(slug)
   if (slugErr) return { ok: false, error: slugErr }
 
-  const { data: existing } = await client
-    .from('cities')
-    .select('id')
-    .eq('slug', slug)
-    .maybeSingle()
-  if (existing) return { ok: false, error: 'slug_taken' }
-
-  const { data, error } = await client
-    .from('cities')
-    .insert({
-      name,
-      slug,
-      country_id: input.countryId,
-      state_id: input.stateId ?? null,
-      description: '',
-      history_md: '',
-      economy_md: '',
-      is_featured: false,
-    })
-    .select('id, slug')
-    .maybeSingle()
-  if (error) return { ok: false, error: error.message }
+  // The RPC commits the city, forum and categories together, with caller RLS.
+  const { data, error } = await client.rpc('create_city_with_forum', {
+    p_name: name,
+    p_slug: slug,
+    p_country_id: input.countryId,
+    p_state_id: input.stateId ?? null,
+  })
+  if (error) return { ok: false, error: error.code === '23505' ? 'slug_taken' : error.message }
   if (!data) return { ok: false, error: 'insert_returned_no_row' }
 
-  const cityId = data.id as string
-  const citySlug = data.slug as string
-  await provisionCityForum(client, cityId, citySlug, name)
-
   revalidateCityList()
-  return { ok: true, data: { id: cityId, slug: citySlug } }
-}
-
-/**
- * Auto-provision the city's `forum_space` + four default categories
- * (General / Política / Deportes / Sociales — matches PDF item 8). Failure
- * here is logged but never rolls the city back; admins can re-create the
- * space manually if needed.
- */
-async function provisionCityForum(
-  client: SupabaseClient,
-  cityId: string,
-  citySlug: string,
-  name: string,
-): Promise<void> {
-  const spaceSlug = `city-${citySlug}`
-  const { data: spaceRow, error: spaceErr } = await client
-    .from('forum_spaces')
-    .insert({
-      owner_type: 'city',
-      owner_id: cityId,
-      slug: spaceSlug,
-      name,
-      description: `Foros públicos de ${name}`,
-      visibility: 'public',
-      enabled: true,
-    })
-    .select('id')
-    .maybeSingle()
-  if (spaceErr) {
-    console.error('[createCity] could not create forum_space:', spaceErr)
-    return
-  }
-  if (!spaceRow) return
-
-  const spaceId = (spaceRow as { id: string }).id
-  const { error: catErr } = await client.from('forum_categories').insert(
-    [
-      { name: 'General', slug: `${spaceSlug}-general`, position: 1 },
-      { name: 'Política', slug: `${spaceSlug}-politica`, position: 2 },
-      { name: 'Deportes', slug: `${spaceSlug}-deportes`, position: 3 },
-      { name: 'Sociales', slug: `${spaceSlug}-sociales`, position: 4 },
-    ].map((c) => ({ ...c, space_id: spaceId })),
-  )
-  if (catErr) console.error('[createCity] could not seed categories:', catErr)
+  return { ok: true, data: { id: data.id as string, slug: data.slug as string } }
 }
 
 export interface UpdateCityMetadataInput {

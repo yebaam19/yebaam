@@ -35,27 +35,34 @@ export function CityCreateForm({ countries }: Props) {
     e.preventDefault()
     setError(null)
     startTransition(async () => {
-      const res = await createCity({
-        name: name.trim(),
-        slug: slug.trim() || undefined,
-        countryId,
-      })
-      if (!res.ok) {
-        setError(res.error === 'slug_taken' ? t('slugTaken') : t('createError'))
-        return
+      try {
+        const res = await createCity({
+          name: name.trim(),
+          slug: slug.trim() || undefined,
+          countryId,
+        })
+        if (!res.ok) {
+          setError(res.error === 'slug_taken' ? t('slugTaken') : t('createError'))
+          return
+        }
+        router.push(`/admin/ciudades/${res.data.slug}` as Route)
+      } catch {
+        setError(t('createError'))
       }
-      router.push(`/admin/ciudades/${res.data.slug}` as Route)
     })
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} aria-busy={pending} className="space-y-4">
       <div>
-        <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+        <label htmlFor="city-name" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {t('fieldName')}
         </label>
         <input
+          id="city-name"
           required
+          disabled={pending}
+          maxLength={150}
           value={name}
           onChange={(e) => {
             const v = e.target.value
@@ -66,11 +73,16 @@ export function CityCreateForm({ countries }: Props) {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+        <label htmlFor="city-slug" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {t('fieldSlug')}
         </label>
         <input
+          id="city-slug"
           required
+          disabled={pending}
+          minLength={2}
+          maxLength={80}
+          aria-describedby="city-slug-hint"
           value={slug}
           onChange={(e) => {
             setSlug(slugify(e.target.value))
@@ -78,13 +90,16 @@ export function CityCreateForm({ countries }: Props) {
           }}
           className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 font-mono text-sm dark:border-neutral-700 dark:bg-neutral-950"
         />
-        <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
+        <p id="city-slug-hint" className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+        <label htmlFor="city-country" className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {t('fieldCountry')}
         </label>
         <select
+          id="city-country"
+          disabled={pending || countries.length === 0}
+          aria-describedby="city-country-hint"
           required
           value={countryId}
           onChange={(e) => setCountryId(e.target.value)}
@@ -97,10 +112,13 @@ export function CityCreateForm({ countries }: Props) {
             </option>
           ))}
         </select>
+        <p id="city-country-hint" className="mt-1 text-xs text-neutral-500">
+          {t(countries.length ? 'countryHint' : 'countriesUnavailable')}
+        </p>
       </div>
 
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+        <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
           {error}
         </div>
       )}

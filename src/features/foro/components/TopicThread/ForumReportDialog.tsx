@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { reportCommunityForumPost } from '../../actions/reports.actions'
@@ -37,7 +38,7 @@ export function ForumReportDialog({ postId, onClose }: { postId: string; onClose
     </div>
     {submitted ? <div className="space-y-3 px-4 py-4">
       <p role="status" className="text-sm text-primary-800 dark:text-primary-200">{t('received')}</p>
-      <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-900">{t('close')}</button>
+      <button type="button" onClick={onClose} className={`${primaryActionColors} min-h-11 rounded-lg px-4 py-2 text-sm font-semibold`}>{t('close')}</button>
     </div> : <form onSubmit={submit} className="space-y-3 px-4 py-4">
       <label htmlFor="forum-report-reason" className="block text-sm font-medium">{t('reason')}</label>
       <textarea id="forum-report-reason" value={reason} onChange={(event) => setReason(event.target.value)}
@@ -48,7 +49,7 @@ export function ForumReportDialog({ postId, onClose }: { postId: string; onClose
       <div className="flex flex-wrap justify-end gap-2">
         <button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-primary-200 px-4 py-2 text-sm font-medium text-primary-800 hover:bg-primary-50 dark:border-primary-800 dark:text-primary-200">{t('cancel')}</button>
         <button type="submit" disabled={pending || reason.trim().length < 10}
-          className="min-h-11 rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-900 disabled:opacity-50">
+          className={`${primaryActionColors} min-h-11 rounded-lg px-4 py-2 text-sm font-semibold`}>
           {t(pending ? 'sending' : 'submit')}
         </button>
       </div>

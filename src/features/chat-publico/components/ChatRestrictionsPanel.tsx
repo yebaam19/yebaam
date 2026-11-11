@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import {
   listCommunityChatRestrictions, releaseCommunityChatRestriction,
@@ -139,7 +140,7 @@ export default function ChatRestrictionsPanel({ communityId, canBlock, target, o
         </label>
         <div className="flex flex-wrap gap-2">
           <button type="submit" disabled={pending || reason.trim().length < 10}
-            className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{pending ? 'Guardando…' : selection.operation === 'release' ? 'Levantar restricción' : 'Abrir expediente'}</button>
+            className={`${primaryActionColors} rounded-lg px-3 py-2 text-xs font-semibold`}>{pending ? 'Guardando…' : selection.operation === 'release' ? 'Levantar restricción' : 'Abrir expediente'}</button>
           <button type="button" disabled={pending} onClick={() => setSelection(null)} className="rounded-lg px-3 py-2 text-xs font-medium text-primary-800 disabled:opacity-50 dark:text-primary-200">Cancelar</button>
         </div>
       </form>}

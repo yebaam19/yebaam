@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useState, useTransition, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -101,7 +102,7 @@ export function CommunityLayoutShell({
   const joinAction = viewerState.kind === 'guest' ? (
     <Link
       href={`/login?redirect=${encodeURIComponent(`/comunidades/${c.slug}`)}`}
-      className="inline-flex min-h-10 items-center rounded-lg bg-primary-800 px-5 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800"
+      className={`${primaryActionColors} inline-flex min-h-10 items-center rounded-lg px-5 py-2 text-sm font-medium shadow-md`}
     >
       {joinButtonLabel}
     </Link>
@@ -115,7 +116,7 @@ export function CommunityLayoutShell({
             ? 'bg-white text-neutral-700 hover:bg-neutral-100'
             : viewerState.kind === 'request_pending'
               ? 'bg-secondary-500 text-neutral-900 hover:bg-secondary-400'
-              : 'bg-primary-800 text-white hover:bg-primary-900'
+              : primaryActionColors
         } disabled:cursor-not-allowed disabled:opacity-50`}
       >
         {joinButtonLabel}

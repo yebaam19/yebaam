@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import Link from 'next/link';
 import type { Route } from 'next';
 import { notFound } from 'next/navigation';
@@ -106,7 +107,7 @@ export default async function CommunityForumsPage({ params }: PageProps) {
               </p>
               <Link
                 href={`/foro/${space.slug}/admin` as Route}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-900"
+                className={`${primaryActionColors} inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium`}
               >
                 Ir al panel
               </Link>

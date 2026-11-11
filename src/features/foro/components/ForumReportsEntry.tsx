@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import {
@@ -118,7 +119,7 @@ function ForumReportsPanel({ communityId, onClose }: { communityId: string; onCl
         <p className="mt-2 max-h-36 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-primary-50 px-2.5 py-2 text-xs text-primary-900 dark:bg-primary-950/30 dark:text-primary-200">{report.post_snapshot}</p>
         {report.reviewer_note && <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">{t('decisionNote')}: {report.reviewer_note}</p>}
         {status === 'open' && <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => { setSelection({ report, decision: 'remove' }); setNote(''); setError(null) }} className="min-h-11 rounded-lg bg-primary-800 px-3 text-xs font-semibold text-white">{t('remove')}</button>
+          <button type="button" onClick={() => { setSelection({ report, decision: 'remove' }); setNote(''); setError(null) }} className={`${primaryActionColors} min-h-11 rounded-lg px-3 text-xs font-semibold`}>{t('remove')}</button>
           <button type="button" onClick={() => { setSelection({ report, decision: 'dismiss' }); setNote(''); setError(null) }} className="min-h-11 rounded-lg border border-primary-200 px-3 text-xs font-medium text-primary-800 dark:border-primary-800 dark:text-primary-200">{t('dismiss')}</button>
         </div>}
       </article>)}
@@ -131,7 +132,7 @@ function ForumReportsPanel({ communityId, onClose }: { communityId: string; onCl
         <textarea id="forum-review-note" value={note} onChange={(event) => setNote(event.target.value)} minLength={10} maxLength={500} rows={3} required
           className="mt-2 w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-600 dark:border-primary-800 dark:bg-neutral-900" />
         <div className="mt-2 flex flex-wrap gap-2">
-          <button type="submit" disabled={pending || note.trim().length < 10} className="min-h-11 rounded-lg bg-primary-800 px-3 text-xs font-semibold text-white disabled:opacity-50">{t('confirm')}</button>
+          <button type="submit" disabled={pending || note.trim().length < 10} className={`${primaryActionColors} min-h-11 rounded-lg px-3 text-xs font-semibold`}>{t('confirm')}</button>
           <button type="button" onClick={() => setSelection(null)} className="min-h-11 rounded-lg px-3 text-xs font-medium text-primary-800 dark:text-primary-200">{t('cancel')}</button>
         </div>
       </form>}

@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -88,7 +89,7 @@ export function CommunityCard({ community, onJoinClick, isLoading = false }: Com
             </span>
           ) : (
             <button type="button" onClick={() => onJoinClick?.(community)} disabled={isLoading}
-              className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-primary-800 px-3 text-sm font-semibold text-white transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:cursor-wait disabled:opacity-60">
+              className={`${primaryActionColors} inline-flex min-h-10 w-full items-center justify-center rounded-lg px-3 text-sm font-semibold`}>
               {isLoading ? t('card.processing') : community.requireApproval ? t('card.requestAccess') : t('card.join')}
             </button>
           )}

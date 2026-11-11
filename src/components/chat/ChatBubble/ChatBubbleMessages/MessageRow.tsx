@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import Avatar from '@/ui/Avatar';
 import { cn } from '@/lib/utils';
 import type { MessageMedia } from '@/features/chat/types';
@@ -179,7 +180,7 @@ export function MessageRow({
                 type="button"
                 onClick={() => onSubmitEdit(msg.id)}
                 title={labels.save}
-                className="rounded-md bg-primary-800 p-1 text-white hover:bg-primary-900"
+                className={`${primaryActionColors} rounded-md p-1`}
               >
                 <CheckIcon className="h-4 w-4" />
               </button>

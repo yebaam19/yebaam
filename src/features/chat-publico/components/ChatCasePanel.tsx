@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -155,7 +156,7 @@ export default function ChatCasePanel({ communityId, scope, onClose }: {
                 className="mt-1 block w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm dark:border-primary-800 dark:bg-neutral-900" />
             </label>
             <button type="submit" disabled={pending || statement.trim().length < 10}
-              className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Enviar descargos</button>
+              className={`${primaryActionColors} rounded-lg px-3 py-2 text-xs font-semibold`}>Enviar descargos</button>
           </form>}
           {selected === item.id && scope === 'staff' && <form onSubmit={(event) => resolve(event, item.id)} className="mt-3 space-y-2">
             <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Decisión
@@ -173,7 +174,7 @@ export default function ChatCasePanel({ communityId, scope, onClose }: {
             </label>
             <p className="text-xs text-neutral-600 dark:text-neutral-300">La restricción exige una advertencia previa; el bloqueo exige además una suspensión anterior.</p>
             <button type="submit" disabled={pending || reason.trim().length < 10}
-              className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Guardar resolución</button>
+              className={`${primaryActionColors} rounded-lg px-3 py-2 text-xs font-semibold`}>Guardar resolución</button>
           </form>}
         </article>
       })}

@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import {
   listCommunityChatReviews, resolveCommunityChatReview, submitCommunityChatReview,
@@ -157,7 +158,7 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
             className="mt-1 block w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-600 dark:border-primary-800 dark:bg-neutral-900" />
         </label>
         <button type="submit" disabled={pending || statement.trim().length < 10}
-          className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Enviar solicitud</button>
+          className={`${primaryActionColors} rounded-lg px-3 py-2 text-xs font-semibold`}>Enviar solicitud</button>
       </form>}
       {scope === 'staff' && selection && <form onSubmit={decide} className="space-y-3 rounded-xl border border-secondary-200 bg-secondary-50 p-3 dark:border-primary-800 dark:bg-primary-900/30">
         <label className="block text-xs font-semibold text-primary-900 dark:text-primary-100">Motivo de la revisión
@@ -167,7 +168,7 @@ export default function ChatReviewPanel({ communityId, scope, restriction, canBl
         </label>
         <div className="flex gap-2">
           <button type="submit" disabled={pending || reason.trim().length < 10}
-            className="rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Confirmar decisión</button>
+            className={`${primaryActionColors} rounded-lg px-3 py-2 text-xs font-semibold`}>Confirmar decisión</button>
           <button type="button" disabled={pending} onClick={() => setSelection(null)} className="rounded-lg px-3 py-2 text-xs text-primary-800 disabled:opacity-50 dark:text-primary-200">Cancelar</button>
         </div>
       </form>}

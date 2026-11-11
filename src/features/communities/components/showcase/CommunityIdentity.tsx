@@ -1,4 +1,5 @@
 'use client';
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { FramedImage } from '../header-images/FramedImage';
 import type { HeaderImages } from '../../schemas/communityHeaderImage.schema';
 import { useTranslations } from 'next-intl';
@@ -33,7 +34,7 @@ export function CommunityIdentity({ community: c, canManageHeader, stacked, head
                         communityId={c.id}
                         target="profile"
                         images={headerImages} currentUrl={c.profileImageUrl}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-800 text-white shadow-md ring-2 ring-white transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:opacity-60 dark:ring-neutral-800"
+                        className={`${primaryActionColors} inline-flex h-7 w-7 items-center justify-center rounded-full shadow-md ring-2 ring-white dark:ring-neutral-800`}
                       />
                     </div>
                   )}

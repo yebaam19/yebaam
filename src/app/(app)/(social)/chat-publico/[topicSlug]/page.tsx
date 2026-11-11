@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { ArrowLeftIcon } from '@/components/icons/heroicons-shim'
 import { getAuthUser } from '@/features/auth/actions/auth.actions'
 import ChatEntryGate from '@/features/chat-publico/components/ChatEntryGate'
@@ -86,7 +87,7 @@ export default async function ChatPublicoTopicPage({
           </div>
           <Link
             href={`/login?redirect=/chat-publico/${topic.slug}` as Route}
-            className="inline-flex rounded-lg bg-primary-800 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-900"
+            className={`${primaryActionColors} inline-flex rounded-lg px-3 py-2 text-xs font-semibold`}
           >
             Inicia sesión para participar
           </Link>

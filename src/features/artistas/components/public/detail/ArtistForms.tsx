@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -98,7 +99,7 @@ export function ContactFormModal({ artistId, artistName, onClose, initialName, i
         <Field label="Asunto" error={errors.subject?.message}><input {...register('subject')} className={inputCls} placeholder="Motivo del contacto" /></Field>
         <Field label="Mensaje *" error={errors.message?.message}><textarea {...register('message')} rows={4} className={inputCls} placeholder="Cuéntale tu propuesta o consulta..." /></Field>
         <button type="submit" disabled={isSubmitting}
-          className="w-full rounded-xl bg-primary-800 py-3 text-sm font-bold text-white transition hover:bg-primary-700 disabled:opacity-50">
+          className={`${primaryActionColors} w-full rounded-xl py-3 text-sm font-bold transition`}>
           {isSubmitting ? 'Enviando…' : 'Enviar mensaje'}
         </button>
       </form>
@@ -138,7 +139,7 @@ export function BookingFormModal({ artistId, artistName, onClose, initialName, i
         <Field label="Presupuesto (COP)" error={errors.budget?.message}><input {...register('budget')} type="number" className={inputCls} placeholder="Opcional" /></Field>
         <Field label="Mensaje *" error={errors.message?.message}><textarea {...register('message')} rows={3} className={inputCls} placeholder="Cuéntanos más sobre el evento…" /></Field>
         <button type="submit" disabled={isSubmitting}
-          className="w-full rounded-xl bg-primary-800 py-3 text-sm font-bold text-white transition hover:bg-primary-700 disabled:opacity-50">
+          className={`${primaryActionColors} w-full rounded-xl py-3 text-sm font-bold transition`}>
           {isSubmitting ? 'Enviando…' : 'Solicitar booking'}
         </button>
       </form>
@@ -175,7 +176,7 @@ export function CollaborationFormModal({ artistId, artistName, onClose, initialN
         <Field label="Propuesta *" error={errors.proposal?.message}><textarea {...register('proposal')} rows={4} className={inputCls} placeholder="Describe tu idea de colaboración…" /></Field>
         <Field label="Mensaje adicional" error={errors.message?.message}><textarea {...register('message')} rows={2} className={inputCls} placeholder="Algo más que quieras compartir" /></Field>
         <button type="submit" disabled={isSubmitting}
-          className="w-full rounded-xl bg-primary-800 py-3 text-sm font-bold text-white transition hover:bg-primary-700 disabled:opacity-50">
+          className={`${primaryActionColors} w-full rounded-xl py-3 text-sm font-bold transition`}>
           {isSubmitting ? 'Enviando…' : 'Enviar propuesta'}
         </button>
       </form>

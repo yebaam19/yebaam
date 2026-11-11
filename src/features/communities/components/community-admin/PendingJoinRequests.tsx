@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -68,7 +69,7 @@ export function PendingJoinRequests({ communityId, initial }: {
           </div>
           <div className="flex shrink-0 gap-2">
             <button type="button" onClick={() => review(req.id, 'approve')} disabled={pending}
-              className="min-h-9 rounded-md bg-primary-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-900 disabled:opacity-50">
+              className={`${primaryActionColors} min-h-9 rounded-md px-3 py-1.5 text-xs font-medium`}>
               {t('admin.panel.approve')}
             </button>
             <button type="button" onClick={() => review(req.id, 'decline')} disabled={pending}

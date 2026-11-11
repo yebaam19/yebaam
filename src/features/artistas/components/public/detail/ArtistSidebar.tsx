@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { ExternalLink, Send, Heart, BookmarkPlus, Flag } from 'lucide-react'
 import type { ArtistProfileDetail, ServiceOffer, SocialLink } from '../../../types'
 import { safeExternalHref } from '@/lib/safe-href'
@@ -33,7 +34,7 @@ export function ArtistSidebar({ artist, onContact, onBooking, onCollaboration }:
         <h2 className="mb-4 font-black text-neutral-950">Conectar</h2>
         <div className="space-y-2">
           <button type="button" onClick={onBooking}
-            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary-800 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700">
+            className={`${primaryActionColors} flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition focus-visible:ring-2 focus-visible:ring-primary-700`}>
             <Send size={15} /> Solicitar booking
           </button>
           <button type="button" onClick={onContact}

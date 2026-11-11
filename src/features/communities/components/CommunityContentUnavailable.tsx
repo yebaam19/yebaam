@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
@@ -18,7 +19,7 @@ export async function CommunityContentUnavailable({ kind }: { kind: Kind }) {
     <meta name="robots" content="noindex" />
     <h2 className="text-xl font-semibold">{copy.title}</h2>
     <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{copy.description}</p>
-    <Link href="/comunidades" className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-primary-800 px-4 text-sm font-semibold text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:focus-visible:outline-primary-300">
+    <Link href="/comunidades" className={`${primaryActionColors} mt-5 inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold`}>
       {t('unavailable.back')}
     </Link>
   </section>;

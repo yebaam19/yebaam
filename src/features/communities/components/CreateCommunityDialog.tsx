@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -196,7 +197,7 @@ export function CreateCommunityDialog({ open, onClose }: CreateCommunityDialogPr
             <button
               type="submit"
               disabled={submitting || isUploadingCover || isUploadingProfile}
-              className="min-h-10 rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`${primaryActionColors} min-h-10 rounded-lg px-4 py-2 text-sm font-semibold`}
             >
               {submitting ? t('create.actions.submitting') : t('create.actions.submit')}
             </button>

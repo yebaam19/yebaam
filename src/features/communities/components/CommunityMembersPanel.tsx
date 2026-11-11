@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -86,7 +87,7 @@ export async function CommunityMembersPanel({ members, total, restricted = false
           <span className="text-neutral-600 dark:text-neutral-300">{t('members.pageStatus', { page, pageCount })}</span>
           <div className="flex gap-2">
             {page > 1 && <Link href={(page === 2 ? basePath : `${basePath}?page=${page - 1}`) as Route} className="inline-flex min-h-11 items-center rounded-lg border border-primary-200 px-4 font-medium text-primary-800 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 dark:border-primary-700 dark:text-primary-200 dark:hover:bg-primary-900/30">{t('members.previous')}</Link>}
-            {page < pageCount && <Link href={`${basePath}?page=${page + 1}` as Route} className="inline-flex min-h-11 items-center rounded-lg bg-primary-800 px-4 font-medium text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">{t('members.next')}</Link>}
+            {page < pageCount && <Link href={`${basePath}?page=${page + 1}` as Route} className={`${primaryActionColors} inline-flex min-h-11 items-center rounded-lg px-4 font-medium`}>{t('members.next')}</Link>}
           </div>
         </nav>
       )}

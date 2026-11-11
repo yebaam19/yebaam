@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
 import { useAutoResizeTextArea } from '@/components/chat/hooks/useAutoResizeTextArea'
@@ -51,7 +52,7 @@ export default function ChatMessageComposer({ topic, identity, draft, setDraft, 
           rows={1} inputMode="text" autoCapitalize="sentences" maxLength={MAX_LENGTH} disabled={!canChat} aria-label="Mensaje" placeholder={canChat ? t('placeholderActive', { channel: topic.name }) : t('placeholderInactive')}
           className="min-h-[44px] min-w-0 flex-1 resize-none rounded-xl border border-primary-200 bg-primary-50/40 px-3 py-2 text-base text-primary-900 placeholder:text-neutral-600 outline-none focus:border-primary-600 focus:bg-white disabled:opacity-60 dark:border-primary-900 dark:bg-neutral-800 dark:text-primary-100 dark:placeholder:text-neutral-400 dark:focus:bg-neutral-800" />
         <button type="submit" disabled={isPending || cooling || !draft.trim() || !canChat}
-          className="inline-flex h-11 shrink-0 items-center rounded-xl bg-primary-800 px-4 text-sm font-semibold text-white hover:bg-primary-900 disabled:cursor-not-allowed disabled:opacity-50">
+          className={`${primaryActionColors} inline-flex h-11 shrink-0 items-center rounded-xl px-4 text-sm font-semibold`}>
           {cooling ? t('submitCooldown', { seconds: Math.ceil(remainingMs / 1000) }) : isPending ? t('submitSending') : t('submit')}
         </button>
       </div>

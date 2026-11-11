@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import Link from 'next/link';
 import type { Route } from 'next';
 import { notFound, redirect } from 'next/navigation';
@@ -45,7 +46,7 @@ export default async function CommunityArticlesPage({ params, searchParams }: {
         <p className="text-sm text-neutral-600 dark:text-neutral-300">Ideas, historias y noticias de la comunidad.</p>
       </div>
       {canManage && <Link href={`/comunidades/${slug}/articulos/nuevo` as Route}
-        className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary-800 px-4 text-sm font-medium text-white hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800">
+        className={`${primaryActionColors} inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-medium`}>
         <PencilSquareIcon className="size-4" /> Nuevo artículo
       </Link>}
     </header>

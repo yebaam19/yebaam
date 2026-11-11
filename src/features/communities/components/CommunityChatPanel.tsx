@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import {
 ChatBubbleLeftRightIcon,
 LockClosedIcon,
@@ -62,7 +63,7 @@ export async function CommunityChatPanel({ community, viewerState }: CommunityCh
           </p>
           <Link
             href={`/chat-publico/${topic.slug}` as Route}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-800 px-4 py-2 text-sm font-medium text-white hover:bg-primary-900"
+            className={`${primaryActionColors} mt-4 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium`}
           >
             <ChatBubbleLeftRightIcon className="h-4 w-4" />
             Entrar al chat

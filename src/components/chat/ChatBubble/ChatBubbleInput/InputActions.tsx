@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import {
   FaceSmileIcon,
   HandThumbUpIcon,
@@ -72,7 +73,7 @@ export function InputActions({
         <button
           type="submit"
           disabled={isSending || isUploading}
-          className="rounded-full bg-primary-800 p-2 text-white shadow-sm transition-colors hover:bg-primary-900 disabled:opacity-50 dark:bg-primary-800 dark:hover:bg-primary-900"
+          className={`${primaryActionColors} rounded-full p-2 shadow-sm`}
           title={labels.send}
         >
           <PaperAirplaneIcon className="h-5 w-5 rtl:rotate-180" aria-hidden />

@@ -84,3 +84,23 @@ describe('fetchGlobalStats', () => {
     expect(stats.totalMedia).toBeGreaterThanOrEqual(0);
   });
 });
+
+it('exposes the complete city-creation country catalog through RLS', async () => {
+  const { data, error } = await makeAnonClient()
+    .from('countries')
+    .select('id, code, name');
+  expect(error).toBeNull();
+  const expectedCodes = [
+    'AG', 'AR', 'BB', 'BO', 'BR', 'BS', 'BZ', 'CL', 'CO', 'CR', 'CU',
+    'DM', 'DO', 'EC', 'ES', 'GD', 'GF', 'GT', 'GY', 'HN', 'HT', 'JM',
+    'KN', 'LC', 'MX', 'NI', 'PA', 'PE', 'PR', 'PY', 'SR', 'SV', 'TT',
+    'US', 'UY', 'VC', 'VE',
+  ];
+  expect(data?.map((country) => country.code)).toEqual(expect.arrayContaining(expectedCodes));
+  for (const code of expectedCodes) {
+    const matches = data?.filter((country) => country.code === code) ?? [];
+    expect(matches).toHaveLength(1);
+    expect(matches[0].id).toBeTruthy();
+    expect(matches[0].name.trim()).not.toBe('');
+  }
+});

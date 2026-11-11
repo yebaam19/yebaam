@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -67,7 +68,7 @@ export function CommunityAccessPreview({
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {(isSecret ? invited : !declined) && (
               <button type="button" onClick={submit} disabled={isPending}
-                className="inline-flex min-h-10 items-center justify-center rounded-lg bg-primary-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 disabled:opacity-60">
+                className={`${primaryActionColors} inline-flex min-h-10 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold`}>
                 {isPending ? t('detail.joinButton.processing') : invited
                   ? t('privatePreview.acceptInvite') : pending
                     ? t('privatePreview.cancel') : t('detail.joinButton.requestAccess')}

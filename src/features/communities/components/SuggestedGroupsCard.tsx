@@ -6,12 +6,13 @@ import { useJoinCommunity,useSuggestedCommunities } from '@/features/communities
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { primaryActionStyles } from '@/ui/primary-action-styles'
 
 const MAX_VISIBLE = 3
 
 function formatMemberCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, '')}K miembros`
-  return `${n} miembros`
+  return `${n} ${n === 1 ? 'miembro' : 'miembros'}`
 }
 
 export function SuggestedGroupsCard() {
@@ -41,11 +42,11 @@ export function SuggestedGroupsCard() {
 
   return (
     <div className="rounded-xl bg-white shadow-sm dark:bg-neutral-900">
-      <div className="flex items-center justify-between px-4 pt-4">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+      <div className="flex items-start justify-between gap-3 px-4 pt-4">
+        <h3 className="min-w-0 text-sm font-semibold leading-5 text-neutral-900 dark:text-neutral-100">
           Comunidades sugeridas
         </h3>
-        <Link href="/comunidades" className="text-xs font-medium text-primary-600 hover:underline">
+        <Link href="/comunidades" className="shrink-0 rounded-sm text-xs font-medium leading-5 text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-primary-400 dark:focus-visible:outline-primary-400">
           Ver todos
         </Link>
       </div>
@@ -70,7 +71,8 @@ export function SuggestedGroupsCard() {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/comunidades/${c.slug}` as never}
-                  className="block truncate text-sm font-semibold text-neutral-900 hover:underline dark:text-neutral-100"
+                  title={c.name}
+                  className="line-clamp-2 break-words text-sm font-semibold leading-5 text-neutral-900 hover:underline dark:text-neutral-100"
                 >
                   {c.name}
                 </Link>
@@ -78,9 +80,11 @@ export function SuggestedGroupsCard() {
                   {formatMemberCount(c.stats?.membersCount ?? 0)}
                 </p>
                 <button
+                  type="button"
+                  aria-label={`Unirse a ${c.name}`}
                   onClick={() => handleJoin(c.id)}
                   disabled={join.isPending}
-                  className="mt-2 inline-flex min-h-10 items-center gap-1 rounded-md bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-800 transition-colors hover:bg-primary-100 focus-visible:outline-2 focus-visible:outline-primary-800 disabled:opacity-60 dark:bg-primary-950 dark:text-primary-300 dark:hover:bg-primary-900"
+                  className={`${primaryActionStyles} mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs`}
                 >
                   <PlusIcon className="size-3.5" />
                   Unirse

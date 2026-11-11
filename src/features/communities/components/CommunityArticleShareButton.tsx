@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -116,7 +117,7 @@ export function CommunityArticleShareButton({
                 type="button"
                 onClick={handleShareToCommunity}
                 disabled={isPending || shared}
-                className="min-h-11 rounded-lg bg-primary-800 px-4 text-sm font-medium text-white hover:bg-primary-900 focus-visible:outline-2 disabled:opacity-50"
+                className={`${primaryActionColors} min-h-11 rounded-lg px-4 text-sm font-medium`}
               >
                 {isPending
                   ? t('admin.article.share.submitting')

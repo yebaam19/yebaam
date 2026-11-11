@@ -1,3 +1,4 @@
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { cn } from '@/lib/utils';
 import Avatar from '@/ui/Avatar';
 import { useState } from 'react';
@@ -148,7 +149,7 @@ export default function MessageBubble({
                 type="button"
                 onClick={submitEdit}
                 title={t('save')}
-                className="rounded-md bg-primary-800 p-1 text-white hover:bg-primary-900"
+                className={`${primaryActionColors} rounded-md p-1`}
               >
                 <CheckIcon className="h-4 w-4" />
               </button>

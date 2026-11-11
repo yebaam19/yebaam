@@ -1,5 +1,6 @@
 'use client';
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -81,7 +82,7 @@ export function CommunityAdminPanel({
             <button
               type="submit"
               disabled={isPending || !inviteUsername.trim()}
-              className="rounded-md bg-primary-800 px-4 py-2 text-sm font-medium text-white hover:bg-primary-900 disabled:opacity-50"
+              className={`${primaryActionColors} rounded-md px-4 py-2 text-sm font-medium`}
             >
               {t('admin.panel.inviteSubmit')}
             </button>

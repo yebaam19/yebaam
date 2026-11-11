@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CheckIcon, LinkIcon } from '@/components/icons/heroicons-shim'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { primaryActionStyles } from '@/ui/primary-action-styles'
 
 // Canonical share URL: always link to the production app, never the current
 // dev/preview origin — otherwise the copied link is useless to recipients.
@@ -149,7 +150,7 @@ export function InviteFriends() {
       <button
         type="button"
         onClick={openShareSheet}
-        className="mt-4 w-full rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700"
+        className={`${primaryActionStyles} mt-4 w-full px-3 py-2 text-sm`}
       >
         {t('inviteCta')}
       </button>

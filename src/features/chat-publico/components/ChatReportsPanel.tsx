@@ -1,5 +1,6 @@
 'use client'
 
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { listCommunityChatReports, restoreCommunityChatMessage, reviewCommunityChatReport } from '../actions/community-chat.actions'
 import type { CommunityChatReport } from '../types'
@@ -112,7 +113,7 @@ export default function ChatReportsPanel({ communityId, onClose }: { communityId
             </p>
             {report.reviewer_note && <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">Decisión: {report.reviewer_note}</p>}
             {status === 'open' && <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => select(report, 'hide')} className="rounded-lg bg-primary-800 px-3 py-1.5 text-xs font-semibold text-white">Retirar mensaje</button>
+              <button type="button" onClick={() => select(report, 'hide')} className={`${primaryActionColors} rounded-lg px-3 py-1.5 text-xs font-semibold`}>Retirar mensaje</button>
               <button type="button" onClick={() => select(report, 'dismiss')} className="rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-medium text-primary-800 dark:border-primary-800 dark:text-primary-200">Descartar reporte</button>
             </div>}
             {status === 'resolved' && report.message?.moderation_hidden_at && <button type="button" onClick={() => select(report, 'restore')} className="mt-3 rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-medium text-primary-800 dark:border-primary-800 dark:text-primary-200">Restaurar mensaje</button>}
@@ -127,7 +128,7 @@ export default function ChatReportsPanel({ communityId, onClose }: { communityId
           <textarea id="chat-review-note" value={note} onChange={(event) => setNote(event.target.value)} minLength={10} maxLength={500} rows={3} required
             className="mt-2 w-full resize-y rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-600 dark:border-primary-800 dark:bg-neutral-900" />
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="submit" disabled={pending || note.trim().length < 10} className="rounded-lg bg-primary-800 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">Confirmar</button>
+            <button type="submit" disabled={pending || note.trim().length < 10} className={`${primaryActionColors} rounded-lg px-3 py-1.5 text-xs font-semibold`}>Confirmar</button>
             <button type="button" onClick={() => setSelection(null)} className="rounded-lg px-3 py-1.5 text-xs font-medium text-primary-800 dark:text-primary-200">Cancelar</button>
           </div>
         </form>}
