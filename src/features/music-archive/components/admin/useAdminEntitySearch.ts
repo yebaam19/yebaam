@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useDebouncedCallback } from '@/lib/hooks/useScheduledCallback';
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -31,30 +32,30 @@ export function useAdminEntitySearch<T>({ initial, fetcher, debounceMs = 250 }: 
   const [rows, setRows] = useState<T[]>(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firstRender = useRef(true);
   const tickRef = useRef(0);
+  const invalidate = useCallback(() => { ++tickRef.current; }, []);
 
-  function refresh() {
+  function run(value: string) {
     const myTick = ++tickRef.current;
     setError(null);
     startTransition(async () => {
-      const res = await fetcher(query.trim() || undefined);
-      if (tickRef.current !== myTick) return; // a newer query already started
-      if (res.ok) setRows(res.data);
-      else setError(res.error);
+      try {
+        const res = await fetcher(value.trim() || undefined);
+        if (tickRef.current !== myTick) return;
+        if (res.ok) setRows(res.data); else setError(res.error);
+      } catch (cause) {
+        if (tickRef.current === myTick) setError(cause instanceof Error ? cause.message : 'Error de búsqueda');
+      }
     });
   }
-
+  const schedule = useDebouncedCallback(run, debounceMs);
+  const refresh = () => { schedule.cancel(); run(query); };
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      refresh();
-    }, debounceMs);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+    if (firstRender.current) firstRender.current = false;
+    else schedule(query);
+    return () => { schedule.cancel(); invalidate(); };
+  }, [query, schedule, debounceMs, invalidate]);
 
   return { query, setQuery, rows, setRows, pending, error, refresh };
 }

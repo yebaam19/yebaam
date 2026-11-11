@@ -1,127 +1,66 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@/components/icons/heroicons-shim';
-import type { Route } from 'next';
 import { useTranslations } from 'next-intl';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState, useTransition } from 'react';
-import type { CountryOption } from '../server/cities.server';
+import { useUrlSearch } from '@/lib/hooks/useUrlSearch';
+import type { CountryOption, StateOption } from '../server/discovery-options.server';
 
-interface Props {
-  countries: CountryOption[];
-}
+interface Props { countries: CountryOption[]; states?: StateOption[] }
+const control = 'w-full rounded-full border border-transparent bg-neutral-100 px-4 py-2 text-sm text-neutral-900 transition-colors focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900';
 
-/**
- * Search + country-filter island for `/cities`. URL is the source of truth:
- *  - typing in the input debounces ~250ms then writes `?q=...`
- *  - changing the dropdown writes `?country=CO` (or removes the param)
- * Suspense above re-mounts the grid on each URL change.
- */
-export function CitiesToolbar({ countries }: Props) {
+/** Geographic filters and country shortcuts share one cancellable, URL-owned search flow. */
+export function CitiesToolbar({ countries, states = [] }: Props) {
   const t = useTranslations('cities.list');
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
-
-  const urlQuery = searchParams.get('q') ?? '';
-  const country = searchParams.get('country') ?? '';
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Derived-state pattern: `localQuery` holds in-flight keystrokes;
-  // `lastUrlQuery` tracks the URL value the input was last seeded from.
-  // When the URL changes for a non-typing reason (back/forward, filter
-  // applied), the comparison `urlQuery !== lastUrlQuery` reseeds both via
-  // setState — no useEffect, no ref access during render.
-  const [localQuery, setLocalQuery] = useState(urlQuery);
-  const [lastUrlQuery, setLastUrlQuery] = useState(urlQuery);
-  if (urlQuery !== lastUrlQuery) {
-    setLastUrlQuery(urlQuery);
-    setLocalQuery(urlQuery);
-  }
-
-  function pushUrl(nextQ: string, nextCountry: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (nextQ.trim()) params.set('q', nextQ.trim());
-    else params.delete('q');
-    if (nextCountry) params.set('country', nextCountry);
-    else params.delete('country');
-    const search = params.toString();
-    const href = (search ? `${pathname}?${search}` : pathname) as Route;
-    startTransition(() => router.replace(href, { scroll: false }));
-  }
-
-  function onQueryChange(value: string) {
-    setLocalQuery(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => pushUrl(value, country), 250);
-  }
-
-  function onCountryChange(value: string) {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    pushUrl(localQuery, value);
-  }
-
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    pushUrl(localQuery, country);
-  }
+  const search = useUrlSearch();
+  const country = search.params.get('country') ?? '';
+  const state = search.params.get('state') ?? '';
+  const popular = [...countries].filter((item) => item.cityCount > 0)
+    .sort((a, b) => b.cityCount - a.cityCount || a.name.localeCompare(b.name)).slice(0, 6);
+  const filtered = Boolean(search.query || country || state);
 
   return (
-    <form
-      role="search"
-      onSubmit={onSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:gap-2.5 sm:p-2.5 dark:border-neutral-800 dark:bg-neutral-900"
-    >
-      <label className="relative flex-1">
-        <span className="sr-only">{t('searchPlaceholder')}</span>
-        <MagnifyingGlassIcon
-          className="pointer-events-none absolute top-1/2 left-3.5 h-[1.125rem] w-[1.125rem] -translate-y-1/2 text-neutral-400"
-          aria-hidden="true"
-        />
-        <input
-          type="search"
-          name="q"
-          value={localQuery}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder={t('searchPlaceholder')}
-          className="w-full rounded-full border border-transparent bg-neutral-100 py-2 pr-3 pl-10 text-sm text-neutral-900 placeholder:text-neutral-500 transition-colors focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-900"
-        />
-      </label>
-
-      <label className="block sm:w-56">
-        <span className="sr-only">{t('filterByCountry')}</span>
-        <select
-          name="country"
-          value={country}
-          onChange={(e) => onCountryChange(e.target.value)}
-          className="w-full appearance-none rounded-full border border-transparent bg-neutral-100 bg-[right_0.875rem_center] bg-no-repeat py-2 pr-9 pl-4 text-sm text-neutral-900 transition-colors focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-900"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23737373' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E\")",
-            backgroundSize: '1.25rem 1.25rem',
-          }}
-          aria-label={t('filterByCountry')}
-        >
-          <option value="">{t('allCountries')}</option>
-          {countries.map((c) => (
-            <option key={c.id} value={c.code}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {/* Non-JS fallback submit button — visible only when JS is disabled */}
-      <noscript>
-        <button
-          type="submit"
-          className="rounded-full bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          {t('applyFilters')}
-        </button>
-      </noscript>
-    </form>
+    <div className="space-y-3">
+      <form role="search" aria-busy={search.pending}
+        onSubmit={(event) => { event.preventDefault(); search.submit(); }}
+        className="flex flex-col gap-3 rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5 sm:p-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+        <label className="relative min-w-0 flex-1 sm:min-w-56">
+          <span className="sr-only">{t('searchPlaceholder')}</span>
+          <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
+          <input type="search" name="q" value={search.query} maxLength={120}
+            onChange={(event) => search.changeQuery(event.target.value)}
+            placeholder={t('searchPlaceholder')} aria-controls="city-results"
+            className={`${control} pl-10 placeholder:text-neutral-500 dark:placeholder:text-neutral-400`} />
+        </label>
+        <label className="block sm:w-52">
+          <span className="sr-only">{t('filterByCountry')}</span>
+          <select name="country" value={country} aria-label={t('filterByCountry')} className={control}
+            onChange={(event) => search.setFilters({ country: event.target.value, state: null })}>
+            <option value="">{t('allCountries')}</option>
+            {countries.map((item) => <option key={item.id} value={item.code}>{item.name} ({item.cityCount})</option>)}
+          </select>
+        </label>
+        {states.length > 0 && <label className="block sm:w-52">
+          <span className="sr-only">{t('filterByState')}</span>
+          <select name="state" value={state} aria-label={t('filterByState')} className={control}
+            onChange={(event) => search.setFilters({ state: event.target.value })}>
+            <option value="">{t('allStates')}</option>
+            {states.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.cityCount})</option>)}
+          </select>
+        </label>}
+        {filtered && <button type="button" onClick={() => search.reset(['country', 'state'])}
+          className="rounded-lg px-3 py-2 text-sm font-medium text-primary-800 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-primary-800 dark:text-primary-300 dark:hover:bg-primary-900/30">{t('clearFilters')}</button>}
+        <noscript><button type="submit" className="rounded-lg bg-primary-600 px-4 py-2 text-sm text-white hover:bg-primary-700">{t('applyFilters')}</button></noscript>
+      </form>
+      <div className="flex flex-wrap items-center gap-2" aria-label={t('browseCountries')}>
+        <span className="text-xs text-neutral-600 dark:text-neutral-400">{t('browseCountries')}</span>
+        {popular.map((item) => <button key={item.id} type="button"
+          aria-pressed={country === item.code}
+          onClick={() => search.setFilters({ country: item.code, state: null }, '')}
+          className="inline-flex min-h-9 items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 hover:border-primary-400 focus-visible:outline-2 focus-visible:outline-primary-800 aria-pressed:border-primary-600 aria-pressed:bg-primary-50 aria-pressed:text-primary-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:aria-pressed:bg-primary-900 dark:aria-pressed:text-primary-100">
+          {item.name}<span className="tabular-nums text-neutral-500 dark:text-neutral-400">{item.cityCount}</span>
+        </button>)}
+        <span role="status" className="text-xs text-neutral-600 dark:text-neutral-400">{search.pending ? t('searching') : ''}</span>
+      </div>
+    </div>
   );
 }

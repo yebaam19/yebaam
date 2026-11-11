@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeAll } from 'vitest';
+import { fetchCountries, fetchStates } from './discovery-options.server';
 import { getPublicServerClient } from '@/utils/supabase/public-server';
-import { fetchCities, fetchGlobalStats, fetchCountries } from './cities.server';
+import { fetchCities, fetchGlobalStats, fetchCitiesPage } from './cities.server';
 
 /**
  * These tests hit the real Supabase project (anon role) and rely on the
@@ -33,7 +34,7 @@ describe('fetchCities', () => {
   });
 
   it('includes the seeded cities and sorts featured-first as the catalog grows', async () => {
-    const cities = await fetchCities(client);
+    const cities = await fetchCities(client, { pageSize: 48 });
     expect(cities.map((city) => city.slug)).toEqual(expect.arrayContaining(seededCitySlugs));
 
     // Featured cities (Popayán, Bogotá) must precede non-featured.
@@ -100,4 +101,39 @@ it('keeps every supported country selectable even before its first city', async 
     expect(matches[0].id).toBeTruthy();
     expect(matches[0].name.trim()).not.toBe('');
   }
+});
+
+it.each([
+  ['Estados Unidos', 'miami', 'US'], ['USA', 'houston', 'US'],
+  ['Texas', 'dallas', 'US'], ['Texsa', 'austin', 'US'],
+  ['Espana', 'madrid', 'ES'], ['Madrd', 'madrid', 'ES'],
+  ['Sao Paulo', 'sao-paulo', 'BR'], ['New York', 'nueva-york', 'US'],
+])('finds geography, aliases and spelling variants: %s', async (q, slug, code) => {
+  const page = await fetchCitiesPage(makeAnonClient(), { q, pageSize: 48 });
+  expect(page.error).toBe(false);
+  expect(page.items.map((city) => city.slug)).toContain(slug);
+  expect(page.items.every((city) => city.country.code === code)).toBe(true);
+  expect(page.total).toBe(page.items.length);
+});
+
+it('combines country and state filters with text search', async () => {
+  const client = makeAnonClient();
+  const states = await fetchStates(client, 'US');
+  const texas = states.find((state) => state.name === 'Texas');
+  expect(texas?.cityCount).toBeGreaterThanOrEqual(4);
+  const page = await fetchCitiesPage(client, { q: 'Estados Unidos', countryCode: 'US', stateId: texas!.id });
+  expect(page.error).toBe(false);
+  expect(page.items.map((city) => city.slug)).toEqual(expect.arrayContaining(['houston', 'dallas', 'austin', 'san-antonio-texas']));
+  expect(page.items.every((city) => city.state?.id === texas!.id)).toBe(true);
+  expect((await fetchCitiesPage(client, { q: 'Texas', countryCode: 'ES' })).total).toBe(0);
+});
+
+it('paginates without overlap and never hides later catalog entries', async () => {
+  const client = makeAnonClient();
+  const first = await fetchCitiesPage(client, { pageSize: 4 });
+  const second = await fetchCitiesPage(client, { page: 2, pageSize: 4 });
+  expect(first.error || second.error).toBe(false);
+  expect(first.items).toHaveLength(4);
+  expect(second.total).toBe(first.total);
+  expect(second.items.every((city) => !first.items.some((previous) => previous.id === city.id))).toBe(true);
 });

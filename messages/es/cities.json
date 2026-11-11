@@ -30,7 +30,17 @@
     "next": "Página siguiente"
   },
   "list": {
-    "searchPlaceholder": "Buscar ciudades",
+    "paginationLabel": "Páginas de ciudades",
+    "resultCount": "{count, plural, one {# ciudad encontrada} other {# ciudades encontradas}}",
+    "resultsLabel": "Ciudades encontradas",
+    "retry": "Reintentar",
+    "loadError": "No pudimos cargar las ciudades. Inténtalo de nuevo.",
+    "searching": "Buscando…",
+    "clearFilters": "Limpiar filtros",
+    "browseCountries": "Explora por país",
+    "allStates": "Todos los estados o regiones",
+    "filterByState": "Filtrar por estado o región",
+    "searchPlaceholder": "Busca ciudad, estado o país",
     "filterByCountry": "Filtrar por país",
     "allCountries": "Todos los países",
     "empty": "Ninguna ciudad coincide con tu búsqueda",
@@ -157,15 +167,33 @@
     "comingSoonPill": "Pronto",
     "discoverHeading": "Explora {city}",
     "discovery": {
-      "places": { "label": "Sitios de Interés" },
-      "food": { "label": "Restaurantes y Cafeterías" },
-      "events": { "label": "Eventos" },
-      "tourism": { "label": "Turismo y Naturaleza" },
-      "nightlife": { "label": "Vida Nocturna" },
-      "lodging": { "label": "Hoteles y Residencias" },
-      "education": { "label": "Escuelas y Universidades" },
-      "commerce": { "label": "Comercio y Servicios" },
-      "history": { "label": "Historia y Cultura" }
+      "places": {
+        "label": "Sitios de Interés"
+      },
+      "food": {
+        "label": "Restaurantes y Cafeterías"
+      },
+      "events": {
+        "label": "Eventos"
+      },
+      "tourism": {
+        "label": "Turismo y Naturaleza"
+      },
+      "nightlife": {
+        "label": "Vida Nocturna"
+      },
+      "lodging": {
+        "label": "Hoteles y Residencias"
+      },
+      "education": {
+        "label": "Escuelas y Universidades"
+      },
+      "commerce": {
+        "label": "Comercio y Servicios"
+      },
+      "history": {
+        "label": "Historia y Cultura"
+      }
     },
     "about": {
       "heading": "Sobre {city}"
@@ -188,34 +216,90 @@
       "backToPortal": "Volver al portal"
     },
     "sections": {
-      "chats": { "label": "Chats Públicos" },
-      "forums": { "label": "Foros" },
-      "promotions": { "label": "Promociones" },
-      "news": { "label": "Noticias" },
-      "directories": { "label": "Directorios" },
-      "classifieds": { "label": "Clasificados" },
-      "emprendimientos": { "label": "Emprendimientos" },
-      "events": { "label": "Eventos" },
-      "photos": { "label": "Fotos" },
-      "videos": { "label": "Videos" },
-      "publications": { "label": "Publicaciones" },
-      "history": { "label": "Historia y Economía" },
-      "places": { "label": "Sitios de Interés" },
-      "government": { "label": "Entidades Gubernamentales" },
-      "education": { "label": "Escuelas, Colegios y Universidades" },
-      "food": { "label": "Restaurantes y Cafeterías" },
-      "nightlife": { "label": "Vida Nocturna" },
-      "lodging": { "label": "Hoteles y Residencias" },
-      "religion": { "label": "Iglesias y Centros Religiosos" },
-      "malls": { "label": "Centros Comerciales" },
-      "sports": { "label": "Deportes y Entretenimiento" },
-      "health": { "label": "Hospitales, Clínicas y Droguerías" },
-      "grocery": { "label": "Supermercados y Graneros" },
-      "clubs-blogs": { "label": "Comunidades, Clubs, Blogs" },
-      "social-help": { "label": "Ayuda Social" },
-      "contact": { "label": "Contacto" },
-      "complaints": { "label": "Portal de Denuncias" },
-      "rural": { "label": "Zona Rural" }
+      "chats": {
+        "label": "Chats Públicos"
+      },
+      "forums": {
+        "label": "Foros"
+      },
+      "promotions": {
+        "label": "Promociones"
+      },
+      "news": {
+        "label": "Noticias"
+      },
+      "directories": {
+        "label": "Directorios"
+      },
+      "classifieds": {
+        "label": "Clasificados"
+      },
+      "emprendimientos": {
+        "label": "Emprendimientos"
+      },
+      "events": {
+        "label": "Eventos"
+      },
+      "photos": {
+        "label": "Fotos"
+      },
+      "videos": {
+        "label": "Videos"
+      },
+      "publications": {
+        "label": "Publicaciones"
+      },
+      "history": {
+        "label": "Historia y Economía"
+      },
+      "places": {
+        "label": "Sitios de Interés"
+      },
+      "government": {
+        "label": "Entidades Gubernamentales"
+      },
+      "education": {
+        "label": "Escuelas, Colegios y Universidades"
+      },
+      "food": {
+        "label": "Restaurantes y Cafeterías"
+      },
+      "nightlife": {
+        "label": "Vida Nocturna"
+      },
+      "lodging": {
+        "label": "Hoteles y Residencias"
+      },
+      "religion": {
+        "label": "Iglesias y Centros Religiosos"
+      },
+      "malls": {
+        "label": "Centros Comerciales"
+      },
+      "sports": {
+        "label": "Deportes y Entretenimiento"
+      },
+      "health": {
+        "label": "Hospitales, Clínicas y Droguerías"
+      },
+      "grocery": {
+        "label": "Supermercados y Graneros"
+      },
+      "clubs-blogs": {
+        "label": "Comunidades, Clubs, Blogs"
+      },
+      "social-help": {
+        "label": "Ayuda Social"
+      },
+      "contact": {
+        "label": "Contacto"
+      },
+      "complaints": {
+        "label": "Portal de Denuncias"
+      },
+      "rural": {
+        "label": "Zona Rural"
+      }
     }
   },
   "emprendimientos": {
@@ -242,7 +326,9 @@
       "hogar": "Hogar",
       "otro": "Otro"
     },
-    "badge": { "verified": "Emprendedor verificado" },
+    "badge": {
+      "verified": "Emprendedor verificado"
+    },
     "list": {
       "empty": "Aún no hay emprendimientos en {city}.",
       "emptyHint": "¿Vendes arepas, arreglas celulares, haces peinados? Sé la primera persona en publicar.",
@@ -482,5 +568,15 @@
         "resolved": "Resuelto"
       }
     }
+  },
+  "directoryEntries": {
+    "address": "Dirección",
+    "phone": "Teléfono de contacto",
+    "website": "Sitio web",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageOf": "Página {page} de {totalPages}",
+    "pagination": "Paginación del directorio",
+    "externalWarning": "Vas a salir de Yebaam hacia un sitio de terceros. El establecimiento es responsable de sus productos, alimentos, entregas y pagos; Yebaam no interviene en esas operaciones. ¿Deseas continuar?"
   }
 }

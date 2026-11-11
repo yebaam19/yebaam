@@ -8,10 +8,11 @@ import { CitiesGrid } from '@/features/cities/components/CitiesGrid'
 import { CitiesHero } from '@/features/cities/components/CitiesHero'
 import { CitiesToolbar } from '@/features/cities/components/CitiesToolbar'
 import {
-  getCities,
-  getCountries,
+  getCitiesPage,
+  type CitiesPage as CitiesPageResult,
   getFeaturedHeroCity,
 } from '@/features/cities/server/cities.server'
+import { getCountries, getStates } from '@/features/cities/server/discovery-options.server'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('cities')
@@ -27,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 interface PageProps {
-  searchParams: Promise<{ q?: string; country?: string }>
+  searchParams: Promise<{ q?: string; country?: string; state?: string; page?: string }>
 }
 
 /**
@@ -40,10 +41,12 @@ interface PageProps {
  * blocking the rest of the shell.
  */
 export default async function CitiesPage({ searchParams }: PageProps) {
-  const { q, country } = await searchParams
-  const [heroCity, countries] = await Promise.all([
+  const { q, country, state, page } = await searchParams
+  const result = getCitiesPage({ q, countryCode: country, stateId: state, page: Number(page ?? 1) })
+  const [heroCity, countries, states] = await Promise.all([
     getFeaturedHeroCity(),
     getCountries(),
+    getStates(country?.trim().toUpperCase() ?? ''),
   ])
 
   return (
@@ -52,17 +55,16 @@ export default async function CitiesPage({ searchParams }: PageProps) {
         backgroundImageUrl={heroCity?.coverImageUrl}
         backgroundImageAlt={heroCity?.name}
       />
-      <CitiesToolbar countries={countries} />
-      <Suspense fallback={<CitiesGridSkeleton />} key={`${q ?? ''}::${country ?? ''}`}>
-        <CitiesGridAsync q={q} countryCode={country} />
+      <CitiesToolbar countries={countries} states={states} />
+      <Suspense fallback={<CitiesGridSkeleton />} key={`${q ?? ''}::${country ?? ''}::${state ?? ''}::${page ?? 1}`}>
+        <CitiesGridAsync result={result} />
       </Suspense>
     </div>
   )
 }
 
-async function CitiesGridAsync({ q, countryCode }: { q?: string; countryCode?: string }) {
-  const cities = await getCities({ q, countryCode })
-  return <CitiesGrid cities={cities} />
+async function CitiesGridAsync({ result }: { result: Promise<CitiesPageResult> }) {
+  return <CitiesGrid {...await result} />
 }
 
 /**
@@ -73,7 +75,7 @@ function CitiesGridSkeleton() {
   return (
     <section>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, index) => (
+        {Array.from({ length: 12 }).map((_, index) => (
           <div
             key={index}
             className="aspect-[4/3] animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800"

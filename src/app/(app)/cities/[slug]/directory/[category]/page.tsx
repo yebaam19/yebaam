@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import { getDirectoryEntries } from '@/features/cities/server/directory-entries.server';
+import { isDirectoryCategory } from '@/features/cities/directory/types';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
@@ -8,19 +11,11 @@ import { getCityBusinessesByCategory } from '@/features/cities/server/directory.
 
 interface Props {
   params: Promise<{ slug: string; category: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-/**
- * Restrict the dynamic segment to category ids that actually point at the
- * directory under-construction route shape — anything else (e.g. a stray
- * `/directory/foo`) renders a 404. The same predicate also gates the
- * generated metadata so unknown slugs don't get a friendly title.
- */
 function knownDirectoryCategory(categoryId: string) {
-  const section = PORTAL_SECTIONS.find((s) => s.id === categoryId);
-  if (!section) return null;
-  if (!section.hrefTemplate.startsWith('/cities/:slug/directory/')) return null;
-  return section;
+  return isDirectoryCategory(categoryId) ? PORTAL_SECTIONS.find((s) => s.id === categoryId) : undefined;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -42,21 +37,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/**
- * Phase 5 directory category page. Lists `businesses` joined to
- * `business_categories.slug = [category]` and filtered by the current city,
- * via the cached `getCityBusinessesByCategory()` server reader. The 10
- * categories seeded by migration `20260518044233_add_city_id_to_community_surfaces`
- * are: government, education, food, nightlife, lodging, religion, malls,
- * sports, health, grocery.
- *
- * An unknown category id (anything not in PORTAL_SECTIONS pointing at the
- * directory route) returns 404. An empty result set (city has no businesses
- * in this category yet) renders the view with an empty state — only Popayán
- * is seeded today, so most cities will exercise that path.
- */
-export default async function DirectoryCategoryPage({ params }: Props) {
+/** Public directory reads remain session-bound and explicitly published-only. */
+export default async function DirectoryCategoryPage({ params, searchParams }: Props) {
   const { slug, category } = await params;
+  const sp = await searchParams;
+  const page = Math.max(1, Math.floor(Number(sp.page) || 1));
 
   const section = knownDirectoryCategory(category);
   if (!section) notFound();
@@ -64,17 +49,26 @@ export default async function DirectoryCategoryPage({ params }: Props) {
   const city = await getCityBySlug(slug);
   if (!city) notFound();
 
-  const [businesses, sectionsT] = await Promise.all([
+  const [businesses, entries, sectionsT, entriesT] = await Promise.all([
     getCityBusinessesByCategory(city.id, category),
+    getDirectoryEntries(city.id, category, page),
     getTranslations('cities.portal.sections'),
+    getTranslations('cities.directoryEntries'),
   ]);
-
+  const totalPages = Math.max(1, Math.ceil(entries.total / entries.pageSize));
   return (
     <CityDirectoryCategoryView
       citySlug={slug}
       cityName={city.name}
       categoryLabel={sectionsT(`${section.id}.label`)}
-      businesses={businesses}
+      businesses={page === 1 ? businesses : []}
+      entries={entries.items}
+      totalCount={entries.total + businesses.length}
+      pagination={totalPages > 1 && <nav aria-label={entriesT('pagination')} className="flex items-center gap-4 text-sm">
+        {entries.page > 1 && <Link className="underline" href={`/cities/${slug}/directory/${category}?page=${entries.page - 1}` as `/${string}`}>{entriesT('previous')}</Link>}
+        <span>{entriesT('pageOf', { page: entries.page, totalPages })}</span>
+        {entries.page < totalPages && <Link className="underline" href={`/cities/${slug}/directory/${category}?page=${entries.page + 1}` as `/${string}`}>{entriesT('next')}</Link>}
+      </nav>}
     />
   );
 }

@@ -6,6 +6,8 @@ import {
   resolveHref,
 } from '@/features/cities/data/portal-sections'
 import { getCityPortalData } from '@/features/cities/server/portal-data.server'
+import { isDirectoryCategory } from '@/features/cities/directory/types'
+import { primaryActionColors } from '@/ui/primary-action-styles'
 import type { AdminCityDetail } from '@/features/admin/server/cities.server'
 
 interface Props {
@@ -85,7 +87,7 @@ export async function CityFeatureLinks({ city }: Props) {
                       {adminHref && (
                         <Link
                           href={adminHref}
-                          className="rounded-md bg-primary-600 px-2 py-1 text-xs font-semibold text-white hover:bg-primary-500"
+                          className={`rounded-md px-2 py-1 text-xs font-semibold ${primaryActionColors}`}
                         >
                           {t('featureAdminLink')}
                         </Link>
@@ -103,7 +105,11 @@ export async function CityFeatureLinks({ city }: Props) {
 }
 
 function adminLinkFor(sectionId: string, citySlug: string): Route | null {
+  if (isDirectoryCategory(sectionId)) return `/admin/ciudades/${citySlug}?tab=directory&category=${sectionId}` as Route
   switch (sectionId) {
+    case 'history':
+    case 'history-economy':
+      return `/admin/ciudades/${citySlug}?tab=metadata` as Route
     case 'news':
       return `/admin/ciudades/${citySlug}?tab=news` as Route
     case 'classifieds':

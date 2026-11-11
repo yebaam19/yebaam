@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import { DirectoryEntryCard } from './DirectoryEntryCard';
+import type { DirectoryEntry } from '@/features/cities/directory/types';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import {
@@ -17,21 +19,17 @@ interface CityDirectoryCategoryViewProps {
   cityName: string;
   categoryLabel: string;
   businesses: CityBusinessListing[];
+  entries: DirectoryEntry[];
+  totalCount: number;
+  pagination?: React.ReactNode;
 }
 
-/**
- * Phase 5 directory listing for one city + one business category.
- *
- * The seed data carries no logos/photos yet, so each card falls back to a
- * gradient + initial-letter chip rather than a blank image frame. When real
- * logos start flowing in (`logo_url` or `ad_image_url`), they take over
- * automatically.
- */
+/** Published administrator entries and existing user-owned businesses. */
 export async function CityDirectoryCategoryView({
   citySlug,
   cityName,
   categoryLabel,
-  businesses,
+  businesses, entries, totalCount, pagination,
 }: CityDirectoryCategoryViewProps) {
   const t = await getTranslations('cities.directoryCategory');
   const headerT = await getTranslations('cities');
@@ -81,21 +79,23 @@ export async function CityDirectoryCategoryView({
             </p>
           </div>
           <p className="shrink-0 text-sm font-medium text-neutral-500 dark:text-neutral-400">
-            {t('count', { count: businesses.length })}
+            {t('count', { count: totalCount })}
           </p>
         </div>
       </header>
 
-      {businesses.length === 0 ? (
+      {businesses.length === 0 && entries.length === 0 ? (
         <EmptyState citySlug={citySlug} t={t} />
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {entries.map((entry) => <DirectoryEntryCard key={entry.id} entry={entry} />)}
           {businesses.map((business) => (
             <BusinessListItem key={business.id} business={business} />
           ))}
         </ul>
       )}
 
+      {pagination}
       <div className="pt-2">
         <Link
           href={`/cities/${citySlug}` as `/${string}`}

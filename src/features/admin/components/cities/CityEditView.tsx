@@ -18,7 +18,10 @@ import { CityMultimediaTab } from './editor/CityMultimediaTab'
 import { CityPromotionsTab } from './editor/CityPromotionsTab'
 import { CityComplaintsTab } from './editor/CityComplaintsTab'
 
+import { CityDirectoryTab } from './directory/CityDirectoryTab'
+
 type TabId =
+  | 'directory'
   | 'metadata'
   | 'images'
   | 'admins'
@@ -37,10 +40,12 @@ interface Props {
   admins: CityAdminRow[]
   activeTab: TabId
   statusFilter: string
+  categoryFilter: string
   page: number
 }
 
 const TAB_KEYS: { id: TabId; labelKey: string }[] = [
+  { id: 'directory', labelKey: 'tabDirectory' },
   { id: 'metadata', labelKey: 'tabMetadata' },
   { id: 'images', labelKey: 'tabImages' },
   { id: 'admins', labelKey: 'tabAdmins' },
@@ -55,7 +60,7 @@ const TAB_KEYS: { id: TabId; labelKey: string }[] = [
   { id: 'complaints', labelKey: 'tabComplaints' },
 ]
 
-export async function CityEditView({ city, admins, activeTab, statusFilter, page }: Props) {
+export async function CityEditView({ city, admins, activeTab, statusFilter, page, categoryFilter }: Props) {
   const t = await getTranslations('admin.ciudades')
   return (
     <div className="space-y-6">
@@ -83,6 +88,7 @@ export async function CityEditView({ city, admins, activeTab, statusFilter, page
         })}
       </nav>
 
+      {activeTab === 'directory' && <CityDirectoryTab city={city} category={categoryFilter} page={page} />}
       {activeTab === 'metadata' && <CityMetadataForm city={city} />}
       {activeTab === 'images' && <CityImagesTab city={city} />}
       {activeTab === 'admins' && <CityAdminsList city={city} admins={admins} />}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { fetchSearchResults } from '../services/search.service';
-import { useDebouncedValue } from './useDebouncedValue';
+import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import type {
   AggregatedSearchResults,
   SearchFilters,
@@ -35,11 +35,11 @@ export function useSearch() {
   const debouncedQuery = useDebouncedValue(query, 300);
   const q = debouncedQuery.trim();
   const key = JSON.stringify([q, type]);
-  const valid = query.trim().length >= 2 && q.length >= 2;
+  const valid = query.trim().length >= 2 && query.trim() === q;
   const current = valid && response?.key === key ? response : null;
   const results = current?.results ?? null;
   const error = current?.error ?? null;
-  const loading = valid && !current;
+  const loading = query.trim().length >= 2 && (!current || query.trim() !== q);
 
   const search = useCallback((searchQuery: string, filters?: SearchFilters) => {
     setQuery(searchQuery);

@@ -1,15 +1,8 @@
 'use client';
 
-/**
- * Category chip filter + free-text search for /cities/[slug]/emprendimientos.
- * Same architecture as ClassifiedsToolbar: the URL is the source of truth
- * (`?tipo=&q=`), chips write instantly, search debounces 300ms, and there is
- * no useState mirror of URL state beyond the input's local buffer.
- */
+/** URL-owned tipo filtering with the shared cancellable search scheduler. */
 
-import { useEffect, useState, useTransition } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import type { Route } from 'next';
+import { useUrlSearch } from '@/lib/hooks/useUrlSearch';
 import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon } from '@/components/icons/heroicons-shim';
 import {
@@ -25,46 +18,11 @@ const IDLE_CHIP =
 
 export function EmprendimientosToolbar() {
   const t = useTranslations('cities.emprendimientos');
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const search = useUrlSearch();
+  const searchParams = search.params;
 
   const urlCategory = searchParams.get('tipo') as EmprendimientoCategory | null;
-  const urlQ = searchParams.get('q') ?? '';
-
-  const [localQ, setLocalQ] = useState(urlQ);
-
-  // Keep the input in sync if the URL changes from outside (e.g. back nav).
-  useEffect(() => {
-    setLocalQ(urlQ);
-  }, [urlQ]);
-
-  // Debounce 300ms before pushing to the URL. The timer reads the LIVE URL
-  // (not the render-time searchParams) so a category-chip click landing
-  // inside the debounce window is not reverted by a stale snapshot.
-  useEffect(() => {
-    if (localQ === urlQ) return;
-    const handle = setTimeout(() => {
-      const next = new URLSearchParams(window.location.search);
-      if (localQ.trim()) next.set('q', localQ.trim());
-      else next.delete('q');
-      startTransition(() => {
-        router.replace(`${pathname}?${next.toString()}` as Route);
-      });
-    }, 300);
-    return () => clearTimeout(handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localQ]);
-
-  const setCategory = (category: EmprendimientoCategory | null) => {
-    const next = new URLSearchParams(searchParams.toString());
-    if (category) next.set('tipo', category);
-    else next.delete('tipo');
-    startTransition(() => {
-      router.replace(`${pathname}?${next.toString()}` as Route);
-    });
-  };
+  const setCategory = (value: EmprendimientoCategory | null) => search.setFilters({ tipo: value });
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -98,8 +56,8 @@ export function EmprendimientosToolbar() {
         <MagnifyingGlassIcon className="pointer-events-none absolute left-3 h-4 w-4 text-neutral-400" />
         <input
           type="search"
-          value={localQ}
-          onChange={(e) => setLocalQ(e.target.value)}
+          value={search.query}
+          onChange={(e) => search.changeQuery(e.target.value)}
           placeholder={t('toolbar.searchPlaceholder')}
           className="block w-full rounded-full border border-neutral-300 bg-white py-1.5 pl-9 pr-3 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-primary-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
         />

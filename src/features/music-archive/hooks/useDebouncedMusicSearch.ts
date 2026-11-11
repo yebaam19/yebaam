@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 
 type SearchResult<T> = { ok: true; data: T[] } | { ok: false; error: string };
 
@@ -13,6 +14,7 @@ export function useDebouncedMusicSearch<T>(
 ) {
   const normalized = query.trim();
   const hasQuery = normalized.length >= minLength;
+  const settled = useDebouncedValue(normalized, debounceMs, '');
   const [result, setResult] = useState<{
     query: string;
     data: T[];
@@ -20,10 +22,9 @@ export function useDebouncedMusicSearch<T>(
   } | null>(null);
 
   useEffect(() => {
-    if (!hasQuery) return;
+    if (!hasQuery || settled !== normalized) return;
     let cancelled = false;
-    const timer = setTimeout(() => {
-      void search(normalized).then((response) => {
+    void search(normalized).then((response) => {
         if (cancelled) return;
         setResult({
           query: normalized,
@@ -38,12 +39,10 @@ export function useDebouncedMusicSearch<T>(
           error: error instanceof Error ? error.message : 'Error de búsqueda',
         });
       });
-    }, debounceMs);
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, [normalized, hasQuery, search, debounceMs]);
+  }, [normalized, hasQuery, search, settled]);
 
   const current = hasQuery && result?.query === normalized ? result : null;
   return {

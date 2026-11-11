@@ -354,7 +354,8 @@
     "thumbnailRemoveConfirm": "Remove this thumbnail?",
     "thumbnailEmpty": "No image",
     "actionError": "Action failed.",
-    "actionSuccess": "Done."
+    "actionSuccess": "Done.",
+    "tabDirectory": "Directories"
   },
   "userDetail": {
     "title": "User detail",
@@ -476,5 +477,39 @@
     "preset2": "The photos do not clearly show the document holder",
     "preset3": "The personal information does not match the document",
     "preset4": "The document has expired"
+  },
+  "cityDirectory": {
+    "heading": "City directories",
+    "hint": "Manage all ten categories. History and Economy is edited under Details.",
+    "category": "Directory categories",
+    "categoriesError": "Categories could not be loaded. Try again.",
+    "add": "Add entry",
+    "empty": "No entries have been added to this category yet.",
+    "viewPublic": "View public page",
+    "name": "Name",
+    "description": "Description",
+    "address": "Address",
+    "phone": "Contact phone",
+    "website": "Website",
+    "photo": "Photo (up to 10 MB)",
+    "removePhoto": "Remove photo",
+    "status": "Status",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "visibilityHint": "Only published entries are visible to visitors. Add public, authorized contact information only.",
+    "archiveConfirm": "Archive this entry? It will disappear from the public directory. You can publish it again.",
+    "imageError": "Choose an image up to 10 MB.",
+    "uploadError": "The photo could not be uploaded. Try again.",
+    "saveError": "The entry could not be saved. Check the fields and try again.",
+    "saved": "Entry saved.",
+    "saving": "Saving…",
+    "save": "Save entry",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "uploading": "Uploading photo…",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages}"
   }
 }

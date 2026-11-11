@@ -6,7 +6,7 @@ import {
   adminDeleteMusicClub,
   toggleClubForum,
 } from '../../../actions/club-settings.actions';
-import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue';
+import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import { AdminClubEditModal } from './AdminClubEditModal';
 import {
   AdminClubCreateModal,

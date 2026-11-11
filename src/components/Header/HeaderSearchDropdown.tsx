@@ -3,7 +3,7 @@
 import { SearchInput } from '@/features/search/components'
 import { SearchHistory } from '@/features/search/components/SearchHistory'
 import { SearchSuggestions } from '@/features/search/components/SearchSuggestions'
-import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue'
+import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import type { SearchResultType } from '@/features/search/interfaces/search.interfaces'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -31,7 +31,7 @@ export function HeaderSearchDropdown() {
   const debouncedQuery = useDebouncedValue(query, 200)
 
   const q = debouncedQuery.trim()
-  const valid = query.trim().length >= 2 && q.length >= 2
+  const valid = query.trim().length >= 2 && query.trim() === q
   const current = valid && response?.query === q ? response : null
   const results = current?.results ?? []
   const isLoading = query.trim().length >= 2 && (!current || query.trim() !== q)

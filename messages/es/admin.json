@@ -354,7 +354,8 @@
     "thumbnailRemoveConfirm": "¿Eliminar esta miniatura?",
     "thumbnailEmpty": "Sin imagen",
     "actionError": "La acción falló.",
-    "actionSuccess": "Listo."
+    "actionSuccess": "Listo.",
+    "tabDirectory": "Directorios"
   },
   "userDetail": {
     "title": "Detalle de usuario",
@@ -476,5 +477,39 @@
     "preset2": "Las fotos no muestran claramente al titular del documento",
     "preset3": "La información personal no coincide con el documento",
     "preset4": "El documento ha expirado"
+  },
+  "cityDirectory": {
+    "heading": "Directorios de la ciudad",
+    "hint": "Gestiona la información de las diez categorías. Historia y Economía se edita en Datos.",
+    "category": "Categorías del directorio",
+    "categoriesError": "No se pudieron cargar las categorías. Intenta de nuevo.",
+    "add": "Agregar ficha",
+    "empty": "Aún no has agregado fichas en esta categoría.",
+    "viewPublic": "Ver página pública",
+    "name": "Nombre",
+    "description": "Descripción",
+    "address": "Dirección",
+    "phone": "Teléfono de contacto",
+    "website": "Sitio web",
+    "photo": "Foto (máximo 10 MB)",
+    "removePhoto": "Quitar foto",
+    "status": "Estado",
+    "draft": "Borrador",
+    "published": "Publicado",
+    "archived": "Archivado",
+    "visibilityHint": "Solo las fichas publicadas son visibles para los visitantes. Agrega únicamente información de contacto pública y autorizada.",
+    "archiveConfirm": "¿Archivar esta ficha? Dejará de aparecer en el directorio público. Puedes volver a publicarla.",
+    "imageError": "Elige una imagen de hasta 10 MB.",
+    "uploadError": "No se pudo subir la foto. Intenta de nuevo.",
+    "saveError": "No se pudo guardar la ficha. Revisa los datos e intenta de nuevo.",
+    "saved": "Ficha guardada.",
+    "saving": "Guardando…",
+    "save": "Guardar ficha",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "uploading": "Subiendo foto…",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageOf": "Página {page} de {totalPages}"
   }
 }

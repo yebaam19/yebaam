@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useVisibleViewport } from '@/lib/hooks/useVisibleViewport'
 
 function Fullscreen({ enabled = true, mode = 'page' }: { enabled?: boolean; mode?: 'page' | 'docked' }) {
@@ -17,7 +17,8 @@ function mockViewport() {
   return viewport
 }
 
-afterEach(() => vi.unstubAllGlobals())
+beforeEach(() => vi.useFakeTimers())
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
 describe('fullscreen visible viewport', () => {
   it('lifts docked chats above the keyboard without overriding their minimized height', () => {
@@ -31,6 +32,7 @@ describe('fullscreen visible viewport', () => {
       viewport.height = 360
       viewport.offsetTop = 44
       viewport.dispatchEvent(new Event('resize'))
+      vi.advanceTimersByTime(16)
     })
     expect(container.style.bottom).toBe('440px')
     expect(container.style.maxHeight).toBe('344px')
@@ -38,6 +40,7 @@ describe('fullscreen visible viewport', () => {
       viewport.scale = 2
       viewport.height = 180
       viewport.dispatchEvent(new Event('resize'))
+      vi.advanceTimersByTime(16)
     })
     expect(container.style.bottom).toBe('440px')
     act(() => {
@@ -45,6 +48,7 @@ describe('fullscreen visible viewport', () => {
       viewport.height = 844
       viewport.offsetTop = 0
       viewport.dispatchEvent(new Event('resize'))
+      vi.advanceTimersByTime(16)
     })
     expect(container.style.bottom).toBe('0px')
     expect(container.style.maxHeight).toBe('828px')
@@ -62,12 +66,14 @@ describe('fullscreen visible viewport', () => {
     act(() => {
       viewport.height = 420
       viewport.dispatchEvent(new Event('resize'))
+      vi.advanceTimersByTime(16)
     })
     expect(container.style.height).toBe('420px')
 
     act(() => {
       viewport.offsetTop = 56
       viewport.dispatchEvent(new Event('scroll'))
+      vi.advanceTimersByTime(16)
     })
     expect(container.style.height).toBe('476px')
 
@@ -75,6 +81,7 @@ describe('fullscreen visible viewport', () => {
       viewport.height = 844
       viewport.offsetTop = 0
       viewport.dispatchEvent(new Event('resize'))
+      vi.advanceTimersByTime(16)
     })
     expect(container.style.height).toBe('844px')
   })
@@ -86,6 +93,7 @@ describe('fullscreen visible viewport', () => {
       viewport.scale = 2
       viewport.height = 422
       viewport.dispatchEvent(new Event('resize'))
+      vi.advanceTimersByTime(16)
     })
     expect(screen.getByTestId('viewport').style.height).toBe('844px')
   })

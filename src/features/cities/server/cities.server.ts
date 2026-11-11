@@ -9,7 +9,7 @@ import type { GlobalStats } from '../interfaces/global-stats.interface';
  * RSC-friendly server functions for the Cities Portal list page.
  *
  * The exported `cache()`-wrapped helpers (`getCities`, `getGlobalStats`,
- * `getCountries`) read cookies via `next/headers` and are only
+ * `getCitiesPage`) read cookies via `next/headers` and are only
  * safe inside a request context. The lower-case `fetch*` helpers accept
  * a Supabase client directly so they can be unit-tested from vitest's
  * node environment with the anon publishable key — and so the same code
@@ -78,6 +78,13 @@ const CITY_SELECT = `id, name, slug, description, cover_cf_image_id, logo_cf_ima
 export interface CitiesQueryOpts {
   q?: string;
   countryCode?: string;
+  stateId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface CitiesPage {
+  items: CityBasic[]; total: number; page: number; pageSize: number; error: boolean;
 }
 
 /**
@@ -88,29 +95,26 @@ export async function fetchCities(
   client: SupabaseClient,
   opts: CitiesQueryOpts = {},
 ): Promise<CityBasic[]> {
-  let q = client
-    .from('cities')
-    .select(CITY_SELECT)
-    .order('is_featured', { ascending: false })
-    .order('follower_count', { ascending: false })
-    .order('name', { ascending: true });
+  return (await fetchCitiesPage(client, opts)).items;
+}
 
-  if (opts.q && opts.q.trim()) {
-    q = q.ilike('name', `%${opts.q.trim()}%`);
-  }
-  if (opts.countryCode && opts.countryCode.trim()) {
-    // With `!inner` on the embedded select above, equality on the alias
-    // restricts parent rows. Without it, the eq would silently keep
-    // all parent rows and just null out the embed.
-    q = q.eq('country.code', opts.countryCode.trim());
-  }
-
-  const { data, error } = await q;
-  if (error) {
-    console.error('[fetchCities]', error);
-    return [];
-  }
-  return (data ?? []).map((row) => toCityDto(row as unknown as CityRow));
+/** Bounded rows and an exact count; search and geography are resolved together under RLS. */
+export async function fetchCitiesPage(client: SupabaseClient, opts: CitiesQueryOpts = {}): Promise<CitiesPage> {
+  const page = Number.isFinite(opts.page) ? Math.max(1, Math.min(100000, Math.floor(opts.page!))) : 1;
+  const pageSize = Number.isFinite(opts.pageSize) ? Math.max(1, Math.min(48, Math.floor(opts.pageSize!))) : 12;
+  const stateId = opts.stateId && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(opts.stateId) ? opts.stateId : null;
+  const from = (page - 1) * pageSize;
+  const { data, error, count } = await client.rpc('search_cities', {
+    p_query: (opts.q ?? '').trim().slice(0, 120),
+    p_country_code: opts.countryCode?.trim().toUpperCase() || null,
+    p_state_id: stateId,
+  }, { count: 'exact' }).select(CITY_SELECT).range(from, from + pageSize - 1);
+  if (error) console.error('[fetchCitiesPage]', error);
+  const rows = (Array.isArray(data) ? data : []) as unknown as CityRow[];
+  return {
+    items: rows.map(toCityDto),
+    total: count ?? 0, page, pageSize, error: Boolean(error),
+  };
 }
 
 export async function fetchGlobalStats(client: SupabaseClient): Promise<GlobalStats> {
@@ -137,34 +141,6 @@ export async function fetchGlobalStats(client: SupabaseClient): Promise<GlobalSt
   };
 }
 
-export interface CountryOption {
-  id: string;
-  code: string;
-  name: string;
-}
-
-export async function fetchCountries(
-  client: SupabaseClient,
-): Promise<CountryOption[]> {
-  // Keep every supported country selectable, including those awaiting their first city.
-  const { data, error } = await client
-    .from('countries')
-    .select('id, code, name')
-    .order('name', { ascending: true });
-  if (error) {
-    console.error('[fetchCountries]', error);
-    return [];
-  }
-  const seen = new Set<string>();
-  const out: CountryOption[] = [];
-  for (const row of (data ?? []) as Array<{ id: string; code: string | null; name: string }>) {
-    if (!row.code || seen.has(row.id)) continue;
-    seen.add(row.id);
-    out.push({ id: row.id, code: row.code, name: row.name });
-  }
-  return out;
-}
-
 // Cached request-scoped wrappers — only safe inside an RSC / Server Action.
 
 export const getCities = cache(async (opts: CitiesQueryOpts = {}): Promise<CityBasic[]> => {
@@ -172,14 +148,12 @@ export const getCities = cache(async (opts: CitiesQueryOpts = {}): Promise<CityB
   return fetchCities(client, opts);
 });
 
+export const getCitiesPage = cache(async (opts: CitiesQueryOpts = {}): Promise<CitiesPage> =>
+  fetchCitiesPage(await getServerClient(), opts));
+
 export const getGlobalStats = cache(async (): Promise<GlobalStats> => {
   const client = await getServerClient();
   return fetchGlobalStats(client);
-});
-
-export const getCountries = cache(async (): Promise<CountryOption[]> => {
-  const client = await getServerClient();
-  return fetchCountries(client);
 });
 
 /**

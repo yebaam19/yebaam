@@ -12,6 +12,7 @@ import { CityEditView } from '@/features/admin/components/cities/CityEditView'
 export const metadata = { title: 'Admin · Editar ciudad' }
 
 type TabId =
+  | 'directory'
   | 'metadata'
   | 'images'
   | 'admins'
@@ -26,6 +27,7 @@ type TabId =
   | 'complaints'
 
 const TABS = new Set<TabId>([
+  'directory',
   'metadata',
   'images',
   'admins',
@@ -42,7 +44,7 @@ const TABS = new Set<TabId>([
 
 interface PageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ tab?: string; status?: string; page?: string }>
+  searchParams: Promise<{ tab?: string; status?: string; page?: string; category?: string }>
 }
 
 export default async function AdminCityEditPage({ params, searchParams }: PageProps) {
@@ -91,6 +93,7 @@ export default async function AdminCityEditPage({ params, searchParams }: PagePr
         city={city}
         admins={admins}
         activeTab={tab}
+        categoryFilter={sp.category ?? ''}
         statusFilter={sp.status ?? ''}
         page={Math.max(1, Number(sp.page) || 1)}
       />

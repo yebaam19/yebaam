@@ -30,7 +30,17 @@
     "next": "Next page"
   },
   "list": {
-    "searchPlaceholder": "Search cities",
+    "paginationLabel": "City pages",
+    "resultCount": "{count, plural, one {# city found} other {# cities found}}",
+    "resultsLabel": "City results",
+    "retry": "Retry",
+    "loadError": "We could not load the cities. Please try again.",
+    "searching": "Searching…",
+    "clearFilters": "Clear filters",
+    "browseCountries": "Explore by country",
+    "allStates": "All states or regions",
+    "filterByState": "Filter by state or region",
+    "searchPlaceholder": "Search city, state or country",
     "filterByCountry": "Filter by country",
     "allCountries": "All countries",
     "empty": "No cities match your search",
@@ -157,15 +167,33 @@
     "comingSoonPill": "Soon",
     "discoverHeading": "Explore {city}",
     "discovery": {
-      "places": { "label": "Places of Interest" },
-      "food": { "label": "Restaurants & Cafés" },
-      "events": { "label": "Events" },
-      "tourism": { "label": "Tourism & Nature" },
-      "nightlife": { "label": "Nightlife" },
-      "lodging": { "label": "Hotels & Lodging" },
-      "education": { "label": "Schools & Universities" },
-      "commerce": { "label": "Commerce & Services" },
-      "history": { "label": "History & Culture" }
+      "places": {
+        "label": "Places of Interest"
+      },
+      "food": {
+        "label": "Restaurants & Cafés"
+      },
+      "events": {
+        "label": "Events"
+      },
+      "tourism": {
+        "label": "Tourism & Nature"
+      },
+      "nightlife": {
+        "label": "Nightlife"
+      },
+      "lodging": {
+        "label": "Hotels & Lodging"
+      },
+      "education": {
+        "label": "Schools & Universities"
+      },
+      "commerce": {
+        "label": "Commerce & Services"
+      },
+      "history": {
+        "label": "History & Culture"
+      }
     },
     "about": {
       "heading": "About {city}"
@@ -188,34 +216,90 @@
       "backToPortal": "Back to portal"
     },
     "sections": {
-      "chats": { "label": "Public Chats" },
-      "forums": { "label": "Forums" },
-      "promotions": { "label": "Promotions" },
-      "news": { "label": "News" },
-      "directories": { "label": "Directories" },
-      "classifieds": { "label": "Classifieds" },
-      "emprendimientos": { "label": "Local ventures" },
-      "events": { "label": "Events" },
-      "photos": { "label": "Photos" },
-      "videos": { "label": "Videos" },
-      "publications": { "label": "Publications" },
-      "history": { "label": "History & Economy" },
-      "places": { "label": "Places of Interest" },
-      "government": { "label": "Government Entities" },
-      "education": { "label": "Schools & Universities" },
-      "food": { "label": "Restaurants & Cafés" },
-      "nightlife": { "label": "Nightlife" },
-      "lodging": { "label": "Hotels & Lodging" },
-      "religion": { "label": "Churches & Religious Centers" },
-      "malls": { "label": "Shopping Malls" },
-      "sports": { "label": "Sports & Entertainment" },
-      "health": { "label": "Hospitals, Clinics & Pharmacies" },
-      "grocery": { "label": "Supermarkets & Grocers" },
-      "clubs-blogs": { "label": "Communities, Clubs, Blogs" },
-      "social-help": { "label": "Social Help" },
-      "contact": { "label": "Contact" },
-      "complaints": { "label": "Complaints Portal" },
-      "rural": { "label": "Rural Area" }
+      "chats": {
+        "label": "Public Chats"
+      },
+      "forums": {
+        "label": "Forums"
+      },
+      "promotions": {
+        "label": "Promotions"
+      },
+      "news": {
+        "label": "News"
+      },
+      "directories": {
+        "label": "Directories"
+      },
+      "classifieds": {
+        "label": "Classifieds"
+      },
+      "emprendimientos": {
+        "label": "Local ventures"
+      },
+      "events": {
+        "label": "Events"
+      },
+      "photos": {
+        "label": "Photos"
+      },
+      "videos": {
+        "label": "Videos"
+      },
+      "publications": {
+        "label": "Publications"
+      },
+      "history": {
+        "label": "History & Economy"
+      },
+      "places": {
+        "label": "Places of Interest"
+      },
+      "government": {
+        "label": "Government Entities"
+      },
+      "education": {
+        "label": "Schools & Universities"
+      },
+      "food": {
+        "label": "Restaurants & Cafés"
+      },
+      "nightlife": {
+        "label": "Nightlife"
+      },
+      "lodging": {
+        "label": "Hotels & Lodging"
+      },
+      "religion": {
+        "label": "Churches & Religious Centers"
+      },
+      "malls": {
+        "label": "Shopping Malls"
+      },
+      "sports": {
+        "label": "Sports & Entertainment"
+      },
+      "health": {
+        "label": "Hospitals, Clinics & Pharmacies"
+      },
+      "grocery": {
+        "label": "Supermarkets & Grocers"
+      },
+      "clubs-blogs": {
+        "label": "Communities, Clubs, Blogs"
+      },
+      "social-help": {
+        "label": "Social Help"
+      },
+      "contact": {
+        "label": "Contact"
+      },
+      "complaints": {
+        "label": "Complaints Portal"
+      },
+      "rural": {
+        "label": "Rural Area"
+      }
     }
   },
   "emprendimientos": {
@@ -242,7 +326,9 @@
       "hogar": "Home",
       "otro": "Other"
     },
-    "badge": { "verified": "Verified entrepreneur" },
+    "badge": {
+      "verified": "Verified entrepreneur"
+    },
     "list": {
       "empty": "No ventures in {city} yet.",
       "emptyHint": "Do you sell arepas, fix phones, style hair? Be the first to post.",
@@ -482,5 +568,15 @@
         "resolved": "Resolved"
       }
     }
+  },
+  "directoryEntries": {
+    "address": "Address",
+    "phone": "Contact phone",
+    "website": "Website",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages}",
+    "pagination": "Directory pagination",
+    "externalWarning": "You are leaving Yebaam for a third-party website. The establishment is responsible for its products, food, deliveries and payments; Yebaam does not handle these transactions. Continue?"
   }
 }

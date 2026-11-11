@@ -46,6 +46,6 @@ it('keeps the form usable after a rejected server request', async () => {
   fillForm();
   fireEvent.click(screen.getByRole('button', { name: 'Crear ciudad' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo crear la ciudad.');
-  expect(screen.getByRole('button', { name: 'Crear ciudad' })).toBeEnabled();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Crear ciudad' })).toBeEnabled());
   expect(screen.getByLabelText('Nombre')).toHaveValue('San José');
 });

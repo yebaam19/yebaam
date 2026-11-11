@@ -13,6 +13,7 @@
 
 import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, XMarkIcon } from '@/components/icons/heroicons-shim'
 import { useCallback, useEffect, useState } from 'react'
+import { useDebouncedCallback } from '@/lib/hooks/useScheduledCallback'
 import { useTranslations } from 'next-intl'
 
 import { cn } from '@/lib/utils'
@@ -76,18 +77,17 @@ export function ServicesFilterBar({
     }
   }
 
-  // Debounce: el texto viaja a `filters.search`, que es lo que lee el fetch.
+  const publishSearch = useDebouncedCallback((value: string) => {
+    const next = value || undefined
+    if (next !== (filters.search || undefined)) {
+      setLastEmittedSearch(value)
+      onFiltersChange({ ...filters, search: next, page: 1 })
+    }
+  })
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const next = searchValue || undefined
-      if (next !== (filters.search || undefined)) {
-        setLastEmittedSearch(searchValue)
-        onFiltersChange({ ...filters, search: next, page: 1 })
-      }
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [searchValue, filters, onFiltersChange])
+    publishSearch(searchValue)
+    return () => publishSearch.cancel()
+  }, [searchValue, publishSearch])
 
   // Ciudades filtradas por estado seleccionado
   const filteredCities = filters.stateId ? cities.filter((city) => city.stateId === filters.stateId) : cities
