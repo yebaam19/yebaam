@@ -9,7 +9,7 @@ import type { GlobalStats } from '../interfaces/global-stats.interface';
  * RSC-friendly server functions for the Cities Portal list page.
  *
  * The exported `cache()`-wrapped helpers (`getCities`, `getGlobalStats`,
- * `getCountriesWithCities`) read cookies via `next/headers` and are only
+ * `getCountries`) read cookies via `next/headers` and are only
  * safe inside a request context. The lower-case `fetch*` helpers accept
  * a Supabase client directly so they can be unit-tested from vitest's
  * node environment with the anon publishable key — and so the same code
@@ -143,17 +143,16 @@ export interface CountryOption {
   name: string;
 }
 
-export async function fetchCountriesWithCities(
+export async function fetchCountries(
   client: SupabaseClient,
 ): Promise<CountryOption[]> {
-  // Pull `cities(id)` so PostgREST inner-joins and only returns countries
-  // that have at least one city. The id is discarded post-fetch.
+  // Keep every supported country selectable, including those awaiting their first city.
   const { data, error } = await client
     .from('countries')
-    .select('id, code, name, cities!inner(id)')
+    .select('id, code, name')
     .order('name', { ascending: true });
   if (error) {
-    console.error('[fetchCountriesWithCities]', error);
+    console.error('[fetchCountries]', error);
     return [];
   }
   const seen = new Set<string>();
@@ -178,9 +177,9 @@ export const getGlobalStats = cache(async (): Promise<GlobalStats> => {
   return fetchGlobalStats(client);
 });
 
-export const getCountriesWithCities = cache(async (): Promise<CountryOption[]> => {
+export const getCountries = cache(async (): Promise<CountryOption[]> => {
   const client = await getServerClient();
-  return fetchCountriesWithCities(client);
+  return fetchCountries(client);
 });
 
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import { getPublicServerClient } from '@/utils/supabase/public-server';
-import { fetchCities, fetchGlobalStats } from './cities.server';
+import { fetchCities, fetchGlobalStats, fetchCountries } from './cities.server';
 
 /**
  * These tests hit the real Supabase project (anon role) and rely on the
@@ -85,11 +85,8 @@ describe('fetchGlobalStats', () => {
   });
 });
 
-it('exposes the complete city-creation country catalog through RLS', async () => {
-  const { data, error } = await makeAnonClient()
-    .from('countries')
-    .select('id, code, name');
-  expect(error).toBeNull();
+it('keeps every supported country selectable even before its first city', async () => {
+  const data = await fetchCountries(makeAnonClient());
   const expectedCodes = [
     'AG', 'AR', 'BB', 'BO', 'BR', 'BS', 'BZ', 'CL', 'CO', 'CR', 'CU',
     'DM', 'DO', 'EC', 'ES', 'GD', 'GF', 'GT', 'GY', 'HN', 'HT', 'JM',

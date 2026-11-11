@@ -9,7 +9,7 @@ import { CitiesHero } from '@/features/cities/components/CitiesHero'
 import { CitiesToolbar } from '@/features/cities/components/CitiesToolbar'
 import {
   getCities,
-  getCountriesWithCities,
+  getCountries,
   getFeaturedHeroCity,
 } from '@/features/cities/server/cities.server'
 
@@ -43,7 +43,7 @@ export default async function CitiesPage({ searchParams }: PageProps) {
   const { q, country } = await searchParams
   const [heroCity, countries] = await Promise.all([
     getFeaturedHeroCity(),
-    getCountriesWithCities(),
+    getCountries(),
   ])
 
   return (
