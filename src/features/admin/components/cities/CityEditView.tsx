@@ -20,45 +20,19 @@ import { CityComplaintsTab } from './editor/CityComplaintsTab'
 
 import { CityDirectoryTab } from './directory/CityDirectoryTab'
 
-type TabId =
-  | 'directory'
-  | 'metadata'
-  | 'images'
-  | 'admins'
-  | 'features'
-  | 'places'
-  | 'media'
-  | 'promotions'
-  | 'news'
-  | 'classifieds'
-  | 'emprendimientos'
-  | 'contact'
-  | 'complaints'
+import { CITY_EDITOR_TABS, type CityEditorTab } from './city-editor-tabs'
+import { CityCommunicationTab } from './editor/CityCommunicationTab'
+import { CityCommercialTab } from './commercial/CityCommercialTab'
+import { CityEventsTab } from './events/CityEventsTab'
 
 interface Props {
   city: AdminCityDetail
   admins: CityAdminRow[]
-  activeTab: TabId
+  activeTab: CityEditorTab
   statusFilter: string
   categoryFilter: string
   page: number
 }
-
-const TAB_KEYS: { id: TabId; labelKey: string }[] = [
-  { id: 'directory', labelKey: 'tabDirectory' },
-  { id: 'metadata', labelKey: 'tabMetadata' },
-  { id: 'images', labelKey: 'tabImages' },
-  { id: 'admins', labelKey: 'tabAdmins' },
-  { id: 'features', labelKey: 'tabFeatures' },
-  { id: 'places', labelKey: 'tabPlaces' },
-  { id: 'media', labelKey: 'tabMedia' },
-  { id: 'promotions', labelKey: 'tabPromotions' },
-  { id: 'news', labelKey: 'tabNews' },
-  { id: 'classifieds', labelKey: 'tabClassifieds' },
-  { id: 'emprendimientos', labelKey: 'tabEmprendimientos' },
-  { id: 'contact', labelKey: 'tabContact' },
-  { id: 'complaints', labelKey: 'tabComplaints' },
-]
 
 export async function CityEditView({ city, admins, activeTab, statusFilter, page, categoryFilter }: Props) {
   const t = await getTranslations('admin.ciudades')
@@ -68,7 +42,7 @@ export async function CityEditView({ city, admins, activeTab, statusFilter, page
         aria-label="tabs"
         className="flex overflow-x-auto border-b border-neutral-200 dark:border-neutral-800"
       >
-        {TAB_KEYS.map((tab) => {
+        {CITY_EDITOR_TABS.map((tab) => {
           const isActive = tab.id === activeTab
           const href = (`/admin/ciudades/${city.slug}?tab=${tab.id}`) as Route
           return (
@@ -82,12 +56,16 @@ export async function CityEditView({ city, admins, activeTab, statusFilter, page
                   : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200')
               }
             >
-              {t(tab.labelKey)}
+              {'label' in tab ? tab.label : t(tab.labelKey)}
             </Link>
           )
         })}
       </nav>
 
+      {(activeTab === 'businesses' || activeTab === 'services') && <CityCommercialTab city={city} kind={activeTab} page={page} />}
+      {activeTab === 'forum' && <CityCommunicationTab city={city} mode="forum" />}
+      {activeTab === 'chat' && <CityCommunicationTab city={city} mode="chat" />}
+      {activeTab === 'events' && <CityEventsTab city={city} page={page} />}
       {activeTab === 'directory' && <CityDirectoryTab city={city} category={categoryFilter} page={page} />}
       {activeTab === 'metadata' && <CityMetadataForm city={city} />}
       {activeTab === 'images' && <CityImagesTab city={city} />}

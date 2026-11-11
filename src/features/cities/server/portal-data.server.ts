@@ -109,7 +109,10 @@ export async function fetchCityPortalData(
     countCityRows(client, 'city_emprendimientos', cityId, { column: 'status', value: 'APPROVED' }),
     countCityRows(client, 'city_social_help', cityId, { column: 'status', value: 'open' }),
     countCityRows(client, 'city_places', cityId),
-    countCityRows(client, 'businesses', cityId),
+    safeCount(async () => {
+      const { data, error } = await client.rpc('list_city_businesses', { p_city_id: cityId, p_admin: false, p_page: 1 });
+      return { count: data?.total ?? 0, error };
+    }),
     countCityRows(client, 'communities', cityId),
     countCityRows(client, 'clubs', cityId),
     countCityRows(client, 'blogs', cityId),

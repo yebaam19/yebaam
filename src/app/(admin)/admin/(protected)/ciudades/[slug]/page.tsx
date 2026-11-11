@@ -11,36 +11,7 @@ import { CityEditView } from '@/features/admin/components/cities/CityEditView'
 
 export const metadata = { title: 'Admin · Editar ciudad' }
 
-type TabId =
-  | 'directory'
-  | 'metadata'
-  | 'images'
-  | 'admins'
-  | 'features'
-  | 'places'
-  | 'media'
-  | 'promotions'
-  | 'news'
-  | 'classifieds'
-  | 'emprendimientos'
-  | 'contact'
-  | 'complaints'
-
-const TABS = new Set<TabId>([
-  'directory',
-  'metadata',
-  'images',
-  'admins',
-  'features',
-  'places',
-  'media',
-  'promotions',
-  'news',
-  'classifieds',
-  'emprendimientos',
-  'contact',
-  'complaints',
-])
+import { parseCityEditorTab } from '@/features/admin/components/cities/city-editor-tabs'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -51,7 +22,7 @@ export default async function AdminCityEditPage({ params, searchParams }: PagePr
   await requirePlatformAdmin()
   const { slug } = await params
   const sp = await searchParams
-  const tab: TabId = TABS.has(sp.tab as TabId) ? (sp.tab as TabId) : 'metadata'
+  const tab = parseCityEditorTab(sp.tab)
   const t = await getTranslations('admin.ciudades')
 
   const city = await getAdminCityBySlug(slug)

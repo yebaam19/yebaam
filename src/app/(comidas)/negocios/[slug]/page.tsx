@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { CityBusinessDisclosures } from '@/features/comidas/components/public/CityBusinessDisclosures'
 import { notFound } from 'next/navigation'
 import { getBusinessBySlug, isUserBusinessAdmin } from '@/features/comidas/server/business.server'
 import {
@@ -41,6 +42,7 @@ export default async function BusinessPage({ params }: Props) {
   ])
 
   return (
+    <>
     <BusinessDetail
       business={business}
       isAdmin={isAdmin}
@@ -59,5 +61,7 @@ export default async function BusinessPage({ params }: Props) {
           : { isAuthenticated: false }
       }
     />
+    <CityBusinessDisclosures businessId={business.id} />
+    </>
   )
 }

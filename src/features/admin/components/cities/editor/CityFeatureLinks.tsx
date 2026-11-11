@@ -116,10 +116,16 @@ function adminLinkFor(sectionId: string, citySlug: string): Route | null {
       return `/admin/ciudades/${citySlug}?tab=classifieds` as Route
     case 'contact':
       return `/admin/ciudades/${citySlug}?tab=contact` as Route
+    case 'events':
+      return `/admin/ciudades/${citySlug}?tab=events` as Route
+    case 'emprendimientos':
+      return `/admin/ciudades/${citySlug}?tab=emprendimientos` as Route
+    case 'directories':
+      return `/admin/ciudades/${citySlug}?tab=businesses` as Route
     case 'forums':
-      return '/admin/foros' as Route
+      return `/admin/ciudades/${citySlug}?tab=forum` as Route
     case 'chats':
-      return '/admin/chat-publico' as Route
+      return `/admin/ciudades/${citySlug}?tab=chat` as Route
     default:
       return null
   }

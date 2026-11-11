@@ -1,16 +1,15 @@
-import type { Metadata } from 'next'
-import { PortalUnderConstruction } from '@/features/cities/components/portal/PortalUnderConstruction'
+import { notFound } from 'next/navigation'
+import { getCityBySlug } from '@/features/cities/server/city.server'
+import { CityEventsList } from '@/features/cities/events/CityEventsList'
 
-// Placeholder ("en construcción") — keep out of search indexes until it has content.
-export const metadata: Metadata = {
-  robots: { index: false },
-}
+export const metadata = { title: 'Eventos de la ciudad | YEBAAM' }
 
-interface Props {
+export default async function EventsPage({ params, searchParams }: {
   params: Promise<{ slug: string }>
-}
-
-export default async function EventsPage({ params }: Props) {
-  const { slug } = await params
-  return <PortalUnderConstruction sectionId="events" citySlug={slug} />
+  searchParams: Promise<{ page?: string }>
+}) {
+  const [{ slug }, query] = await Promise.all([params, searchParams])
+  const city = await getCityBySlug(slug)
+  if (!city) notFound()
+  return <CityEventsList cityId={city.id} citySlug={city.slug} cityName={city.name} page={Number(query.page) || 1} />
 }

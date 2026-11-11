@@ -26,6 +26,8 @@ import { Composer } from './Composer';
 interface PublicChatPanelProps {
   topicId: string;
   cityName: string;
+  roomName?: string;
+  description?: string | null;
   initialMessages: PublicChatMessage[];
   currentUserId: string | null;
   maxCapacity: number;
@@ -45,11 +47,14 @@ type IncomingRow = {
 export function PublicChatPanel({
   topicId,
   cityName,
+  roomName,
+  description,
   initialMessages,
   currentUserId,
   maxCapacity,
 }: PublicChatPanelProps) {
   const t = useTranslations('cities.publicChat');
+  const [closed, setClosed] = useState(false);
   const [messages, setMessages] = useState<PublicChatMessage[]>(initialMessages);
 
   useEffect(() => {
@@ -120,6 +125,7 @@ export function PublicChatPanel({
         ok: false as const, error: 'network_error',
       }));
       if (!result.ok) {
+        if (result.error === 'room_closed') setClosed(true);
         // Drop the optimistic row on failure so the user can retry.
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         return result;
@@ -147,10 +153,10 @@ export function PublicChatPanel({
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-base font-semibold text-neutral-900 dark:text-neutral-100 sm:text-lg">
-            {t('header.title')}
+            {roomName ?? t('header.title')}
           </h1>
           <p className="truncate text-xs text-neutral-600 dark:text-neutral-400 sm:text-sm">
-            {t('header.subtitle', { city: cityName })}
+            {description || t('header.subtitle', { city: cityName })}
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">
@@ -160,7 +166,7 @@ export function PublicChatPanel({
 
       <MessageList messages={messages} currentUserId={currentUserId} />
 
-      {currentUserId ? (
+      {closed ? <p role="status" className="border-t p-4 text-center">La administración ha cerrado temporalmente esta sala.</p> : currentUserId ? (
         <Composer onSend={handleSend} />
       ) : (
         <div className="border-t border-neutral-200 bg-neutral-50 px-4 py-3 text-center text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">

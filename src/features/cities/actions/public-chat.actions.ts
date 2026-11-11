@@ -47,6 +47,11 @@ export async function sendCityPublicChatMessage(
     return { ok: false, error: 'too_long' };
   }
 
+  const { data: topic, error: topicError } = await sess.client.from('public_chat_topics')
+    .select('id,is_archived').eq('id', topicId).eq('owner_type', 'city').maybeSingle();
+  if (topicError || !topic) return { ok: false, error: 'temporarily_unavailable' };
+  if (topic.is_archived) return { ok: false, error: 'room_closed' };
+
   // Rate limit, mirroring chat-publico on the same public_chat_messages table:
   // 5 messages / 10s with a 1.5s minimum gap, keyed on the sender.
   const since = new Date(Date.now() - RATE_WINDOW_MS).toISOString();

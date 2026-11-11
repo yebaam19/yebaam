@@ -1,23 +1,6 @@
-/**
- * Single source of truth for every City Portal section (PDF page 4).
- *
- * NOTE: the PUBLIC portal (grid + mobile menu) renders only the
- * `PORTAL_SHORTCUTS` subset defined at the bottom of this file — business
- * directory categories + city history. The full array remains the registry
- * for the admin editor, route validation, and under-construction pages.
- *
- * The portal detail page renders a 3-column wireframe: a left column of
- * communication/feed tiles, a center column with three media tiles on top
- * plus a 4x3 inner grid for the directory + history/places, and a right
- * column with community/help/contact tiles. Every visible label is an i18n
- * key under `cities.portal.sections.<id>.label`; every tile resolves a
- * `countKey` into the `CityPortalData` object returned by `getCityPortalData`.
- *
- * Tiles flagged `comingSoon` link to a polished "En construcción" empty
- * state instead of a 404. As each later phase ships, flip its tile to
- * `comingSoon: false` and the tile becomes a live link.
- */
+import { DIRECTORY_PORTAL_SECTIONS } from './portal-directory-sections'
 
+/** Shared registry for the public city portal and its admin editor. */
 export type PortalColumn = 'left' | 'center-top' | 'center' | 'right';
 
 /**
@@ -119,7 +102,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     column: 'left',
     icon: 'CalendarDaysIcon',
     hrefTemplate: '/cities/:slug/events',
-    comingSoon: true,
+    comingSoon: false,
   },
 
   // ---------- CENTER-TOP ROW (Fotos / Videos / Publicaciones) ----------
@@ -161,76 +144,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     comingSoon: false,
     countKey: 'placeCount',
   },
-  {
-    id: 'government',
-    column: 'center',
-    icon: 'BuildingLibraryIcon',
-    hrefTemplate: '/cities/:slug/directory/government',
-    comingSoon: false,
-  },
-  {
-    id: 'education',
-    column: 'center',
-    icon: 'AcademicCapIcon',
-    hrefTemplate: '/cities/:slug/directory/education',
-    comingSoon: false,
-  },
-  {
-    id: 'food',
-    column: 'center',
-    icon: 'BuildingStorefrontIcon',
-    hrefTemplate: '/cities/:slug/directory/food',
-    comingSoon: false,
-  },
-  {
-    id: 'nightlife',
-    column: 'center',
-    icon: 'SparklesIcon',
-    hrefTemplate: '/cities/:slug/directory/nightlife',
-    comingSoon: false,
-  },
-  {
-    id: 'lodging',
-    column: 'center',
-    icon: 'BuildingOfficeIcon',
-    hrefTemplate: '/cities/:slug/directory/lodging',
-    comingSoon: false,
-  },
-  {
-    id: 'religion',
-    column: 'center',
-    icon: 'HomeIcon',
-    hrefTemplate: '/cities/:slug/directory/religion',
-    comingSoon: false,
-  },
-  {
-    id: 'malls',
-    column: 'center',
-    icon: 'ShoppingBagIcon',
-    hrefTemplate: '/cities/:slug/directory/malls',
-    comingSoon: false,
-  },
-  {
-    id: 'sports',
-    column: 'center',
-    icon: 'TrophyIcon',
-    hrefTemplate: '/cities/:slug/directory/sports',
-    comingSoon: false,
-  },
-  {
-    id: 'health',
-    column: 'center',
-    icon: 'BeakerIcon',
-    hrefTemplate: '/cities/:slug/directory/health',
-    comingSoon: false,
-  },
-  {
-    id: 'grocery',
-    column: 'center',
-    icon: 'BuildingStorefrontIcon',
-    hrefTemplate: '/cities/:slug/directory/grocery',
-    comingSoon: false,
-  },
+  ...DIRECTORY_PORTAL_SECTIONS,
 
   // ---------- RIGHT COLUMN ----------
   {
@@ -272,16 +186,7 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
   },
 ] as const;
 
-/**
- * The ONLY sections the public portal surfaces as shortcuts (tile grid +
- * mobile FAB menu): the business directory categories plus the city history.
- *
- * Product decision (2026-07-29, reglamento para menores de edad): the public
- * portal must not link chat público, foros, or the other social sections.
- * `PORTAL_SECTIONS` stays the full registry — the admin editor
- * (CityFeatureLinks, DiscoveryThumbnailsManager), the `/directory/[category]`
- * route validation, and the "En construcción" pages still read every entry.
- */
+/** Visual directory tiles. Social destinations use CITY_PORTAL_SHORTCUTS. */
 const SHORTCUT_IDS: ReadonlySet<string> = new Set([
   'history',
   'government',

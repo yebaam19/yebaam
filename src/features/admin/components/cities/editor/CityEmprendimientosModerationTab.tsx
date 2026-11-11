@@ -6,6 +6,7 @@ import { listCityEmprendimientosForAdmin } from '@/features/admin/server/cities.
 import { FilterChipsCommon } from './FilterChipsCommon'
 import { Pagination } from './Pagination'
 import { EmprendimientoRowActions } from './EmprendimientoRowActions'
+import { EmprendimientoEditorButton } from './EmprendimientoEditorButton'
 
 interface Props {
   city: AdminCityDetail
@@ -61,6 +62,7 @@ export async function CityEmprendimientosModerationTab({ city, statusFilter, pag
           namespace="admin.ciudades"
         />
       </header>
+      <EmprendimientoEditorButton cityId={city.id} />
       {items.length === 0 ? (
         <p className="rounded-md border border-dashed border-neutral-200 px-4 py-8 text-center text-sm text-neutral-500 dark:border-neutral-800">
           {t('emprendimientosEmpty')}
@@ -68,7 +70,7 @@ export async function CityEmprendimientosModerationTab({ city, statusFilter, pag
       ) : (
         <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
           {items.map((e) => (
-            <li key={e.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4">
+            <li key={e.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800">
                 {e.heroImageUrl ? (
                   <img src={e.heroImageUrl} alt="" className="h-full w-full object-cover" decoding="async" loading="lazy" />
@@ -103,6 +105,7 @@ export async function CityEmprendimientosModerationTab({ city, statusFilter, pag
                 {statusLabel[e.status]}
               </span>
               <EmprendimientoRowActions rowId={e.id} status={e.status} />
+              <EmprendimientoEditorButton cityId={city.id} id={e.id} />
             </li>
           ))}
         </ul>

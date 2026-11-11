@@ -36,6 +36,10 @@ export default async function PublicChatPage({ params }: Props) {
   if (!city) notFound();
 
   const topic = await getOrCreatePublicChatTopicForCityCached(city.id);
+  if (topic.is_archived) return <section className="rounded-xl border p-6">
+    <h1 className="text-xl font-semibold">Chat cerrado temporalmente</h1>
+    <p className="mt-2 text-sm text-neutral-500">La administración ha pausado esta sala. Vuelve más tarde.</p>
+  </section>;
   // The two reads are independent — kick them off in parallel so the
   // Suspense boundary does not artificially serialize them.
   const [initial, auth] = await Promise.all([
@@ -47,6 +51,8 @@ export default async function PublicChatPage({ params }: Props) {
     <PublicChatPanel
       topicId={topic.id}
       cityName={city.name}
+      roomName={topic.name}
+      description={topic.description}
       initialMessages={initial}
       currentUserId={auth.data.user?.id ?? null}
       maxCapacity={topic.max_capacity}

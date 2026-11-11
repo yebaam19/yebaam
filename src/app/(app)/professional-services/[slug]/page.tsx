@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { getMyCityServiceDraft } from '@/features/professional-services/server/city-draft.server'
+import { CityServiceDraftAcceptance } from '@/features/professional-services/components/consent/CityServiceDraftAcceptance'
 import { notFound } from 'next/navigation'
 
 import { getCachedAuthUser } from '@/features/auth/actions/auth.actions'
@@ -69,12 +71,13 @@ export default async function ProfessionalServicePage({ params }: ProfessionalSe
   // Lecturas del perfil en paralelo (todas cache()adas por request): sesión del
   // visitante, sub-servicios, Q&A y el contenido público del dueño (posts +
   // artículos). RLS ya filtra lo que cada sesión puede ver.
-  const [viewer, offerings, questions, posts, articles] = await Promise.all([
+  const [viewer, offerings, questions, posts, articles, draft] = await Promise.all([
     getCachedAuthUser(),
     listServiceOfferings(service.id),
     listServiceQuestions(service.id),
     getOwnerPublicPosts(service.userId, 3),
     getOwnerPublishedArticles(service.userId, 6),
+    getMyCityServiceDraft(service.id),
   ])
 
   return (
@@ -84,6 +87,8 @@ export default async function ProfessionalServicePage({ params }: ProfessionalSe
         <ServiceBreadcrumb cityName={service.city.name} citySlug={service.city.slug} serviceName={service.name} />
         <ServiceActions serviceId={service.id} serviceName={service.name} />
       </div>
+
+      {draft && <CityServiceDraftAcceptance serviceId={service.id} />}
 
       {/* Perfil de servicio — distribución de 3 columnas (mockup pág. 9) */}
       <ProfileLayoutWrapper

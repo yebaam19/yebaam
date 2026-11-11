@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { useTranslations } from 'next-intl'
@@ -24,6 +24,7 @@ export default function NewTopicForm({
   const t = useTranslations('foro')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const requestId = useRef('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const canSubmit = title.trim().length > 0 && content.trim().length > 0 && !isPending
@@ -32,15 +33,21 @@ export default function NewTopicForm({
     e.preventDefault()
     setError(null)
     if (!canSubmit) return
+    const id = requestId.current || crypto.randomUUID()
+    requestId.current = id
     startTransition(async () => {
-      const result = await createTopic({ forumId, title, content })
-      if (!result.ok) {
-        setError(result.error ?? t('newTopic.errors.createFailed'))
-        return
+      try {
+        const result = await createTopic({ forumId, title, content, requestId: id })
+        if (!result.ok) {
+          setError(result.error ?? t('newTopic.errors.createFailed'))
+          return
+        }
+        router.push(
+          `/foro/${result.spaceSlug}/${result.forumSlug}/${result.topicSlug}` as Route,
+        )
+      } catch {
+        setError(t('newTopic.errors.createFailed'))
       }
-      router.push(
-        `/foro/${result.spaceSlug}/${result.forumSlug}/${result.topicSlug}` as Route,
-      )
     })
   }
 
@@ -91,7 +98,7 @@ export default function NewTopicForm({
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-400">
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-400">
           {error}
         </p>
       )}

@@ -1,9 +1,9 @@
+import { getCityBusinessPage } from '@/features/cities/server/city-businesses.server'
 import { BusinessList } from '@/features/cities/components/directory/BusinessList'
 import { DirectoryHero } from '@/features/cities/components/directory/DirectoryHero'
 import { getCityBySlug } from '@/features/cities/server/city.server'
 import {
   getBusinessDirectoryCategories,
-  getCityBusinesses,
 } from '@/features/cities/server/directory.server'
 import { ChevronRightIcon, HomeIcon } from '@/components/icons/heroicons-shim'
 import { Metadata } from 'next'
@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation'
 
 interface BusinessesPageProps {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ page?: string }>
 }
 
 /**
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: BusinessesPageProps): Promise
  * Página de listado de negocios de una ciudad
  * Server Component - fetches data and passes to client components
  */
-export default async function BusinessesPage({ params }: BusinessesPageProps) {
+export default async function BusinessesPage({ params, searchParams }: BusinessesPageProps) {
   const { slug } = await params
   const city = await getCityBySlug(slug)
 
@@ -46,8 +47,9 @@ export default async function BusinessesPage({ params }: BusinessesPageProps) {
   }
 
   // Obtener negocios y categorías (datos reales de Supabase)
+  const page = Math.max(1, Math.floor(Number((await searchParams).page) || 1))
   const [businesses, categories] = await Promise.all([
-    getCityBusinesses(city.id),
+    getCityBusinessPage(city.id, page),
     getBusinessDirectoryCategories(),
   ])
 
@@ -83,7 +85,12 @@ export default async function BusinessesPage({ params }: BusinessesPageProps) {
 
       {/* Lista de negocios */}
       <section>
-        <BusinessList businesses={businesses} categories={categories} />
+        <BusinessList businesses={businesses.items} categories={categories} />
+      <nav aria-label="Paginación de negocios" className="mt-5 flex gap-4 text-sm">
+          {page > 1 && <Link href={`/cities/${slug}/directory/businesses?page=${page - 1}`}>Anterior</Link>}
+          <span>Página {page} de {Math.max(1, Math.ceil(businesses.total / 24))}</span>
+          {page * 24 < businesses.total && <Link href={`/cities/${slug}/directory/businesses?page=${page + 1}`}>Siguiente</Link>}
+        </nav>
       </section>
     </div>
   )

@@ -7,7 +7,7 @@ import { getTranslations } from 'next-intl/server';
 import { CityDirectoryCategoryView } from '@/features/cities/components/portal/CityDirectoryCategoryView';
 import { PORTAL_SECTIONS } from '@/features/cities/data/portal-sections';
 import { getCityBySlug } from '@/features/cities/server/city.server';
-import { getCityBusinessesByCategory } from '@/features/cities/server/directory.server';
+import { getCityBusinessCategoryPage } from '@/features/cities/server/city-businesses.server';
 
 interface Props {
   params: Promise<{ slug: string; category: string }>;
@@ -50,20 +50,20 @@ export default async function DirectoryCategoryPage({ params, searchParams }: Pr
   if (!city) notFound();
 
   const [businesses, entries, sectionsT, entriesT] = await Promise.all([
-    getCityBusinessesByCategory(city.id, category),
+    getCityBusinessCategoryPage(city.id, category, page),
     getDirectoryEntries(city.id, category, page),
     getTranslations('cities.portal.sections'),
     getTranslations('cities.directoryEntries'),
   ]);
-  const totalPages = Math.max(1, Math.ceil(entries.total / entries.pageSize));
+  const totalPages = Math.max(1, Math.ceil(Math.max(entries.total, businesses.total) / entries.pageSize));
   return (
     <CityDirectoryCategoryView
       citySlug={slug}
       cityName={city.name}
       categoryLabel={sectionsT(`${section.id}.label`)}
-      businesses={page === 1 ? businesses : []}
+      businesses={businesses.items}
       entries={entries.items}
-      totalCount={entries.total + businesses.length}
+      totalCount={entries.total + businesses.total}
       pagination={totalPages > 1 && <nav aria-label={entriesT('pagination')} className="flex items-center gap-4 text-sm">
         {entries.page > 1 && <Link className="underline" href={`/cities/${slug}/directory/${category}?page=${entries.page - 1}` as `/${string}`}>{entriesT('previous')}</Link>}
         <span>{entriesT('pageOf', { page: entries.page, totalPages })}</span>
