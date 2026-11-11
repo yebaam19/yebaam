@@ -1,7 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
+import { subscribeToTable } from '@/utils/supabase/realtime';
 import { PublicChatPanel } from './PublicChatPanel';
 import { sendCityPublicChatMessage } from '@/features/cities/actions/public-chat.actions';
 import type { PublicChatMessage } from '@/features/cities/server/public-chat.server';
@@ -33,13 +34,14 @@ const baseMessages = {
       header: {
         title: 'Chat público',
         subtitle: 'Conversación en vivo con la comunidad de {city}',
-        capacity: '{count}/{max} en línea',
+        capacity: 'Capacidad: {max}',
       },
       composer: {
         placeholder: 'Escribe un mensaje',
         send: 'Enviar',
         signedOut: 'Inicia sesión para participar',
         signInCta: 'Inicia sesión',
+        error: 'No se pudo enviar',
       },
       messages: {
         empty: 'Aún no hay mensajes. ¡Sé el primero en saludar!',
@@ -141,4 +143,22 @@ describe('PublicChatPanel', () => {
     });
     expect(screen.getByRole('button', { name: /enviar/i })).toBeDisabled();
   });
+});
+
+it('removes the provisional message and preserves the draft after a network failure', async () => {
+  vi.mocked(sendCityPublicChatMessage).mockRejectedValue(new Error('Offline'));
+  renderPanel({ currentUserId: 'sender' });
+  const user = userEvent.setup();
+  await user.type(screen.getByRole('textbox'), 'Retry me');
+  await user.click(screen.getByRole('button', { name: /enviar/i }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo enviar');
+  expect(screen.getByRole('textbox')).toHaveValue('Retry me');
+  expect(screen.getByText('Aún no hay mensajes. ¡Sé el primero en saludar!')).toBeInTheDocument();
+});
+
+it('removes a moderated message from the realtime stream', () => {
+  renderPanel({ initialMessages: [makeMsg('moderated', 'Remove this')] });
+  const options = vi.mocked(subscribeToTable).mock.calls.at(-1)![0];
+  act(() => options.onChange({ eventType: 'UPDATE', new: { ...makeMsg('moderated', ''), is_deleted: true }, old: {} } as never));
+  expect(screen.queryByText('Remove this')).not.toBeInTheDocument();
 });

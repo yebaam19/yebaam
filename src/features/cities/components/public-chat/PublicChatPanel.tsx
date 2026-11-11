@@ -57,14 +57,25 @@ export function PublicChatPanel({
       channel: `city-public-chat:${topicId}`,
       table: 'public_chat_messages',
       filter: `topic_id=eq.${topicId}`,
-      events: ['INSERT'],
+      events: ['INSERT', 'UPDATE', 'DELETE'],
       onChange: (payload) => {
-        if (payload.eventType !== 'INSERT') return;
+        if (payload.eventType === 'DELETE') {
+          const removed = payload.old as { id?: string };
+          setMessages((prev) => prev.filter((m) => m.id !== removed.id));
+          return;
+        }
         const row = payload.new as IncomingRow;
+        if (row.is_deleted) {
+          setMessages((prev) => prev.filter((m) => m.id !== row.id));
+          return;
+        }
         if (!row.id) return;
         setMessages((prev) => {
           // Dedupe in case the optimistic insert beat the realtime payload.
-          if (prev.some((m) => m.id === row.id)) return prev;
+          if (prev.some((m) => m.id === row.id)) {
+            return payload.eventType === 'UPDATE'
+              ? prev.map((m) => m.id === row.id ? { ...m, ...row } : m) : prev;
+          }
           const dto: PublicChatMessage = {
             id: row.id,
             topic_id: row.topic_id,
@@ -78,7 +89,7 @@ export function PublicChatPanel({
           };
           // Prepend so the newest-first ordering coming from the server
           // stays stable. MessageList reverses for display.
-          return [dto, ...prev];
+          return [dto, ...prev].slice(0, 200);
         });
       },
     });
@@ -105,7 +116,9 @@ export function PublicChatPanel({
       };
       setMessages((prev) => [optimistic, ...prev]);
 
-      const result = await sendCityPublicChatMessage(topicId, body);
+      const result = await sendCityPublicChatMessage(topicId, body).catch(() => ({
+        ok: false as const, error: 'network_error',
+      }));
       if (!result.ok) {
         // Drop the optimistic row on failure so the user can retry.
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
