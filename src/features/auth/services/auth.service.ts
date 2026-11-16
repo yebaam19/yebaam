@@ -102,7 +102,13 @@ export class AuthService {
       options: credentials.captchaToken ? { captchaToken: credentials.captchaToken } : undefined,
     });
     if (error || !data?.user || !data.session) {
-      throw new Error(error?.message || 'Error al iniciar sesión');
+      // Log only a fixed category, never provider messages or credential data.
+      const validationCodes = ['invalid_credentials', 'email_not_confirmed', 'user_not_found'];
+      console.warn('[auth] login_failed', {
+        category: error && validationCodes.includes(error.code ?? '') ? 'validation' : 'provider_or_configuration',
+      });
+      // Unconfirmed, unknown and wrong-password accounts share one public result.
+      throw new Error('No se pudo iniciar sesión. Revisa tus credenciales e inténtalo de nuevo.');
     }
 
     const profile = await fetchProfile(this.supabase, data.user.id);

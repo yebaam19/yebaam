@@ -12,7 +12,6 @@ import {
   consumeOtpAttempt,
   resetOtpAttempts,
   OTP_TTL_MINUTES,
-  MAX_ATTEMPTS,
 } from './_otp-shared';
 import { checkRateLimit } from '@/lib/api/rate-limit';
 import type { AuthActionResult } from '../interfaces/auth.interfaces';
@@ -91,8 +90,8 @@ export async function requestPasswordResetAction(
       },
     });
     if (updateError) {
-      console.error('[password-recovery] write metadata failed:', updateError.message);
-      return { ok: false, error: 'No se pudo generar el código de recuperación' };
+      console.error('[password-recovery] metadata_write_failed');
+      return { ok: true, message: PASSWORD_RESET_ACK };
     }
 
     const { data: profile } = await admin
@@ -104,9 +103,9 @@ export async function requestPasswordResetAction(
     await sendPasswordResetEmail({ to: email, code, firstName: profile?.first_name ?? null });
 
     return { ok: true, message: PASSWORD_RESET_ACK };
-  } catch (err) {
-    console.error('[password-recovery] unexpected error:', err);
-    return { ok: false, error: 'No pudimos enviar el código. Intenta de nuevo.' };
+  } catch {
+    console.error('[password-recovery] unexpected_failure');
+    return { ok: true, message: PASSWORD_RESET_ACK };
   }
 }
 
@@ -151,41 +150,26 @@ export async function resetPasswordAction(
     const reset = appMetadata.password_reset as PasswordResetMetadata | undefined;
 
     if (!reset) {
-      return { ok: false, error: 'No hay un código pendiente para este email' };
+      return { ok: false, error: 'Código inválido' };
     }
 
     if (new Date(reset.expires_at).getTime() < Date.now()) {
       await clearPasswordResetMetadata(user.id, appMetadata);
-      return { ok: false, error: 'El código expiró. Solicita uno nuevo.' };
+      return { ok: false, error: 'Código inválido' };
     }
 
     // Burn the attempt BEFORE comparing the code, atomically, so a batch of
     // parallel guesses costs one attempt each rather than one between them.
     const attempt = await consumeOtpAttempt(user.id, 'password_reset');
-    if (attempt.available) {
-      if (attempt.lockedOut) {
-        await clearPasswordResetMetadata(user.id, appMetadata);
-        await resetOtpAttempts(user.id, 'password_reset');
-        return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
-      }
-    } else if ((reset.attempts ?? 0) >= MAX_ATTEMPTS) {
-      // Fallback path: the atomic RPC is not deployed yet, so this is the old
-      // non-atomic check. Still bounds the sequential case.
+    if (attempt.lockedOut) {
       await clearPasswordResetMetadata(user.id, appMetadata);
-      return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
+      await resetOtpAttempts(user.id, 'password_reset');
+      return { ok: false, error: 'Código inválido' };
     }
 
     const admin = getServiceClient();
 
     if (reset.code_hash !== hashCode(otp)) {
-      if (!attempt.available) {
-        await admin.auth.admin.updateUserById(user.id, {
-          app_metadata: {
-            ...appMetadata,
-            password_reset: { ...reset, attempts: (reset.attempts ?? 0) + 1 },
-          },
-        });
-      }
       return { ok: false, error: 'Código inválido' };
     }
 
@@ -195,13 +179,13 @@ export async function resetPasswordAction(
       app_metadata: restMetadata,
     });
     if (updateError) {
-      return { ok: false, error: updateError.message || 'No se pudo actualizar la contraseña' };
+      return { ok: false, error: 'No se pudo actualizar la contraseña' };
     }
 
     await resetOtpAttempts(user.id, 'password_reset');
     return { ok: true, message: 'Contraseña actualizada correctamente.' };
-  } catch (err) {
-    console.error('[password-recovery] unexpected error:', err);
+  } catch {
+    console.error('[password-recovery] unexpected_failure');
     return { ok: false, error: 'No pudimos actualizar la contraseña. Intenta de nuevo.' };
   }
 }

@@ -15,8 +15,7 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false
     const run = async () => {
-      // Wait for the SDK's pending PKCE exchange, then mirror the
-      // access token into the httpOnly cookie before running checkAuth.
+      // The browser SDK consumes the PKCE code and synchronizes SSR cookies.
       const user = await authService.completeOAuthLogin()
       await checkAuth()
       if (cancelled) return

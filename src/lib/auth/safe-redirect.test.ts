@@ -23,3 +23,13 @@ describe('sanitizeRedirectPath', () => {
     expect(sanitizeRedirectPath('//evil.com', '/login')).toBe('/login');
   });
 });
+
+describe('approved destinations', () => {
+  it.each(['/index.php', '/api/auth/session', '/login', '/auth/callback', '/_next/x', '/%2f%2fevil.com', '/feed/%5cevil', '/feed/%252e%252e/api'])('rejects %s', (path) => {
+    expect(sanitizeRedirectPath(path, '/rejected')).toBe('/rejected');
+  });
+  it('keeps legitimate nested links and queries', () => {
+    expect(sanitizeRedirectPath('/umbral?clave=synthetic#door')).toBe('/umbral?clave=synthetic#door');
+    expect(sanitizeRedirectPath('/cities/synthetic/news')).toBe('/cities/synthetic/news');
+  });
+});

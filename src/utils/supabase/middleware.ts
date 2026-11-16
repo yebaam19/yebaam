@@ -1,3 +1,4 @@
+import { authCookieOptions } from './cookie-options';
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 import { PATHNAME_HEADER } from '@/i18n/route-namespaces';
@@ -33,6 +34,7 @@ export const createClient = (request: NextRequest) => {
   });
 
   const supabase = createServerClient(supabaseUrl!, supabaseKey!, {
+    cookieOptions: authCookieOptions,
     cookies: {
       getAll() {
         return request.cookies.getAll();

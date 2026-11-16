@@ -12,7 +12,7 @@ Sentry.init({
   // Errors still always get a replay via replaysOnErrorSampleRate below.
   replaysSessionSampleRate: 0.01,
   replaysOnErrorSampleRate: 1.0,
-  sendDefaultPii: true,
+  sendDefaultPii: false,
   enableLogs: true,
 });
 

@@ -8,7 +8,6 @@ import {
   getRemoteIp,
   consumeOtpAttempt,
   resetOtpAttempts,
-  MAX_ATTEMPTS,
 } from './_otp-shared';
 import {
   resolveCountryName,
@@ -156,15 +155,9 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<Auth
     // same value and spent one increment between them, leaving a 6-digit code
     // effectively unbounded against a parallel batch.
     const attempt = await consumeOtpAttempt(row.user_id, 'signup');
-    if (attempt.available) {
-      if (attempt.lockedOut) {
-        await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
-        await resetOtpAttempts(row.user_id, 'signup');
-        return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
-      }
-    } else if (row.attempts >= MAX_ATTEMPTS) {
-      // Fallback while the atomic RPC is not deployed: the original check.
+    if (attempt.lockedOut) {
       await admin.from('otp_codes').update({ consumed_at: new Date().toISOString() }).eq('id', row.id);
+      await resetOtpAttempts(row.user_id, 'signup');
       return { ok: false, error: 'Demasiados intentos. Solicita un nuevo código.' };
     }
 
@@ -180,9 +173,6 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<Auth
     }
 
     if (!match) {
-      if (!attempt.available) {
-        await admin.from('otp_codes').update({ attempts: row.attempts + 1 }).eq('id', row.id);
-      }
       return { ok: false, error: 'Código inválido' };
     }
 

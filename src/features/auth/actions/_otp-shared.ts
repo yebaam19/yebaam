@@ -22,23 +22,22 @@ export type OtpPurpose = 'signup' | 'password_reset';
  *
  * Call this BEFORE comparing the submitted code.
  *
- * Degradation: if the migration adding the RPC has not been applied yet, this
- * returns `{ available: false }` and the caller keeps its old metadata-based
- * check — same behaviour as before the fix, rather than a password-reset flow
- * that stops working. The per-email/IP rate limits still apply in that window.
+ * Fail closed if the atomic counter is unavailable: metadata read/modify/write
+ * cannot bound concurrent guesses. A missing local SQL definition requires
+ * schema verification before deployment, never a non-atomic fallback.
  */
 export async function consumeOtpAttempt(
   userId: string,
   purpose: OtpPurpose,
-): Promise<{ available: true; lockedOut: boolean } | { available: false }> {
+): Promise<{ available: true; lockedOut: boolean }> {
   const admin = getServiceClient();
   const { data, error } = await admin.rpc('consume_otp_attempt', {
     p_user_id: userId,
     p_purpose: purpose,
   });
-  if (error) {
-    console.error('[auth] consume_otp_attempt unavailable — falling back:', error.message);
-    return { available: false };
+  if (error || !Number.isInteger(data) || (data as number) < 1) {
+    console.error('[auth] otp_counter_unavailable');
+    throw new Error('OTP verification temporarily unavailable');
   }
   return { available: true, lockedOut: (data as number) > MAX_ATTEMPTS };
 }
@@ -50,7 +49,7 @@ export async function resetOtpAttempts(userId: string, purpose: OtpPurpose): Pro
     p_user_id: userId,
     p_purpose: purpose,
   });
-  if (error) console.error('[auth] reset_otp_attempts failed:', error.message);
+  if (error) console.error('[auth] otp_counter_reset_failed');
 }
 
 export function generateCode(): string {
@@ -88,7 +87,7 @@ export async function findUserByEmail(email: string) {
       perPage: LIST_USERS_PER_PAGE,
     });
     if (error) {
-      console.error('[auth] listUsers failed:', error.message);
+      console.error('[auth] user_lookup_failed');
       return null;
     }
     const match = data.users.find((u) => (u.email ?? '').toLowerCase() === target);

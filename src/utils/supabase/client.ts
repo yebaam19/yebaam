@@ -1,3 +1,4 @@
+import { authCookieOptions } from './cookie-options';
 import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,7 +13,7 @@ let cached: ReturnType<typeof createBrowserClient> | null = null;
  */
 export const createClient = () => {
   if (!cached) {
-    cached = createBrowserClient(supabaseUrl!, supabaseKey!);
+    cached = createBrowserClient(supabaseUrl!, supabaseKey!, { cookieOptions: authCookieOptions });
   }
   return cached;
 };
