@@ -66,3 +66,35 @@ it('OAuth completion rejects an absent provider user', async () => {
   expect(await service.completeOAuthLogin()).toBeNull();
   vi.stubGlobal('window', undefined);
 });
+
+
+describe('login destination warming', () => {
+  const credentials = { email: 'synthetic@example.invalid', password: 'synthetic' };
+  it('starts only after authentication and overlaps the pending profile read', async () => {
+    let finishProfile!: (value: { data: { username: string } }) => void;
+    maybeSingle.mockReturnValue(new Promise((resolve) => { finishProfile = resolve; }));
+    signIn.mockResolvedValue({ data: { user: { id: 'synthetic-user' }, session: {} } });
+    const ready = vi.fn();
+    let completed = false;
+    const result = service.login(credentials, ready).then((user) => { completed = true; return user; });
+    expect(ready).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(maybeSingle).toHaveBeenCalledOnce());
+    expect(ready).toHaveBeenCalledOnce();
+    expect(ready).toHaveBeenCalledWith();
+    expect(completed).toBe(false);
+    finishProfile({ data: { username: 'real-profile-name' } });
+    expect((await result).user.username).toBe('real-profile-name');
+  });
+  it('never warms a protected route for a rejected login', async () => {
+    signIn.mockResolvedValue({ error: { code: 'invalid_credentials' } });
+    const ready = vi.fn();
+    await expect(service.login(credentials, ready)).rejects.toThrow();
+    expect(ready).not.toHaveBeenCalled();
+    expect(maybeSingle).not.toHaveBeenCalled();
+  });
+  it('does not turn a prefetch failure into a failed login', async () => {
+    signIn.mockResolvedValue({ data: { user: { id: 'synthetic-user' }, session: {} } });
+    const result = await service.login(credentials, () => { throw new Error('prefetch unavailable'); });
+    expect(result.user.id).toBe('synthetic-user');
+  });
+});

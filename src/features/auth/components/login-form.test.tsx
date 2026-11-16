@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 // --- Mocks ------------------------------------------------------------------
 const pushMock = vi.fn();
+const prefetchMock = vi.fn();
 const loginMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, prefetch: prefetchMock }),
   useSearchParams: () => ({
     get: (key: string) => (key === 'redirect' ? '//evil.com' : null),
   }),
@@ -37,11 +38,12 @@ function submitLogin(email = 'user@example.com', password = 'Password123') {
   fireEvent.click(screen.getByRole('button', { name: 'login.submit' }));
 }
 
-describe('LoginForm — unverified-email recovery', () => {
+describe('LoginForm — login errors', () => {
   beforeEach(() => {
     // Disable Turnstile gating so submit reaches login() deterministically.
     vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
     pushMock.mockReset();
+    prefetchMock.mockReset();
     loginMock.mockReset();
   });
 
@@ -49,14 +51,13 @@ describe('LoginForm — unverified-email recovery', () => {
     vi.unstubAllEnvs();
   });
 
-  it('offers confirmation resend to everyone without disclosing account state', async () => {
+  it('keeps failed login on the form without offering confirmation resend', async () => {
     loginMock.mockRejectedValueOnce(new Error('Error neutro'));
     render(<LoginForm />);
     submitLogin('user@example.com');
     await waitFor(() => expect(loginMock).toHaveBeenCalled());
     expect(pushMock).not.toHaveBeenCalled();
-    const link = screen.getByRole('link', { name: 'login.resendConfirmation' });
-    expect(link.getAttribute('href')).toContain('/verify-email?email=user%40example.com');
+    expect(screen.queryByRole('link', { name: 'login.resendConfirmation' })).not.toBeInTheDocument();
   });
 
   it('does NOT redirect to /verify-email on a wrong-password error', async () => {
@@ -76,6 +77,7 @@ describe('LoginForm — redirect sanitization', () => {
   beforeEach(() => {
     vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
     pushMock.mockReset();
+    prefetchMock.mockReset();
     loginMock.mockReset();
   });
 
@@ -84,7 +86,7 @@ describe('LoginForm — redirect sanitization', () => {
   });
 
   it('ignores ?redirect=//evil.com and lands on /feed after a successful login', async () => {
-    loginMock.mockResolvedValueOnce(undefined);
+    loginMock.mockImplementationOnce(async (_credentials, ready) => { ready(); });
     render(<LoginForm />);
 
     submitLogin();
@@ -93,5 +95,33 @@ describe('LoginForm — redirect sanitization', () => {
       expect(pushMock).toHaveBeenCalledWith('/feed');
     });
     expect(pushMock).not.toHaveBeenCalledWith(expect.stringContaining('evil.com'));
+    expect(prefetchMock).toHaveBeenCalledWith('/feed');
   });
+});
+
+
+it('prevents duplicate submits while authentication/profile is pending', () => {
+  vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
+  loginMock.mockReset().mockReturnValue(new Promise(() => {}));
+  render(<LoginForm />);
+  submitLogin();
+  const button = screen.getByRole('button', { name: 'login.submitting' });
+  expect(button).toBeDisabled();
+  fireEvent.submit(button.closest('form')!);
+  expect(loginMock).toHaveBeenCalledOnce();
+  vi.unstubAllEnvs();
+});
+
+
+it('keeps feedback visible while the destination navigation is pending', async () => {
+  vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '');
+  loginMock.mockReset().mockResolvedValue(undefined);
+  let finishNavigation!: () => void;
+  pushMock.mockImplementationOnce(() => new Promise<void>((resolve) => { finishNavigation = resolve; }));
+  render(<LoginForm />);
+  submitLogin();
+  await waitFor(() => expect(finishNavigation).toBeDefined());
+  expect(screen.getByRole('button', { name: 'login.submitting' })).toBeDisabled();
+  await act(async () => { finishNavigation(); });
+  vi.unstubAllEnvs();
 });

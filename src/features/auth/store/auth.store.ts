@@ -10,10 +10,8 @@
  * - Gestionar el estado de carga y errores
  * - Sincronizar con el servicio de autenticación
  * 
- * Principios aplicados:
- * - Single Responsibility: Solo maneja estado de autenticación
- * - Separation of Concerns: El servicio HTTP está separado
- * - Immutability: Usa Immer (incluido en Zustand) para updates inmutables
+ * Persiste el perfil y el indicador de sesión; nunca los tokens de Supabase.
+ * La precarga de navegación recibe una señal sin credenciales ni tokens.
  */
 
 import { create } from 'zustand';
@@ -41,7 +39,7 @@ interface AuthState {
   error: string | null;
   
   // Acciones
-  login: (credentials: LoginDTO) => Promise<void>;
+  login: (credentials: LoginDTO, onSessionReady?: () => void) => Promise<void>;
   loginWithGoogle: (redirectTo?: string) => Promise<void>;
   register: (userData: RegisterDTO) => ReturnType<typeof authService.register>;
   logout: () => Promise<void>;
@@ -68,10 +66,10 @@ export const useAuthStore = create<AuthState>()(
         /**
          * Inicia sesión de usuario
          */
-        login: async (credentials: LoginDTO) => {
+        login: async (credentials: LoginDTO, onSessionReady?: () => void) => {
           set({ isLoading: true, error: null });
           try {
-            const response = await authService.login(credentials);
+            const response = await authService.login(credentials, onSessionReady);
             resetRealtimeFailure();
             set({
               user: response.user,

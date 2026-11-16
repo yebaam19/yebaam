@@ -4,7 +4,7 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, useTransition, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { useAuthStore } from '../store/auth.store'
@@ -30,6 +30,10 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
   const [password, setPassword] = useState('')
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null)
+  const submittingRef = useRef(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isNavigating, startNavigation] = useTransition()
+  const busy = isLoading || isSubmitting || isNavigating
 
   useEffect(() => {
     if (verified && emailFromUrl) {
@@ -54,6 +58,7 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (submittingRef.current || busy) return
 
     const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
     if (turnstileEnabled && !captchaToken) {
@@ -61,26 +66,31 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
       return
     }
 
+    submittingRef.current = true
+    setIsSubmitting(true)
     try {
       await login({
         email: identifier,
         password,
         captchaToken: captchaToken ?? undefined,
-      })
+      }, () => router.prefetch(redirectTo as Route))
 
       toast.success(t('login.welcomeBack'))
-      router.push(redirectTo as Route)
+      startNavigation(() => router.push(redirectTo as Route))
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : ''
       toast.error(message || t('login.genericError'))
       // Turnstile tokens are single-use — refresh the widget so the user can retry.
       setCaptchaToken(null)
       turnstileRef.current?.reset()
+    } finally {
+      submittingRef.current = false
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} aria-busy={busy} className="space-y-4">
       {/* Email */}
       <div>
         <label htmlFor="identifier" className="mb-2 block text-sm font-medium text-gray-700">
@@ -139,20 +149,13 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
         </div>
       )}
 
-      <Link
-        href={{ pathname: '/verify-email', query: { email: identifier, redirect: redirectTo } }}
-        className="block text-sm font-semibold text-green-600 underline"
-      >
-        {t('login.resendConfirmation')}
-      </Link>
-
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={busy}
         className="w-full rounded-lg bg-yellow-500 px-4 py-3 font-semibold text-white shadow-md transition-colors hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isLoading ? (
+        {busy ? (
           <span className="flex items-center justify-center gap-2">
             <svg className="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

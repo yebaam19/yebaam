@@ -80,7 +80,7 @@ async function fetchProfile(
 ): Promise<Partial<ProfileRow> | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, first_name, middle_name, last_name, second_last_name, birth_date, gender, country, state, city, avatar_url, cover_photo_url, profile_completed, created_at')
     .eq('id', userId)
     .maybeSingle();
   if (error) return null;
@@ -92,7 +92,7 @@ export class AuthService {
     return createClient();
   }
 
-  async login(credentials: LoginDTO): Promise<AuthResponseDTO> {
+  async login(credentials: LoginDTO, onSessionReady?: () => void): Promise<AuthResponseDTO> {
     if (!credentials.email) {
       throw new Error('Email is required to sign in');
     }
@@ -111,6 +111,14 @@ export class AuthService {
       throw new Error('No se pudo iniciar sesión. Revisa tus credenciales e inténtalo de nuevo.');
     }
 
+    // SSR has persisted the verified session cookies. Warm the destination
+    // concurrently with the profile read, without delaying or failing login
+    // if speculative navigation is unavailable.
+    try {
+      onSessionReady?.();
+    } catch {
+      // Prefetch is best-effort; profile hydration must still complete.
+    }
     const profile = await fetchProfile(this.supabase, data.user.id);
     const user = mapProfileToAuthUser(
       { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at },

@@ -25,7 +25,6 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthSync } from '../hooks/useAuthSync';
 import type {
   AuthUser,
-  LoginDTO,
   RegisterDTO,
   ResendOtpRequest,
   VerifyEmailRequest,
@@ -44,7 +43,7 @@ interface AuthContextType {
   isInitialized: boolean;
 
   // Acciones
-  login: (credentials: LoginDTO) => Promise<void>;
+  login: ReturnType<typeof useAuthStore.getState>['login'];
   register: ReturnType<typeof useAuthStore.getState>['register'];
   logout: () => Promise<void>;
   verifyEmail: (data: VerifyEmailRequest) => Promise<void>;
