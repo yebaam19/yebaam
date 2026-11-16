@@ -194,6 +194,7 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<Auth
 }
 
 export async function resendOtpAction(payload: ResendOtpRequest): Promise<AuthActionResult> {
+  const ack = { ok: true as const, message: 'Si la cuenta necesita confirmación, recibirás un código.' };
   try {
     const captcha = await verifyTurnstileToken(payload.captchaToken, {
       remoteIp: await getRemoteIp(),
@@ -214,18 +215,19 @@ export async function resendOtpAction(payload: ResendOtpRequest): Promise<AuthAc
       .limit(1)
       .maybeSingle();
     if (existingError) {
-      return { ok: false, error: existingError.message || 'Error al localizar el usuario' };
+      console.error('[resend-otp] lookup_failed');
+      return ack;
     }
     if (!existing) {
-      return { ok: false, error: 'No se encontró una cuenta pendiente de verificación para ese email' };
+      return ack;
     }
 
     const { data: userLookup, error: userError } = await admin.auth.admin.getUserById(existing.user_id);
     if (userError || !userLookup?.user) {
-      return { ok: false, error: userError?.message || 'No se encontró el usuario' };
+      return ack;
     }
     if (userLookup.user.email_confirmed_at) {
-      return { ok: false, error: 'Este email ya está verificado' };
+      return ack;
     }
 
     const { data: profile } = await admin
@@ -236,9 +238,9 @@ export async function resendOtpAction(payload: ResendOtpRequest): Promise<AuthAc
 
     await issueOtpFor(existing.user_id, payload.email, profile?.first_name ?? null);
 
-    return { ok: true, message: 'Verification code resent.' };
-  } catch (err) {
-    console.error('[resend-otp] unexpected error:', err);
-    return { ok: false, error: 'No pudimos reenviar el código. Intenta de nuevo.' };
+    return ack;
+  } catch {
+    console.error('[resend-otp] delivery_failed');
+    return ack;
   }
 }

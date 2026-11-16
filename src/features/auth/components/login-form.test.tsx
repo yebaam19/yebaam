@@ -49,15 +49,14 @@ describe('LoginForm — unverified-email recovery', () => {
     vi.unstubAllEnvs();
   });
 
-  it('redirects to /verify-email when the email is not confirmed', async () => {
-    loginMock.mockRejectedValueOnce(new Error('Email not confirmed'));
+  it('offers confirmation resend to everyone without disclosing account state', async () => {
+    loginMock.mockRejectedValueOnce(new Error('Error neutro'));
     render(<LoginForm />);
-
     submitLogin('user@example.com');
-
-    await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith('/verify-email?email=user%40example.com&redirect=%2Ffeed');
-    });
+    await waitFor(() => expect(loginMock).toHaveBeenCalled());
+    expect(pushMock).not.toHaveBeenCalled();
+    const link = screen.getByRole('link', { name: 'login.resendConfirmation' });
+    expect(link.getAttribute('href')).toContain('/verify-email?email=user%40example.com');
   });
 
   it('does NOT redirect to /verify-email on a wrong-password error', async () => {

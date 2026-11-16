@@ -1,0 +1,311 @@
+diff --git a/messages/en/auth.json b/messages/en/auth.json
+index 8f9dfb0a..41165f05 100644
+--- a/messages/en/auth.json
++++ b/messages/en/auth.json
+@@ -20,7 +20,8 @@
+     "emailVerifiedToast": "Email verified successfully! You can now sign in",
+     "resetSuccessToast": "Password updated. Sign in with your new password.",
+     "genericError": "Sign in failed",
+-    "needsVerificationToast": "Your email isn't verified yet. Taking you to verify it."
++    "needsVerificationToast": "Your email isn't verified yet. Taking you to verify it.",
++    "resendConfirmation": "Resend email confirmation"
+   },
+   "signup": {
+     "metaTitle": "Sign up",
+diff --git a/messages/es/auth.json b/messages/es/auth.json
+index befb8cd2..f2b587a5 100644
+--- a/messages/es/auth.json
++++ b/messages/es/auth.json
+@@ -20,7 +20,8 @@
+     "emailVerifiedToast": "Email verificado correctamente! Ya puedes iniciar sesión",
+     "resetSuccessToast": "Contraseña actualizada. Inicia sesión con tu nueva contraseña.",
+     "genericError": "Error al iniciar sesión",
+-    "needsVerificationToast": "Tu correo aún no está verificado. Te llevamos a verificarlo."
++    "needsVerificationToast": "Tu correo aún no está verificado. Te llevamos a verificarlo.",
++    "resendConfirmation": "Reenviar confirmación de correo"
+   },
+   "signup": {
+     "metaTitle": "Registrarse",
+diff --git a/src/features/auth/actions/otp-signup.actions.ts b/src/features/auth/actions/otp-signup.actions.ts
+index 4273740b..7ad1b93d 100644
+--- a/src/features/auth/actions/otp-signup.actions.ts
++++ b/src/features/auth/actions/otp-signup.actions.ts
+@@ -194,6 +194,7 @@ export async function verifyOtpAction(payload: VerifyEmailRequest): Promise<Auth
+ }
+ 
+ export async function resendOtpAction(payload: ResendOtpRequest): Promise<AuthActionResult> {
++  const ack = { ok: true as const, message: 'Si la cuenta necesita confirmación, recibirás un código.' };
+   try {
+     const captcha = await verifyTurnstileToken(payload.captchaToken, {
+       remoteIp: await getRemoteIp(),
+@@ -214,18 +215,19 @@ export async function resendOtpAction(payload: ResendOtpRequest): Promise<AuthAc
+       .limit(1)
+       .maybeSingle();
+     if (existingError) {
+-      return { ok: false, error: existingError.message || 'Error al localizar el usuario' };
++      console.error('[resend-otp] lookup_failed');
++      return ack;
+     }
+     if (!existing) {
+-      return { ok: false, error: 'No se encontró una cuenta pendiente de verificación para ese email' };
++      return ack;
+     }
+ 
+     const { data: userLookup, error: userError } = await admin.auth.admin.getUserById(existing.user_id);
+     if (userError || !userLookup?.user) {
+-      return { ok: false, error: userError?.message || 'No se encontró el usuario' };
++      return ack;
+     }
+     if (userLookup.user.email_confirmed_at) {
+-      return { ok: false, error: 'Este email ya está verificado' };
++      return ack;
+     }
+ 
+     const { data: profile } = await admin
+@@ -236,9 +238,9 @@ export async function resendOtpAction(payload: ResendOtpRequest): Promise<AuthAc
+ 
+     await issueOtpFor(existing.user_id, payload.email, profile?.first_name ?? null);
+ 
+-    return { ok: true, message: 'Verification code resent.' };
+-  } catch (err) {
+-    console.error('[resend-otp] unexpected error:', err);
+-    return { ok: false, error: 'No pudimos reenviar el código. Intenta de nuevo.' };
++    return ack;
++  } catch {
++    console.error('[resend-otp] delivery_failed');
++    return ack;
+   }
+ }
+diff --git a/src/features/auth/components/login-form.test.tsx b/src/features/auth/components/login-form.test.tsx
+index a89b6e88..66a8ae2e 100644
+--- a/src/features/auth/components/login-form.test.tsx
++++ b/src/features/auth/components/login-form.test.tsx
+@@ -49,15 +49,14 @@ describe('LoginForm — unverified-email recovery', () => {
+     vi.unstubAllEnvs();
+   });
+ 
+-  it('redirects to /verify-email when the email is not confirmed', async () => {
+-    loginMock.mockRejectedValueOnce(new Error('Email not confirmed'));
++  it('offers confirmation resend to everyone without disclosing account state', async () => {
++    loginMock.mockRejectedValueOnce(new Error('Error neutro'));
+     render(<LoginForm />);
+-
+     submitLogin('user@example.com');
+-
+-    await waitFor(() => {
+-      expect(pushMock).toHaveBeenCalledWith('/verify-email?email=user%40example.com&redirect=%2Ffeed');
+-    });
++    await waitFor(() => expect(loginMock).toHaveBeenCalled());
++    expect(pushMock).not.toHaveBeenCalled();
++    const link = screen.getByRole('link', { name: 'login.resendConfirmation' });
++    expect(link.getAttribute('href')).toContain('/verify-email?email=user%40example.com');
+   });
+ 
+   it('does NOT redirect to /verify-email on a wrong-password error', async () => {
+diff --git a/src/features/auth/components/login-form.tsx b/src/features/auth/components/login-form.tsx
+index ac24996c..5c115b3b 100644
+--- a/src/features/auth/components/login-form.tsx
++++ b/src/features/auth/components/login-form.tsx
+@@ -9,7 +9,6 @@ import { toast } from 'sonner'
+ import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
+ import { useAuthStore } from '../store/auth.store'
+ import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
+-import { isEmailNotConfirmedError } from '../utils/auth-errors'
+ 
+ interface LoginFormProps {
+   showForgotPassword?: boolean
+@@ -72,18 +71,6 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
+       toast.success(t('login.welcomeBack'))
+       router.push(redirectTo as Route)
+     } catch (err: unknown) {
+-      // Half-registered account: the email was never confirmed. Instead of a
+-      // dead-end error, route the user back into the verification flow where
+-      // they can resend a fresh code and finish signing up. Keep ?redirect
+-      // riding along so the verify → login chain still lands on the original
+-      // destination (e.g. a shared /umbral link).
+-      if (isEmailNotConfirmedError(err)) {
+-        toast.info(t('login.needsVerificationToast'))
+-        const verifyParams = new URLSearchParams({ email: identifier })
+-        if (searchParams.get('redirect')) verifyParams.set('redirect', redirectTo)
+-        router.push(`/verify-email?${verifyParams.toString()}`)
+-        return
+-      }
+       const message = err instanceof Error ? err.message : ''
+       toast.error(message || t('login.genericError'))
+       // Turnstile tokens are single-use — refresh the widget so the user can retry.
+@@ -152,6 +139,13 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
+         </div>
+       )}
+ 
++      <Link
++        href={{ pathname: '/verify-email', query: { email: identifier, redirect: redirectTo } }}
++        className="block text-sm font-semibold text-green-600 underline"
++      >
++        {t('login.resendConfirmation')}
++      </Link>
++
+       {/* Submit Button */}
+       <button
+         type="submit"
+diff --git a/src/lib/auth/safe-redirect.test.ts b/src/lib/auth/safe-redirect.test.ts
+index 91833e1a..6e3a87bc 100644
+--- a/src/lib/auth/safe-redirect.test.ts
++++ b/src/lib/auth/safe-redirect.test.ts
+@@ -33,3 +33,7 @@ describe('approved destinations', () => {
+     expect(sanitizeRedirectPath('/cities/synthetic/news')).toBe('/cities/synthetic/news');
+   });
+ });
++
++it.each(['/ellis', '/ellis.cano?tab=mascotas', '/user_name-1'])('preserves profile destination %s', (path) => {
++  expect(sanitizeRedirectPath(path)).toBe(path);
++});
+diff --git a/src/lib/auth/safe-redirect.ts b/src/lib/auth/safe-redirect.ts
+index b45df647..59906025 100644
+--- a/src/lib/auth/safe-redirect.ts
++++ b/src/lib/auth/safe-redirect.ts
+@@ -1,7 +1,6 @@
+ const DEFAULT_FALLBACK = '/feed';
+ 
+-// Auth/API/static endpoints are never post-login destinations. Profile links
+-// with arbitrary usernames can still be opened normally after signing in.
++// Auth/API/static endpoints are never post-login destinations.
+ const DESTINATIONS = new Set([
+   'feed', 'familias', 'friends', 'profiles', 'clubs', 'blogs', 'professional-profile',
+   'chat', 'chat-publico', 'comunidades', 'foro', 'cities', 'insignias',
+@@ -10,6 +9,8 @@ const DESTINATIONS = new Set([
+   'ajustes', 'noticias', 'search', 'stories', 'watch', 'paginas', 'notifications', 'grupos',
+ ]);
+ 
++const RESERVED = new Set(['login', 'signup', 'verify-email', 'forgot-password', 'reset-password', 'auth', 'api', '_next', 'monitoring']);
++
+ /**
+  * Restrict post-auth redirects to approved app route families.
+  * Blocks open redirects (`//evil.com`, `/\\evil.com`, encoded tricks).
+@@ -27,10 +28,17 @@ export function sanitizeRedirectPath(
+   try {
+     const parsed = new URL(trimmed, 'http://localhost');
+     if (parsed.protocol !== 'http:' || parsed.hostname !== 'localhost') return fallback;
++    if (/%2f/i.test(parsed.pathname)) return fallback;
+     const pathname = decodeURIComponent(parsed.pathname);
+     if (/[\x00-\x1f\x7f\\%]/.test(pathname)) return fallback;
+     if (pathname.split('/').some((part) => part === '.' || part === '..')) return fallback;
+-    if (!DESTINATIONS.has(pathname.split('/')[1])) return fallback;
++    const segments = pathname.split('/').filter(Boolean);
++    const root = segments[0];
++    // The product's /[username] route admits a single profile segment.
++    // Keep punctuation used by email-derived usernames, excluding file endpoints.
++    const profile = segments.length === 1 && /^[\p{L}\p{N}_][\p{L}\p{N}_.-]*$/u.test(root)
++      && !/\.(?:php|html?|json|xml|txt|js|css|png|ico)$/i.test(root);
++    if (RESERVED.has(root) || (!DESTINATIONS.has(root) && !profile)) return fallback;
+     return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+   } catch {
+     return fallback;
+diff --git a/src/test/auth/login-security.test.ts b/src/test/auth/login-security.test.ts
+index 115e574c..b151a89c 100644
+--- a/src/test/auth/login-security.test.ts
++++ b/src/test/auth/login-security.test.ts
+@@ -1,9 +1,9 @@
+ import { beforeEach, describe, expect, it, vi } from 'vitest';
+-const { signIn, signOut, getUser, maybeSingle } = vi.hoisted(() => ({
+-  signIn: vi.fn(), signOut: vi.fn(), getUser: vi.fn(), maybeSingle: vi.fn(),
++const { signIn, signOut, getUser, maybeSingle, oauth } = vi.hoisted(() => ({
++  oauth: vi.fn(), signIn: vi.fn(), signOut: vi.fn(), getUser: vi.fn(), maybeSingle: vi.fn(),
+ }));
+ vi.mock('@/utils/supabase/client', () => ({ createClient: () => ({
+-  auth: { signInWithPassword: signIn, signOut, getUser },
++  auth: { signInWithOAuth: oauth, signInWithPassword: signIn, signOut, getUser },
+   from: () => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }),
+ }) }));
+ vi.mock('@/features/auth/actions/otp-signup.actions', () => ({}));
+@@ -46,3 +46,23 @@ it('logs fixed validation/configuration categories without credentials', async (
+   expect(JSON.stringify(log.mock.calls)).not.toContain('sensitive-provider-detail');
+   log.mockRestore();
+ });
++
++it('Google uses a same-origin callback and preserves a legitimate profile destination', async () => {
++  vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
++  oauth.mockResolvedValue({ error: null });
++  await service.loginWithGoogle('/ellis.cano?tab=mascotas');
++  expect(oauth).toHaveBeenCalledWith({ provider: 'google', options: {
++    redirectTo: 'http://localhost:3000/auth/callback?redirect=%2Fellis.cano%3Ftab%3Dmascotas',
++  } });
++  await service.loginWithGoogle('//evil.invalid');
++  expect(oauth).toHaveBeenLastCalledWith({ provider: 'google', options: {
++    redirectTo: 'http://localhost:3000/auth/callback?redirect=%2Ffeed',
++  } });
++  vi.stubGlobal('window', undefined);
++});
++it('OAuth completion rejects an absent provider user', async () => {
++  vi.stubGlobal('window', {});
++  getUser.mockResolvedValue({ data: { user: null } });
++  expect(await service.completeOAuthLogin()).toBeNull();
++  vi.stubGlobal('window', undefined);
++});
+diff --git a/vitest.audit.config.ts b/vitest.audit.config.ts
+index 547c79d9..c55c86c7 100644
+--- a/vitest.audit.config.ts
++++ b/vitest.audit.config.ts
+@@ -12,6 +12,7 @@ export default defineConfig({
+     setupFiles: ['./src/test/auth/audit-offline.setup.ts'],
+     include: [
+       'src/test/auth/login-security.test.ts',
++      'src/test/auth/resend-security.test.ts',
+       'src/test/auth/recovery-security.test.ts',
+       'src/test/auth/attachment-security.test.ts',
+       'src/lib/auth/safe-redirect.test.ts',
+diff --git a/src/test/auth/audit-ui.setup.ts b/src/test/auth/audit-ui.setup.ts
+new file mode 100644
+index 00000000..ddd99d59
+--- /dev/null
++++ b/src/test/auth/audit-ui.setup.ts
+@@ -0,0 +1,4 @@
++import '@testing-library/jest-dom/vitest';
++import { afterEach } from 'vitest';
++import { cleanup } from '@testing-library/react';
++afterEach(cleanup);
+diff --git a/src/test/auth/resend-security.test.ts b/src/test/auth/resend-security.test.ts
+new file mode 100644
+index 00000000..b82cf281
+--- /dev/null
++++ b/src/test/auth/resend-security.test.ts
+@@ -0,0 +1,27 @@
++import { beforeEach, expect, it, vi } from 'vitest';
++const { lookup, user, issue, captcha } = vi.hoisted(() => ({ lookup: vi.fn(), user: vi.fn(), issue: vi.fn(), captcha: vi.fn() }));
++vi.mock('@/utils/supabase/server', () => ({ getServiceClient: () => ({
++  auth: { admin: { getUserById: user } },
++  from: () => { const q = { select: () => q, eq: () => q, order: () => q, limit: () => q, maybeSingle: lookup }; return q; },
++}) }));
++vi.mock('@/features/auth/actions/_signup-helpers', () => ({ issueOtpFor: issue }));
++vi.mock('@/features/auth/actions/_otp-shared', () => ({ getRemoteIp: async () => '192.0.2.1' }));
++vi.mock('@/lib/turnstile', () => ({ verifyTurnstileToken: captcha }));
++import { resendOtpAction } from '@/features/auth/actions/otp-signup.actions';
++beforeEach(() => { vi.resetAllMocks(); captcha.mockResolvedValue({ ok: true }); });
++it('keeps resend available with the same acknowledgment for absent, confirmed and pending accounts', async () => {
++  lookup.mockResolvedValueOnce({ data: null });
++  const absent = await resendOtpAction({ email: 'synthetic@example.invalid' });
++  lookup.mockResolvedValue({ data: { user_id: 'synthetic' } });
++  user.mockResolvedValueOnce({ data: { user: { email_confirmed_at: 'synthetic' } } });
++  expect(await resendOtpAction({ email: 'synthetic@example.invalid' })).toEqual(absent);
++  user.mockResolvedValueOnce({ data: { user: { email_confirmed_at: null } } });
++  expect(await resendOtpAction({ email: 'synthetic@example.invalid' })).toEqual(absent);
++  expect(issue).toHaveBeenCalledOnce();
++});
++it('requires action-bound CAPTCHA before user lookup', async () => {
++  captcha.mockResolvedValue({ ok: false, reason: 'CAPTCHA requerido' });
++  expect(await resendOtpAction({ email: 'synthetic@example.invalid' })).toMatchObject({ ok: false });
++  expect(captcha).toHaveBeenCalledWith(undefined, { remoteIp: '192.0.2.1', expectedAction: 'resend-otp' });
++  expect(lookup).not.toHaveBeenCalled();
++});
+diff --git a/vitest.audit-ui.config.ts b/vitest.audit-ui.config.ts
+new file mode 100644
+index 00000000..bde59c71
+--- /dev/null
++++ b/vitest.audit-ui.config.ts
+@@ -0,0 +1,7 @@
++import { defineConfig, mergeConfig } from 'vitest/config';
++import audit from './vitest.audit.config';
++export default mergeConfig(audit, defineConfig({ test: {
++  environment: 'jsdom',
++  include: ['src/features/auth/components/login-form.test.tsx'],
++  setupFiles: ['./src/test/auth/audit-ui.setup.ts'],
++} }));

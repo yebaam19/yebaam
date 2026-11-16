@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-const { signIn, signOut, getUser, maybeSingle } = vi.hoisted(() => ({
-  signIn: vi.fn(), signOut: vi.fn(), getUser: vi.fn(), maybeSingle: vi.fn(),
+const { signIn, signOut, getUser, maybeSingle, oauth } = vi.hoisted(() => ({
+  oauth: vi.fn(), signIn: vi.fn(), signOut: vi.fn(), getUser: vi.fn(), maybeSingle: vi.fn(),
 }));
 vi.mock('@/utils/supabase/client', () => ({ createClient: () => ({
-  auth: { signInWithPassword: signIn, signOut, getUser },
+  auth: { signInWithOAuth: oauth, signInWithPassword: signIn, signOut, getUser },
   from: () => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }),
 }) }));
 vi.mock('@/features/auth/actions/otp-signup.actions', () => ({}));
@@ -45,4 +45,24 @@ it('logs fixed validation/configuration categories without credentials', async (
   expect(JSON.stringify(log.mock.calls)).not.toContain('synthetic-secret');
   expect(JSON.stringify(log.mock.calls)).not.toContain('sensitive-provider-detail');
   log.mockRestore();
+});
+
+it('Google uses a same-origin callback and preserves a legitimate profile destination', async () => {
+  vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+  oauth.mockResolvedValue({ error: null });
+  await service.loginWithGoogle('/ellis.cano?tab=mascotas');
+  expect(oauth).toHaveBeenCalledWith({ provider: 'google', options: {
+    redirectTo: 'http://localhost:3000/auth/callback?redirect=%2Fellis.cano%3Ftab%3Dmascotas',
+  } });
+  await service.loginWithGoogle('//evil.invalid');
+  expect(oauth).toHaveBeenLastCalledWith({ provider: 'google', options: {
+    redirectTo: 'http://localhost:3000/auth/callback?redirect=%2Ffeed',
+  } });
+  vi.stubGlobal('window', undefined);
+});
+it('OAuth completion rejects an absent provider user', async () => {
+  vi.stubGlobal('window', {});
+  getUser.mockResolvedValue({ data: { user: null } });
+  expect(await service.completeOAuthLogin()).toBeNull();
+  vi.stubGlobal('window', undefined);
 });

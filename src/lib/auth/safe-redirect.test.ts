@@ -33,3 +33,7 @@ describe('approved destinations', () => {
     expect(sanitizeRedirectPath('/cities/synthetic/news')).toBe('/cities/synthetic/news');
   });
 });
+
+it.each(['/ellis', '/ellis.cano?tab=mascotas', '/user_name-1'])('preserves profile destination %s', (path) => {
+  expect(sanitizeRedirectPath(path)).toBe(path);
+});

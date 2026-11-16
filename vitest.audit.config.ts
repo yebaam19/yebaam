@@ -12,6 +12,7 @@ export default defineConfig({
     setupFiles: ['./src/test/auth/audit-offline.setup.ts'],
     include: [
       'src/test/auth/login-security.test.ts',
+      'src/test/auth/resend-security.test.ts',
       'src/test/auth/recovery-security.test.ts',
       'src/test/auth/attachment-security.test.ts',
       'src/lib/auth/safe-redirect.test.ts',

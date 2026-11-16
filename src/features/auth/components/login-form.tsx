@@ -9,7 +9,6 @@ import { toast } from 'sonner'
 import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth/TurnstileWidget'
 import { useAuthStore } from '../store/auth.store'
 import { sanitizeRedirectPath } from '@/lib/auth/safe-redirect'
-import { isEmailNotConfirmedError } from '../utils/auth-errors'
 
 interface LoginFormProps {
   showForgotPassword?: boolean
@@ -72,18 +71,6 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
       toast.success(t('login.welcomeBack'))
       router.push(redirectTo as Route)
     } catch (err: unknown) {
-      // Half-registered account: the email was never confirmed. Instead of a
-      // dead-end error, route the user back into the verification flow where
-      // they can resend a fresh code and finish signing up. Keep ?redirect
-      // riding along so the verify → login chain still lands on the original
-      // destination (e.g. a shared /umbral link).
-      if (isEmailNotConfirmedError(err)) {
-        toast.info(t('login.needsVerificationToast'))
-        const verifyParams = new URLSearchParams({ email: identifier })
-        if (searchParams.get('redirect')) verifyParams.set('redirect', redirectTo)
-        router.push(`/verify-email?${verifyParams.toString()}`)
-        return
-      }
       const message = err instanceof Error ? err.message : ''
       toast.error(message || t('login.genericError'))
       // Turnstile tokens are single-use — refresh the widget so the user can retry.
@@ -151,6 +138,13 @@ export function LoginForm({ showForgotPassword = true }: LoginFormProps) {
           </Link>
         </div>
       )}
+
+      <Link
+        href={{ pathname: '/verify-email', query: { email: identifier, redirect: redirectTo } }}
+        className="block text-sm font-semibold text-green-600 underline"
+      >
+        {t('login.resendConfirmation')}
+      </Link>
 
       {/* Submit Button */}
       <button
